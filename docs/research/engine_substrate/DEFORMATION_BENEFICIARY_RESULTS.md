@@ -74,6 +74,47 @@ correctly over a range too short to contain the answer.
 That is a prediction the two seeds make jointly and which has **not** been run as one composed
 experiment; each half is measured separately here and in the horizon results.
 
+## 4. Three ways to be moved, and the horizon defends against one
+
+The instrument above measures a **continuation** against a **tube**. Two consequences follow that it
+cannot see, and they are the more common cases.
+
+| | what is deformed | detectable by | measured |
+|---|---|---|---|
+| **A** | the continuation — you are taken where your tube excludes | **a long enough horizon** | 1,1 → 0,0,0 as horizon grows |
+| **B** | **the tube** — what you are aiming at is replaced | **not by any horizon** | `serves_actor = 1` at 2, 4, 6, 8 |
+| **C** | (B, audited against the tube held *before*) | **retained history** | `0` at every horizon |
+
+**B is invisible by construction, not by oversight.** An audit measures a continuation against a
+tube; move the tube and the measure moves with it. More foresight does not touch it. An agent so
+moved is not mistaken — by its own current lights it is correct, and it is selecting exactly what it
+now aims at.
+
+**And no actor is required for the harm.** Row A at short horizon is already a decision against one's
+own interest with nobody arranging it: the capture reads as help because the discriminating evidence
+lies past the horizon, and a *forced* deformation — the authorless container relation — takes you out
+of your tube just as effectively as an authored one. The beneficiary question is malformed there
+(§1), which does not make the outcome any less against your interest. **Self-harming choice needs no
+manipulator; it needs only a horizon shorter than the consequence.**
+
+Where an actor *is* present, this says something sharper about why the target so often cannot report
+it. Deforming the content is detectable at the content level. Deforming the continuation is
+detectable with enough horizon. **Deforming the aim, or the admissibility grammar that decides which
+options are even proposed, leaves nothing to detect in the present** — the selector runs correctly on
+altered inputs, and `feasible_selection`'s own `withheld_minimal` is empty in that case, because an
+option removed from admissibility was never a candidate to withhold. Unawareness is then the expected
+state rather than a failure of attention.
+
+**What defends against it is memory, not foresight.** Row C recovers the move only because the prior
+tube was retained to compare against. That is the theory's own retention — *"what is free is only the
+not-yet-forgetting"* — and it gives the forgetting a specific cost: discard your own prior aim and
+you lose the only instrument that detects having been re-aimed.
+
+**Not built.** Nothing in this seed retains a prior tube or watches the admissibility grammar for
+change; row C is produced by handing the audit the old target by hand. A `prior_target` with a rule
+that flags divergence between held and prior aim is the obvious shape, and the harder half —
+detecting a change in Γ itself — is not obviously the same shape and is not attempted here.
+
 ## Honest bounds
 
 * **The horizon buys the negative, not the beneficiary.** `serves_origin` stays 0 at every horizon in
