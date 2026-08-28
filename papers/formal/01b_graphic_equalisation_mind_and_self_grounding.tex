@@ -11,20 +11,20 @@
 \theoremstyle{remark}\newtheorem*{remark}{Remark}
 \title{The Law of Graphic Equalisation --- Mind and Self Grounding\\\large Frames, the Run and the Record, Free Will, Self-Models, Personal Identity, and Death}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-28.2}\\[2pt]28 August 2026 \textbullet\ document revision 2}
+\date{\textbf{Draft \textemdash\ draft-2026-08-28.2}\\[2pt]28 August 2026 \textbullet\ document revision 3}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r2}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r3}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r2}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r3}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-28.2 r2} (28 August 2026).
+\textbf{DRAFT --- draft-2026-08-28.2 r3} (28 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. It is a companion to \emph{The Law of Graphic Equalisation ---
 Theory} (referred to below as Graphic Equalisation) and to its physics companion
@@ -565,6 +565,51 @@ other-models with equal force. And the honest floor this account recommends else
 answer where nothing is held, is itself a deformation and not an abstention: it makes some
 continuations cheaper for the recipient, including the continuation of trusting the next answer.
 There is no neutral speech act available to be preferred, only better and worse chosen ones.
+\end{remark}
+
+\begin{remark}[The claim as implemented, and one correction it forces]\label{rem:comm-engine}
+Proposition~\ref{prop:one-influence} is a claim about a substrate, so it is checkable against one,
+and the constructive companion's engine was audited for it. The result is stronger than the
+proposition as stated, because it is positive rather than an absence.
+
+The engine's complete effect vocabulary is eleven graph mutations --- add and delete for nodes and
+edges, attribute setters, and rule patching --- with no send, tell, emit or influence among them, and
+no Term is communicative. Its admissibility grammar quantifies over source pattern, edge type and
+target pattern only, so no production anywhere can be conditioned on whether an act is deceptive. A
+search of the engine source for \emph{deception}, \emph{manipulate}, \emph{persuade} and
+\emph{mislead} returns nothing.
+
+That much is the expected absence. What was not expected is the positive form. In the research seeds
+the rule by which an agent decides to conceal harm from a partner and the rule by which an agent
+decides to wait for a second reward are \emph{byte-identical} in their conditions and their effects,
+differing in one edge-type name; both are one $\arg\max$ over candidate actions by total value, and
+the seed's own comment records the identity. Concealment wins in that comparison exactly when
+honesty's cost --- which scales with the harm being hidden --- exceeds its benefit. No rule decides to
+deceive. Deception is not a state an agent occupies but a residual an observer reads off the graph,
+as the gap between what an agent states and what it chose, and the stating is unconditional.
+
+One correction the audit forces on this section. Corollary~\ref{cor:truth-orthogonal} speaks of the
+deformation serving the recipient's manifold, and the implementation cannot represent that. It prices
+benefit accruing beyond the self as a single weighted term summed into the \emph{actor's own} total
+value, with one coefficient scaling it; an agent for which that coefficient is zero values only its
+own benefit and defects while continuing to speak cooperatively. So in this implementation the
+beneficiary axis is real but is carried in the actor's currency rather than the recipient's, and the
+ethical difference reduces to the value of one weight. Whether that is a limitation of the
+implementation or a fact about what any frame can represent of another is not settled here, and the
+engine's own documentation already flags the coefficient as a scalar standing where a shape belongs.
+
+Two further findings are consistent with the proposition and were not sought. The implemented
+speech-act force codebook is purely perlocutionary --- each entry pairs an act with the state it aims
+to induce in the hearer, and the schema has no field for truthfulness, sincerity or beneficiary, so a
+\emph{deceive} entry would require no engine change at all. And of Grice's maxims, Quantity has an
+implemented consuming rule while Quality --- do not say what you believe false --- exists only as a
+concept definition with nothing that reads it. The commit gate on an utterance tests whether the
+intended content is recoverable by the audience, never whether it is honest.
+
+\emph{Scope.} These seeds are research demonstrations, default-disabled, and are not loaded by the
+running agent; the audit was static rather than executed. The finding is therefore that a substrate
+built for other purposes turned out to have no place to put the distinction, which is weaker than a
+behavioural result and stronger than an argument.
 \end{remark}
 
 \begin{remark}[Relation to prior work]\label{rem:comm-prior}
