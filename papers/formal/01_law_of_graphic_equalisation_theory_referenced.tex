@@ -16,20 +16,20 @@
 \newcommand{\Hist}{\mathcal{H}}
 \title{The Law of Graphic Equalisation --- Theory\\\large Minimal Recursive Dynamics, Collapse, Frame-Relative Identity, and Residual}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-28.2}\\[2pt]28 August 2026 \textbullet\ document revision 23}
+\date{\textbf{Draft \textemdash\ draft-2026-08-28.2}\\[2pt]28 August 2026 \textbullet\ document revision 24}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r23}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r24}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r23}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r24}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-28.2 r23} (28 August 2026).
+\textbf{DRAFT --- draft-2026-08-28.2 r24} (28 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -566,16 +566,34 @@ The provenance of $r$ (Section~\ref{sec:scope}) records that operative transform
 A graph's \emph{primitives} are the operations it invokes without performing: the operator set its
 rules bottom out in. Every level has them, and having them is what being a level consists of --- a
 graph with no primitives would have to perform everything it invokes, which is the regress this
-substrate does not contain.
+substrate does not contain. That is the whole of the definition, and in particular it says nothing
+about what a graph can learn of where they come from.
 
-The defining property is that \emph{their provenance is not exposed}. A graph invokes a primitive and
-receives its result; what supplied it, whether one structure supplied all of them or several supplied
-different ones, and whether the supplier performed the operation or relayed it from somewhere else
-again, are all outside what the invoking graph can determine. So the question is not \emph{where} a
-graph's execution happens but simply that its primitives are closed to it, and the language of a
-single performing thing standing behind them --- \emph{the} runner --- imports an assumption the
-substrate does not supply.
+A \emph{well-formed} set of primitives does not leak its provenance: a graph invokes and receives a
+result, and nothing in the result discloses what supplied it, whether one structure supplied all of
+them or several supplied different ones, or whether the supplier performed the operation or relayed
+it. Leaking is not thereby forbidden, and an earlier statement of this definition made it definitional
+when it is a property some supplies have and others do not.
 \end{definition}
+
+\begin{proposition}[Primitives leak, and complete provenance is still unrecoverable]\label{prop:leak}
+Leaking is ordinary rather than exceptional. A primitive's timing discloses the structure beneath it,
+which is why measuring how long a read takes recovers what a cache holds
+\citep{osvik2006,kocher2019}; an arithmetic that overflows at a particular magnitude discloses a word
+size; a rounding discloses a representation; and a performance cliff at a particular size discloses a
+page. Most abstractions leak, and this one is not special.
+
+What does not follow is that provenance can be recovered entire. Every act of recovery is itself
+performed by primitives, so a graph inferring what lies beneath one operator does so using others
+whose own provenance is not thereby in view, and there is no position from which the whole supply is
+inspected at once. The result is the standing shape: \emph{partial always, complete never} --- leaks
+give a graph real and sometimes decisive knowledge of what supplies it, and never the closure of that
+question.
+\end{proposition}
+This is what the physics companion's treatment of $c$ turns on rather than contradicts. A frame cannot
+read the rate beneath its primitives directly, and has nonetheless obtained a number for it by
+measurement and inference across three centuries --- which is exploiting a leak, and is available
+precisely because provenance is not sealed.
 
 \begin{proposition}[Primitives are supplied, not intrinsic]\label{prop:rule-runner}
 A graph is data --- nodes, relations, and rules --- and the operations its rules bottom out in are supplied to it rather than contained in it. The same graph may therefore be run against different supplies of the same operator set, and nothing supplying an operator need be the substrate the graph describes or is ``in.'' Where the work is done is a fact about that supply and not about the graph.
@@ -860,7 +878,7 @@ The substrate claim remains
 \item \textbf{Minting is a rule.} Fails if grammar-extension (growth) requires a primitive operation beneath the rules rather than a reflective rule subject to the same economics, admissibility, and antecedent-state principle --- in particular, if a graph can mint its first distinctions without any seeded from its container.
 \item \textbf{Partial-order sufficiency.} Fails if realised dynamics require a total order over collapses in distinct frames --- a global simultaneity --- rather than only the boundary-induced partial order.
 \item \textbf{Globally-async/locally-sync.} Fails if coupling never induces local synchrony (boundary-related collapses remain unordered) or if synchrony is forced without coupling (a global instant exists independent of any boundary).
-\item \textbf{Closure of provenance.} Fails if a frame can determine by internal observation alone where its primitives come from --- if any in-frame test distinguishes self-supplied from externally supplied operators, reveals whether a serial hidden supply underlies an apparently asynchronous frame, or establishes how many distinct structures supply its operator set.
+\item \textbf{Provenance is never closed by inference.} Not that primitives fail to leak --- they do leak, and Proposition~\ref{prop:leak} says so. This fails if a frame can \emph{settle} the provenance of its own operator set from inside: if some in-frame procedure establishes, rather than merely evidences, whether its operators are self-supplied, how many distinct structures supply them, or whether a serial hidden supply underlies an apparently asynchronous frame --- and does so without relying on further primitives whose own provenance is then equally open.
 \end{enumerate}
 
 \section{Conclusion}

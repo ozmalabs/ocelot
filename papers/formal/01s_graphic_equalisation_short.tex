@@ -24,10 +24,10 @@
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2 / short form / from long r23}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2 / short form / from long r24}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2 / short form / from long r23}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2 / short form / from long r24}}\renewcommand{\headrulewidth}{0pt}}
 
 \title{The Law of Graphic Equalisation\\\large Short Form}
 \author{Matthew Parslow\\Independent Researcher}
@@ -217,15 +217,14 @@ $U_{\mathcal F}$ counts undetermined dimensions only. NULL dimensions are exclud
 A graph's \emph{primitives} are the operations it invokes without performing: the operator set its
 rules bottom out in. Every level has them, and having them is what being a level consists of --- a
 graph with no primitives would have to perform everything it invokes, which is the regress this
-substrate does not contain.
+substrate does not contain. That is the whole of the definition, and in particular it says nothing
+about what a graph can learn of where they come from.
 
-The defining property is that \emph{their provenance is not exposed}. A graph invokes a primitive and
-receives its result; what supplied it, whether one structure supplied all of them or several supplied
-different ones, and whether the supplier performed the operation or relayed it from somewhere else
-again, are all outside what the invoking graph can determine. So the question is not \emph{where} a
-graph's execution happens but simply that its primitives are closed to it, and the language of a
-single performing thing standing behind them --- \emph{the} runner --- imports an assumption the
-substrate does not supply.
+A \emph{well-formed} set of primitives does not leak its provenance: a graph invokes and receives a
+result, and nothing in the result discloses what supplied it, whether one structure supplied all of
+them or several supplied different ones, or whether the supplier performed the operation or relayed
+it. Leaking is not thereby forbidden, and an earlier statement of this definition made it definitional
+when it is a property some supplies have and others do not.
 \end{definition}
 \begin{proposition}[Primitives are supplied, not intrinsic]\label{prop:rule-runner}
 A graph is data --- nodes, relations, and rules --- and the operations its rules bottom out in are supplied to it rather than contained in it. The same graph may therefore be run against different supplies of the same operator set, and nothing supplying an operator need be the substrate the graph describes or is ``in.'' Where the work is done is a fact about that supply and not about the graph.
