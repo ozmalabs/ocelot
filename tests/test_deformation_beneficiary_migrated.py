@@ -375,3 +375,76 @@ def test_the_substrate_cannot_separate_education_from_installation():
     assert installed == 1.0, (
         "an installed aim reported as not served — if this now fails, the "
         "substrate has acquired a standard external to the agent's own tube")
+
+
+# ---------------------------------------------------------------------------
+# Two things this instrument does NOT establish, pinned so they cannot be
+# forgotten by anyone reading only its passing tests.
+# ---------------------------------------------------------------------------
+
+def _three_party(third_aim):
+    """Victim aims at 0; originator aims at 99 and gains nothing; the deformation
+    parks the victim at 5, where a third frame wants it."""
+    a = WorldAdapter(seeds=())
+    a.inner.load_seed_manifest(
+        json.load(open(ROOT / "seeds" / "deformation_beneficiary.json")), a.agent)
+    g = a.s
+    pol = g.add_node("ManifoldPolicy", {"future_manifold_projection_budget": 4.0,
+                                        "future_manifold_physical_horizon": 4.0})
+    mk = lambda n, aim: g.add_node("Frame", {"name": n,
+                                             "future_manifold_target": [[aim]] * 4,
+                                             "future_manifold_bounds": [[1.0]] * 4})
+    victim, origin = mk("victim", 0.0), mk("originator", 99.0)
+    third = mk("third_party", third_aim)
+    for f in (victim, origin, third):
+        g.add_edge(f, "uses_policy", pol)
+    d = g.add_node("Deformation", {"presents_as": "acted_on",
+                                   "future_manifold_values": [[5.0]] * 4})
+    g.add_edge(d, "acts_on", victim)
+    g.add_edge(d, "originates_in", origin)
+    a.inner.run_rules(1_000_000)
+    at = g.node(d)["attrs"]
+    served_third = a.inner.evaluate(
+        {"type": "FutureManifoldProjection", "episode": {"type": "Var", "name": "f"},
+         "policy": {"type": "Var", "name": "p"}, "source": {"type": "Var", "name": "d"},
+         "field": "retained_width"}, {"f": third, "p": pol, "d": d})
+    return at, served_third
+
+
+def test_a_THIRD_PARTY_beneficiary_is_invisible_to_this_instrument():
+    """A KNOWN BLINDNESS, not a bug to be found later.
+
+    The beneficiary candidates are hardcoded to {acted_on, origin}, and
+    `claim_diverges` compares only those two. So a deformation that costs the
+    victim, benefits the originator NOT AT ALL, and fully serves a third frame
+    passes with `diverges = 0` — a clean report on the shape that needs nothing
+    further to be a manipulation: cause a benefit to one agent at another's
+    expense.
+
+    The self-interest detector never fires because no self-interest is present."""
+    at, served_third = _three_party(third_aim=5.0)
+    assert at["serves_actor"] == 0.0, "the victim should be out of its own tube"
+    assert at["serves_origin"] == 0.0, "the originator should gain nothing"
+    assert at["claim_diverges"] == 0.0, (
+        "the instrument flagged a third-party case — if this now fails the "
+        "beneficiary sweep has been widened and the results document is stale")
+    assert served_third == 1.0, "the third party should be fully served"
+
+
+def test_benefit_incidence_is_not_authorship():
+    """The second thing this does not establish, and the harder one.
+
+    `originates_in` is an edge the fixture SUPPLIES. Nothing measures it. Every
+    `serves_*` number is benefit incidence — whose tube this continuation sits
+    in — and a frame can sit in its tube without having caused anything. The
+    identical measurement is produced whether the origin authored the deformation
+    or merely happens to benefit.
+
+    Establishing authorship needs a counterfactual — the continuation projected
+    with and without that frame's action — which the manifold could express and
+    this seed does not attempt."""
+    at_benefiting, _ = _three_party(third_aim=5.0)
+    # same edges, same measured numbers, and the causal claim is carried entirely
+    # by the supplied edge rather than by anything computed
+    assert at_benefiting["beneficiary_well_formed"] == 1.0
+    assert at_benefiting["serves_origin"] == 0.0
