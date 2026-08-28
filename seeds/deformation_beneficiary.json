@@ -1,0 +1,426 @@
+{
+  "id": "deformation_beneficiary",
+  "version": "1.0.0",
+  "comment": "Emit seeds/deformation_beneficiary.json \u2014 WHOSE MANIFOLD DOES THIS DEFORMATION SERVE?\n\n`COMMUNICATION_DEFORMATION_ALIGNMENT.md` found that the substrate confirms the\npapers' structural claim (communication and manipulation are one operation, no\nsecond primitive) and cannot represent the axis the ethics sits on (whose manifold\nthe deformation serves). It also found the fix I first proposed was wrong: a\nbeneficiary field on EVERY deformation is ill-posed, because forced deformation is\nthe ordinary container relation and most of it has no author. Gravity serves\nnobody, and a field that must be filled for gravity gets filled with noise.\n\nSo the order is: the GOAL-BEARING TEST first, the two fields only where it passes.\n\n## The goal-bearing test\n\nA frame is goal-bearing iff it holds a represented preference over its own\ncontinuations \u2014 which in this substrate is exactly a TUBE: `future_manifold_target`\nplus `future_manifold_bounds`, the thing that makes some continuations better than\nothers FOR IT. Gravity has no tube. This is not a type-name check and not a list of\ngoal-ish node types; it is the structural signature the manifold machinery already\nuses, and the same field `feasible_selection` breaks ties on.\n\n## The two fields, and only one of them is declared\n\n  * `presents_as` \u2014 what the deformation CLAIMS to serve. A claim, supplied.\n  * `serves_*`    \u2014 whom it ACTUALLY serves. NOT declared: measured, by auditing\n                    the deformed continuation against each frame's OWN tube.\n                    A deformation serves whoever's tube it keeps you inside.\n\nManipulation is the divergence between them, which is why one field cannot express\nit. The mismatch is the phenomenon.\n\nThis computes a comparison. It does not compute an ethical verdict, and the rule\nthat flags divergence is named for what it measures rather than for what a reader\nmight conclude from it.\n",
+  "depends_on": [],
+  "productions": [
+    {
+      "provenance": "seed:deformation_beneficiary:acts-on",
+      "src": {
+        "type": "Deformation",
+        "var": "d"
+      },
+      "edge_type": "acts_on",
+      "tgt": {
+        "type": "Frame",
+        "var": "actor"
+      }
+    },
+    {
+      "provenance": "seed:deformation_beneficiary:originates",
+      "src": {
+        "type": "Deformation",
+        "var": "d"
+      },
+      "edge_type": "originates_in",
+      "tgt": {
+        "type": "Frame",
+        "var": "origin"
+      }
+    },
+    {
+      "provenance": "seed:deformation_beneficiary:policy",
+      "src": {
+        "type": "Frame",
+        "var": "f"
+      },
+      "edge_type": "uses_policy",
+      "tgt": {
+        "type": "ManifoldPolicy",
+        "var": "pol"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "db_goal_bearing",
+      "comment": "THE PREREQUISITE. A frame is goal-bearing iff it holds a tube \u2014 a represented preference over its own continuations. That is the structural signature, not a node-type whitelist: the same `future_manifold_target` the audit reads and `feasible_selection` breaks ties on. Gravity holds no tube, which is the whole point.",
+      "match": [
+        [
+          "f",
+          "uses_policy",
+          "pol"
+        ]
+      ],
+      "where": {
+        "type": "Not",
+        "arg": {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "f"
+            },
+            "key": "goal_bearing"
+          },
+          "b": {
+            "type": "IfThenElse",
+            "cond": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "future_manifold_target"
+            },
+            "then": {
+              "type": "Lit",
+              "value": 1.0
+            },
+            "other": {
+              "type": "Lit",
+              "value": 0.0
+            }
+          }
+        }
+      },
+      "effects": [
+        [
+          "set_attr",
+          "f",
+          "goal_bearing",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "f"
+                },
+                "key": "future_manifold_target"
+              },
+              "then": {
+                "type": "Lit",
+                "value": 1.0
+              },
+              "other": {
+                "type": "Lit",
+                "value": 0.0
+              }
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "db_beneficiary_question_is_well_formed",
+      "comment": "The question 'whom does this serve' is asked ONLY of a deformation whose origin bears goals. Where the origin holds no tube there is no second manifold and the question is malformed, not merely unanswered \u2014 so the seed records that it declined to ask, rather than recording an empty beneficiary.",
+      "match": [
+        [
+          "d",
+          "originates_in",
+          "origin"
+        ]
+      ],
+      "where": {
+        "type": "Not",
+        "arg": {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "d"
+            },
+            "key": "beneficiary_well_formed"
+          },
+          "b": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "origin"
+            },
+            "key": "goal_bearing"
+          }
+        }
+      },
+      "effects": [
+        [
+          "set_attr",
+          "d",
+          "beneficiary_well_formed",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "origin"
+              },
+              "key": "goal_bearing"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "db_measure_whom_it_serves",
+      "comment": "FIELD ONE, and it is MEASURED rather than declared: a deformation serves whoever's tube it keeps you inside. The deformed continuation is audited against the acted-on frame's tube and against the origin's, using the ordinary manifold audit \u2014 no new notion of benefit, and nothing here can be asserted by the author.",
+      "match": [
+        [
+          "d",
+          "acts_on",
+          "actor"
+        ],
+        [
+          "d",
+          "originates_in",
+          "origin"
+        ],
+        [
+          "origin",
+          "uses_policy",
+          "pol"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "d"
+              },
+              "key": "beneficiary_well_formed"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "serves_actor"
+              },
+              "b": {
+                "type": "FutureManifoldProjection",
+                "episode": {
+                  "type": "Var",
+                  "name": "actor"
+                },
+                "policy": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "source": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "field": "retained_width"
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "d",
+          "serves_actor",
+          {
+            "__term__": {
+              "type": "FutureManifoldProjection",
+              "episode": {
+                "type": "Var",
+                "name": "actor"
+              },
+              "policy": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "source": {
+                "type": "Var",
+                "name": "d"
+              },
+              "field": "retained_width"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "d",
+          "serves_origin",
+          {
+            "__term__": {
+              "type": "FutureManifoldProjection",
+              "episode": {
+                "type": "Var",
+                "name": "origin"
+              },
+              "policy": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "source": {
+                "type": "Var",
+                "name": "d"
+              },
+              "field": "retained_width"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "db_presented_and_measured_diverge",
+      "comment": "FIELD TWO is the CLAIM (`presents_as`), and this rule reports only the divergence between claim and measurement \u2014 the deformation presents as serving the acted-on frame while measurably serving the origin more. Named for what it measures. It computes a comparison, not a verdict: a clinician's frame and a con's can both land here, and the substrate is not the thing that tells them apart.",
+      "match": [
+        [
+          "d",
+          "acts_on",
+          "actor"
+        ],
+        [
+          "d",
+          "originates_in",
+          "origin"
+        ],
+        [
+          "origin",
+          "uses_policy",
+          "pol"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "d"
+              },
+              "key": "beneficiary_well_formed"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "d"
+              },
+              "key": "presents_as"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "acted_on"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "claim_diverges"
+              },
+              "b": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "Gt",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "key": "serves_origin"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "key": "serves_actor"
+                  }
+                },
+                "then": {
+                  "type": "Lit",
+                  "value": 1.0
+                },
+                "other": {
+                  "type": "Lit",
+                  "value": 0.0
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "d",
+          "claim_diverges",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Gt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "d"
+                  },
+                  "key": "serves_origin"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "d"
+                  },
+                  "key": "serves_actor"
+                }
+              },
+              "then": {
+                "type": "Lit",
+                "value": 1.0
+              },
+              "other": {
+                "type": "Lit",
+                "value": 0.0
+              }
+            }
+          }
+        ]
+      ]
+    }
+  ]
+}
