@@ -16,20 +16,20 @@
 \newcommand{\Hist}{\mathcal{H}}
 \title{The Law of Graphic Equalisation --- Theory\\\large Minimal Recursive Dynamics, Collapse, Frame-Relative Identity, and Residual}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-28.2}\\[2pt]28 August 2026 \textbullet\ document revision 25}
+\date{\textbf{Draft \textemdash\ draft-2026-08-28.2}\\[2pt]28 August 2026 \textbullet\ document revision 26}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r25}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r26}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r25}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r26}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-28.2 r25} (28 August 2026).
+\textbf{DRAFT --- draft-2026-08-28.2 r26} (28 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -559,7 +559,21 @@ What is not borrowed is that computing was \emph{forced} to these arrangements. 
 
 So the convergence is not that two descriptions sound alike. It is that a discipline optimising hard against cost, with no interest in metaphysics and every incentive to avoid each of these features, arrived at cycle-as-variable-unit, per-frame logical time, per-level opacity and cost inherited along provision --- because the constraints that force them are the constraints this account claims are the operative ones. That is evidence about the constraints, and it survives the borrowed vocabulary because it does not run through it.
 
-The honest limit is that computing's designers are people, so convergence could reflect shared cognition rather than shared constraint. What answers that is the forcing arguments themselves being physical --- finite signal speed, finite bandwidth, a thermodynamic floor --- rather than matters of taste, and Lamport's result in particular being a proof about what is available given a finite $c$, not a design that could have gone otherwise. Its value here is understanding rather than weight: it shows what the claims look like when they run, and is worth more for that than it would be as a proof it cannot supply.
+The honest limit is that computing's designers are people, so convergence could reflect shared cognition rather than shared constraint. What answers that is the forcing arguments themselves being physical --- finite signal speed, finite bandwidth, a thermodynamic floor --- rather than matters of taste, and Lamport's result in particular being a proof about what is available given a finite $c$, not a design that could have gone otherwise.
+
+Computing is an instance of something more general, and stating the general form makes clear what the instance is and is not evidence for.
+
+\begin{proposition}[Convergence under compression]\label{prop:compression-convergence}
+A structure operating under a universe's constraints, and under pressure to hold nothing that does no work, approaches the arrangements that universe already uses --- asymptotically, and only over the part of them its own work touches. This is not imitation and requires no access to those arrangements. It is Proposition~\ref{prop:convergence-observed} applied with the universe as one of the converging parties: well-formedness removes what is not earning its cost (Definition~\ref{def:well-formed}), the cheap solution under a given constraint is nearly unique, and a structure squeezed hard enough finds it because there is little else to find.
+\end{proposition}
+
+Three things follow, and the third is what keeps this from being numerology.
+
+The rate is set by the compression. A discipline under weak pressure, or with slack to spend on anything but cost, converges slowly or not at all; one optimising hard against cost per unit of function converges fast. Computing is the second kind, which is why it is the worked instance and why it got there in decades rather than epochs.
+
+The approach does not terminate, and the reason is stated rather than gestured at. Well-formedness is relative to \emph{what work} (Definition~\ref{def:well-formed}), so a structure converges only over the arrangements its own purpose touches, and the limit of removing all particularity is empty rather than distant. Nothing here says an artefact ends up being a universe.
+
+And a convergence is evidence only where the forcing constraint can be \emph{named}. This is the operative discipline, and it is what separates the two halves of the computing case: no global clock is evidence because finite signal speed is exhibited as the thing forcing it, while shared vocabulary is not evidence because no constraint forces a word. Absent a named constraint, convergence is resemblance, and resemblance is what this whole account's composition falsifier (Section~\ref{sec:falsifiability}) exists to be suspicious of --- so the rule applies to this paper's own claims first. Its value here is understanding rather than weight: it shows what the claims look like when they run, and is worth more for that than it would be as a proof it cannot supply.
 \end{remark}
 
 \begin{remark}[Physics groundings are developed in a companion]\label{rem:physics-companion}
