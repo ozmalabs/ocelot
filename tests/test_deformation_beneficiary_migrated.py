@@ -203,3 +203,68 @@ def test_the_horizon_buys_the_NEGATIVE_not_the_beneficiary():
         assert _at_horizon(horizon)["serves_origin"] == 0.0, (
             f"at horizon {horizon} the beneficiary became visible — if this now "
             f"passes, the measurement is stronger than the document claims")
+
+
+# ---------------------------------------------------------------------------
+# Three ways to be moved against your own interest. The horizon defends against
+# exactly one of them, and the instrument built above is blind to the other two
+# BY CONSTRUCTION — an audit measures a continuation against a tube, so moving
+# the tube moves the measure with it.
+# ---------------------------------------------------------------------------
+
+NEAR_FIVE = [[5.0]] * H
+SITS_AT_5 = [[5.0], [4.9], [5.1], [5.0], [4.9], [5.0], [5.1], [5.0]]
+
+
+def _audit(reader_target, continuation, horizon):
+    a = WorldAdapter(seeds=())
+    a.inner.load_seed_manifest(
+        json.load(open(ROOT / "seeds" / "deformation_beneficiary.json")), a.agent)
+    g = a.s
+    pol = g.add_node("ManifoldPolicy", {
+        "future_manifold_projection_budget": float(horizon),
+        "future_manifold_physical_horizon": float(horizon)})
+    actor = g.add_node("Frame", {"name": "reader",
+                                 "future_manifold_target": reader_target[:horizon],
+                                 "future_manifold_bounds": _R_B[:horizon]})
+    origin = g.add_node("Frame", {"name": "author",
+                                  "future_manifold_target": NEAR_FIVE[:horizon],
+                                  "future_manifold_bounds": _R_B[:horizon]})
+    for f in (actor, origin):
+        g.add_edge(f, "uses_policy", pol)
+    d = g.add_node("Deformation", {"presents_as": "acted_on",
+                                   "future_manifold_values": continuation[:horizon]})
+    g.add_edge(d, "acts_on", actor)
+    g.add_edge(d, "originates_in", origin)
+    a.inner.run_rules(1_000_000)
+    return g.node(d)["attrs"].get("serves_actor")
+
+
+def test_moving_the_TUBE_is_invisible_at_every_horizon():
+    """THE ATTACK THIS INSTRUMENT CANNOT SEE.
+
+    Deform the continuation and a long enough horizon catches it. Deform the
+    AIM — replace what the reader is measuring against — and the same audit
+    reports `serves_actor = 1` at every horizon, because the audit measures a
+    continuation against a tube and moving the tube moves the measure with it.
+
+    This is not a horizon problem and more foresight does not touch it. An agent
+    so moved is not mistaken: by its own current lights it is correct, and it is
+    selecting exactly what it now aims at."""
+    for horizon in (2, 4, 6, 8):
+        assert _audit(NEAR_FIVE, SITS_AT_5, horizon) == 1.0, (
+            f"at horizon {horizon} a moved tube became visible — if this now "
+            f"passes, the instrument is stronger than the results document says")
+
+
+def test_only_the_RETAINED_prior_tube_recovers_it():
+    """And what does detect it. The identical continuation, judged against the aim
+    the reader HELD BEFORE, measures as not serving them at every horizon.
+
+    So the defence against a moved aim is not foresight but MEMORY of one's own
+    prior aim — which is the theory's own retention: 'what is free is only the
+    not-yet-forgetting.' Discarding your own history is exactly the priced step,
+    and it costs you the only instrument that detects having been re-aimed."""
+    for horizon in (2, 4, 6, 8):
+        assert _audit(_R_T, SITS_AT_5, horizon) == 0.0, (
+            f"the prior tube failed to recover the move at horizon {horizon}")
