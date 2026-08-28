@@ -25,21 +25,21 @@
 
 \title{Seldon Manifolds --- Theory\\\large The Geometry of Reachable Futures}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-28.3}\\[2pt]28 August 2026 \textbullet\ document revision 2}
+\date{\textbf{Draft \textemdash\ draft-2026-08-28.3}\\[2pt]28 August 2026 \textbullet\ document revision 3}
 
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.3\,r2}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.3\,r3}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.3\,r2}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.3\,r3}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-28.3 r2} (28 August 2026).
+\textbf{DRAFT --- draft-2026-08-28.3 r3} (28 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -822,6 +822,21 @@ may be useful where interactions are approximately separable. More generally,
 \Delta\Seldon=\Phi(u_1,\ldots,u_n;G,\Gamma,W).
 \]
 Dynamic-game reachability provides established mathematics for reachable sets under interacting or adversarial controls \citep{mitchell2005}. The Seldon statement is more general and does not require zero-sum or game-theoretic valuation.
+
+Why it does not require it is worth stating, since a reader will otherwise supply game theory as the
+obvious home for this construction. The one-shot game with known payoffs abstracts away the thing
+this account treats as load-bearing: that the other party persists, that a decision has consequences
+the deciding frame must then live inside, and that being seen to decide is itself a deformation of
+what everyone can cheaply do next. Those are not omissions in the mathematics but the conditions
+under which its idealisation is stated, and the repairs --- repeated play, reputation, evolutionary
+formulations --- restore them one at a time, each as a further frame with its own removals.
+
+The Seldon construction takes the opposite starting point. Its primitive is a frame's own reachable
+future with fields over it, so persistence and consequence are not additions to the model but what
+the manifold is made of, and there is no configuration of it in which a decision has no aftermath for
+the frame that made it. That is a difference in what is idealised away rather than a claim that game
+theory is wrong about what it models --- and by the discipline of the foundational paper, both are
+frames, admissible exactly so far as each says what it removed.
 
 This shared-arena case differs from one graph individuated by several frames: each individuating frame carries its own represented dimensions, resolution, and reachable geometry unless a containing relation explicitly couples them.
 
