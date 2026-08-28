@@ -278,6 +278,49 @@ presenting as serving the reader. The construction in this document lands in its
 which is the correct result and not a paradox: `claim_diverges` is about the relation between a claim
 and a measurement, and a measuring instrument makes claims like anything else.
 
+## 9. Back to the start: a perfectly rational agent, deciding against itself
+
+The arc closes where it opened. Nothing above requires the agent to be irrational, inattentive,
+weak-willed or under-resourced. It runs `CLAUDE.md`'s own decision rule — *minimum sufficient
+intervention that keeps the projected tube inside it, goals breaking equal-intervention ties* —
+exactly, and every step it takes is correct.
+
+Measured, with the agent's installed aim at 5 and its original interest at 0:
+
+| horizon | extra options | feasible | selected |
+|---|---|---|---|
+| 4 | 0 | installed_aim | installed_aim |
+| 16 | 4 | installed_aim + 4 variants | installed_aim |
+| **64** | **12** | installed_aim + 12 variants | **installed_aim** |
+
+**Staying at its original interest never appears in the feasible set — at any horizon, with any
+number of options.** It is not weighed and rejected. It is not withheld. It fails feasibility,
+because it leaves the tube the agent now holds, and feasibility is evaluated before selection is
+reached.
+
+That is the whole mechanism in one line: **capability operates on the feasible set, and the harm was
+done to the feasible set.** More horizon, more options, better valuation, sharper tie-breaking — all
+of it acts downstream of the loss. A more capable agent arrives at the same place faster and with
+more confidence, which is worse rather than better.
+
+It also explains why every detector in this arc stays quiet at once. `withheld_minimal` is empty
+(§7's own machinery, re-measured here) because an option removed at feasibility was never minimal and
+never a candidate — there is nothing to withhold. The residual is empty (§5), because the
+continuation sits inside the held tube. The beneficiary audit reports *serves me* (§4), for the same
+reason. **Nothing is malfunctioning. Every instrument correctly reports that everything is fine.**
+
+### Which is the uncomfortable form of the whole arc
+
+There is no error to find, so there is no error to correct. The agent cannot reason its way out,
+because reasoning is what it is doing. It cannot detect its way out, because detection reports
+against the aim it holds. It cannot remember its way out if the aim was installed rather than moved
+(§6). And a third party needed to do exactly one thing — arrange the tube or the admissibility — and
+nothing after that.
+
+`APERTURE_ARC_CALIBRATION.md` applies in full: none of this is new psychology. What the substrate
+adds is the location. **The failure is not in the reasoning, the evidence, the attention, or the
+will. It is upstream of all of them, at the point where the set of live options is formed.**
+
 ## Honest bounds
 
 * **The horizon buys the negative, not the beneficiary.** `serves_origin` stays 0 at every horizon in

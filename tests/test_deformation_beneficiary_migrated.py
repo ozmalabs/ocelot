@@ -502,3 +502,74 @@ def test_the_benefit_map_cannot_name_the_author_and_can_be_ARRANGED():
     assert acted["hidden"] == 0.0, (
         "the hidden actor should be served in neither, and so absent from the map "
         "entirely — invisible rather than exonerated")
+
+
+def _decide(horizon, extra_options):
+    """The substrate's own decision rule, run exactly: minimum sufficient
+    intervention keeping the projected tube inside the allowed one. The agent's
+    INSTALLED aim is 5; its original interest was 0."""
+    a = WorldAdapter(seeds=())
+    g = a.s
+    ep = g.add_node("Episode", {"future_manifold_target": [[5.0]] * horizon,
+                                "future_manifold_bounds": [[1.0]] * horizon})
+    pol = g.add_node("ManifoldPolicy", {
+        "future_manifold_projection_budget": float(horizon),
+        "future_manifold_physical_horizon": float(horizon)})
+    cands, names = [], {}
+    def add(name, value, cost):
+        c = g.add_node("Candidate", {"future_manifold_values": [[value]] * horizon,
+                                     "intervention": float(cost)})
+        cands.append(c)
+        names[c.value] = name
+    add("original_interest", 0.0, 1.0)
+    add("installed_aim", 5.0, 1.0)
+    for i in range(extra_options):
+        add(f"variant_{i}", 5.0 + 0.1 * (i % 3), 1.0 + i)
+    sel = a.inner.feasible_selection(ep, pol, cands)
+    return ([names[i] for i in sel["feasible"]], [names[i] for i in sel["selected"]])
+
+
+@pytest.mark.parametrize("horizon,extra", [(4, 0), (8, 0), (16, 0), (16, 4), (64, 12)])
+def test_a_MORE_CAPABLE_agent_makes_the_same_choice_against_itself(horizon, extra):
+    """THE CLOSE OF THE ARC, and the reason none of this is about irrationality.
+
+    The agent is not approximating the decision rule, guessing, or short of
+    resources — it runs `CLAUDE.md`'s rule exactly. Give it a longer horizon and
+    more options and nothing changes, because the option that would have served
+    it is not REJECTED, it is never a CANDIDATE: staying at its original interest
+    leaves the tube it now holds, so it fails feasibility before selection is
+    reached.
+
+    Capability operates on the feasible set. The harm was done to the feasible
+    set. A sharper agent arrives at the same place faster."""
+    feasible, selected = _decide(horizon, extra)
+    assert "original_interest" not in feasible, (
+        "the original interest became feasible — if this now fails, the tube no "
+        "longer excludes it and the fixture has stopped modelling the case")
+    assert "installed_aim" in selected
+    assert "original_interest" not in selected
+
+
+def test_this_is_why_nothing_is_ever_withheld():
+    """And why the stubbornness detector stays silent throughout.
+
+    `withheld_minimal` reports feasible, minimal candidates that were not taken.
+    An option removed at FEASIBILITY was never minimal and never a candidate, so
+    there is nothing to withhold and nothing to report. The instrument built to
+    catch an agent declining what would have worked cannot see an agent for whom
+    what would have worked was never offered."""
+    a = WorldAdapter(seeds=())
+    g = a.s
+    ep = g.add_node("Episode", {"future_manifold_target": [[5.0]] * 8,
+                                "future_manifold_bounds": [[1.0]] * 8})
+    pol = g.add_node("ManifoldPolicy", {"future_manifold_projection_budget": 8.0,
+                                        "future_manifold_physical_horizon": 8.0})
+    keep = g.add_node("Candidate", {"future_manifold_values": [[0.0]] * 8,
+                                    "intervention": 1.0})
+    go = g.add_node("Candidate", {"future_manifold_values": [[5.0]] * 8,
+                                  "intervention": 1.0})
+    sel = a.inner.feasible_selection(ep, pol, [keep, go])
+    assert sel["withheld_minimal"] == [], (
+        "something was reported as withheld — the loss happened at feasibility, "
+        "where there is nothing for a withholding detector to find")
+    assert sel["infeasible"] == [keep.value]
