@@ -1,0 +1,273 @@
+% ==========================================================
+% GENERATED FILE --- DO NOT EDIT.
+% Source of truth: 01_law_of_graphic_equalisation_theory_referenced.tex
+% Short-only content: 01s.spec
+% Regenerate: tools/build_short_paper.py formal/01s.spec
+% ==========================================================
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,hyperref,enumitem,microtype}
+\usepackage{natbib}
+\usepackage[margin=1in]{geometry}
+\newtheorem{axiom}{Axiom}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{theorem}[definition]{Theorem}
+\newtheorem{proposition}[definition]{Proposition}
+\newtheorem{hypothesis}[definition]{Hypothesis}
+\newtheorem{corollary}[definition]{Corollary}
+\theoremstyle{remark}\newtheorem*{remark}{Remark}
+\newcommand{\Poss}{\mathcal{P}}
+\newcommand{\Coll}{\mathcal{C}}
+\newcommand{\Hist}{\mathcal{H}}
+\title{The Law of Graphic Equalisation --- Theory\\\large Minimal Recursive Dynamics, Collapse, Frame-Relative Identity, and Residual}
+\author{Matthew Parslow\\Independent Researcher}
+\date{\textbf{Draft \textemdash\ draft-2026-08-28.2}\\[2pt]28 August 2026 \textbullet\ document revision 21}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[C]{\thepage}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r21}}
+\renewcommand{\headrulewidth}{0pt}
+\fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r21}}\renewcommand{\headrulewidth}{0pt}}
+
+\title{The Law of Graphic Equalisation\\\large Short Form}
+\author{Matthew Parslow\\Independent Researcher}
+\date{\textbf{Draft \textemdash\ draft-2026-08-28.2}\\[2pt]28 August 2026 \textbullet\ short form}
+
+\begin{document}
+\maketitle
+\begin{center}
+\fbox{\parbox{0.92\textwidth}{\small
+\textbf{SHORT FORM.} This is a generated abridgement of \emph{The Law of Graphic
+Equalisation} (Theory). It states the substrate and its consequences without
+demonstrating the removals that establish minimality; the long paper carries
+those, and is the reference for any claim here that a reader wants shown rather
+than asserted. Every definition and proposition below is pulled from the long
+paper at build time, so the two cannot drift.}}
+\end{center}
+\vspace{1em}
+
+\begin{abstract}
+One minimal structure is proposed as underlying phenomena usually studied apart. This short form
+gives the structure, the frame machinery through which anything reaches it, the single prohibition it
+carries, and the commitments on which it fails. It does not argue for minimality: that argument is
+the bulk of the long paper and consists of removing candidate primitives one at a time, which is
+worth reading only by someone who doubts a particular removal.
+\end{abstract}
+
+\section{The substrate}
+Reality is modelled as typed graphs plus a grammar of which relations may exist. Nothing beyond that
+triple is primitive; anything else exists where a graph happens to represent it.
+
+\begin{definition}[Graph]\label{def:graph}
+A graph is
+\[\boxed{G=(g,r,\Gamma),}\]
+where $g$ is represented state, $r$ is operative transformation structure, and $\Gamma$ is the admissibility grammar governing graph-originated transformations.
+\end{definition}
+\begin{definition}[Grounding]\label{def:grounding}
+A \emph{grounding} is a particular assignment of rule content and initial conditions to the substrate
+--- one $(g,r,\Gamma)$ with its laws and its starting configuration fixed --- together with the
+domain it is taken to model. The substrate is what every grounding shares; a grounding is what any
+one of them adds. Claims made about the substrate are accordingly claims about all groundings, and
+are correspondingly weak; claims made within a grounding carry that grounding's contingent rule
+content and are where this account's falsifiable commitments mostly sit.
+\end{definition}
+\begin{definition}[Admissible continuation]\label{def:admissible}
+A continuation $\delta$ belongs to $\Poss(G_t)$ iff it is expressible in the current graph vocabulary, satisfies the relevant antecedent conditions, and is admissible under the operative grammar for the transformation class in question.
+\end{definition}
+\begin{definition}[Collapse]\label{def:collapse}
+Collapse is the frame-relative passage from a pre-realisation possibility structure to realised continuation:
+\[\boxed{\Coll_t:\Poss(G_t)\rightsquigarrow G_{t+1}.}\]
+It is not identified with deliberative choice.
+\end{definition}
+
+The Law is that a graph's admissible continuations are fixed by its present structure, and that
+realisation selects one of them, which then becomes the antecedent for what follows.
+
+\begin{definition}[Residual]\label{def:residual}
+The residual is
+\[\boxed{\epsilon=\delta^R\ominus\delta^P,}\]
+where $\ominus$ is the grounding's difference relation preserving relevant discrepancy.
+\end{definition}
+
+\section{Frames}
+A frame is how anything is reached at all: there is no view from nowhere, so every claim is a claim
+made in some frame, and the frame is not a container holding contents but the relation that
+demarcates them.
+
+\begin{definition}[Frame]\label{def:frame}
+A \emph{frame} is an instantiated boundary relation --- the edge $\mathcal B_{W:G}$ itself, and not the subgraph $G$ it demarcates. The subgraph is the relatum; the frame is the relation. To individuate is to instantiate such an edge, which is why individuation is per frame rather than a fact about the graph.
+\end{definition}
+\begin{corollary}[Frame and dimension are one edge type in two roles]\label{cor:frame-dimension}
+A dimension is the same construction read from the other end. The boundary $\mathcal B_{W:G}$ is a dimension of $W$ --- one of the properties along which $W$ separates what it contains --- and each dimension $W$ instantiates is a frame to the values it separates. So \emph{frame} and \emph{dimension} name two roles one edge type plays relative to another edge, not two kinds of thing, and the asymmetry between them is positional in the same way that the asymmetry between a parent and a child is.
+\end{corollary}
+\begin{proposition}[One interface, two gates]\label{prop:two-gates}
+A situated graph meets its containing frame through a single relation, and what an observation from that frame delivers is not distinct in kind from what the containing frame imposes: to a subgraph, being observed \emph{is} being deformed by its container. That one relation is gated twice, by the same kind of admissibility grammar on its two faces --- the \emph{aperture grammar} $\Gamma_a$ on the input and the \emph{change grammar} $\Gamma_c$ on the output:
+\[
+\boxed{\underbrace{\text{aperture}}_{\Gamma_a}\;\longrightarrow\;\underbrace{\text{rules}}_{r}\;\longrightarrow\;\underbrace{\text{change}}_{\Gamma_c}.}
+\]
+$\Gamma_a$ limits, by grain, which of the container's deformation enters the rules; $\Gamma_c$ determines which of the rules' realised deltas cohere into the container and which remain as residual (Proposition~(long form)). Both are faces of the frame's one grammar $\Gamma$, and instantiate for a specific container $W$ as $\Gamma_{W_a}$ and $\Gamma_{W_c}$; it is $\Gamma_{W_c}$, the change face, that the residual proposition uses. Execution runs between the two.
+\end{proposition}
+\begin{definition}[Aperture]\label{def:aperture}
+A frame's \emph{aperture} is its input gate $\Gamma_a$ together with what that gate fixes: which
+dimensions it can separate along at all, how finely it separates within each (its resolution,
+per dimension, for which this paper also uses \emph{grain}), and how far along each it reaches. The three are properties of one edge --- existence,
+grain, and extent --- and are named separately because they vary independently, not because they are
+different kinds of limit. What falls outside an aperture on any of the three is \emph{absent} to that
+frame rather than held-but-unresolved.
+\end{definition}
+\begin{definition}[Change grammar]\label{def:change-grammar}
+A frame's \emph{change grammar} $\Gamma_c$ is its output gate: it determines which of the realised
+deltas its rules produce cohere into the containing frame and which do not. What it declines has
+entered the frame and been operated on, so it is \emph{residual} (Definition~\ref{def:residual})
+rather than absent, and it persists in place rather than being discarded. $\Gamma_a$ and $\Gamma_c$
+are the two faces of one grammar $\Gamma$ on one boundary edge, and the asymmetry between them is
+which direction they gate, not what kind of thing they are.
+\end{definition}
+\begin{definition}[States of a dimension]\label{def:states}
+For a frame $\mathcal F$, a dimension is in exactly one of four states:
+\[
+\boxed{\mathrm{NULL}\;\neq\;\mathrm{undetermined}\;\neq\;\mathrm{undisclosed}\;\neq\;\mathrm{resolved}.}
+\]
+\emph{NULL}: the dimension is not instantiated; there is nothing to have a value. \emph{Undetermined}: the dimension is instantiated and \emph{no value has been realised} --- collapse has not occurred. \emph{Undisclosed}: a value has been realised but is not held by this frame. \emph{Resolved}: a realised value, held.
+\end{definition}
+
+\section{Economics}
+Cost attaches to writes rather than to holding, and what a write costs is set by whatever runs the
+rules rather than by any universal.
+
+\begin{proposition}[Cost characteristically reduces to the write]\label{prop:economics}
+In the substrate as characterised here, the boundary relation itself is free; the standing structure persisting is free; the operation that costs is a delta that writes over that structure, and $r$ is what writes. Free here means information-preserving rather than absent --- evaluating a rule is itself a write, and is unpaid because it destroys nothing (Remark~\ref{rem:evaluation-writes}). To that extent
+\[
+\boxed{\text{cost is paid by rules.}}
+\]
+This is a characterisation of the substrate as specified, not a necessity of graphhood, and the writeability status it describes is not required to be uniform (Remark~(long form)).
+\end{proposition}
+\begin{definition}[Well-formedness]\label{def:well-formed}
+A graph is \emph{well-formed} to the degree that it holds no structure doing no work for it: each retained distinction earns the cost of its retention, and each rule that runs is one whose running is used. Well-formedness is graded rather than binary; it is relative to \emph{what work} the graph is doing, so a graph well-formed for one purpose is not thereby well-formed for another; and it is not enforced by the substrate. An ill-formed graph runs. It pays more to.
+\end{definition}
+\begin{remark}[Evaluation is a write, and that is why it is free]\label{rem:evaluation-writes}
+The economics above can be stated in a way that does not survive contact with the machinery, and the
+objection is worth answering rather than rewording. If running a rule that does not fire is a read,
+and reads are free, where does the check go, and how does the substrate know to run the next one?
+
+Computing answers it without any appeal to physics. \texttt{read()} is an operation, and it returns
+data; the returned datum has to be somewhere to be used, and in a substrate that is graph all the way
+down there is no return channel outside the structure, so the value materialises as structure. A read
+therefore writes by being a write, and the write is the return. An operation that returns nothing is
+not a read of anything, which is why the free case exists and is exactly the empty one: a read whose
+return is never used has read nothing, and a compiler will delete it. Real machines make the same
+point expensively --- a read leaves traces in caches, predictors and translation state, and those
+traces are measurable, which is why timing attacks recover secrets from victims that only ever read (long form) and why an entire class of speculative attacks was available to designs built on
+the assumption that reading is passive (long form).
+
+Evaluation is a write in that plain sense: a match outcome, a position in an ordering, and the fact
+of having tried are returned values, and returned values are structure. What does not follow is the
+price. A rule's cost is set by the substrate that runs it (Section~(long form)), so a
+different runner is a different charge for the same rule, and Landauer's bound
+(Remark~(long form)) is a floor in one substrate rather than the price in any --- it
+says what cannot be undercut, not what is paid, and those differ wherever a runner charges above the
+floor, which is every real one. This is also why continuation presents as free from inside: a
+well-formed runner does not expose itself (Proposition~\ref{prop:runner-opaque}), so its charge is
+below the frame's aperture and is not an in-frame event at all. In-frame nothing happened; in the
+running substrate something was paid; both hold, of different frames.
+
+Two things follow for the rest of these papers. Reversibility is a structural fact about a map and
+cost is a fact about a runner, and conflating them is what the earlier phrasing did --- separating
+them is what lets the physics companion recover unitarity, which needs only the first, since a
+no-write was never the right description of an evolution that plainly changes the state and is
+reversible because it is injective. And the residual named in Remark~(long form)
+attaches here: information-preserving evaluation accumulates the history it preserves, so a frame
+running a long time without collapsing has deferred a cost into retention rather than escaping one.
+What is free is not the running, only the not-yet-forgetting --- and free only relative to a frame
+that cannot see the bill.
+\end{remark}
+
+\section{Time}
+Time is not a substrate dimension. It is inferred by a frame from its own closure cycles, which is
+why a frame that runs no rules has none.
+
+\begin{proposition}[Time is inferred, not observed]\label{prop:time-inferred}
+No collapse presents a temporal coordinate. Succession is a relation \emph{between} realised states, and a relation between states is not a datum of any one of them. A frame therefore acquires a time dimension only by \emph{inferring} it from the relations among what it holds. Consequently
+\[
+\boxed{\text{a frame observes time}\;\Longrightarrow\;\text{that frame is capable of inference.}}
+\]
+\end{proposition}
+\begin{proposition}[The unit of inferred time is a cycle, and requires closure]\label{prop:cycle-unit}
+A frame does not count its individual changes --- those are below its aperture --- but its own \emph{cycles}, each one traversal of a closed rule-loop. The unit of inferred time is therefore a cycle, not a change, and a cycle has no fixed length: each does a variable amount of change, so inferred time is non-uniform in underlying change (a nonlinear grounding, which Discrete Sufficiency already permits) and a fuller cycle reads as a longer moment (subjective dilation). A cycle exists only for a graph with \emph{closure} --- a graph without it runs to fixed point once and stops, one pass and no repeated tick --- so having time requires closure as well as inference (Proposition~\ref{prop:time-inferred}): a one-shot computation, lacking a loop to iterate, has no time, and a frame's experienced ``now'' is one cycle of its own loop.
+\end{proposition}
+\begin{definition}[The present, structurally]\label{def:present}
+Within a frame, the present is the collapse boundary at which every instantiated \emph{undetermined} dimension relevant to that collapse has been determined:
+\[
+\boxed{U_{\mathcal F}=0.}
+\]
+$U_{\mathcal F}$ counts undetermined dimensions only. NULL dimensions are excluded --- they are not variables. \textbf{Undisclosed dimensions are also excluded}: they are already determined, and a frame's failure to hold them is an epistemic deficit rather than an unresolved collapse. A frame with outstanding undisclosed structure is still at its own present.
+\end{definition}
+
+\section{The runner, and the single prohibition}
+\begin{definition}[Rule runner]\label{def:runner}
+A graph's \emph{rule runner} is whatever performs its rules --- the thing that makes a rule's firing
+happen, as distinct from the rule, which is graph data. A runner is not a substance apart from graph
+(Proposition~\ref{prop:runner-recursion}): it is itself graph that runs, on a runner of its own. The
+term names a role in a coupling, not a layer of the world, and which structure occupies that role for
+a given graph is a contingent fact about how the graph is run.
+\end{definition}
+\begin{proposition}[The rule runner is separable from the graph, and need not be the same substrate]\label{prop:rule-runner}
+A graph is data --- nodes, relations, and rules --- and its rules are executed by a rule runner. The two are separable: the same graph may be run by different runners, and a runner need not be the substrate the graph describes or is ``in.'' Where the compute is done is therefore a fact about the \emph{coupling} between graph and runner, not about the graph alone.
+\end{proposition}
+\begin{proposition}[A well-formed runner does not expose itself, and no level is self-transparent]\label{prop:runner-opaque}
+The asynchronous, locally synchronous structure a frame observes (Remark~(long form)) is the graph's \emph{internal} view and does not fix its runner's actual mode. A hidden central runner may execute a graph serially, one change at a time, while the graph --- lacking any access to the runner's clock --- appears asynchronous and concurrent to itself. More generally, where a frame has no boundary to the substrate that runs it, its runner lies beyond the frame's epistemic boundary in exactly the sense of Section~(long form).
+
+Two claims have to be separated here, and an earlier statement of this proposition ran them together by calling the runner unseeable rather than unseen. That a runner is hidden is \emph{contingent}. Nothing forbids a runner from exposing its own state to what it runs, and computational reflection does exactly that, as this paper acknowledges when placing itself against that literature (Section~(long form)); a tower in which each level is available to the one above is a built artefact, not a thought experiment. A runner that does not expose itself is the \emph{well-formed} case, and for the reasons well-formedness always turns on: exposed runner state is structure maintained for work the frame does not do, and each exposure needs a runner of its own to run the reading of it.
+
+What is not contingent is weaker and survives reflection: \emph{no level is self-transparent}. Reading is an operation whose product lands one level up (Remark~\ref{rem:evaluation-writes}), so a level cannot hold the reading of itself while being the level that is running. Reflection makes the levels explicit and pays for each; it does not terminate in a level transparent to itself. A frame may therefore be given sight of what runs it, and cannot be given sight of its own running. Since the rules are graph and a frame can read and rewrite them (Definition~\ref{def:frame}), while its own running is not graph it holds, the asymmetry is exact: a frame is transparent to itself in precisely one respect and opaque in precisely the other. \emph{It can know what it is and cannot observe its being it.} Self-modification is available; self-observation at the level of the modifying is not.
+\end{proposition}
+\begin{proposition}[The runner is itself graph that runs; operators are its running]\label{prop:runner-recursion}
+A runner is not a substance apart from graph data. The operators a graph's rules invoke are provided by its runner, and the runner provides them because \emph{its} rules run on \emph{its} runner, and so on. A graph's ``primitives'' are therefore the observable running of the graph one level down, exposed as an operator set --- code over machine code over microcode over silicon over electromagnetism over quantum physics --- with no primitive runner at the base. The regress bottoms not at a floor but at the epistemic frontier of Section~(long form): below the lowest measured level is the unclaimed pre-relational substrate.
+\end{proposition}
+
+The account forbids one thing: a frame cannot get outside itself. It cannot be transparent to itself
+at the level it is running at, cannot measure its own throughput, and cannot hold a view from
+nowhere. That prohibition has a formal analogue --- a language of sufficient strength cannot define
+its own truth predicate, and must be given it from a metalanguage --- and the analogue is proved,
+though the mapping from frames to formal systems is argued rather than proved. What is forbidden is
+complete self-capture and not partial self-modelling, which is why reflective towers work and a frame
+can know a great deal about itself.
+
+\section{Carvings}
+Since the rules draw the boundary and the rules are contingent, no carving is privileged. That does
+not make the notion vacuous: an ill-formed cut costs more writes, so a frame under a budget tends to
+be running cheaper cuts, and the cuts that look like joints are the cheap ones rather than the real
+ones.
+
+\begin{proposition}[Convergence is observed, not enforced]\label{prop:convergence-observed}
+Two frames doing the same work converge on similar cuts as each becomes better formed, because the
+cheap cut for a given task is nearly unique. This is a tendency of cost and not the discovery of a
+privileged boundary, and the two are distinguishable in principle: a privileged boundary would
+\emph{enforce} convergence, and enforcement would extend to the hard cases; cost-shaped cuts converge
+where the work is shared and come apart where it is not.
+\end{proposition}
+\begin{hypothesis}[Located degradation]\label{hyp:located-degradation}
+Where a classification's purpose can be specified independently and in advance of inspecting its
+failures, the failures concentrate near the boundary of that purpose more than a uniform
+distribution over the domain would produce. The claim is comparative and is not that failures occur
+nowhere else.
+\end{hypothesis}
+
+\section{Falsifiability}
+The substrate risks little by design and the groundings carry the risk. These are the commitments on
+which the substrate itself fails.
+
+\begin{enumerate}[leftmargin=*]
+\item \textbf{Minimal graph sufficiency.} Fails if basic realised graph dynamics require a primitive beyond $(g,r,\Gamma)$ rather than represented or relational structure.
+\item \textbf{Discrete sufficiency.} Fails if a claimed observable consequence cannot be preserved by any discrete representation, including dynamically varying quantisation, but is preserved by a genuinely non-discrete primitive.
+\item \textbf{Antecedent-state principle.} Fails if a realised transition can require as antecedent a fact that exists only as consequence of that same transition, absent prior fixed-point structure.
+\item \textbf{Graph-law determinism.} Fails if two genuinely identical, causally complete antecedent configurations produce different realised successors without any additional causally operative distinction. Variation observed only from a frame that omits determining dimensions does not constitute such a falsification.
+\item \textbf{Located degradation.} Fails if, for classifications whose purpose is specifiable in advance of inspecting their failures, failure cases are distributed no differently near the purpose boundary than across the rest of the domain (Hypothesis~\ref{hyp:located-degradation}).
+\item \textbf{Convergence is not enforced.} Fails if convergence between independently developed classifications of one domain extends to the cases where the classifications' purposes differ, which is what a privileged boundary would produce and cost-shaped convergence would not (Proposition~\ref{prop:convergence-observed}).
+\end{enumerate}
+
+\end{document}
+

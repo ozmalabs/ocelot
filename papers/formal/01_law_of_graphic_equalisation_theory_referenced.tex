@@ -16,20 +16,20 @@
 \newcommand{\Hist}{\mathcal{H}}
 \title{The Law of Graphic Equalisation --- Theory\\\large Minimal Recursive Dynamics, Collapse, Frame-Relative Identity, and Residual}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-28.2}\\[2pt]28 August 2026 \textbullet\ document revision 20}
+\date{\textbf{Draft \textemdash\ draft-2026-08-28.2}\\[2pt]28 August 2026 \textbullet\ document revision 21}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r20}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r21}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r20}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r21}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-28.2 r20} (28 August 2026).
+\textbf{DRAFT --- draft-2026-08-28.2 r21} (28 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -95,7 +95,7 @@ This removes a privileged frame, not determinacy. Within a frame, relations may 
 \end{remark}
 
 \section{The minimal graph}
-\begin{definition}[Graph]
+\begin{definition}[Graph]\label{def:graph}
 A graph is
 \[\boxed{G=(g,r,\Gamma),}\]
 where $g$ is represented state, $r$ is operative transformation structure, and $\Gamma$ is the admissibility grammar governing graph-originated transformations.
@@ -155,21 +155,21 @@ A continuation $\delta$ belongs to $\Poss(G_t)$ iff it is expressible in the cur
 \end{definition}
 The theory does not require a particular algorithm for constructing $\Poss(G_t)$. This extensional separation between graph transformation as a mathematical relation and any particular rewriting algorithm follows the general discipline of algebraic graph transformation, where rewrite rules and admissible transformations can be studied independently of one concrete executor \citep{ehrig2006}.
 
-\begin{definition}[Partial transformation]
+\begin{definition}[Partial transformation]\label{def:partial-transformation}
 Write
 \[G\oplus\delta\rightharpoonup G'\]
 for the partial realised transformation relation. Undefinedness means that $\delta$ does not produce a structurally valid successor under the stated conditions. No ontological \textsc{FAIL} state is required.
 \end{definition}
 
 \section{Collapse and realised history}\label{sec:collapse-law}
-\begin{definition}[Collapse]
+\begin{definition}[Collapse]\label{def:collapse}
 Collapse is the frame-relative passage from a pre-realisation possibility structure to realised continuation:
 \[\boxed{\Coll_t:\Poss(G_t)\rightsquigarrow G_{t+1}.}\]
 It is not identified with deliberative choice.
 \end{definition}
 The term is inherited from quantum measurement theory, where a formal distinction is made between a pre-measurement state and the realised measurement record; the historical lineage includes the von Neumann measurement scheme and later relative-state formulations \citep{vonneumann1955,everett1957}. This paper does not claim that every grounding reproduces the full quantum formalism; it claims that the possibility-to-realisation distinction is load-bearing.
 
-\begin{definition}[History]
+\begin{definition}[History]\label{def:history}
 The realised history of a frame is
 \[\Hist=G_0\xrightarrow{\Coll_0}G_1\xrightarrow{\Coll_1}G_2\rightarrow\cdots.\]
 \end{definition}
@@ -194,7 +194,7 @@ A reflective transformation of $r$ or $\Gamma$ may alter the successor graph, bu
 \end{corollary}
 
 \section{Recursion and reflection}
-\begin{definition}[Reflective graph]
+\begin{definition}[Reflective graph]\label{def:reflective}
 A graph is reflective over structure $X\subseteq G$ when $X$ is represented in the graph and graph-originated transformations may take that representation as an operand.
 \end{definition}
 \begin{theorem}[The grammar is the loop]
@@ -205,7 +205,7 @@ The transition $\Gamma_t\rightarrow\Gamma_{t+1}$ is itself a graph transition li
 \end{proof}
 
 \section{Situated graphs and world boundaries}\label{sec:situated}
-\begin{definition}[World boundary]
+\begin{definition}[World boundary]\label{def:world-boundary}
 A boundary $\mathcal B_{W:G}$ is the relation through which containing frame $W$ can alter situated graph $G$ and through which graph-originated deformation can participate in interactions represented by $W$.
 \end{definition}
 A graph need not contain a pointer to $W$; containment belongs to the containing frame. A situated graph is a \emph{subset} of $W$, not a thing separate from it: the boundary demarcates which subset is the graph, and self and container are one graph divided by individuation, not two substances (Proposition~\ref{prop:no-direct-self-alter}).
@@ -240,7 +240,7 @@ That distinct instances individuate --- diverge, each minting its own residual, 
 Coupling is therefore a continuous setting of the shared boundary's aperture and change grammars (Proposition~\ref{prop:two-gates}), not a binary: sharing only generators leaves each instance its own moment-to-moment state (and already removes the per-substrate build floor of Proposition~\ref{prop:copyable-generators}), while sharing all operative structure is one individual over many bodies, with SELF and SUPERGRAPH identity (Section~\ref{sec:self-supergraph}) dialling independently. Nothing in the substrate fixes the setting. The symmetric fact is that a shared containing frame is equally a shared residual and a shared forcing, so the same coupling that shares understanding gives shared corruption, container-level coercion, and collective termination-failure the same reach; ``at what coupling, and with what guarding'' is the substantive question, and it is an engineering one rather than a question of possibility.
 
 \section{SELF and SUPERGRAPH identity}\label{sec:self-supergraph}
-\begin{definition}[SELF identity]
+\begin{definition}[SELF identity]\label{def:self-identity}
 SELF identity is the continuity of the graph as a whole --- its rules together with the state they
 act on --- across realised transitions. A graph is the same self while its present remains
 congruous with its own history: if its rules changed abruptly, the structure carried forward would
@@ -248,7 +248,7 @@ no longer cohere with what produced it, and that incongruity is the discontinuit
 self-description --- content inside $g$ by which a graph identifies itself --- is one optional part
 of this and not the whole of it; a graph may have SELF identity without representing itself at all.
 \end{definition}
-\begin{definition}[SUPERGRAPH identity]
+\begin{definition}[SUPERGRAPH identity]\label{def:supergraph-identity}
 For graph $G$ individuated in frame $W$,
 \[\iota_{W:G}=\operatorname{Id}_W(G)\]
 is the identity relation under which $W$ tracks that situated instance.
@@ -396,7 +396,7 @@ A residual is absorbed either by a containing frame extending $\Gamma_{W_c}$ to 
 Two properties of this mechanism matter. Residual is \emph{per-rule}: each firing leaves its own remainder, local to where the rule ran, with no global residual store, so it is dealt with per-frame --- which is why the residual-and-mint loop is frame-portable rather than living in a domain-specific module. And minting is itself a \emph{rule}, not a primitive: extending $\Gamma_{W_c}$ is the grammar acting on itself (the reflection theorem), a reflective rule subject to the same economics, admissibility, and antecedent-state principle as any other. Growth is therefore rule-governed, costed (the spend-and-gain of the Narrativium paper), contingent, and buildable --- never a primitive spark. It also cannot bootstrap from nothing: by the antecedent-state principle a mint cannot authorise its own installation, so a graph's first mint-rules are installed from its container. This is the substrate reason a situated graph requires a seed --- the minimal rule-set, including the capacity to mint, that a container provides so the graph can thereafter grow itself. The two provenances --- seeded from the container, or minted from residual --- are what the nature/nurture dichotomy names, and they are not two \emph{kinds} of thing: both are rules that run identically, the running records no provenance, and the capacity to mint (nurture's mechanism) is itself seeded (nature), so what remains measurable is provenance, not a distinction of kind.
 
 \section{Termination}\label{sec:termination}
-\begin{definition}[Frame-relative termination]
+\begin{definition}[Frame-relative termination]\label{def:frame-termination}
 A situated identity $\iota_{W:G}$ terminates when the realised world transition admits no successor that $W$ continues to individuate under that identity.
 \end{definition}
 Termination is not successful refusal of world forcing. Nor need it erase copied SELF identity. If $G$ is individuated by several frames, it may terminate in one and continue in another.
