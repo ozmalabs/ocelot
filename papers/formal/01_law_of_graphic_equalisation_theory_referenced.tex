@@ -532,9 +532,9 @@ therefore writes by being a write, and the write is the return. An operation tha
 not a read of anything, which is why the free case exists and is exactly the empty one: a read whose
 return is never used has read nothing, and a compiler will delete it. Real machines make the same
 point expensively --- a read leaves traces in caches, predictors and translation state, and those
-traces are measurable, which is why timing attacks recover secrets from victims that only ever read
-\citep{osvik2006} and why an entire class of speculative attacks was available to designs built on
-the assumption that reading is passive \citep{kocher2019}.
+traces are measurable, which is why timing attacks recover secrets from a victim whose only secret-dependent operation is a
+read \citep{osvik2006} and why an entire class of speculative attacks was available to designs built on the assumption that rolled-back
+speculation leaves no trace \citep{kocher2019}, where the read is the vehicle rather than the premise.
 
 Evaluation is a write in that plain sense: a match outcome, a position in an ordering, and the fact
 of having tried are returned values, and returned values are structure. What does not follow is the
@@ -891,12 +891,13 @@ here is contingent rule content. The impossibility of a level being transparent 
 \emph{formal analogue}, and the analogue is proved --- in mathematics rather than in physics, so it
 does not depend on any fact about which universe this is.
 
-A consistent, effectively axiomatised formal system strong enough to represent its own syntax cannot
-prove its own \emph{Gödel sentence}: there are truths of the system unprovable within it
+A consistent, effectively axiomatised formal system with enough arithmetic strength --- from which
+the expressibility of its own syntax follows, by numbering, rather than being assumed --- does not
+prove its own \emph{Gödel sentence}, which is nonetheless true in the standard model of arithmetic
 \citep{godel1931}. A language of sufficient strength cannot define its own truth predicate under
-classical bivalent semantics; truth for it must be given in a metalanguage \citep{tarski1936}. And no
-single procedure decides halting for arbitrary procedures, which is a limit on universality
-\citep{turing1936}. These are not three coincidences: they share one diagonal construction, and the
+classical bivalent semantics; truth for it must be given in a metalanguage \citep{tarski1936}. And no single procedure decides halting for arbitrary procedures --- a limit on what a universal
+procedure can decide, and one that arises \emph{because} such a procedure exists rather than in spite
+of it \citep{turing1936}. These are not three coincidences: they share one diagonal construction, and the
 categorical statement of it makes the unity explicit \citep{lawvere1969,yanofsky2003}. Tarski's is the
 tightest fit --- the semantics of a level is available only from above it, which is
 Proposition~\ref{prop:runner-opaque}'s surviving half in the vocabulary of formal languages.
@@ -911,8 +912,11 @@ model itself has no self-transparency problem, because it has no self-model.
 
 The unification covers what is claimed above and not more. Gödel's \emph{second} incompleteness
 theorem --- that such a system cannot prove its own consistency --- is the more striking result and is
-outside the cited unification, which its own author flags as requiring machinery he does not supply.
-The claim here is accordingly made with the first theorem, which the unification does cover.
+not covered by the unification as published: \citet{lawvere1969} closes by noting that extending to
+it may require a specific relation between formulas and their numbers that his framework does not
+supply, while \citet{yanofsky2003} treats it as a simple consequence of the first and expects the
+scheme to reach it. The claim here is made with the first theorem, which the unification does cover,
+and takes no position on the second.
 
 The mapping from frames to formal systems is an argument in this paper and not itself a theorem. What
 is proved is proved about the formal systems. The honest statement is therefore that the impossibility
@@ -1006,10 +1010,13 @@ converges slowly or not at all; one optimising hard against cost per unit of fun
 Computing is the second kind, which is why it is the worked instance and why decades sufficed.
 
 \begin{remark}[Cognition under the same treatment]\label{rem:cognition-compression}
-Cognition is compressed by any measure --- a brain takes a fifth of a body's resting energy for a
-fiftieth of its mass, and its arrangements are argued in detail to be forced by that budget rather
-than chosen \citep{attwell2001,sterling2015}. Two constraints on it can be named in the way the
-discipline above requires, and only two. Conduction takes time over distance, so there is no central
+Cognition is compressed by any measure --- a brain takes on the order of a fifth of a body's
+resting energy for a fiftieth of its mass, and an energy budget for signalling has been computed in
+detail \citep{attwell2001} --- for rodent grey matter, with the whole-body figures quoted there from
+earlier work rather than established by it. The stronger claim, that neural arrangements are forced
+by that budget rather than chosen, is \citet{sterling2015}'s thesis and not the budget paper's. Two
+constraints can then be named in the way the discipline above requires, and only two; neither is
+supplied by either citation, and both are ordinary neuroscience. Conduction takes time over distance, so there is no central
 synchroniser and coordination is local and coupled --- the same concession distributed engineering
 made, for the same reason. And bandwidth is scarce, so what is not predicted is what gets sent.
 
@@ -1059,20 +1066,25 @@ The advance-specification clause is what keeps this from circularity, and it is 
 purpose read off from where the failures already are confirms nothing. Independent evidence exists
 elsewhere --- classification systems in institutional use are documented as leaking wherever they
 have been examined closely, carrying residual categories and encoding their builders' purposes
-\citep{bowkerstar1999} --- and that literature's concept of \emph{torque}, the strain where a
-classification is pulled against a use it was not built for, is a closer instrument for this
-hypothesis than leakage is.
+\citep{bowkerstar1999} --- and that literature's concept of \emph{torque} --- the twisting of a
+person's own trajectory against a standardised classification that does not fit it --- is a closer
+instrument for this hypothesis than leakage is, with the qualification that its subject is a
+biography rather than a use.
 
 Two further results bear on the general claim without establishing it. No clustering function
-satisfies scale-invariance, richness and consistency together \citep{kleinberg2002}; that this does
-not entail the absence of a canonical cut is shown in the same paper, where fixing the number of
-clusters restores two of the three axioms and a canonicity result for single-linkage is cited on its
-opening page. It is a trade-off theorem, not an impossibility of carving, and it is a deliberate
+satisfies scale-invariance, richness and consistency together \citep{kleinberg2002} --- but the same
+paper shows any two of the three are jointly achievable, so what is established is that the three
+cannot be had at once rather than that no cut is canonical. Kleinberg reads it that way himself, and
+dismisses a canonicity result for single-linkage cited on his second page as resting on a property
+that is an implicit optimisation criterion which single-linkage uniquely optimises; that dismissal is
+his, and is noted here rather than relied on. It is a trade-off theorem, not an impossibility of
+carving, and it is a deliberate
 transplant of Arrow's method rather than an independent convergence --- the paper says so. And the
 question of which predicates are projectible has no syntactic answer \citep{goodman1955}, which is
-usually reported as a defeat; but Goodman's own criterion is \emph{entrenchment}, a track record of
-successful use, which is a criterion of what has been cheap to run and is therefore closer to support
-for the present account than to a null result.
+usually reported as a defeat. Goodman's own criterion is \emph{entrenchment}, a record of a
+predicate's having been \emph{projected} before --- a history of use and deliberately not a history
+of success, so it does not license reading entrenchment as tracking what has been cheap to run. The
+resemblance to a cost criterion is worth noticing and is not evidence for one.
 
 The constructive response is this paper's own and needs no companion: if the trouble is a cut fixed in
 advance, do not fix one. Corollary~\ref{cor:mint-is-grammar} already gives the mechanism --- recognition

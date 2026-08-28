@@ -14,7 +14,7 @@
 \fbox{\parbox{0.92\textwidth}{\small
 \textbf{SHORT FORM.} This is a generated abridgement of \emph{The Law of Graphic
 Equalisation} (Theory). It states the substrate and its consequences without
-demonstrating the removals that establish minimality; the long paper carries
+demonstrating the removals that establish how little is required; the long paper carries
 those, and is the reference for any claim here that a reader wants shown rather
 than asserted. Every definition and proposition below is pulled from the long
 paper at build time, so the two cannot drift.}}
@@ -33,14 +33,16 @@ non-time, not-later, there was graph.
 \begin{abstract}
 One minimal structure is proposed as underlying phenomena usually studied apart. This short form
 gives the structure, the frame machinery through which anything reaches it, the single prohibition it
-carries, and the commitments on which it fails. It does not argue for minimality: that argument is
-the bulk of the long paper and consists of removing candidate primitives one at a time, which is
-worth reading only by someone who doubts a particular removal.
+carries, and the commitments on which it fails. It does not rehearse the removals: those are the bulk
+of the long paper, are what establishes how little is required, and are worth reading by anyone who
+doubts a particular one.
 \end{abstract}
 
 \section{The substrate}
-Reality is modelled as typed graphs plus a grammar of which relations may exist. Nothing beyond that
-triple is primitive; anything else exists where a graph happens to represent it.
+The substrate is structure, the transformations operative upon it, and a grammar of which relations
+may exist. Only the first is required for there to be anything; the other two are what a world in
+which anything \emph{happens} costs. Nothing beyond the three is primitive, and anything else exists
+where a graph happens to represent it.
 
 @pull def:graph
 @pull def:grounding
@@ -51,6 +53,7 @@ The Law is that a graph's admissible continuations are fixed by its present stru
 realisation selects one of them, which then becomes the antecedent for what follows.
 
 @pull def:residual
+@pull rem:only-g
 
 \section{Frames}
 A frame is how anything is reached at all: there is no view from nowhere, so every claim is a claim
@@ -71,6 +74,7 @@ rules rather than by any universal.
 @pull prop:economics
 @pull def:well-formed
 @pull rem:evaluation-writes
+@pull prop:leak
 
 \section{Time}
 Time is not a substrate dimension. It is inferred by a frame from its own closure cycles, which is
@@ -80,8 +84,9 @@ why a frame that runs no rules has none.
 @pull prop:cycle-unit
 @pull def:present
 
-\section{The runner, and the single prohibition}
+\section{Primitives, and the single prohibition}
 @pull def:runner
+@pull rem:nothing-compulsory
 @pull prop:rule-runner
 @pull prop:runner-opaque
 @pull prop:runner-recursion
@@ -114,6 +119,8 @@ which the substrate itself fails.
 @falsifier Graph-law determinism
 @falsifier Located degradation
 @falsifier Convergence is not enforced
+@falsifier Provenance is never closed by inference
+@falsifier Solutions are strongly non-unique under a binding constraint
 \end{enumerate}
 
 \end{document}

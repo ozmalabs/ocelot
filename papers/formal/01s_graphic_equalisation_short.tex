@@ -39,7 +39,7 @@
 \fbox{\parbox{0.92\textwidth}{\small
 \textbf{SHORT FORM.} This is a generated abridgement of \emph{The Law of Graphic
 Equalisation} (Theory). It states the substrate and its consequences without
-demonstrating the removals that establish minimality; the long paper carries
+demonstrating the removals that establish how little is required; the long paper carries
 those, and is the reference for any claim here that a reader wants shown rather
 than asserted. Every definition and proposition below is pulled from the long
 paper at build time, so the two cannot drift.}}
@@ -58,14 +58,16 @@ non-time, not-later, there was graph.
 \begin{abstract}
 One minimal structure is proposed as underlying phenomena usually studied apart. This short form
 gives the structure, the frame machinery through which anything reaches it, the single prohibition it
-carries, and the commitments on which it fails. It does not argue for minimality: that argument is
-the bulk of the long paper and consists of removing candidate primitives one at a time, which is
-worth reading only by someone who doubts a particular removal.
+carries, and the commitments on which it fails. It does not rehearse the removals: those are the bulk
+of the long paper, are what establishes how little is required, and are worth reading by anyone who
+doubts a particular one.
 \end{abstract}
 
 \section{The substrate}
-Reality is modelled as typed graphs plus a grammar of which relations may exist. Nothing beyond that
-triple is primitive; anything else exists where a graph happens to represent it.
+The substrate is structure, the transformations operative upon it, and a grammar of which relations
+may exist. Only the first is required for there to be anything; the other two are what a world in
+which anything \emph{happens} costs. Nothing beyond the three is primitive, and anything else exists
+where a graph happens to represent it.
 
 \begin{definition}[Graph]\label{def:graph}
 A graph is
@@ -97,6 +99,24 @@ The residual is
 \[\boxed{\epsilon=\delta^R\ominus\delta^P,}\]
 where $\ominus$ is the grounding's difference relation preserving relevant discrepancy.
 \end{definition}
+\begin{remark}[Only $g$ is required; the triple is what a \emph{running} world costs]\label{rem:only-g}
+The triple is not the minimum and this paper has previously implied that it was. Strip $r$ and
+$\Gamma$ and something remains: structure, with relations among its parts. Nothing \emph{happens} in
+it --- no transformation, so no collapse, no residual, and nothing it individuates --- but it has not
+thereby become nothing, and it has not stopped being individuable by something else. What $r$ and
+$\Gamma$ buy is \emph{occurrence}, and everything this account is about --- change, collapse,
+observation, cost, experience --- requires them. The triple is the price of a world in which anything
+happens rather than the price of there being anything, and Remark~\ref{rem:nothing-compulsory}'s
+``only that rules run is compulsory'' should be read in that narrower sense.
+
+A distinction is doing the work there and an earlier version of this remark collapsed it. Being a
+frame is being individuated (Definition~\ref{def:frame}), and individuation is performed by the
+container, not by the thing: a boundary belongs to the frame that draws it. So a structure with no
+rules of its own is still a frame --- something else instantiated its boundary --- and what it lacks
+is not framehood but the capacity to individuate anything itself. The earlier claim that stripping
+$r$ leaves ``no frame'' was wrong, and it would have invalidated the companion result that reasons
+from a rock's being a frame to the universe's being one.
+\end{remark}
 
 \section{Frames}
 A frame is how anything is reached at all: there is no view from nowhere, so every claim is a claim
@@ -166,8 +186,9 @@ therefore writes by being a write, and the write is the return. An operation tha
 not a read of anything, which is why the free case exists and is exactly the empty one: a read whose
 return is never used has read nothing, and a compiler will delete it. Real machines make the same
 point expensively --- a read leaves traces in caches, predictors and translation state, and those
-traces are measurable, which is why timing attacks recover secrets from victims that only ever read (long form) and why an entire class of speculative attacks was available to designs built on
-the assumption that reading is passive (long form).
+traces are measurable, which is why timing attacks recover secrets from a victim whose only secret-dependent operation is a
+read (long form) and why an entire class of speculative attacks was available to designs built on the assumption that rolled-back
+speculation leaves no trace (long form), where the read is the vehicle rather than the premise.
 
 Evaluation is a write in that plain sense: a match outcome, a position in an ordering, and the fact
 of having tried are returned values, and returned values are structure. What does not follow is the
@@ -190,6 +211,26 @@ running a long time without collapsing has deferred a cost into retention rather
 What is free is not the running, only the not-yet-forgetting --- and free only relative to a frame
 that cannot see the bill.
 \end{remark}
+\begin{proposition}[Primitives leak, and complete provenance is still unrecoverable]\label{prop:leak}
+Leaking is ordinary rather than exceptional. A primitive's timing discloses the structure beneath it,
+which is why measuring how long a read takes recovers what a cache holds (long form); an arithmetic that overflows at a particular magnitude discloses a word
+size; a rounding discloses a representation; and a performance cliff at a particular size discloses a
+page. Most abstractions leak, and this one is not special.
+
+How a leak reaches a frame at all is worth stating, since what falls outside an aperture is
+\emph{absent} (Definition~\ref{def:aperture}) and an absent thing cannot disclose anything. It does
+not arrive by perception. What arrives is an ordinary in-frame observable on a dimension the frame
+already instantiates --- a duration in its own units, a value at a boundary --- and what the frame
+does with it is \emph{infer}. The cache is not perceived; the timings are, and the cache is concluded
+from them.
+
+What does not follow is that provenance can be recovered entire. Every act of recovery is itself
+performed by primitives, so a graph inferring what lies beneath one operator does so using others
+whose own provenance is not thereby in view, and there is no position from which the whole supply is
+inspected at once. The result is the standing shape: \emph{partial always, complete never} --- leaks
+give a graph real and sometimes decisive knowledge of what supplies it, and never the closure of that
+question.
+\end{proposition}
 
 \section{Time}
 Time is not a substrate dimension. It is inferred by a frame from its own closure cycles, which is
@@ -212,7 +253,7 @@ Within a frame, the present is the collapse boundary at which every instantiated
 $U_{\mathcal F}$ counts undetermined dimensions only. NULL dimensions are excluded --- they are not variables. \textbf{Undisclosed dimensions are also excluded}: they are already determined, and a frame's failure to hold them is an epistemic deficit rather than an unresolved collapse. A frame with outstanding undisclosed structure is still at its own present.
 \end{definition}
 
-\section{The runner, and the single prohibition}
+\section{Primitives, and the single prohibition}
 \begin{definition}[Primitives]\label{def:runner}
 A graph's \emph{primitives} are the operations it invokes without performing: the operator set its
 rules bottom out in. Every level has them, and having them is what being a level consists of --- a
@@ -231,12 +272,15 @@ frame supplying it gets nothing.
 \emph{Leakage} is the opposite case and is not excluded at all. A cache earns its retention many
 times over and leaks precisely \emph{because} it does work; an arithmetic fast enough to overflow at
 a word boundary discloses the boundary by being fast; a page-sized performance cliff exists because
-the page size is doing something. Every leak in Proposition~(long form) is a consequence of
+the page size is doing something. Every leak in Proposition~\ref{prop:leak} is a consequence of
 efficient design rather than of poor design, so well-formedness does not prevent leakage --- it
 \emph{produces} it, and a structure that leaked nothing would have given up the optimisations that
 distinguish it from a uniform one, which is what constant-time implementations do and what they pay
 for.
 \end{definition}
+\begin{remark}[What is required and what is optimisation]\label{rem:nothing-compulsory}
+Only that rules run is compulsory for anything to \emph{occur} --- structure alone is what is required for there to be anything at all (Remark~\ref{rem:only-g}). Applying a delta is itself a rule, not a primitive operation beneath the rules, so the specific dynamics --- inertia, the merge behaviour, closure --- are contingent rule content, and a different $r$ or $\Gamma$ is a different physics rather than a violated law (this is why the initial and boundary conditions of a grounding are supplied separately from its laws; Section~(long form)). The two gates of Proposition~\ref{prop:two-gates}, and even the retained standing structure itself, are \emph{optimisations} on bare rule-running: the aperture grammar $\Gamma_a$ bounds the input, the change grammar $\Gamma_c$ sorts the realised output into what coheres and what is residual, and the retained structure buys free continuation. A substrate whose grammar admits everything still runs --- effectively ungated, without momentum, wastefully; it is not a substrate \emph{lacking} $\Gamma$, since Definition~\ref{def:admissible} defines the possibility structure through the grammar and a collapse needs something to select from --- so they are what an efficient graph accretes under a budget, not constituents of graphhood. The retained structure specifically is what distinguishes a self-sustaining loop from a purely reactive one, since coasting is the cached structure.
+\end{remark}
 \begin{proposition}[Primitives are supplied, not intrinsic]\label{prop:rule-runner}
 A graph is data --- nodes, relations, and rules --- and the operations its rules bottom out in are supplied to it rather than contained in it. The same graph may therefore be run against different supplies of the same operator set, and nothing supplying an operator need be the substrate the graph describes or is ``in.'' Where the work is done is a fact about that supply and not about the graph.
 \end{proposition}
@@ -293,6 +337,8 @@ which the substrate itself fails.
 \item \textsc{[shape]}~\textbf{Graph-law determinism.} Fails if two genuinely identical, causally complete antecedent configurations produce different realised successors without any additional causally operative distinction. Variation observed only from a frame that omits determining dimensions does not constitute such a falsification.
 \item \textsc{[detail]}~\textbf{Located degradation.} Fails if, for classifications whose purpose is specifiable in advance of inspecting their failures, failure cases are distributed no differently near the purpose boundary than across the rest of the domain (Hypothesis~\ref{hyp:located-degradation}).
 \item \textsc{[detail]}~\textbf{Convergence is not enforced.} Fails if convergence between independently developed classifications of one domain extends to the cases where the classifications' purposes differ, which is what a privileged boundary would produce and cost-shaped convergence would not (Proposition~\ref{prop:convergence-observed}).
+\item \textsc{[detail]}~\textbf{Provenance is never closed by inference.} Not that primitives fail to leak --- they do leak, and Proposition~\ref{prop:leak} says so. This fails if a frame can \emph{settle} the provenance of its own operator set from inside: if some in-frame procedure establishes, rather than merely evidences, whether its operators are self-supplied, how many distinct structures supply them, or whether a serial hidden supply underlies an apparently asynchronous frame The escape is not that further primitives were used, which is unavoidable, but that their provenance is open in the same way, so no procedure closes the question rather than relocating it.
+\item \textsc{[detail]}~\textbf{Solutions are strongly non-unique under a binding constraint.} The posit under Propositions~\ref{prop:convergence-observed} and~(long form). Fails if structures optimising hard against the same binding constraint, over the same region, are exhibited arriving at arrangements that do not resemble each other --- in which case constraint narrows the space without selecting within it, and both propositions weaken to that.
 \end{enumerate}
 
 \end{document}
