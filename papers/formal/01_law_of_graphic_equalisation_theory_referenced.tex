@@ -16,20 +16,20 @@
 \newcommand{\Hist}{\mathcal{H}}
 \title{The Law of Graphic Equalisation --- Theory\\\large Minimal Recursive Dynamics, Collapse, Frame-Relative Identity, and Residual}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-28.2}\\[2pt]28 August 2026 \textbullet\ document revision 5}
+\date{\textbf{Draft \textemdash\ draft-2026-08-28.2}\\[2pt]28 August 2026 \textbullet\ document revision 6}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r5}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r6}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r5}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r6}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-28.2 r5} (28 August 2026).
+\textbf{DRAFT --- draft-2026-08-28.2 r6} (28 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -542,8 +542,12 @@ A graph is data --- nodes, relations, and rules --- and its rules are executed b
 \end{proposition}
 At one extreme the coupling is tight --- the graph is fused to its runner, as matter running its own change or a mind running on the tissue that is it --- and the compute is local, in the graph, inseparable. At the other it is loose --- the graph is data executed by a separate interpreter --- and the compute is done in the runner, elsewhere, while the graph becomes portable: copyable, relocatable, and run at whatever rate the runner supplies (Section~\ref{sec:time-not-primitive}). This separability is the condition for the copyable-generator and clock-independence results (Proposition~\ref{prop:copyable-generators}, and the Seldon paper's dependent-clock remark): a graph welded to its runner has none of them, a graph loosely coupled has all of them.
 
-\begin{proposition}[A frame cannot determine its rule runner from inside]\label{prop:runner-opaque}
-The asynchronous, locally synchronous structure a frame observes (Remark~\ref{rem:gals}) is the graph's \emph{internal} view and does not fix its runner's actual mode. A hidden central runner may execute a graph serially, one change at a time, while the graph --- lacking any access to the runner's clock --- appears asynchronous and concurrent to itself. More generally, a frame has no boundary to the substrate that runs it, so its runner lies beyond the frame's epistemic boundary in exactly the sense of Section~\ref{sec:scope}: unseeable from within, not merely unseen.
+\begin{proposition}[A well-formed runner does not expose itself, and no level is self-transparent]\label{prop:runner-opaque}
+The asynchronous, locally synchronous structure a frame observes (Remark~\ref{rem:gals}) is the graph's \emph{internal} view and does not fix its runner's actual mode. A hidden central runner may execute a graph serially, one change at a time, while the graph --- lacking any access to the runner's clock --- appears asynchronous and concurrent to itself. More generally, where a frame has no boundary to the substrate that runs it, its runner lies beyond the frame's epistemic boundary in exactly the sense of Section~\ref{sec:scope}.
+
+Two claims have to be separated here, and an earlier statement of this proposition ran them together by calling the runner unseeable rather than unseen. That a runner is hidden is \emph{contingent}. Nothing forbids a runner from exposing its own state to what it runs, and computational reflection does exactly that, as this paper acknowledges when placing itself against that literature (Section~\ref{sec:prior-art}); a tower in which each level is available to the one above is a built artefact, not a thought experiment. A runner that does not expose itself is the \emph{well-formed} case, and for the reasons well-formedness always turns on: exposed runner state is structure maintained for work the frame does not do, and each exposure needs a runner of its own to run the reading of it.
+
+What is not contingent is weaker and survives reflection: \emph{no level is self-transparent}. Reading is an operation whose product lands one level up (Remark~\ref{rem:evaluation-writes}), so a level cannot hold the reading of itself while being the level that is running. Reflection makes the levels explicit and pays for each; it does not terminate in a level transparent to itself. A frame may therefore be given sight of what runs it, and cannot be given sight of its own running.
 \end{proposition}
 This is constructively demonstrable rather than merely argued. A computation realised inside another rule system --- a graph whose rules are implemented within the mechanics of a game or a universal cellular automaton \citep{berlekamp1982} --- is a blind subframe: from inside it computes at its own change-count and has no means to detect that its ``compute'' is the tokens of the host, or that the host may be advancing it by a single serial loop. Building one confirms the opacity directly, and puts the observer of any frame on the same footing. Consequently the question ``where is the universe's compute done'' has the precise form: it depends on the universe's coupling to its own rule runner --- self-running, or hosted on a substrate not itself --- and is undetermined from inside. The theory declines to decide it; it is a question about a coupling below the frontier, and the demonstrable opacity is why no internal observation settles it.
 
@@ -688,9 +692,9 @@ carried by the groundings. A reviewer who objects that the substrate forbids too
 is right about the substrate.
 
 What the substrate does forbid is worth stating, because it is one thing recurring rather than a
-list. A frame cannot get outside itself. It cannot read its own runner, cannot measure its own
-throughput, cannot obtain a quantity whose unit does not close within it, cannot decide anything
-without writing, and cannot hold a view from nowhere. Every impossibility in this corpus is that
+list. A frame cannot get outside itself. It cannot be transparent to itself at the level
+it is running at, cannot measure its own throughput, cannot obtain a quantity whose unit does not
+close within it, cannot decide anything without writing, and cannot hold a view from nowhere. Every impossibility in this corpus is that
 impossibility wearing a different costume, and every one of them survives every attempt to remove
 it. Everything else that has looked impossible has turned out to be contingent rule content that some
 grounding happens not to instantiate. That the second category keeps proving larger than expected is
@@ -707,10 +711,12 @@ is per frame rather than a fact about the graph: to individuate is to draw the b
 
 That is why the one prohibition is the only necessity, and it is not a separate fact from
 Remark~\ref{rem:writeability}'s minimum but the same fact from the other side. Everything else is
-contingent because rules can be otherwise; this is not, because it is not rule content. A frame
-cannot arrange by any rule to see its own runner, since the rules are what the runner runs. The
-container relation across which rules run and the impossibility of stepping outside one's own frame
-are the same structure described positively and negatively.
+contingent because rules can be otherwise; this is not, because it is not rule content. A frame may
+by rule be given sight of what runs it --- reflection does precisely that, and is contingent rule
+content like everything else --- but no rule gives a level sight of its own running, because the
+seeing is itself run (Proposition~\ref{prop:runner-opaque}). The container relation across which
+rules run and the impossibility of stepping outside one's own frame are the same structure described
+positively and negatively.
 
 The regress that follows should be stated with both ends, because each half is easy to overstate. A
 superframe dissolves the frame below's limit --- holding both of two locations, it has units closing
