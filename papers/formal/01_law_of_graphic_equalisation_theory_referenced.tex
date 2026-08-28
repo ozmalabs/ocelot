@@ -274,24 +274,38 @@ it does something and is a write. There is no third operation that costs nothing
 something.
 
 The objection is correct, and what it corrects is the classification rather than the economics.
-Evaluation \emph{is} a write. The outcome of a match, the position in whatever ordering the substrate
-applies, and the fact of having tried are all state, and state is written. What does not follow is the
-step from write to price. The floor of Remark~\ref{rem:landauer-change} is on operations that destroy
-their predecessors; a write that is injective --- one from which the prior state is recoverable ---
-destroys nothing and crosses no floor \citep{landauer1961,bennett1973}. Evaluation is of that kind. A
-collapse is not: an admissible set maps to one realised outcome, many to one, and that merge is
-exactly what the floor bounds.
+Evaluation \emph{is} a write. The outcome of a match, the position in whatever ordering is applied,
+and the fact of having tried are all state, and state is written.
 
-So continuation is unpaid because it \emph{preserves}, not because it is absent, and ``reads are
-free'' is a special case of that rather than the reason for it. Two things follow. A no-write is not
-the right description of the free default anywhere in these papers, and where the reversibility of
-free continuation is load-bearing --- the recovery of unitarity in the physics companion --- the
-information-preserving reading is the stronger one, since unitary evolution plainly does change the
-state and is reversible for the same reason evaluation is. And the residual that
+What the objection does not settle, and what must not be smuggled in behind it, is the price. There
+is no universal cost of running a rule, and the temptation to name one should be resisted here for
+the same reason it is resisted everywhere else in this account. A rule's cost is set by the substrate
+that runs it (Section~\ref{sec:rule-runner}): the rule runner is separable from the graph and need
+not be the same kind of thing as it, so what evaluation costs is what that runner charges, and a
+different runner is a different charge for the same rule. Landauer's bound
+(Remark~\ref{rem:landauer-change}) is accordingly a \emph{floor in one substrate} --- the physical
+one --- and not the price in any. It says what cannot be undercut where it applies; it does not say
+what is paid, and the two are different numbers wherever a runner charges more than the floor, which
+is every real one. A logically reversible branch still costs a physical machine something to take.
+
+This is also why continuation presents as free from inside. A frame cannot determine its rule runner
+from within (Proposition~\ref{prop:runner-opaque}), so whatever the runner charges is below that
+frame's aperture and is not an in-frame event at all. In-frame, nothing happened; in the running
+substrate, something was paid. Both hold, of different frames, and neither is the correction of the
+other. The economics is inherited down the stack rather than fixed at any level, and like the other
+regresses here it is operationally truncated and not definitionally terminated: each level's charge
+is defined whether or not the level above can see it.
+
+Two things follow for the rest of these papers. \emph{Reversibility} is a structural fact about a map
+and \emph{cost} is a fact about a runner, and the two were conflated in the earlier phrasing;
+separating them strengthens the physics companion's recovery of unitarity, which needs only the
+first --- a no-write was never the right description, since unitary evolution plainly does change the
+state and is reversible because it is injective. And the residual that
 Remark~\ref{rem:landauer-change} already names now attaches here: an information-preserving
 evaluation accumulates the history it preserves. A frame that runs a long time without collapsing has
-not escaped a cost; it has deferred it into retention, and discarding that history is the priced step
-whenever it falls due. What is free is not the running. It is only the not-yet-forgetting.
+not escaped a cost; it has deferred it into retention, and discarding that history is priced whenever
+it falls due --- at whatever its runner charges for the discarding. What is free is not the running.
+It is only the not-yet-forgetting, and it is free only relative to a frame that cannot see the bill.
 \end{remark}
 
 

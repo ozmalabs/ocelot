@@ -21,8 +21,11 @@ Nothing is privileged: there is no god's-eye frame, and no privileged phase orig
 measurement basis. When no rule fires, a frame's Narrative simply carries forward — **free
 continuation**, the reversible default. "Free" here means *information-preserving*, not *absent*:
 evaluating a rule is itself a write (the outcome and the ordering are state and have to go
-somewhere), and it is unpaid because it is injective — nothing is destroyed, so no Landauer floor is
-crossed. A collapse is the many-to-one step, and that is the priced, irreversible one.
+somewhere). What it *costs* is set by the substrate that runs the rules, not universally — Landauer
+is a floor in the physical substrate, not the price in any — and a frame cannot see its own runner's
+charge, which is why continuation presents as free from inside. Nothing in the mapping below depends
+on the economics: what it uses is that free continuation is *injective*, hence reversible, which is a
+structural fact independent of what anything charges for it.
 The invariant speed `c` is the frame's own change-throughput unit, `1` by construction. Frames
 compose by **nesting** (a subframe in a superframe); a correlation invisible in each subframe is
 a dimension of the superframe.
