@@ -16,20 +16,20 @@
 \newcommand{\Hist}{\mathcal{H}}
 \title{The Law of Graphic Equalisation --- Theory\\\large Minimal Recursive Dynamics, Collapse, Frame-Relative Identity, and Residual}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-28.2}\\[2pt]28 August 2026 \textbullet\ document revision 17}
+\date{\textbf{Draft \textemdash\ draft-2026-08-28.2}\\[2pt]28 August 2026 \textbullet\ document revision 18}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r17}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r18}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r17}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r18}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-28.2 r17} (28 August 2026).
+\textbf{DRAFT --- draft-2026-08-28.2 r18} (28 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -119,6 +119,15 @@ Two cautions. First, this constructive order does not contradict the relational 
 \begin{remark}[The triple is a functional decomposition of one substance]\label{rem:one-substance}
 $g$, $r$, and $\Gamma$ are not three kinds of thing. Rules are graph data (nodes and relations), and admissibility is enforced by rules that decide admit-or-residual, so $r$ and $\Gamma$ are themselves graph data playing roles --- transformation and gating --- over the state $g$, which is graph data too. The triple decomposes function, not substance: there is one substance, graph data, and it runs. Three things follow. Admissibility is \emph{mintable} like any rule, so what is admissible is not a fixed law but a growable set of rules a graph carries and extends. The reflection theorem is the special case of this homogeneity (the grammar, being rules, can act on itself), and it does not tower into a stack of meta-grammars, because gating and being-gated are one substance closing on itself. And the irreducible form of the substrate is \emph{graph data that runs} --- where the running is supplied by a runner that is, in turn, graph data that runs (Section~\ref{sec:rule-runner}).
 \end{remark}
+
+\begin{definition}[Grounding]\label{def:grounding}
+A \emph{grounding} is a particular assignment of rule content and initial conditions to the substrate
+--- one $(g,r,\Gamma)$ with its laws and its starting configuration fixed --- together with the
+domain it is taken to model. The substrate is what every grounding shares; a grounding is what any
+one of them adds. Claims made about the substrate are accordingly claims about all groundings, and
+are correspondingly weak; claims made within a grounding carry that grounding's contingent rule
+content and are where this account's falsifiable commitments mostly sit.
+\end{definition}
 
 \section{Discrete sufficiency}
 \begin{hypothesis}[Discrete sufficiency]
@@ -261,6 +270,17 @@ A situated graph meets its containing frame through a single relation, and what 
 \]
 $\Gamma_a$ limits, by grain, which of the container's deformation enters the rules; $\Gamma_c$ determines which of the rules' realised deltas cohere into the container and which remain as residual (Proposition~\ref{prop:residual-inadmissible}). Both are faces of the frame's one grammar $\Gamma$, and instantiate for a specific container $W$ as $\Gamma_{W_a}$ and $\Gamma_{W_c}$; it is $\Gamma_{W_c}$, the change face, that the residual proposition uses. Execution runs between the two.
 \end{proposition}
+
+The input face is named often enough in these papers to be worth defining rather than assumed.
+
+\begin{definition}[Aperture]\label{def:aperture}
+A frame's \emph{aperture} is its input gate $\Gamma_a$ together with what that gate fixes: which
+dimensions it can separate along at all, how finely it separates within each (its resolution,
+per dimension), and how far along each it reaches. The three are properties of one edge --- existence,
+grain, and extent --- and are named separately because they vary independently, not because they are
+different kinds of limit. What falls outside an aperture on any of the three is \emph{absent} to that
+frame rather than held-but-unresolved.
+\end{definition}
 
 This distinguishes two ways a candidate is excluded, with opposite consequences. What falls below the aperture grammar $\Gamma_a$ never enters and is therefore \emph{absent} --- it is simply absent to the frame --- there is nothing there for it to hold or to be disturbed by --- rather than residual. What $\Gamma_c$ does not admit has entered, been operated on, and cannot cohere; it is residual, and it persists in place, re-encountered on each merge (Corollary~\ref{cor:mint-is-grammar}). The first is a limit of perception, the second a limit of expression, and phenomena of the ``stuck, repeating'' kind belong exclusively to the second.
 
