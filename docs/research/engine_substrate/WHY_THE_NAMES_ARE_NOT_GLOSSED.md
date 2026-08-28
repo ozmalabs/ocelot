@@ -213,6 +213,25 @@ was going to find a reason regardless, and that the names supply an early and ch
 creating the disposition. An easy out taken early is preferable to a late one, and it costs a reader
 who was never going to arrive.
 
+## There is a book, and it takes the register the papers do not
+
+The papers are one destination and not the only one. Material whose value is in how it *reads* —
+pastiche, an opening that undercuts itself, anything doing its work by voice — belongs in the book;
+the papers stay dry.
+
+That is a placement rule and not a quality judgement, and it settles a class of argument cheaply. A
+review flagged the short form's Genesis pastiche (*"In the beginning… there was no time, so it
+wasn't really the beginning"*) as the line most likely to be quoted against the work. Every clause of
+it does track a proposition — time inferred, no intrinsic first, succession not a substrate
+mechanism — so it was defensible where it stood. It was still in the wrong document, and it has been
+removed from the short form.
+
+The rule that generalises: **if a passage's work is done by register, it is book material; if its work
+survives being stated flatly, it is paper material.** The naming borrowings pass that test in the
+papers' favour — *Seldon manifold* and *Narrativium* carry technical content and lose nothing stated
+flatly, which is why they stay unglossed in the papers rather than being reserved for the book. An
+epigraph carries no technical content at all.
+
 ## Consequence for the papers
 
 **Do not add a glossary, a naming note, or an acknowledgements paragraph about the borrowings.** This
