@@ -16,20 +16,20 @@
 \newcommand{\Hist}{\mathcal{H}}
 \title{The Law of Graphic Equalisation --- Theory\\\large Minimal Recursive Dynamics, Collapse, Frame-Relative Identity, and Residual}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-30.1}\\[2pt]30 August 2026 \textbullet\ document revision 86}
+\date{\textbf{Draft \textemdash\ draft-2026-08-30.1}\\[2pt]30 August 2026 \textbullet\ document revision 89}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.1\,r86}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.1\,r89}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.1\,r86}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.1\,r89}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-30.1 r86} (30 August 2026).
+\textbf{DRAFT --- draft-2026-08-30.1 r89} (30 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -647,6 +647,18 @@ Because the graph is a subgraph of its containing frame $W$, a realised graph-or
 \end{proposition}
 This locates the residual as the negative of an admissibility judgement rather than as an independently produced quantity, and it is what makes the merge non-destructive: what fits is absorbed, and what does not is left untouched, not deleted. A deformation may pass the graph's own change grammar $\Gamma_{G_c}$ (admissible to itself) yet fail the containing $\Gamma_{W_c}$ (inadmissible to its frame); the residual is precisely that gap between a graph's change grammar and its container's.
 
+\begin{corollary}[Growth is grammar extension]\label{cor:mint-is-grammar}
+A residual is absorbed either by a containing frame extending $\Gamma_{W_c}$ to admit it, or by paying to copy it out (Section~\ref{sec:interface}); otherwise it persists in place and is re-encountered each time the merge runs. The first route is the substrate form of \emph{minting} a new distinction: the residual does not fit because it is inadmissible, so admitting it requires extending the grammar, and extending the grammar is the act by which a previously inadmissible deformation becomes recognisable. Recognition and growth are therefore one mechanism joined at one place --- the residual is where the shape a graph decodes and the grammar that admits it meet.
+\end{corollary}
+Two properties of this mechanism matter. Residual is \emph{per-rule}: each firing leaves its own remainder, local to where the rule ran, with no global residual store, so it is dealt with per-frame --- which is why the residual-and-mint loop is frame-portable rather than living in a domain-specific module. And minting is itself a \emph{rule}, not a primitive: extending $\Gamma_{W_c}$ is the grammar acting on itself (the reflection theorem), a reflective rule subject to the same economics, admissibility, and antecedent-state principle as any other. Growth is therefore rule-governed, costed (the spend-and-gain of the Narrativium paper), contingent, and buildable --- never a primitive spark. It also cannot bootstrap from nothing: by the antecedent-state principle a mint cannot authorise its own installation, so a graph's first mint-rules are installed from its container. This is the substrate reason a situated graph requires a seed --- the minimal rule-set, including the capacity to mint, that a container provides so the graph can thereafter grow itself. The two provenances --- seeded from the container, or minted from residual --- are what the nature/nurture dichotomy names, and they are not two \emph{kinds} of thing: both are rules that run identically, the running records no provenance, and the capacity to mint (nurture's mechanism) is itself seeded (nature), so what remains measurable is provenance, not a distinction of kind.
+
+\section{Decoherence}\label{sec:decoherence}
+Residual is what a containing grammar declines to absorb. This section is the limiting case of that:
+what happens when a write is not partly unabsorbed but wholly inadmissible, so that no continuation is
+realised at all. It is placed separately because it is a specific thing rather than a corollary of the
+last one --- an inadmissible write has its own failure structure, its own economics, and its own
+consequences for what depends on the frame it failed in.
+
 \begin{remark}[Decoherence is one operation; the frames are what differ]\label{rem:decoherence-one}
 Two strings make the structure visible. \emph{$2+2=5$} is a perfectly coherent set of symbols: it
 parses, every token is admissible, the arrangement is grammatical. \emph{Two particles smash into each
@@ -947,11 +959,6 @@ has not paid for it. Chesterton's rule about the fence is this stated as advice 
 the ecological version, where removing one species collapses relations that were not obviously routed
 through it, is the same structure with the dependents alive \citep{paine1969}.
 \end{remark}
-
-\begin{corollary}[Growth is grammar extension]\label{cor:mint-is-grammar}
-A residual is absorbed either by a containing frame extending $\Gamma_{W_c}$ to admit it, or by paying to copy it out (Section~\ref{sec:interface}); otherwise it persists in place and is re-encountered each time the merge runs. The first route is the substrate form of \emph{minting} a new distinction: the residual does not fit because it is inadmissible, so admitting it requires extending the grammar, and extending the grammar is the act by which a previously inadmissible deformation becomes recognisable. Recognition and growth are therefore one mechanism joined at one place --- the residual is where the shape a graph decodes and the grammar that admits it meet.
-\end{corollary}
-Two properties of this mechanism matter. Residual is \emph{per-rule}: each firing leaves its own remainder, local to where the rule ran, with no global residual store, so it is dealt with per-frame --- which is why the residual-and-mint loop is frame-portable rather than living in a domain-specific module. And minting is itself a \emph{rule}, not a primitive: extending $\Gamma_{W_c}$ is the grammar acting on itself (the reflection theorem), a reflective rule subject to the same economics, admissibility, and antecedent-state principle as any other. Growth is therefore rule-governed, costed (the spend-and-gain of the Narrativium paper), contingent, and buildable --- never a primitive spark. It also cannot bootstrap from nothing: by the antecedent-state principle a mint cannot authorise its own installation, so a graph's first mint-rules are installed from its container. This is the substrate reason a situated graph requires a seed --- the minimal rule-set, including the capacity to mint, that a container provides so the graph can thereafter grow itself. The two provenances --- seeded from the container, or minted from residual --- are what the nature/nurture dichotomy names, and they are not two \emph{kinds} of thing: both are rules that run identically, the running records no provenance, and the capacity to mint (nurture's mechanism) is itself seeded (nature), so what remains measurable is provenance, not a distinction of kind.
 
 \section{Termination}\label{sec:termination}
 \begin{definition}[Frame-relative termination]\label{def:frame-termination}
@@ -1437,18 +1444,13 @@ lost \citep{bollinger2007}, and to have arisen independently many times across m
 what a functionless remnant does \citep{smith2013}.
 
 The lesson is not that the appendix turned out useful. It is that \emph{inertness is a judgement made
-at an aperture, and the judgement fails}. Something was called structure-that-does-nothing by people
-looking carefully, for a hundred years, and they were looking at the wrong scale --- the function is
-not the organ's own activity but its relation to a population it houses.
-
-Which sharpens why inert structure is retained, beyond removal being a write. Establishing that
-structure is inert requires perturbing it and observing that nothing follows --- and that perturbation
-\emph{is} the removal one was trying to justify. The information needed to license the write is
-obtainable only by making it. So the choice is not between a cheap test and an expensive change; it
-is between paying for the change without the test, or not paying. Under that structure, retention is
-the ordinary outcome, and it is a correct one rather than a failure of nerve. Neither case is a hoarding
-failure. Both are what an economics in which holding is free and changing is paid predicts, and a
-lineage or a codebase that pruned aggressively would be the anomaly requiring explanation.
+at an aperture, and the judgement fails} --- something was called structure-that-does-nothing by people
+looking carefully, for a hundred years, at the wrong scale. Why that judgement cannot be made cheaply
+is treated generally in Section~\ref{sec:decoherence}: the dependents of a structure are held in other
+frames and not in it (Remark~\ref{rem:vacated}), and establishing inertness requires the perturbation
+that \emph{is} the removal one wanted licensed (Remark~\ref{rem:failure-instrument}). Retention is
+therefore the ordinary outcome and a correct one, and a lineage or a codebase that pruned aggressively
+would be the anomaly requiring explanation.
 
 \emph{Convergent evolution} is Proposition~\ref{prop:compression-convergence} with a name biology gave
 it first. Independent lineages arrive at the camera eye, the streamlined body, the wing, and they do
@@ -1470,236 +1472,6 @@ rewriting that follows when the residual will not fit.
 forced by what it meets, which is the aperture claim of Section~\ref{sec:interface} in another
 grounding, and it is why the same organism is coarse in one setting and finely differentiated in
 another.
-\end{remark}
-
-\begin{remark}[A popular understanding equalises, and that is why it drifts]\label{rem:public-aperture}
-The evolutionary claims above read very differently depending on who is reading them, and the
-difference is not one of expertise so much as of aperture --- which makes it an instance of the same
-machinery rather than an aside about communication.
-
-The account of evolution most people hold is close to Darwin's: variation, competition, survival of
-the better fitted, over long stretches. Working biology in 2026 is not that. Developmental bias,
-phenotypic plasticity, inheritance beyond the gene, horizontal transfer, symbiosis and constructive
-neutral processes are all ordinary parts of the working picture, and the argument the previous remark
-takes a side in is an argument \emph{within} that picture rather than an attack on it. So
-\emph{natural selection is half of evolution} is heterodox against one aperture and unremarkable
-against the other, and a reader's reaction to it says which one they are holding.
-
-Why the gap persists is the interesting part, and it is not that the explaining has been done badly.
-A popular understanding is a structure under compression like any other, and Darwin-level evolution is
-\emph{well-formed for the purposes most people put it to}: it accounts for enough, it is cheap to
-hold, and almost nothing anyone meets in a day produces a residual it cannot absorb. It has
-equalised, and it persists for exactly the reason the horseshoe crab's form does --- nothing is
-forcing a write. The working picture is the overshooting case, kept changing by a residual the field
-manufactures deliberately.
-
-That predicts something checkable and slightly counterintuitive: the gap between popular and expert
-understanding of a field should track \emph{daily exposure to residual} rather than education or
-communication effort. Where a lay frame is corrected constantly by contact --- weather forecasting,
-where people check a prediction and see it fail --- the gap is small and the lay frame keeps up. Where
-it is never contacted in a way that fails, the gap widens no matter how much explaining is done,
-because explanation supplies no residual: the frame is not wrong for what it is used for, so nothing
-in it has to give.
-
-Two ends. This is not a claim that the popular account is ignorance --- it is well-formed for its
-work, which is what makes it durable, and calling it deficient would be measuring it against work it
-is not doing. And expert consensus is not thereby correct; it is a frame under different pressure,
-which is a fact about its residual and not a warrant.
-
-For this paper the practical consequence is small and worth stating: the evolutionary material is
-addressed to the working aperture, and a reader who finds it radical is invited to check it against
-the field rather than against what they were taught.
-\end{remark}
-
-\begin{remark}[Overshoot is a rate, not a shape --- and it is where agency comes from]\label{rem:overshoot}
-Equalisation is a balance point: the state at which what a structure meets no longer forces it to
-write against what it holds. Reaching it is not the only thing a lineage can do at it, and the other
-option is the one that matters.
-
-A lineage \emph{overshoots} when its rate of change carries it past that point --- when it goes on
-changing after the environment has stopped requiring it to. That is not a defect and not
-specialisation, which an earlier version of this remark wrongly made it. It is momentum in the rate
-itself: the machinery that produced change does not stop because the residual did, and a standing
-structure that includes a rate carries the rate forward, which is the subject of the Narrative
-Momentum companion one grounding over.
-
-What overshoot produces is \emph{capacity in excess of requirement}, and excess capacity is spendable
-in three ways of increasing consequence. It can fit an environment not yet met --- structure arising
-under one demand turning out to serve another \citep{gouldvrba1982}. It can be spent on the current
-environment rather than on the organism, which is an organism altering the conditions it is selected
-by \citep{odlingsmee2003}. And it can be spent selecting which environment to be in, which is also
-already named: \emph{niche choice}, one of three modes in a published framework whose other two are
-construction and conformance \citep{trappes2022}. The three-way division above is close to theirs and
-descends from the same source.
-
-What this account adds is only the ordering --- that the three are one capacity spent at increasing
-remove from the organism --- and the suggestion that at sufficient accumulation the third amounts to
-self-direction. That last step is the one not found in the literature, and it should be taken
-carefully: the agency-in-biology programme grounds agency in organisational closure and normativity
-rather than in surplus, and there is a recent and pointed argument that the agency perspective has no
-research programme at all \citep{difriscogawne2024}. Constituting agency out of unspent capacity is a
-position in a live dispute, not a summary of one.
-
-Two ends, and the second matters more. Overshoot is expensive: excess capacity is structure that does
-no work yet, so it is ill-formed until the day it is not, and most of it is never spent. Most
-overshoot is waste, and most lineages that overshoot go extinct rather than becoming anything. And
-nothing here is directional --- overshoot is undirected excess that is sometimes usable afterwards,
-and agency is one thing accumulated usable excess can amount to, not a destination the process is
-heading for. Read as a trajectory this would be orthogenesis, which the account has no room for,
-since the substrate supplies no goals for anything to be heading toward.
-
-It is tempting to read that as two stable answers to a stable environment --- settle at the balance
-point, or carry rate past it --- and the temptation should be resisted, because the first is not
-available. \emph{Equilibrium is a limit and not a state.} Reaching it would require an environment
-that stopped, and environments do not: an environment is other frames, which are running; a frame is
-a subset of its container, so its own persistence is a fact in that container; and at any grain where
-anything is individuated something is arriving. Total absence of forcing would require the container
-to be doing nothing, which is a limit rather than a condition environments occupy.
-
-That is deliberately not identified with the empty limit this account reaches for perfection and for
-the view from nowhere, though an earlier version of this passage did identify them. Those are
-properties of a frame; equilibrium is a relation between a frame and its container. The shapes may
-be related and the relation is not argued here.
-
-So what a stable-looking environment offers is not settling but a \emph{rate of approach}, and the
-difference between the two answers is how fast a lineage closes on a target that keeps moving. One
-closes slowly and spends little; the other carries rate past the point the environment is currently
-requiring, pays for capacity that does nothing yet, and holds the means to survive a change of
-conditions or to cause one. Neither arrives. The horseshoe crab is usually offered as the settled case, and the specialist measurements say
-otherwise --- which is a correction that strengthens the reading above rather than embarrassing it,
-since under it nothing settles. The
-four-hundred-and-fifty-million-year figure belongs to the \emph{lineage}; measured shape stasis in
-xiphosurids is Late Jurassic, on the order of a hundred and fifty million years, with developmental
-stasis older and body size increasing throughout \citep{bicknell2021}. And the clade did not settle:
-xiphosurids invaded non-marine environments independently at least five times and twice radiated into
-novel morphospace \citep{lamsdell2016}.
-
-So the group is not an example of equilibrium attained. It is an example of equilibrium
-\emph{approached slowly and never reached}: long intervals in which environments rarely required a
-write, a form that kept changing anyway, and repeated episodes of exactly the excess-spending the
-other rate describes. That is the prediction rather than an exception to it, and the received
-version --- four hundred and fifty million years of a fixed shape --- is the one the account would
-have had trouble with. What did continue underneath was demonstrated for these animals as a
-\emph{decoupling} --- large numbers of molecular characters distinguish even these morphologically
-conservative organisms, though the same study measures a moderate slowdown in sequence evolution
-rather than an ordinary rate \citep{avise1994} --- and is now a stronger claim than point substitution: three
-whole-genome duplications are specific to the group \citep{nong2021,castellano2025}.
-
-The other answer has a worked instance, and it is one where the received story was wrong in exactly
-the way this account predicts. Fish did not grow legs in order to walk. Limbs with digits appear in
-animals that were still aquatic and still breathing through gills: \emph{Acanthostega} had eight
-digits on a limb \citep{coatesclack1990} and retained internal gills
-\citep{coatesclack1991,clack2012}, and digits and putative digits are now described inside a fin that
-still bore lepidotrichia, in an animal that still bore lepidotrichia \citep{cloutier2020}. The structure
-preceded its \emph{effective} terrestrial use --- not its possibility, since the capacity for
-terrestrial locomotion is argued to have arrived with limbs themselves \citep{dickson2021}, and the
-known \emph{Acanthostega} material is juvenile and exclusively aquatic \citep{sanchez2016}, so
-nothing here is claimed about the adult animal. Legs were not needed. What the lineage had was \emph{change} ---
-rate carried forward in its standing structure --- and legs are what that change produced. Land became
-available to them afterwards.
-
-And the sequence was not a ramp, which is the part that matters most for the reading offered here. \emph{Qikiqtania wakei}, a Late Devonian elpistostegalian, has a pectoral fin specialised for swimming
-and lacking substrate-support features, which its describers read as a secondary return to open water
-close to the origin of limbed vertebrates \citep{stewart2022}. A lineage near that origin specialised
-back toward the water --- not, on this evidence, one shown to have held substrate-support capacity
-and then lost it, since the taxon sits more basally than \emph{Tiktaalik} in the same analysis. That is the
-disclaimer above made concrete --- most overshoot is not spent on anything --- and it is the clearest
-available evidence against reading any of this as a direction the process was heading in.
-
-What that instance is about is the half of the process \emph{before} selection, and saying so places
-this account rather than merely correcting a story. \emph{Natural selection is half of evolution.}
-Variation is generated and variants are differentially retained; neither half alone produces
-anything, and there is nothing to select from until something has been generated.
-
-That is a claim about billing rather than about power. Selection's evidential standing is not in
-question and nothing here reduces it. What is in question is that the theory is named after one half
-while the other enters as a premise --- \emph{given heritable variation} --- so that the structure of
-what is generated is treated as an input to explanation rather than part of it. If generation has
-structure of its own, the shape of what evolves depends on it as much as on what is retained, which
-is the substance of a live dispute rather than a neutral observation: an extended synthesis arguing
-that developmental bias, plasticity, niche construction and inheritance beyond the gene deserve equal
-standing, against a position that they are already accommodated \citep{laland2015}. This account
-takes the first side, and takes it as a position rather than as settled.
-
-The gap is old and named. Natural selection explains the survival of the fittest and not the
-\emph{arrival} of the fittest, which is de~Vries's formulation and has stayed in use for over a
-century \citep{devries1905,wagner2014}. It is not neglected --- developmental constraint, evolvability
-and the biased structure of available variation are all active, and variation is known not to be
-isotropic: lineages move more readily along some directions than others, and the direction is a fact
-about the organism rather than about the pressure \citep{schluter1996}. This account belongs on that
-side of the line and has nothing to add to the selection side.
-
-The mechanism this account would offer there is named already, and the name is the same one: a
-lineage that has been changing does not stop when selection does. Maternal inheritance makes a
-population continue to evolve for many generations after selection ceases, sometimes in the direction
-selection opposes, and the effect is described as a form of
-\emph{evolutionary momentum} in the follow-on treatment \citep{kirkpatricklande1989,landekirkpatrick1990}.
-A related effect has been measured in the field, where responses in red squirrels were influenced by
-the previous generation's selection as well as the current one --- under selection that was ongoing
-rather than ceased \citep{mcadamboutin2004}. Rate itself is likewise treated as an inherited, autocorrelated quantity in
-molecular evolution \citep{thorne1998}, and whether evolutionary patterns arise from variational
-properties of traits or lineages, or instead from ecology, is stated as the open question by the people working on it
-\citep{love2021}.
-
-So this is not a gap and nothing here fills one, and an earlier version of this passage claimed a
-remaining novelty that the momentum paper has since withdrawn: the published account's carrier is the
-maternal phenotype, which is present structure doing the work, so it holds the position this account
-holds rather than a rival to it. What the correspondence supplies is a grounding, not a contribution.
-
-\emph{Need does not generate structure, and cannot}: a need for legs is a relation to legs, and there
-are none yet to be related to. Need filters what has been produced, which is exactly selection's
-work. The producing is the part above, and if change were proportional to what is required nothing
-new would ever appear, since every change would be a closer fit to a demand already present.
-\emph{Novelty requires overshoot} --- structure has to exist before anything can find a use for it, so
-the capacity that looks wasteful is the only thing that has ever produced anything not already
-implied.
-
-That inference is not new either, and one version of it holds in simulation. Search directed at an
-objective can be actively prevented from reaching it by that objective, and on two benchmark tasks
---- maze navigation and biped walking --- search for novelty alone outperformed it
-\citep{lehmanstanley2011}. Those are evolved controllers rather than organisms, so this transfers a
-result across domains and does not supply biological evidence. Redundant capacity released from
-immediate requirement is the textbook biological route to novel function \citep{ohno1970}, and
-complexity arising with no adaptive cause is an established position in molecular evolution
-\citep{stoltzfus1999,lukes2011}. What is thin rather than absent is the tie to an overshooting
-\emph{rate} specifically.
-
-Three qualifications. Morphological stasis is not the absence of evolution and only the former is
-claimed. The mechanism of stasis \emph{in general} is contested --- stabilising selection
-\citep{estesarnold2007} and ephemeral divergence with gene flow \citep{futuyma2010}, whose title names
-constraint as the other live account, are the developed positions --- but there is no
-horseshoe-crab-specific three-way contest, and an earlier version of this remark implied one, and
-misdescribed the study that measured the group: it argues habitat and developmental constraint and
-\emph{also} endorses stabilising selection explicitly, including in its conclusion. It fits no
-evolutionary-mode models at all, which is worth knowing beside \citet{hunt2025} below. And settling is not safety: \emph{Limulus} is presently threatened by harvesting and
-habitat loss, which is the environment moving faster than any trade was struck for.
-
-A caution about stasis generally, since the remark leans on it. The punctuated reading is not the
-settled state of the evidence: a recent assessment finds stasis favoured in fewer than half of
-examined cases, with meandering random walks or more complex models accounting for most of the rest, which is why the
-citation above is worded as what the record \emph{was read as} showing \citep{hunt2025}.
-\end{remark}
-
-\begin{remark}[Cognition under the same treatment]\label{rem:cognition-compression}
-Cognition is compressed by any measure --- a brain takes on the order of a fifth of a body's
-resting energy for a fiftieth of its mass, and an energy budget for signalling has been computed in
-detail \citep{attwell2001} --- for rodent grey matter, with the whole-body figures quoted there from
-earlier work rather than established by it. The stronger claim, that neural arrangements are forced
-by that budget rather than chosen, is \citet{sterling2015}'s thesis and not the budget paper's. Two
-constraints can then be named in the way the discipline above requires, and only two; neither is
-supplied by either citation, and both are ordinary neuroscience. Conduction takes time over distance, so there is no central
-synchroniser and coordination is local and coupled --- the same concession distributed engineering
-made, for the same reason. And bandwidth is scarce, so what is not predicted is what gets sent.
-
-Two further candidates are excluded. That cost is inherited along provision is this account's own
-thesis (Proposition~\ref{prop:runner-recursion}), so offering it as an independent constraint on
-brains would be circular; and that introspection does not reach the machinery is not a constraint but
-the conclusion relabelled.
-
-What this licenses is narrower than \emph{cognition is the same}. Two structures under the same
-binding constraints land on the same arrangements over the region those constraints touch, and no
-further: cognition is not thereby computation, all cognitions are not thereby alike, and nothing here
-says a brain is a computer.
 \end{remark}
 
 The consequence for this paper's own composition claim is the deflation stated in
@@ -1891,16 +1663,6 @@ W.~Ross Ashby.
 \newblock \emph{An Introduction to Cybernetics}.
 \newblock Chapman \& Hall, London, 1956.
 
-\bibitem[Attwell and Laughlin(2001)]{attwell2001}
-David Attwell and Simon B. Laughlin.
-\newblock An energy budget for signaling in the grey matter of the brain.
-\newblock \emph{Journal of Cerebral Blood Flow and Metabolism}, 21(10):1133--1145, 2001.
-
-\bibitem[Avise et al.(1994)]{avise1994}
-John C. Avise, William S. Nelson, and Hiroaki Sugita.
-\newblock A speciational history of ``living fossils'': molecular evolutionary patterns in horseshoe crabs.
-\newblock \emph{Evolution}, 48(6):1986--2001, 1994.
-
 \bibitem[Barbour(1999)]{barbour1999}
 Julian Barbour.
 \newblock \emph{The End of Time: The Next Revolution in Physics}.
@@ -1921,11 +1683,6 @@ Elwyn R. Berlekamp, John H. Conway, and Richard K. Guy.
 \newblock \emph{Winning Ways for Your Mathematical Plays}.
 \newblock Academic Press, London, 1982.
 \newblock (Universality of Conway's Game of Life.)
-
-\bibitem[Bicknell et al.(2022)]{bicknell2021}
-Russell D.~C. Bicknell, Julien Kimmig, Graham E. Budd, David A. Legg, Cheyenne Bader, Joachim T. Haug, Andr\'e Kaiser, Petr Laibl, Yara Tashman, and Nicol\'as E. Campione.
-\newblock Habitat and developmental constraints drove 330 million years of horseshoe crab evolution.
-\newblock \emph{Biological Journal of the Linnean Society}, 136(1):155--172, 2022.
 
 \bibitem[Bohm(1952)]{bohm1952}
 David Bohm.
@@ -1952,60 +1709,20 @@ Eric A. Brewer.
 \newblock Towards robust distributed systems.
 \newblock In \emph{Proceedings of the 19th ACM Symposium on Principles of Distributed Computing (PODC)}, keynote, 2000.
 
-\bibitem[Castellano et al.(2025)]{castellano2025}
-K.~R. Castellano and colleagues.
-\newblock Genome assembly of a living fossil, the Atlantic horseshoe crab \emph{Limulus polyphemus}, reveals lineage-specific whole-genome duplications, transposable element-based centromeres, and a ZW sex chromosome system.
-\newblock \emph{Molecular Biology and Evolution}, 42(2):msaf021, 2025.
-
 \bibitem[Chapiro(1984)]{chapiro1984}
 Daniel M. Chapiro.
 \newblock \emph{Globally-Asynchronous Locally-Synchronous Systems}.
 \newblock PhD thesis, Stanford University, 1984.
-
-\bibitem[Clack(2012)]{clack2012}
-Jennifer A. Clack.
-\newblock \emph{Gaining Ground: The Origin and Evolution of Tetrapods}.
-\newblock Indiana University Press, Bloomington, 2nd edition, 2012.
-
-\bibitem[Cloutier et al.(2020)]{cloutier2020}
-Richard Cloutier, Alice M. Clement, Michael S.~Y. Lee, Roxanne B\'echard, Vincent Roy, John A. Long, and Isabelle B\'egin.
-\newblock \emph{Elpistostege} and the origin of the vertebrate hand.
-\newblock \emph{Nature}, 579:549--554, 2020.
-
-\bibitem[Coates and Clack(1990)]{coatesclack1990}
-Michael I. Coates and Jennifer A. Clack.
-\newblock Polydactyly in the earliest known tetrapod limbs.
-\newblock \emph{Nature}, 347:66--69, 1990.
-
-\bibitem[Coates and Clack(1991)]{coatesclack1991}
-Michael I. Coates and Jennifer A. Clack.
-\newblock Fish-like gills and breathing in the earliest known tetrapod.
-\newblock \emph{Nature}, 352:234--236, 1991.
 
 \bibitem[de Queiroz(2007)]{dequeiroz2007}
 Kevin de~Queiroz.
 \newblock Species concepts and species delimitation.
 \newblock \emph{Systematic Biology}, 56(6):879--886, 2007.
 
-\bibitem[de Vries(1905)]{devries1905}
-Hugo de~Vries.
-\newblock \emph{Species and Varieties: Their Origin by Mutation}.
-\newblock Open Court, Chicago, 2nd edition, 1905.
-
 \bibitem[DeWitt(1967)]{dewitt1967}
 Bryce S. DeWitt.
 \newblock Quantum theory of gravity. I. The canonical theory.
 \newblock \emph{Physical Review}, 160:1113--1148, 1967.
-
-\bibitem[Dickson et al.(2021)]{dickson2021}
-Blake V. Dickson, Jennifer A. Clack, Timothy R. Smithson, and Stephanie E. Pierce.
-\newblock Functional adaptive landscapes predict terrestrial capacity at the origin of limbs.
-\newblock \emph{Nature}, 589:242--245, 2021.
-
-\bibitem[DiFrisco and Gawne(2025)]{difriscogawne2024}
-James DiFrisco and Richard Gawne.
-\newblock Biological agency: a concept without a research program.
-\newblock \emph{Journal of Evolutionary Biology}, 38(2):143--156, 2025.
 
 \bibitem[Dupr\'e(1993)]{dupre1993}
 John Dupr\'e.
@@ -2022,20 +1739,10 @@ Niles Eldredge and Stephen Jay Gould.
 \newblock Punctuated equilibria: an alternative to phyletic gradualism.
 \newblock In \emph{Models in Paleobiology}, pages 82--115. Freeman Cooper, San Francisco, 1972.
 
-\bibitem[Estes and Arnold(2007)]{estesarnold2007}
-Suzanne Estes and Stevan J. Arnold.
-\newblock Resolving the paradox of stasis.
-\newblock \emph{The American Naturalist}, 169(2):227--244, 2007.
-
 \bibitem[Everett(1957)]{everett1957}
 Hugh Everett III.
 \newblock ``Relative state'' formulation of quantum mechanics.
 \newblock \emph{Reviews of Modern Physics}, 29:454--462, 1957.
-
-\bibitem[Futuyma(2010)]{futuyma2010}
-Douglas J. Futuyma.
-\newblock Evolutionary constraint and ecological consequences.
-\newblock \emph{Evolution}, 64(7):1865--1884, 2010.
 
 \bibitem[G\"odel(1931)]{godel1931}
 Kurt G\"odel.
@@ -2047,16 +1754,6 @@ Nelson Goodman.
 \newblock \emph{Fact, Fiction, and Forecast}.
 \newblock Harvard University Press, Cambridge, MA, 1955.
 
-\bibitem[Gould and Vrba(1982)]{gouldvrba1982}
-Stephen Jay Gould and Elisabeth S. Vrba.
-\newblock Exaptation --- a missing term in the science of form.
-\newblock \emph{Paleobiology}, 8(1):4--15, 1982.
-
-\bibitem[Hunt et al.(2025)]{hunt2025}
-Gene Hunt, Kjetil L. Voje, and Lee Hsiang Liow.
-\newblock Punctuated equilibrium: state of the evidence.
-\newblock \emph{Paleobiology}, 51(4):652--661, 2025.
-
 \bibitem[Jaynes(1957)]{jaynes1957}
 E. T. Jaynes.
 \newblock Information theory and statistical mechanics.
@@ -2066,11 +1763,6 @@ E. T. Jaynes.
 K.~Ingemar J\"onsson, Elke Rabbow, Ralph O. Schill, Mats Harms-Ringdahl, and Petra Rettberg.
 \newblock Tardigrades survive exposure to space in low Earth orbit.
 \newblock \emph{Current Biology}, 18(17):R729--R731, 2008.
-
-\bibitem[Kirkpatrick and Lande(1989)]{kirkpatricklande1989}
-Mark Kirkpatrick and Russell Lande.
-\newblock The evolution of maternal characters.
-\newblock \emph{Evolution}, 43(3):485--503, 1989.
 
 \bibitem[Kleinberg(2002)]{kleinberg2002}
 Jon Kleinberg.
@@ -2092,50 +1784,25 @@ Saul Kripke.
 \newblock Outline of a theory of truth.
 \newblock \emph{Journal of Philosophy}, 72(19):690--716, 1975.
 
-\bibitem[Laland et al.(2015)]{laland2015}
-Kevin N. Laland, Tobias Uller, Marcus W. Feldman, Kim Sterelny, Gerd B. M\"uller, Armin Moczek, Eva Jablonka, and John Odling-Smee.
-\newblock The extended evolutionary synthesis: its structure, assumptions and predictions.
-\newblock \emph{Proceedings of the Royal Society B}, 282(1813):20151019, 2015.
-
 \bibitem[Lamport(1978)]{lamport1978}
 Leslie Lamport.
 \newblock Time, clocks, and the ordering of events in a distributed system.
 \newblock \emph{Communications of the ACM}, 21(7):558--565, 1978.
-
-\bibitem[Lamsdell(2016)]{lamsdell2016}
-James C. Lamsdell.
-\newblock Horseshoe crab phylogeny and independent colonizations of fresh water: ecological invasion as a driver for morphological innovation.
-\newblock \emph{Palaeontology}, 59(2):181--194, 2016.
 
 \bibitem[Landauer(1961)]{landauer1961}
 Rolf Landauer.
 \newblock Irreversibility and heat generation in the computing process.
 \newblock \emph{IBM Journal of Research and Development}, 5(3):183--191, 1961.
 
-\bibitem[Lande and Kirkpatrick(1990)]{landekirkpatrick1990}
-Russell Lande and Mark Kirkpatrick.
-\newblock Selection response in traits with maternal inheritance.
-\newblock \emph{Genetical Research}, 55(3):189--197, 1990.
-
 \bibitem[Lawvere(1969)]{lawvere1969}
 F.~William Lawvere.
 \newblock Diagonal arguments and cartesian closed categories.
 \newblock In \emph{Category Theory, Homology Theory and their Applications II}, Lecture Notes in Mathematics 92, pages 134--145. Springer, 1969.
 
-\bibitem[Lehman and Stanley(2011)]{lehmanstanley2011}
-Joel Lehman and Kenneth O. Stanley.
-\newblock Abandoning objectives: evolution through the search for novelty alone.
-\newblock \emph{Evolutionary Computation}, 19(2):189--223, 2011.
-
 \bibitem[Losos(2017)]{losos2017}
 Jonathan B. Losos.
 \newblock \emph{Improbable Destinies: Fate, Chance, and the Future of Evolution}.
 \newblock Riverhead, New York, 2017.
-
-\bibitem[Love et al.(2022)]{love2021}
-Alan C. Love, Mark Grabowski, David Houle, Lee Hsiang Liow, Arthur Porto, Masahito Tsuboi, Kjetil L. Voje, and Gene Hunt.
-\newblock Evolvability in the fossil record.
-\newblock \emph{Paleobiology}, 48(2):186--209, 2022.
 
 \bibitem[Luke\v{s} et al.(2011)]{lukes2011}
 Julius Luke\v{s}, John M. Archibald, Patrick J. Keeling, W. Ford Doolittle, and Michael W. Gray.
@@ -2147,30 +1814,10 @@ Pattie Maes.
 \newblock Concepts and experiments in computational reflection.
 \newblock In \emph{Proceedings of OOPSLA '87}, 1987.
 
-\bibitem[McAdam and Boutin(2004)]{mcadamboutin2004}
-Andrew G. McAdam and Stan Boutin.
-\newblock Maternal effects and the response to selection in red squirrels.
-\newblock \emph{Proceedings of the Royal Society B}, 271(1534):75--79, 2004.
-
 \bibitem[McGhee(2011)]{mcghee2011}
 George R. McGhee.
 \newblock \emph{Convergent Evolution: Limited Forms Most Beautiful}.
 \newblock MIT Press, Cambridge, MA, 2011.
-
-\bibitem[Nong et al.(2021)]{nong2021}
-Wenyan Nong and colleagues.
-\newblock Horseshoe crab genomes reveal the evolution of genes and microRNAs after three rounds of whole genome duplication.
-\newblock \emph{Communications Biology}, 4:83, 2021.
-
-\bibitem[Odling-Smee et al.(2003)]{odlingsmee2003}
-F.~John Odling-Smee, Kevin N. Laland, and Marcus W. Feldman.
-\newblock \emph{Niche Construction: The Neglected Process in Evolution}.
-\newblock Princeton University Press, Princeton, NJ, 2003.
-
-\bibitem[Ohno(1970)]{ohno1970}
-Susumu Ohno.
-\newblock \emph{Evolution by Gene Duplication}.
-\newblock Springer, Berlin, 1970.
 
 \bibitem[Osvik et al.(2006)]{osvik2006}
 Dag Arne Osvik, Adi Shamir, and Eran Tromer.
@@ -2287,16 +1934,6 @@ Carlo Rovelli.
 \newblock Forget time.
 \newblock \emph{Foundations of Physics}, 41:1475--1490, 2011.
 
-\bibitem[Sanchez et al.(2016)]{sanchez2016}
-Sophie Sanchez, Paul Tafforeau, Jennifer A. Clack, and Per E. Ahlberg.
-\newblock Life history of the stem tetrapod \emph{Acanthostega} revealed by synchrotron microtomography.
-\newblock \emph{Nature}, 537:408--411, 2016.
-
-\bibitem[Schluter(1996)]{schluter1996}
-Dolph Schluter.
-\newblock Adaptive radiation along genetic lines of least resistance.
-\newblock \emph{Evolution}, 50(5):1766--1774, 1996.
-
 \bibitem[Shannon(1948)]{shannon1948}
 Claude E. Shannon.
 \newblock A mathematical theory of communication.
@@ -2312,16 +1949,6 @@ Heather F. Smith, William Parker, Sanet H. Kotz\'e, and Michel Laurin.
 \newblock Multiple independent appearances of the cecal appendix in mammalian evolution and an investigation of related ecological and anatomical factors.
 \newblock \emph{Comptes Rendus Palevol}, 12(6):339--354, 2013.
 
-\bibitem[Sterling and Laughlin(2015)]{sterling2015}
-Peter Sterling and Simon Laughlin.
-\newblock \emph{Principles of Neural Design}.
-\newblock MIT Press, Cambridge, MA, 2015.
-
-\bibitem[Stewart et al.(2022)]{stewart2022}
-Thomas A. Stewart, Justin B. Lemberg, Ailis Daly, Edward B. Daeschler, and Neil H. Shubin.
-\newblock A new elpistostegalian from the Late Devonian of the Canadian Arctic.
-\newblock \emph{Nature}, 608:563--568, 2022.
-
 \bibitem[Stoltzfus(1999)]{stoltzfus1999}
 Arlin Stoltzfus.
 \newblock On the possibility of constructive neutral evolution.
@@ -2332,16 +1959,6 @@ Alfred Tarski.
 \newblock Der Wahrheitsbegriff in den formalisierten Sprachen.
 \newblock \emph{Studia Philosophica}, 1:261--405, 1936.
 
-\bibitem[Thorne et al.(1998)]{thorne1998}
-Jeffrey L. Thorne, Hirohisa Kishino, and Ian S. Painter.
-\newblock Estimating the rate of evolution of the rate of molecular evolution.
-\newblock \emph{Molecular Biology and Evolution}, 15(12):1647--1657, 1998.
-
-\bibitem[Trappes et al.(2022)]{trappes2022}
-Rose Trappes, Behzad Nematipour, Marie I. Kaiser, Ulrich Krohs, Koen J. van Benthem, Ulrich R. Ernst, J\"urgen Gadau, Peter Korsten, Joachim Kurtz, Holger Schielzeth, Tim Sch\"urmann, and Claudia Zeiss.
-\newblock How individualized niches arise: defining mechanisms of niche construction, niche choice, and niche conformance.
-\newblock \emph{BioScience}, 72(6):538--548, 2022.
-
 \bibitem[Turing(1936)]{turing1936}
 Alan M. Turing.
 \newblock On computable numbers, with an application to the Entscheidungsproblem.
@@ -2351,11 +1968,6 @@ Alan M. Turing.
 John von Neumann.
 \newblock \emph{Mathematical Foundations of Quantum Mechanics}.
 \newblock Princeton University Press, Princeton, 1955. English translation of the 1932 German edition.
-
-\bibitem[Wagner(2014)]{wagner2014}
-Andreas Wagner.
-\newblock \emph{Arrival of the Fittest: Solving Evolution's Greatest Puzzle}.
-\newblock Current, New York, 2014.
 
 \bibitem[Wiener(1948)]{wiener1948}
 Norbert Wiener.
