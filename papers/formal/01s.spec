@@ -101,8 +101,10 @@ ones.
 @pull hyp:located-degradation
 
 \section{Falsifiability}
-The substrate risks little by design and the groundings carry the risk. These are the commitments on
-which the substrate itself fails.
+The substrate risks little by design and the groundings carry the risk. Below are the commitments
+attached to the material this abridgement states. They are a subset: the long paper carries the full
+set, including those for results not stated here, and the generator reports the difference on every
+build so the omission stays visible rather than becoming a claim.
 
 \begin{enumerate}[leftmargin=*]
 @falsifier Minimal graph sufficiency

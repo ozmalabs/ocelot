@@ -143,9 +143,22 @@ def main(spec_path):
         banner + preamble_of(long_tex) + '\n'.join(body) + '\n')
 
     unpulled = sorted(set(blocks) - pulled)
+    # Falsifier drift is reported in BOTH directions. A spec asking for a
+    # falsifier the paper no longer has is a hard error above; a paper carrying
+    # a commitment the spec does not pull is a silent gap, because the short
+    # form's own framing implies it lists what the account fails on. Same
+    # asymmetry that let a stale spec title through once already.
+    unpulled_fals = sorted(k for k in falsifiers
+                           if ('falsifier:' + k) not in pulled)
     print('wrote %s  (%d blocks pulled, %d falsifiers)'
           % (out_rel, len([p for p in pulled if not p.startswith('falsifier:')]),
              len([p for p in pulled if p.startswith('falsifier:')])))
+    if unpulled_fals:
+        print('\nfalsifiers NOT pulled (%d of %d) --- the short form implies it '
+              'lists what the account fails on:' % (len(unpulled_fals),
+                                                    len(falsifiers)))
+        for k in unpulled_fals:
+            print('  %s' % k)
     if unpulled:
         print('\nnot pulled (%d) --- review when the long paper gains material:'
               % len(unpulled))

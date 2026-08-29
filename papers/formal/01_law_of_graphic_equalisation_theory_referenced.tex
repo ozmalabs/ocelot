@@ -16,20 +16,20 @@
 \newcommand{\Hist}{\mathcal{H}}
 \title{The Law of Graphic Equalisation --- Theory\\\large Minimal Recursive Dynamics, Collapse, Frame-Relative Identity, and Residual}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-29.3}\\[2pt]29 August 2026 \textbullet\ document revision 80}
+\date{\textbf{Draft \textemdash\ draft-2026-08-29.3}\\[2pt]29 August 2026 \textbullet\ document revision 81}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.3\,r80}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.3\,r81}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.3\,r80}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.3\,r81}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-29.3 r80} (29 August 2026).
+\textbf{DRAFT --- draft-2026-08-29.3 r81} (29 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -813,13 +813,18 @@ deliver the result. Failure becomes an instrument rather than an accident, and t
 wherever a procedure has a default: the party who prefers where the exception path lands has no reason
 to argue on the merits.
 
-And it is not detectable from within. A frame's handler is part of its own rules, so the frame reports
-what it was built to report and its report is consistent with itself; the divergence exists only
-between what the frame says happened and what the container admitted. Locating it therefore requires
-the containing frame, which is Axiom~\ref{ax:no-view} arriving where it is least convenient --- the
-frame that most needs to detect this is the one structurally unable to. This is the same shape as the
-silence of the fourth cost, and the same shape as the presented-versus-produced divergence the
-companion paper on mind treats at the scale of one frame acting on another.
+Detection is available but never free, and the exact shape of that is worth stating, because the
+obvious formulation overshoots. It is not that a frame cannot detect a swallow: a frame holding a
+record of the attempt separately from the handler's report can compare the two and find the
+divergence, and well-built systems do exactly that. What is unavailable is detecting it \emph{from the
+handler's own report}, which is self-consistent by construction. So the audit is installed structure,
+paid for like any other, and a frame that has not bought one has no access to the discrepancy. The
+audit is itself a policy, abusable in the same way one level in, so what the purchase buys is
+relocation rather than closure --- the same regress the provenance commitment names, terminating only
+in a containing frame. That is Axiom~\ref{ax:no-view} arriving where it is least convenient, since the
+frame with most reason to detect this is the one whose own machinery is doing it. The silence of the
+fourth cost has this structure, and so does the presented-versus-produced divergence the companion
+paper on mind treats at the scale of one frame acting on another.
 \end{remark}
 
 \begin{remark}[Forcing a failure is the instrument, and handlers blunt it]\label{rem:failure-instrument}
@@ -1799,6 +1804,11 @@ Each commitment below is marked \textsc{[shape]} or \textsc{[detail]}. A \textsc
 \item \textsc{[shape]}~\textbf{Minting is a rule.} Fails if grammar-extension (growth) requires a primitive operation beneath the rules rather than a reflective rule subject to the same economics, admissibility, and antecedent-state principle --- in particular, if a graph can mint its first distinctions without any seeded from its container.
 \item \textsc{[shape]}~\textbf{Partial-order sufficiency.} Fails if realised dynamics require a total order over collapses in distinct frames --- a global simultaneity --- rather than only the boundary-induced partial order.
 \item \textsc{[shape]}~\textbf{Globally-async/locally-sync.} Fails if coupling never induces local synchrony (boundary-related collapses remain unordered) or if synchrony is forced without coupling (a global instant exists independent of any boundary).
+\item \textsc{[shape]}~\textbf{Decoherence is one operation.} Fails if the manner in which an inadmissible write fails is a property of what was attempted rather than of the frame's rules --- that is, if one frame under one rule set yields structurally distinct failure modes for two inadmissible writes, with the difference not attributable to that frame's own policy (Remark~\ref{rem:decoherence-one}). Different outcomes across \emph{different} frames do not bear on this; that is what the claim predicts.
+\item \textsc{[detail]}~\textbf{A swallowed failure is relocated, never closed.} Not that a frame cannot detect its own handler discarding a failure --- it can, by holding a record of the attempt independent of the handler's report, and that record is ordinary paid structure. This fails if some in-frame audit \emph{settles} the question rather than moving it: if a frame can establish that no handler of its own has misreported, without that audit being itself a policy subject to the same abuse one level in (Remark~\ref{rem:handler-abuse}).
+\item \textsc{[shape]}~\textbf{Dependents are not held by the referent.} Fails if realised graph dynamics require a structure to carry the set of things depending on it --- back-references primitive rather than installed --- so that the consequences of removing a structure are recoverable from that structure alone, without querying the frames holding the references and without paid machinery (Remark~\ref{rem:vacated}). A substrate in which deletion is always clean falsifies this, and would also remove the distinction between an absence and a vacancy.
+\item \textsc{[shape]}~\textbf{A boundary is known only by crossing it.} Fails if a frame can \emph{settle} the location of its own admissibility boundary without any write that crosses it. Extrapolation from inside the admissible region evidences a boundary and is not at issue; establishing one would be (Remark~\ref{rem:failure-instrument}). This is the epistemic member of the same family as the provenance commitment below, and fails in the same manner --- by a procedure that closes the question rather than relocating it.
+\item \textsc{[detail]}~\textbf{Robustness trades against legibility.} Fails if a policy can bound a frame's residuals without reducing what its failures disclose about its grammar --- a handler that both absorbs and reports with no loss (Remark~\ref{rem:failure-instrument}). Cheaply testable in software, and marked \textsc{[detail]} because the account survives its loss with the trade weakened to a tendency.
 \item \textsc{[detail]}~\textbf{Provenance is never closed by inference.} Not that primitives fail to leak --- they do leak, and Proposition~\ref{prop:leak} says so. This fails if a frame can \emph{settle} the provenance of its own operator set from inside: if some in-frame procedure establishes, rather than merely evidences, whether its operators are self-supplied, how many distinct structures supply them, or whether a serial hidden supply underlies an apparently asynchronous frame The escape is not that further primitives were used, which is unavoidable, but that their provenance is open in the same way, so no procedure closes the question rather than relocating it.
 \end{enumerate}
 
