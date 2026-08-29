@@ -65,7 +65,7 @@ def preamble_of(tex):
 
     rev = re.search(r'document revision (\d+)', tex)
     src = re.search(r'\\textsc\{(draft-\S*?)[\\}]', tex)
-    stamp = (src.group(1) if src else 'draft') + ' / short form / from long r' + \
+    stamp = (src.group(1) if src else 'draft') + ' / statement / from long r' + \
             (rev.group(1) if rev else '?')
     pre = re.sub(r'\\textsc\{draft-[^}]*\}', lambda m: '\\textsc{' + stamp + '}', pre)
     return pre
@@ -154,7 +154,7 @@ def main(spec_path):
           % (out_rel, len([p for p in pulled if not p.startswith('falsifier:')]),
              len([p for p in pulled if p.startswith('falsifier:')])))
     if unpulled_fals:
-        print('\nfalsifiers NOT pulled (%d of %d) --- the short form implies it '
+        print('\nfalsifiers NOT pulled (%d of %d) --- the statement implies it '
               'lists what the account fails on:' % (len(unpulled_fals),
                                                     len(falsifiers)))
         for k in unpulled_fals:

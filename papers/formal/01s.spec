@@ -1,32 +1,34 @@
-# Short version of paper 01. This file holds the short paper's OWN content;
+# The STATEMENT of paper 01 --- not an abridgement of it. This file holds the
+# statement's OWN content;
 # every @pull line is fetched from the long paper at build time and is never
 # copied here. Edit this file and the long paper; never edit the generated .tex.
 @source 01_law_of_graphic_equalisation_theory_referenced.tex
-@out 01s_graphic_equalisation_short.tex
+@out 01s_graphic_equalisation_statement.tex
 
-\title{The Law of Graphic Equalisation\\\large Short Form}
+\title{The Law of Graphic Equalisation\\\large Statement}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-29.6}\\[2pt]29 August 2026 \textbullet\ short form}
+\date{\textbf{Draft \textemdash\ draft-2026-08-29.6}\\[2pt]29 August 2026 \textbullet\ statement}
 
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{SHORT FORM.} This is a generated abridgement of \emph{The Law of Graphic
-Equalisation} (Theory). It states the substrate and its consequences without
-demonstrating the removals that establish how little is required; the long paper carries
-those, and is the reference for any claim here that a reader wants shown rather
-than asserted. Every definition and proposition below is pulled from the long
-paper at build time, so the two cannot drift.}}
+\textbf{STATEMENT.} This is the theory; the companion \emph{Law of Graphic
+Equalisation} (Theory) is the case for it. What is missing here is not detail but
+\emph{argument} --- the removals that establish how little is required are the long
+paper's bulk and its actual work, so anything below that a reader wants shown rather
+than asserted is shown there. Calling this a short form, as an earlier version did,
+described it by its length instead of by what it does. Every definition and proposition
+below is pulled from the long paper at build time, so the two cannot drift.}}
 \end{center}
 \vspace{1em}
 
 \begin{abstract}
-One minimal structure is proposed as underlying phenomena usually studied apart. This short form
-gives the structure, the frame machinery through which anything reaches it, what happens when a write
-is refused, the single prohibition it carries, and the commitments on which it fails. It does not rehearse the removals: those are the bulk
-of the long paper, are what establishes how little is required, and are worth reading by anyone who
-doubts a particular one.
+One minimal structure is proposed as underlying phenomena usually studied apart. This statement gives
+the structure, the frame machinery through which anything reaches it, what happens when a write is
+refused, the single prohibition it carries, and the commitments on which it fails. It argues for none
+of them. The removals that establish how little is required are the long paper's bulk, and a reader
+who doubts a particular claim here should expect to be persuaded there and not by this.
 \end{abstract}
 
 \section{The substrate}
