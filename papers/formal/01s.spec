@@ -139,7 +139,7 @@ build so the omission stays visible rather than becoming a claim.
 \end{document}
 
 # --- regeneration ---
-# From papers/formal/:  python3 ../../tools/build_short_paper.py 01s.spec
+# From papers/formal/:  python3 ../../tools/build_statement.py 01s.spec
 # The generator exits non-zero if a @pull label no longer exists in the long
 # paper, and lists every labelled block the spec does not pull, so material
 # added to the long paper surfaces as a review item rather than silently

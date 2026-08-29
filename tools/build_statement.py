@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
-"""Generate a short paper from a long one plus a spec of short-only content.
+"""Generate the STATEMENT of a paper from the paper plus a spec of statement-only content.
 
 The long paper is the single source of truth for every shared block: definitions,
 propositions, corollaries, hypotheses, remarks and falsifiability items are PULLED
-by label at build time, never copied. The spec supplies the short paper's own prose
+by label at build time, never copied. The spec supplies the statement's own prose
 and its running order.
 
-Usage:  tools/build_short_paper.py papers/formal/01s.spec
+The long paper is the case for the theory; the generated document is the theory
+stated. The split is demonstration versus statement, not full versus abridged --
+which is why length is not a design goal here and never was a good name for it.
+
+Usage:  tools/build_statement.py papers/formal/01s.spec
 Output: the .tex named by the spec's @out directive, overwritten in place.
 
 Exits non-zero if a pulled label is missing (a rename in the long paper must not
@@ -132,8 +136,8 @@ def main(spec_path):
         '%% ==========================================================\n'
         '%% GENERATED FILE --- DO NOT EDIT.\n'
         '%% Source of truth: %s\n'
-        '%% Short-only content: %s\n'
-        '%% Regenerate: tools/build_short_paper.py %s\n'
+        '%% Statement-only content: %s\n'
+        '%% Regenerate: tools/build_statement.py %s\n'
         '%% ==========================================================\n'
         % (src_rel, os.path.basename(spec_path), os.path.relpath(spec_path,
            os.path.dirname(os.path.dirname(os.path.abspath(spec_path)))))
