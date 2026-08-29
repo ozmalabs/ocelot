@@ -27,7 +27,41 @@ to what its owner would have thought. What survives as this paper's own is runni
 design and is not what pastiche is assessed for. That is the reverse of how the passage
 previously divided prior art from contribution.
 
-## NOT settled — do not quote these until verified
+## RESOLVED 2026-08-29 — the source was read, and all three confirmed verbatim
+
+The user supplied the Newman/Doubinsky translation. Every quarantined phrasing is Genette's own, and
+the anticipation is **much tighter than the definitional reading below**. From pp. 82–83:
+
+- **"a *matrix of imitation* is inevitably interposed, which is the *model of competence* or, if one
+  prefers, the *idiolect* of the imitated corpus"** — all three terms, one sentence.
+- **"the essence of competence is the ability to generate an *unlimited number of correct
+  performances*"** — the indefinite-generation claim, verbatim.
+- **"it is impossible to imitate a text directly"** — stated as a principle, not an aside.
+- The framing is explicitly the generative grammarian's: competence against performance, *langue*
+  against *parole*, an idiolect being "not a message but rather a language: a code wherein the
+  specificities of the message have been made fit for generalization."
+- And there is a **worked forward example**: from scattered Balzac locutions Genette abstracts the
+  formula *x, that y of z*, then produces on it a phrase Balzac never wrote.
+
+So the extraction of a generator from a corpus and its use on material the source never treated is set
+out with a mechanism and an instance, in 1982. 01b r17 states it that way and quotes it.
+
+**What survives, and it turns on one word.** A pastiche's *correctness* is stylistic well-formedness —
+Proust's new Balzaceme is good because it is a locution Balzac could have written, and no question
+arises of whether Balzac would have held the thought. The claim in 01b has a different success
+condition: what a particular person would have made of something they never addressed, right or wrong
+**checkably against them**. That is why it needs a model of a *person* rather than of a manner, and why
+Schwitzgebel's design scores against the living philosopher's own answers. Genette's objection to
+personifying the implied author is consistent with all of this — he declined to take the step, having
+built everything the step requires.
+
+**Method note.** This is the third tightening of the same claim in one day, and the only one that came
+from reading the source rather than a summary. The two before it were made on a Wikipedia-level
+definition, because every other channel was blocked (below). Both were in the right direction and both
+were too weak. **A summary told us the shape; only the text gave the size.**
+
+## Superseded — what was quarantined, and why
+
 
 The stronger phrasing the agent recalled, and which would make the anticipation tighter still:
 
