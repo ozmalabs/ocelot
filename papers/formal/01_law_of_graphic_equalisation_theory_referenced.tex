@@ -16,20 +16,20 @@
 \newcommand{\Hist}{\mathcal{H}}
 \title{The Law of Graphic Equalisation --- Theory\\\large Minimal Recursive Dynamics, Collapse, Frame-Relative Identity, and Residual}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-29.1}\\[2pt]29 August 2026 \textbullet\ document revision 69}
+\date{\textbf{Draft \textemdash\ draft-2026-08-29.1}\\[2pt]29 August 2026 \textbullet\ document revision 70}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.1\,r69}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.1\,r70}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.1\,r69}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.1\,r70}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-29.1 r69} (29 August 2026).
+\textbf{DRAFT --- draft-2026-08-29.1 r70} (29 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -245,7 +245,7 @@ negative-only, and its whole burden sits on the closeable side.
 
 \section{Axiom $-1$: relativity of grounding}
 \setcounter{axiom}{-2}
-\begin{axiom}[Relativity of grounding]
+\begin{axiom}[Relativity of grounding]\label{ax:no-view}
 There is no operational view from nowhere. Every distinction, measurement, identity relation, admissibility judgement, and represented quantity is made in some frame. Frames may represent one another, but no quantity used by the theory requires a frame-independent evaluator.
 \end{axiom}
 \begin{remark}
@@ -646,6 +646,48 @@ Because the graph is a subgraph of its containing frame $W$, a realised graph-or
 \]
 \end{proposition}
 This locates the residual as the negative of an admissibility judgement rather than as an independently produced quantity, and it is what makes the merge non-destructive: what fits is absorbed, and what does not is left untouched, not deleted. A deformation may pass the graph's own change grammar $\Gamma_{G_c}$ (admissible to itself) yet fail the containing $\Gamma_{W_c}$ (inadmissible to its frame); the residual is precisely that gap between a graph's change grammar and its container's.
+
+\begin{remark}[Decoherence is one operation; the frames are what differ]\label{rem:decoherence-one}
+Two strings make the structure visible. \emph{$2+2=5$} is a perfectly coherent set of symbols: it
+parses, every token is admissible, the arrangement is grammatical. \emph{Two particles smash into each
+other at $.99c$} is coherent in the same way. Both pass the aperture and fail at the change grammar,
+which is the two-gate structure of Proposition~\ref{prop:two-gates} in its sharpest case --- what is
+admitted as \emph{represented} need not be admissible as a \emph{change}.
+
+What follows is not a partial merge. The collapse realises nothing, and the result is NULL --- which is
+not the same as \emph{absent}: absent is never represented, whereas this is represented, admitted, and
+yields no continuation. And the residual is not a local remainder. Admitting $2+2=5$ into arithmetic
+does not cost a repair somewhere; it costs the grammar's restrictiveness, since a grammar that admits
+a contradiction admits everything and thereby stops restricting anything. So the residual is
+\emph{everything in the superframe}.
+
+The point is what does \emph{not} vary. Decoherence is one operation. It does not come in kinds and it
+does not come in degrees, and the two cases above fail identically. What differs between them is the
+frame --- arithmetic in one, kinematics in the other --- and \emph{the frames are what make the cases
+different, not the failure}. ``Everything in the superframe'' is a constant expression whose value is
+frame-relative, which is Axiom~\ref{ax:no-view} applied to incoherence rather than to observation.
+
+This is worth stating because the obvious gloss is wrong in a specific way. One is tempted to rank
+them --- arithmetic lies deeper than kinematics, so denying it costs more --- and depth is real, but it
+is a fact about a web of commitments and therefore about a frame, never about the decoherence. The
+temptation is to read a magnitude off a difference that belongs elsewhere. That no distinction of
+\emph{kind} survives here between the analytic and the empirical case is Quine's conclusion
+\citep{quine1951}; the present account reaches it without needing his gradient, since the failure is
+uniform and only the frame is indexed.
+
+The container-relativity is exhibited rather than assumed by the case that resists this. A
+paraconsistent container does not explode, and absorbs a contradiction locally with a bounded residual
+\citep{priest1979}. That is not a counterexample: it is a different frame, giving a different value of
+the same constant expression, which is the claim.
+
+The second string carries a further lesson and is a better instance than it first appears, because it
+is not in fact false. A closing speed of $1.98c$ is unproblematic, being no object's velocity, and the
+relative velocity is $(0.99+0.99)/(1+0.99^2)\approx0.99995c$, under $c$. The incoherence arises only
+when the sentence is evaluated \emph{in one frame by addition} --- an in-frame operation applied to a
+quantity that lives between frames. It fails as a category error rather than as forbidden physics,
+which is the in-frame/cross-frame discipline of Section~\ref{sec:time-not-primitive} appearing as a
+coherence verdict.
+\end{remark}
 
 \begin{corollary}[Growth is grammar extension]\label{cor:mint-is-grammar}
 A residual is absorbed either by a containing frame extending $\Gamma_{W_c}$ to admit it, or by paying to copy it out (Section~\ref{sec:interface}); otherwise it persists in place and is re-encountered each time the merge runs. The first route is the substrate form of \emph{minting} a new distinction: the residual does not fit because it is inadmissible, so admitting it requires extending the grammar, and extending the grammar is the act by which a previously inadmissible deformation becomes recognisable. Recognition and growth are therefore one mechanism joined at one place --- the residual is where the shape a graph decodes and the grammar that admits it meet.
@@ -1886,6 +1928,16 @@ Michael Lynch and John S. Conery.
 Kenneth D. Whitney and Theodore Garland~Jr.
 \newblock Did genetic drift drive increases in genome complexity?
 \newblock \emph{PLoS Genetics}, 6(8):e1001080, 2010.
+
+\bibitem[Quine(1951)]{quine1951}
+W.~V. Quine.
+\newblock Two dogmas of empiricism.
+\newblock \emph{The Philosophical Review}, 60(1):20--43, 1951.
+
+\bibitem[Priest(1979)]{priest1979}
+Graham Priest.
+\newblock The logic of paradox.
+\newblock \emph{Journal of Philosophical Logic}, 8(1):219--241, 1979.
 
 \bibitem[Rovelli(1996)]{rovelli1996}
 Carlo Rovelli.
