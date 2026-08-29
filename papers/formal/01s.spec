@@ -111,7 +111,7 @@ which the substrate itself fails.
 @falsifier Located degradation
 @falsifier Convergence is not enforced
 @falsifier Provenance is never closed by inference
-@falsifier Solutions are strongly non-unique under a binding constraint
+@falsifier Cheap solutions are nearly unique under a binding constraint
 \end{enumerate}
 
 \end{document}
