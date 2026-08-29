@@ -48,8 +48,8 @@ paper at build time, so the two cannot drift.}}
 
 \begin{abstract}
 One minimal structure is proposed as underlying phenomena usually studied apart. This short form
-gives the structure, the frame machinery through which anything reaches it, the single prohibition it
-carries, and the commitments on which it fails. It does not rehearse the removals: those are the bulk
+gives the structure, the frame machinery through which anything reaches it, what happens when a write
+is refused, the single prohibition it carries, and the commitments on which it fails. It does not rehearse the removals: those are the bulk
 of the long paper, are what establishes how little is required, and are worth reading by anyone who
 doubts a particular one.
 \end{abstract}
@@ -231,6 +231,304 @@ give a graph real and sometimes decisive knowledge of what supplies it, and neve
 question.
 \end{proposition}
 
+\section{When a write is refused}
+An inadmissible write yields no continuation in that frame. What happens after that --- whether
+anything propagates, whether a value is produced instead --- is rule content and not substrate, so the
+exception reading below is an analogy and the systems it names are policies rather than discoveries.
+
+\begin{remark}[Decoherence is one operation; the frames are what differ]\label{rem:decoherence-one}
+Two strings make the structure visible. \emph{$2+2=5$} is a perfectly coherent set of symbols: it
+parses, every token is admissible, the arrangement is grammatical. \emph{Two particles smash into each
+other at $.99c$} is coherent in the same way. Both pass the aperture and fail at the change grammar,
+which is the two-gate structure of Proposition~\ref{prop:two-gates} in its sharpest case --- what is
+admitted as \emph{represented} need not be admissible as a \emph{change}.
+
+What follows is not a partial merge. The collapse realises nothing, and the result is NULL --- which is
+not the same as \emph{absent}: absent is never represented, whereas this is represented, admitted, and
+yields no continuation.
+
+The obvious objection is that $2+2=5$ has a truth value and that value is false. It does not, and the
+notation already says so. \emph{$2+2=5$ is not false; $2+2{=}{=}5$ is false} --- one sign writes and
+the other reads, and computing has kept them apart in its surface syntax for exactly as long as it has
+had both. The comparison is an ordinary in-frame operation returning an ordinary in-frame value. The
+assertion is a write, and in a typed setting it does not evaluate to anything at all: it is refused
+before execution, because nothing admits an assignment to a value. Rejected by the grammar rather than
+run, with no continuation taken from it.
+
+So the NULL belongs to the write, and the familiar falsity belongs to a different operation that is
+spelled differently. That the two are easy to confuse is not a quibble either --- writing the write
+where the read belongs is among the most persistent defect classes there is, guarded against by
+compilers and linters because the cost of the confusion is high. The distinction is load-bearing
+wherever both operations exist, which is the point of Section~(long form) arriving from the
+other direction. And the residual is not a local remainder. Admitting $2+2=5$ into arithmetic
+does not cost a repair somewhere; it costs the grammar's restrictiveness, since a grammar that admits
+a contradiction admits everything and thereby stops restricting anything. So the residual is
+\emph{everything in the superframe}.
+
+The two companion papers instantiate this at their own grains, and the word is used in both. The
+physics companion separates the sense used here from the standard environmental one and states what
+relates them; the companion on mind reads death as this operation with the frame set to a person.
+Neither is required for what follows.
+
+The point is what does \emph{not} vary. Decoherence is one operation. It does not come in kinds and it
+does not come in degrees, and the two cases above fail identically. What differs between them is the
+frame --- arithmetic in one, kinematics in the other --- and \emph{the frames are what make the cases
+different, not the failure}. ``Everything in the superframe'' is a constant expression whose value is
+frame-relative, which is Axiom~(long form) applied to incoherence rather than to observation.
+
+This is worth stating because the obvious gloss is wrong in a specific way. One is tempted to rank
+them --- arithmetic lies deeper than kinematics, so denying it costs more --- and depth is real, but it
+is a fact about a web of commitments and therefore about a frame, never about the decoherence. The
+temptation is to read a magnitude off a difference that belongs elsewhere. That no distinction of
+\emph{kind} survives here between the analytic and the empirical case is Quine's conclusion (long form); the present account reaches it without needing his gradient, since the failure is
+uniform and only the frame is indexed.
+
+The mechanism for that indexing settles what would otherwise look like a family of competing answers,
+and the useful way to see it is by analogy with exceptions --- an analogy, because the substrate fixes
+far less than the analogy suggests. What follows from admissibility alone is only this: an inadmissible
+write yields no continuation \emph{in that frame}. Everything downstream of that --- whether anything
+propagates, whether the container is notified at all, whether a value is produced instead and which
+one --- is rule content, and rules here are contingent throughout. There is no substrate-level default.
+
+Read as the analogy it is: a frame that rejects a write raises, the failure goes one frame up and up
+again until something handles it or nothing does, and unhandled to the top the whole thing stops, which
+is what ``residual of everything in the superframe'' describes. A frame may instead cohere the failure
+to a value --- false, a gap, NaN, null, or a contradiction held without explosion --- and any of these
+is available, as installed machinery someone had to put there. Nothing about the failure selects the
+value; the frame's rules do.
+
+The reason to insist the framing is arbitrary is that computing itself does not agree on it. Exceptions
+propagate by default and are handled on the marked path; return codes, result types and option types
+make the check explicit at every call and propagate nothing on their own; hardware may trap or may set
+a flag and continue. These are not approximations of one true discipline. They are different rule sets
+for the same underlying fact, which is only that something did not work.
+
+Which reorganises the prior art rather than accumulating it. \emph{These systems are handlers.}
+Bochvar's infectious junk value, the neutral free logics' gaps for empty terms, Reichenbach's third
+value for the quantum indeterminate (long form), paraconsistent absorption (long form), relevance logic's refusal of ex falso on grounds of relevance (long form) --- each is a policy for what a frame coheres a failure to, and that they are
+mutually incompatible while each being defensible is evidence they are choices rather than discoveries.
+
+The demonstration is in silicon and is not a metaphor. IEEE~754 gives floating point a \emph{value}
+where integer arithmetic \emph{traps}: $1/0$ is an infinity in one and a fault in the other, $0/0$ is
+NaN, and NaN then propagates through every operation containing it --- weak Kleene, in hardware, by
+deliberate standardisation (long form). One machine, two policies, chosen per type. The failure
+did not choose; the committee did.
+
+The economics is therefore weaker than an earlier version of this remark claimed, and the claim it
+made is a good example of the error it was warning about. It said propagation costs nothing while a
+handler is purchased, so that a total residual is the unmarked case. That holds \emph{under the
+exception convention} and not otherwise: where failure is carried in return values the check is
+explicit and paid at every call, and it is the propagation rather than the handling that costs. Which
+side the cost falls on is the convention's, not the substrate's.
+
+What survives generally is only that a policy of any kind is held structure and is paid for under
+Proposition~\ref{prop:economics}, so a frame that bounds its residuals holds more than one that does
+not, whatever discipline it uses to do it.
+
+The physical case at the largest scale makes the purchase visible, and it is the same shape rather than
+an illustration of it. A heavy nucleus sits near the limit of what holds it together; add a neutron and
+the configuration cannot be held, so it does not continue as that nucleus and the binding energy goes
+to the container. A reactor and a weapon are then the identical failure with the handler installed and
+with it removed --- control rods, moderator and containment are held structure, paid for continuously,
+and the whole of their function is to bound a residual that is otherwise total. What the Manhattan
+Project's design problem amounted to was keeping an unhandled configuration assembled long enough for
+the propagation to finish, which is the cost of \emph{defeating} a handler rather than of installing
+one.
+
+Two things there are worth marking rather than absorbing. The handler is viable only because a small
+fraction of the neutrons are delayed --- well under one per cent --- which supplies a timescale it can
+act within; a frame whose failure propagates faster than its handler can run has, effectively, no
+handler, which is a constraint on the purchase that the logical cases do not exhibit. And criticality
+is the condition where each raise produces more than one further raise, so the residual does not merely
+ascend a frame but multiplies. That is a genuine difference from an exception unwinding a stack, and
+the substrate accommodates it only because residual is per-rule (Proposition~(long form) and the paragraph following it) so one
+failing write may leave several. It should be recorded as a difference and not smoothed into the
+analogy. It is also where this remark meets the Narrativium paper from the other side, since a process
+whose products exceed their cause in number is that paper's spend-and-gain iterated above unit gain ---
+the same ratio, arrived at through failure here and through capacity there.
+
+Almost all of this is prior art, in a literature this account did not come from, and the correspondence
+is close enough to be worth stating precisely. That a string may be syntactically well-formed and yet
+fail is Ryle's category mistake, and he used such failures for the purpose this remark puts them to ---
+delineating the categories, the failure showing where a boundary runs (long form). That the result
+is neither true nor false but a third thing is the truth-valuelessness position. And the propagation
+--- residual of everything in the superframe --- is exactly the long form's three-valued calculus,
+in which a compound takes the junk value if any constituent does, so nonsense is infectious rather than
+local. the long form named the resulting system the logic of nonsense and made it
+\emph{paraconsistent}, which combines in one system what the paragraphs above treated as two frames;
+the separation of a theory being inconsistent from its being trivial is likewise established, and is
+what the economic reading here restates (long form).
+
+One further correspondence is not a debt but evidence for a different claim in this paper. Computing
+reached the same machinery independently and for its own reasons: ill-typed terms are refused before
+execution rather than evaluated to anything (long form), and denotational semantics gives
+divergence a value $\bot$ whose strict functions satisfy $f(\bot)=\bot$, so bottom propagates through
+any compound containing it (long form). That is Bochvar's infectious value, re-derived some three
+decades later, by people solving computation rather than the semantic paradoxes. Two fields under
+different binding constraints arriving at one arrangement is exactly what
+Proposition~\ref{prop:compression-convergence} predicts, and it is offered here as an instance of that
+rather than as support for this remark, which needs none.
+
+What is not taken from that literature is the frame-indexing. The formal systems fix an infectious
+value and derive its behaviour; the claim here is that the same failure yields the appearance of
+falsity in one frame and of nonsense in another, so the taxonomy separating $2+2=5$ from a category
+mistake is itself the frames differing rather than the failures. That is a claim about where the
+distinction lives, not a new logic, and the logics above are the machinery it would be written in.
+
+The second string carries a further lesson and is a better instance than it first appears, because it
+is not in fact false. A closing speed of $1.98c$ is unproblematic, being no object's velocity, and the
+relative velocity is $(0.99+0.99)/(1+0.99^2)\approx0.99995c$, under $c$. The incoherence arises only
+when the sentence is evaluated \emph{in one frame by addition} --- an in-frame operation applied to a
+quantity that lives between frames. It fails as a category error rather than as forbidden physics,
+which is the in-frame/cross-frame discipline of Section~(long form) appearing as a
+coherence verdict.
+\end{remark}
+\begin{remark}[A handler can be abused, and the abuse is invisible from inside]\label{rem:handler-abuse}
+If a handler decides what a frame coheres a failure to, it can be set to cohere it to anything,
+including success. Computing knows this as the swallowed exception --- the catch that discards what it
+caught, the broad handler that reports normal completion --- and it is not a defect in the mechanism
+but the mechanism used against its purpose.
+
+What that does is precise in this account's terms, and it is already costed. Swallowing does not undo
+the inadmissibility: the containing grammar still refused, and the write still did not happen. What is
+removed is the frame's \emph{record} of that, which leaves the frame holding a model of itself in which
+something occurred that did not. That is exactly the fourth cost of Definition~\ref{def:well-formed} ---
+expenditure returning nothing, with the failure silent --- and the swallowing handler is the mechanism
+by which a false self-model is manufactured rather than merely risked.
+
+The stronger form follows from the same premise and is worth stating plainly. \emph{If the handler
+determines the outcome, then causing a failure is a way of choosing the outcome.} One need not make the
+preferred continuation admissible; one can make the alternative fail to cohere and let the policy
+deliver the result. Failure becomes an instrument rather than an accident, and the move is recognisable
+wherever a procedure has a default: the party who prefers where the exception path lands has no reason
+to argue on the merits.
+
+Detection is available but never free, and the exact shape of that is worth stating, because the
+obvious formulation overshoots. It is not that a frame cannot detect a swallow: a frame holding a
+record of the attempt separately from the handler's report can compare the two and find the
+divergence, and well-built systems do exactly that. What is unavailable is detecting it \emph{from the
+handler's own report}, which is self-consistent by construction. So the audit is installed structure,
+paid for like any other, and a frame that has not bought one has no access to the discrepancy. The
+audit is itself a policy, abusable in the same way one level in, so what the purchase buys is
+relocation rather than closure --- the same regress the provenance commitment names, terminating only
+in a containing frame. That is Axiom~(long form) arriving where it is least convenient, since the
+frame with most reason to detect this is the one whose own machinery is doing it. The silence of the
+fourth cost has this structure, and so does the presented-versus-produced divergence the companion
+paper on mind treats at the scale of one frame acting on another.
+\end{remark}
+\begin{remark}[What never cohered is absent; what cohered and stopped leaves a hole]\label{rem:vacated}
+A distinction the preceding material needs and has not drawn. Something that never cohered is simply
+\emph{absent}, and absence is free --- nothing points at it, nothing expected it, and no frame is worse
+off for it. Something that cohered and then stopped is a different object: it leaves \emph{a space
+where something was}, and the difference is that other structure came to depend on it while it held.
+
+The consequences of the second are underdefined, and underdefined in a specific way rather than merely
+unpredictable. What breaks is not the removed structure --- it is gone and has no further behaviour ---
+but every relation elsewhere that resolved through it and now resolves through nothing. Computing has
+the sharp case and calls it exactly that: dereferencing what was freed is undefined behaviour, and its
+mildest form is a wrong answer while its worst is unbounded. A variable that was never assigned and one
+that was assigned and released fail differently, and only the second can corrupt something that was
+correct.
+
+The reason this cannot be surveyed in advance is structural rather than practical. \emph{A thing does
+not carry a record of what depends on it.} The dependencies live in the frames holding the references,
+not in the referent, so from the position of the thing being removed they are not visible at all ---
+Axiom~(long form) again, in its most operational form. Knowing what would break requires the
+containing frames, and asking them is the expense.
+
+Which yields three states rather than two, and the third is the one that costs. Absent: nothing held,
+nothing owed, free. Vacated with the references left standing: a hole, unpaid, with consequences
+determined by whatever the dangling relations do next. And vacated with the absence \emph{represented}
+--- a tombstone, a cascade rule, a retained count of dependents --- which resolves cleanly and is
+installed machinery paid for under Proposition~\ref{prop:economics}, the deletion-side member of the
+handler family of Remark~\ref{rem:handler-abuse}. Reference counting is not a fact about references; it
+is a purchase.
+
+This is also the sharper form of the removal cost argued later for genomes and dead code
+(Remark~(long form)). The reason deletion is expensive is not mainly that the
+excised structure might turn out to do something. It is that the survey licensing the deletion is a
+question about \emph{other} frames, obtainable only from them, and a confident remover is someone who
+has not paid for it. Chesterton's rule about the fence is this stated as advice (long form);
+the ecological version, where removing one species collapses relations that were not obviously routed
+through it, is the same structure with the dependents alive (long form).
+\end{remark}
+\begin{remark}[Termination propagates along supply, not containment]\label{rem:supply-not-containment}
+A consequence of primitives not exposing their provenance (Proposition~\ref{prop:runner-opaque}) that
+the preceding material assumed away. A subgraph's operations need not be supplied by the graph that
+contains it: a primitive may come from arbitrarily far up and be passed through, and nothing in the
+subgraph can tell. So if a graph $G$ sits inside $W$ while running on primitives supplied from beyond
+$W$, then $W$ ceasing does not stop $G$. \emph{There is no reason it cannot continue}, because what ran
+it was never the thing that stopped.
+
+Two relations that ordinary usage runs together are what this separates: being contained by something,
+and being run by it. They usually coincide, which is why the distinction is easy to miss, and the
+coupling result already says they need not (Proposition~(long form)) --- a graph fused to what
+supplies it has no independence, a loosely coupled one has all of it. Survival of a container's
+termination is therefore a question about \emph{coupling} and not about containment, and it is
+arrangeable: a frame that wants to outlive its container can be built so that its supply comes from
+higher up, which is a purchase like any other.
+
+The rule this yields is short. \emph{Termination propagates along the supply relation, not the
+containment relation.} Downward it need not reach at all --- a container may stop while what it held
+runs on. Upward the supplier's stop is total: everything running on primitives from a graph stops when
+that graph does, at whatever containment distance and with no handler available, since the operations a
+handler would run are the ones withdrawn.
+
+And it refines the previous remark rather than sitting beside it, because it splits the dependents into
+three kinds, not two. A dependent that merely \emph{refers} to a vacated structure is left dangling and
+keeps running, wrongly. A dependent \emph{wholly run by} it simply stops. And --- since supply is a set
+rather than an edge, primitives being drawn from wherever they are drawn from --- a dependent may be
+\emph{partly} supplied by what stopped, in which case it keeps running with an incomplete set of
+operations and its behaviour is undefined.
+
+The third is the worst of them and is worth separating out, because it is the silent one. Such a frame
+does not stop and does not visibly break; it runs until it reaches a rule requiring an operation that is
+no longer there, and \emph{it cannot know in advance which rules those are}. There is no dangling edge
+to find, because a withdrawn primitive leaves no structure behind pointing at nothing --- the operation
+is simply absent. And the frame cannot audit for it, since provenance is not exposed
+(Proposition~\ref{prop:runner-opaque}): there is no procedure by which it asks which of its own
+operations came from the thing that stopped. So the loss is discovered only by attempting it, which is
+Remark~\ref{rem:failure-instrument} arriving with nothing to be learned that was worth the price.
+
+That places it in the family this paper keeps returning to. A partially supplied frame holds a model of
+itself in which it can do things it can no longer do, which is the false self-model of the fourth cost
+(Definition~\ref{def:well-formed}) and of the swallowed handler
+(Remark~\ref{rem:handler-abuse}), arrived at a third way. Graceful degradation is the name for buying
+one's way out of this, and it is worth noting that it is a purchase: the \emph{unbought} behaviour of a
+partially supplied frame is not graceful, it is undefined.
+\end{remark}
+\begin{remark}[Forcing a failure is the instrument, and handlers blunt it]\label{rem:failure-instrument}
+Remark~\ref{rem:handler-abuse} treats a caused failure as a way of choosing an outcome. The same act
+has a second use which is not abuse at all, and it is how most of what is known about any grammar was
+found: \emph{a frame that never fails discloses nothing about what it admits}. Admissibility is
+invisible from inside its own range, since everything works; the boundary is legible only where it is
+crossed. So the way to learn a rule is to force the failure and read the residual.
+
+This is not a marginal technique but the standard one across unrelated fields, which is what a
+generative claim should predict. Genetics removes a gene and observes what stops (long form); neuroscience reads function from lesions; machine learning ablates a component
+to price it; software injects faults to check that anything notices (long form). And physics
+builds the largest instrument there is on exactly this principle --- an accelerator spends energy to
+push interactions onto one step, where the frame cannot sequence them and the interaction is decoherent
+in that frame (the physics companion's reading of the high-energy regime). One does not observe the
+grammar; one pays to violate it and observes the remains.
+
+Two consequences follow that are worth having. The first closes a circuit opened twice already in this
+paper. Establishing that structure is inert requires perturbing it, and the perturbation is the removal
+one wanted licensed (Remark~(long form)); the dependents of a thing are held in
+other frames and cannot be surveyed from it (Remark~\ref{rem:vacated}); and now, the rule governing a
+frame is legible only where it is broken. These are one statement in three places:
+\emph{the test and the change are the same operation, so knowledge of a boundary is bought by crossing
+it and there is no cheaper instrument}. Which also prices the instrument, since by the accelerator's
+own economics each further increment of boundary costs more than the last.
+
+The second is a cost of handlers that is easy to miss because it looks like a benefit. \emph{Every
+handler installed reduces what failure can teach.} A frame that coheres its failures to tidy values
+reports success and discloses nothing, so robustness and legibility are traded against one another
+rather than being two names for quality. That the same system is customarily made loud in development
+and quiet in production is this trade made deliberately --- two frames wanting opposite policies over
+identical structure, for the reason given here rather than by convention.
+\end{remark}
+
 \section{Time}
 Time is not a substrate dimension. It is inferred by a frame from its own closure cycles, which is
 why a frame that runs no rules has none.
@@ -347,6 +645,12 @@ build so the omission stays visible rather than becoming a claim.
 \item \textsc{[shape]}~\textbf{Convergence is not enforced.} Fails if convergence between independently developed classifications of one domain extends to the cases where the classifications' purposes differ, which is what a privileged boundary would produce and cost-shaped convergence would not (Proposition~\ref{prop:convergence-observed}). Marked \textsc{[shape]} on reconsideration: a privileged boundary is not a mechanism this account could replace, since the contingency of the rules that draw a boundary is what Section~(long form) rests on and what Axiom~(long form) asserts one level up. Exhibiting one refutes rather than revises.
 \item \textsc{[shape]}~\textbf{Provenance is never closed by inference.} Marked \textsc{[shape]} on reconsideration: this is the single prohibition of Section~(long form) in one of its operational forms, so a frame that closed the question would have got outside itself, which the account forbids rather than merely models. Not that primitives fail to leak --- they do leak, and Proposition~\ref{prop:leak} says so. This fails if a frame can \emph{settle} the provenance of its own operator set from inside: if some in-frame procedure establishes, rather than merely evidences, whether its operators are self-supplied, how many distinct structures supply them, or whether a serial hidden supply underlies an apparently asynchronous frame The escape is not that further primitives were used, which is unavoidable, but that their provenance is open in the same way, so no procedure closes the question rather than relocating it.
 \item \textsc{[detail]}~\textbf{Solutions are nearly unique under a binding constraint.} The posit under Propositions~\ref{prop:convergence-observed} and~\ref{prop:compression-convergence}. Fails if structures optimising hard against the same binding constraint, over the same region, are exhibited arriving at arrangements that do not resemble each other --- in which case constraint narrows the space without selecting within it, and both propositions weaken to that.
+\item \textsc{[shape]}~\textbf{Decoherence is one operation.} Fails if the manner in which an inadmissible write fails is a property of what was attempted rather than of the frame's rules --- that is, if one frame under one rule set yields structurally distinct failure modes for two inadmissible writes, with the difference not attributable to that frame's own policy (Remark~\ref{rem:decoherence-one}). Different outcomes across \emph{different} frames do not bear on this; that is what the claim predicts.
+\item \textsc{[detail]}~\textbf{A swallowed failure is relocated, never closed.} Not that a frame cannot detect its own handler discarding a failure --- it can, by holding a record of the attempt independent of the handler's report, and that record is ordinary paid structure. This fails if some in-frame audit \emph{settles} the question rather than moving it: if a frame can establish that no handler of its own has misreported, without that audit being itself a policy subject to the same abuse one level in (Remark~\ref{rem:handler-abuse}).
+\item \textsc{[shape]}~\textbf{Dependents are not held by the referent.} Fails if realised graph dynamics require a structure to carry the set of things depending on it --- back-references primitive rather than installed --- so that the consequences of removing a structure are recoverable from that structure alone, without querying the frames holding the references and without paid machinery (Remark~\ref{rem:vacated}). A substrate in which deletion is always clean falsifies this, and would also remove the distinction between an absence and a vacancy.
+\item \textsc{[shape]}~\textbf{Termination follows supply, not containment.} Fails if containment alone determines it --- if a subgraph must stop when the graph containing it stops, even where its primitives are supplied from beyond that graph (Remark~\ref{rem:supply-not-containment}). The partial case carries its own clause: fails if a frame losing part of its supply must either stop or continue correctly, rather than running with an incomplete operation set and undefined behaviour, or if such a frame can enumerate what it has lost from inside --- which would also falsify the provenance commitment below.
+\item \textsc{[shape]}~\textbf{A boundary is known only by crossing it.} Fails if a frame can \emph{settle} the location of its own admissibility boundary without any write that crosses it. Extrapolation from inside the admissible region evidences a boundary and is not at issue; establishing one would be (Remark~\ref{rem:failure-instrument}). This is the epistemic member of the same family as the provenance commitment below, and fails in the same manner --- by a procedure that closes the question rather than relocating it.
+\item \textsc{[detail]}~\textbf{Robustness trades against legibility.} Fails if a policy can bound a frame's residuals without reducing what its failures disclose about its grammar --- a handler that both absorbs and reports with no loss (Remark~\ref{rem:failure-instrument}). Cheaply testable in software, and marked \textsc{[detail]} because the account survives its loss with the trade weakened to a tendency.
 \end{enumerate}
 
 \end{document}

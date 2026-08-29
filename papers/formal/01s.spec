@@ -23,8 +23,8 @@ paper at build time, so the two cannot drift.}}
 
 \begin{abstract}
 One minimal structure is proposed as underlying phenomena usually studied apart. This short form
-gives the structure, the frame machinery through which anything reaches it, the single prohibition it
-carries, and the commitments on which it fails. It does not rehearse the removals: those are the bulk
+gives the structure, the frame machinery through which anything reaches it, what happens when a write
+is refused, the single prohibition it carries, and the commitments on which it fails. It does not rehearse the removals: those are the bulk
 of the long paper, are what establishes how little is required, and are worth reading by anyone who
 doubts a particular one.
 \end{abstract}
@@ -66,6 +66,17 @@ rules rather than by any universal.
 @pull def:well-formed
 @pull rem:evaluation-writes
 @pull prop:leak
+
+\section{When a write is refused}
+An inadmissible write yields no continuation in that frame. What happens after that --- whether
+anything propagates, whether a value is produced instead --- is rule content and not substrate, so the
+exception reading below is an analogy and the systems it names are policies rather than discoveries.
+
+@pull rem:decoherence-one
+@pull rem:handler-abuse
+@pull rem:vacated
+@pull rem:supply-not-containment
+@pull rem:failure-instrument
 
 \section{Time}
 Time is not a substrate dimension. It is inferred by a frame from its own closure cycles, which is
@@ -115,6 +126,12 @@ build so the omission stays visible rather than becoming a claim.
 @falsifier Convergence is not enforced
 @falsifier Provenance is never closed by inference
 @falsifier Solutions are nearly unique under a binding constraint
+@falsifier Decoherence is one operation
+@falsifier A swallowed failure is relocated, never closed
+@falsifier Dependents are not held by the referent
+@falsifier Termination follows supply, not containment
+@falsifier A boundary is known only by crossing it
+@falsifier Robustness trades against legibility
 \end{enumerate}
 
 \end{document}
