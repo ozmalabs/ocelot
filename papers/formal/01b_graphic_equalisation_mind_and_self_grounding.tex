@@ -11,20 +11,20 @@
 \theoremstyle{remark}\newtheorem{remark}[definition]{Remark}
 \title{The Law of Graphic Equalisation --- Mind and Self Grounding\\\large Frames, the Run and the Record, Free Will, Self-Models, Personal Identity, and Death}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-29.4}\\[2pt]29 August 2026 \textbullet\ document revision 14}
+\date{\textbf{Draft \textemdash\ draft-2026-08-29.4}\\[2pt]29 August 2026 \textbullet\ document revision 15}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.4\,r14}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.4\,r15}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.4\,r14}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.4\,r15}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-29.4 r14} (29 August 2026).
+\textbf{DRAFT --- draft-2026-08-29.4 r15} (29 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. It is a companion to \emph{The Law of Graphic Equalisation ---
 Theory} (referred to below as Graphic Equalisation) and to its physics companion
@@ -937,23 +937,37 @@ further behaviour to be worse off in.
 \end{remark}
 
 \begin{remark}[The computing grounding, which was built without any of this in view]\label{rem:death-computing}
-Everything the preceding two remarks assert has an implemented form, arrived at by people solving
-process management rather than personal identity. That is worth setting out, both because it makes the
-claims concrete and because independent arrival is the kind of support this programme says it wants.
+Everything the preceding two remarks asserts has an implemented form, arrived at by people solving
+process management rather than personal identity. What that is worth needs stating before the
+correspondences are, because the obvious reading of it is wrong in a way this account has to keep
+correcting: \emph{an implementation is free to add rules to suit}, so nothing an operating system does
+can establish that something is structurally required. It chose its rules. Where the correspondences
+carry weight is as convergence --- people building such a system repeatedly find they need these
+distinctions --- which is the same standing this programme gives any independent arrival, and no more.
 
-The handler claim is not merely illustrated but \emph{standardised}. A process may catch a request to
-terminate and run whatever it likes in response, which is the negotiated stop; it may not catch the
-signal that ends it, which by specification can be neither caught, blocked nor ignored
-\citep{posix2017}. The distinction this section draws between a stop the frame can cohere to something
-and one it cannot is thus already two different signals with different catchability, and for the reason
-given here: running the handler is exactly what has stopped.
+The termination signals are the case where that matters most, because they also turn out to bear on a
+different claim than the one they appear to. A process may catch a request to terminate and run
+whatever it likes in response, and may not catch the signal that ends it, which can be neither caught,
+blocked nor ignored \citep{posix2017}. That is not the frame being structurally unable to handle its
+own stop. It is the \emph{container refusing to let it}, enforced from outside and chosen deliberately,
+because a container whose processes could decline to die would not be a container. So the right mapping
+is to Graphic Equalisation's commitment that admissibility is not armour: what a frame admits does not
+constrain what contains it. Two signals with different catchability is that distinction built on
+purpose.
+
+The structural claim of the previous remark stands on its own argument rather than on this one. A
+handler runs in the frame; if the frame has stopped there is nothing to run it. That holds whatever an
+implementation chooses, and the implementation is evidence that the distinction is useful, not that it
+is forced.
 
 The disposal claims follow the same way. A terminated process whose parent has not yet collected its
 status is retained as an entry with no behaviour --- the tombstone of the theory paper's account,
 absence represented so that a reference resolves cleanly, paid for with a slot, and leaking if nobody
 collects it. Children of a dead process are reassigned to the root process, which is the container
 assuming dependents the stopped frame can no longer hold. Neither is a metaphor for what this section
-says; they are that, running.
+says; they are that, running --- and both are chosen policies rather than necessities, which is
+consistent rather than awkward, since the theory paper already prices a tombstone as installed
+machinery someone paid for.
 
 Two further correspondences, one of which is exact and one of which is not.
 Proposition~\ref{prop:identity}'s fission is \texttt{fork}: one internal state, two nodes, diverging
