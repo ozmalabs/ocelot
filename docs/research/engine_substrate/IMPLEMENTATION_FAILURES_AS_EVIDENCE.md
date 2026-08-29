@@ -24,19 +24,49 @@ So each forced structure admits a three-way test, and all three outcomes are inf
 | **(i) already in the account** | the account covered ground it was not built to cover |
 | **(ii) added because of this** | honest growth, with a recorded external cause rather than an aesthetic one |
 | **(iii) still not in the account** | a live gap, and the most useful entry a document like this can hold |
+| **(iv) already in use, unstated** | the structure was operating before the theory named it; building forced it into explicit form |
 
 Outcome (ii) is not a weakness. A framework that never grew under construction would be either
 complete or untested, and the second is far likelier.
+
+**Outcome (iv) is the one worth separating, and it is easy to mistake for (ii).** There is a
+difference between *inventing* structure because a build demands it and *externalising* structure one
+was already using without having written it down. The first could be an artefact of the build — a
+scaffolding requirement mistaken for a feature. The second cannot be, because the structure has a
+prior existence the build did not create; what the build supplied was the obligation to state it in a
+form something else could execute.
+
+That is this account's own claim about self-models, arriving as method rather than as doctrine: a
+frame cannot be transparent to itself at the level it is running at, so it externalises in order to
+inspect. **Building is a prosthetic aperture onto one's own operation** — and per
+Remark~`rem:failure-instrument`, the reason it works is that an implementation that does not run tells
+you where the tacit account was incomplete, which introspection alone will not.
+
+The epistemic limit is sharp and stated here rather than left implicit: *"I was already using this"* is
+a first-person report and is not independently checkable. It cannot carry the weight a pre-registered
+prediction carries. What it changes is not the strength of the evidence but its **kind** — the build
+transcribed rather than generated. And it is checkable in principle, though not here: structure in use
+before it was stated should leave traces in decisions and writing that predate the formalism.
 
 ---
 
 ## 2. The catalogue of forcings
 
-### F1. Seldon manifolds — forced by deciding across timescales *(outcome ii)*
+### F1. Seldon manifolds — forced into the open, not into existence *(outcome iv)*
 
 **The whole of paper 02 exists because a decision had to be made on different timescales, which
-required machinery to project the future.** Nothing in the substrate demanded it; paper 02 says so in
-its own scope section — *"Graphic Equalisation requires only admissible continuation and deterministic
+required machinery to project the future — and that machinery was already in use, mentally, before it
+was ever built.** What implementation forced was not its invention but its *externalisation*: an
+executable form has to be complete in a way a tacit one never has to be, so building it is what
+required every field, bound and edge case to be named.
+
+That distinction decides what the case is worth. Had the manifold been invented to make a build work,
+it would be suspect as scaffolding. Having been in use beforehand, it is structure with a prior
+existence that the build only transcribed — which is why it belongs in outcome (iv) and not (ii), and
+why it is the corpus's clearest instance of implementation acting as an aperture onto the author's own
+operation rather than as a source of new content.
+
+Nothing in the substrate demanded it; paper 02 says so in its own scope section — *"Graphic Equalisation requires only admissible continuation and deterministic
 collapse. It does not require a graph or containing frame to represent unrealised futures as an
 object."* Optional to the substrate, **compulsory to the task.**
 
@@ -46,10 +76,12 @@ of it was deduced from `(g, r, Γ)`. It was what remained after asking how a thi
 consequences arriving later.
 
 **Gap, recorded here because it is real:** *paper 02 nowhere states this origin.* It presents the
-machinery as additional structure a frame may instantiate, which is true and is not the reason it was
-built. A reader cannot currently tell that the paper's content was forced rather than elected, which
-discards the evidential value of the forcing entirely. This is the single most valuable fix this
-document identifies.
+machinery as additional structure a frame may instantiate — true, and not the reason it was built. A
+reader cannot currently tell that the content was in use before it was formalised, which discards the
+evidential value entirely and also mis-states what kind of thing the paper is. **If the machinery was
+operating before it was written, then 02 describes something that runs rather than proposing a
+design** — which is a claim about its subject matter, and is where 02a's measured plural horizons
+already point. This is the single most valuable fix this document identifies.
 
 ### F2. Frame ≡ dimension — the implementation had already answered *(outcome i, running backwards)*
 
@@ -146,6 +178,8 @@ from and broken by**, which most frameworks cannot demonstrate. It does not show
 ## 5. Next
 
 1. **State F1's origin in paper 02.** The forcing is the evidence and the paper currently discards it.
-2. **Establish direction for F6** from git history rather than recollection.
+2. **Establish direction for F6** from git history rather than recollection — and test F1's outcome
+   (iv) claim the same way, by looking for the manifold's structure in decisions and notes predating
+   the formalism. That is the only route from a first-person report to something checkable.
 3. **Write one prereg that asks whether an outcome would contradict the account**, so §3's empty class
    can be populated or its emptiness can start meaning something.
