@@ -16,20 +16,20 @@
 \newcommand{\Hist}{\mathcal{H}}
 \title{The Law of Graphic Equalisation --- Theory\\\large Minimal Recursive Dynamics, Collapse, Frame-Relative Identity, and Residual}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-29.4}\\[2pt]29 August 2026 \textbullet\ document revision 85}
+\date{\textbf{Draft \textemdash\ draft-2026-08-29.4}\\[2pt]29 August 2026 \textbullet\ document revision 86}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.4\,r85}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.4\,r86}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.4\,r85}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.4\,r86}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-29.4 r85} (29 August 2026).
+\textbf{DRAFT --- draft-2026-08-29.4 r86} (29 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -855,11 +855,27 @@ that graph does, at whatever containment distance and with no handler available,
 handler would run are the ones withdrawn.
 
 And it refines the previous remark rather than sitting beside it, because it splits the dependents into
-two kinds. A dependent that merely \emph{refers} to a vacated structure is left dangling and keeps
-running, wrongly. A dependent that was \emph{run by} it simply stops. The two failures need different
-handling and are commonly conflated, and a frame that survives its container's death in the first sense
-may still be badly damaged in it --- continuing to run, with every reference it held into that container
-now resolving through nothing.
+three kinds, not two. A dependent that merely \emph{refers} to a vacated structure is left dangling and
+keeps running, wrongly. A dependent \emph{wholly run by} it simply stops. And --- since supply is a set
+rather than an edge, primitives being drawn from wherever they are drawn from --- a dependent may be
+\emph{partly} supplied by what stopped, in which case it keeps running with an incomplete set of
+operations and its behaviour is undefined.
+
+The third is the worst of them and is worth separating out, because it is the silent one. Such a frame
+does not stop and does not visibly break; it runs until it reaches a rule requiring an operation that is
+no longer there, and \emph{it cannot know in advance which rules those are}. There is no dangling edge
+to find, because a withdrawn primitive leaves no structure behind pointing at nothing --- the operation
+is simply absent. And the frame cannot audit for it, since provenance is not exposed
+(Proposition~\ref{prop:runner-opaque}): there is no procedure by which it asks which of its own
+operations came from the thing that stopped. So the loss is discovered only by attempting it, which is
+Remark~\ref{rem:failure-instrument} arriving with nothing to be learned that was worth the price.
+
+That places it in the family this paper keeps returning to. A partially supplied frame holds a model of
+itself in which it can do things it can no longer do, which is the false self-model of the fourth cost
+(Definition~\ref{def:well-formed}) and of the swallowed handler
+(Remark~\ref{rem:handler-abuse}), arrived at a third way. Graceful degradation is the name for buying
+one's way out of this, and it is worth noting that it is a purchase: the \emph{unbought} behaviour of a
+partially supplied frame is not graceful, it is undefined.
 \end{remark}
 
 \begin{remark}[Forcing a failure is the instrument, and handlers blunt it]\label{rem:failure-instrument}
@@ -1852,6 +1868,7 @@ Each commitment below is marked \textsc{[shape]} or \textsc{[detail]}. A \textsc
 \item \textsc{[shape]}~\textbf{Dependents are not held by the referent.} Fails if realised graph dynamics require a structure to carry the set of things depending on it --- back-references primitive rather than installed --- so that the consequences of removing a structure are recoverable from that structure alone, without querying the frames holding the references and without paid machinery (Remark~\ref{rem:vacated}). A substrate in which deletion is always clean falsifies this, and would also remove the distinction between an absence and a vacancy.
 \item \textsc{[shape]}~\textbf{A boundary is known only by crossing it.} Fails if a frame can \emph{settle} the location of its own admissibility boundary without any write that crosses it. Extrapolation from inside the admissible region evidences a boundary and is not at issue; establishing one would be (Remark~\ref{rem:failure-instrument}). This is the epistemic member of the same family as the provenance commitment below, and fails in the same manner --- by a procedure that closes the question rather than relocating it.
 \item \textsc{[detail]}~\textbf{Robustness trades against legibility.} Fails if a policy can bound a frame's residuals without reducing what its failures disclose about its grammar --- a handler that both absorbs and reports with no loss (Remark~\ref{rem:failure-instrument}). Cheaply testable in software, and marked \textsc{[detail]} because the account survives its loss with the trade weakened to a tendency.
+\item \textsc{[shape]}~\textbf{Termination follows supply, not containment.} Fails if containment alone determines it --- if a subgraph must stop when the graph containing it stops, even where its primitives are supplied from beyond that graph (Remark~\ref{rem:supply-not-containment}). The partial case carries its own clause: fails if a frame losing part of its supply must either stop or continue correctly, rather than running with an incomplete operation set and undefined behaviour, or if such a frame can enumerate what it has lost from inside --- which would also falsify the provenance commitment below.
 \item \textsc{[shape]}~\textbf{Provenance is never closed by inference.} Marked \textsc{[shape]} on reconsideration: this is the single prohibition of Section~\ref{sec:prohibition} in one of its operational forms, so a frame that closed the question would have got outside itself, which the account forbids rather than merely models. Not that primitives fail to leak --- they do leak, and Proposition~\ref{prop:leak} says so. This fails if a frame can \emph{settle} the provenance of its own operator set from inside: if some in-frame procedure establishes, rather than merely evidences, whether its operators are self-supplied, how many distinct structures supply them, or whether a serial hidden supply underlies an apparently asynchronous frame The escape is not that further primitives were used, which is unavoidable, but that their provenance is open in the same way, so no procedure closes the question rather than relocating it.
 \end{enumerate}
 
