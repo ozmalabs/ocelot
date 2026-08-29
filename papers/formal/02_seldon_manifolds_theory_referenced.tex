@@ -25,21 +25,21 @@
 
 \title{Seldon Manifolds --- Theory\\\large The Geometry of Reachable Futures}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-30.1}\\[2pt]30 August 2026 \textbullet\ document revision 9}
+\date{\textbf{Draft \textemdash\ draft-2026-08-30.1}\\[2pt]30 August 2026 \textbullet\ document revision 10}
 
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.1\,r9}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.1\,r10}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.1\,r9}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.1\,r10}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-30.1 r9} (30 August 2026).
+\textbf{DRAFT --- draft-2026-08-30.1 r10} (30 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -55,6 +55,33 @@ The construction is deterministic at substrate level. A Seldon manifold is not a
 
 The manifold need not be smooth or continuous; ``manifold'' denotes structured reachable geometry. Its dimensions are instantiated only where represented, its values are discrete at operative resolution, and its quantisation may change dynamically. Two distinctions are developed at length: what such a projection is a projection \emph{over} --- the \emph{undetermined}, which collapse has yet to fix, as against the \emph{undisclosed}, which is realised but not held by this frame --- and \emph{causal depth}, the additional determining structure supplied by containing frames rather than by earlier times. Goals, where represented, define acceptable subsets; Muchness measures retained distinguishable future possibility; irreversibility removes reachable distinctions; and control deforms the reachable geometry. No primitive is added to graphhood.
 \end{abstract}
+
+\begin{remark}[The object is described, not proposed --- and millions read one daily]\label{rem:already-in-use}
+Before the construction, a statement about what kind of paper this is, because the abstract's phrasing
+invites the wrong reading. \emph{A Seldon manifold is a description of something that exists, and an
+implementable one.} It is not machinery proposed for a frame to adopt, and that the sections below
+build it up from the substrate should not be mistaken for a claim that it was invented there.
+
+The simple case is read by millions of people every day. A hurricane forecast cone is a time-indexed
+set of reachable continuations, drawn in one frame, widening with lead time because information about
+later slices is worse; the National Hurricane Center's version is sized so that the storm's centre has
+historically fallen inside it about two thirds of the time. Nobody using it reads a trajectory off it.
+They ask whether a position stays inside the envelope over the horizon they care about, which is
+exactly the question the rest of this paper formalises. A route planner's arrival estimate is the same
+object with the cost field foregrounded --- reachable arrivals under a cost re-projected as the present
+moves --- and a weather forecast, a budget projection and a calendar are readings of one.
+
+That the cone is routinely misread as the \emph{extent of the storm} rather than as the envelope of its
+\emph{centre} is not an aside. It is a frame confusion of the kind this paper treats: one quantity's
+manifold read as another's, with the error invisible from inside the reading.
+
+Two consequences for how this paper should be taken. The contribution is not the manifold, and claiming
+it would be false --- the object is ubiquitous and every case above predates this account. What is
+contributed is that they are \emph{one} object: the same structure with its fields named rather than
+left implicit, indexed to the frame holding it rather than treated as a view of the future, and
+specified closely enough to be built. And a paper describing something that exists is answerable to how
+that thing behaves, which is a harder standard than proposing machinery and a better one.
+\end{remark}
 
 \section{Scope and relationship to prior work}\label{sec:scope}
 

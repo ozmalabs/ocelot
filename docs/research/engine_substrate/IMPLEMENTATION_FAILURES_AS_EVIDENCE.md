@@ -75,7 +75,17 @@ reachable-future object, its cost and capacity and deformability fields, the hor
 of it was deduced from `(g, r, Γ)`. It was what remained after asking how a thing decides now against
 consequences arriving later.
 
-**Gap, recorded here because it is real:** *paper 02 nowhere states this origin.* It presents the
+**Stronger than (iv) alone, and it makes the case checkable after all.** A Seldon manifold is not
+only structure that was in use before it was written — it is **a description of something that exists,
+and millions read one every day**. A hurricane forecast cone is a time-indexed set of reachable
+continuations widening with lead time, and nobody reads a trajectory off it; they ask whether a
+position stays inside the envelope over a horizon. A route planner's arrival estimate is the same
+object with the cost field foregrounded. That removes the first-person limit noted above: the claim is
+no longer *"I was using this"* but *"here is the thing, in public, used at scale, unnamed."* The
+contribution is correspondingly small and should be stated that way — not the manifold, which is
+ubiquitous, but that these are **one** object with its fields named, frame-indexed, and buildable.
+
+**Gap, now fixed:** *paper 02 nowhere stated this origin.* It presents the
 machinery as additional structure a frame may instantiate — true, and not the reason it was built. A
 reader cannot currently tell that the content was in use before it was formalised, which discards the
 evidential value entirely and also mis-states what kind of thing the paper is. **If the machinery was
@@ -177,7 +187,8 @@ from and broken by**, which most frameworks cannot demonstrate. It does not show
 
 ## 5. Next
 
-1. **State F1's origin in paper 02.** The forcing is the evidence and the paper currently discards it.
+1. ~~State F1's origin in paper 02.~~ **Done** — `rem:already-in-use`, which states that the object is
+   described rather than proposed and names the everyday case.
 2. **Establish direction for F6** from git history rather than recollection — and test F1's outcome
    (iv) claim the same way, by looking for the manifold's structure in decisions and notes predating
    the formalism. That is the only route from a first-person report to something checkable.
