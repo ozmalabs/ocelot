@@ -16,20 +16,20 @@
 \newcommand{\Hist}{\mathcal{H}}
 \title{The Law of Graphic Equalisation --- Theory\\\large Minimal Recursive Dynamics, Collapse, Frame-Relative Identity, and Residual}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-29.2}\\[2pt]29 August 2026 \textbullet\ document revision 75}
+\date{\textbf{Draft \textemdash\ draft-2026-08-29.2}\\[2pt]29 August 2026 \textbullet\ document revision 76}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.2\,r75}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.2\,r76}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.2\,r75}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.2\,r76}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-29.2 r75} (29 August 2026).
+\textbf{DRAFT --- draft-2026-08-29.2 r76} (29 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -789,6 +789,35 @@ when the sentence is evaluated \emph{in one frame by addition} --- an in-frame o
 quantity that lives between frames. It fails as a category error rather than as forbidden physics,
 which is the in-frame/cross-frame discipline of Section~\ref{sec:time-not-primitive} appearing as a
 coherence verdict.
+\end{remark}
+
+\begin{remark}[A handler can be abused, and the abuse is invisible from inside]\label{rem:handler-abuse}
+If a handler decides what a frame coheres a failure to, it can be set to cohere it to anything,
+including success. Computing knows this as the swallowed exception --- the catch that discards what it
+caught, the broad handler that reports normal completion --- and it is not a defect in the mechanism
+but the mechanism used against its purpose.
+
+What that does is precise in this account's terms, and it is already costed. Swallowing does not undo
+the inadmissibility: the containing grammar still refused, and the write still did not happen. What is
+removed is the frame's \emph{record} of that, which leaves the frame holding a model of itself in which
+something occurred that did not. That is exactly the fourth cost of Definition~\ref{def:well-formed} ---
+expenditure returning nothing, with the failure silent --- and the swallowing handler is the mechanism
+by which a false self-model is manufactured rather than merely risked.
+
+The stronger form follows from the same premise and is worth stating plainly. \emph{If the handler
+determines the outcome, then causing a failure is a way of choosing the outcome.} One need not make the
+preferred continuation admissible; one can make the alternative fail to cohere and let the policy
+deliver the result. Failure becomes an instrument rather than an accident, and the move is recognisable
+wherever a procedure has a default: the party who prefers where the exception path lands has no reason
+to argue on the merits.
+
+And it is not detectable from within. A frame's handler is part of its own rules, so the frame reports
+what it was built to report and its report is consistent with itself; the divergence exists only
+between what the frame says happened and what the container admitted. Locating it therefore requires
+the containing frame, which is Axiom~\ref{ax:no-view} arriving where it is least convenient --- the
+frame that most needs to detect this is the one structurally unable to. This is the same shape as the
+silence of the fourth cost, and the same shape as the presented-versus-produced divergence the
+companion paper on mind treats at the scale of one frame acting on another.
 \end{remark}
 
 \begin{corollary}[Growth is grammar extension]\label{cor:mint-is-grammar}
