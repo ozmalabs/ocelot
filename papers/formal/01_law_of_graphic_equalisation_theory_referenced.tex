@@ -16,20 +16,20 @@
 \newcommand{\Hist}{\mathcal{H}}
 \title{The Law of Graphic Equalisation --- Theory\\\large Minimal Recursive Dynamics, Collapse, Frame-Relative Identity, and Residual}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-29.4}\\[2pt]29 August 2026 \textbullet\ document revision 84}
+\date{\textbf{Draft \textemdash\ draft-2026-08-29.4}\\[2pt]29 August 2026 \textbullet\ document revision 85}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.4\,r84}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.4\,r85}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.4\,r84}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.4\,r85}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-29.4 r84} (29 August 2026).
+\textbf{DRAFT --- draft-2026-08-29.4 r85} (29 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -830,6 +830,36 @@ in a containing frame. That is Axiom~\ref{ax:no-view} arriving where it is least
 frame with most reason to detect this is the one whose own machinery is doing it. The silence of the
 fourth cost has this structure, and so does the presented-versus-produced divergence the companion
 paper on mind treats at the scale of one frame acting on another.
+\end{remark}
+
+\begin{remark}[Termination propagates along supply, not containment]\label{rem:supply-not-containment}
+A consequence of primitives not exposing their provenance (Proposition~\ref{prop:runner-opaque}) that
+the preceding material assumed away. A subgraph's operations need not be supplied by the graph that
+contains it: a primitive may come from arbitrarily far up and be passed through, and nothing in the
+subgraph can tell. So if a graph $G$ sits inside $W$ while running on primitives supplied from beyond
+$W$, then $W$ ceasing does not stop $G$. \emph{There is no reason it cannot continue}, because what ran
+it was never the thing that stopped.
+
+Two relations that ordinary usage runs together are what this separates: being contained by something,
+and being run by it. They usually coincide, which is why the distinction is easy to miss, and the
+coupling result already says they need not (Proposition~\ref{prop:coupling}) --- a graph fused to what
+supplies it has no independence, a loosely coupled one has all of it. Survival of a container's
+termination is therefore a question about \emph{coupling} and not about containment, and it is
+arrangeable: a frame that wants to outlive its container can be built so that its supply comes from
+higher up, which is a purchase like any other.
+
+The rule this yields is short. \emph{Termination propagates along the supply relation, not the
+containment relation.} Downward it need not reach at all --- a container may stop while what it held
+runs on. Upward the supplier's stop is total: everything running on primitives from a graph stops when
+that graph does, at whatever containment distance and with no handler available, since the operations a
+handler would run are the ones withdrawn.
+
+And it refines the previous remark rather than sitting beside it, because it splits the dependents into
+two kinds. A dependent that merely \emph{refers} to a vacated structure is left dangling and keeps
+running, wrongly. A dependent that was \emph{run by} it simply stops. The two failures need different
+handling and are commonly conflated, and a frame that survives its container's death in the first sense
+may still be badly damaged in it --- continuing to run, with every reference it held into that container
+now resolving through nothing.
 \end{remark}
 
 \begin{remark}[Forcing a failure is the instrument, and handlers blunt it]\label{rem:failure-instrument}
