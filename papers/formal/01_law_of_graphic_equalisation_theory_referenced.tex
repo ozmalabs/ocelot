@@ -16,20 +16,20 @@
 \newcommand{\Hist}{\mathcal{H}}
 \title{The Law of Graphic Equalisation --- Theory\\\large Minimal Recursive Dynamics, Collapse, Frame-Relative Identity, and Residual}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-29.2}\\[2pt]29 August 2026 \textbullet\ document revision 78}
+\date{\textbf{Draft \textemdash\ draft-2026-08-29.2}\\[2pt]29 August 2026 \textbullet\ document revision 79}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.2\,r78}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.2\,r79}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.2\,r78}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.2\,r79}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-29.2 r78} (29 August 2026).
+\textbf{DRAFT --- draft-2026-08-29.2 r79} (29 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -820,6 +820,43 @@ the containing frame, which is Axiom~\ref{ax:no-view} arriving where it is least
 frame that most needs to detect this is the one structurally unable to. This is the same shape as the
 silence of the fourth cost, and the same shape as the presented-versus-produced divergence the
 companion paper on mind treats at the scale of one frame acting on another.
+\end{remark}
+
+\begin{remark}[What never cohered is absent; what cohered and stopped leaves a hole]\label{rem:vacated}
+A distinction the preceding material needs and has not drawn. Something that never cohered is simply
+\emph{absent}, and absence is free --- nothing points at it, nothing expected it, and no frame is worse
+off for it. Something that cohered and then stopped is a different object: it leaves \emph{a space
+where something was}, and the difference is that other structure came to depend on it while it held.
+
+The consequences of the second are underdefined, and underdefined in a specific way rather than merely
+unpredictable. What breaks is not the removed structure --- it is gone and has no further behaviour ---
+but every relation elsewhere that resolved through it and now resolves through nothing. Computing has
+the sharp case and calls it exactly that: dereferencing what was freed is undefined behaviour, and its
+mildest form is a wrong answer while its worst is unbounded. A variable that was never assigned and one
+that was assigned and released fail differently, and only the second can corrupt something that was
+correct.
+
+The reason this cannot be surveyed in advance is structural rather than practical. \emph{A thing does
+not carry a record of what depends on it.} The dependencies live in the frames holding the references,
+not in the referent, so from the position of the thing being removed they are not visible at all ---
+Axiom~\ref{ax:no-view} again, in its most operational form. Knowing what would break requires the
+containing frames, and asking them is the expense.
+
+Which yields three states rather than two, and the third is the one that costs. Absent: nothing held,
+nothing owed, free. Vacated with the references left standing: a hole, unpaid, with consequences
+determined by whatever the dangling relations do next. And vacated with the absence \emph{represented}
+--- a tombstone, a cascade rule, a retained count of dependents --- which resolves cleanly and is
+installed machinery paid for under Proposition~\ref{prop:economics}, the deletion-side member of the
+handler family of Remark~\ref{rem:handler-abuse}. Reference counting is not a fact about references; it
+is a purchase.
+
+This is also the sharper form of the removal cost argued later for genomes and dead code
+(Remark~\ref{rem:evolution-compression}). The reason deletion is expensive is not mainly that the
+excised structure might turn out to do something. It is that the survey licensing the deletion is a
+question about \emph{other} frames, obtainable only from them, and a confident remover is someone who
+has not paid for it. Chesterton's rule about the fence is this stated as advice \citep{chesterton1929};
+the ecological version, where removing one species collapses relations that were not obviously routed
+through it, is the same structure with the dependents alive \citep{paine1969}.
 \end{remark}
 
 \begin{corollary}[Growth is grammar extension]\label{cor:mint-is-grammar}
@@ -2116,6 +2153,16 @@ Robin Milner.
 Dana Scott and Christopher Strachey.
 \newblock Toward a mathematical semantics for computer languages.
 \newblock Technical Monograph PRG-6, Oxford University Computing Laboratory, 1971.
+
+\bibitem[Chesterton(1929)]{chesterton1929}
+G.~K. Chesterton.
+\newblock \emph{The Thing}.
+\newblock Sheed and Ward, London, 1929.
+
+\bibitem[Paine(1969)]{paine1969}
+Robert T. Paine.
+\newblock A note on trophic complexity and community stability.
+\newblock \emph{The American Naturalist}, 103(929):91--93, 1969.
 
 \bibitem[Rovelli(1996)]{rovelli1996}
 Carlo Rovelli.
