@@ -97,6 +97,7 @@ be running cheaper cuts, and the cuts that look like joints are the cheap ones r
 ones.
 
 @pull prop:convergence-observed
+@pull prop:compression-convergence
 @pull hyp:located-degradation
 
 \section{Falsifiability}
@@ -111,7 +112,7 @@ which the substrate itself fails.
 @falsifier Located degradation
 @falsifier Convergence is not enforced
 @falsifier Provenance is never closed by inference
-@falsifier Cheap solutions are nearly unique under a binding constraint
+@falsifier Solutions are nearly unique under a binding constraint
 \end{enumerate}
 
 \end{document}

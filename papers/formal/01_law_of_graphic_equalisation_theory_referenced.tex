@@ -16,20 +16,20 @@
 \newcommand{\Hist}{\mathcal{H}}
 \title{The Law of Graphic Equalisation --- Theory\\\large Minimal Recursive Dynamics, Collapse, Frame-Relative Identity, and Residual}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-29.1}\\[2pt]29 August 2026 \textbullet\ document revision 66}
+\date{\textbf{Draft \textemdash\ draft-2026-08-29.1}\\[2pt]29 August 2026 \textbullet\ document revision 68}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.1\,r66}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.1\,r68}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.1\,r66}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.1\,r68}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-29.1 r66} (29 August 2026).
+\textbf{DRAFT --- draft-2026-08-29.1 r68} (29 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -1063,12 +1063,22 @@ And the rate is set by how binding the pressure is. A domain with slack to spend
 converges slowly or not at all; one optimising hard against cost per unit of function converges fast.
 Computing is the second kind, which is why it is the worked instance and why decades sufficed.
 
-\begin{remark}[Evolution under the same treatment, and a better instance than computing]\label{rem:evolution-compression}
+\begin{remark}[Evolution under the same treatment: independent where computing is not, and weaker where computing is strong]\label{rem:evolution-compression}
 Descent with modification is compressed in the required sense --- energy, time and reproduction are
-all scarce, and the pressure falls on what is \emph{spent} rather than on what is carried --- and its constraints are nameable in the way the discipline demands, which makes it a
-cleaner instance than the computing case. Where computing shares this account's vocabulary and is
-therefore disqualified as independent evidence, biology shares neither vocabulary nor personnel, and
-its convergences were catalogued long before anything here was written.
+all scarce, and the pressure falls on what is \emph{spent} rather than on what is carried.
+
+Whether that makes it a better instance than computing depends on which axis is asked, and an earlier
+version of this remark asserted superiority on both, which is not available. On \emph{independence} it
+is decisively better and this is the axis the argument needs: computing shares this account's
+vocabulary and is disqualified for it, whereas biology shares neither vocabulary nor personnel, and
+its convergences were catalogued long before anything here was written. On the \emph{antecedent} the
+ranking reverses. The rate law above sets convergence by how binding the pressure is, and computing
+was named the hard-optimising kind for a reason; biology is the slack kind, since selection is
+efficacious only where its coefficient exceeds the reciprocal of effective population size, so
+structure whose cost falls below that line is invisible to it and persists \citep{ohta1973}. Biology
+is therefore a \emph{sufficient} instance on the antecedent rather than a superior one, and the
+paragraph that follows is the work of establishing that sufficiency rather than a defence of a
+stronger claim.
 
 An objection is worth meeting here rather than leaving to a reader, because it looks decisive and is
 not. Genomes conspicuously carry structure that does no work --- pseudogenes, transposon debris,
@@ -1080,6 +1090,15 @@ those is small and continuous, while removing it is a single write that risks ex
 turns out to matter. So it persists wherever the accumulated search cost has not yet overtaken the
 cost of the write, which is most of the time. Constructive neutral evolution is that observation made precisely rather than a
 counterexample to it \citep{stoltzfus1999,lukes2011}.
+
+The concession also earns something, because the weakness just admitted makes a quantitative
+prediction the account would otherwise not get. If inert sequence persists exactly where its cost sits
+below what selection can resolve, then how much of it a lineage carries should track that threshold
+--- less in large populations where selection is efficacious, more in small ones where it is not. That
+inverse relation between genome bloat and effective population size is observed, and has been argued
+to be the explanation of genome size itself \citep{lynch2003}. The reading is contested and the
+correlation admits other accounts \citep{whitney2010}, so it is offered as a consistency the economics
+predicts rather than as a result relied on.
 
 The same shape appears wherever the same economics does, which is the point rather than an aside.
 Dead code survives in working systems for the identical reason, and shows the later costs plainly
@@ -1842,6 +1861,21 @@ Don N. Page and William K. Wootters.
 Jorma Rissanen.
 \newblock Modeling by shortest data description.
 \newblock \emph{Automatica}, 14:465--471, 1978.
+
+\bibitem[Ohta(1973)]{ohta1973}
+Tomoko Ohta.
+\newblock Slightly deleterious mutant substitutions in evolution.
+\newblock \emph{Nature}, 246(5428):96--98, 1973.
+
+\bibitem[Lynch and Conery(2003)]{lynch2003}
+Michael Lynch and John S. Conery.
+\newblock The origins of genome complexity.
+\newblock \emph{Science}, 302(5649):1401--1404, 2003.
+
+\bibitem[Whitney and Garland(2010)]{whitney2010}
+Kenneth D. Whitney and Theodore Garland~Jr.
+\newblock Did genetic drift drive increases in genome complexity?
+\newblock \emph{PLoS Genetics}, 6(8):e1001080, 2010.
 
 \bibitem[Rovelli(1996)]{rovelli1996}
 Carlo Rovelli.

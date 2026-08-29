@@ -24,10 +24,10 @@
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.1 / short form / from long r59}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.1 / short form / from long r68}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.1 / short form / from long r59}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.1 / short form / from long r68}}\renewcommand{\headrulewidth}{0pt}}
 
 \title{The Law of Graphic Equalisation\\\large Short Form}
 \author{Matthew Parslow\\Independent Researcher}
@@ -163,7 +163,17 @@ In the substrate as characterised here, the boundary relation itself is free; th
 This is a characterisation of the substrate as specified, not a necessity of graphhood, and the writeability status it describes is not required to be uniform (Remark~(long form)).
 \end{proposition}
 \begin{definition}[Well-formedness]\label{def:well-formed}
-A graph is \emph{well-formed} to the degree that it holds no structure doing no work for it: each retained distinction earns the cost of its retention, and each rule that runs is one whose running is used. Well-formedness is graded rather than binary; it is relative to \emph{what work} the graph is doing, so a graph well-formed for one purpose is not thereby well-formed for another; and it is not enforced by the substrate. An ill-formed graph runs. It pays more to.
+A graph is \emph{well-formed} to the degree that it pays for nothing that does no work for it. Three costs bear on that and they behave differently, so the notion is graded along each rather than binary.
+
+\emph{Writes} are paid when made (Proposition~\ref{prop:economics}), which prices doing. \emph{Retention} is nearly free per unit, which is why an unused distinction is not immediately pruned. \emph{Search} is paid on every operation over what is held and scales with how much is held, so inert structure is cheap to keep and expensive to keep in quantity.
+
+The fourth is the worst and is not a variant of the third. A write may land on structure that cannot affect anything --- a modification to a branch nothing reaches. It is paid in full: decided, made, checked, risked. It returns nothing. And unlike a search, which is expensive and then yields, this failure is \emph{silent}: the graph has spent, has no effect to show for it, and no signal that the effect is missing. What it acquires instead is a false model of itself, in which something was changed that was not --- residual it cannot see, produced by its own inert contents, and the share of writes exposed to it grows with how much is held.
+
+So a graph does not become ill-formed by carrying something useless. It becomes ill-formed by carrying enough that finding the useful parts costs, and enough that its changes start landing where nothing happens.
+
+The third cost is where aperture enters, and it is why the same contents are well-formed for one graph and not another. What search costs depends on how finely the graph can discriminate within what it holds: with structure that separates the relevant from the rest, the cost grows slowly with size; without it, every operation is over everything. That discriminating structure is itself held and itself earns its keep, so a well-formed graph is one whose aperture over its own contents keeps pace with their growth.
+
+Removal is therefore not free either, being a write. Pruning happens when accumulated cost exceeds the one-off cost of removal, and the fourth cost is what usually triggers it: search cost is diffuse and tolerated for a long time, while a change that demonstrably did nothing is a discrete and memorable event. Systems clean up after being burned rather than after slowly noticing. Well-formedness is graded rather than binary; it is relative to \emph{what work} the graph is doing, so a graph well-formed for one purpose is not thereby well-formed for another; and it is not enforced by the substrate. An ill-formed graph runs. It pays more to.
 \end{definition}
 \begin{remark}[Evaluation is a write, and that is why it is free]\label{rem:evaluation-writes}
 The economics above can be stated in a way that does not survive contact with the machinery, and the
@@ -304,9 +314,16 @@ cheap cut for a given task is nearly unique. This is a tendency of cost and not 
 privileged boundary, and the two are distinguishable in principle: a privileged boundary would
 \emph{enforce} convergence, and enforcement would extend to the hard cases; cost-shaped cuts converge
 where the work is shared and come apart where it is not. The step from shared work to similar cuts
-assumes the cheap cut for a task is strongly non-unique, which is an empirical posit and not a result
+assumes the cheap cut for a task is nearly unique, which is an empirical posit and not a result
 of this account; it is labelled again where it is used
-(Proposition~(long form)).
+(Proposition~\ref{prop:compression-convergence}).
+\end{proposition}
+\begin{proposition}[Convergence under compression]\label{prop:compression-convergence}
+A structure operating under a constraint, and under pressure to spend nothing on what does no work,
+approaches the arrangements that constraint forces --- asymptotically, and only over the region the
+constraint touches. Two such structures therefore come to resemble each other without either having
+access to the other, because both are downstream of the same forcing rather than converging on a
+target.
 \end{proposition}
 \begin{hypothesis}[Located degradation]\label{hyp:located-degradation}
 Where a classification's purpose can be specified independently and in advance of inspecting its
@@ -327,7 +344,7 @@ which the substrate itself fails.
 \item \textsc{[detail]}~\textbf{Located degradation.} Fails if, for classifications whose purpose is specifiable in advance of inspecting their failures, failure cases are distributed no differently near the purpose boundary than across the rest of the domain (Hypothesis~\ref{hyp:located-degradation}).
 \item \textsc{[detail]}~\textbf{Convergence is not enforced.} Fails if convergence between independently developed classifications of one domain extends to the cases where the classifications' purposes differ, which is what a privileged boundary would produce and cost-shaped convergence would not (Proposition~\ref{prop:convergence-observed}).
 \item \textsc{[detail]}~\textbf{Provenance is never closed by inference.} Not that primitives fail to leak --- they do leak, and Proposition~\ref{prop:leak} says so. This fails if a frame can \emph{settle} the provenance of its own operator set from inside: if some in-frame procedure establishes, rather than merely evidences, whether its operators are self-supplied, how many distinct structures supply them, or whether a serial hidden supply underlies an apparently asynchronous frame The escape is not that further primitives were used, which is unavoidable, but that their provenance is open in the same way, so no procedure closes the question rather than relocating it.
-\item \textsc{[detail]}~\textbf{Solutions are strongly non-unique under a binding constraint.} The posit under Propositions~\ref{prop:convergence-observed} and~(long form). Fails if structures optimising hard against the same binding constraint, over the same region, are exhibited arriving at arrangements that do not resemble each other --- in which case constraint narrows the space without selecting within it, and both propositions weaken to that.
+\item \textsc{[detail]}~\textbf{Solutions are nearly unique under a binding constraint.} The posit under Propositions~\ref{prop:convergence-observed} and~\ref{prop:compression-convergence}. Fails if structures optimising hard against the same binding constraint, over the same region, are exhibited arriving at arrangements that do not resemble each other --- in which case constraint narrows the space without selecting within it, and both propositions weaken to that.
 \end{enumerate}
 
 \end{document}
