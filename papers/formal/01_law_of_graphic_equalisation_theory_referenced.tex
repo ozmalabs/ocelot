@@ -16,20 +16,20 @@
 \newcommand{\Hist}{\mathcal{H}}
 \title{The Law of Graphic Equalisation --- Theory\\\large Minimal Recursive Dynamics, Collapse, Frame-Relative Identity, and Residual}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-30.1}\\[2pt]30 August 2026 \textbullet\ document revision 97}
+\date{\textbf{Draft \textemdash\ draft-2026-08-30.1}\\[2pt]30 August 2026 \textbullet\ document revision 98}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.1\,r97}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.1\,r98}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.1\,r97}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.1\,r98}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-30.1 r97} (30 August 2026).
+\textbf{DRAFT --- draft-2026-08-30.1 r98} (30 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -550,6 +550,39 @@ which direction they gate, not what kind of thing they are.
 \end{definition}
 
 This distinguishes two ways a candidate is excluded, with opposite consequences. What falls below the aperture grammar $\Gamma_a$ never enters and is therefore \emph{absent} --- it is simply absent to the frame --- there is nothing there for it to hold or to be disturbed by --- rather than residual. What $\Gamma_c$ does not admit has entered, been operated on, and cannot cohere; it is residual, and it persists in place, re-encountered on each merge (Corollary~\ref{cor:mint-is-grammar}). The first is a limit of perception, the second a limit of expression, and phenomena of the ``stuck, repeating'' kind belong exclusively to the second.
+
+\begin{proposition}[Costs are paid; where and how is not fixed by the substrate]\label{prop:no-free-lunch}
+The substrate's economic commitment is narrow and should be stated before the specific one that
+follows, because the specific one is often mistaken for it. \emph{A change is paid for.} Which frame
+pays, in what currency, at what point, and under what discipline is \emph{not} fixed here --- it is
+rule content, and implementations differ over it freely. What the substrate forbids is a change that is
+paid for nowhere.
+\end{proposition}
+
+Two things follow that this paper has repeatedly had to correct in itself, and the correction is always
+the same shape: an assignment of the cost was mistaken for the invariant. Whether an inadmissible write
+propagates or coheres to a value, whether a failure is caught or unwound, whether the check is explicit
+at every call or deferred to a marked path --- each is a convention, each puts the cost somewhere
+different, and none is the substrate speaking. The invariant is only that the cost is somewhere.
+
+And the floor is not a claim about magnitude. You may pay \emph{less} for the same result --- that is
+compression, and Proposition~\ref{prop:compression-convergence} is about structures pushed toward it.
+You may pay and thereby be able to do \emph{more} --- that is spend-and-gain, and it is why expenditure
+is not loss. What is excluded is neither of these but the third thing: getting the result without
+anyone having paid.
+
+The everyday form makes the mechanism visible and is worth stating, because apparent freeness is
+common and always has the same structure. \emph{An all-you-can-eat buffet is free at the point of
+consumption and is nonetheless paid.} The cost was moved --- to a different transaction, borne by
+another party, amortised across many, settled earlier in time --- and the moving is itself structure
+that somebody holds and maintains. Every case of something appearing free resolves this way on
+inspection, and the appearance is not an illusion in the frame that has it: at the table the next plate
+genuinely costs nothing, which is Axiom~\ref{ax:no-view} showing up in an ordinary place. What is
+unavailable is the view in which nobody paid.
+
+That is a real commitment rather than a definitional one, and its falsifier is stated with the others:
+exhibit a realised change whose cost is absent at every frame, rather than relocated to one that was
+not being looked at.
 
 \begin{proposition}[Cost characteristically reduces to the write]\label{prop:economics}
 In the substrate as characterised here, the boundary relation itself is free; the standing structure persisting is free; the operation that costs is a delta that writes over that structure, and $r$ is what writes. Free here means information-preserving rather than absent --- evaluating a rule is itself a write, and is unpaid because it destroys nothing (Remark~\ref{rem:evaluation-writes}). To that extent
@@ -1734,6 +1767,7 @@ Each commitment below is marked \textsc{[shape]} or \textsc{[detail]}. A \textsc
 \item \textsc{[shape]}~\textbf{Dependents are not held by the referent.} Fails if realised graph dynamics require a structure to carry the set of things depending on it --- back-references primitive rather than installed --- so that the consequences of removing a structure are recoverable from that structure alone, without querying the frames holding the references and without paid machinery (Remark~\ref{rem:vacated}). A substrate in which deletion is always clean falsifies this, and would also remove the distinction between an absence and a vacancy.
 \item \textsc{[shape]}~\textbf{A boundary is known only by crossing it.} Fails if a frame can \emph{settle} the location of its own admissibility boundary without any write that crosses it. Extrapolation from inside the admissible region evidences a boundary and is not at issue; establishing one would be (Remark~\ref{rem:failure-instrument}). This is the epistemic member of the same family as the provenance commitment below, and fails in the same manner --- by a procedure that closes the question rather than relocating it.
 \item \textsc{[detail]}~\textbf{Robustness trades against legibility.} Fails if a policy can bound a frame's residuals without reducing what its failures disclose about its grammar --- a handler that both absorbs and reports with no loss (Remark~\ref{rem:failure-instrument}). Cheaply testable in software, and marked \textsc{[detail]} because the account survives its loss with the trade weakened to a tendency.
+\item \textsc{[shape]}~\textbf{No free lunch.} Fails if a realised change can be exhibited whose cost is absent at \emph{every} frame rather than relocated to one that was not being inspected (Proposition~\ref{prop:no-free-lunch}). Cheaper is not a counterexample and neither is spend-and-gain; what would falsify it is free, and the burden is on exhibiting the frame where the payment fails to appear.
 \item \textsc{[shape]}~\textbf{Termination follows supply, not containment.} Fails if containment alone determines it --- if a subgraph must stop when the graph containing it stops, even where its primitives are supplied from beyond that graph (Remark~\ref{rem:supply-not-containment}). The partial case carries its own clause: fails if a frame losing part of its supply must either stop or continue correctly, rather than running with an incomplete operation set and undefined behaviour, or if such a frame can enumerate what it has lost from inside --- which would also falsify the provenance commitment below.
 \item \textsc{[shape]}~\textbf{Provenance is never closed by inference.} Marked \textsc{[shape]} on reconsideration: this is the single prohibition of Section~\ref{sec:prohibition} in one of its operational forms, so a frame that closed the question would have got outside itself, which the account forbids rather than merely models. Not that primitives fail to leak --- they do leak, and Proposition~\ref{prop:leak} says so. This fails if a frame can \emph{settle} the provenance of its own operator set from inside: if some in-frame procedure establishes, rather than merely evidences, whether its operators are self-supplied, how many distinct structures supply them, or whether a serial hidden supply underlies an apparently asynchronous frame The escape is not that further primitives were used, which is unavoidable, but that their provenance is open in the same way, so no procedure closes the question rather than relocating it.
 \end{enumerate}
