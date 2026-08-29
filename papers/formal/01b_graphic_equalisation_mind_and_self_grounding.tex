@@ -11,20 +11,20 @@
 \theoremstyle{remark}\newtheorem{remark}[definition]{Remark}
 \title{The Law of Graphic Equalisation --- Mind and Self Grounding\\\large Frames, the Run and the Record, Free Will, Self-Models, Personal Identity, and Death}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-29.4}\\[2pt]29 August 2026 \textbullet\ document revision 13}
+\date{\textbf{Draft \textemdash\ draft-2026-08-29.4}\\[2pt]29 August 2026 \textbullet\ document revision 14}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.4\,r13}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.4\,r14}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.4\,r13}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.4\,r14}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-29.4 r13} (29 August 2026).
+\textbf{DRAFT --- draft-2026-08-29.4 r14} (29 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. It is a companion to \emph{The Law of Graphic Equalisation ---
 Theory} (referred to below as Graphic Equalisation) and to its physics companion
@@ -936,6 +936,39 @@ costs is borne by the frames holding those relations rather than by the one that
 further behaviour to be worse off in.
 \end{remark}
 
+\begin{remark}[The computing grounding, which was built without any of this in view]\label{rem:death-computing}
+Everything the preceding two remarks assert has an implemented form, arrived at by people solving
+process management rather than personal identity. That is worth setting out, both because it makes the
+claims concrete and because independent arrival is the kind of support this programme says it wants.
+
+The handler claim is not merely illustrated but \emph{standardised}. A process may catch a request to
+terminate and run whatever it likes in response, which is the negotiated stop; it may not catch the
+signal that ends it, which by specification can be neither caught, blocked nor ignored
+\citep{posix2017}. The distinction this section draws between a stop the frame can cohere to something
+and one it cannot is thus already two different signals with different catchability, and for the reason
+given here: running the handler is exactly what has stopped.
+
+The disposal claims follow the same way. A terminated process whose parent has not yet collected its
+status is retained as an entry with no behaviour --- the tombstone of the theory paper's account,
+absence represented so that a reference resolves cleanly, paid for with a slot, and leaking if nobody
+collects it. Children of a dead process are reassigned to the root process, which is the container
+assuming dependents the stopped frame can no longer hold. Neither is a metaphor for what this section
+says; they are that, running.
+
+Two further correspondences, one of which is exact and one of which is not.
+Proposition~\ref{prop:identity}'s fission is \texttt{fork}: one internal state, two nodes, diverging
+from the branch point, neither uniquely the original after it. And a checkpoint that restores into the
+same running state is the coherence-snapshot, which is not a thought experiment in this domain but
+ordinary infrastructure.
+
+The one that is not a match should be marked, since the vocabulary invites it. Automatic memory
+management declares a thing dead when nothing refers to it, whereas this section declares a thing dead
+when its rules cannot re-run as the same coherent entity. \emph{Reachability and re-runnability are
+different criteria and come apart in both directions} --- an unreachable process may still be running,
+and a referenced one may have stopped. The resemblance is in the word only, and the two should not be
+run together.
+\end{remark}
+
 \begin{remark}[Death is relative to the coherency of the self]\label{rem:death-relative}
 It follows that death is relative to the coherency of the self. The criterion applies
 within a coherent self, but which coherence counts as ``the same self'' is a
@@ -1119,6 +1152,11 @@ the same self, or a theory of consciousness or qualia --- none is offered.
 \end{itemize}
 
 \begin{thebibliography}{99}
+\bibitem[IEEE(2017)]{posix2017}
+IEEE and The Open Group.
+\newblock \emph{Standard for Information Technology --- Portable Operating System Interface (POSIX)}.
+\newblock IEEE Std 1003.1-2017, 2017.
+
 \bibitem[Adler(1997)]{adler1997}
 Jonathan E. Adler.
 \newblock Lying, deceiving, or falsely implicating.
