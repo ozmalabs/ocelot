@@ -16,20 +16,20 @@
 \newcommand{\Hist}{\mathcal{H}}
 \title{The Law of Graphic Equalisation --- Theory\\\large Minimal Recursive Dynamics, Collapse, Frame-Relative Identity, and Residual}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-29.2}\\[2pt]29 August 2026 \textbullet\ document revision 72}
+\date{\textbf{Draft \textemdash\ draft-2026-08-29.2}\\[2pt]29 August 2026 \textbullet\ document revision 73}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.2\,r72}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.2\,r73}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.2\,r72}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.2\,r73}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-29.2 r72} (29 August 2026).
+\textbf{DRAFT --- draft-2026-08-29.2 r73} (29 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -690,10 +690,34 @@ temptation is to read a magnitude off a difference that belongs elsewhere. That 
 \citep{quine1951}; the present account reaches it without needing his gradient, since the failure is
 uniform and only the frame is indexed.
 
-The container-relativity is exhibited rather than assumed by the case that resists this. A
-paraconsistent container does not explode, and absorbs a contradiction locally with a bounded residual
-\citep{priest1979}. That is not a counterexample: it is a different frame, giving a different value of
-the same constant expression, which is the claim.
+The mechanism for that indexing is worth naming, because it is ordinary and it settles what would
+otherwise look like a family of competing answers. \emph{The default is not a value; it is
+propagation.} A frame that rejects a write does not thereby produce anything --- it raises, and the
+failure goes one frame up, and up again, until something handles it or nothing does. Unhandled to the
+top, the whole thing stops, which is what ``residual of everything in the superframe'' describes.
+
+A frame \emph{may} instead cohere the failure to a value --- false, a gap, NaN, null, or a
+contradiction held without explosion. Any of these is available. But it is installed machinery: a
+handler is structure the frame must carry, and someone had to put it there. Nothing about the failure
+selects the value; the frame's own rules do.
+
+Which reorganises the prior art rather than accumulating it. \emph{These systems are handlers.}
+Bochvar's infectious junk value, the neutral free logics' gaps for empty terms, Reichenbach's third
+value for the quantum indeterminate \citep{reichenbach1944}, paraconsistent absorption
+\citep{priest1979}, relevance logic's refusal of ex falso on grounds of relevance
+\citep{anderson1975} --- each is a policy for what a frame coheres a failure to, and that they are
+mutually incompatible while each being defensible is evidence they are choices rather than discoveries.
+
+The demonstration is in silicon and is not a metaphor. IEEE~754 gives floating point a \emph{value}
+where integer arithmetic \emph{traps}: $1/0$ is an infinity in one and a fault in the other, $0/0$ is
+NaN, and NaN then propagates through every operation containing it --- weak Kleene, in hardware, by
+deliberate standardisation \citep{ieee754}. One machine, two policies, chosen per type. The failure
+did not choose; the committee did.
+
+And the economics follows without further assumption. Propagation costs nothing, since nothing is
+installed; a handler is held structure and is paid for under Proposition~\ref{prop:economics}. So the
+\emph{unmarked} case is total residual and a bounded one is purchased --- which is why the constant
+expression above reads as extreme when it is merely what happens when nobody has bought anything else.
 
 Almost all of this is prior art, in a literature this account did not come from, and the correspondence
 is close enough to be worth stating precisely. That a string may be syntactically well-formed and yet
@@ -706,6 +730,16 @@ local. \citet{hallden1949} named the resulting system the logic of nonsense and 
 \emph{paraconsistent}, which combines in one system what the paragraphs above treated as two frames;
 the separation of a theory being inconsistent from its being trivial is likewise established, and is
 what the economic reading here restates \citep{dacosta1974}.
+
+One further correspondence is not a debt but evidence for a different claim in this paper. Computing
+reached the same machinery independently and for its own reasons: ill-typed terms are refused before
+execution rather than evaluated to anything \citep{milner1978}, and denotational semantics gives
+divergence a value $\bot$ whose strict functions satisfy $f(\bot)=\bot$, so bottom propagates through
+any compound containing it \citep{scott1971}. That is Bochvar's infectious value, re-derived some three
+decades later, by people solving computation rather than the semantic paradoxes. Two fields under
+different binding constraints arriving at one arrangement is exactly what
+Proposition~\ref{prop:compression-convergence} predicts, and it is offered here as an instance of that
+rather than as support for this remark, which needs none.
 
 What is not taken from that literature is the frame-indexing. The formal systems fix an infectious
 value and derive its behaviour; the claim here is that the same failure yields the appearance of
@@ -1991,6 +2025,31 @@ Newton C.~A. da Costa.
 Gilbert Ryle.
 \newblock \emph{The Concept of Mind}.
 \newblock Hutchinson, London, 1949.
+
+\bibitem[Reichenbach(1944)]{reichenbach1944}
+Hans Reichenbach.
+\newblock \emph{Philosophic Foundations of Quantum Mechanics}.
+\newblock University of California Press, Berkeley, 1944.
+
+\bibitem[Anderson and Belnap(1975)]{anderson1975}
+Alan Ross Anderson and Nuel D. Belnap.
+\newblock \emph{Entailment: The Logic of Relevance and Necessity}, volume~1.
+\newblock Princeton University Press, Princeton, 1975.
+
+\bibitem[IEEE(2019)]{ieee754}
+IEEE.
+\newblock \emph{IEEE Standard for Floating-Point Arithmetic}.
+\newblock IEEE Std 754-2019, 2019.
+
+\bibitem[Milner(1978)]{milner1978}
+Robin Milner.
+\newblock A theory of type polymorphism in programming.
+\newblock \emph{Journal of Computer and System Sciences}, 17(3):348--375, 1978.
+
+\bibitem[Scott and Strachey(1971)]{scott1971}
+Dana Scott and Christopher Strachey.
+\newblock Toward a mathematical semantics for computer languages.
+\newblock Technical Monograph PRG-6, Oxford University Computing Laboratory, 1971.
 
 \bibitem[Rovelli(1996)]{rovelli1996}
 Carlo Rovelli.
