@@ -16,20 +16,20 @@
 \newcommand{\Hist}{\mathcal{H}}
 \title{The Law of Graphic Equalisation --- Theory\\\large Minimal Recursive Dynamics, Collapse, Frame-Relative Identity, and Residual}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-29.2}\\[2pt]29 August 2026 \textbullet\ document revision 71}
+\date{\textbf{Draft \textemdash\ draft-2026-08-29.2}\\[2pt]29 August 2026 \textbullet\ document revision 72}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.2\,r71}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.2\,r72}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.2\,r71}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.2\,r72}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-29.2 r71} (29 August 2026).
+\textbf{DRAFT --- draft-2026-08-29.2 r72} (29 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -658,12 +658,20 @@ What follows is not a partial merge. The collapse realises nothing, and the resu
 not the same as \emph{absent}: absent is never represented, whereas this is represented, admitted, and
 yields no continuation.
 
-One distinction must be kept or the claim collapses into an obvious error, since $2+2=5$ plainly has a
-truth value and that value is false. \emph{Evaluating} the string is an ordinary in-frame operation
-returning an ordinary in-frame result. What yields nothing is \emph{admitting} it --- installing it as
-something the grammar holds, from which continuations are then taken. Those are different operations
-on the same symbols, and only the second is at issue here. The remark is about writes, not about
-truth-value assignment. And the residual is not a local remainder. Admitting $2+2=5$ into arithmetic
+The obvious objection is that $2+2=5$ has a truth value and that value is false. It does not, and the
+notation already says so. \emph{$2+2=5$ is not false; $2+2{=}{=}5$ is false} --- one sign writes and
+the other reads, and computing has kept them apart in its surface syntax for exactly as long as it has
+had both. The comparison is an ordinary in-frame operation returning an ordinary in-frame value. The
+assertion is a write, and in a typed setting it does not evaluate to anything at all: it is refused
+before execution, because nothing admits an assignment to a value. Rejected by the grammar rather than
+run, with no continuation taken from it.
+
+So the NULL belongs to the write, and the familiar falsity belongs to a different operation that is
+spelled differently. That the two are easy to confuse is not a quibble either --- writing the write
+where the read belongs is among the most persistent defect classes there is, guarded against by
+compilers and linters because the cost of the confusion is high. The distinction is load-bearing
+wherever both operations exist, which is the point of Section~\ref{sec:carvings} arriving from the
+other direction. And the residual is not a local remainder. Admitting $2+2=5$ into arithmetic
 does not cost a repair somewhere; it costs the grammar's restrictiveness, since a grammar that admits
 a contradiction admits everything and thereby stops restricting anything. So the residual is
 \emph{everything in the superframe}.
