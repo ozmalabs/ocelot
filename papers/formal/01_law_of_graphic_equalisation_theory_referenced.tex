@@ -16,20 +16,20 @@
 \newcommand{\Hist}{\mathcal{H}}
 \title{The Law of Graphic Equalisation --- Theory\\\large Minimal Recursive Dynamics, Collapse, Frame-Relative Identity, and Residual}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-29.2}\\[2pt]29 August 2026 \textbullet\ document revision 74}
+\date{\textbf{Draft \textemdash\ draft-2026-08-29.2}\\[2pt]29 August 2026 \textbullet\ document revision 75}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.2\,r74}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.2\,r75}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.2\,r74}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-29.2\,r75}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-29.2 r74} (29 August 2026).
+\textbf{DRAFT --- draft-2026-08-29.2 r75} (29 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -690,16 +690,25 @@ temptation is to read a magnitude off a difference that belongs elsewhere. That 
 \citep{quine1951}; the present account reaches it without needing his gradient, since the failure is
 uniform and only the frame is indexed.
 
-The mechanism for that indexing is worth naming, because it is ordinary and it settles what would
-otherwise look like a family of competing answers. \emph{The default is not a value; it is
-propagation.} A frame that rejects a write does not thereby produce anything --- it raises, and the
-failure goes one frame up, and up again, until something handles it or nothing does. Unhandled to the
-top, the whole thing stops, which is what ``residual of everything in the superframe'' describes.
+The mechanism for that indexing settles what would otherwise look like a family of competing answers,
+and the useful way to see it is by analogy with exceptions --- an analogy, because the substrate fixes
+far less than the analogy suggests. What follows from admissibility alone is only this: an inadmissible
+write yields no continuation \emph{in that frame}. Everything downstream of that --- whether anything
+propagates, whether the container is notified at all, whether a value is produced instead and which
+one --- is rule content, and rules here are contingent throughout. There is no substrate-level default.
 
-A frame \emph{may} instead cohere the failure to a value --- false, a gap, NaN, null, or a
-contradiction held without explosion. Any of these is available. But it is installed machinery: a
-handler is structure the frame must carry, and someone had to put it there. Nothing about the failure
-selects the value; the frame's own rules do.
+Read as the analogy it is: a frame that rejects a write raises, the failure goes one frame up and up
+again until something handles it or nothing does, and unhandled to the top the whole thing stops, which
+is what ``residual of everything in the superframe'' describes. A frame may instead cohere the failure
+to a value --- false, a gap, NaN, null, or a contradiction held without explosion --- and any of these
+is available, as installed machinery someone had to put there. Nothing about the failure selects the
+value; the frame's rules do.
+
+The reason to insist the framing is arbitrary is that computing itself does not agree on it. Exceptions
+propagate by default and are handled on the marked path; return codes, result types and option types
+make the check explicit at every call and propagate nothing on their own; hardware may trap or may set
+a flag and continue. These are not approximations of one true discipline. They are different rule sets
+for the same underlying fact, which is only that something did not work.
 
 Which reorganises the prior art rather than accumulating it. \emph{These systems are handlers.}
 Bochvar's infectious junk value, the neutral free logics' gaps for empty terms, Reichenbach's third
@@ -714,10 +723,16 @@ NaN, and NaN then propagates through every operation containing it --- weak Klee
 deliberate standardisation \citep{ieee754}. One machine, two policies, chosen per type. The failure
 did not choose; the committee did.
 
-And the economics follows without further assumption. Propagation costs nothing, since nothing is
-installed; a handler is held structure and is paid for under Proposition~\ref{prop:economics}. So the
-\emph{unmarked} case is total residual and a bounded one is purchased --- which is why the constant
-expression above reads as extreme when it is merely what happens when nobody has bought anything else.
+The economics is therefore weaker than an earlier version of this remark claimed, and the claim it
+made is a good example of the error it was warning about. It said propagation costs nothing while a
+handler is purchased, so that a total residual is the unmarked case. That holds \emph{under the
+exception convention} and not otherwise: where failure is carried in return values the check is
+explicit and paid at every call, and it is the propagation rather than the handling that costs. Which
+side the cost falls on is the convention's, not the substrate's.
+
+What survives generally is only that a policy of any kind is held structure and is paid for under
+Proposition~\ref{prop:economics}, so a frame that bounds its residuals holds more than one that does
+not, whatever discipline it uses to do it.
 
 The physical case at the largest scale makes the purchase visible, and it is the same shape rather than
 an illustration of it. A heavy nucleus sits near the limit of what holds it together; add a neutron and
