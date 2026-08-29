@@ -16,20 +16,20 @@
 \newcommand{\Hist}{\mathcal{H}}
 \title{The Law of Graphic Equalisation --- Theory\\\large Minimal Recursive Dynamics, Collapse, Frame-Relative Identity, and Residual}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-30.1}\\[2pt]30 August 2026 \textbullet\ document revision 92}
+\date{\textbf{Draft \textemdash\ draft-2026-08-30.1}\\[2pt]30 August 2026 \textbullet\ document revision 94}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.1\,r92}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.1\,r94}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.1\,r92}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.1\,r94}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-30.1 r92} (30 August 2026).
+\textbf{DRAFT --- draft-2026-08-30.1 r94} (30 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -790,9 +790,10 @@ reached the same machinery independently and for its own reasons: ill-typed term
 execution rather than evaluated to anything \citep{milner1978}, and denotational semantics gives
 divergence a value $\bot$ whose strict functions satisfy $f(\bot)=\bot$, so bottom propagates through
 any compound containing it \citep{scott1971}. That is Bochvar's infectious value, re-derived some three
-decades later, by people solving computation rather than the semantic paradoxes. Two fields under
-different binding constraints arriving at one arrangement is exactly what
-Proposition~\ref{prop:compression-convergence} predicts, and it is offered here as an instance of that
+decades later, by people solving computation rather than the semantic paradoxes. Two fields meeting the same constraint --- propagate a failure
+through every compound containing it, without special-casing the combinations --- and arriving at one
+arrangement from different problems is what Proposition~\ref{prop:compression-convergence} predicts,
+which requires the forcing to be shared and not merely the outcome, and it is offered here as an instance of that
 rather than as support for this remark, which needs none.
 
 What is not taken from that literature is the frame-indexing. The formal systems fix an infectious
@@ -1020,14 +1021,6 @@ Ordinary usage collapses three distinct conditions into the single word \emph{un
 \item \textbf{undetermined} --- \emph{no value exists yet}. Nothing has been realised, so there is nothing to be ignorant of. This is not a deficiency of any frame.
 \item \textbf{indeterministic} --- no structure fixes what the value will be. The present theory denies this (Section~\ref{sec:determinism}); it is listed to be excluded.
 \end{enumerate}
-
-Two of the above are not closeable as written, and saying so is better than listing them as though they were tests --- the standard is the one the composition paragraph sets, that a test whose stopping condition lies with the assessor is not a test. \emph{Admissibility is not armour} and \emph{higher-frame first-class structure} are closer to consequences of the definitions than to empirical risks: given a container that may force arbitrarily, self-admissibility not constraining it follows, and given that a frame's state about another frame is ordinary state, its independence from that other frame's primitives follows. They are retained because they are load-bearing and a reader should see what they commit to, and they are marked here as derivations rather than wagers --- which, per the opening of this section, is their correct standing and not an apology.
-
-A third was listed here in an earlier version and should not have been, because the objection to it mistook the thesis for a loophole. \emph{Minimal graph sufficiency} was said to absorb its own falsifier, on the grounds that any proposed fourth primitive can be redescribed as represented or relational structure. But that redescription is not a rescue --- \emph{it is what the claim says}. The commitment is one of \emph{sufficiency}: not that nothing else exists, but that nothing else is required. A named feature turning out to be graph data confirms it rather than evading it, and the paper's own results are that pattern rather than exceptions to it, since frame, dimension, time and cost each entered as a candidate primitive and left as represented structure.
-
-So the falsifier is closeable and the burden sits on the positive side, where it is constructive: exhibit realised dynamics that \emph{cannot run} on $(g,r,\Gamma)$. Proposing a primitive is not the test and never was. And the place to conduct it is the minimum rather than the maximum --- the rock of Remark~\ref{rem:rock}, where $r$ and $\Gamma$ are absent at the grain of individuation and there is accordingly nothing extra present to smuggle the work into. A sufficiency claim is tested where least is available, not where most is.
-
-Two further notes on the list as a whole. Nothing is claimed to be closeable cheaply --- \emph{discrete sufficiency} requires ruling out every discrete representation including dynamically varying ones, which is hard rather than ill-formed, and the distinction between the two is the point of this paragraph. And the marks themselves are revisable: three entries above were re-marked after the commitments for Section~\ref{sec:residual}'s newer material were written, because setting out a new commitment made the criterion sharper than it had been when the older ones were assigned.
 The distinction is operational rather than terminological. \textbf{Determination is an event, not a fact about a pre-existing value}: ``undisclosed'' presupposes a value already realised and merely unheld, whereas ``undetermined'' asserts that collapse is what produces one. A frame may act to \emph{obtain} an undisclosed value; it can only \emph{await or participate in} the collapse that determines an undetermined one; and a NULL dimension is not something it can look for at all.
 
 This separation is what Proposition~\ref{prop:determinable} states from the other side: a continuation may be determinable and undetermined simultaneously, since the first concerns what fixes it and the second whether it has happened.
@@ -1632,7 +1625,7 @@ This account can say something sharper than either, in its own terms. A falsifia
 no framework-work while costing --- so by Definition~\ref{def:well-formed} a maximally well-formed
 framework has \emph{no} falsifiable content, and has none by paying for nothing idle rather than by
 evading a test. Unfalsifiable-by-construction is therefore not a concession here. It is what
-well-formedness looks like at this level, and it is why the three commitments identified below as
+well-formedness looks like at this level, and it is why the commitments identified below as
 derivations rather than wagers are the framework showing through rather than tests that could not be
 found.
 
@@ -1726,6 +1719,15 @@ Each commitment below is marked \textsc{[shape]} or \textsc{[detail]}. A \textsc
 \item \textsc{[shape]}~\textbf{Termination follows supply, not containment.} Fails if containment alone determines it --- if a subgraph must stop when the graph containing it stops, even where its primitives are supplied from beyond that graph (Remark~\ref{rem:supply-not-containment}). The partial case carries its own clause: fails if a frame losing part of its supply must either stop or continue correctly, rather than running with an incomplete operation set and undefined behaviour, or if such a frame can enumerate what it has lost from inside --- which would also falsify the provenance commitment below.
 \item \textsc{[shape]}~\textbf{Provenance is never closed by inference.} Marked \textsc{[shape]} on reconsideration: this is the single prohibition of Section~\ref{sec:prohibition} in one of its operational forms, so a frame that closed the question would have got outside itself, which the account forbids rather than merely models. Not that primitives fail to leak --- they do leak, and Proposition~\ref{prop:leak} says so. This fails if a frame can \emph{settle} the provenance of its own operator set from inside: if some in-frame procedure establishes, rather than merely evidences, whether its operators are self-supplied, how many distinct structures supply them, or whether a serial hidden supply underlies an apparently asynchronous frame The escape is not that further primitives were used, which is unavoidable, but that their provenance is open in the same way, so no procedure closes the question rather than relocating it.
 \end{enumerate}
+
+Two of the above are not closeable as written, and saying so is better than listing them as though they were tests --- the standard is the one the composition paragraph sets, that a test whose stopping condition lies with the assessor is not a test. \emph{Admissibility is not armour} and \emph{higher-frame first-class structure} are closer to consequences of the definitions than to empirical risks: given a container that may force arbitrarily, self-admissibility not constraining it follows, and given that a frame's state about another frame is ordinary state, its independence from that other frame's primitives follows. They are retained because they are load-bearing and a reader should see what they commit to, and they are marked here as derivations rather than wagers --- which, per the opening of this section, is their correct standing and not an apology.
+
+A third was listed here in an earlier version and should not have been, because the objection to it mistook the thesis for a loophole. \emph{Minimal graph sufficiency} was said to absorb its own falsifier, on the grounds that any proposed fourth primitive can be redescribed as represented or relational structure. But that redescription is not a rescue --- \emph{it is what the claim says}. The commitment is one of \emph{sufficiency}: not that nothing else exists, but that nothing else is required. A named feature turning out to be graph data confirms it rather than evading it, and the paper's own results are that pattern rather than exceptions to it, since frame, dimension, time and cost each entered as a candidate primitive and left as represented structure.
+
+So the falsifier is closeable and the burden sits on the positive side, where it is constructive: exhibit realised dynamics that \emph{cannot run} on $(g,r,\Gamma)$. Proposing a primitive is not the test and never was. And the place to conduct it is the minimum rather than the maximum --- the rock of Remark~\ref{rem:rock}, where $r$ and $\Gamma$ are absent at the grain of individuation and there is accordingly nothing extra present to smuggle the work into. A sufficiency claim is tested where least is available, not where most is.
+
+Two further notes on the list as a whole. Nothing is claimed to be closeable cheaply --- \emph{discrete sufficiency} requires ruling out every discrete representation including dynamically varying ones, which is hard rather than ill-formed, and the distinction between the two is the point of this paragraph. And the marks themselves are revisable: three entries above were re-marked after the commitments for Section~\ref{sec:residual}'s newer material were written, because setting out a new commitment made the criterion sharper than it had been when the older ones were assigned.
+
 
 \section{Conclusion}
 The theory is deliberately small. A graph need not know what it is, where it is, what will happen, or what it wants. Present structure determines admissible continuation; interaction and collapse produce realised history; realised history changes the antecedent from which subsequent possibility is generated.

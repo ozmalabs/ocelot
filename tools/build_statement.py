@@ -128,8 +128,38 @@ def main(spec_path):
     text = re.sub(r'~?\\ref\{([^}]+)\}',
                   lambda m: m.group(0) if m.group(1) in have else '~(long form)',
                   text)
-    text = re.sub(r'\s*\\citep\{[^}]+\}', ' (long form)', text)
-    text = re.sub(r'\\citet\{[^}]+\}', 'the long form', text)
+    # Citations are rendered as plain author-year text taken from the long
+    # paper's own bibitem labels. The previous behaviour rewrote every \citet
+    # to "the long form", which silently ATTRIBUTED cited work to this
+    # programme -- Bochvar's 1938 calculus was printed as "the long form's
+    # three-valued calculus". Erasing a citation is not a neutral abridgement.
+    biblabels = dict(re.findall(r'\\bibitem\[([^\]]*)\]\{([^}]+)\}',
+                                long_tex))
+    biblabels = {k: v for v, k in biblabels.items()}
+
+    def _label(key, textual):
+        lab = biblabels.get(key.strip())
+        if not lab:
+            return None
+        m = re.match(r'^(.*?)\((\d{4}[a-z]?)\)$', lab.strip())
+        if not m:
+            return lab.strip()
+        who, year = m.group(1).strip(), m.group(2)
+        return '%s (%s)' % (who, year) if textual else '%s, %s' % (who, year)
+
+    def _cite(m, textual):
+        keys = [k.strip() for k in m.group(1).split(',')]
+        out = [_label(k, textual) for k in keys]
+        if any(o is None for o in out):
+            return 'the long form' if textual else ' (long form)'
+        joined = '; '.join(out)
+        return joined if textual else ' (%s)' % joined
+
+    text = re.sub(r'\s*\\citep(?:\[[^\]]*\])?\{([^}]+)\}',
+                  lambda m: _cite(m, False), text)
+    text = re.sub(r'\\citet(?:\[[^\]]*\])?\{([^}]+)\}',
+                  lambda m: _cite(m, True), text)
+    text = re.sub(r'\\citealp\{([^}]+)\}', lambda m: _cite(m, False).strip(' ()'), text)
     body = [text]
 
     banner = (

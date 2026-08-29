@@ -24,10 +24,10 @@
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.1 / statement / from long r92}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.1 / statement / from long r94}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.1 / statement / from long r92}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.1 / statement / from long r94}}\renewcommand{\headrulewidth}{0pt}}
 
 \title{The Law of Graphic Equalisation\\\large Statement}
 \author{Matthew Parslow\\Independent Researcher}
@@ -189,8 +189,8 @@ not a read of anything, which is why the free case exists and is exactly the emp
 return is never used has read nothing, and a compiler will delete it. Real machines make the same
 point expensively --- a read leaves traces in caches, predictors and translation state, and those
 traces are measurable, which is why timing attacks recover secrets from a victim whose only secret-dependent operation is a
-read (long form) and why an entire class of speculative attacks was available to designs built on the assumption that rolled-back
-speculation leaves no trace (long form), where the read is the vehicle rather than the premise.
+read (Osvik et al., 2006) and why an entire class of speculative attacks was available to designs built on the assumption that rolled-back
+speculation leaves no trace (Kocher et al., 2019), where the read is the vehicle rather than the premise.
 
 Evaluation is a write in that plain sense: a match outcome, a position in an ordering, and the fact
 of having tried are returned values, and returned values are structure. What does not follow is the
@@ -213,7 +213,7 @@ that cannot see the bill.
 \end{remark}
 \begin{proposition}[Primitives leak, and complete provenance is still unrecoverable]\label{prop:leak}
 Leaking is ordinary rather than exceptional. A primitive's timing discloses the structure beneath it,
-which is why measuring how long a read takes recovers what a cache holds (long form); an arithmetic that overflows at a particular magnitude discloses a word
+which is why measuring how long a read takes recovers what a cache holds (Osvik et al., 2006; Kocher et al., 2019); an arithmetic that overflows at a particular magnitude discloses a word
 size; a rounding discloses a representation; and a performance cliff at a particular size discloses a
 page. Most abstractions leak, and this one is not special.
 
@@ -281,7 +281,7 @@ This is worth stating because the obvious gloss is wrong in a specific way. One 
 them --- arithmetic lies deeper than kinematics, so denying it costs more --- and depth is real, but it
 is a fact about a web of commitments and therefore about a frame, never about the decoherence. The
 temptation is to read a magnitude off a difference that belongs elsewhere. That no distinction of
-\emph{kind} survives here between the analytic and the empirical case is Quine's conclusion (long form); the present account reaches it without needing his gradient, since the failure is
+\emph{kind} survives here between the analytic and the empirical case is Quine's conclusion (Quine, 1951); the present account reaches it without needing his gradient, since the failure is
 uniform and only the frame is indexed.
 
 The mechanism for that indexing settles what would otherwise look like a family of competing answers,
@@ -306,13 +306,13 @@ for the same underlying fact, which is only that something did not work.
 
 Which reorganises the prior art rather than accumulating it. \emph{These systems are handlers.}
 Bochvar's infectious junk value, the neutral free logics' gaps for empty terms, Reichenbach's third
-value for the quantum indeterminate (long form), paraconsistent absorption (long form), relevance logic's refusal of ex falso on grounds of relevance (long form) --- each is a policy for what a frame coheres a failure to, and that they are
+value for the quantum indeterminate (Reichenbach, 1944), paraconsistent absorption (Priest, 1979), relevance logic's refusal of ex falso on grounds of relevance (Anderson and Belnap, 1975) --- each is a policy for what a frame coheres a failure to, and that they are
 mutually incompatible while each being defensible is evidence they are choices rather than discoveries.
 
 The demonstration is in silicon and is not a metaphor. IEEE~754 gives floating point a \emph{value}
 where integer arithmetic \emph{traps}: $1/0$ is an infinity in one and a fault in the other, $0/0$ is
 NaN, and NaN then propagates through every operation containing it --- weak Kleene, in hardware, by
-deliberate standardisation (long form). One machine, two policies, chosen per type. The failure
+deliberate standardisation (IEEE, 2019). One machine, two policies, chosen per type. The failure
 did not choose; the committee did.
 
 The economics is therefore weaker than an earlier version of this remark claimed, and the claim it
@@ -351,23 +351,24 @@ the same ratio, arrived at through failure here and through capacity there.
 Almost all of this is prior art, in a literature this account did not come from, and the correspondence
 is close enough to be worth stating precisely. That a string may be syntactically well-formed and yet
 fail is Ryle's category mistake, and he used such failures for the purpose this remark puts them to ---
-delineating the categories, the failure showing where a boundary runs (long form). That the result
+delineating the categories, the failure showing where a boundary runs (Ryle, 1949). That the result
 is neither true nor false but a third thing is the truth-valuelessness position. And the propagation
---- residual of everything in the superframe --- is exactly the long form's three-valued calculus,
+--- residual of everything in the superframe --- is exactly Bochvar (1938)'s three-valued calculus,
 in which a compound takes the junk value if any constituent does, so nonsense is infectious rather than
-local. the long form named the resulting system the logic of nonsense and made it
+local. Halld\'en (1949) named the resulting system the logic of nonsense and made it
 \emph{paraconsistent}, which combines in one system what the paragraphs above treated as two frames;
 the separation of a theory being inconsistent from its being trivial is likewise established, and is
-what the economic reading here restates (long form).
+what the economic reading here restates (da Costa, 1974).
 
 One further correspondence is not a debt but evidence for a different claim in this paper. Computing
 reached the same machinery independently and for its own reasons: ill-typed terms are refused before
-execution rather than evaluated to anything (long form), and denotational semantics gives
+execution rather than evaluated to anything (Milner, 1978), and denotational semantics gives
 divergence a value $\bot$ whose strict functions satisfy $f(\bot)=\bot$, so bottom propagates through
-any compound containing it (long form). That is Bochvar's infectious value, re-derived some three
-decades later, by people solving computation rather than the semantic paradoxes. Two fields under
-different binding constraints arriving at one arrangement is exactly what
-Proposition~\ref{prop:compression-convergence} predicts, and it is offered here as an instance of that
+any compound containing it (Scott and Strachey, 1971). That is Bochvar's infectious value, re-derived some three
+decades later, by people solving computation rather than the semantic paradoxes. Two fields meeting the same constraint --- propagate a failure
+through every compound containing it, without special-casing the combinations --- and arriving at one
+arrangement from different problems is what Proposition~\ref{prop:compression-convergence} predicts,
+which requires the forcing to be shared and not merely the outcome, and it is offered here as an instance of that
 rather than as support for this remark, which needs none.
 
 What is not taken from that literature is the frame-indexing. The formal systems fix an infectious
@@ -449,9 +450,9 @@ This is also the sharper form of the removal cost argued later for genomes and d
 (Remark~(long form)). The reason deletion is expensive is not mainly that the
 excised structure might turn out to do something. It is that the survey licensing the deletion is a
 question about \emph{other} frames, obtainable only from them, and a confident remover is someone who
-has not paid for it. Chesterton's rule about the fence is this stated as advice (long form);
+has not paid for it. Chesterton's rule about the fence is this stated as advice (Chesterton, 1929);
 the ecological version, where removing one species collapses relations that were not obviously routed
-through it, is the same structure with the dependents alive (long form).
+through it, is the same structure with the dependents alive (Paine, 1969).
 \end{remark}
 \begin{remark}[Termination propagates along supply, not containment]\label{rem:supply-not-containment}
 A consequence of primitives not exposing their provenance (Proposition~\ref{prop:runner-opaque}) that
@@ -506,8 +507,8 @@ invisible from inside its own range, since everything works; the boundary is leg
 crossed. So the way to learn a rule is to force the failure and read the residual.
 
 This is not a marginal technique but the standard one across unrelated fields, which is what a
-generative claim should predict. Genetics removes a gene and observes what stops (long form); neuroscience reads function from lesions; machine learning ablates a component
-to price it; software injects faults to check that anything notices (long form). And physics
+generative claim should predict. Genetics removes a gene and observes what stops (Capecchi, 1989); neuroscience reads function from lesions; machine learning ablates a component
+to price it; software injects faults to check that anything notices (Basiri et al., 2016). And physics
 builds the largest instrument there is on exactly this principle --- an accelerator spends energy to
 push interactions onto one step, where the frame cannot sequence them and the interaction is decoherent
 in that frame (the physics companion's reading of the high-energy regime). One does not observe the
