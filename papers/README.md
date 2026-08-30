@@ -13,12 +13,16 @@ Paper 00 makes a single statement — *to be is to stand in relation* — and ma
 a case for it. The companions add what a world in which things *happen* costs,
 which 00 says is not required for there to be anything.
 
-**That addition is five things, not one, and this section said one until the
+**That addition is four things, not one, and this section said one until the
 first audit.** 01's `rem:inherited` carries the corrected ledger: transformation
-`r`; the admissibility grammar `Γ`; a realisation operator selecting one
-continuation where `Γ` yields a set; a valuation on writes, since `Γ` admits or
-declines and a price is more than a gate; and no-copy, that a change does not
-preserve its predecessor. Plus Axiom −1, close to 00's claim without being
+`r` — rules running, with **admissibility folded in as a specific instance of
+rules** rather than counted separately, since `Γ` names a role `r` plays and the
+dependence of `Poss` on `Γ` is definitional, not ontological; a realisation
+operator selecting one continuation where the rules yield a set; a valuation on
+writes, since admitting or declining is not the same as pricing; and no-copy,
+that a change does not preserve its predecessor. The triple stays as notation —
+it is a useful functional decomposition and the corpus is written in it — but
+the count is what a ledger is. Plus Axiom −1, close to 00's claim without being
 entailed by it. A **third tier** sits between postulate and consequence — four
 hypotheses, including the Law of Graphic Equalisation itself, and the
 near-uniqueness of the cheap cut, which 01 calls an empirical posit and not a
@@ -27,7 +31,8 @@ result. Neither assumed nor derived.
 The economy claim is made so it can be held against the set, and on its first
 audit it failed in the direction that flatters — two postulates claimed, five
 found, each demonstrated by 01 contradicting its own ledger elsewhere in its own
-words. The claim that survives is narrower and still useful: the base is small,
+words — and then four, after a second pass folded `Γ` into `r`. Only one of the
+two movements was in the flattering direction. The claim that survives is narrower and still useful: the base is small,
 the addition is enumerable, and an independent posit the enumeration does not
 carry is a defect in the economy even where the individual claim stands.
 

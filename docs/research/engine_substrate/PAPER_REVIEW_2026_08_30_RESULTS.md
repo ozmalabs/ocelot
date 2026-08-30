@@ -15,7 +15,7 @@ over paper 00 and that everything else is consequence. It invited a reader to
 look for a hidden axiom, on the ground that finding one would be *"a real result
 against the account's economy."*
 
-**The audit found five postulates, not two — and every one is demonstrated by 01
+**The audit found five postulates, not two (later four, §1.1) — and every one is demonstrated by 01
 contradicting the remark in its own words elsewhere in the same file.** That is
 the strongest available form of evidence for this kind of check, because it does
 not depend on the reviewer's reading of any derivation.
@@ -28,10 +28,22 @@ not depend on the reviewer's reading of any derivation.
 | the two gates (not a consequence) | *"optimisations … not constituents of graphhood"*, needing a selection pressure `sec:carvings` **declines to supply** |
 | — plus a missing **third tier** | 4 hypotheses (incl. the Law of Graphic Equalisation, the title claim) + the cheap cut, *"an empirical posit and not a result of this account"* |
 
-One correction ran the **other** way and is recorded: `rem:one-substance` holds
-admissibility is enforced by rules, so `Γ` may be a configuration of `r` rather
-than a separate postulate. **The ledger counts it separately anyway, because the
-economical reading is the one that flatters.**
+One correction ran the **other** way: `rem:one-substance` holds admissibility is
+enforced by rules, so `Γ` is a configuration of `r` rather than a separate
+postulate. It was first recorded and *not* taken — the ledger counted `Γ`
+separately on the grounds that the economical reading is the one that flatters —
+and then taken on the author's decision that **admissibility is a specific
+instance of rules**. The count is four, not five.
+
+Folding it removed an assertion rather than renaming one. `prop:two-gates` had to
+claim the aperture and change grammars are *"two faces of one grammar on one
+boundary edge"* — an identity asserted across a distinction the definitions drew,
+since `Γ` was defined to govern *graph-originated* transformations while `Γ_a`
+gates *inbound* container deformation. If admissibility is just rules, `Γ_a` and
+`Γ_c` are rules with different scopes, which needs no unification claim. **One of
+the two objections to that proposition dissolves; the other — that the paper
+calls both gates optimisations under a budget rather than constituents of
+graphhood — stands.**
 
 Consequences that followed forcibly once the ledger was corrected:
 
