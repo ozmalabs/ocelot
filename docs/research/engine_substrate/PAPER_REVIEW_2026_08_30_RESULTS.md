@@ -329,8 +329,8 @@ follow-on says no ***particular*** algorithm is required and names itself
 ***extensional*** — which keeps the family as an object independent of any
 constructor, the opposite of what was concluded from it.
 
-**Ledger as it now stands: the admission, a valuation, a realisation operator,
-Axiom −1.**
+**Ledger as it stood after the second pass: the admission, a valuation, a
+realisation operator, Axiom −1.** *(Superseded — see §10.)*
 
 ### 8.2 The objection that outranks the count
 
@@ -467,3 +467,46 @@ prohibition acquires a quantifier over everything, which in an account with an
 unbounded frontier and no view from nowhere **nobody can discharge** — so the claim
 gets weaker as it is stated more strongly, and its falsifier goes from a finite
 inspection to an impossible enumeration.
+
+---
+
+## 10. Fourth pass — three folds withdrawn, and the ledger settles
+
+Between the third and fourth passes the ledger was driven to "two premises and a
+discipline" across three turns of dialogue. **The fourth pass found all three of
+those moves unsound.** They are withdrawn; the record of them lives here rather
+than in the paper, which is now a ~900-word ledger instead of a 3,745-word one.
+
+**Realisation does not fold.** *"Nothing selects — what matches writes, two rules
+matching make a bigger change"* contradicts `def:collapse` (typed as a map out of
+`Poss`), `rem:nothing-compulsory` (*"a collapse needs something to select from"*),
+and 01a's measurement account, which needs exactly one continuation realised. The
+fold **trades collapse for union** — a retained-branch treatment with the branches
+glued. It also mis-locates residual, which is defined as a *part* of a realised
+deformation and is per-rule, so it cannot carry a joint incompatibility between two
+individually admissible writes. **The constructive companion is the evidence**: its
+executor refuses that case as an *explicit incompatibility* rather than
+residualising it.
+
+**"Change is the cost of change" does not remove the posits.** It is analytic, and
+its stated falsifier — *exhibit a change costing nothing, which is to exhibit a
+change in which nothing changed* — is a contradiction in terms rather than a test.
+Only the persistence limb falls out, by redefinition. The destroy/preserve
+predicate survives because the account runs **two cost criteria**:
+cost-as-change in the ledger, cost-as-destruction in `prop:economics`, which exempts
+evaluation *because it preserves*. And an information-preserving write is a change
+that destroys nothing — 01a says so of free continuation.
+
+**Axiom −1 as a pure guard does not generalise.** The reclassification asserted
+*"that is not how any part of the corpus uses it"* while touching three of twelve
+papers. Of 63 invocations, **21 need it true of the world**: two falsifiers name it
+as their own exposure, one is falsified by an *object*, one predicts cortical
+integration windows, one counts fermions, one supplies the context-independence
+premise Gleason's theorem needs, and 07's answer to the triviality objection lists
+it among the prohibitions a *world* could violate. The repair is the split the
+corpus already almost states: **guard in 01, commitment in the groundings.**
+
+**The pattern, for a fourth time.** Every one of these was a claim generalised from
+the site where it was made. And the mechanical findings were all the same shape —
+stale sentences left standing in the *same paragraph* as their replacements. The
+record itself was an instance: its "ledger as it now stands" was two revisions old.

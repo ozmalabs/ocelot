@@ -8,110 +8,43 @@ subtraction from them.
 
 ## The shape of the set
 
-**A small base, an enumerated addition, and the rest offered as consequence.**
-Paper 00 makes a single statement — *to be is to stand in relation* — and makes
-a case for it. The companions add what a world in which things *happen* costs,
-which 00 says is not required for there to be anything.
+**Two premises, and what they force.** Paper 00 claims one thing — *to be is to
+stand in relation*. The companions admit one more — that anything *happens* —
+which 00 says is not required for there to be anything, so it is a real addition
+and it is not derived: it appears **ex nihilo**, the account's one unargued entry.
 
-**The addition is one admission plus two things that do not follow from it.**
-01's `rem:inherited` carries the ledger, which this section reported as *one*
-until the first audit, then as five, and which successive passes have moved it in both directions.
+**Forced by the admission:** transformation `r`. Something has to do the happening,
+whatever does it is a graph, and the least graph that can do anything is a pattern
+plus a change it makes. Admissibility comes with it — `Γ` names the rules that
+decide admit-or-residual.
 
-**Admitted:** that anything *happens* — which 00 says is not required for there
-to be anything, so it is a real addition.
+**Postulated, and both restored by audit after being folded away:** a **realisation
+operator** (collapse is typed as a map out of `Poss`, and the physics grounding's
+measurement account needs exactly one continuation realised), and a
+**destroy/preserve distinction** (`prop:economics` exempts evaluation because it
+*preserves*, so the operative criterion is that a change which *destroys* costs).
 
-**Forced by it, not posited beside it:** transformation `r`. Something has to do
-the happening; whatever does it is a graph, because everything is; and the least
-graph that can do anything is a pattern plus a change it makes. **A rule is a
-graph that does something.** That is 00's own method one level along — 00 asks
-what the least structure that can *be* is and answers relation; 01 asks what the
-least that can *do* is and answers rule. Admissibility folds in here too, as a
-specific instance of rules: `Γ` names a role `r` plays, and `Poss`'s dependence
-on it is definitional, not ontological.
+**Axiom −1 is split.** In paper 01 every use refuses an import — no frame-free
+denominator, no absolute threshold — which is a discipline, not a place that paper
+can fail. In the **groundings** it licenses positive results and is a commitment
+that can fail; 04 already locates its exposure in its own falsifier. Guard here,
+commitment there.
 
-(The economics was folded in here too, by an argument 01 has since withdrawn as
-circular: *continuation is free and change is paid* refutes rather than supports
-deriving a retention cost. It is a posit again, and smaller than it was.) (The
-*strong* form of no-copy — that no change ever preserves its predecessor — is
-**not** derived, since an append-only rule preserves as a side effect. So it was
-removed, and `ax:no-time`'s direction limb, which had rested on it, now rests on
-the asymmetry of enablement, which it had all along.)
+**A third tier** sits between postulate and consequence: four hypotheses, including
+the Law of Graphic Equalisation itself, plus the near-uniqueness of the cheap cut.
+Bets, neither assumed nor derived.
 
-(Realisation was folded in here too, and that fold misquoted its source: the text
-after `def:admissible` says no ***particular*** algorithm is required and calls
-itself *extensional*, which keeps the family as an object. Naming the selector a
-rule relabels the posit. Restored.) Single-valuedness then rests on rules being determinate in their
-antecedents — one pattern yielding two changes means the pattern missed what
-mattered — which is `prop:determinism`, closer to what *rule* means here than to
-a wager.
+**How to read the count.** These reductions are re-descriptions — *X is a special
+case of Y* — and the criterion licensing them applies to anything the account
+posits, so a count driven to zero would be a theorem of the vocabulary rather than
+a measurement. **The two restorations are worth more than the folds were.** What a
+surviving re-description buys is narrower: two things cannot be varied
+independently, which constrains what a grounding may do. It does not reduce the
+number of ways the account can be wrong.
 
-**Genuinely extra: nothing.** Realisation folds too, at the third attempt — the
-first two failed and are recorded. Nothing selects among candidate continuations:
-**what matches, writes**; two rules matching one state make a bigger change rather
-than a contest; writes that do not compose leave residual. A successor is single
-because the *change* is. Realisation is then a **rule about rules**, as a frame is
-a graph about graphs — turtles all the way down.
-
-**And Axiom −1 is not a commitment either.** Every use of it in the corpus has the
-form *you may not import this* — no frame-free denominator, no frame-free identity,
-no absolute threshold. Those are rules about what the account may say, not reports
-about what the world contains. It is a **guard**, not a premise: the discipline
-that stops the premises silently becoming more. Its number was already saying so —
-it sits before the axioms because it is not one of them.
-
-**So: two premises. Things exist; things change.**
-
-**The economics is not among them.** What a thing does, when it does anything, is
-**change** — and **change is the cost of change**: the cost is not a quantity in
-another currency the change is priced in, it is the change. So a happening that
-cost nothing would be a change in which nothing changed. That dissolves three
-things earlier ledgers counted separately — no destroy/preserve predicate is owed
-(what preserves has not changed, so nothing happened), persistence is not a posited
-default (persisting is not changing), and *something costs* is not a bit added on
-top. Cost can be **unboundedly small and never zero**; what a particular floor is —
-Landauer, say — is the container's rule content and belongs to the groundings.
-
-Past those and Axiom −1 sit the **bets the papers state as hypotheses**, including
-the Law of Graphic Equalisation itself.
-
-**A caution on reading the count down.** The criterion that licenses these folds —
-*selecting is doing something, doing something is what a rule is* — applies to
-anything this account posits, so a count driven to zero would be a theorem of the
-vocabulary rather than a measurement of the economy. What a surviving fold buys is
-narrower and real: it says two things cannot be varied independently, which
-constrains what a grounding may do. It does **not** reduce the number of ways the
-account can be wrong.
-
-The triple stays as notation — a useful functional decomposition, and the corpus
-is written in it — but a ledger that counts functions as substances counts wrong. Plus Axiom −1, close to 00's claim without being
-entailed by it. A **third tier** sits between postulate and consequence — four
-hypotheses, including the Law of Graphic Equalisation itself, and the
-near-uniqueness of the cheap cut, which 01 calls an empirical posit and not a
-result. Neither assumed nor derived.
-
-The economy claim is made so it can be held against the set, and on its first
-audit it failed in the direction that flatters — two postulates claimed, five
-found, each demonstrated by 01 contradicting its own ledger elsewhere in its own
-words. Successive folds then drove it down to none — `Γ` into `r`, the valuation
-into no-copy, `r` into the admission, no-copy into `r`, the realisation operator
-into rules — and **a second audit found two of those folds unsound and put them
-back**, leaving the admission, a valuation, a realisation operator and Axiom −1.
-
-The valuation's fold was circular (it derived the weak form of no-copy from the
-strong form it had just conceded was unavailable, against 01's own free-persistence
-doctrine); the realisation operator's misquoted the line it was built on (`def:admissible`'s
-follow-on says no **particular** algorithm is required and calls itself
-*extensional*, which keeps the object rather than dissolving it). The count has moved repeatedly under that standard, twice
-against the account's own economy. **That movement is the procedure running, not a
-caveat on its result** — a ledger that had never moved would be evidence only that
-nobody had checked it. The claim that survives is narrower and still useful: the base is small,
-the addition is enumerable, and an independent posit the enumeration does not
-carry is a defect in the economy even where the individual claim stands.
-
-00's method section states the single operation that generates the set (*remove,
-and see what breaks*, pointed at inherited restrictions rather than posited
-entities) together with its severe limit: most restrictions are load-bearing,
-and the operation returns nothing on almost every attempt.
+The full ledger is `rem:inherited` in paper 01, kept to about 900 words so it can
+be checked at a glance; its revision history is in the review record rather than in
+the paper.
 
 | file | title |
 |---|---|
