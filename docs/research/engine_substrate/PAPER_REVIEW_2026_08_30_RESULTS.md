@@ -386,11 +386,19 @@ rendered **unparseable** by two nested corrections stacked before its main verb.
 - **Free continuation: a write, or the absence of one?** `01a` says it *is* a write
   from which the predecessor is recoverable; `01` and `03` say it is the absence of
   an event. `01a` is internally split on it. Load-bearing for `prop:second-law`.
-- **Is a rule-less structure a frame?** `01` says yes and calls the contrary *"wrong"*;
-  `00` says *"nothing here is a frame"* and infers a load-bearing conclusion from it.
-- **Can a rock measure?** `00`'s `prop:one-way` says it cannot observe; `01a`'s
-  `cor:observer` says a rock measures. A grain qualifier probably resolves it and is
-  stated at neither site.
+- ~~**Is a rule-less structure a frame?**~~ **CLOSED.** A rule-less structure *is* a
+  frame: a frame is a boundary relation — an edge — so wherever there are relata in
+  relations there are frames, and rules are no part of the requirement. (An *empty*
+  frame is impossible, since an edge needs relata.) `00` said *"nothing here is a
+  frame"* and inferred a load-bearing conclusion from it; the inference is repaired
+  by locating the gap correctly. **What is missing at the base is not frames but
+  \emph{making}** — a view is had by a frame that *makes* a distinction, making is
+  doing, and doing is what the base does not have. The removed axiom governs an
+  *act*, not a frame, which is why it cannot be stated there.
+- ~~**Can a rock measure?**~~ **CLOSED by the same distinction.** `01a`'s *measure* is
+  the coupling itself — standing in the relation that makes an outcome definite
+  relative to a partner. `00`'s *observe* is making a distinction, which needs rules.
+  A rock does the second and not the first, and `cor:observer` now says so.
 - **"Capability"** means the gates in `01` and reach in `02` and `04`; `01`'s caution
   names only the Sen-following companion, so `02` is uncovered.
 - **Narrativium as a stock**: `07`'s *"paid out of their Narrativium"* against `04`'s
