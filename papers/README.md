@@ -8,23 +8,33 @@ subtraction from them.
 
 ## The shape of the set
 
-**One claim, and everything else is what it means.** Paper 00 makes a single
-statement — *to be is to stand in relation* — and makes a case for it. The
-companions add exactly **one** further thing: that things *happen*, which 00 is
-careful to say is not required for there to be anything. In the substrate's
-terms that addition is `r` and `Γ` — the transformations and the admissibility
-grammar. Everything else across the set is offered as **consequence of those
-two**, not as further claims about what exists.
+**A small base, an enumerated addition, and the rest offered as consequence.**
+Paper 00 makes a single statement — *to be is to stand in relation* — and makes
+a case for it. The companions add what a world in which things *happen* costs,
+which 00 says is not required for there to be anything.
 
-This is a strong statement about the set's economy and it is made so it can be
-held against it. Anything in the companions that turns out to be an independent
-posit rather than a derivation is a **hidden axiom** — a real result against the
-economy even where the individual claim survives. 01's `rem:inherited` states
-the ledger explicitly; 00's method section states the single operation that
-generates the whole set (*remove, and see what breaks*, pointed at inherited
-restrictions rather than posited entities) together with its severe limit: most
-restrictions are load-bearing, and the operation returns nothing on almost every
-attempt.
+**That addition is five things, not one, and this section said one until the
+first audit.** 01's `rem:inherited` carries the corrected ledger: transformation
+`r`; the admissibility grammar `Γ`; a realisation operator selecting one
+continuation where `Γ` yields a set; a valuation on writes, since `Γ` admits or
+declines and a price is more than a gate; and no-copy, that a change does not
+preserve its predecessor. Plus Axiom −1, close to 00's claim without being
+entailed by it. A **third tier** sits between postulate and consequence — four
+hypotheses, including the Law of Graphic Equalisation itself, and the
+near-uniqueness of the cheap cut, which 01 calls an empirical posit and not a
+result. Neither assumed nor derived.
+
+The economy claim is made so it can be held against the set, and on its first
+audit it failed in the direction that flatters — two postulates claimed, five
+found, each demonstrated by 01 contradicting its own ledger elsewhere in its own
+words. The claim that survives is narrower and still useful: the base is small,
+the addition is enumerable, and an independent posit the enumeration does not
+carry is a defect in the economy even where the individual claim stands.
+
+00's method section states the single operation that generates the set (*remove,
+and see what breaks*, pointed at inherited restrictions rather than posited
+entities) together with its severe limit: most restrictions are load-bearing,
+and the operation returns nothing on almost every attempt.
 
 | file | title |
 |---|---|
