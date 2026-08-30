@@ -150,8 +150,25 @@ def main(spec_path):
     # paper full of undefined-reference warnings is a short paper nobody checks.
     text = '\n'.join(body)
     have = set(re.findall(r'\\label\{([^}]+)\}', text))
+    # An unpulled target is NAMED rather than blanked. "(long form)" told a reader
+    # nothing and appeared 31 times; the environment's own title tells them what to
+    # look for. Titles come from the long paper's optional argument.
+    titles = dict(re.findall(
+        r'\\begin\{(?:definition|proposition|corollary|hypothesis|remark|axiom|theorem)\}'
+        r'\[([^\]]*)\]\\label\{([^}]+)\}', long_tex))
+    titles = {lab: t for t, lab in titles.items()}
+    sects = dict(re.findall(r'\\section\{([^}]*)\}\\label\{([^}]+)\}', long_tex))
+    sects = {lab: t for t, lab in sects.items()}
+
+    def _refname(lab):
+        if lab in titles:
+            return '~(\\emph{%s}, long form)' % titles[lab]
+        if lab in sects:
+            return '~(\\emph{%s}, long form)' % sects[lab]
+        return '~(long form)'
+
     text = re.sub(r'~?\\ref\{([^}]+)\}',
-                  lambda m: m.group(0) if m.group(1) in have else '~(long form)',
+                  lambda m: m.group(0) if m.group(1) in have else _refname(m.group(1)),
                   text)
     # Citations are rendered as plain author-year text taken from the long
     # paper's own bibitem labels. The previous behaviour rewrote every \citet
