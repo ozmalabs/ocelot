@@ -59,7 +59,16 @@ further bodies are built but included by no paper (`fig01_boundary`,
 All twelve carry the same draft string in three places — the title block, a boxed
 notice under the title, and the footer of every page:
 
-> **`draft-2026-08-30.3`** · 30 August 2026
+> **`draft-2026-08-30.4`** · 30 August 2026
+
+**The bump is checked, not trusted.** `python3 tools/check_draft_consistency.py`
+verifies that all twelve are on one draft string, that no file mixes two, and
+that each document's per-page footer and boxed DRAFT notice carry the same
+revision as its title block. It exits non-zero on any finding. Each of those
+three defects has actually occurred: on the `.4` bump, paper 01's footer and
+notice still read `r152` while its title block read `r155` (three revisions of
+drift, because the footer is a separate hand-maintained site), and 00 and 07
+had no footer or notice at all despite this section claiming all of them do.
 
 They are circulated for comment, not as finished results. **Bump all twelve
 together**, so a reader comparing two papers is never comparing two drafts, and
