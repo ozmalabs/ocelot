@@ -252,73 +252,32 @@ reference warnings.
 
 ---
 
-## 6. Named, not fixed
+## 6. Named, then fixed
 
-*Re-audited after the ledger folds. Every item below was verified still open
-against the current files, not carried forward from the first pass.*
+*The first pass closed with fourteen findings named and not fixed. They were then
+worked through. What each turned into:*
 
-Reported here rather than silently carried. **This list is the honest residual of
-the pass, not a backlog someone promised to clear.**
+| finding | resolution |
+|---|---|
+| `Graph-law determinism` unfalsifiable | **Partly dissolved.** The "omits determining dimensions" clause is not an escape but the content — a rule is a pattern plus a change, so one pattern giving two changes means the pattern missed what mattered. Risk **relocates** onto the Law itself, which is closeable. |
+| Four commitments, one observation | **Declared.** The four are kept as separate places to look, and the list now says failing any is the single prohibition failing — one result, not four. `A swallowed failure` re-marked `[shape]`, an inconsistency rather than a judgement. |
+| 07 carries no commitments | **Three added**, including the one it named as worth testing — with the modelling choice that made it ambiguous **fixed in advance**, which is the whole repair. |
+| 61 untagged grounding commitments | **All 59 tagged** (two were Scope items, not commitments) under a stated rule, and marked as the least-audited judgement in each document. |
+| `01s` has no bibliography | **Generator emits one**, lifted verbatim from the long paper. 17 entries. |
+| Rate: cross-frame vs in-frame | **Resolved, neither side conceding.** In-frame in *provenance*, cross-frame in *type* — a ratio of two integers is not an integer, and a frame's coordinates are the integer lattice. |
+| 07's prohibitions include cost | **Removed from the list.** Since the ledger correction the retention cost is *derived*, so it is neither prohibition nor postulate but consequence. |
+| 00's second falsifier rigged | **Unrigged.** The unsatisfiable *"and that does not reduce to them"* clause is gone; what is asked is that a field **keep** the primitive in the formalism it teaches and computes with. |
+| 00's yield-rate uncommitted | **Committed** — and the commitment says the base rate is reconstructed rather than recorded, and that the paper owes the ledger before the claim should be granted. |
+| Parallel postulate exemplar | **Removed**, and inverted: it is the canonical *independent, non-eliminable* axiom, so it is a picture of what the ledger would look like **if one of its entries were wrong**. |
+| Duplicate commitments across papers | **Marked in place** as inherited or entailed — 01≡03 twice, determinism across four documents, Axiom −1 in two groundings while 01 carries none for it. |
+| `claimed class` indexing | **Closed.** A class counts as claimed once it appears in a grounding section; nothing may be added or removed in response to a result. |
+| 00 and 06 orphaned | **`rem:companions` added to 01.** 06 had been pointed at by nothing since its material was moved out of 01's conclusion. |
+| No systematic no-copy sweep | **Run.** One site found: 01a's `rem:arrows` unified three arrows into no-copy. Two are one asymmetry; the **causal** arrow is enablement and agrees without being them. |
 
-- **`Graph-law determinism` is unfalsifiable as written** — *"variation observed
-  only from a frame that omits determining dimensions does not constitute such a
-  falsification"*, and the standing position is that apparent stochasticity *is*
-  incomplete observation. Any counterexample is assignable to an omitted
-  dimension by construction. It is `[shape]`, so it inflates the range-risk count,
-  **and it is retained in the statement**.
-- **Four of 01's commitments are falsified by one observation** — an in-frame
-  procedure that *settles* rather than *relocates*. Two of the four overlaps are
-  acknowledged in the text and all four are still counted separately; three are
-  `[shape]`.
-- **`No free lunch` requires an unbounded negative** (cost absent at *every*
-  frame) — the exact form the composition paragraph rules out as "not a test" one
-  page earlier.
-- **07 states "the claim actually worth testing" and carries no commitments at
-  all**, then reports that claim *"is true in one reading and false in another,
-  with the answer flipping on a modelling choice this paper had not made."*
-- **The `[shape]`/`[detail]` scheme is used only in 00, 01 and 01s.** The 61
-  commitments in the groundings are untagged — and the groundings are where 07
-  says the risk actually sits.
-- **00's second commitment may be rigged**: the clause *"and that does not reduce
-  to them"* is hard to satisfy given that graphs are expressive, which is the same
-  fact the paper uses to disqualify confirming evidence. Its supporting list is
-  also one-sided (GR's manifold, Hilbert space and variational principles are
-  compressions that moved the other way).
-- **00's yield-rate claim** — the method *"returns nothing on almost every
-  attempt"* — is a base rate over attempts nobody recorded.
-- **The parallel postulate is a questionable exemplar** for cheap-entry
-  derived-consequence, being the canonical example of an *independent,
-  non-eliminable* axiom.
-- **Duplicate commitments across papers**: 01≡03 on historical sufficiency and on
-  discrete sufficiency; determinism appears four times across 01/02/03/05;
-  Axiom −1 three times outside 01; 02's basins entry is entailed by its
-  descent entry.
-- **Ten commitments in 02/03/04 are indexed to "a claimed class"** never
-  enumerated in advance, so a counterexample is excludable by declining to have
-  claimed that class.
-- **`01s` has no bibliography** while making ~16 named attributions; the generator
-  flattens `\citep` to author-year text and emits no reference list, so no reader
-  can resolve any of them.
-- **A rate is called cross-frame in 01 and in-frame in 04**, with 01a siding with
-  04. 04 presents this as a reconciliation; 01's sentence classifies exactly the
-  construction 04 uses as cross-frame.
-- **07's five "prohibitions" include cost attaching to the write**, which 01
-  deliberately excludes from its single prohibition — *"folding either into the
-  single prohibition would be the over-unification this section otherwise warns
-  against."* **The ledger folds sharpen this rather than settle it**: the retention
-  cost is now *derived* from rules being what puts structure anywhere, so it is
-  neither a prohibition nor a postulate but a consequence, and 07's list has it in
-  the wrong category on the corrected reading too.
-
-- **`ax:no-time`'s direction limb was repaired; the same over-attribution may sit
-  elsewhere.** Two sites were found and fixed by name. Nothing systematic was run
-  to see whether other results lean on the strong form of no-copy.
-- **00 is referenced by 01 alone**; 06 is referenced by nothing in the set.
-- **Self-congratulatory register** in the newest passages — *"that shortness is
-  the argument"*, *"the paper has nowhere to hide"* — concentrated, a reviewer
-  noted, in exactly the passages where the support is thinnest.
-
----
+**Still open, and deliberately:** the self-congratulatory register in the newest
+passages. It was flagged as concentrated in exactly the passages where support is
+thinnest, and several of those have since been rewritten for other reasons — so it
+cannot be closed by inspection and would need a fresh read to assess honestly.
 
 ## 7. Standing rules this pass earned
 
