@@ -15,7 +15,7 @@ over paper 00 and that everything else is consequence. It invited a reader to
 look for a hidden axiom, on the ground that finding one would be *"a real result
 against the account's economy."*
 
-**The audit found five postulates, not two (later two plus an admission, §1.1) — and every one is demonstrated by 01
+**The audit found five postulates, not two (later one plus an admission, §1.1) — and every one is demonstrated by 01
 contradicting the remark in its own words elsewhere in the same file.** That is
 the strongest available form of evidence for this kind of check, because it does
 not depend on the reviewer's reading of any derivation.
@@ -53,9 +53,27 @@ that method's limit too: least is established by removal against a candidate
 list. The obvious candidate fails — a change occurring regardless of what is
 present is a rule with an empty match condition, not a counterexample.
 
-**The ledger settles at one admission (things happen) plus two posits that do not
-follow from it (single-valued realisation, no-copy), plus Axiom −1** — against
-the five the audit found and the two originally claimed.
+A fourth fold applied the account's own removal test to no-copy — *either it is
+forced, or derived, or it is not pulling its weight* — and the answer **differs by
+which use is tested**, which is why it is worth recording:
+
+- **The economics use is derived.** For a predecessor to be present after a
+  change, something must have put it there; putting structure anywhere is a rule
+  firing. So retaining anything specific costs its own write, using only the
+  admission and never a notion of cost — no circularity with the budget it
+  grounds. This is also why the paper *prices* reversible operation rather than
+  forbidding it: it was never a prohibition, it was the observation that keeping
+  something is work.
+- **The strong form does not survive, and was load-bearing.** *No change preserves
+  its predecessor* is more than the derivation gives — an append-only rule
+  preserves as a side effect. `ax:no-time` rested time's **direction** on exactly
+  that, and now rests it on the **asymmetry of enablement**, which it had all
+  along: if one change makes another possible, the second does not thereby make
+  the first possible. Direction had been over-attributed.
+
+**The ledger settles at one admission (things happen) plus ONE posit that does not
+follow from it (single-valued realisation), plus Axiom −1** — against the five the
+audit found and the two originally claimed.
 
 Of the two survivors, single-valued realisation is a bet **against a rival that
 is not cheaper**, and the remark now prices it: retaining every continuation

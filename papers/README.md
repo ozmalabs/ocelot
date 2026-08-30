@@ -29,11 +29,17 @@ least that can *do* is and answers rule. Admissibility folds in here too, as a
 specific instance of rules: `Γ` names a role `r` plays, and `Poss`'s dependence
 on it is definitional, not ontological.
 
-**Genuinely extra:** a realisation operator selecting one continuation where the
-rules yield a set; and **no-copy**, that a change does not preserve its
-predecessor — which carries the economics with it, since retention then costs a
-further write and a write spent on one thing is not spent on another. A budget by
-opportunity cost, needing no quota, so the valuation is not a separate posit.
+The economics follows too. To have something still present after a change,
+something must have put it there, and putting structure anywhere is a rule
+firing — so **keeping a thing costs a write**, and a write spent on keeping is not
+spent on anything else. A budget by opportunity cost, needing no quota. (The
+*strong* form of no-copy — that no change ever preserves its predecessor — is
+**not** derived, since an append-only rule preserves as a side effect. So it was
+removed, and `ax:no-time`'s direction limb, which had rested on it, now rests on
+the asymmetry of enablement, which it had all along.)
+
+**Genuinely extra:** one thing — a realisation operator selecting one
+continuation where the rules yield a set.
 
 The triple stays as notation — a useful functional decomposition, and the corpus
 is written in it — but a ledger that counts functions as substances counts wrong. Plus Axiom −1, close to 00's claim without being
@@ -47,8 +53,10 @@ audit it failed in the direction that flatters — two postulates claimed, five
 found, each demonstrated by 01 contradicting its own ledger elsewhere in its own
 words — then four, after `Γ` folded into `r`; then three, after the valuation
 folded into no-copy; then two-plus-an-admission, after `r` itself turned out to
-follow from the admission rather than sit beside it. Of the four movements only
-the first was in the flattering direction. The claim that survives is narrower and still useful: the base is small,
+follow from the admission rather than sit beside it; then **one**, after no-copy
+did too. Of the five movements only the first was in the flattering direction —
+and the last found a claim made *too strongly* rather than a posit left
+uncounted, so the standard does not only run toward economy. The claim that survives is narrower and still useful: the base is small,
 the addition is enumerable, and an independent posit the enumeration does not
 carry is a defect in the economy even where the individual claim stands.
 
