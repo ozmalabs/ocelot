@@ -16,20 +16,20 @@
 \newcommand{\Hist}{\mathcal{H}}
 \title{Is\\\large Relation Without Time, Cause, or Rule}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-30.4}\\[2pt]30 August 2026 \textbullet\ document revision 61}
+\date{\textbf{Draft \textemdash\ draft-2026-08-30.4}\\[2pt]30 August 2026 \textbullet\ document revision 64}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r61}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r64}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r61}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r64}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-30.4 r61} (30 August 2026).
+\textbf{DRAFT --- draft-2026-08-30.4 r64} (30 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -313,9 +313,12 @@ paper. Each was adopted because it was the cheapest thing that still accounted f
 
 One case is worth setting out rather than listing, because it is the oldest, it has been kept longest,
 and it is usually described as an invention. \emph{Double-entry bookkeeping is not an invention. It is
-a compression.} A transfer has two sides, so the shortest record of one that loses nothing has two
-entries --- an account, an account, and the movement between them, which is relata and a relation and
-nothing else. Nobody derived it from a thesis about what exists.
+a compression.} A transfer has two sides, and the record that keeps both of them names an account, an account, and the
+movement between them --- relata and a relation and nothing else. It should be said at once that this
+is not a minimality claim, because \citeauthor{ellerman2014} refutes the obvious one: a single-sided
+system using signed numbers records the same information, and given the same opening equation and the
+same transactions the two end in the same place. What single-sided recording loses is the trial
+balance, and that is the whole of the difference worth having here. Nobody derived it from a thesis about what exists.
 
 The history is what makes it a case rather than an analogy. \citet{pacioli1494} is usually credited
 with the system, and what he wrote was a description: the \emph{Particularis de Computis et Scripturis},
@@ -328,10 +331,16 @@ commitment below actually asks for.
 
 The honest counterweight belongs here too, because the history is contested in a way that bears on the
 claim. \citet{yamey1949} argued against the then-standard view that double entry was adopted for
-rational profit calculation, holding that early merchants did not use it that way. That cuts against
-reading the technique as designed for a purpose --- which, for the reading here, is help rather than
-harm: a method adopted without a theory of what it was for, and kept anyway, is better evidence that it
-fitted its subject than one adopted because somebody argued it should be.
+rational profit calculation, holding that early merchants did not use it that way. What Yamey found, though, is a
+\emph{smaller} purpose rather than none --- tracking debtor and creditor relations, custody, and agency
+accountability --- and \citet{sangster2015} names it more precisely still: the system gave a clear
+picture of every debtor and creditor \emph{together with the means to check that the entries between
+them were complete and accurate}. An earlier version of this paragraph inferred from Yamey that the
+method was adopted with no theory of what it was for, and that inference does not survive: it was
+adopted for something, and the something was checking. That is worse for one argument and better for
+the next, and both are stated rather than the convenient one alone. It removes any claim that nobody
+designed the technique for anything. It also means the error-detection property below was not a lucky
+side effect --- it is what the thing was built to do, which is why it was kept.
 
 And it earns the case rather than illustrating it, because of what the practice detects. A ledger that
 does not balance is not a rule violation but a \emph{residual} --- something recorded that does not
@@ -349,9 +358,14 @@ error-detecting property comes from. The dating is the part that bears on the cl
 construction was only formulated abstractly in mathematics in the nineteenth century, after the
 practice had used it for over five centuries. So the structure was in use long before anyone had the
 mathematics to say what it was --- found, then written down as a method, then formalised four hundred
-years after that. \citet{arya2000} take the same structure the other way and read the ledger as a
-network whose accounts are nodes and transactions are edges, recovering transactions from statements by
-its connectivity, which is the relata-and-relations reading arrived at without the thesis.
+years after that. \citet{arya2000} take the same structure the other way, recovering transactions
+from statements by treating accounting information as a linear aggregation whose rule is double entry;
+and \citet{aryagraph2000} give the reading this paper actually wants, characterising the consistent
+transaction vectors by a \emph{directed graph representation of the accounting system} without which
+the inversion becomes intractable as accounts multiply. That is the relata-and-relations reading
+arrived at without the thesis. The graph framing is the companion paper's rather than the estimation
+paper's, and citing only the second for it --- as an earlier version did --- attributed to one paper
+what the other says.
 
 The discriminator matters and is easy to lose. \emph{The prediction is about movement, not about
 drawability.} That a field's subject matter can be drawn as a graph shows nothing, since graphs are
@@ -512,12 +526,19 @@ That is why the general form goes unwritten while every local version gets writt
 
 And the mechanism has a worked case in this paper already, which is worth pointing at because it makes
 the explanation checkable instead of merely available. The gap between double entry being in daily
-use and the group of differences being written down is roughly four hundred years, on top of the two
-centuries between the practice and Pacioli's description of it. That is not a hard construction ---
-it is how the integers are built from the naturals --- and it was not being hidden from anyone. It went
-unwritten because it belonged to nobody: merchants had no reason to state abstractly what they could
-already do, and mathematicians were not reading ledgers, so a trivial structure in continuous use by
-thousands of people sat unformalised in the gap between two restrictions.
+use and the group of differences being written down is about three and a half centuries --- Pacioli in
+1494 to Hamilton in 1837, on \citeauthor{ellerman2014}'s own attribution --- on top of the two centuries
+between the practice and Pacioli's description of it. That is not a hard construction: it is how the
+integers are built from the naturals.
+
+The reason it went unwritten is \emph{not} that nobody looked, and an earlier version of this passage
+said it was. Mathematicians did look --- \citeauthor{ellerman2014} names De Morgan in 1869 and Cayley,
+who published a pamphlet on double-entry bookkeeping in 1894 --- and did not make the ordered-pairs
+identification. So the case is weaker than a clean two-restriction gap and is still a case: a trivial
+structure in continuous use by thousands of people, examined by capable people from the other side, went
+unformalised anyway. \citeauthor{ellerman2014} adds the part that bears on the mechanism, which is that
+placing the identification took him three decades to publish in an accounting journal. The restriction
+is real; what it obstructed was the crossing rather than the looking.
 
 The parallel is in the sociology and not in the content, and the difference matters. What double entry
 says is not what this paper says. What the case establishes is that \emph{a thing can be simple, in
@@ -652,6 +673,11 @@ David Ellerman.
 \newblock On double-entry bookkeeping: the mathematical treatment.
 \newblock \emph{Accounting Education}, 23(5):483--501, 2014.
 
+\bibitem[Arya et al.(2000b)]{aryagraph2000}
+Anil Arya, John C. Fellingham, and Douglas A. Schroeder.
+\newblock Estimating transactions given balance sheets and an income statement.
+\newblock \emph{Issues in Accounting Education}, 15(3):393--411, 2000.
+
 \bibitem[Lee(1977)]{lee1977}
 Geoffrey A. Lee.
 \newblock The coming of age of double entry: the Giovanni Farolfi ledger of 1299--1300.
@@ -682,6 +708,12 @@ James Ladyman and Don Ross.
 N\=ag\=arjuna.
 \newblock \emph{The Fundamental Wisdom of the Middle Way: N\=ag\=arjuna's M\=ulamadhyamakak\=arik\=a}.
 \newblock Translated by Jay L. Garfield. Oxford University Press, New York, 1995.
+
+\bibitem[Sangster(2016)]{sangster2015}
+Alan Sangster.
+\newblock The genesis of double entry bookkeeping.
+\newblock \emph{The Accounting Review}, 91(1):299--315, 2016.
+\newblock Published online 2015.
 
 \bibitem[Yamey(1949)]{yamey1949}
 Basil S. Yamey.
