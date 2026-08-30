@@ -233,6 +233,9 @@ reference warnings.
 
 ## 6. Named, not fixed
 
+*Re-audited after the ledger folds. Every item below was verified still open
+against the current files, not carried forward from the first pass.*
+
 Reported here rather than silently carried. **This list is the honest residual of
 the pass, not a backlog someone promised to clear.**
 
@@ -281,7 +284,14 @@ the pass, not a backlog someone promised to clear.**
 - **07's five "prohibitions" include cost attaching to the write**, which 01
   deliberately excludes from its single prohibition — *"folding either into the
   single prohibition would be the over-unification this section otherwise warns
-  against."*
+  against."* **The ledger folds sharpen this rather than settle it**: the retention
+  cost is now *derived* from rules being what puts structure anywhere, so it is
+  neither a prohibition nor a postulate but a consequence, and 07's list has it in
+  the wrong category on the corrected reading too.
+
+- **`ax:no-time`'s direction limb was repaired; the same over-attribution may sit
+  elsewhere.** Two sites were found and fixed by name. Nothing systematic was run
+  to see whether other results lean on the strong form of no-copy.
 - **00 is referenced by 01 alone**; 06 is referenced by nothing in the set.
 - **Self-congratulatory register** in the newest passages — *"that shortness is
   the argument"*, *"the paper has nowhere to hide"* — concentrated, a reviewer
