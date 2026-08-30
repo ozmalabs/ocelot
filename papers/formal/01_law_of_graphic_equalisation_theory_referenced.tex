@@ -16,20 +16,20 @@
 \newcommand{\Hist}{\mathcal{H}}
 \title{The Law of Graphic Equalisation --- Theory\\\large Minimal Recursive Dynamics, Collapse, Frame-Relative Identity, and Residual}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-30.2}\\[2pt]30 August 2026 \textbullet\ document revision 124}
+\date{\textbf{Draft \textemdash\ draft-2026-08-30.2}\\[2pt]30 August 2026 \textbullet\ document revision 126}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.2\,r124}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.2\,r126}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.2\,r124}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.2\,r126}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-30.2 r124} (30 August 2026).
+\textbf{DRAFT --- draft-2026-08-30.2 r126} (30 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -2137,25 +2137,40 @@ arrived, a transform reader that handled rotated input with no change --- and ea
 added without paying again for what it stood on.
 
 There is better evidence than either the scores or the cost curve, and it is better because of what
-the author did not control. \emph{Several times a change of frame forced a learning, and the forced
-learning then improved frames that were not being worked on.} A sequence decoder written under the
-demands of speech later ran unmodified on ink; a defect surfaced by one embodied control problem turned
-out to be present across unrelated embodied faculties; a criterion derived in vision matched, and
-predated, a result the compiler-optimisation literature arrived at independently.
+the author did not control: a change of frame forces a learning, and the forced learning is then
+available to frames that were not being worked on. That claim has since been audited against the
+history, and the audit removed most of what had been offered for it. What follows is what survived.
 
-The evidential force sits in two places, and neither is the transfer itself. The forcing was
-\emph{external}: a new domain broke something and the general fix was what remained, rather than the
-author looking for something portable. And the beneficiary was \emph{not the target} --- when a lesson
-forced in one frame improves another that nobody was working on, the improvement is not something
-confirmation could have produced. That is also this programme's own stated criterion, which counts a
-capability re-derived in a second body above the same body scoring higher on its own benchmark.
+The clean case is one the earlier drafts did not name. A dynamic-time-warping comparison and its
+analysis-by-synthesis decision procedure were built for speech, and were picked up sixteen days later
+by the commit that \emph{created} the ink frame's first files --- the beneficiary did not exist when
+the structure was made, which is as close to an uncontrolled counterfactual as this record contains.
+The example previously given in its place, a lattice decoder said to have been written for speech and
+later run on ink, is mis-attributed: it was written for printed-letter recognition, and speech and ink
+took it up on the same day nine hours apart with both frames under active development, which is
+co-development rather than transfer. A second example, a writer-style dimension described as the ink
+twin of a speech speaker dimension, is withdrawn entirely --- the two share no code, and where the
+construction was finally evaluated it \emph{harmed} the receiving frame against its own guard.
 
-Two honest qualifications on it. Most recorded instances are components \emph{reused without
-modification}, which evidences portability, and fewer are cases where the second frame's measured
-behaviour improved, which would evidence benefit; the two are easy to conflate and are different
-strengths. And the record does not systematically log transfers that \emph{failed} --- lessons that did
-not generalise, or that made a second frame worse --- so the apparent success rate is unaudited, which
-is a gap in the record rather than a property of the framework.
+What replaces those is a stronger and narrower claim about portability, which is verifiable rather than
+argued: the decoder seed is byte-identical --- same hash --- from its creation to the present, across
+five dated points and seven consuming frames, never modified. Structure built once and consumed
+unaltered by frames that did not exist at the time is what the account predicts, and it is what the
+record shows.
+
+The qualification given earlier was too generous and must be replaced by the measurement. It said most
+instances are components reused without modification and \emph{fewer} are cases where the receiving
+frame's measured behaviour improved. The true count of the second kind is \emph{zero}: every measured
+before-and-after improvement in the history is within a frame, and no cross-frame transfer has a
+measured benefit attached to it at all. The account's central evidential claim is therefore supported at
+the level of portability and unsupported at the level of benefit.
+
+Two corrections in the account's favour, since the audit did not run only one way. Failed transfers
+\emph{are} logged, contrary to the concession made in an earlier draft --- seventeen are recorded,
+including one that measurably harmed the receiving frame and one explicitly retracted --- so the
+success rate is auditable and the failures are in the record rather than absent from it. And one
+transfer meets the strict date test cleanly: a defect census produced under an embodied control problem
+led, eight days later, to a fix in a conversation module that had been untouched since its creation.
 
 The author's own estimate of the differential should be recorded, because withholding it while
 demanding intervals from everyone else would be inconsistent. \emph{It starts not far above zero ---
@@ -2222,11 +2237,28 @@ The standard this section holds itself to is therefore not that the differential
 is established. It is that the limitations are stated where the claim is, rather than somewhere a
 reader has to go looking.
 
-Three limits stand, and the first is now the sharp one. \emph{The trajectory claim is directional and
-not quantified}: the reuse instances are recorded as components left unchanged, nobody costed the
-effort per capability, and until that is logged the decreasing-marginal-cost claim has a shape and no
-interval. It is specifiable --- cost per capability acquired, against acquisition order --- and it has
-not been specified. The attribution is arguable, since a competent engineer might have
+The trajectory claim has since been quantified, and the result is that \emph{it is true in one reading
+and false in another, with the answer flipping on a modelling choice this paper had not made}. Taking a
+capability to be a shipped seed with its own tests, and counting the acquisition order across two
+hundred and thirty-eight of them: the number of \emph{new primitive kinds} required per capability falls
+from $0.24$ over the first hundred and forty-two to \emph{zero} over the last ninety-six, intervals
+separated, with the five most recently entered domains requiring none at all while composing more held
+structure than earlier ones did. That is the predicted shape, measured.
+
+The volume reading does not agree. Total implementation code grows linearly throughout with no
+saturation, and the marginal code per capability returns to founding-era levels whenever a new domain is
+entered. So structural cost falls to zero and volume cost does not fall at all, and which of the two
+\emph{is} ``the cost of the $N$th capability'' is a choice rather than a finding. The honest report is
+both numbers and the statement that the account did not specify which it meant.
+
+Three further results bound the favourable one, and they are stated because they were found by the same
+audit. Nearly half the primitives introduced have \emph{no consumer in any seed}, so the growth of the
+primitive set and the composition of it are not the same story --- one exception is large and real, a
+decode primitive used by eighteen seeds across eight domains over fifty-four days. Rework \emph{rises}
+with acquisition order rather than falling, with later capabilities revised more often than early ones
+despite less exposure. And the confound that cannot be removed from this data has a name now: the same
+period saw the author's assistance improve substantially, so a falling cost per capability is not
+separable from a falling cost of assistance without a second builder. The attribution is arguable, since a competent engineer might have
 reached the same two changes without the framework and the prereg records only that the prediction
 preceded the result. The frame measured is an implementation and not a reader, so nothing here
 transfers to what these papers do for a person. And it is the same hand throughout, which this paper's
