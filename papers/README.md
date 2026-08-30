@@ -45,8 +45,13 @@ antecedents — one pattern yielding two changes means the pattern missed what
 mattered — which is `prop:determinism`, closer to what *rule* means here than to
 a wager.
 
-**Genuinely extra: one.** A **realisation operator**, since naming the selector a
-rule relabels the commitment without discharging it.
+**Genuinely extra: nothing but Axiom −1.** Realisation folds too, at the third
+attempt — the first two failed and are recorded. Nothing selects among candidate
+continuations: **what matches, writes**; two rules matching one state make a bigger
+change rather than a contest; writes that do not compose leave residual. A
+successor is single because the *change* is. Realisation is then a **rule about
+rules**, as a frame is a graph about graphs — turtles all the way down, with the
+recursion as the architecture rather than a regress.
 
 **The economics is not among them.** What a thing does, when it does anything, is
 **change** — and **change is the cost of change**: the cost is not a quantity in
