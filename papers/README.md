@@ -93,9 +93,10 @@ The valuation's fold was circular (it derived the weak form of no-copy from the
 strong form it had just conceded was unavailable, against 01's own free-persistence
 doctrine); the realisation operator's misquoted the line it was built on (`def:admissible`'s
 follow-on says no **particular** algorithm is required and calls itself
-*extensional*, which keeps the object rather than dissolving it). **The last
-movement ran against the account's economy**, which is the direction that matters
-for whether the standard is real. The claim that survives is narrower and still useful: the base is small,
+*extensional*, which keeps the object rather than dissolving it). The count has moved repeatedly under that standard, twice
+against the account's own economy. **That movement is the procedure running, not a
+caveat on its result** — a ledger that had never moved would be evidence only that
+nobody had checked it. The claim that survives is narrower and still useful: the base is small,
 the addition is enumerable, and an independent posit the enumeration does not
 carry is a defect in the economy even where the individual claim stands.
 
