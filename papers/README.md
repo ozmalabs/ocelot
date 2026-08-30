@@ -45,17 +45,18 @@ antecedents — one pattern yielding two changes means the pattern missed what
 mattered — which is `prop:determinism`, closer to what *rule* means here than to
 a wager.
 
-**Genuinely extra: two.** A **valuation** — not a cost model, which cannot be
-derived, but the commitment that *something costs something*. An economics is not
-**required**: a frame whose container charges it nothing has none, and the
-companions permit that rather than forbidding it. What is claimed is that every
-frame anyone has examined has one — an observed universal, not a necessity. (An
-earlier version had MDL supplying the rest from that one bit; 01 withdrew that
-argument, and the economics there now rests on three: that something costs, that
-destruction and preservation differ, and that structure persists by default.) And
-a **realisation operator**, since naming the selector a rule relabels the
-commitment without discharging it. Both were folded away in one pass and restored
-by the next audit.
+**Genuinely extra: one.** A **realisation operator**, since naming the selector a
+rule relabels the commitment without discharging it.
+
+**The economics is not among them.** What a thing does, when it does anything, is
+**change** — and **change is the cost of change**: the cost is not a quantity in
+another currency the change is priced in, it is the change. So a happening that
+cost nothing would be a change in which nothing changed. That dissolves three
+things earlier ledgers counted separately — no destroy/preserve predicate is owed
+(what preserves has not changed, so nothing happened), persistence is not a posited
+default (persisting is not changing), and *something costs* is not a bit added on
+top. Cost can be **unboundedly small and never zero**; what a particular floor is —
+Landauer, say — is the container's rule content and belongs to the groundings.
 
 Past those and Axiom −1 sit the **bets the papers state as hypotheses**, including
 the Law of Graphic Equalisation itself.
