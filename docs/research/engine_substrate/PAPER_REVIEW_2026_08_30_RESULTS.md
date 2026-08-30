@@ -15,7 +15,7 @@ over paper 00 and that everything else is consequence. It invited a reader to
 look for a hidden axiom, on the ground that finding one would be *"a real result
 against the account's economy."*
 
-**The audit found five postulates, not two (later four, §1.1) — and every one is demonstrated by 01
+**The audit found five postulates, not two (later three, §1.1) — and every one is demonstrated by 01
 contradicting the remark in its own words elsewhere in the same file.** That is
 the strongest available form of evidence for this kind of check, because it does
 not depend on the reviewer's reading of any derivation.
@@ -33,17 +33,27 @@ enforced by rules, so `Γ` is a configuration of `r` rather than a separate
 postulate. It was first recorded and *not* taken — the ledger counted `Γ`
 separately on the grounds that the economical reading is the one that flatters —
 and then taken on the author's decision that **admissibility is a specific
-instance of rules**. The count is four, not five.
+instance of rules**.
+
+A second fold followed from the same direction of argument: **a budget is forced
+because something has to change, and if change is free there is no pressure.**
+Under no-copy a change does not keep its predecessor, so retention costs a
+further write, and a write spent on one thing is not spent on another — a budget
+by *opportunity cost*, requiring no quota. So `prop:no-free-lunch` is no-copy
+restated in the currency writes supply, and the valuation is not a separate
+posit. **The count is three, not five.**
 
 Folding it removed an assertion rather than renaming one. `prop:two-gates` had to
 claim the aperture and change grammars are *"two faces of one grammar on one
 boundary edge"* — an identity asserted across a distinction the definitions drew,
 since `Γ` was defined to govern *graph-originated* transformations while `Γ_a`
 gates *inbound* container deformation. If admissibility is just rules, `Γ_a` and
-`Γ_c` are rules with different scopes, which needs no unification claim. **One of
-the two objections to that proposition dissolves; the other — that the paper
-calls both gates optimisations under a budget rather than constituents of
-graphhood — stands.**
+`Γ_c` are rules with different scopes, which needs no unification claim. **One of the two objections to that proposition dissolves outright; the other is
+halved.** The *budget* the gates optimise against is forced, so calling them
+optimisations no longer smuggles in an uncounted posit — but their *accretion* is
+not forced, and `sec:carvings` is right to decline a selection principle. A
+budget supplies a differential, not an enforcement: a graph that gates cheaply
+does more per write, and nothing compels any graph to be that kind.
 
 Consequences that followed forcibly once the ledger was corrected:
 
