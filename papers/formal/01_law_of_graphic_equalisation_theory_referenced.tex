@@ -16,20 +16,20 @@
 \newcommand{\Hist}{\mathcal{H}}
 \title{The Law of Graphic Equalisation --- Theory\\\large Minimal Recursive Dynamics, Collapse, Frame-Relative Identity, and Residual}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-30.3}\\[2pt]30 August 2026 \textbullet\ document revision 143}
+\date{\textbf{Draft \textemdash\ draft-2026-08-30.3}\\[2pt]30 August 2026 \textbullet\ document revision 144}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.3\,r143}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.3\,r144}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.3\,r143}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.3\,r144}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-30.3 r143} (30 August 2026).
+\textbf{DRAFT --- draft-2026-08-30.3 r144} (30 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -610,8 +610,10 @@ for, and the reading applies to a forager, a firm, a lineage and a protocol alik
 distinction that does the work.
 
 A cost can be moved \emph{sideways}, to a peer frame. That is externalising, and it buys a real local
-advantage which is nevertheless temporary, because the peer is not inert: it responds, and the response
-is the continuous paid change of Remark~\ref{rem:red-queen}. Nothing is reduced by a lateral move; the
+advantage. Whether that advantage is temporary depends on the peer: one able to register the cost
+responds, and the response is the continuous paid change of Remark~\ref{rem:red-queen}. A peer that
+cannot register it --- the case treated later in this paper --- does not, and there the advantage
+persists for as long as the signal fails to return, which may be indefinitely. Nothing is reduced by a lateral move; the
 total is what it was, redistributed, and the advantage lasts exactly as long as the asymmetry does.
 
 Reduction proper comes from moving \emph{up} --- acquiring structure at a level that did not previously
@@ -1600,7 +1602,7 @@ The asynchronous, locally synchronous structure a frame observes (Remark~\ref{re
 
 Two claims have to be separated here, and an earlier statement of this proposition ran them together by calling the runner unseeable rather than unseen. That a runner is hidden is \emph{contingent}. Nothing forbids a runner from exposing its own state to what it runs, and computational reflection does exactly that, as this paper acknowledges when placing itself against that literature (Section~\ref{sec:prior-art}); a tower in which each level is available to the one above is a built artefact, not a thought experiment. A runner that does not expose itself is the \emph{well-formed} case, and for the reasons well-formedness always turns on: exposed runner state is structure maintained for work the frame does not do, and each exposure needs a runner of its own to run the reading of it.
 
-What is not contingent is weaker and survives reflection: \emph{no level is self-transparent}. Reading is an operation whose product lands one level up (Remark~\ref{rem:evaluation-writes}), so a level cannot hold the reading of itself while being the level that is running. Reflection makes the levels explicit and pays for each; it does not terminate in a level transparent to itself. A frame may therefore be given sight of what runs it, and cannot be given sight of its own running. Since the rules are graph and a frame can read and rewrite them (Definition~\ref{def:frame}), while its own running is not graph it holds, the asymmetry is exact: a frame is transparent to itself in precisely one respect and opaque in precisely the other. \emph{It can know what it is and cannot observe its being it.} Self-modification is available; self-observation at the level of the modifying is not.
+What does not depend on the cost model is weaker and survives reflection: \emph{no level is self-transparent}. Reading is an operation whose product lands one level up (Remark~\ref{rem:evaluation-writes}), so a level cannot hold the reading of itself while being the level that is running. Reflection makes the levels explicit and pays for each; it does not terminate in a level transparent to itself. A frame may therefore be given sight of what runs it, and cannot be given sight of its own running. Since the rules are graph and a frame can read and rewrite them (Definition~\ref{def:frame}), while its own running is not graph it holds, the asymmetry is exact: a frame is transparent to itself in precisely one respect and opaque in precisely the other. \emph{It can know what it is and cannot observe its being it.} Self-modification is available; self-observation at the level of the modifying is not.
 \end{proposition}
 This is constructively demonstrable rather than merely argued. A computation realised inside another rule system --- a graph whose rules are implemented within the mechanics of a game or a universal cellular automaton \citep{berlekamp1982} --- is a blind subframe: from inside it computes at its own change-count and has no means to detect that its ``compute'' is the tokens of the host, or that the host may be advancing it by a single serial loop. Building one confirms the opacity directly, and puts the observer of any frame on the same footing. Consequently the question ``where is the universe's compute done'' has the precise form: it asks after the provenance of the universe's own primitives --- self-supplied, or supplied from a substrate not itself --- and is undetermined from inside. The theory declines to decide it; it is a question about a coupling below the frontier, and the demonstrable opacity is why no internal observation settles it.
 
@@ -2012,8 +2014,11 @@ The substrate claim remains
 \section{Falsifiability commitments}\label{sec:falsifiability}
 
 \paragraph{What a framework can and cannot risk.} A list of falsifiers invites a reading this section
-should refuse before making it. \emph{A universal framework cannot be falsified, and that is not the
-same defect as being unfalsifiable.} Something claimed to hold of everything has no outside from which
+should refuse before making it. \emph{A universal framework that is only a vocabulary cannot be
+falsified, and that is not the same defect as being unfalsifiable} --- the qualifier is load-bearing,
+and is discharged at the end of this section where the difference between a vocabulary and a claim with
+content turns out to be the whole question. Stated without it, as an earlier version of this paragraph
+did, the sentence is quotable in a form the rest of the section spends its length withdrawing. Something claimed to hold of everything has no outside from which
 a counterexample could arrive: every observation is expressible in it, so no observation contradicts
 it. That is a property of frameworks rather than a failing of this one --- nobody demands a falsifier
 for arithmetic, or for the concept of a group --- and the distinction is old enough to be named.
@@ -2083,7 +2088,7 @@ What it establishes is that the account is \emph{specified enough to be built fr
 property most frameworks lack and which cannot be faked --- one discovers that a framework is
 underspecified only by attempting to build it, which is Remark~\ref{rem:failure-instrument} at the
 scale of the account itself. And it supplies the thing the opening of this section conceded was
-missing. \emph{The framework cannot be falsified; any implementation of it can.} A running system makes
+missing. \emph{The framework's purely framework-level part cannot be falsified; its contentful claims can, and any implementation of it can.} A running system makes
 the commitments concrete enough to break, and breaks, and is corrected --- so the unfalsifiable core
 acquires a falsifiable surface, which is where the empirical discipline actually operates. Nothing here
 is unprecedented: the free-energy and active-inference programme is implementable in the same sense and
