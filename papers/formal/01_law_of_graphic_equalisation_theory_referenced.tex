@@ -16,20 +16,20 @@
 \newcommand{\Hist}{\mathcal{H}}
 \title{The Law of Graphic Equalisation --- Theory\\\large Minimal Recursive Dynamics, Collapse, Frame-Relative Identity, and Residual}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-30.4}\\[2pt]30 August 2026 \textbullet\ document revision 160}
+\date{\textbf{Draft \textemdash\ draft-2026-08-30.4}\\[2pt]30 August 2026 \textbullet\ document revision 162}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r160}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r162}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r160}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r162}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-30.4 r160} (30 August 2026).
+\textbf{DRAFT --- draft-2026-08-30.4 r162} (30 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -752,9 +752,14 @@ Two honest qualifications, the second of which matters more.
 The claim should be sized rather than announced, because two literatures have already written it for
 their own domains. \citet{coase1937} explains the firm as coordination moved up out of the market
 exactly when the market's transaction costs exceed the hierarchy's, and
-\citet{maynardsmith1995} read the history of life as a sequence of such moves --- replicators to
-chromosomes to cells to eukaryotes to multicellularity to sociality to language. What is offered here is
-that these are one move rather than two analogous ones, which is the same contribution this account
+\citet{maynardsmith1995} read the history of life as a sequence of such moves --- replicating
+molecules to populations in compartments, unlinked replicators to chromosomes, then to cells, to
+eukaryotes, to multicellularity, to sociality, to language. Their ladder is theirs and the criterion is
+not: they unify the transitions by changes in how information is stored and transmitted, and no
+cost comparison appears in that book, so what is imported from them is the sequence while the
+\emph{when} is Coase's alone. An earlier version of this sentence had the first two transitions in the
+wrong order and credited both authors with the criterion. What is offered here is that these are one
+move rather than two analogous ones, which is the same contribution this account
 makes elsewhere and no larger.
 
 And moving up is not a free lunch either, which is Proposition~\ref{prop:no-free-lunch} applied one
@@ -1064,9 +1069,17 @@ mutually incompatible while each being defensible is evidence they are choices r
 
 The demonstration is in silicon and is not a metaphor. IEEE~754 gives floating point a \emph{value}
 where integer arithmetic \emph{traps}: $1/0$ is an infinity in one and a fault in the other, $0/0$ is
-NaN, and NaN then propagates through every operation containing it --- weak Kleene, in hardware, by
-deliberate standardisation \citep{ieee754}. One machine, two policies, chosen per type. The failure
-did not choose; the committee did.
+NaN, and NaN then propagates through most operations containing it, by deliberate standardisation
+\citep{ieee754}. An earlier version of this sentence called that weak Kleene in hardware, which
+overstates it and, in overstating it, discards the better example. The standard is \emph{near}
+infectious with carve-outs written in on purpose: $\mathrm{pow}(x,\pm 0)$ is $1$ for any $x$ including
+NaN, $\mathrm{hypot}(\pm\infty,\mathrm{NaN})$ is $+\infty$, and the minimum/maximum-number operations
+return the number rather than the NaN. Where the result is fixed by the arguments that are not NaN,
+that result is returned. Those exceptions are the point rather than an embarrassment to it: a genuinely
+infectious value would be a discovered semantics, whereas a mostly-infectious one with a list of
+deliberate exemptions is exactly what an \emph{installed policy} looks like. One machine, two policies,
+chosen per type, and one of them carrying a schedule of cases where the committee decided the failure
+should not spread. The failure did not choose; the committee did.
 
 The economics is therefore weaker than an earlier version of this remark claimed, and the claim it
 made is a good example of the error it was warning about. It said propagation costs nothing while a
@@ -1115,12 +1128,19 @@ what the economic reading here restates \citep{dacosta1974}.
 
 One further correspondence is not a debt but evidence for a different claim in this paper. Computing
 reached the same machinery independently and for its own reasons: ill-typed terms are refused before
-execution rather than evaluated to anything \citep{milner1978}, and denotational semantics gives
-divergence a value $\bot$ whose strict functions satisfy $f(\bot)=\bot$, so bottom propagates through
-any compound containing it \citep{scott1971}. That is Bochvar's infectious value, re-derived some three
-decades later, by people solving computation rather than the semantic paradoxes. Two fields meeting the same constraint --- propagate a failure
-through every compound containing it, without special-casing the combinations --- and arriving at one
-arrangement from different problems is what Proposition~\ref{prop:compression-convergence} predicts,
+execution rather than evaluated to a useful value \citep{milner1978} --- strictly, an ill-typed term
+evaluates to $\mathbf{wrong}$, which exists in that semantics so the soundness theorem can be stated,
+and the contrast being drawn is with producing an ordinary value --- and denotational semantics gives
+divergence a value $\bot$ with $f(\bot)=\bot$ for \emph{strict} $f$ \citep{scott1971}. The restriction
+is load-bearing and an earlier version of this sentence dropped it, concluding that bottom propagates
+through any compound containing it. It does not: that monograph restricts function spaces to the
+continuous and explicitly not to the strict, and a non-strict function --- a constant, a lazy
+conditional --- has $f(\bot)\neq\bot$. Nor is this an identity with Bochvar, for whom infectiousness is
+definitional for every connective rather than a property some functions have. What survives is
+narrower and is still what the proposition needs: two fields, decades apart, solving different problems,
+both found that a failure value which propagates through the compounds \emph{built to propagate it} is
+the cheap arrangement, and both then had to say which compounds those are. Arriving at one arrangement
+from different problems is what Proposition~\ref{prop:compression-convergence} predicts,
 which requires the forcing to be shared and not merely the outcome, and it is offered here as an instance of that
 rather than as support for this remark, which needs none.
 
@@ -2131,7 +2151,7 @@ The individual ingredients of Graphic Equalisation have substantial prior art. T
 
 \paragraph{Emergent and relational time.} That time is not a substrate dimension (Section~\ref{sec:time-not-primitive}) has substantial physics precedent, and the present account sits at the most-local end of it. The Wheeler--DeWitt equation of canonical quantum gravity carries no time parameter \citep{dewitt1967} --- the ``problem of time'' this substrate dissolves rather than solves, there having been no time variable to recover. The Page--Wootters mechanism derives apparent evolution from entanglement between a clock subsystem and the rest \citep{pagewootters1983}, closely matching ``time inferred from the relations a frame holds,'' but retains a single global state where this account is per-frame. Barbour's Machian relationalism takes time to be abstracted from change rather than a container \citep{barbour1999}, and Rovelli's relational and thermal-time programme refuses a privileged global time \citep{rovelli1996,rovelli2011}. The distinguishing move here is to keep none of the global objects these programmes retain --- global wavefunction, global configuration space, global state --- reading time entirely from local change.
 
-\paragraph{Computational-universe and graph-rewrite models.} The closest extant framework is the Wolfram Physics Project, in which the universe is a hypergraph evolved by rewrite rules, time is progressive rule application, and observer-independent structure follows from \emph{causal invariance} --- different update orderings yielding the same causal graph \citep{wolfram2002,wolfram2020}. The structural agreement is deep: graph plus rewrite rules, time emergent from rule application rather than posited, order-independence, and observer-relative slicing. Four differences locate the present contribution. First, $\Gamma$ is an admissibility grammar that is itself graph data and self-modifying (the grammar-is-the-loop theorem), whereas Wolfram fixes a rule per universe or takes the entire rule space --- the Ruliad --- at once. Second, collapse realises \emph{one} frame-relative continuation, whereas Wolfram retains all branches (the multiway graph) and derives quantum structure from them. Third, residual and growth-by-minting from it have no counterpart in a fixed rule. Fourth, the present substrate keeps no global object --- no single hypergraph being updated --- being local and frame-relative throughout, and its claims are information-level and cross-domain rather than an attempt to derive our specific universe. This last is why $c$ falls out here as a \emph{per-frame} unit (developed in the companion physics-grounding paper): sub-rules with closure give each frame its own cycle and hence its own $c=1$, invariant by construction, whereas a single global update yields $c$ only as an emergent speed limit shown observer-independent by causal invariance --- the constant, but not the per-frame machinery beneath it. That an independent programme reached the shared shape from cellular automata and physics, while this one reached it from cognition and engineering, bears on the arrangement claim of Section~\ref{sec:scope} rather than against its novelty, at the calibrated strength given there.
+\paragraph{Computational-universe and graph-rewrite models.} The closest extant framework is the Wolfram Physics Project, in which the universe is a hypergraph evolved by rewrite rules, time is progressive rule application, and observer-independent structure follows from \emph{causal invariance} --- different update orderings yielding the same causal graph \citep{wolfram2002,wolfram2020,wolfram2020cs}. The structural agreement is deep: graph plus rewrite rules, time emergent from rule application rather than posited, order-independence, and observer-relative slicing. Four differences locate the present contribution. First, $\Gamma$ is an admissibility grammar that is itself graph data and self-modifying (the grammar-is-the-loop theorem), whereas Wolfram fixes a rule per universe or takes the entire rule space --- the Ruliad --- at once. Second, collapse realises \emph{one} frame-relative continuation, whereas Wolfram retains all branches (the multiway graph) and derives quantum structure from them. Third, residual and growth-by-minting from it have no counterpart in a fixed rule. Fourth, the present substrate keeps no global object --- no single hypergraph being updated --- being local and frame-relative throughout, and its claims are information-level and cross-domain rather than an attempt to derive our specific universe. This last is why $c$ falls out here as a \emph{per-frame} unit (developed in the companion physics-grounding paper): sub-rules with closure give each frame its own cycle and hence its own $c=1$, invariant by construction, whereas a single global update yields $c$ only as an emergent speed limit shown observer-independent by causal invariance --- the constant, but not the per-frame machinery beneath it. That an independent programme reached the shared shape from cellular automata and physics, while this one reached it from cognition and engineering, bears on the arrangement claim of Section~\ref{sec:scope} rather than against its novelty, at the calibrated strength given there.
 
 \paragraph{Information and minimum description.} The preference for the smallest sufficient ontology is the method's rather than this paper's, and is set out with its prior art in the companion \emph{Is}. What matters here is only its consequence for one hypothesis: it motivates the Discrete Sufficiency Hypothesis and does not prove it.
 
@@ -2224,7 +2244,6 @@ is a property of a class of $r$, and the claim is that the class is not optional
 
 Two further notes on the list as a whole. Nothing is claimed to be closeable cheaply --- \emph{discrete sufficiency} requires ruling out every discrete representation including dynamically varying ones, which is hard rather than ill-formed, and the distinction between the two is the point of this paragraph. And the marks themselves are revisable: three entries above were re-marked after the commitments for Section~\ref{sec:residual}'s newer material were written, because setting out a new commitment made the criterion sharper than it had been when the older ones were assigned.
 
-
 \section{Conclusion}
 The theory is deliberately small. A graph need not know what it is, where it is, what will happen, or what it wants. Present structure determines admissible continuation; interaction and collapse produce realised history; realised history changes the antecedent from which subsequent possibility is generated.
 
@@ -2304,20 +2323,7 @@ R.~H. Coase.
 \newblock The nature of the firm.
 \newblock \emph{Economica}, 4(16):386--405, 1937.
 
-\bibitem[Friston(2010)]{friston2010}
-Karl Friston.
-\newblock The free-energy principle: a unified brain theory?
-\newblock \emph{Nature Reviews Neuroscience}, 11(2):127--138, 2010.
 
-\bibitem[Lakatos(1970)]{lakatos1970}
-Imre Lakatos.
-\newblock Falsification and the methodology of scientific research programmes.
-\newblock In Imre Lakatos and Alan Musgrave, editors, \emph{Criticism and the Growth of Knowledge}, pages 91--196. Cambridge University Press, Cambridge, 1970.
-
-\bibitem[Carnap(1950)]{carnap1950}
-Rudolf Carnap.
-\newblock Empiricism, semantics, and ontology.
-\newblock \emph{Revue Internationale de Philosophie}, 4(11):20--40, 1950.
 
 \bibitem[Ashby(1956)]{ashby1956}
 W.~Ross Ashby.
@@ -2630,10 +2636,15 @@ Stephen Wolfram.
 \newblock \emph{A New Kind of Science}.
 \newblock Wolfram Media, Champaign, IL, 2002.
 
-\bibitem[Wolfram(2020)]{wolfram2020}
+\bibitem[Wolfram(2020a)]{wolfram2020}
 Stephen Wolfram.
 \newblock \emph{A Project to Find the Fundamental Theory of Physics}.
 \newblock Wolfram Media, Champaign, IL, 2020.
+
+\bibitem[Wolfram(2020b)]{wolfram2020cs}
+Stephen Wolfram.
+\newblock A class of models with the potential to represent fundamental physics.
+\newblock \emph{Complex Systems}, 29(2):107--536, 2020.
 
 \bibitem[Yanofsky(2003)]{yanofsky2003}
 Noson S. Yanofsky.
