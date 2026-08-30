@@ -1,4 +1,10 @@
-# Full review pass over the twelve formal papers — results
+# Review passes over the twelve formal papers — results
+
+> **Two passes are recorded here.** §1–§7 describe the FIRST pass. **§8 records the
+> second pass, which found two of the first pass's own repairs unsound and
+> reversed them** — so where §1 and §8 disagree, §8 is current. The disagreement is
+> left in place rather than edited away because it is the more useful record: it
+> shows the standard running against the account rather than only for it.
 
 **Date:** 2026-08-30 · **Draft set reviewed:** `draft-2026-08-30.4`
 **Method:** five independent review lenses run in parallel over `papers/formal/`, plus a
@@ -291,3 +297,104 @@ cannot be closed by inspection and would need a fresh read to assess honestly.
    *eight papers* when there were twelve, and named a draft string two bumps old.
 4. **Verify the reviewer.** Two findings this pass did not survive re-checking,
    one of them mine. §5 exists so the pass's own error rate is on the record.
+
+---
+
+## 8. Second pass — what it overturned
+
+Five fresh lenses, run after the first pass's repairs. It found the first pass had
+been **too kind to the account in exactly the places the account was being
+reduced**, which is the direction that matters.
+
+### 8.1 Two of the five ledger folds were unsound and are withdrawn
+
+| fold | verdict |
+|---|---|
+| `Γ` into `r` | **holds** |
+| `r` into the admission | **holds**, with the candidate list now stated and the partly-analytic concession made |
+| the valuation into no-copy | **CIRCULAR — withdrawn** |
+| no-copy into `r` | withdrawn with the valuation |
+| the realisation operator into rules | **MISQUOTED ITS SOURCE — withdrawn** |
+
+**The valuation's fold derived the weak form of no-copy from the strong form the
+same paragraph had just conceded was unavailable.** And `prop:economics` says
+outright that *continuation is free and change is paid*, so a predecessor a change
+does not touch persists at no cost — the derivation was refuted by the proposition
+it was offered as grounding. Independently, *each write does one thing* is a
+unit-of-account convention, not a scarcity premise; `prop:partial-order` and
+`rem:gals` make unrelated collapses concurrent, so nothing is forgone.
+
+**The realisation fold misquoted the line it was built on.** `def:admissible`'s
+follow-on says no ***particular*** algorithm is required and names itself
+***extensional*** — which keeps the family as an object independent of any
+constructor, the opposite of what was concluded from it.
+
+**Ledger as it now stands: the admission, a valuation, a realisation operator,
+Axiom −1.**
+
+### 8.2 The objection that outranks the count
+
+Every fold has the form *X is a special case of Y*, and the licensing criterion —
+*selecting is doing something, doing something is what a rule is* — applies to
+**anything this account posits**. If admissibility turned out not to be a species
+of rule, `Γ` returns to the list and **not one proposition, falsifier or prediction
+changes**. So a count driven to zero is a theorem of the vocabulary, not a
+measurement of the economy. `rem:inherited` now says this. What a surviving fold
+*does* buy: two things cannot be varied independently, which constrains what a
+grounding may do. It does not reduce the ways the account can be wrong.
+
+### 8.3 The systemic defect, named
+
+**Corrections applied at the site of the objection and not swept.** The papers
+narrated a repair where the objection landed and left the repaired claim
+load-bearing elsewhere. Measured instances: a no-copy sweep that was run, reported,
+and missed two sites inside the same remark; a fold withdrawn in the ledger while
+two falsifiers still cited it as made; `07` retracting an item from its prohibitions
+140 lines after the enumeration that contained it; `00` §1 asserting what §2
+corrects. **This is one defect, not five.**
+
+### 8.4 Corrections that damaged the text
+
+The first pass added **66 in-place self-corrections**, 20 in paper 01. A lens
+classified all of them: **~13 load-bearing, ~12 belong in a footnote or here, ~43
+bookkeeping.** Two structural rules came out of it and are now enforced: **no
+revision history inside an axiom, definition, proposition, or falsifier entry**,
+and **the generated statement carries none at all**. One sentence in `01b` had been
+rendered **unparseable** by two nested corrections stacked before its main verb.
+
+### 8.5 Also found and fixed
+
+- **Seven flattering `[detail]`→`[shape]` mis-tags**, including three of the four
+  quantum results `01a`'s abstract sells, `01b`'s death criterion (listed under its
+  own *"the strong claims are structural"*), and `06`'s underdetermination, which is
+  a third of that paper.
+- `00`'s falsifiability section header said **"Two commitments"** over a list of three.
+- `00`'s compression commitment was **refuted by its own worked example** — an arity
+  and a count are neither relata nor relations. Narrowed to the *bearer of
+  distinctions*.
+- `07`'s **"in advance" was false of the document it appears in**: the numbers are on
+  the preceding page, so the definition is prospective only.
+- **Ten of `07`'s prose pointers** were aimed at the wrong sections after it gained
+  eight of them; `07` uses `\ref` nowhere, so none of them failed loudly.
+- My `rem:inherited` rewrite **deleted the Axiom −1 and third-tier paragraphs** and
+  **duplicated the `Γ` fold**. Both restored/removed.
+- All twelve now carry **zero margin overflows**, and the draft checker gained a
+  fourth check for them — **verified by planting one**.
+
+### 8.6 Still open
+
+- **Free continuation: a write, or the absence of one?** `01a` says it *is* a write
+  from which the predecessor is recoverable; `01` and `03` say it is the absence of
+  an event. `01a` is internally split on it. Load-bearing for `prop:second-law`.
+- **Is a rule-less structure a frame?** `01` says yes and calls the contrary *"wrong"*;
+  `00` says *"nothing here is a frame"* and infers a load-bearing conclusion from it.
+- **Can a rock measure?** `00`'s `prop:one-way` says it cannot observe; `01a`'s
+  `cor:observer` says a rock measures. A grain qualifier probably resolves it and is
+  stated at neither site.
+- **"Capability"** means the gates in `01` and reach in `02` and `04`; `01`'s caution
+  names only the Sen-following companion, so `02` is uncovered.
+- **Narrativium as a stock**: `07`'s *"paid out of their Narrativium"* against `04`'s
+  *"Narrativium is not a tank."*
+- **The self-congratulatory register**, carried over from the first pass and now
+  joined by a self-flagellating one — a *"X rather than quietly Y-ing"* formula
+  appears six times across four papers.
