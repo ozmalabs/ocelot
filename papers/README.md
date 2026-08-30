@@ -15,7 +15,7 @@ which 00 says is not required for there to be anything.
 
 **The addition is one admission plus two things that do not follow from it.**
 01's `rem:inherited` carries the ledger, which this section reported as *one*
-until the first audit, then as five, and which four passes have since settled.
+until the first audit, then as five, and which successive passes have moved it in both directions.
 
 **Admitted:** that anything *happens* — which 00 says is not required for there
 to be anything, so it is a real addition.
@@ -48,10 +48,22 @@ antecedents — one pattern yielding two changes means the pattern missed what
 mattered — which is `prop:determinism`, closer to what *rule* means here than to
 a wager.
 
-**Genuinely extra: nothing.** Past the admission and Axiom −1, what remains are
-the **bets the papers state as hypotheses** — including the Law of Graphic
-Equalisation itself. Read that as *more* exposure, not less: an account resting
-on fewer things has fewer places where a failure could be contained.
+**Genuinely extra: two.** A **valuation on writes** — the argument folding it into
+no-copy was circular, and 01's own economics (*continuation is free and change is
+paid*) refutes rather than supports it — and a **realisation operator**, since
+naming the selector a rule relabels the commitment without discharging it. Both
+were folded away in one pass and put back by the next audit.
+
+Past those and Axiom −1 sit the **bets the papers state as hypotheses**, including
+the Law of Graphic Equalisation itself.
+
+**A caution on reading the count down.** The criterion that licenses these folds —
+*selecting is doing something, doing something is what a rule is* — applies to
+anything this account posits, so a count driven to zero would be a theorem of the
+vocabulary rather than a measurement of the economy. What a surviving fold buys is
+narrower and real: it says two things cannot be varied independently, which
+constrains what a grounding may do. It does **not** reduce the number of ways the
+account can be wrong.
 
 The triple stays as notation — a useful functional decomposition, and the corpus
 is written in it — but a ledger that counts functions as substances counts wrong. Plus Axiom −1, close to 00's claim without being
@@ -63,13 +75,18 @@ result. Neither assumed nor derived.
 The economy claim is made so it can be held against the set, and on its first
 audit it failed in the direction that flatters — two postulates claimed, five
 found, each demonstrated by 01 contradicting its own ledger elsewhere in its own
-words — then four, after `Γ` folded into `r`; then three, after the valuation
-folded into no-copy; then two-plus-an-admission, after `r` itself turned out to
-follow from the admission rather than sit beside it; then **one**, after no-copy
-did too; then **none**, after the realisation operator turned out to be a specific
-type of rule. Of the six movements only the first ran in the flattering
-direction, and one found a claim made *too strongly* rather than a posit left
-uncounted — so the standard does not only push toward economy. The claim that survives is narrower and still useful: the base is small,
+words. Successive folds then drove it down to none — `Γ` into `r`, the valuation
+into no-copy, `r` into the admission, no-copy into `r`, the realisation operator
+into rules — and **a second audit found two of those folds unsound and put them
+back**, leaving the admission, a valuation, a realisation operator and Axiom −1.
+
+The valuation's fold was circular (it derived the weak form of no-copy from the
+strong form it had just conceded was unavailable, against 01's own free-persistence
+doctrine); the realisation operator's misquoted the line it was built on (`def:admissible`'s
+follow-on says no **particular** algorithm is required and calls itself
+*extensional*, which keeps the object rather than dissolving it). **The last
+movement ran against the account's economy**, which is the direction that matters
+for whether the standard is real. The claim that survives is narrower and still useful: the base is small,
 the addition is enumerable, and an independent posit the enumeration does not
 carry is a defect in the economy even where the individual claim stands.
 
