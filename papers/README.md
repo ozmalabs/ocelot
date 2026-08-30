@@ -38,8 +38,20 @@ spent on anything else. A budget by opportunity cost, needing no quota. (The
 removed, and `ax:no-time`'s direction limb, which had rested on it, now rests on
 the asymmetry of enablement, which it had all along.)
 
-**Genuinely extra:** one thing — a realisation operator selecting one
-continuation where the rules yield a set.
+Realisation follows too. **Nothing assembles the set of what could happen and
+then reduces it** — `def:admissible` fixes membership by an *iff*, and 01 says
+outright that no algorithm for constructing `Poss` is required, so there is no
+collection standing in the graph awaiting selection. A rule fires and writes a
+delta; **the firing is the realisation**, and selecting is one more thing a rule
+does. Single-valuedness then rests on rules being determinate in their
+antecedents — one pattern yielding two changes means the pattern missed what
+mattered — which is `prop:determinism`, closer to what *rule* means here than to
+a wager.
+
+**Genuinely extra: nothing.** Past the admission and Axiom −1, what remains are
+the **bets the papers state as hypotheses** — including the Law of Graphic
+Equalisation itself. Read that as *more* exposure, not less: an account resting
+on fewer things has fewer places where a failure could be contained.
 
 The triple stays as notation — a useful functional decomposition, and the corpus
 is written in it — but a ledger that counts functions as substances counts wrong. Plus Axiom −1, close to 00's claim without being
@@ -54,9 +66,10 @@ found, each demonstrated by 01 contradicting its own ledger elsewhere in its own
 words — then four, after `Γ` folded into `r`; then three, after the valuation
 folded into no-copy; then two-plus-an-admission, after `r` itself turned out to
 follow from the admission rather than sit beside it; then **one**, after no-copy
-did too. Of the five movements only the first was in the flattering direction —
-and the last found a claim made *too strongly* rather than a posit left
-uncounted, so the standard does not only run toward economy. The claim that survives is narrower and still useful: the base is small,
+did too; then **none**, after the realisation operator turned out to be a specific
+type of rule. Of the six movements only the first ran in the flattering
+direction, and one found a claim made *too strongly* rather than a posit left
+uncounted — so the standard does not only push toward economy. The claim that survives is narrower and still useful: the base is small,
 the addition is enumerable, and an independent posit the enumeration does not
 carry is a defect in the economy even where the individual claim stands.
 

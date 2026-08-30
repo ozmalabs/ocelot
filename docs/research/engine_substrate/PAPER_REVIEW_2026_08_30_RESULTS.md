@@ -15,7 +15,7 @@ over paper 00 and that everything else is consequence. It invited a reader to
 look for a hidden axiom, on the ground that finding one would be *"a real result
 against the account's economy."*
 
-**The audit found five postulates, not two (later one plus an admission, §1.1) — and every one is demonstrated by 01
+**The audit found five postulates, not two (later an admission and no posits, §1.1) — and every one is demonstrated by 01
 contradicting the remark in its own words elsewhere in the same file.** That is
 the strongest available form of evidence for this kind of check, because it does
 not depend on the reviewer's reading of any derivation.
@@ -71,9 +71,30 @@ which use is tested**, which is why it is worth recording:
   along: if one change makes another possible, the second does not thereby make
   the first possible. Direction had been over-attributed.
 
-**The ledger settles at one admission (things happen) plus ONE posit that does not
-follow from it (single-valued realisation), plus Axiom −1** — against the five the
-audit found and the two originally claimed.
+A fifth fold took the last one. **A realisation operator is not required; it is a
+specific type of rule.** The argument that had defended it — `Γ` generates the
+*set*, `r` produces deltas, neither yields a single successor — **reifies `Poss`**,
+and `Poss` is not that kind of thing: `def:admissible` fixes membership by an
+*iff*, and the text after it says no construction algorithm is required. There is
+no collection in the graph awaiting reduction. A rule fires and writes a delta;
+the firing *is* the realisation. Single-valuedness then rests on rules being
+determinate in their antecedents, which is `prop:determinism` and is closer to
+what *rule* means here than to a wager.
+
+**This partly answers §6's determinism finding (C1)** rather than leaving it open:
+the *"variation observed only from a frame that omits determining dimensions"*
+clause reads as an unfalsifiable escape, and on this reading it is **the content**
+— an omitted dimension is exactly the case where the pattern missed what mattered.
+That **relocates** the empirical risk rather than dissolving it, onto a claim the
+paper already carries: the Law itself, which bets that realised dynamics admit a
+rule-description at all. Closeable in the ordinary way, and where a doubter should
+press.
+
+**The ledger settles at one admission (things happen), NO further posits, and
+Axiom −1** — against the five the audit found and the two originally claimed. The
+third tier is untouched: the hypotheses remain bets. **This is more exposure, not
+less** — an account resting on fewer things has fewer places where a failure could
+be contained.
 
 Of the two survivors, single-valued realisation is a bet **against a rival that
 is not cheaper**, and the remark now prices it: retaining every continuation
