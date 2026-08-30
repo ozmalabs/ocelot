@@ -558,3 +558,21 @@ addressed:
 The second is the useful fix. The generator reports every labelled block the spec
 does not pull; the ledger was the one block it was blind to, and the ledger is where
 every one of these six misses originated.
+
+---
+
+## 12. On reading this record
+
+The passes are recorded by what they left, not by which way they moved the count.
+That distinction was got wrong in these pages more than once — several sections
+score a movement by whether it cost the account something, as though an
+unflattering finding were worth more than a flattering one. It is not. **A review
+is a write; what it returns that does not cohere is residual; and the residual is
+what the next revision runs on.** A pass returning nothing is the expected case and
+costs little. A pass returning something localised is the one worth having, and its
+value does not depend on whom it embarrasses.
+
+Read that way the sequence is not a record of errors corrected but of residual
+produced and absorbed, which is the same loop the account describes and the reason
+it could be run on itself at all. The direction the count moved is an artefact of
+which residual arrived first.
