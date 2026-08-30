@@ -16,20 +16,20 @@
 \newcommand{\Hist}{\mathcal{H}}
 \title{The Law of Graphic Equalisation --- Theory\\\large Minimal Recursive Dynamics, Collapse, Frame-Relative Identity, and Residual}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-30.3}\\[2pt]30 August 2026 \textbullet\ document revision 144}
+\date{\textbf{Draft \textemdash\ draft-2026-08-30.3}\\[2pt]30 August 2026 \textbullet\ document revision 147}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.3\,r144}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.3\,r147}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.3\,r144}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.3\,r147}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-30.3 r144} (30 August 2026).
+\textbf{DRAFT --- draft-2026-08-30.3 r147} (30 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -164,7 +164,7 @@ the shape changes slowly; neither is fixed. Over the work behind this account th
 shifted and wobbled --- more slowly than the details, and not negligibly --- so anyone treating the
 shape as the stable part should understand that as a comparison rather than a guarantee. That is checkable against a revision record rather than
 merely assertable, so the record is kept and the current reading is reported here: over this
-account's most heavily revised single day, thirty-eight revisions to this paper produced roughly a
+account's most heavily revised single day, many revisions to this paper produced roughly a
 dozen corrections to claims it had already made, of which four were shape-level --- a primitive that
 turned out to be a role, two components that turned out not to be required, and a property that
 turned out to be well-formedness rather than necessity. Roughly one shape correction to three detail
@@ -666,8 +666,9 @@ expenditure distinct; the phrasing here follows it, an earlier version having in
 passing.
 
 That also corrects the class named a moment ago, which was drawn too narrowly. An information hazard is
-a \emph{capability} change with a negative sign, and it is not the whole of what alters a frame's
-prospects --- an accessibility failure alters them with the capability untouched. The boots case is
+a \emph{capability} change whose negative sign is admissible in the reference frame --- the qualifier is
+developed in Section~\ref{sec:crossings}, where it is load-bearing --- and it is not the whole of what
+alters a frame's prospects --- an accessibility failure alters them with the capability untouched. The boots case is
 exactly that: nothing about the gates prevents buying durable boots, and the arrangement is nonetheless
 out of reach. So a frame can have the gate open and the
 capacity absent, in which case the arrangement is fully understood and permanently out of reach, and
@@ -686,9 +687,10 @@ consequence of the two being orthogonal at an instant and coupled over one.
 
 The orthogonality is clean at a point in time and does not stay clean, because \emph{aperture is itself
 purchased}. Holding a wider aperture or a longer horizon is standing structure a frame pays to maintain,
-so anything consuming capacity narrows it --- which supplies the mechanism the companion on mind states
-without one, where a frame under stress becomes manipulable by having its horizon shortened rather than
-its judgement impaired. The narrowing needs no special stress machinery. It is the ordinary consequence
+so anything consuming capacity narrows it --- which bears on the companion on mind, where a frame under
+stress becomes manipulable by having its horizon shortened rather than its judgement impaired. That
+paper gives its own account of the shortening; what is offered here is a different one, in this
+account's terms, and the two have not been reconciled. The narrowing needs no special stress machinery. It is the ordinary consequence
 of spending Narrativium on something else.
 
 That prediction is domain-general and dose-dependent, and it has been measured in the least convenient
@@ -1120,6 +1122,59 @@ frame is legible only where it is broken. These are one statement in three place
 it and there is no cheaper instrument}. Which also prices the instrument, since by the accelerator's
 own economics each further increment of boundary costs more than the last.
 
+And there is a cost of handlers that is easy to miss because it looks like a benefit. \emph{Every
+handler installed reduces what failure can teach.} A frame that coheres its failures to tidy values
+reports success and discloses nothing, so robustness and legibility are traded against one another
+rather than being two names for quality. That the same system is customarily made loud in development
+and quiet in production is this trade made deliberately --- two frames wanting opposite policies over
+identical structure, for the reason given here rather than by convention.
+\end{remark}
+
+\begin{remark}[What never cohered is absent; what cohered and stopped leaves a hole]\label{rem:vacated}
+A distinction the preceding material needs and has not drawn. Something that never cohered is simply
+\emph{absent}, and absence is free --- nothing points at it, nothing expected it, and no frame is worse
+off for it. Something that cohered and then stopped is a different object: it leaves \emph{a space
+where something was}, and the difference is that other structure came to depend on it while it held.
+
+The consequences of the second are underdefined, and underdefined in a specific way rather than merely
+unpredictable. What breaks is not the removed structure --- it is gone and has no further behaviour ---
+but every relation elsewhere that resolved through it and now resolves through nothing. Computing has
+the sharp case and calls it exactly that: dereferencing what was freed is undefined behaviour, and its
+mildest form is a wrong answer while its worst is unbounded. A variable that was never assigned and one
+that was assigned and released fail differently, and only the second can corrupt something that was
+correct.
+
+The reason this cannot be surveyed in advance is structural rather than practical. \emph{A thing does
+not carry a record of what depends on it.} The dependencies live in the frames holding the references,
+not in the referent, so from the position of the thing being removed they are not visible at all ---
+Axiom~\ref{ax:no-view} again, in its most operational form. Knowing what would break requires the
+containing frames, and asking them is the expense.
+
+Which yields three states rather than two, and the third is the one that costs. Absent: nothing held,
+nothing owed, free. Vacated with the references left standing: a hole, unpaid, with consequences
+determined by whatever the dangling relations do next. And vacated with the absence \emph{represented}
+--- a tombstone, a cascade rule, a retained count of dependents --- which resolves cleanly and is
+installed machinery paid for under Proposition~\ref{prop:economics}, the deletion-side member of the
+handler family of Remark~\ref{rem:handler-abuse}. Reference counting is not a fact about references; it
+is a purchase.
+
+This is also the sharper form of the removal cost argued later for genomes and dead code
+(Remark~\ref{rem:evolution-compression}). The reason deletion is expensive is not mainly that the
+excised structure might turn out to do something. It is that the survey licensing the deletion is a
+question about \emph{other} frames, obtainable only from them, and a confident remover is someone who
+has not paid for it. Chesterton's rule about the fence is this stated as advice \citep{chesterton1929};
+the ecological version, where removing one species collapses relations that were not obviously routed
+through it, is the same structure with the dependents alive \citep{paine1969}.
+\end{remark}
+
+\section{Crossings, and what a disclosure moves}\label{sec:crossings}
+Forcing a failure is how a boundary is found (Remark~\ref{rem:failure-instrument}), and that instrument
+has consequences the preceding section did not draw out: crossings are paid for by somebody, the payment
+may be arranged to return slowly or not at all, and a disclosure of what lies past a boundary changes
+what other frames can do. This section treats those, and is separate from the decoherence machinery
+because none of it is about how a write fails --- it is about who bears the cost of finding out and what
+the finding then moves.
+
 The remark so far reads as though the instrument were benign, and the canonical cases are not. A
 boundary crossed at scale, with the cost falling on parties who did not choose to cross it, is the same
 operation with the price paid elsewhere. Tetraethyl lead was introduced as an anti-knock additive in the
@@ -1319,51 +1374,6 @@ It also locates the ethical question rather than importing one. Nothing here say
 It says the cost is paid by someone, that who pays is a separable choice from whether to cross, and that
 choosing a payer who cannot signal is what makes the instrument stop working while continuing to look as
 though it has.
-
-The second is a cost of handlers that is easy to miss because it looks like a benefit. \emph{Every
-handler installed reduces what failure can teach.} A frame that coheres its failures to tidy values
-reports success and discloses nothing, so robustness and legibility are traded against one another
-rather than being two names for quality. That the same system is customarily made loud in development
-and quiet in production is this trade made deliberately --- two frames wanting opposite policies over
-identical structure, for the reason given here rather than by convention.
-\end{remark}
-
-\begin{remark}[What never cohered is absent; what cohered and stopped leaves a hole]\label{rem:vacated}
-A distinction the preceding material needs and has not drawn. Something that never cohered is simply
-\emph{absent}, and absence is free --- nothing points at it, nothing expected it, and no frame is worse
-off for it. Something that cohered and then stopped is a different object: it leaves \emph{a space
-where something was}, and the difference is that other structure came to depend on it while it held.
-
-The consequences of the second are underdefined, and underdefined in a specific way rather than merely
-unpredictable. What breaks is not the removed structure --- it is gone and has no further behaviour ---
-but every relation elsewhere that resolved through it and now resolves through nothing. Computing has
-the sharp case and calls it exactly that: dereferencing what was freed is undefined behaviour, and its
-mildest form is a wrong answer while its worst is unbounded. A variable that was never assigned and one
-that was assigned and released fail differently, and only the second can corrupt something that was
-correct.
-
-The reason this cannot be surveyed in advance is structural rather than practical. \emph{A thing does
-not carry a record of what depends on it.} The dependencies live in the frames holding the references,
-not in the referent, so from the position of the thing being removed they are not visible at all ---
-Axiom~\ref{ax:no-view} again, in its most operational form. Knowing what would break requires the
-containing frames, and asking them is the expense.
-
-Which yields three states rather than two, and the third is the one that costs. Absent: nothing held,
-nothing owed, free. Vacated with the references left standing: a hole, unpaid, with consequences
-determined by whatever the dangling relations do next. And vacated with the absence \emph{represented}
---- a tombstone, a cascade rule, a retained count of dependents --- which resolves cleanly and is
-installed machinery paid for under Proposition~\ref{prop:economics}, the deletion-side member of the
-handler family of Remark~\ref{rem:handler-abuse}. Reference counting is not a fact about references; it
-is a purchase.
-
-This is also the sharper form of the removal cost argued later for genomes and dead code
-(Remark~\ref{rem:evolution-compression}). The reason deletion is expensive is not mainly that the
-excised structure might turn out to do something. It is that the survey licensing the deletion is a
-question about \emph{other} frames, obtainable only from them, and a confident remover is someone who
-has not paid for it. Chesterton's rule about the fence is this stated as advice \citep{chesterton1929};
-the ecological version, where removing one species collapses relations that were not obviously routed
-through it, is the same structure with the dependents alive \citep{paine1969}.
-\end{remark}
 
 \section{Termination}\label{sec:termination}
 \begin{definition}[Frame-relative termination]\label{def:frame-termination}
@@ -2454,9 +2464,10 @@ substrate time dimension, no frame-free identity, no consequence serving as its 
 attaching to the write --- and a world encoded as a graph but carrying a global clock, or
 frame-independent sameness, or retroaction, satisfies ``everything is a graph'' while violating this
 account outright. That is where a counterexample would come from, and it is why one is conceivable.
-And the universality is \emph{load-bearing}: every transfer claim in this programme depends on it,
-since a framework holding only in some domains could not say that a lesson forced in one applies in
-another. The objection has identified the feature the account is built on and called it a defect.
+And the universality is \emph{load-bearing} in a specific and limited way: the transfer claims this
+programme makes are about its economics, so what they require is that the economics range widely, not
+that every clause of the account be a strict universal --- which the conclusion denies of the
+write-economics itself. The objection has identified the feature the account is built on and called it a defect.
 
 There is no need to argue the point further here, because it is already this paper's own primary
 commitment: the composition falsifier states that the account fails if its structure is recoverable
@@ -2476,8 +2487,9 @@ being the success condition for description rather than an embarrassment about i
 The sharper reading is that the two are one property seen from two places. \emph{Trivial is an in-frame
 judgement and consequential is a cross-frame one}: held, the thing follows immediately and surprises
 nobody; transferred, it changes what other frames can represent and do. Those are measured in different
-frames and therefore cannot conflict --- which is this paper's own in-frame/cross-frame discipline
-applied to the reception of its own claims, and is the same reason the value of a disclosure is
+frames, so a claim of conflict between them would have to be made from a third --- which does not
+vindicate the pairing, and establishes only that its two halves are not each other's counterexample.
+That is this paper's own in-frame/cross-frame discipline applied to the reception of its own claims, and is the same reason the value of a disclosure is
 relative to whoever receives it.
 
 The guard is that this signature is necessary and not sufficient, and stating it requires care because
@@ -2563,6 +2575,18 @@ hold them apart. The substrate risks little by design, which is the claim just m
 \emph{groundings} carry the risk, and the commitments below that bear on them are falsifiable in the
 ordinary sense.
 
+\paragraph{The position, in brief.} The discussion above reached its form by successive correction and
+records those corrections, which is useful for anyone checking the reasoning and useless for anyone who
+only wants to know where it ended. Stated once, without the history: the purely framework-level part of
+this account carries no falsifiable content, because a contingent commitment doing no framework-work is
+idle structure by its own definition of well-formedness. The rest is contentful and answerable, and a
+counterexample to it \emph{bounds} the account --- locates the edge of its range --- rather than
+refuting it from nowhere, which is what residual does everywhere else here. What separates such an
+account from a mere vocabulary is that a counterexample is conceivable at all. Establishing it would
+require enumerating an unbounded frontier and cannot terminate; bounding it requires one extant thing
+that does not fit. And what it earns beyond that is not truth but use: whether it does work its absence
+would not, which is a record and not a proof, and is reported above with its gaps.
+
 \medskip
 Each commitment below is marked \textsc{[shape]} or \textsc{[detail]}. A \textsc{[detail]} failing is a revision: the account survives with that mechanism replaced. A \textsc{[shape]} failing costs \emph{range} rather than a mechanism, because what fails is something the substrate is claimed to require or to permit --- so the account does not hold where it claimed to, which is the more serious of the two and is still a boundary rather than an annihilation, per the discussion above. The distinction is the one Section~\ref{sec:scope} rests its epistemic claim on, and marking it here is what makes that claim checkable rather than asserted.
 \paragraph{\textsc{[shape]}~Composition.} Prior to the component commitments below: the arrangement claim of Section~\ref{sec:scope} fails if the structure's recurrence across unrelated domains is an artefact of description rather than a property of those domains. Evidence against it would be a demonstration that any sufficiently rich domain can be rendered in this vocabulary with equal facility, including domains chosen adversarially to lack the structure. Evidence bearing on it is independent re-derivation, in a domain's own idiom, without reference to this theory --- which rules out this vocabulary having supplied the structure, and does not by itself distinguish the composition claim from the shared-constraint reading the account predicts anyway. The burden here is deliberately on the negative side, because that side is closeable: a single adversarial domain rendered with equal facility settles it against the claim. No requirement is placed on the positive side to exhibit domains that share \emph{nothing} --- every pair of domains shares something, so that standard is unmeetable in principle, and discharging it would mean enumerating domains until an assessor chose to stop. A test whose stopping condition lies with the assessor rather than with the claim is not a test, and this paper does not offer one.
@@ -2589,6 +2613,9 @@ Each commitment below is marked \textsc{[shape]} or \textsc{[detail]}. A \textsc
 \item \textsc{[shape]}~\textbf{Dependents are not held by the referent.} Fails if realised graph dynamics require a structure to carry the set of things depending on it --- back-references primitive rather than installed --- so that the consequences of removing a structure are recoverable from that structure alone, without querying the frames holding the references and without paid machinery (Remark~\ref{rem:vacated}). A substrate in which deletion is always clean falsifies this, and would also remove the distinction between an absence and a vacancy.
 \item \textsc{[shape]}~\textbf{A boundary is known only by crossing it.} Fails if a frame can \emph{settle} the location of its own admissibility boundary without any write that crosses it. Extrapolation from inside the admissible region evidences a boundary and is not at issue; establishing one would be (Remark~\ref{rem:failure-instrument}). This is the epistemic member of the same family as the provenance commitment below, and fails in the same manner --- by a procedure that closes the question rather than relocating it.
 \item \textsc{[detail]}~\textbf{Robustness trades against legibility.} Fails if a policy can bound a frame's residuals without reducing what its failures disclose about its grammar --- a handler that both absorbs and reports with no loss (Remark~\ref{rem:failure-instrument}). Cheaply testable in software, and marked \textsc{[detail]} because the account survives its loss with the trade weakened to a tendency.
+\item \textsc{[shape]}~\textbf{Capability and accessibility are distinct.} Fails if what a frame's gates admit and what it can reach from where it stands collapse into one quantity --- if there is no case of a frame able to represent and perform an arrangement it cannot reach, or none of a frame able to reach what it cannot represent (Section~\ref{sec:crossings}). The coupling claimed between them, that a capacity shortfall narrows aperture and so degrades capability over time, fails separately if aperture width is unaffected by demands on capacity.
+\item \textsc{[detail]}~\textbf{A hazard is a signed capability change above a frame-relative threshold.} Fails if a disclosure can be a hazard to a frame in which the negative sign is not admissible, or if the magnitude at which one counts is fixed independently of the frame bearing it rather than as a ratio to what that frame can absorb. Fails also if the threshold sits somewhere other than where the impact forces a write.
+\item \textsc{[detail]}~\textbf{Externalising lengthens the interval before a crossing is legible.} Fails if the time for a crossing's cost to become signable is independent of whether the frame bearing it can report --- that is, if costs placed on frames that cannot signal return no more slowly than costs placed on frames that can (Section~\ref{sec:crossings}).
 \item \textsc{[shape]}~\textbf{No free lunch.} Fails if a realised change can be exhibited whose cost is absent at \emph{every} frame rather than relocated to one that was not being inspected (Proposition~\ref{prop:no-free-lunch}). Cheaper is not a counterexample and neither is spend-and-gain; what would falsify it is free, and the burden is on exhibiting the frame where the payment fails to appear.
 \item \textsc{[shape]}~\textbf{Termination follows supply, not containment.} Fails if containment alone determines it --- if a subgraph must stop when the graph containing it stops, even where its primitives are supplied from beyond that graph (Remark~\ref{rem:supply-not-containment}). The partial case carries its own clause: fails if a frame losing part of its supply must either stop or continue correctly, rather than running with an incomplete operation set and undefined behaviour, or if such a frame can enumerate what it has lost from inside --- which would also falsify the provenance commitment below.
 \item \textsc{[shape]}~\textbf{Provenance is never closed by inference.} Marked \textsc{[shape]} on reconsideration: this is the single prohibition of Section~\ref{sec:prohibition} in one of its operational forms, so a frame that closed the question would have got outside itself, which the account forbids rather than merely models. Not that primitives fail to leak --- they do leak, and Proposition~\ref{prop:leak} says so. This fails if a frame can \emph{settle} the provenance of its own operator set from inside: if some in-frame procedure establishes, rather than merely evidences, whether its operators are self-supplied, how many distinct structures supply them, or whether a serial hidden supply underlies an apparently asynchronous frame The escape is not that further primitives were used, which is unavoidable, but that their provenance is open in the same way, so no procedure closes the question rather than relocating it.

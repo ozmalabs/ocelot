@@ -19,7 +19,8 @@ Equalisation} (Theory) is the case for it. What is missing here is not detail bu
 paper's bulk and its actual work, so anything below that a reader wants shown rather
 than asserted is shown there. Calling this a short form, as an earlier version did,
 described it by its length instead of by what it does. Every definition and proposition
-below is pulled from the long paper at build time, so the two cannot drift.}}
+below is pulled from the long paper at build time, so those cannot drift from it. The
+connecting prose is written here and is not synchronised, so it can.}}
 \end{center}
 \vspace{1em}
 
@@ -96,7 +97,8 @@ why a frame that runs no rules has none.
 @pull prop:runner-recursion
 
 The account forbids one thing: a frame cannot get outside itself. It cannot be transparent to itself
-at the level it is running at, cannot measure its own throughput, and cannot hold a view from
+at the level it is running at, cannot measure its own throughput in units independent of it --- which
+leaves the number obtainable and its absolute scale not --- and cannot hold a view from
 nowhere. That prohibition has a formal analogue --- a language of sufficient strength cannot define
 its own truth predicate, and must be given it from a metalanguage --- and the analogue is proved,
 though the mapping from frames to formal systems is argued rather than proved. What is forbidden is
@@ -115,11 +117,12 @@ ones.
 
 \section{Falsifiability}
 The substrate risks little by design and the groundings carry the risk. Below are the commitments
-attached to the material this abridgement states. They are a subset: the long paper carries the full
+attached to the material this statement carries. They are a subset: the long paper carries the full
 set, including those for results not stated here, and the generator reports the difference on every
 build so the omission stays visible rather than becoming a claim.
 
 \begin{enumerate}[leftmargin=*]
+@falsifier Composition
 @falsifier Minimal graph sufficiency
 @falsifier Discrete sufficiency
 @falsifier Antecedent-state principle

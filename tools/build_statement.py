@@ -35,12 +35,31 @@ def parse_blocks(tex):
 
 
 def parse_falsifiers(tex):
-    r"""short-name -> \item source, from the falsifiability enumerate."""
+    r"""short-name -> source, from the falsifiability section.
+
+    Two forms are recognised, because the section carries both: the numbered
+    \item commitments inside the enumerate, and any \paragraph-form commitment
+    stated BEFORE the list. The composition commitment is of the second kind and
+    is the one the paper calls primary, so a parser that only saw \item silently
+    omitted it from the statement -- which is how it went missing.
+    """
+    sec = re.search(r'\\section\{Falsifiability commitments\}(.*?)'
+                    r'(?=\n\\section\{)', tex, re.S)
+    items = {}
+    if sec:
+        for pm in re.finditer(r'\\paragraph\{\\textsc\{\[(?:shape|detail)\]\}'
+                              r'~?([^}]*?)\.?\}(.*?)(?=\n\\paragraph|\n\\begin|\Z)',
+                              sec.group(1), re.S):
+            body = pm.group(0).strip()
+            items[pm.group(1).rstrip('.').lower()] = (
+                r'\item \textsc{[shape]}~\textbf{%s.} %s'
+                % (pm.group(1).rstrip('.'),
+                   re.sub(r'^\\paragraph\{\\textsc\{\[[a-z]*\]\}~?[^}]*\}\s*',
+                          '', body).strip()))
     m = re.search(r'\\section\{Falsifiability commitments\}.*?\\begin\{enumerate\}'
                   r'(.*?)\\end\{enumerate\}', tex, re.S)
     if not m:
-        return {}
-    items = {}
+        return items
     for it in re.split(r'\n(?=\\item )', m.group(1)):
         it = it.strip()
         if not it.startswith(r'\item'):
