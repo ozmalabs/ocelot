@@ -1,14 +1,36 @@
 # papers/ — the formal record
 
-`formal/` holds the eight written preprints (LaTeX, theorem environments,
+`formal/` holds the twelve written preprints (LaTeX, theorem environments,
 proofs, falsifiability sections). They are the **citable artefacts**, and they
 do not disappear when the book is written: each book chapter carries a pointer
 of the form *the formal statement is Paper N §M*, and the chapter drafts by
 subtraction from them.
 
+## The shape of the set
+
+**One claim, and everything else is what it means.** Paper 00 makes a single
+statement — *to be is to stand in relation* — and makes a case for it. The
+companions add exactly **one** further thing: that things *happen*, which 00 is
+careful to say is not required for there to be anything. In the substrate's
+terms that addition is `r` and `Γ` — the transformations and the admissibility
+grammar. Everything else across the set is offered as **consequence of those
+two**, not as further claims about what exists.
+
+This is a strong statement about the set's economy and it is made so it can be
+held against it. Anything in the companions that turns out to be an independent
+posit rather than a derivation is a **hidden axiom** — a real result against the
+economy even where the individual claim survives. 01's `rem:inherited` states
+the ledger explicitly; 00's method section states the single operation that
+generates the whole set (*remove, and see what breaks*, pointed at inherited
+restrictions rather than posited entities) together with its severe limit: most
+restrictions are load-bearing, and the operation returns nothing on almost every
+attempt.
+
 | file | title |
 |---|---|
+| `formal/00_is.tex` | Is — the single claim, its method, and the case for it |
 | `formal/01_law_of_graphic_equalisation_theory_referenced.tex` | The Law of Graphic Equalisation — Theory |
+| `formal/01s_graphic_equalisation_statement.tex` | The Law of Graphic Equalisation — Statement (generated from 01 via `01s.spec`) |
 | `formal/01a_graphic_equalisation_physics_grounding.tex` | The Law of Graphic Equalisation — Physics Grounding (c, relativity, constants, the second law) |
 | `formal/01b_graphic_equalisation_mind_and_self_grounding.tex` | The Law of Graphic Equalisation — Mind and Self Grounding (frames, the run/record, free will, personal identity, death) |
 | `formal/02_seldon_manifolds_theory_referenced.tex` | Seldon Manifolds — Theory |
@@ -16,6 +38,14 @@ subtraction from them.
 | `formal/03_law_of_narrative_momentum_theory_referenced.tex` | The Law of Narrative Momentum — Theory |
 | `formal/04_narrativium_theory_referenced.tex` | Narrativium — Theory |
 | `formal/05_constructive_graphic_equalisation_implementation_referenced.tex` | A Constructive Realisation of Graphic Equalisation |
+| `formal/06_frames_relation_and_the_empty_limit.tex` | Frames, Relation, and the Empty Limit |
+| `formal/07_assessing_an_account_of_this_kind.tex` | Assessing an Account of This Kind (the process material, split out of 01) |
+
+`01s` is **generated**, never hand-edited: edit `01s.spec` and the long paper,
+then `python3 ../../tools/build_statement.py 01s.spec` from `formal/`. The
+generator exits non-zero on a dead `@pull` label and lists every labelled block
+the spec does not pull, so material added to 01 surfaces as a review item
+instead of silently diverging.
 
 `figures/` holds paper figures — **a committed generator script plus its
 output**, never an output alone; the plan for all of them (papers and book
@@ -26,12 +56,12 @@ further bodies are built but included by no paper (`fig01_boundary`,
 
 ## Version
 
-All eight carry the same draft string in three places — the title block, a boxed
+All twelve carry the same draft string in three places — the title block, a boxed
 notice under the title, and the footer of every page:
 
-> **`draft-2026-08-27`** · 27 August 2026
+> **`draft-2026-08-30.3`** · 30 August 2026
 
-They are circulated for comment, not as finished results. **Bump all eight
+They are circulated for comment, not as finished results. **Bump all twelve
 together**, so a reader comparing two papers is never comparing two drafts, and
 keep the string identical across the title, the notice and the footer. The
 version is deliberately a date rather than a number: these papers are revised in
