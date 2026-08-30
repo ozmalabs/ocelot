@@ -1,8 +1,10 @@
 # Review passes over the twelve formal papers — results
 
-> **Two passes are recorded here.** §1–§7 describe the FIRST pass. **§8 records the
-> second pass, which found two of the first pass's own repairs unsound and
-> reversed them** — so where §1 and §8 disagree, §8 is current. The disagreement is
+> **Five passes are recorded here, and later sections supersede earlier ones.**
+> §1–§7 are the first pass, §8 the second, §9 the third, §10 the fourth. **Where any
+> two disagree, the later is current** — and §11 records the fifth, which withdrew
+> §10's own replacement argument. Any ledger statement in §1–§10 should be read as
+> historical unless §11 repeats it. The disagreement is
 > left in place rather than edited away because it is the more useful record: it
 > shows the standard running against the account rather than only for it.
 
@@ -21,7 +23,7 @@ over paper 00 and that everything else is consequence. It invited a reader to
 look for a hidden axiom, on the ground that finding one would be *"a real result
 against the account's economy."*
 
-**The audit found five postulates, not two (later an admission and no posits, §1.1) — and every one is demonstrated by 01
+**The audit found five postulates, not two (the count moved repeatedly; see §11 for where it stands) — and every one is demonstrated by 01
 contradicting the remark in its own words elsewhere in the same file.** That is
 the strongest available form of evidence for this kind of check, because it does
 not depend on the reviewer's reading of any derivation.
@@ -510,3 +512,49 @@ corpus already almost states: **guard in 01, commitment in the groundings.**
 the site where it was made. And the mechanical findings were all the same shape —
 stale sentences left standing in the *same paragraph* as their replacements. The
 record itself was an instance: its "ledger as it now stands" was two revisions old.
+
+---
+
+## 11. Fifth pass — the closure argument withdrawn, and the pattern's structural cause
+
+**Three more withdrawals, all of arguments made since the fourth pass.**
+
+**Closure fails, on four of the account's own texts.** `ax:no-time` makes enablement
+**asymmetric** and `prop:partial-order` totally orders a frame's writes, so the
+event order admits **no cycle of any length** — there is no loop for change to close
+into. `prop:cycle-unit`'s closure is of a *rule* loop, not the event order; citing it
+for the second was an equivocation. `rem:cost-to-zero` already calls container
+termination **"relocation rather than closure"**, and the falsifiability section
+counts settling-rather-than-relocating as a single risk named four times. 01a says
+this universe's entry **must come from outside**. What survives is
+**category-preservation**: whatever funds a change is a change, so no second *kind*
+of thing is admitted.
+
+**Two unpaid entries, not one.** The ledger's own *Admitted* paragraph calls the
+second "a real addition, not derived from anything here" — which is unpaid. "Cannot
+spend *ex nihilo* twice" was bookkeeping preference presented as a constraint.
+
+**The empty set does not force admissibility.** The premise contradicts 00, which
+holds the empty set to be the one perfect thing and perfection unavailable to an
+existent. *Admitted* slides between "stands in a relation" (= `prop:is` restated)
+and "a grammar licenses it" (denied by `rem:only-g`). And the conclusion would make
+existence **frame-indexed**, reinstalling the verificationism 00 disowns. The corpus
+already derived 0≠NULL relationally in three places, one 315 lines further down the
+same file: `def:states` — **NULL is the edge's non-existence**. Both inheritance
+markings reverted; 02's had removed a live falsifier.
+
+### 11.1 The structural cause, finally named
+
+Six instances of one defect: **the ledger gets the correction; the falsifiability
+list, the README and this record keep the withdrawn version.** Two causes, both now
+addressed:
+
+1. `rem:inherited` is cited by `\ref`, so revising it **cannot break the citing text
+   loudly** — a stale citation compiles clean.
+2. **`01s.spec` did not pull the ledger**, so the generator whose entire purpose is
+   surfacing drift could not see the most-revised passage in the corpus. It now
+   pulls `rem:inherited`.
+
+The second is the useful fix. The generator reports every labelled block the spec
+does not pull; the ledger was the one block it was blind to, and the ledger is where
+every one of these six misses originated.

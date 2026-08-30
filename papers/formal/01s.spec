@@ -48,6 +48,7 @@ realisation selects one of them, which then becomes the antecedent for what foll
 
 @pull def:residual
 @pull rem:only-g
+@pull rem:inherited
 
 \section{Frames}
 A frame is how anything is reached at all: there is no view from nowhere, so every claim is a claim
