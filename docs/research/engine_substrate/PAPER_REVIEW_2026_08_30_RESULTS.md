@@ -57,6 +57,18 @@ present is a rule with an empty match condition, not a counterexample.
 follow from it (single-valued realisation, no-copy), plus Axiom −1** — against
 the five the audit found and the two originally claimed.
 
+Of the two survivors, single-valued realisation is a bet **against a rival that
+is not cheaper**, and the remark now prices it: retaining every continuation
+needs a structure holding all branches as realised *and* a measure over them to
+recover what is observed — and a measure over branches is a selection principle
+written somewhere else, so the trade is a relocation, not a saving. The work
+branches are usually wanted for is already done by `Poss(G_t)`, which this
+account has: interference and superposition live in *possibility* without
+promoting possibility to realised history. It stays a postulate because the
+preference is methodological rather than forced. Its falsifier is sharpened
+accordingly — a rival must predict what this account predicts **without adding a
+measure**, or it has moved the selection rather than removed it.
+
 Folding it removed an assertion rather than renaming one. `prop:two-gates` had to
 claim the aperture and change grammars are *"two faces of one grammar on one
 boundary edge"* — an identity asserted across a distinction the definitions drew,
