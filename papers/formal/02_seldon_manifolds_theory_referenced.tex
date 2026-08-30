@@ -25,21 +25,21 @@
 
 \title{Seldon Manifolds --- Theory\\\large The Geometry of Reachable Futures}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-30.4}\\[2pt]30 August 2026 \textbullet\ document revision 13}
+\date{\textbf{Draft \textemdash\ draft-2026-08-30.4}\\[2pt]30 August 2026 \textbullet\ document revision 15}
 
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r13}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r15}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r13}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r15}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-30.4 r13} (30 August 2026).
+\textbf{DRAFT --- draft-2026-08-30.4 r15} (30 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -1130,6 +1130,16 @@ the rest.
 
 \section{Falsifiability commitments}\label{sec:falsifiability}
 
+\noindent\emph{On ``a claimed class'' and ``a claimed grounding''.} Several commitments below are
+indexed to a class or a grounding rather than stated universally, and that is a real weakness unless
+the index is fixed in advance: a counterexample can otherwise be excluded after the fact by declining
+to have claimed that class, which makes the commitment untestable by the party holding it. The
+discipline this paper adopts, stated here so it can be held to it, is that \emph{a class counts as
+claimed once it appears in a grounding section of this corpus}, and the claim is then owed for every
+member of it. Nothing may be added to or removed from a class in response to a result. Where no class
+has been named the commitment is not yet live, and the honest reading of such an entry is that it
+states what \emph{would} be risked rather than what currently is.
+
 \noindent\emph{On the tags.} Each commitment below is marked \textsc{[shape]} where failing it costs
 this grounding its \emph{reach} --- the account would no longer apply to the domain, or would apply
 only by giving up what it was brought here to explain --- and \textsc{[detail]} where failing it costs
@@ -1142,10 +1152,16 @@ position.
 
 \begin{enumerate}[leftmargin=*]
 \item \textsc{[shape]}~\textbf{Descent predicts trajectory.} Fails if the continuations a frame actually takes, absent intervention, are not the cheap ones --- if the descent direction of the cost field does not predict where an uninterrupted frame goes.
-\item \textsc{[detail]}~\textbf{Basins and persistence.} Fails if persistence in a region can be exhibited with no corresponding basin, or a basin with no corresponding persistence.
+\item \textsc{[detail]}~\textbf{Basins and persistence.} \emph{(Largely entailed by the preceding
+entry: a basin is defined as a region closed under cheapest successors, so staying in one is taking
+cheap continuations and leaving one is not. What it adds beyond ``descent predicts trajectory'' is the
+existence direction, and that is all it should be read as risking.)} Fails if persistence in a region can be exhibited with no corresponding basin, or a basin with no corresponding persistence.
 \item \textsc{[shape]}~\textbf{The two fields come apart.} Fails if expected capacity after an action is always the capacity before it less the cost, so that no expensive continuation ever raises capacity and no cheap one lowers it. This is the condition on which the trap is definable at all.
 \item \textsc{[detail]}~\textbf{Traps defeat inertia.} Fails if no grounding exhibits a region in which acceptability is preserved throughout while the capacity to leave falls below the cost of leaving --- that is, if minimum-sufficient intervention never requires acting from inside an acceptable region.
-\item \textsc{[shape]}~\textbf{Deterministic counterfactual typing.} Fails if the Seldon construction requires multiple fundamentally random realised outcomes from one causally complete antecedent rather than multiple deterministic continuations under differing represented future conditions.
+\item \textsc{[shape]}~\textbf{Deterministic counterfactual typing.} \emph{(Inherited: this is the
+substrate paper's graph-law determinism reaching the Seldon construction. Failing it there fails it
+here, and the same commitment also appears in the Narrative-momentum paper and as a conformance test
+in the constructive one --- four listings, one risk.)} Fails if the Seldon construction requires multiple fundamentally random realised outcomes from one causally complete antecedent rather than multiple deterministic continuations under differing represented future conditions.
 \item \textsc{[shape]}~\textbf{Reachability utility.} Fails for a claimed task class if reachable geometry cannot preserve distinctions needed for prediction or control that trajectory-level representation preserves.
 \item \textsc{[shape]}~\textbf{Dimension/value typing.} Fails if an absent future dimension must be represented as the numerical value zero rather than remaining undefined until instantiated.
 \item \textsc{[detail]}~\textbf{Adaptive resolution.} Fails as an efficiency hypothesis if decision-directed refinement gives no advantage over uniform refinement in the claimed class.

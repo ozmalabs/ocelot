@@ -16,20 +16,20 @@
 \newcommand{\Hist}{\mathcal{H}}
 \title{The Law of Graphic Equalisation --- Theory\\\large Minimal Recursive Dynamics, Collapse, Frame-Relative Identity, and Residual}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-30.4}\\[2pt]30 August 2026 \textbullet\ document revision 169}
+\date{\textbf{Draft \textemdash\ draft-2026-08-30.4}\\[2pt]30 August 2026 \textbullet\ document revision 170}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r169}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r170}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r169}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r170}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-30.4 r169} (30 August 2026).
+\textbf{DRAFT --- draft-2026-08-30.4 r170} (30 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -2306,7 +2306,11 @@ Each commitment below is marked \textsc{[shape]} or \textsc{[detail]}. A \textsc
 \item \textsc{[shape]}~\textbf{Partial-order sufficiency.} Fails if realised dynamics require a total order over collapses in distinct frames --- a global simultaneity --- rather than only the boundary-induced partial order.
 \item \textsc{[shape]}~\textbf{Globally-async/locally-sync.} Fails if coupling never induces local synchrony (boundary-related collapses remain unordered) or if synchrony is forced without coupling (a global instant exists independent of any boundary).
 \item \textsc{[shape]}~\textbf{Decoherence is one operation.} Fails if the manner in which an inadmissible write fails is a property of what was attempted rather than of the frame's rules --- that is, if one frame under one rule set yields structurally distinct failure modes for two inadmissible writes, with the difference not attributable to that frame's own policy (Remark~\ref{rem:decoherence-one}). Different outcomes across \emph{different} frames do not bear on this; that is what the claim predicts.
-\item \textsc{[detail]}~\textbf{A swallowed failure is relocated, never closed.} Not that a frame cannot detect its own handler discarding a failure --- it can, by holding a record of the attempt independent of the handler's report, and that record is ordinary paid structure. This fails if some in-frame audit \emph{settles} the question rather than moving it: if a frame can establish that no handler of its own has misreported, without that audit being itself a policy subject to the same abuse one level in (Remark~\ref{rem:handler-abuse}).
+\item \textsc{[shape]}~\textbf{A swallowed failure is relocated, never closed.} Marked \textsc{[shape]}
+on the same reconsideration as the provenance entry and for the same reason: an in-frame audit that
+\emph{settled} the question would be a frame having got outside itself in that respect, which the
+account forbids rather than models. It was \textsc{[detail]} while its two siblings were re-marked,
+which was an inconsistency rather than a judgement. Not that a frame cannot detect its own handler discarding a failure --- it can, by holding a record of the attempt independent of the handler's report, and that record is ordinary paid structure. This fails if some in-frame audit \emph{settles} the question rather than moving it: if a frame can establish that no handler of its own has misreported, without that audit being itself a policy subject to the same abuse one level in (Remark~\ref{rem:handler-abuse}).
 \item \textsc{[shape]}~\textbf{Dependents are not held by the referent.} Fails if realised graph dynamics require a structure to carry the set of things depending on it --- back-references primitive rather than installed --- so that the consequences of removing a structure are recoverable from that structure alone, without querying the frames holding the references and without paid machinery (Remark~\ref{rem:vacated}). A substrate in which deletion is always clean falsifies this, and would also remove the distinction between an absence and a vacancy.
 \item \textsc{[shape]}~\textbf{A boundary is known only by crossing it.} Fails if a frame can \emph{settle} the location of its own admissibility boundary without any write that crosses it. Extrapolation from inside the admissible region evidences a boundary and is not at issue; establishing one would be (Remark~\ref{rem:failure-instrument}). This is the epistemic member of the same family as the provenance commitment below, and fails in the same manner --- by a procedure that closes the question rather than relocating it.
 \item \textsc{[detail]}~\textbf{Robustness trades against legibility.} Fails if a policy can bound a frame's residuals without reducing what its failures disclose about its grammar --- a handler that both absorbs and reports with no loss (Remark~\ref{rem:failure-instrument}). Cheaply testable in software, and marked \textsc{[detail]} because the account survives its loss with the trade weakened to a tendency.
@@ -2350,6 +2354,18 @@ irreversible operation to coincide. The arrow of the event order is \emph{not} a
 versions of this entry said it was: direction is carried by the asymmetry of enablement, which stands
 whether or not a change preserves what it followed.
 \end{enumerate}
+
+Four of the entries above are one risk counted four times, and the list says so rather than banking
+the arithmetic. \emph{Provenance is never closed by inference}, \emph{A boundary is known only by
+crossing it}, \emph{A swallowed failure is relocated, never closed} and the second clause of
+\emph{Termination follows supply} are each falsified by the same event: an in-frame procedure that
+\emph{settles} a question rather than relocating it. Two of the four already acknowledge an overlap in
+their own text and all four were still counted separately, three of them \textsc{[shape]} --- so an
+account whose headline is that a \textsc{[shape]} failure costs range was reporting one exposure as
+four. They are kept as separate entries because they name genuinely different places to look for the
+event, which is what a falsifier is for; what is withdrawn is the implication that failing them would
+cost four separate things. Failing any one of them is the single prohibition of
+Section~\ref{sec:prohibition} failing, and that is one result, not four.
 
 Two further notes on the list as a whole. Nothing is claimed to be closeable cheaply --- \emph{discrete sufficiency} requires ruling out every discrete representation including dynamically varying ones, which is hard rather than ill-formed, and the distinction between the two is the point of this paragraph. And the marks themselves are revisable: three entries above were re-marked after the commitments for Section~\ref{sec:residual}'s newer material were written, because setting out a new commitment made the criterion sharper than it had been when the older ones were assigned.
 
