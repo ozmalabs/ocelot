@@ -29,32 +29,33 @@ least that can *do* is and answers rule. Admissibility folds in here too, as a
 specific instance of rules: `Γ` names a role `r` plays, and `Poss`'s dependence
 on it is definitional, not ontological.
 
-The economics follows too. To have something still present after a change,
-something must have put it there, and putting structure anywhere is a rule
-firing — so **keeping a thing costs a write**, and a write spent on keeping is not
-spent on anything else. A budget by opportunity cost, needing no quota. (The
+(The economics was folded in here too, by an argument 01 has since withdrawn as
+circular: *continuation is free and change is paid* refutes rather than supports
+deriving a retention cost. It is a posit again, and smaller than it was.) (The
 *strong* form of no-copy — that no change ever preserves its predecessor — is
 **not** derived, since an append-only rule preserves as a side effect. So it was
 removed, and `ax:no-time`'s direction limb, which had rested on it, now rests on
 the asymmetry of enablement, which it had all along.)
 
-Realisation follows too. **Nothing assembles the set of what could happen and
-then reduces it** — `def:admissible` fixes membership by an *iff*, and 01 says
-outright that no algorithm for constructing `Poss` is required, so there is no
-collection standing in the graph awaiting selection. A rule fires and writes a
-delta; **the firing is the realisation**, and selecting is one more thing a rule
-does. Single-valuedness then rests on rules being determinate in their
+(Realisation was folded in here too, and that fold misquoted its source: the text
+after `def:admissible` says no ***particular*** algorithm is required and calls
+itself *extensional*, which keeps the family as an object. Naming the selector a
+rule relabels the posit. Restored.) Single-valuedness then rests on rules being determinate in their
 antecedents — one pattern yielding two changes means the pattern missed what
 mattered — which is `prop:determinism`, closer to what *rule* means here than to
 a wager.
 
-**Genuinely extra: two, one of them a single bit.** A **valuation** — not a cost
-model, which cannot be derived, but the one commitment that *something costs
-something*. Past that bit, MDL does the rest: a collapse is the only kind of event
-the substrate has, so charging the write is the shortest sufficient cost model and
-any rival must name a second thing to charge for. And a **realisation operator**,
-since naming the selector a rule relabels the commitment without discharging it.
-Both were folded away in one pass and restored by the next audit.
+**Genuinely extra: two.** A **valuation** — not a cost model, which cannot be
+derived, but the commitment that *something costs something*. An economics is not
+**required**: a frame whose container charges it nothing has none, and the
+companions permit that rather than forbidding it. What is claimed is that every
+frame anyone has examined has one — an observed universal, not a necessity. (An
+earlier version had MDL supplying the rest from that one bit; 01 withdrew that
+argument, and the economics there now rests on three: that something costs, that
+destruction and preservation differ, and that structure persists by default.) And
+a **realisation operator**, since naming the selector a rule relabels the
+commitment without discharging it. Both were folded away in one pass and restored
+by the next audit.
 
 Past those and Axiom −1 sit the **bets the papers state as hypotheses**, including
 the Law of Graphic Equalisation itself.
