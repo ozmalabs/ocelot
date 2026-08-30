@@ -409,10 +409,19 @@ rendered **unparseable** by two nested corrections stacked before its main verb.
   the coupling itself — standing in the relation that makes an outcome definite
   relative to a partner. `00`'s *observe* is making a distinction, which needs rules.
   A rock does the second and not the first, and `cor:observer` now says so.
-- **"Capability"** means the gates in `01` and reach in `02` and `04`; `01`'s caution
-  names only the Sen-following companion, so `02` is uncovered.
-- **Narrativium as a stock**: `07`'s *"paid out of their Narrativium"* against `04`'s
-  *"Narrativium is not a tank."*
+- ~~**"Capability"**~~ **CLOSED.** `01`'s caution named only the Sen-following
+  companion; it now covers `02`'s unborrowed use and the third, narrower sense in
+  `07` (a shipped unit with its own tests), which is stipulated there and is not
+  this word.
+- ~~**Narrativium as a stock**~~ **CLOSED, and 07's phrasing survives.** *You still
+  pay Narrativium; for a single change you are charged.* `04`'s *"not a tank"*
+  denies the **vessel**, not the charge, and the two were running together. The
+  charge is why the measurement afterwards differs from the measurement before;
+  what is ruled out is a stored level a charge draws down. **Spend-and-gain is what
+  makes the difference operative rather than verbal** — expenditure can leave a
+  frame able to reach *more*, impossible for a reservoir and ordinary for a
+  measurement re-taken on a changed configuration. So *paid out of* is accurate
+  about the charge and misleading only if heard as a level falling.
 - **The self-congratulatory register**, carried over from the first pass and now
   joined by a self-flagellating one — a *"X rather than quietly Y-ing"* formula
   appears six times across four papers.
