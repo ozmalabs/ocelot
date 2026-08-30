@@ -425,3 +425,45 @@ rendered **unparseable** by two nested corrections stacked before its main verb.
 - **The self-congratulatory register**, carried over from the first pass and now
   joined by a self-flagellating one — a *"X rather than quietly Y-ing"* formula
   appears six times across four papers.
+
+---
+
+## 9. Modal-clothing sweep — a null, and where it localises
+
+Three claims in two turns turned out to be **observed universals written as
+necessities**: the economics bit (*something costs*), `prop:no-free-lunch` (*the
+substrate forbids a change paid for nowhere*), and the falsifier for `prop:is`. Each
+was narrowed. That looked like a habit worth sweeping for, so the sweep was run
+across all twelve for `forbids`, `forbidden`, `cannot`, `never`, `impossible`,
+`must`, `no frame can`, `nothing can`.
+
+**Result: null. The corpus is already careful, and the three were a cluster rather
+than a habit.**
+
+- The **prohibition family** is mostly explicit *denials* — "nothing forbids one",
+  "dependence is not *forbidden* either", "not forbidden; it is unattested here" —
+  which is the correct form already in use.
+- The **`never` family** checks out: "records only ever trail the run, never lead
+  it" is labelled a prediction; "never readable from inside" is an Axiom −1
+  consequence; "can never put all of it into motion" is standard SR in a physics
+  grounding.
+- The **`must` family** is almost entirely methodological — *must be named*, *must
+  be traceable*, *must be explicit* — not modal claims about the world.
+- **`01a` had already made this exact correction independently, and left it
+  visible**: *"So ``impossible'' was the wrong word twice over: wrong for a
+  restriction that holds of one frame and is lifted by the frame above it, and wrong
+  again for suggesting that some sufficient ascent would lift it altogether."*
+
+**What the null localises is the more useful finding.** The discipline was
+established and the three failures were all in economics material written in a
+single day. So the cause is not a missing discipline but **new material not
+inheriting an established one** — the same defect as a repair applied at the site of
+an objection and not swept, one level up. `07` now carries the check as
+§`sec:modal`, stated so it can be run on any new section: for each modal word, ask
+whether the support is an argument or a record; if a record, name the record.
+
+The cost of getting this wrong is not stylistic. A regularity stated as a
+prohibition acquires a quantifier over everything, which in an account with an
+unbounded frontier and no view from nowhere **nobody can discharge** — so the claim
+gets weaker as it is stated more strongly, and its falsifier goes from a finite
+inspection to an impossible enumeration.
