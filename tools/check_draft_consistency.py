@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check the formal paper set for draft-string and revision inconsistencies.
+r"""Check the formal paper set for draft-string and revision inconsistencies.
 
 Three defects this catches, all of which have actually occurred:
 
@@ -10,6 +10,14 @@ Three defects this catches, all of which have actually occurred:
      revision bump can miss it.
   3. A document carrying no footer or notice at all, while README says all of
      them do.
+  4. Typesetting overflow: a display or line running more than 20pt past the
+     margin, which is visible in the PDF and has shipped before.
+
+Not a defect, and deliberately not checked: the generated statement carries
+\bibitem entries with no \cite commands, because the generator flattens
+citations to author-year text and then emits the reference list so a reader can
+resolve them. Every one of its entries is an "orphan" by a naive check and all
+of them are correct.
 
 Exits non-zero on any finding. Run from anywhere:
     python3 tools/check_draft_consistency.py
@@ -69,6 +77,16 @@ def main() -> int:
             + "; ".join(f"{d} -> {len(v)} file(s): {', '.join(sorted(v))}"
                         for d, v in sorted(by_draft.items()))
         )
+
+    for log in sorted(FORMAL.glob("*.log")):
+        txt = log.read_text(encoding="utf-8", errors="replace")
+        bad = [float(x) for x in re.findall(r"Overfull \\hbox \((\d+\.?\d*)pt", txt)]
+        bad = [x for x in bad if x > 20]
+        if bad:
+            problems.append(
+                f"{log.stem}: {len(bad)} display(s) over the margin by more than 20pt "
+                f"(worst {max(bad):.0f}pt) --- visible in the PDF"
+            )
 
     if problems:
         print(f"draft consistency: {len(problems)} problem(s)\n")
