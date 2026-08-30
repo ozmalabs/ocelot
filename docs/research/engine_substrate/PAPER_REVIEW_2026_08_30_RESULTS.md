@@ -1,0 +1,237 @@
+# Full review pass over the twelve formal papers — results
+
+**Date:** 2026-08-30 · **Draft set reviewed:** `draft-2026-08-30.4`
+**Method:** five independent review lenses run in parallel over `papers/formal/`, plus a
+mechanical pass. Every finding quoted below was re-verified against the source
+before any edit; the two findings that did not survive re-verification are
+recorded in §5 rather than dropped.
+
+---
+
+## 1. The headline: the ledger claim failed its own first audit
+
+`rem:inherited` (written the same day) said paper 01 postulates **two** things
+over paper 00 and that everything else is consequence. It invited a reader to
+look for a hidden axiom, on the ground that finding one would be *"a real result
+against the account's economy."*
+
+**The audit found five postulates, not two — and every one is demonstrated by 01
+contradicting the remark in its own words elsewhere in the same file.** That is
+the strongest available form of evidence for this kind of check, because it does
+not depend on the reviewer's reading of any derivation.
+
+| postulate | the paper's own words against the ledger |
+|---|---|
+| a valuation on writes | *"cost is not in the triple … a different cost model revises the economics throughout and leaves $(g,r,\Gamma)$, admissibility, residual and frames exactly as they were"* |
+| a realisation operator | provenance section: collapse *"arrived by constraint"*, adopted from quantum measurement and generalised |
+| no-copy | used for time's direction and the Landauer floor; appears 5×, defined 0× |
+| the two gates (not a consequence) | *"optimisations … not constituents of graphhood"*, needing a selection pressure `sec:carvings` **declines to supply** |
+| — plus a missing **third tier** | 4 hypotheses (incl. the Law of Graphic Equalisation, the title claim) + the cheap cut, *"an empirical posit and not a result of this account"* |
+
+One correction ran the **other** way and is recorded: `rem:one-substance` holds
+admissibility is enforced by rules, so `Γ` may be a configuration of `r` rather
+than a separate postulate. **The ledger counts it separately anyway, because the
+economical reading is the one that flatters.**
+
+Consequences that followed forcibly once the ledger was corrected:
+
+- *Cost is the write* was `[detail]`; a declared postulate cannot be a mechanism
+  the account could swap out. Now `[shape]`.
+- **Two postulates had no falsifier anywhere in 01** — worse than a mis-tag,
+  since an uncommitted postulate is not graded wrongly but *unexposed*. Added:
+  *Realisation is single-valued* and *No-copy*.
+- *"Two of the above are not closeable"* was stale; it is four.
+- 00's abstract and `papers/README.md` both still advertised *"exactly one
+  thing."* Both corrected, both recording that they said one until the audit.
+
+---
+
+## 2. Factual errors — sources that do not say what they were cited for
+
+Found by the citation lens, which machine-checked 369/370 unique keys against
+Crossref and independently verified 26 attributions against primary sources.
+
+1. **IEEE 754** — cited for *"NaN propagates through every operation containing
+   it — weak Kleene, in hardware."* It does not: `pow(x,±0)=1` for any `x`
+   **including NaN**, `hypot(±Inf,NaN)=+Inf`, `minimumNumber` returns the number.
+   **Correcting this improved the passage**: a mostly-infectious value with a
+   schedule of deliberate exemptions is a better instance of the paper's own
+   "handlers are installed policy" claim than a cleanly infectious one would be.
+2. **Scott & Strachey 1971** — cited for ⊥ propagating *"through any compound
+   containing it."* The monograph restricts function spaces to the **continuous
+   and explicitly not the strict**; a lazy conditional has `f(⊥) ≠ ⊥`.
+   Load-bearing: it was offered as an instance of `prop:compression-convergence`,
+   which requires the *forcing* to be shared.
+3. **Maynard Smith & Szathmáry 1995** — first two transitions in the wrong order,
+   and **no cost-comparison criterion exists in that book**. The ladder is theirs;
+   the *when* is Coase's alone.
+4. **Hau et al. 1999** — *"slowed to walking pace"*; 17 m/s ≈ 61 km/h. Wrong by
+   >10×, and it **understated** a result that needed no help.
+5. **Shannon 1948** cited for the parsimony norm — contains no model selection and
+   treats redundancy as *useful* on a noisy channel. The norm is Rissanen's.
+6. **Nāgārjuna** — *"without an observer edge anywhere in it"* is an absolute the
+   secondary literature does not license.
+7. **Rovelli 1996** at 01a — RQM relativises to interacting physical **systems**,
+   never to descriptive rule sets; *"already holds"* claimed absent agreement.
+   Every other `rovelli1996` use in the corpus verified correct.
+8. **Schrödinger** wrote *negative entropy*; *negentropy* is Brillouin's coinage.
+9. **`wolfram2020` resolved to two different works** — the Wolfram Media book in
+   01, the *Complex Systems* monograph in 01a. Causal invariance lives in the
+   monograph.
+10. **D. C. vs Bernard Williams** — 00 cited *Descartes: The Project of Pure
+    Enquiry* for the **bundle tradition**. 06's use of the same key is correct
+    (Bernard Williams did propose the absolute conception), so one key was serving
+    two doctrines.
+
+---
+
+## 3. Arguments that did not go through
+
+All four were introduced in the `.4` additions — the expected place for defects,
+and the reason new text was reviewed as a separate lens.
+
+- **`prop:is` read as verificationism.** Its second clause was given as
+  *equivalent* to the first and phrased as a distinction *"not available to be
+  drawn"* — availability implies somebody to whom something is available, and the
+  base of this account has **no observers, no frames and no views at all**. Now
+  contrapositive and structural. The paper states outright that it owes nothing to
+  verificationism and could not use it: *a tree falling unobserved is exactly as
+  related to its forest as one that is watched.*
+- **The candidate list claimed to have removed the axiom the argument needs.**
+  Removed: any rule about where a distinction may be made *from*. **Retained and
+  load-bearing:** that a distinction *is* a relation. A reader who denies that
+  should reject the paper at that sentence, not several pages downstream.
+- **"The ideal information shape is a graph"** was argued from *"a description
+  shorter than its subject's structure has lost something"* — a picture theory
+  that **contradicts 00's own MDL accounting two sections earlier**. The shortest
+  description of $K_{10^6}$ is a phrase naming the relation and the count, not
+  $5\times10^{11}$ pairs. Repaired to a claim about the **vocabulary** the
+  generator is written in, which is what was wanted and what survives.
+- **The licensing argument overreached.** *Derivation-length is not
+  commitment-length* is right about reasoning and wrong about **vocabulary**:
+  aperture, change grammar, residual and frame are terms, and terms sit on the
+  generator's side however well motivated. Both papers now state the comparative
+  form and concede the fraction covered is unmeasured.
+- **"Each removal is a test with a determinate outcome"** was contradicted eight
+  paragraphs later by *"only survival."* The outcome is determinate in **one
+  direction**: a successful removal exhibits an inspectable account; a failed one
+  records only that nobody has yet seen how.
+
+---
+
+## 4. Cross-document and structural defects
+
+- **07 had zero sections** — 7,759 words, three `\paragraph` heads, the third
+  spanning 466 of 621 lines. Now eight labelled sections.
+- **07 carried 13 self-references pointing at 01**, residue of the split. The
+  worst was the closing line before the bibliography: *"the commitments below…"*
+  — promising a list into empty space.
+- **01b sourced three claims to the constructive companion**, which contains no
+  results, no fixture and no numbers; 07 says so explicitly while insisting the
+  engineering record is not in this corpus. Now named as the engineering record
+  and marked as uncheckable assertions.
+- **"Rock" meant two things.** 01 uses it for `g` with `r,Γ` **absent**; 01b for
+  rules **present but not firing** — which 01 says is a distinct third condition
+  while crediting "the companion on mind" with naming it. 01b now carries the
+  distinction.
+- **06 carried the superseded minimum** (*"what survives every removal is that
+  rules run"*), which `rem:only-g` corrected and which 00 exists to deny.
+- **36 build artefacts tracked in git**, no LaTeX ignore rules. Untracked.
+- **Two boxed displays overflowed the margin** by 55pt and 80pt.
+- **The statement generator could not see new commitments at all** —
+  `parse_falsifiers` scanned only the *first* `enumerate` after the section
+  header, reporting items in a second block as MISSING while they sat in the
+  paper. Fixed; the statement went 15 → 19 falsifiers, and it had been omitting
+  *Cost is the write* while carrying all three propositions it defends.
+
+---
+
+## 5. Method notes, including this pass's own error rate
+
+**A reviewer's finding is not a finding until re-verified.** Two did not survive:
+
+1. A lens reported that no paper includes any figure, on a grep for
+   `\includegraphics`. **Wrong** — 02 includes two figures via
+   `\input{../figures/…-body}`, and `papers/README.md`'s claim was accurate as
+   written. *This was my error, not the lens's.*
+2. An earlier audit had flagged 14 `\bibitem` entries as missing their
+   author-year argument. **False positive** — they use natbib's *extended* form
+   `[Short(Year)Full list]`, which `plainnat.bst` itself emits.
+
+**Clean on mechanical checks:** 0 dangling citations across 526 instances
+(cross-confirmed against LaTeX's own `Citation undefined` warnings), 0 dangling
+or duplicate `\ref`/`\label` across twelve files, 0 compile errors, 0 unresolved
+reference warnings.
+
+---
+
+## 6. Named, not fixed
+
+Reported here rather than silently carried. **This list is the honest residual of
+the pass, not a backlog someone promised to clear.**
+
+- **`Graph-law determinism` is unfalsifiable as written** — *"variation observed
+  only from a frame that omits determining dimensions does not constitute such a
+  falsification"*, and the standing position is that apparent stochasticity *is*
+  incomplete observation. Any counterexample is assignable to an omitted
+  dimension by construction. It is `[shape]`, so it inflates the range-risk count,
+  **and it is retained in the statement**.
+- **Four of 01's commitments are falsified by one observation** — an in-frame
+  procedure that *settles* rather than *relocates*. Two of the four overlaps are
+  acknowledged in the text and all four are still counted separately; three are
+  `[shape]`.
+- **`No free lunch` requires an unbounded negative** (cost absent at *every*
+  frame) — the exact form the composition paragraph rules out as "not a test" one
+  page earlier.
+- **07 states "the claim actually worth testing" and carries no commitments at
+  all**, then reports that claim *"is true in one reading and false in another,
+  with the answer flipping on a modelling choice this paper had not made."*
+- **The `[shape]`/`[detail]` scheme is used only in 00, 01 and 01s.** The 61
+  commitments in the groundings are untagged — and the groundings are where 07
+  says the risk actually sits.
+- **00's second commitment may be rigged**: the clause *"and that does not reduce
+  to them"* is hard to satisfy given that graphs are expressive, which is the same
+  fact the paper uses to disqualify confirming evidence. Its supporting list is
+  also one-sided (GR's manifold, Hilbert space and variational principles are
+  compressions that moved the other way).
+- **00's yield-rate claim** — the method *"returns nothing on almost every
+  attempt"* — is a base rate over attempts nobody recorded.
+- **The parallel postulate is a questionable exemplar** for cheap-entry
+  derived-consequence, being the canonical example of an *independent,
+  non-eliminable* axiom.
+- **Duplicate commitments across papers**: 01≡03 on historical sufficiency and on
+  discrete sufficiency; determinism appears four times across 01/02/03/05;
+  Axiom −1 three times outside 01; 02's basins entry is entailed by its
+  descent entry.
+- **Ten commitments in 02/03/04 are indexed to "a claimed class"** never
+  enumerated in advance, so a counterexample is excludable by declining to have
+  claimed that class.
+- **`01s` has no bibliography** while making ~16 named attributions; the generator
+  flattens `\citep` to author-year text and emits no reference list, so no reader
+  can resolve any of them.
+- **A rate is called cross-frame in 01 and in-frame in 04**, with 01a siding with
+  04. 04 presents this as a reconciliation; 01's sentence classifies exactly the
+  construction 04 uses as cross-frame.
+- **07's five "prohibitions" include cost attaching to the write**, which 01
+  deliberately excludes from its single prohibition — *"folding either into the
+  single prohibition would be the over-unification this section otherwise warns
+  against."*
+- **00 is referenced by 01 alone**; 06 is referenced by nothing in the set.
+- **Self-congratulatory register** in the newest passages — *"that shortness is
+  the argument"*, *"the paper has nowhere to hide"* — concentrated, a reviewer
+  noted, in exactly the passages where the support is thinnest.
+
+---
+
+## 7. Standing rules this pass earned
+
+1. **A claim that invites an audit will get one, and the audit's result belongs in
+   the paper.** `rem:inherited` failed on its first use, in the flattering
+   direction, and saying so in place is worth more than the claim was.
+2. **A value maintained by hand at several sites drifts.** 01's footer carried
+   `r152` while its title block said `r155`. Now checked by
+   `tools/check_draft_consistency.py` on every bump.
+3. **A claim about a set that is never executed goes stale.** The README said
+   *eight papers* when there were twelve, and named a draft string two bumps old.
+4. **Verify the reviewer.** Two findings this pass did not survive re-checking,
+   one of them mine. §5 exists so the pass's own error rate is on the record.
