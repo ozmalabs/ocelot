@@ -45,13 +45,21 @@ antecedents — one pattern yielding two changes means the pattern missed what
 mattered — which is `prop:determinism`, closer to what *rule* means here than to
 a wager.
 
-**Genuinely extra: nothing but Axiom −1.** Realisation folds too, at the third
-attempt — the first two failed and are recorded. Nothing selects among candidate
-continuations: **what matches, writes**; two rules matching one state make a bigger
-change rather than a contest; writes that do not compose leave residual. A
-successor is single because the *change* is. Realisation is then a **rule about
-rules**, as a frame is a graph about graphs — turtles all the way down, with the
-recursion as the architecture rather than a regress.
+**Genuinely extra: nothing.** Realisation folds too, at the third attempt — the
+first two failed and are recorded. Nothing selects among candidate continuations:
+**what matches, writes**; two rules matching one state make a bigger change rather
+than a contest; writes that do not compose leave residual. A successor is single
+because the *change* is. Realisation is then a **rule about rules**, as a frame is
+a graph about graphs — turtles all the way down.
+
+**And Axiom −1 is not a commitment either.** Every use of it in the corpus has the
+form *you may not import this* — no frame-free denominator, no frame-free identity,
+no absolute threshold. Those are rules about what the account may say, not reports
+about what the world contains. It is a **guard**, not a premise: the discipline
+that stops the premises silently becoming more. Its number was already saying so —
+it sits before the axioms because it is not one of them.
+
+**So: two premises. Things exist; things change.**
 
 **The economics is not among them.** What a thing does, when it does anything, is
 **change** — and **change is the cost of change**: the cost is not a quantity in
