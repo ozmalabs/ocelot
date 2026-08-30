@@ -172,11 +172,20 @@ def main(spec_path):
         who, year = m.group(1).strip(), m.group(2)
         return '%s (%s)' % (who, year) if textual else '%s, %s' % (who, year)
 
+    # Keys actually named in the statement, in first-appearance order. The
+    # flattened text carries no \cite commands, so without this the document
+    # made ~16 named attributions a reader could not resolve to anything --
+    # erasing the bibliography is not a neutral abridgement either.
+    cited = []
+
     def _cite(m, textual):
         keys = [k.strip() for k in m.group(1).split(',')]
         out = [_label(k, textual) for k in keys]
         if any(o is None for o in out):
             return 'the long form' if textual else ' (long form)'
+        for k in keys:
+            if k not in cited:
+                cited.append(k)
         joined = '; '.join(out)
         return joined if textual else ' (%s)' % joined
 
@@ -185,6 +194,26 @@ def main(spec_path):
     text = re.sub(r'\\citet(?:\[[^\]]*\])?\{([^}]+)\}',
                   lambda m: _cite(m, True), text)
     text = re.sub(r'\\citealp\{([^}]+)\}', lambda m: _cite(m, False).strip(' ()'), text)
+
+    # Emit a reference list for exactly the works the statement names, lifted
+    # verbatim from the long paper so the two can never disagree. Sorted by
+    # the author-year label, since the flattened text gives the reader a name
+    # and a year to look up rather than a number.
+    if cited:
+        entries = {}
+        for k in cited:
+            m = re.search(r'\\bibitem\[[^\]]*\]\{' + re.escape(k) + r'\}.*?(?=\n\n|\n\\bibitem|\n\\end\{thebibliography\})',
+                          long_tex, re.S)
+            if m:
+                entries[k] = m.group(0).rstrip()
+        if entries:
+            refs = ['', r'\begin{thebibliography}{99}', r'\itemsep=2pt',
+                    r'\item[] \small\emph{The works named above, listed from the long paper so the two cannot disagree.}',
+                    '']
+            for k in sorted(entries, key=lambda k: biblabels.get(k, k)):
+                refs.append(entries[k]); refs.append('')
+            refs.append(r'\end{thebibliography}')
+            text = text.replace(r'\end{document}', '\n'.join(refs) + '\n' + r'\end{document}', 1)
     body = [text]
 
     banner = (
