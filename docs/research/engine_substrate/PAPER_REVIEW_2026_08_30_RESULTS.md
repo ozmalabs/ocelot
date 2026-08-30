@@ -383,9 +383,19 @@ rendered **unparseable** by two nested corrections stacked before its main verb.
 
 ### 8.6 Still open
 
-- **Free continuation: a write, or the absence of one?** `01a` says it *is* a write
-  from which the predecessor is recoverable; `01` and `03` say it is the absence of
-  an event. `01a` is internally split on it. Load-bearing for `prop:second-law`.
+- ~~**Free continuation: a write, or the absence of one?**~~ **CLOSED, and the
+  resolution is sharper than either side.** The two are not rivals about one thing:
+  **continuation is not free for all frames, and the economics depends on the rules
+  — not the frame's, the superframes'.** In the frame's own terms continuation is
+  the absence of an event, which is `01`/`03`'s reading and is right. Whether
+  anything is *paid* is set by the container, which may sustain a frame without
+  charge or require a write to keep it standing — and the physical superframe
+  `01a` grounds in does charge, which is why free continuation reads as a write
+  there. Both correct, about different frames, neither marking which.
+  `prop:economics` now says *free to the frame* and states outright that there is
+  **no frame-independent fact about what continuation costs, only what it costs to
+  whom** — which is `prop:no-free-lunch` at the level of persistence and Axiom −1
+  applied to the economics.
 - ~~**Is a rule-less structure a frame?**~~ **CLOSED.** A rule-less structure *is* a
   frame: a frame is a boundary relation — an edge — so wherever there are relata in
   relations there are frames, and rules are no part of the requirement. (An *empty*
