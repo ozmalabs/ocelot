@@ -48,11 +48,13 @@ antecedents — one pattern yielding two changes means the pattern missed what
 mattered — which is `prop:determinism`, closer to what *rule* means here than to
 a wager.
 
-**Genuinely extra: two.** A **valuation on writes** — the argument folding it into
-no-copy was circular, and 01's own economics (*continuation is free and change is
-paid*) refutes rather than supports it — and a **realisation operator**, since
-naming the selector a rule relabels the commitment without discharging it. Both
-were folded away in one pass and put back by the next audit.
+**Genuinely extra: two, one of them a single bit.** A **valuation** — not a cost
+model, which cannot be derived, but the one commitment that *something costs
+something*. Past that bit, MDL does the rest: a collapse is the only kind of event
+the substrate has, so charging the write is the shortest sufficient cost model and
+any rival must name a second thing to charge for. And a **realisation operator**,
+since naming the selector a rule relabels the commitment without discharging it.
+Both were folded away in one pass and restored by the next audit.
 
 Past those and Axiom −1 sit the **bets the papers state as hypotheses**, including
 the Law of Graphic Equalisation itself.

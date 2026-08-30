@@ -16,20 +16,20 @@
 \newcommand{\Hist}{\mathcal{H}}
 \title{The Law of Graphic Equalisation --- Theory\\\large Minimal Recursive Dynamics, Collapse, Frame-Relative Identity, and Residual}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-30.4}\\[2pt]30 August 2026 \textbullet\ document revision 181}
+\date{\textbf{Draft \textemdash\ draft-2026-08-30.4}\\[2pt]30 August 2026 \textbullet\ document revision 182}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r181}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r182}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r181}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r182}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-30.4 r181} (30 August 2026).
+\textbf{DRAFT --- draft-2026-08-30.4 r182} (30 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -308,12 +308,13 @@ something and is not a rule has the same move available here as there. The obvio
 survive: a change that occurs regardless of what is present is not a counterexample but a rule whose
 match condition is empty.
 
-\emph{And two things are postulated on top.} An earlier version of this remark said none were, having
+\emph{And two things are postulated on top, one of them a single bit.} An earlier version of this remark said none were, having
 folded four of the original five entries away in succession. Two of those folds do not survive audit
 and are withdrawn here; the ledger is longer than the version it replaces, and the direction of the
 correction is worth noting since every previous movement ran the other way.
 
-\emph{The valuation does not fold, and the argument that folded it was circular.} It ran: to have a
+\emph{The valuation shrinks to one bit, and the argument that tried to remove it entirely was
+circular.} Take the failed argument first, since the correction is only legible against it. It ran: to have a
 predecessor present after a change something must have put it there, which is a rule firing, so
 retention costs a write. That equivocates between \emph{something put it there at some point} and
 \emph{something put it there again, after this change}, and only the second yields the conclusion. The
@@ -331,7 +332,34 @@ The budget's second problem is independent of the first. \emph{Each write does o
 unit-of-account convention: it says one write cannot do two things, not that two writes cannot be made.
 Opportunity cost needs a forgone alternative, and this account removes the usual sources of one ---
 Proposition~\ref{prop:partial-order} makes unrelated collapses concurrent and
-Remark~\ref{rem:gals} makes asynchrony the default. So a valuation is a posit and is counted as one.
+Remark~\ref{rem:gals} makes asynchrony the default. So a cost \emph{model} cannot be derived that way.
+
+What is required is much less, and it is worth stating exactly because the difference between it and a
+cost model is most of what the earlier account was carrying. \emph{Something has to cost something.}
+That is one bit --- the denial that everything is free --- and it is not obtained from $r$ or from the
+admission. It is an observation about this instance: a substrate in which nothing cost anything would
+have no arrangement preferable to any other, no cheaper cut, nothing for an economics to be about, and
+that is a coherent world which is not the one being described. So it is a posit, and it is counted as
+one; what it is not is a \emph{model}.
+
+Everything else the economics needs then comes from the method rather than from a further commitment.
+Given that something costs, minimum description length settles \emph{what} costs without adding
+anything: a collapse is the only kind of event the substrate has, so a cost model charging the write
+introduces one charge and no further structure, while any rival must name a second thing to charge for
+and pay for naming it. That is why Proposition~\ref{prop:economics} reads as it does --- continuation
+free, change paid --- and it is why Proposition~\ref{prop:no-free-lunch} is narrow: a change is paid
+for \emph{somewhere}, with which frame pays and in what units left to the groundings. The apparatus is
+not derived from the substrate and it is not posited on top of it; it is the shortest sufficient cost
+model over one bit of commitment, which is the ordinary way a method earns its content.
+
+Two things the earlier version of this passage claimed and should not have. It claimed a
+\emph{budget} by opportunity cost, arguing that each write does one thing so a write spent on retention
+is not spent elsewhere. That needs a scarcity this account removes ---
+Proposition~\ref{prop:partial-order} makes unrelated collapses concurrent and Remark~\ref{rem:gals}
+makes asynchrony the default --- and it is not needed: a cost is enough to make one arrangement cheaper
+than another, and nothing here requires a quota. And it claimed the physics companion's fixed
+change-budget as a magnitude of the same commitment. It is not: a fixed total is a further commitment,
+and it belongs to that grounding rather than here.
 Its magnitude was always contingent and stays with the groundings, and one grounding should be named
 here rather than left to be discovered: the physics companion runs on a \emph{fixed} change-budget,
 not on opportunity cost, and a fixed total is a different commitment rather than a magnitude.
