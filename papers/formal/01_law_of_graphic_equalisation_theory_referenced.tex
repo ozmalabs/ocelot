@@ -16,20 +16,20 @@
 \newcommand{\Hist}{\mathcal{H}}
 \title{The Law of Graphic Equalisation --- Theory\\\large Minimal Recursive Dynamics, Collapse, Frame-Relative Identity, and Residual}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-30.4}\\[2pt]30 August 2026 \textbullet\ document revision 158}
+\date{\textbf{Draft \textemdash\ draft-2026-08-30.4}\\[2pt]30 August 2026 \textbullet\ document revision 159}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r158}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r159}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r158}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r159}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-30.4 r158} (30 August 2026).
+\textbf{DRAFT --- draft-2026-08-30.4 r159} (30 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -2171,7 +2171,7 @@ Each commitment below is marked \textsc{[shape]} or \textsc{[detail]}. A \textsc
 \item \textsc{[shape]}~\textbf{Frame-relative identity.} Fails if sameness and persistence are derivable from $(g,r,\Gamma)$ alone without individuation.
 \item \textsc{[shape]}~\textbf{Higher-frame first-class structure.} Fails if a containing graph cannot possess ordinary relational state about a lower graph unless the same quantity is primitive inside the lower graph.
 \item \textsc{[shape]}~\textbf{Residual is inadmissibility.} Fails if a graph-originated deformation can be left as residual by a containing frame that nonetheless admits it under $\Gamma_{W_c}$, or absorbed while inadmissible, so that residual and non-admission come apart.
-\item \textsc{[detail]}~\textbf{Cost is the write.} Fails if a substrate operation other than writing a delta carries an irreducible cost --- if reading, holding a standing structure, or the boundary relation itself must be paid for with a cost that is not the cost of the write they occasion. It stays \textsc{[detail]} despite carrying a great deal --- the four costs of Definition~\ref{def:well-formed}, the handler economics, records as paid copies --- for a reason that decides the question rather than weighing it: \emph{cost is not in the triple}. A different cost model revises the economics throughout and leaves $(g,r,\Gamma)$, admissibility, residual and frames exactly as they were.
+\item \textsc{[shape]}~\textbf{Cost is the write.} Fails if a substrate operation other than writing a delta carries an irreducible cost --- if reading, holding a standing structure, or the boundary relation itself must be paid for with a cost that is not the cost of the write they occasion. This was marked \textsc{[detail]} until the ledger of Remark~\ref{rem:inherited} was corrected, on the reasoning that \emph{cost is not in the triple} --- a different cost model revises the economics throughout and leaves $(g,r,\Gamma)$, admissibility, residual and frames exactly as they were. That reasoning is sound and it settles a different question. It establishes that the valuation is not \emph{made of} the triple, which is why the corrected ledger now counts it as a postulate; the tag asks instead what failure costs, and the answer is range. If holding or reading carried irreducible cost, persistence would not be free, and the carvings section, the crossings section and Remark~\ref{rem:cost-to-zero} would go together rather than singly. A commitment the account declares as one of its own postulates cannot also be a mechanism it could swap out.
 \item \textsc{[shape]}~\textbf{Self-change is subset-change.} The claim is that a graph changes itself and its subgraphs directly (rule-governed), and affects its container only as a subset of it, by propagation through coupling. Fails if a graph changes its container by a means other than changing the region of it that the graph is --- a container-change not propagating from the graph's own subset --- or if a graph can self-terminate without acting on the container.
 \item \textsc{[shape]}~\textbf{Minting is a rule.} Fails if grammar-extension (growth) requires a primitive operation beneath the rules rather than a reflective rule subject to the same economics, admissibility, and antecedent-state principle --- in particular, if a graph can mint its first distinctions without any seeded from its container.
 \item \textsc{[shape]}~\textbf{Partial-order sufficiency.} Fails if realised dynamics require a total order over collapses in distinct frames --- a global simultaneity --- rather than only the boundary-induced partial order.
@@ -2189,11 +2189,33 @@ Each commitment below is marked \textsc{[shape]} or \textsc{[detail]}. A \textsc
 \item \textsc{[shape]}~\textbf{Provenance is never closed by inference.} Marked \textsc{[shape]} on reconsideration: this is the single prohibition of Section~\ref{sec:prohibition} in one of its operational forms, so a frame that closed the question would have got outside itself, which the account forbids rather than merely models. Not that primitives fail to leak --- they do leak, and Proposition~\ref{prop:leak} says so. This fails if a frame can \emph{settle} the provenance of its own operator set from inside: if some in-frame procedure establishes, rather than merely evidences, whether its operators are self-supplied, how many distinct structures supply them, or whether a serial hidden supply underlies an apparently asynchronous frame The escape is not that further primitives were used, which is unavoidable, but that their provenance is open in the same way, so no procedure closes the question rather than relocating it.
 \end{enumerate}
 
-Two of the above are not closeable as written, and saying so is better than listing them as though they were tests --- the standard is the one the composition paragraph sets, that a test whose stopping condition lies with the assessor is not a test. \emph{Admissibility is not armour} and \emph{higher-frame first-class structure} are closer to consequences of the definitions than to empirical risks: given a container that may force arbitrarily, self-admissibility not constraining it follows, and given that a frame's state about another frame is ordinary state, its independence from that other frame's primitives follows. They are retained because they are load-bearing and a reader should see what they commit to, and they are marked here as derivations rather than wagers --- which, per the opening of this section, is their correct standing and not an apology.
+Two of the above are not closeable as written, and two more are consequences rather than wagers; saying so is better than listing four items as though they were all tests --- the standard is the one the composition paragraph sets, that a test whose stopping condition lies with the assessor is not a test. \emph{Admissibility is not armour} and \emph{higher-frame first-class structure} are closer to consequences of the definitions than to empirical risks: given a container that may force arbitrarily, self-admissibility not constraining it follows, and given that a frame's state about another frame is ordinary state, its independence from that other frame's primitives follows. They are retained because they are load-bearing and a reader should see what they commit to, and they are marked here as derivations rather than wagers --- which, per the opening of this section, is their correct standing and not an apology.
 
 \emph{Minimal graph sufficiency} is not a third such case, though it can look like one: it might be said to absorb its own falsifier, on the grounds that any proposed fourth primitive can be redescribed as represented or relational structure. But that redescription is not a rescue --- \emph{it is what the claim says}. The commitment is one of \emph{sufficiency}: not that nothing else exists, but that nothing else is required. A named feature turning out to be graph data confirms it rather than evading it, and the paper's own results are that pattern rather than exceptions to it, since frame, dimension, time and cost each entered as a candidate primitive and left as represented structure.
 
 So the falsifier is closeable and the burden sits on the positive side, where it is constructive: exhibit realised dynamics that \emph{cannot run} on $(g,r,\Gamma)$. Proposing a primitive is not the test and never was. And the place to conduct it is the minimum rather than the maximum --- the rock of Remark~\ref{rem:rock}, where $r$ and $\Gamma$ are absent at the grain of individuation and there is accordingly nothing extra present to smuggle the work into. A sufficiency claim is tested where least is available, not where most is.
+
+Two commitments below were added after the ledger correction, because two of the things this paper
+postulates had no falsifier anywhere in it --- which is the more serious version of a mis-tag, since
+an uncommitted postulate is not merely graded wrongly but unexposed.
+
+\begin{enumerate}[leftmargin=*,resume]
+\item \textsc{[shape]}~\textbf{Realisation is single-valued.} Fails if realised dynamics are better
+accounted for by retaining the admissible set than by selecting one member of it --- if a treatment
+carrying all continuations forward, and recovering the observed statistics from the retained
+structure rather than from a selection, predicts what this account predicts without the selection
+step. $\Gamma$ generates a set and $r$ produces deltas; neither yields a single successor, so this is
+a commitment and not a definition, and Remark~\ref{rem:qm-provenance} records where it was borrowed
+from. Its failure costs range rather than a mechanism, because collapse is what makes a history
+rather than a branching structure, and history is what the account is about.
+\item \textsc{[shape]}~\textbf{No-copy.} Fails if a substrate change can preserve its predecessor
+without paying to keep it --- if retention is available at no cost rather than as a purchased record.
+Direction in Section~\ref{sec:time-not-primitive} is this asymmetry and nothing else, and the
+Landauer reading in Section~\ref{sec:interface} requires change and irreversible operation to
+coincide, so the arrow of the event order and the physical floor fail together. The account prices
+reversible operation rather than forbidding it, which is what makes this contingent: destructiveness
+is a property of a class of $r$, and the claim is that the class is not optional.
+\end{enumerate}
 
 Two further notes on the list as a whole. Nothing is claimed to be closeable cheaply --- \emph{discrete sufficiency} requires ruling out every discrete representation including dynamically varying ones, which is hard rather than ill-formed, and the distinction between the two is the point of this paragraph. And the marks themselves are revisable: three entries above were re-marked after the commitments for Section~\ref{sec:residual}'s newer material were written, because setting out a new commitment made the criterion sharper than it had been when the older ones were assigned.
 

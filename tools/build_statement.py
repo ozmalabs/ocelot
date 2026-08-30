@@ -56,17 +56,23 @@ def parse_falsifiers(tex):
                 % (pm.group(1).rstrip('.'),
                    re.sub(r'^\\paragraph\{\\textsc\{\[[a-z]*\]\}~?[^}]*\}\s*',
                           '', body).strip()))
-    m = re.search(r'\\section\{Falsifiability commitments\}.*?\\begin\{enumerate\}'
-                  r'(.*?)\\end\{enumerate\}', tex, re.S)
-    if not m:
+    # EVERY enumerate in the section, not just the first. Commitments added
+    # after the original list -- e.g. behind an explanatory paragraph, in a
+    # \begin{enumerate}[resume] -- live in a second block, and a parser that
+    # stopped at the first \end{enumerate} reported them as MISSING while they
+    # sat in the paper. That is how the two postulate-level commitments added
+    # with the ledger correction failed to reach the statement.
+    if not sec:
         return items
-    for it in re.split(r'\n(?=\\item )', m.group(1)):
-        it = it.strip()
-        if not it.startswith(r'\item'):
-            continue
-        t = re.search(r'\\textbf\{([^}]*)\}', it)
-        if t:
-            items[t.group(1).rstrip('.').lower()] = it
+    for blk in re.finditer(r'\\begin\{enumerate\}(?:\[[^\]]*\])?(.*?)\\end\{enumerate\}',
+                           sec.group(1), re.S):
+        for it in re.split(r'\n(?=\\item )', blk.group(1)):
+            it = it.strip()
+            if not it.startswith(r'\item'):
+                continue
+            t = re.search(r'\\textbf\{([^}]*)\}', it)
+            if t:
+                items[t.group(1).rstrip('.').lower()] = it
     return items
 
 

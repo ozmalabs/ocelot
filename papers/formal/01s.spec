@@ -131,6 +131,10 @@ build so the omission stays visible rather than becoming a claim.
 @falsifier Convergence is not enforced
 @falsifier Provenance is never closed by inference
 @falsifier Solutions are nearly unique under a binding constraint
+@falsifier Cost is the write
+@falsifier Residual is inadmissibility
+@falsifier Realisation is single-valued
+@falsifier No-copy
 @falsifier Decoherence is one operation
 @falsifier A swallowed failure is relocated, never closed
 @falsifier Dependents are not held by the referent
