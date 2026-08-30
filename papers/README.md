@@ -11,14 +11,17 @@ subtraction from them.
 **Two premises, and what they force.** Paper 00 claims one thing — *to be is to
 stand in relation*. The companions admit one more — that anything *happens* —
 which 00 says is not required for there to be anything, so it is a real addition
-and it is not derived: it appears **ex nihilo**, the account's one unargued entry.
+and it is not derived: **The account carries two unpaid entries, not one** — that there is anything, which 00 claims and
+nothing here grounds, and that anything happens. Neither follows from the other, and an earlier
+version of this section located the single unpaid entry at the second.
 
 **Forced by the admission:** transformation `r`. Something has to do the happening,
 whatever does it is a graph, and the least graph that can do anything is a pattern
 plus a change it makes. Admissibility comes with it — `Γ` names the rules that
 decide admit-or-residual.
 
-**Postulated, and both restored by audit after being folded away:** a **realisation
+**Postulated, and both restored by audit after being folded away** — the second of
+them three times: a **realisation
 operator** (collapse is typed as a map out of `Poss`, and the physics grounding's
 measurement account needs exactly one continuation realised), and a
 **destroy/preserve distinction** (`prop:economics` exempts evaluation because it
