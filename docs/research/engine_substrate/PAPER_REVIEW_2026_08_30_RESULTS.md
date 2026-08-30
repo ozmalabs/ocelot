@@ -15,7 +15,7 @@ over paper 00 and that everything else is consequence. It invited a reader to
 look for a hidden axiom, on the ground that finding one would be *"a real result
 against the account's economy."*
 
-**The audit found five postulates, not two (later three, §1.1) — and every one is demonstrated by 01
+**The audit found five postulates, not two (later two plus an admission, §1.1) — and every one is demonstrated by 01
 contradicting the remark in its own words elsewhere in the same file.** That is
 the strongest available form of evidence for this kind of check, because it does
 not depend on the reviewer's reading of any derivation.
@@ -41,7 +41,21 @@ Under no-copy a change does not keep its predecessor, so retention costs a
 further write, and a write spent on one thing is not spent on another — a budget
 by *opportunity cost*, requiring no quota. So `prop:no-free-lunch` is no-copy
 restated in the currency writes supply, and the valuation is not a separate
-posit. **The count is three, not five.**
+posit.
+
+A third fold went furthest: **rules are forced because something has to do
+something, a rule is the least something-that-does-something that can be, and it
+is a graph because everything is.** So `r` follows from the admission that
+anything happens rather than standing beside it — *a rule is a graph that does
+something* — which is 00's own minimality method used one level along (00: least
+structure that can *be* → relation; 01: least that can *do* → rule). It inherits
+that method's limit too: least is established by removal against a candidate
+list. The obvious candidate fails — a change occurring regardless of what is
+present is a rule with an empty match condition, not a counterexample.
+
+**The ledger settles at one admission (things happen) plus two posits that do not
+follow from it (single-valued realisation, no-copy), plus Axiom −1** — against
+the five the audit found and the two originally claimed.
 
 Folding it removed an assertion rather than renaming one. `prop:two-gates` had to
 claim the aperture and change grammars are *"two faces of one grammar on one
