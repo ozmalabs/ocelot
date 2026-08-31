@@ -244,8 +244,23 @@ def main(spec_path):
            os.path.dirname(os.path.dirname(os.path.abspath(spec_path)))))
     )
     out_path = os.path.join(root, out_rel)
-    io.open(out_path, 'w', encoding='utf-8').write(
-        banner + preamble_of(long_tex) + '\n'.join(body) + '\n')
+    text = banner + preamble_of(long_tex) + '\n'.join(body) + '\n'
+
+    # Anything emitted after \end{document} is in the file and not in the PDF.
+    # The generator reported success and the falsifiability list looked whole,
+    # because "did the spec name resolve" and "did the content get typeset" are
+    # different questions and only the first was being asked. A spec directive
+    # placed after the one that closes the document is enough to cause it.
+    tail = text.split(r'\end{document}')
+    if len(tail) > 1 and tail[-1].strip():
+        stray = [ln for ln in tail[-1].splitlines() if ln.strip()]
+        raise SystemExit(
+            'ERROR: %d line(s) emitted after \\end{document} and would not be '
+            'typeset.\n  First: %s\n  Cause is usually a spec directive placed '
+            'below the one that closes the document; move it into its own '
+            'block.' % (len(stray), stray[0][:90]))
+
+    io.open(out_path, 'w', encoding='utf-8').write(text)
 
     unpulled = sorted(set(blocks) - pulled)
     # Falsifier drift is reported in BOTH directions. A spec asking for a

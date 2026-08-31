@@ -142,6 +142,7 @@ build so the omission stays visible rather than becoming a claim.
 @falsifier Termination follows supply, not containment
 @falsifier A boundary is known only by crossing it
 @falsifier Robustness trades against legibility
+@falsifier The relativity of grounding is a consequence, and can fail as one
 \end{enumerate}
 
 \end{document}
