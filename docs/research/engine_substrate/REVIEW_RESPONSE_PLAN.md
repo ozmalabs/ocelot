@@ -63,7 +63,7 @@ estimating what they weigh is not.
 Ordered by **risk of losing content**, cheapest and safest first. Each states
 what verifies it.
 
-### Tier A — mechanical, no claim touched (est. 1 session)
+### Tier A — mechanical, no claim touched — **DONE 2026-08-31**
 
 | # | item | measured | verify |
 |---|---|---|---|
@@ -156,3 +156,50 @@ hours earlier, not years. Every item above is a correction at a site.
 **Therefore: after each item, re-read the whole section, not the edit.** §1 of Is
 went 951 → 745 → 1,269 words because five separately-correct fixes never re-read
 the section. That is the failure mode this plan is most likely to reproduce.
+
+
+---
+
+## 6. Tier A execution record (2026-08-31)
+
+**A1 — references.** Both lists sorted alphabetically by author then year (Is 16
+entries, Theory 83), accent-stripped sort keys so `N\=ag\=arjuna` files under N.
+Yamey 1949 given its page range (99–113). Arya pair relabelled (2000a)/(2000b) —
+previously (2000)/(2000b), a suffix with nothing to suffix.
+
+**A2 — the Nāgārjuna glyph: investigated, and there is nothing to fix.**
+The review reported it rendering as "N¯ag¯arjuna". Checked in three places:
+the source is `N\=ag\=arjuna`, which is correct LaTeX; **the rendered page is
+correct** (inspected at 200dpi — properly composed macrons); and the extracted
+text is `N` + `a` + U+0304, i.e. **NFD rather than NFC**, which Python reads as
+`'Nāgārjuna'` and normalises to the precomposed form identically. So the output
+is canonically-equivalent Unicode and the reviewer's tool displayed the
+decomposed form badly.
+
+Two candidate fixes were tried and **both reverted**: `cmap` and
+`\input{glyphtounicode}\pdfgentounicode=1` each left the extraction byte-identical.
+T1 composes the accent from two glyphs, so decomposed output is inherent to
+pdflatex+T1; precomposed extraction needs LuaLaTeX or XeLaTeX with Unicode fonts,
+which is an engine change across twelve documents and out of proportion to a
+display artefact in one tool. **Adding packages that changed nothing would be
+exactly the cost `def:well-formed` prices as idle**, so they came out again.
+
+**A3 — count-promising openers: 33 → 8.** Kept: those delivering with
+First/Second, and the two standalone signposts (*Four qualifications*, *Three
+things about that statement*) that head genuine multi-paragraph lists. Stripped
+the rest, keeping the content and dropping the numeral.
+
+**One real miscount found**, confirming the review's secondary note: *"Two things
+this account adds, and one it must obey"* promises three and delivers two.
+Corrected to *"This account adds two things and must obey a third."*
+
+**A4 — the announce-then-say tic.** Twelve of the clearest cut: *"This is worth
+stating because the obvious gloss is wrong in a specific way"* → *"The obvious
+gloss is wrong in a specific way."* Ten remain, where the phrase carries content
+(*"is worth running"*, *"is worth answering"*, *"is worth its"*) rather than
+announcing.
+
+**Measured cost of Tier A: −120 words in Theory, −1 in Is.** Page counts
+unchanged (69 / 16). This is consistent with §2's warning and worth recording as
+a second data point: **the style items are real defects and are not where pages
+come from.** Pages are in Tiers C and D.
