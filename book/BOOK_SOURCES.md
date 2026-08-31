@@ -186,7 +186,7 @@ Runtime and data: `~/ozmadev/bigville` (external).
 ### Ch. 14 — The law, and one machine that obeys it
 
 `papers/formal/01_law_of_graphic_equalisation_theory_referenced.tex`,
-`papers/formal/05_constructive_graphic_equalisation_implementation_referenced.tex`;
+`papers/formal/A1_constructive_graphic_equalisation_implementation_referenced.tex`;
 `~/ozmadev/internal/research/docs/paper1.md` and the drafts around it;
 `docs/research/theory_convergence/GRAPHIC_EQUALISATION_V22_SUBSTRATE_GAP.md`;
 engine: `runners/dsl/src/{substrate,rewrite,grammar,checker}.rs`.

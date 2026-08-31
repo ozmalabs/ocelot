@@ -60,9 +60,9 @@ the paper.
 | `formal/02a_seldon_manifolds_psychological_grounding.tex` | Seldon Manifolds — Psychological Grounding (forward models, acceptable regions, the aperture of one embodiment) |
 | `formal/03_law_of_narrative_momentum_theory_referenced.tex` | The Law of Narrative Momentum — Theory |
 | `formal/04_narrativium_theory_referenced.tex` | Narrativium — Theory |
-| `formal/05_constructive_graphic_equalisation_implementation_referenced.tex` | A Constructive Realisation of Graphic Equalisation |
-| `formal/06_frames_relation_and_the_empty_limit.tex` | Frames, Relation, and the Empty Limit |
-| `formal/07_assessing_an_account_of_this_kind.tex` | Assessing an Account of This Kind (the process material, split out of 01) |
+| `formal/A1_constructive_graphic_equalisation_implementation_referenced.tex` | A Constructive Realisation of Graphic Equalisation |
+| `formal/05_frames_relation_and_the_empty_limit.tex` | Frames, Relation, and the Empty Limit |
+| `formal/06_assessing_an_account_of_this_kind.tex` | Assessing an Account of This Kind (the process material, split out of 01) |
 
 `01s` is **generated**, never hand-edited: edit `01s.spec` and the long paper,
 then `python3 ../../tools/build_statement.py 01s.spec` from `formal/`. The

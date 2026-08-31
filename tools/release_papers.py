@@ -30,7 +30,9 @@ import argparse, os, re, shutil, subprocess, sys
 CLEARED = ["00_is",
            "01_law_of_graphic_equalisation_theory_referenced",
            "01s_graphic_equalisation_statement",
-           "01a_graphic_equalisation_physics_grounding"]
+           "01a_graphic_equalisation_physics_grounding",
+           "02_seldon_manifolds_theory_referenced",
+           "04_narrativium_theory_referenced"]
 
 # Phrases that set out the excluded document's contents rather than naming it.
 FORBIDDEN = ["proposal closure", "execution semantics", "reference execution"]
