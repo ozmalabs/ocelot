@@ -641,3 +641,49 @@ applied at its site and not swept to what points at it*. It has now appeared in
 six consecutive passes. Finding 5 is the sharpest instance yet, because two
 independent success signals (`err=0`, `MISSING=0`) were both green over a missing
 artefact.
+
+### §13.1 — What pass six could not have found, and a second instance of it
+
+Immediately after pass six closed, the observation was made that no review pass
+had found the smuggled type import — and that the reason is the one Axiom −1 is
+numbered for: **the import is free**.
+
+This is correct and it is structural, not a lapse. A lens checks *claims* —
+against each other, against sources, against what they replaced. A commitment
+arriving as *vocabulary* is not a claim in the text; it is a claim in the reader,
+supplied on reading and never written down. A lens has nothing to stop on. So
+**a procedure that examines what a text asserts cannot examine what a text lets
+its reader assume**, and six passes reporting nothing there were reporting
+accurately about the wrong thing.
+
+**The specific defect in the method, now fixed.** `00`'s stated candidate list
+for removal was: *time, causation, substance or intrinsic nature, an observer, a
+privileged frame or global clock, admissibility, and any axiom restricting where
+a distinction may be made from.* Every entry is a **posit** — something an
+account might assert exists. The list is short by a whole category. Extended to
+name vocabulary as a candidate class, with the test unchanged: put the account
+without the word and see whether any claim alters. Vocabulary doing no work goes
+silently; vocabulary carrying a smuggled commitment takes a claim with it.
+
+**A second instance, found by running that extended sweep immediately.**
+`00` removes *substance or intrinsic nature* by name and reports the removal
+successful. `01`'s `rem:one-substance` then asserts **"there is one substance,
+graph data, and it runs"** — in the sentence claiming to have decomposed
+substance away, with the word already on the companion's own removed list, in
+the remark's title, and again as "one substance closing on itself". Intent was
+homogeneity; the wording posits a bearer, which is exactly what gets imported for
+free. Fixed: *one substance is not the correction to three kinds of thing; no
+substance is.* Title and both body uses amended.
+
+**Division of labour, recorded in 07.** Review catches the defect this record
+shows most of — a correction made at its site and not swept to what points at it.
+Removal catches the free import, and nothing else here does. **An account revised
+only by review will drift in exactly one direction**, accumulating imported
+vocabulary while its explicit claims grow more careful, and from inside the two
+are hard to tell apart.
+
+**Swept and not findings:** `set` in 06's empty-limit argument (extensionality
+imports identity-by-membership, but the claim is that the class is empty and does
+not turn on identity); `represented state` in `def:graph` (reads as a role
+against transformation, and with the substance fix there is nothing underneath
+for it to be a state *of*).
