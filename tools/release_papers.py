@@ -29,10 +29,20 @@ import argparse, os, re, shutil, subprocess, sys
 
 CLEARED = ["00_is",
            "01_law_of_graphic_equalisation_theory_referenced",
-           "01s_graphic_equalisation_statement",
            "01a_graphic_equalisation_physics_grounding",
+           "01b_graphic_equalisation_mind_and_self_grounding",
+           "01s_graphic_equalisation_statement",
            "02_seldon_manifolds_theory_referenced",
-           "04_narrativium_theory_referenced"]
+           "02a_seldon_manifolds_psychological_grounding",
+           "03_law_of_narrative_momentum_theory_referenced",
+           "04_narrativium_theory_referenced",
+           "05_frames_relation_and_the_empty_limit",
+           "06_assessing_an_account_of_this_kind"]
+# This is the whole series and A1 is the only exclusion, which makes an inverted
+# rule tempting: release everything except A1. It stays an ALLOWLIST because the
+# two fail in opposite directions. A document added to this repository tomorrow
+# is, under an allowlist, not released until somebody clears it; under a
+# denylist it is released until somebody remembers to stop it.
 
 # Phrases that set out the excluded document's contents rather than naming it.
 FORBIDDEN = ["proposal closure", "execution semantics", "reference execution"]
