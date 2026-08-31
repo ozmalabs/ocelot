@@ -16,20 +16,20 @@
 \newcommand{\Hist}{\mathcal{H}}
 \title{The Law of Graphic Equalisation --- Theory\\\large Minimal Recursive Dynamics, Collapse, Frame-Relative Identity, and Residual}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-30.4}\\[2pt]30 August 2026 \textbullet\ document revision 223}
+\date{\textbf{Draft \textemdash\ draft-2026-08-30.4}\\[2pt]30 August 2026 \textbullet\ document revision 224}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r223}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r224}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r223}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r224}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-30.4 r223} (30 August 2026).
+\textbf{DRAFT --- draft-2026-08-30.4 r224} (30 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -346,6 +346,38 @@ what a standpoint at no relation, or at unbounded remove, receives --- and there
 occupied by anyone, which is why neither statement licenses the conclusion usually drawn from it.
 \end{remark}
 
+\begin{remark}[The method is one of the account's own consequences]\label{rem:mdl-ontic}
+Minimum description length appears twice in this programme under one name, and the second appearance is
+not a method. In the companion it is the method --- \emph{prefer the shortest account that suffices} ---
+and is imported rather than invented. It is also \emph{derivable}: relation is what carries the
+information, a relation with no content of its own adds nothing to what a thing is, so what a thing is
+is its shortest sufficient relational description. That is the same principle applied to \emph{things}
+rather than to accounts, and it is what the claim that information is everything cashes to. Neither
+grip is prior; they are one principle held at two places.
+
+One extension is required and is named rather than hidden. Remark~\ref{rem:self-edge} settles the case
+of a relation carrying no information \emph{at all}; this uses the conditional form --- no information
+\emph{given the rest}. A duplicated edge is not zero-bit on its own, only conditional on the edge it
+duplicates. The step from the unconditional result to the conditional one is plausible and is not
+proved here.
+
+Well-posedness comes from Axiom~$-1$ and could come from nowhere else, since description length is
+defined only against a vocabulary and \emph{shortest simpliciter} is not a quantity. The standing
+objection to any constitutive reading of description length --- that complexity is machine-relative up
+to an additive constant --- is therefore not answered here but \emph{accepted}: the constant is the
+frame. Converting an objection into a thesis is only honest where the thesis was motivated
+independently of the objection, which is the case here, Axiom~$-1$ having been argued for on other
+grounds entirely.
+
+The cost is specific and worth stating plainly, because it is easy to miss and it cuts against this
+paper. \emph{If the method is a consequence of the account, the method cannot be independent support for
+the account.} There is nothing vicious in the circle --- a description of everything describes its own
+production --- but the most that may be claimed from it is consistency: were the method and the
+ontological reading to disagree, the account would be self-undermining, and they do not disagree. That
+is a check passed and not evidence gathered, and it is the weaker of the two things a reader might
+have taken the agreement to show.
+\end{remark}
+
 \begin{remark}[Why it is numbered before the axioms]\label{rem:why-minus-one}
 The number is not decoration and it is not a claim that this is a different kind of thing --- an
 earlier reading here held it was a methodological guard rather than a commitment, and that reading
@@ -638,7 +670,7 @@ The three components of $G$ resolve into five constituents ordered by requiremen
 \[
 \boxed{\text{nodes}\;\to\;\text{relations}\;\to\;\text{rules}\;\to\;\text{delta}\;\to\;\text{grammar}.}
 \]
-\emph{Nodes} are bare distinctions --- the minimal difference that makes a difference; a node alone carries almost no content. \emph{Relations} structure nodes and require them as relata; this is where content lives, and a node's identity is its relations. \emph{Rules} ($r$) act on relational structure and require relations to match. \emph{Delta} is the change a rule writes and requires rules, since only a rule produces one. \emph{Grammar} ($\Gamma$) determines which deltas are admissible and requires deltas to act on, which is why it is last. Nodes and relations are $g$; delta is $r$'s product, made explicit; grammar is $\Gamma$.
+\emph{Nodes} are bare distinctions --- the minimal \emph{``difference which makes a difference''} \citep{bateson1972}; a node alone carries almost no content. \emph{Relations} structure nodes and require them as relata; this is where content lives, and a node's identity is its relations. \emph{Rules} ($r$) act on relational structure and require relations to match. \emph{Delta} is the change a rule writes and requires rules, since only a rule produces one. \emph{Grammar} ($\Gamma$) determines which deltas are admissible and requires deltas to act on, which is why it is last. Nodes and relations are $g$; delta is $r$'s product, made explicit; grammar is $\Gamma$.
 
 Two cautions. First, this constructive order does not contradict the relational primacy of Axiom~$-1$: constructively nodes precede relations (relata come first), while semantically relations precede nodes (a node means nothing unheld by relations); both hold on different axes. Second, the order is a dependency partial order, not a temporal one --- nodes are not a first \emph{moment} but the least-dependent constituent, consistent with the absence of any substrate time (Section~\ref{sec:time-not-primitive}).
 \end{remark}
@@ -2390,6 +2422,20 @@ The individual ingredients of Graphic Equalisation have substantial prior art. T
 
 \paragraph{Computational-universe and graph-rewrite models.} The closest extant framework is the Wolfram Physics Project, in which the universe is a hypergraph evolved by rewrite rules, time is progressive rule application, and observer-independent structure follows from \emph{causal invariance} --- different update orderings yielding the same causal graph \citep{wolfram2002,wolfram2020,wolfram2020cs}. The structural agreement is deep: graph plus rewrite rules, time emergent from rule application rather than posited, order-independence, and observer-relative slicing. Four differences locate the present contribution. First, $\Gamma$ is an admissibility grammar that is itself graph data and self-modifying (the grammar-is-the-loop theorem), whereas Wolfram fixes a rule per universe or takes the entire rule space --- the Ruliad --- at once. Second, collapse realises \emph{one} frame-relative continuation, whereas Wolfram retains all branches (the multiway graph) and derives quantum structure from them. Third, residual and growth-by-minting from it have no counterpart in a fixed rule. Fourth, the present substrate keeps no global object --- no single hypergraph being updated --- being local and frame-relative throughout, and its claims are information-level and cross-domain rather than an attempt to derive our specific universe. This last is why $c$ falls out here as a \emph{per-frame} unit (developed in the companion physics-grounding paper): sub-rules with closure give each frame its own cycle and hence its own $c=1$, invariant by construction, whereas a single global update yields $c$ only as an emergent speed limit shown observer-independent by causal invariance --- the constant, but not the per-frame machinery beneath it. That an independent programme reached the shared shape from cellular automata and physics, while this one reached it from cognition and engineering, bears on the arrangement claim of Section~\ref{sec:scope} rather than against its novelty, at the calibrated strength given there.
 
+\paragraph{Information as constitutive.} That what exists comes to information is Wheeler's \emph{it
+from bit} \citep{wheeler1990}, asserted there at total scope within physics --- every particle, every
+field of force, spacetime itself --- and before it Bateson's unit of information, \emph{``a difference
+which makes a difference''} \citep{bateson1972}. Two differences locate what is added, and the first is
+a deflation rather than an extension. \emph{The ground.} Wheeler derives existence from
+apparatus-elicited answers to yes-or-no questions, which is why the participatory observer is the most
+contested part of that programme; the ground here is relation (\emph{Is}, Proposition~1), and a relation
+requires no apparatus --- a rock stands in relations without measuring anything, and the companion is
+explicit that what merely is cannot observe at all. The same claim is reached on a weaker ground, and
+without the participatory commitment usually taken to come with it. \emph{The scope.} Wheeler's claim is
+total within physics; Axiom~$-1$ states it for every frame's every claim, physical or not. That also
+makes explicit what Bateson left implicit, since \emph{makes a difference} already asks \emph{to whom}
+and does not say.
+
 \paragraph{Information and minimum description.} The preference for the smallest sufficient ontology is the method's rather than this paper's, and is set out with its prior art in the companion \emph{Is}. What matters here is only its consequence for one hypothesis: it motivates the Discrete Sufficiency Hypothesis and does not prove it.
 
 \paragraph{Standing beside, not replacing.} Graphic Equalisation is not proposed as a replacement for established theories. It is intended to sit beneath or beside them as a substrate description. A grounding may add continuous geometry, conservation laws, quantum amplitudes, relativistic metrics, biological mechanisms, institutional rules, or probabilistic models of unresolved lower-frame observations. In particular, relational quantum mechanics \citep{rovelli1996}, Everettian relative-state quantum mechanics \citep{everett1957}, and deterministic Bohmian mechanics \citep{bohm1952} make mutually different commitments while remaining compatible with large parts of standard quantum phenomenology; this paper does not require choosing among those complete physical models at the substrate-definition stage. Such additions do not alter Proposition~\ref{prop:determinism}: within the Graph Law, realised transition remains deterministic once the causally complete antecedent configuration is specified.
@@ -2843,6 +2889,19 @@ Mario R. Capecchi.
 Ali Basiri, Niosha Behnam, Ruud de Rooij, Lorin Hochstein, Luke Kosewski, Justin Reynolds, and Casey Rosenthal.
 \newblock Chaos engineering.
 \newblock \emph{IEEE Software}, 33(3):35--41, 2016.
+
+\bibitem[Bateson(1972)]{bateson1972}
+Gregory Bateson.
+\newblock \emph{Steps to an Ecology of Mind}.
+\newblock Chandler, San Francisco, 1972.
+
+\bibitem[Wheeler(1990)]{wheeler1990}
+John~A. Wheeler.
+\newblock Information, physics, quantum: The search for links.
+\newblock In Wojciech~H. Zurek, editor, \emph{Complexity, Entropy, and the Physics of Information},
+pages 3--28. Addison-Wesley, Redwood City, 1990.
+\newblock Originally in \emph{Proceedings of the 3rd International Symposium on Foundations of Quantum
+Mechanics}, Tokyo, 1989, pages 354--368.
 
 \bibitem[Sagan(1994)]{sagan1994}
 Carl Sagan.
