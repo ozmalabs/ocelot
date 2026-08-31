@@ -275,3 +275,53 @@ change was navigational, not editorial.
 prose, +1 page of tables. **The page count has not moved down once.** Every item
 that reduces pages is in Tier C or D, exactly as the corrected arithmetic
 predicted.
+
+---
+
+## 9. Tier C execution record (2026-08-31)
+
+**C1 — vestigial sections demoted, 27 → 20.** Checked first: only two of the
+eight carried labels, one reference each. Demoted to `\subsection` rather than
+dissolved, because measurement showed **these are short for being dense, not for
+being padding** — each is a definition, theorem or proposition with a section
+header round it. `\subsection` takes them out of the top-level count while
+keeping them numbered, findable and referenceable; no text moved, and zero
+reference warnings confirm no `\ref` broke.
+
+*The Law of Graphic Equalisation* (60w) was kept as a section per §3's note, and
+given the `\label` it had never had.
+
+**C2 — the reviewer's diagnosis was inverted, and the real defect is worse.**
+The claim was that §12 draws the capability/accessibility distinction before
+"capability" is defined in §15. Measured: **§12 defines both terms where it
+introduces them.** What actually happens is that §15, six hundred lines later,
+announces *"the neutral term for the event is not missing at all. It is
+capability"* — presenting as a discovery a term already in use. Fixed by having
+§15 refer back rather than re-derive, and by stating the section's result in its
+first paragraph, which is the review's separate "conclusions before discovery"
+item for the same passage.
+
+**C3 — the reviewer pointed at 269 words; the mass was 1,866.**
+The recommendation was to move §1's *"what kind of thing"* and *"what kind of
+document"* to the assessment companion. Measured: **"What kind of document this
+is" is 269 words** — moving it saves nothing. §1's mass was **"Epistemic
+boundary" at 2,223 words, 63% of the section**, of which only ~357 is an
+epistemic boundary. The remaining **1,866 words are assessment material** —
+kinds of prior-art finding, shape-versus-details, and a five-case scorecard with
+the competent-man standard — sitting in the substrate paper's scope section.
+
+Moved to 07 as *What kind of contribution this is*, with its four
+Theory-internal `\ref`s converted to the prose form 07 already uses, and the
+Heinlein citation carried across.
+
+| | before | after |
+|---|---|---|
+| Theory §1 | 3,533w (~7.9pp) | **1,705w (~3.8pp)** |
+| Theory | 70pp | **68pp** |
+| 07 | 15pp | 18pp |
+
+**The first page reduction in the exercise**, and it is worth being exact about
+what it is: relocation moved 1,866 words to the document whose title is
+*Assessing an Account of This Kind*. The corpus total went 85 → 86pp. **The
+substrate paper got shorter because it stopped carrying somebody else's
+material, not because anything was cut.** Tier D is where cuts happen.
