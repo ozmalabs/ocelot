@@ -24,10 +24,10 @@
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4 / statement / from long r240}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4 / statement / from long r243}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4 / statement / from long r240}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4 / statement / from long r243}}\renewcommand{\headrulewidth}{0pt}}
 
 \title{The Law of Graphic Equalisation\\\large Statement}
 \author{Matthew Parslow\\Independent Researcher}
@@ -112,9 +112,7 @@ A distinction is doing the work there. Being a
 frame is being individuated (Definition~\ref{def:frame}), and individuation is performed by the
 container, not by the thing: a boundary belongs to the frame that draws it. So a structure with no
 rules of its own is still a frame --- something else instantiated its boundary --- and what it lacks
-is not framehood but the capacity to individuate anything itself. The earlier claim that stripping
-$r$ leaves ``no frame'' was wrong, and it would have invalidated the companion result that reasons
-from a rock's being a frame to the universe's being one.
+is not framehood but the capacity to individuate anything itself. Stripping $r$ does not leave ``no frame'', and reading it so would invalidate the companion result that reasons from a rock's being a frame to the universe's being one.
 \end{remark}
 \begin{remark}[What this paper postulates over \emph{Is}]\label{rem:inherited}
 The ledger is five entries --- \emph{inherited}, \emph{admitted}, \emph{taken to follow from the
@@ -342,7 +340,7 @@ In the substrate as characterised here, the boundary relation itself is free; th
 This is a characterisation of the substrate as specified, not a necessity of graphhood, and the writeability status it describes is not required to be uniform (Remark~(\emph{Writeability status is contingent, not uniform}, long form)).
 \end{proposition}
 \begin{definition}[Well-formedness]\label{def:well-formed}
-A graph is \emph{well-formed} to the degree that it pays for nothing that does no work for it. Three costs bear on that and they behave differently, so the notion is graded along each rather than binary.
+A graph is \emph{well-formed} to the degree that it pays for nothing that does no work for it. Four costs bear on that and they behave differently, so the notion is graded along each rather than binary.
 
 \emph{Writes} are paid when made (Proposition~\ref{prop:economics}), which prices doing. \emph{Retention} is nearly free per unit, which is why an unused distinction is not immediately pruned. \emph{Search} is paid on every operation over what is held and scales with how much is held, so inert structure is cheap to keep and expensive to keep in quantity.
 
@@ -500,9 +498,7 @@ deliberate exemptions is exactly what an \emph{installed policy} looks like. One
 chosen per type, and one of them carrying a schedule of cases where the committee decided the failure
 should not spread. The failure did not choose; the committee did.
 
-The economics is therefore weaker than an earlier version of this remark claimed, and the claim it
-made is a good example of the error it was warning about. It said propagation costs nothing while a
-handler is purchased, so that a total residual is the unmarked case. That holds \emph{under the
+The economics is therefore weaker than it looks, and the tempting stronger claim is a good example of the error this remark warns about: that propagation costs nothing while a handler is purchased, so that a total residual is the unmarked case. That holds \emph{under the
 exception convention} and not otherwise: where failure is carried in return values the check is
 explicit and paid at every call, and it is the propagation rather than the handling that costs. Which
 side the cost falls on is the convention's, not the substrate's.
@@ -777,7 +773,7 @@ A graph is data --- nodes, relations, and rules --- and the operations its rules
 \begin{proposition}[A well-formed runner does not expose itself, and no level is self-transparent]\label{prop:runner-opaque}
 The asynchronous, locally synchronous structure a frame observes (Remark~(\emph{Globally asynchronous, locally synchronous}, long form)) is the graph's \emph{internal} view and does not fix its runner's actual mode. A hidden central runner may execute a graph serially, one change at a time, while the graph --- lacking any access to the runner's clock --- appears asynchronous and concurrent to itself. More generally, where a frame has no boundary to the substrate that runs it, its runner lies beyond the frame's epistemic boundary in exactly the sense of Section~(\emph{Scope and epistemic status}, long form).
 
-Two claims have to be separated here, and an earlier statement of this proposition ran them together by calling the runner unseeable rather than unseen. That a runner is hidden is \emph{contingent}. Nothing forbids a runner from exposing its own state to what it runs, and computational reflection does exactly that, as this paper acknowledges when placing itself against that literature (Section~(\emph{Positioning and prior art}, long form)); a tower in which each level is available to the one above is a built artefact, not a thought experiment. A runner that does not expose itself is the \emph{well-formed} case, and for the reasons well-formedness always turns on: exposed runner state is structure maintained for work the frame does not do, and each exposure needs a runner of its own to run the reading of it.
+Two claims have to be separated here, and calling the runner unseeable rather than unseen runs them together. That a runner is hidden is \emph{contingent}. Nothing forbids a runner from exposing its own state to what it runs, and computational reflection does exactly that, as this paper acknowledges when placing itself against that literature (Section~(\emph{Positioning and prior art}, long form)); a tower in which each level is available to the one above is a built artefact, not a thought experiment. A runner that does not expose itself is the \emph{well-formed} case, and for the reasons well-formedness always turns on: exposed runner state is structure maintained for work the frame does not do, and each exposure needs a runner of its own to run the reading of it.
 
 What does not depend on the cost model is weaker and survives reflection: \emph{no level is self-transparent}. Reading is an operation whose product lands one level up (Remark~\ref{rem:evaluation-writes}), so a level cannot hold the reading of itself while being the level that is running. Reflection makes the levels explicit and pays for each; it does not terminate in a level transparent to itself. A frame may therefore be given sight of what runs it, and cannot be given sight of its own running. Since the rules are graph and a frame can read and rewrite them (Definition~\ref{def:frame}), while its own running is not graph it holds, the asymmetry is exact: a frame is transparent to itself in precisely one respect and opaque in precisely the other. \emph{It can know what it is and cannot observe its being it.} Self-modification is available; self-observation at the level of the modifying is not.
 \end{proposition}
@@ -870,7 +866,7 @@ which was an inconsistency rather than a judgement. Not that a frame cannot dete
 \item \textsc{[shape]}~\textbf{Termination follows supply, not containment.} Fails if containment alone determines it --- if a subgraph must stop when the graph containing it stops, even where its primitives are supplied from beyond that graph (Remark~\ref{rem:supply-not-containment}). The partial case carries its own clause: fails if a frame losing part of its supply must either stop or continue correctly, rather than running with an incomplete operation set and undefined behaviour, or if such a frame can enumerate what it has lost from inside --- which would also falsify the provenance commitment below.
 \item \textsc{[shape]}~\textbf{A boundary is known only by crossing it.} Fails if a frame can \emph{settle} the location of its own admissibility boundary without any write that crosses it. Extrapolation from inside the admissible region evidences a boundary and is not at issue; establishing one would be (Remark~\ref{rem:failure-instrument}). This is the epistemic member of the same family as the provenance commitment below, and fails in the same manner --- by a procedure that closes the question rather than relocating it.
 \item \textsc{[detail]}~\textbf{Robustness trades against legibility.} Fails if a policy can bound a frame's residuals without reducing what its failures disclose about its grammar --- a handler that both absorbs and reports with no loss (Remark~\ref{rem:failure-instrument}). Cheaply testable in software, and marked \textsc{[detail]} because the account survives its loss with the trade weakened to a tendency.
-\item \textsc{[shape]}~\textbf{The relativity of grounding is a consequence, and can fail as one.} Fails if a view can be informative without standing in relation to what it views, or if relation is not what carries information here. Listed because the axiom's status changed: read as a posit it was outside this list, and read as a costless guard it was unfailable, but a consequence has content (Remark~(\emph{The axiom in bits}, long form)). The second disjunct is the companion's own identification of distinction with relation, so this is where the account is thinnest rather than where it is safest, and it is marked \textsc{[shape]} because what fails with it is the range of everything derived through it.
+\item \textsc{[shape]}~\textbf{The relativity of grounding is a consequence, and can fail as one.} Fails if a view can be informative without standing in relation to what it views, or if relation is not what carries information here. A consequence has content and can fail, which a posit or a costless guard could not (Remark~(\emph{The axiom in bits}, long form)). The second disjunct is the companion's own identification of distinction with relation, so this is where the account is thinnest rather than where it is safest, and it is marked \textsc{[shape]} because what fails with it is the range of everything derived through it.
 \end{enumerate}
 
 
