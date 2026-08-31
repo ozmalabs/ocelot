@@ -687,3 +687,42 @@ imports identity-by-membership, but the claim is that the class is empty and doe
 not turn on identity); `represented state` in `def:graph` (reads as a role
 against transformation, and with the substance fix there is nothing underneath
 for it to be a state *of*).
+
+### §13.2 — The correction to §13.1: types are emergent, and true imports are the ones that survive
+
+§13.1's fix was itself one word short, and the framing it drifted into was wrong.
+
+**Two errors corrected.**
+
+1. **The fix stopped at "typed" and left "graph".** The import is close to free
+   from the bare word: a reader supplies types on hearing *graph*, because in
+   every field that uses the word they are there. Fixing the adjective moved the
+   import one word down rather than removing it — the same regress the
+   reification argument already describes. `def:graph` now says what the word
+   denotes here, and says it again where it matters, which is the axiom's own
+   remedy (refuse where it would return, repeatedly) rather than a definition
+   expected to carry it alone.
+
+2. **"Supplied by a frame" drifted toward "decorative", and types are neither.**
+   **Types are emergent.** A plurality forces its members to differ; anything
+   operating over them repeatedly treats some alike, and an operator treating two
+   differences alike *is* what their alikeness consists in. So kinds arise
+   wherever a plurality is run over, which is wherever anything runs. **Every
+   graph anyone meets is typed, and none is typed at the floor.** The defect is
+   never that types are present — only ever the ordering, taking as given what
+   arrives derived.
+
+**Which explains the blindness better than §13.1 did.** §13.1 said review has
+nothing to stop on. True, but weaker than the real reason: **the imports that
+survive review are the true ones.** A typed graph *is* typed, so every lens
+asking whether the description holds returned yes, correctly. A false import is
+refuted by a counterexample and does not last one pass; a true-but-derived one is
+refuted by nothing. So review does not merely fail to catch these — **it selects
+for them**, retaining exactly the imports no counterexample will ever remove.
+The same applies to the substance instance: there *is* one graph-data stuff in
+the obvious sense, which is why that sentence read as harmless for as long as it
+did.
+
+This is the sharper statement of why removal and review are not substitutes.
+Review filters for truth. Free imports are true. The filter passes them by
+construction, and only asking whether a term is *derived* separates them.
