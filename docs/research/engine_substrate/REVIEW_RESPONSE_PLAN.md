@@ -203,3 +203,42 @@ announcing.
 unchanged (69 / 16). This is consistent with §2's warning and worth recording as
 a second data point: **the style items are real defects and are not where pages
 come from.** Pages are in Tiers C and D.
+
+---
+
+## 7. The history sweep was itself unswept (2026-08-31)
+
+The revision-history removal was executed against **Is and Theory only** — the
+two papers the review named. Measured afterwards across all twelve: **34 more
+sites in nine other papers**, including **eight in 07**, the assessment
+companion, which is where the rule about not apologising was being written.
+
+That is the week's defect class at its purest: a correction applied where it was
+reported and not swept to what the same rule points at.
+
+Now cleared. Remaining sites: **three, all inside Theory's ledger**, which keeps
+its withdrawals under a stated contract ("a ledger whose entries cannot be
+checked against what they replaced is not checkable"), plus the four the
+statement paper inherits by pulling the ledger.
+
+| paper | sites | words |
+|---|---|---|
+| 07 | 8 | −67 |
+| 01b | 7 | −43 |
+| 04 | 4 | −28 |
+| 06 | 3 | −22 |
+| 01a | 2 | −17 |
+| 02 | 2 | −7 |
+| 03 | 1 | −2 |
+| **total** | **27** | **−186** |
+
+**Third data point for §2.** −186 words, no page count changed anywhere. The
+history removal across *all twelve papers* has now cost about 270 words in
+total — against the review's estimate of 6–8 pages for Theory alone.
+
+**And the rule it was serving is now stated** (07): an account of this kind
+cannot apologise, because an apology instructs a reader how to read from a
+standpoint outside the reading, and there is none; it is also idle structure by
+`def:well-formed`. The admissible form of the same impulse is an **exposure** —
+what would settle the matter against the account — which asks for nothing and
+hands over something. Every apology has that translation.
