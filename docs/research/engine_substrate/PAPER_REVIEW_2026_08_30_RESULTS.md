@@ -726,3 +726,49 @@ did.
 This is the sharper statement of why removal and review are not substitutes.
 Review filters for truth. Free imports are true. The filter passes them by
 construction, and only asking whether a term is *derived* separates them.
+
+---
+
+## §14 — Pass seven (2026-08-31, later)
+
+Covers a heavy day on 00: r75 → r96, twenty revisions, including two reversals
+inside an hour (the "rules are implied by g" fold, made and withdrawn).
+
+**Mechanical.** Full clean rebuild of all twelve: err=0, citation warnings 0,
+reference warnings 0, no overfull box >20pt, draft check green.
+
+**Findings.**
+
+1. **§1 re-accreted the exact defect it was cut for, and my own fixes did it.**
+   Measured: 951w originally → 745w after compression → **1,269w** by the time
+   this pass looked. The self-relation was explained three times (in the
+   prop:cohere paragraph, again in the consistency paragraph, again in the
+   structural-floor paragraph) and "the failing item is a description not a
+   thing" appeared twice. Merged: **958w block → 566w, −392**. §1 now 877w,
+   paper 9,931 → 9,539. Each successive fix today was locally right and the
+   section was never re-read whole afterwards.
+
+2. **"Coherence" was pre-existing vocabulary and I widened it silently.**
+   Measured across the corpus: 81 uses in 01b (*personal identity is internal
+   coherence*, *death is relative to a coherence-boundary*), 17 in 01a, 3 in 02
+   (*incoherence at the grain already held* licenses a split), plus 04's
+   *re-cohering*. **Every established use means the end where holding is
+   impossible.** The new criterion covers both ends, so a reader carrying the
+   old sense into `prop:cohere` looks for a contradiction in the self-relation
+   case and finds none — because that case fails at the *other* end. The
+   widening is now noted in `rem:cohere` rather than left to be discovered.
+
+3. **The ledger inherited the wrong claim.** `rem:inherited` read "The
+   companion's claim, that to be is to stand in relation" — which, since this
+   morning, is half of 00's claim and the half `prop:cohere` exists to correct.
+   Now inherits both propositions, with the note that taking the second adds
+   nothing, the companion deriving it from the first plus the measure.
+
+**Swept clean, no finding:** reversal debris from the rules fold (00's remaining
+"restriction" hits are all about *fields'* restrictions in the method section,
+not about 00 having rules); enforcement language consistent across 00 and 01.
+
+**Method note.** Finding 1 is the week's defect class turned on the fastest-moving
+document rather than the oldest: five separate correct edits to one section, none
+of them re-reading the section. **A correction verified at its site is not
+verified in its paragraph.**
