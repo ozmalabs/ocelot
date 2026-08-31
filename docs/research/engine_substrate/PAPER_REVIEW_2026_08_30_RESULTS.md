@@ -576,3 +576,68 @@ Read that way the sequence is not a record of errors corrected but of residual
 produced and absorbed, which is the same loop the account describes and the reason
 it could be run on itself at all. The direction the count moved is an artefact of
 which residual arrived first.
+
+---
+
+## §13 — Pass six (2026-08-31)
+
+Covers the material landed since pass five: `rem:self-edge`, `rem:axiom-in-bits`,
+Axiom −1 demoted to consequence, `rem:everything-nothing`, the Wheeler/Bateson
+lineage, `rem:mdl-ontic`, `rem:types-forced` (twice rewritten), `rem:realisation`
+in 01b, and 07's narrowing/decomposition addition.
+
+**Mechanical.** Full clean rebuild of all twelve from scratch: err=0, citation
+warnings 0, reference warnings 0, no overfull box >20pt anywhere, draft check
+green. Self-correction density in 01 is 18 lines (was ~40 before pass five's
+cleanup, so the cleanup held under this week's additions). Modal clothing in new
+text: 1 `cannot`, 2 `never` — no finding.
+
+**Findings, all fixed.**
+
+1. **The ledger header held a count while the list grew.** It read "The four
+   labelled entries below are the ledger" and "a reader who wants only the count
+   should read all four." There were **five** — Axiom −1's entry was reworded
+   this week and the header was not swept. Fixed by *naming* the five rather than
+   counting them, so the header cannot silently fall out of date again. This is
+   the standing rule about baselines applied to the ledger itself: a count can be
+   carried unchanged while the list beneath it grows, and a list cannot.
+
+2. **The Axiom −1 entry carried the new label over an unrevised body.** Labelled
+   "a consequence rather than an axiom" and then argued the guard-vs-commitment
+   split without ever saying what it is a consequence *of*. Fixed: the derivation
+   (`rem:axiom-in-bits`) now precedes the older split, which still stands below it.
+
+3. **Two stated exposures were absent from the list that claims to be the
+   commitments.** `rem:axiom-in-bits` and `rem:mdl-ontic` both state what would
+   falsify them, inline, and neither was in `sec:falsifiability`. Added as items
+   29 and 30.
+
+4. **A third exposure turned out to be already standing, and was cross-referenced
+   rather than duplicated.** `rem:types-forced`'s limit half — a sameness readable
+   off a difference with no respect supplied — is item 10, *frame-relative
+   identity*: "fails if sameness and persistence are derivable from (g,r,Γ) alone
+   without individuation." The commitment predates its argument by some months.
+   `rem:types-forced` now says so.
+
+5. **Generator bug: content emitted after `\end{document}`, silently.** Adding the
+   new falsifier to `01s.spec` by appending to the file put the directive below
+   the one that closes the document, so the item landed at line 958 of a file whose
+   `\end{document}` is at 956. `pdflatex` reported err=0 and the generator reported
+   0 MISSING — **both were true and neither was the question.** Caught only by
+   grepping the PDF. Fixed twice: the directive moved into the falsifier block, and
+   the generator now hard-fails on any non-empty text after `\end{document}`. Guard
+   verified by planting a stray directive and confirming it fires.
+
+**Finding withdrawn during the pass.** The ledger measures 2,004 words against a
+903-word floor, which looked like the re-accretion that pass four had to cut. It
+is not the same thing: the header says the entries "can be read on their own,"
+so the bulk is the attached justification, which the ledger's own contract
+requires ("a ledger whose entries cannot be checked against what they replaced is
+not checkable"). No blanket cut made. The real problem was that the five entries
+were hard to pick out of 145 lines, which finding 1's fix addresses directly.
+
+**Method note.** Findings 1, 2, 3 and 5 are all one defect class — *a correction
+applied at its site and not swept to what points at it*. It has now appeared in
+six consecutive passes. Finding 5 is the sharpest instance yet, because two
+independent success signals (`err=0`, `MISSING=0`) were both green over a missing
+artefact.
