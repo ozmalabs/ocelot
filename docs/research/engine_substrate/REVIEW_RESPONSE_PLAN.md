@@ -242,3 +242,36 @@ standpoint outside the reading, and there is none; it is also idle structure by
 `def:well-formed`. The admissible form of the same impulse is an **exposure** —
 what would settle the matter against the account — which asks for nothing and
 hands over something. Every apology has that translation.
+
+---
+
+## 8. Tier B execution record (2026-08-31)
+
+**B1 — companion map.** Table in Theory §1: title, short name, one-line scope,
+for all twelve documents. Measured beforehand: **80 companion mentions with no
+consistent naming** — `companion on assessment`, `companion physics`, `companion
+paper on mind`, `companion states with its prior art`, all ad hoc. The middle
+column is now the only form the paper uses.
+
+*Caught in my own new text*: the introductory sentence said "Eleven documents
+make up this programme" while the table listed twelve. Twelve documents, eleven
+companions — this paper is one of them. Fixed before commit; the column widths
+were also hyphenating "the physics com-panion" and were rebalanced.
+
+**B2 — ledger as a table.** Status / entry / where argued and what it replaced,
+five rows, with the prose beneath as the argument for each placement. The header
+paragraph shrank from a count-and-caveat to two sentences.
+
+**B3 — seven parts.** Foundations · The substrate · Frames, economics, and
+failure · Order and time · Provenance and its limit · Carvings and determinism ·
+Positioning, falsifiers, and close. Section numbering runs continuous (1–27
+unchanged), so no `\ref` target moved — confirmed by 0 reference warnings.
+
+**Cost: +1 page (69 → 70).** Tier B is additive by design and was never going to
+reduce anything; it is on the list because the review's second-most-important
+change was navigational, not editorial.
+
+**Running total against §2's warning.** Tiers A and B together: −306 words of
+prose, +1 page of tables. **The page count has not moved down once.** Every item
+that reduces pages is in Tier C or D, exactly as the corrected arithmetic
+predicted.
