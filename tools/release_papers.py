@@ -124,16 +124,40 @@ def main():
     if len(set(drafts.values())) != 1:
         fail("cleared set spans several drafts: %s" % sorted(set(drafts.values())))
 
+    # Versioned filenames mean a second run ADDS rather than replaces, so the
+    # directory accumulates superseded revisions and someone sending "the papers"
+    # can send a mixed set. That is the failure this gate exists to prevent,
+    # reintroduced by the naming. Supersedes are moved aside, not deleted.
+    keep = {d for _, d in plan}
+    stale = []
+    if os.path.isdir(out):
+        for f in sorted(os.listdir(out)):
+            if not f.endswith(".pdf") or f in keep:
+                continue
+            if any(f.startswith(name + "_") for name in CLEARED):
+                stale.append(f)
+
     if a.dry_run:
         print("dry run -- would write %d files to %s" % (len(plan), out))
+        for f in stale:
+            print("  would supersede: " + f)
     else:
         os.makedirs(out, exist_ok=True)
+        if stale:
+            sup = os.path.join(out, "superseded")
+            os.makedirs(sup, exist_ok=True)
+            for f in stale:
+                shutil.move(os.path.join(out, f), os.path.join(sup, f))
         for pdf, dest in plan:
             shutil.copy2(pdf, os.path.join(out, dest))
 
     print("cleared and released (%s):" % list(drafts.values())[0])
     for _, dest in plan:
         print("  " + dest)
+    if stale:
+        print("\nmoved to superseded/ (%d):" % len(stale))
+        for f in stale:
+            print("  " + f)
     print("\nNOT released: every other document in this repository, and the "
           "repository itself.")
 
