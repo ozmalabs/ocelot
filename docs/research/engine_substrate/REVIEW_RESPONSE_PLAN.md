@@ -376,3 +376,64 @@ what it reorganises. Compressed where possible, left where they are.
 across all tiers: roughly 700 words. The corrected arithmetic in §2 continues to
 hold — **the page movement so far is almost entirely C3's relocation, not
 cutting.**
+
+---
+
+## 11. Tier E execution record (2026-08-31)
+
+**The dependency was narrower than §3 flagged.** `01s.spec` pulls falsifiers by
+the `\textbf{}` name only, so entry *bodies* can be rewritten freely; and neither
+entry removed below was among the twenty pulled. Verified before editing, and the
+generator reports 0 MISSING after.
+
+**Four oversized entries trimmed to *fails if X*, justification left in the
+remark each cites.**
+
+| entry | before | after |
+|---|---|---|
+| Provenance is never closed by inference | 554w | **78w** |
+| Cost is the write | 213w | ~90w |
+| Realisation is single-valued | 189w | ~85w |
+| A swallowed failure is relocated | 141w | ~70w |
+
+**Two entries removed from the list because the paper itself calls them
+consequences.** *Admissibility is not armour* and *Higher-frame first-class
+structure* are derivations, not wagers; both are still stated in the body, and
+the paragraph that names them now says they sit there rather than in the count.
+
+| | before | after |
+|---|---|---|
+| entries | 32 | 30 |
+| list words | 4,319 | **2,318 (−46%)** |
+| longest entry | 554w | **138w** |
+| median entry | — | 59w |
+| entries over 100w | 6 | 3 |
+
+**The count target is not met, and should not be.** The review asked for 30 → ~20,
+most of the reduction coming from nesting the four entries the paper says are
+"one risk counted four times". **The paper already carries that note, and already
+declines the nesting with a reason**: they "name genuinely different places to
+look for the event, which is what a falsifier is for", and what it withdraws is
+only the implication that four failures would be four losses. That reasoning is
+better than the recommendation. The real goal — each entry readable at a glance —
+is met by halving the list's words, not by merging its entries.
+
+**Theory 68 → 67pp.**
+
+---
+
+## 12. Where the five tiers ended up
+
+| | Theory | Is | 07 | corpus |
+|---|---|---|---|---|
+| before | 69 | 16 | 15 | 85 |
+| after | **67** | **15** | 18 | 86 |
+
+Roughly **1,100 words of prose removed** across A–E, and not one commitment,
+claim or falsifier dropped. The page arithmetic is exactly what §2 predicted
+after correcting the review's own largest estimate: **the reductions came from
+one relocation (C3) and one list (E); the style tiers moved words and no pages.**
+
+The review's 69 → 35–40 target remains unreachable by the items it listed. What
+would reach it is cutting argument — Is §6 and §10, `rem:inherited`'s prose,
+`rem:cost-to-zero` — and that is a decision about content, not presentation.
