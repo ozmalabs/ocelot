@@ -24,10 +24,10 @@
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4 / statement / from long r254}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4 / statement / from long r255}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4 / statement / from long r254}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4 / statement / from long r255}}\renewcommand{\headrulewidth}{0pt}}
 \makeatletter\renewcommand\thepart{\Roman{part}}\makeatother
 
 \title{The Law of Graphic Equalisation\\\large Statement}
@@ -507,17 +507,14 @@ value for the quantum indeterminate (Reichenbach, 1944), paraconsistent absorpti
 mutually incompatible while each being defensible is evidence they are choices rather than discoveries.
 
 The demonstration is in silicon and is not a metaphor. IEEE~754 gives floating point a \emph{value}
-where integer arithmetic \emph{traps}: $1/0$ is an infinity in one and a fault in the other, $0/0$ is
-NaN, and NaN then propagates through most operations containing it, by deliberate standardisation (IEEE, 2019). Calling that weak Kleene in hardware overstates it, and in overstating it discards the better
-example. The standard is \emph{near}
-infectious with carve-outs written in on purpose: $\mathrm{pow}(x,\pm 0)$ is $1$ for any $x$ including
-NaN, $\mathrm{hypot}(\pm\infty,\mathrm{NaN})$ is $+\infty$, and the minimum/maximum-number operations
-return the number rather than the NaN. Where the result is fixed by the arguments that are not NaN,
-that result is returned. Those exceptions are the point rather than an embarrassment to it: a genuinely
-infectious value would be a discovered semantics, whereas a mostly-infectious one with a list of
-deliberate exemptions is exactly what an \emph{installed policy} looks like. One machine, two policies,
-chosen per type, and one of them carrying a schedule of cases where the committee decided the failure
-should not spread. The failure did not choose; the committee did.
+where integer arithmetic \emph{traps} --- $1/0$ is an infinity in one and a fault in the other --- and
+NaN then propagates by deliberate standardisation (IEEE, 2019). Calling that weak Kleene in hardware
+overstates it and discards the better example: the standard is \emph{near} infectious with carve-outs
+written in on purpose, so that $\mathrm{pow}(x,\pm 0)$ is $1$ even for NaN and the
+minimum/maximum-number operations return the number. A genuinely infectious value would be a discovered
+semantics; a mostly-infectious one with a schedule of exemptions is what an \emph{installed policy}
+looks like. One machine, two policies, chosen per type. \emph{The failure did not choose; the committee
+did.}
 
 The economics is therefore weaker than it looks, and the tempting stronger claim is a good example of the error this remark warns about: that propagation costs nothing while a handler is purchased, so that a total residual is the unmarked case. That holds \emph{under the
 exception convention} and not otherwise: where failure is carried in return values the check is
@@ -533,15 +530,14 @@ an illustration of it. A heavy nucleus sits near the limit of what holds it toge
 the configuration cannot be held, so it does not continue as that nucleus and the binding energy goes
 to the container. A reactor and a weapon are then the identical failure with the handler installed and
 with it removed --- control rods, moderator and containment are held structure, paid for continuously,
-and the whole of their function is to bound a residual that is otherwise total. What the Manhattan
-Project's design problem amounted to was keeping an unhandled configuration assembled long enough for
-the propagation to finish, which is the cost of \emph{defeating} a handler rather than of installing
-one.
+and the whole of their function is to bound a residual that is otherwise total. What the Manhattan Project's design problem amounted to was keeping an unhandled configuration
+assembled long enough for the propagation to finish, which is the cost of \emph{defeating} a handler
+rather than of installing one. The handler is viable at all only because well under one per cent of the
+neutrons are delayed, which supplies a timescale it can act within: \emph{a frame whose failure
+propagates faster than its handler can run has no handler}, and that is a constraint on the purchase the
+logical cases do not exhibit.
 
-The handler is viable only because a small
-fraction of the neutrons are delayed --- well under one per cent --- which supplies a timescale it can
-act within; a frame whose failure propagates faster than its handler can run has, effectively, no
-handler, which is a constraint on the purchase that the logical cases do not exhibit. And criticality
+Criticality
 is the condition where each raise produces more than one further raise, so the residual does not merely
 ascend a frame but multiplies. That is a genuine difference from an exception unwinding a stack, and
 the substrate accommodates it only because residual is per-rule (Proposition~(\emph{Residual is what a containing grammar does not admit}, long form) and the paragraph following it) so one

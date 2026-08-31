@@ -325,3 +325,54 @@ what it is: relocation moved 1,866 words to the document whose title is
 *Assessing an Account of This Kind*. The corpus total went 85 → 86pp. **The
 substrate paper got shorter because it stopped carrying somebody else's
 material, not because anything was cut.** Tier D is where cuts happen.
+
+---
+
+## 10. Tier D — partial (2026-08-31)
+
+Tier D is rewriting, and it is the tier where content can be lost. Progress is
+recorded honestly rather than reported as complete.
+
+**Done.**
+
+- **§15's result stated first** — landed with C2, since the same passage carried
+  both faults.
+- **Is §3** 461w → 335w. The review said its content is one sentence the abstract
+  already carries. Measured against the text, that is wrong: paragraphs three and
+  four carry qualifications the abstract does not — that vocabulary sits on the
+  *generator's* side so the licence covers less than all the length, and that
+  *it is derivation* can be said of any text and needs traceability or it is an
+  excuse. All four claims kept, the setup tightened.
+- **Is §6/§10 dating deduplicated.** The Pacioli→Hamilton interval was told
+  loosely in §6 and precisely in §10. §6 now states the fact and defers the
+  interval to where it does argumentative work.
+- **The decoherence remark's two worst excesses.** IEEE~754 186w → 95w, keeping
+  the argument (hardware itself does not agree on the framing; the carve-outs are
+  what an *installed policy* looks like) and dropping the enumeration. The
+  nuclear case's two paragraphs merged, keeping both distinct claims — the
+  reactor/weapon shape, and the delayed-neutron timescale as a constraint the
+  logical cases do not exhibit.
+
+**Declined, with reason.** The review asks for the decoherence remark's prior-art
+paragraphs to move to §25. They are not positioning; they are *doing work in
+place* — "these systems are handlers" reorganises Bochvar, the free logics,
+Reichenbach, paraconsistency and relevance logic as instances of the claim being
+made. Moving them to the positioning section separates the reorganisation from
+what it reorganises. Compressed where possible, left where they are.
+
+**Remaining.**
+
+| item | measured | note |
+|---|---|---|
+| `rem:inherited` prose | 2,250w | the table landed in B2; the argument beneath is still the largest remark in the paper |
+| `rem:cost-to-zero` | 2,102w | not named by the review; found by measurement |
+| Evolution remark (23.3) | 1,181w | dead-code paragraph restates `def:well-formed`'s fourth cost |
+| Is §6 | 1,143w | review asks for half |
+| Is §10 | 1,475w | review asks for two pages |
+| Prop 12.6 duplication | — | "free simpliciter is set by the superframes", twice |
+| Falsifier list (Tier E) | 30 → ~20 | **`01s.spec` pulls 20 by exact name; spec must move in the same commit** |
+
+**Running total.** Theory 69 → 68pp, Is 16 → 15pp, 07 15 → 18pp. Prose removed
+across all tiers: roughly 700 words. The corrected arithmetic in §2 continues to
+hold — **the page movement so far is almost entirely C3's relocation, not
+cutting.**
