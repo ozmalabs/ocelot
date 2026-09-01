@@ -1,0 +1,165 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,hyperref,enumitem,microtype}
+\usepackage[margin=1in]{geometry}
+\usepackage{natbib}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{proposition}[definition]{Proposition}
+\theoremstyle{remark}
+\newtheorem{remark}[definition]{Remark}
+
+\title{Adaptability\\\large One Operation Behind Shape Matching and Analogy, and Why It Is Not Called Intelligence}
+\author{Matthew Parslow\\Independent Researcher}
+\date{\textbf{Draft \textemdash\ draft-2026-08-30.4}\\[2pt]1 September 2026 \textbullet\ document revision 1}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}\fancyhf{}\fancyfoot[C]{\thepage}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r1}}
+\renewcommand{\headrulewidth}{0pt}
+\fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r1}}\renewcommand{\headrulewidth}{0pt}}
+\begin{document}
+\maketitle
+\begin{center}
+\fbox{\parbox{0.92\textwidth}{\small
+\textbf{DRAFT --- draft-2026-08-30.4 r1} (1 September 2026).
+Circulated for comment, not as a finished result. This is the theory half of a pair; the companion
+reports what is built and what is not. Sections marked as falsifiability commitments are the intended
+points of attack.}}
+\end{center}
+\vspace{1em}
+
+\begin{abstract}
+Two capabilities this programme treats separately --- matching a shape against a held codebook, and
+reasoning by analogy --- are one operation at two grains. Both \emph{extract the transform between
+things already held and apply it where nothing is held}. Naming that operation gives a quantity worth
+having: \emph{adaptability}, the capacity to acquire a competence that was not supplied. The word is
+chosen against \emph{intelligence} deliberately. Intelligence is a scalar people rank; adaptability is
+an operation with a cost, an ordering, and a failure mode, and a system either performs it on a given
+case or does not.
+\end{abstract}
+
+\section{Why not intelligence}\label{sec:not-intelligence}
+\emph{Intelligence} names a ranking before it names a mechanism. Asking whether a system has more of it
+than another invites a scalar, and a scalar invites a benchmark, and a benchmark measures what a system
+already does rather than what it can come to do. That is the wrong quantity for the question here.
+
+\emph{Adaptability} is narrower and is an operation rather than a rank. A system is adaptable on a case
+to the degree that, meeting something it does not hold, it ends up holding it --- and the interesting
+part is the mechanism by which the new holding is \emph{derived from} the old rather than supplied. A
+system given a competence has not adapted. A system that recognises everything it meets has not adapted
+either; it was already sufficient. \emph{Adaptation requires a residual}, and the size of what must be
+added to absorb one is the cost.
+
+\section{The operation}\label{sec:operation}
+\begin{definition}[Adaptation]\label{def:adapt}
+Given a held set and an observation not covered by it, an \emph{adaptation} is the addition of the
+smallest structure under which the observation is covered, derived from what is held.
+\end{definition}
+
+Three words carry it. \emph{Smallest}, because an adaptation that adds the observation itself is
+storage, not adaptation. \emph{Derived}, because an adaptation supplied from outside is instruction.
+And \emph{covered}, because the test is whether the case is now recognised, not whether a description
+of it exists.
+
+\begin{remark}[Shape matching and analogy are one operation]\label{rem:one}
+Matching a shape against a codebook and completing an analogy look unrelated because their vocabularies
+are. They are not.
+
+To decode an observation against held signatures is to ask what transform carries a held one onto it.
+Where that transform is the identity, the observation is recognised. Where it is a uniform step along a
+dimension the codebook already has, the observation is a known thing moved --- and no new structure is
+required. Where no such step exists but the residual is \emph{coupled} across the observed dimensions,
+the transform requires a dimension not currently held, and one must be inferred before the observation
+can be covered.
+
+To complete an analogy is the same question with the arguments rearranged. Given two things held, the
+transform between them is extracted; given a third, that transform is applied to reach a fourth which is
+not held. \emph{Anti-unification --- generalising two structures while retaining what distinguishes
+them --- is the general form, and the shape ladder is that form restricted}: at one rung the difference
+is a single step along a known dimension, at the next it is a dimension.
+
+So the two are not analogous to each other. They are the same operation, and the second is what the
+first looks like when the objects are rules rather than observations.
+\end{remark}
+
+\section{The ladder, and why its order is not arbitrary}\label{sec:ladder}
+An adaptation must be the smallest available, and that gives an ordering rather than a preference:
+
+\begin{enumerate}[leftmargin=*]
+\item \textbf{Recognise.} The observation is covered as held. Nothing is added, and no adaptation has
+occurred --- which is the correct outcome for most observations.
+\item \textbf{Transform in the held basis.} One uniform step along a dimension already carried. The
+observation is a known thing displaced; the codebook does not grow.
+\item \textbf{Infer a dimension.} The residual is coupled across observed dimensions in a way no step
+in the current basis produces, so a dimension is minted and the transform is expressed in it.
+\item \textbf{Mint.} No transform reaches the observation, so it is added as new.
+\end{enumerate}
+
+\emph{Only rungs three and four are adaptations}, and only the third is interesting: it is where the
+system's own vocabulary changes. Rung four is the honest floor --- something genuinely new --- and a
+system that reaches it too readily is not adapting but accumulating.
+
+\begin{remark}[Why the order must be Occam and not preference]\label{rem:occam}
+Attempting mint first would always succeed, so a system that did would never transform, never infer,
+and would grow linearly in what it meets. Attempting transform first is what makes minting
+\emph{informative}: a mint that survives the earlier rungs is evidence that nothing held reaches the
+case, which is a claim about the held set and not only about the observation.
+
+That is also why the ordering is a commitment and not an implementation detail. \emph{A system that
+mints where a transform would have sufficed has recorded a coincidence as a category}, and one that
+transforms where a mint was required has folded a distinction it needed. Both are failures of
+adaptation, in opposite directions, and the ladder is what makes them separable.
+\end{remark}
+
+\section{What adaptability predicts}\label{sec:predicts}
+The account is worth having only if it says what an adaptable system does that an unadaptable one does
+not, on a case neither has seen.
+
+\emph{One mint, then recognition.} Meeting a genuinely novel case repeatedly, an adaptable system should
+mint \emph{exactly once} and recognise every later instance --- not mint per encounter, which is
+storage, and not fail to mint, which is refusal. The signature is a step followed by silence.
+
+\emph{Zero mints under transformation.} Meeting a known thing transformed along a held dimension, it
+should add nothing at all. A system that mints there is treating the dimension it already has as absent.
+
+\emph{Coupling forces dimensions.} A residual that is coupled across observed dimensions should produce
+a dimension, not a member. \emph{The distinguishing case is the one whose difference cannot be written
+in the current basis at all}, and a system without rung three cannot tell it apart from novelty --- it
+mints where it should have generalised, and the codebook grows with the world instead of with its
+structure.
+
+\emph{And competence should transfer without being carried.} If the operation is real, structure built
+for one domain should be usable unmodified in another whose existence was not anticipated when the
+structure was made. That is the strongest available test, because it removes the author from the loop,
+and it is the one the assessment companion reports against.
+
+\section{What this does not claim}\label{sec:not-claimed}
+Adaptability is not a quantity a system has more or less of in general. It is defined \emph{per case}
+and against \emph{a held set}, so the same system is adaptable on one observation and not on another,
+and moving the held set moves the verdict. There is no frame-free adaptability, for the same reason
+this programme's base claim gives for there being no frame-free anything.
+
+Nor does adaptation imply improvement. An adaptation is an addition that covers a residual; whether
+covering it was worth the cost is a separate question with a separate answer, and a system that adapts
+readily to noise is worse than one that refuses.
+
+\section{Falsifiability commitments}\label{sec:falsifiability}
+\begin{enumerate}[leftmargin=*]
+\item \textsc{[shape]}~\textbf{Shape matching and analogy are one operation.} Fails if a case of one
+cannot be expressed as a case of the other --- specifically, if some analogical completion has no
+formulation as a transform between held signatures, or some shape adaptation has no formulation as an
+anti-unification with its witness retained.
+\item \textsc{[shape]}~\textbf{The ladder's order is forced, not chosen.} Fails if reordering the rungs
+leaves the outcomes unchanged on cases where the rungs disagree, which would make the order a
+preference.
+\item \textsc{[detail]}~\textbf{One mint, then recognition.} Fails on a novel case that yields repeated
+minting under an unchanged codebook, or none at all.
+\item \textsc{[detail]}~\textbf{Coupling forces a dimension.} Fails if a residual coupled across
+observed dimensions is absorbed by a member rather than a dimension, without loss.
+\item \textsc{[shape]}~\textbf{Adaptability is per case, not a rank.} Fails if a single ordering of
+systems by adaptability can be constructed that survives changing the held set.
+\end{enumerate}
+
+\end{document}

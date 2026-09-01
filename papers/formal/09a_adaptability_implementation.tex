@@ -1,0 +1,138 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,hyperref,enumitem,microtype}
+\usepackage[margin=1in]{geometry}
+\usepackage{natbib}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{proposition}[definition]{Proposition}
+\theoremstyle{remark}
+\newtheorem{remark}[definition]{Remark}
+
+\title{Adaptability --- Implementation\\\large What Is Built, What Has Run, and the One Place They Do Not Meet}
+\author{Matthew Parslow\\Independent Researcher}
+\date{\textbf{Draft \textemdash\ draft-2026-08-30.4}\\[2pt]1 September 2026 \textbullet\ document revision 1}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}\fancyhf{}\fancyfoot[C]{\thepage}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r1}}
+\renewcommand{\headrulewidth}{0pt}
+\fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r1}}\renewcommand{\headrulewidth}{0pt}}
+\begin{document}
+\maketitle
+\begin{center}
+\fbox{\parbox{0.92\textwidth}{\small
+\textbf{DRAFT --- draft-2026-08-30.4 r1} (1 September 2026).
+Circulated for comment, not as a finished result. The companion states the theory; this paper reports
+the implementation and its principal gap. Sections marked as falsifiability commitments are the intended
+points of attack.}}
+\end{center}
+\vspace{1em}
+
+\begin{abstract}
+The operation the companion describes is built, has run at scale, and has been measured, including a
+large correction against itself. It is also, in one specific and consequential way, in the wrong place.
+\emph{The algebra is native; the faculty that uses it is not.} Every count below was obtained by
+running a command against the tree.
+\end{abstract}
+
+\section{What is built}\label{sec:built}
+The transform algebra is native to the engine. Anti-unification retaining its witness, substitution,
+unification, structural similarity and a coverage predicate are all term-level operations, evaluable
+inside the rule language rather than beside it. The shape ladder is built on them: decoding against a
+held codebook, transformation within the held basis, inference of a dimension, and minting.
+
+The ladder runs as rules. It is a rule fixpoint rather than a loop in the host language --- a residual
+mints a quantum, a codebook epoch re-arms decoding, and the re-decode either recognises or does not.
+That much is graph-resident and gated.
+
+\section{What has run}\label{sec:run}
+\begin{remark}[Transfer by parallelogram completion]\label{rem:parallelogram}
+The strongest demonstration takes four of the agent's own rules arranged as a $2\times 2$ over two
+independent dimensions. Anti-unification over two corners derives the transform; substitution applies it
+to the third; the result is a rule \emph{absent from all $2{,}851$ distinct recognisers in the corpus}
+which, installed, fires correctly on the missing cell.
+
+$318$ such families exist in the corpus, and $200$ of $200$ sampled transfers are algebraically
+lossless, well-defined and novel. \emph{No new term variants, no graph mirror and no engine change were
+required to demonstrate this} --- the capability was reachable with what already existed.
+\end{remark}
+
+\begin{remark}[The concept-grain faculty, and its own correction]\label{rem:retraction}
+At the concept grain the faculty has run against the agent's largest real bridge, $142$ concepts against
+$137$, and reported $8{,}575$ analogies.
+
+\emph{Of those, $8{,}253$ were an artefact}: a keyword matching \emph{inside} a longer word, which
+accounted for $39.6\%$ of every vocabulary hit in the booted graph. After token-anchoring and a
+requirement of structural support the count fell to $321$, of which $78$ are corroborated by a witness
+shared across pairs.
+
+That is reported here as the faculty's principal measured result, not as an embarrassment adjacent to
+one. A ninety-six per cent retraction is what the correction was worth, and the corrected number is the
+one this paper stands behind.
+\end{remark}
+
+\section{The gap}\label{sec:gap}
+\emph{The two halves above do not meet, and the seam is exactly locatable.}
+
+Anti-unification with witness retained appears \textbf{seven times} in the faculty's host-language
+module and \textbf{zero times} across the $3{,}843$ rules carried by the $805$ seed manifests. The
+faculty is $1{,}241$ lines of host code, and it \emph{does} call the native algebra --- so this is not a
+capability that was built and left unused. It has run, it has been measured, and its output survives
+correction.
+
+What it is not is graph-resident. The transform algebra is reachable from the host language and not from
+a rule.
+
+\begin{remark}[Why that matters here more than anywhere else]\label{rem:selfrepair}
+This programme's boundary on self-repair is sharp and is stated elsewhere in it: \emph{the agent can
+repair and extend its cognition exactly where that cognition is graph-native}, because what it can vary,
+inspect and mint against is graph data. A faculty in the host language can be used and cannot be
+improved by the thing using it.
+
+So of all the faculties that could have been left outside, \emph{this is the worst one} --- because it
+is the adaptation mechanism. The system's ability to acquire competences it was not given is itself a
+competence it cannot acquire. That is not a contradiction, but it is a ceiling, and it is the ceiling
+the companion's ladder was built to remove.
+
+The measured retraction above sharpens it. A ninety-six per cent artefact rate was found by an audit
+performed \emph{on} the faculty from outside. A graph-resident faculty is the kind of thing this
+substrate has repeatedly been made to notice about itself --- it files gaps, retires its own duplicates,
+and surfaces what it cannot answer. \emph{The faculty most in need of that treatment is the one that
+cannot receive it.}
+\end{remark}
+
+\section{What the gap is not}\label{sec:not}
+It is not that the algebra is unreachable in principle. Neighbouring operations from the same family are
+already used in rules --- coverage in twelve seed files, unification in eleven, substitution in three.
+The vocabulary is live; the one operation that carries the transform is the one no rule invokes.
+
+It is not that the demonstration is unsound. The parallelogram result stands on its own terms, and its
+numbers are reported above with the caveat they deserve: it was demonstrated in analysis scripts rather
+than as agent behaviour, so it establishes that the corpus \emph{contains} $318$ derivable rules, not
+that the agent derived them.
+
+And it is not a large amount of work in prospect. The absence of new term variants in the demonstration
+is the relevant measurement: what would be required is a rule surface over an algebra that already
+evaluates, which is the same move this programme has made before and reported.
+
+\section{Falsifiability commitments}\label{sec:falsifiability}
+\begin{enumerate}[leftmargin=*]
+\item \textsc{[detail]}~\textbf{The transform algebra is absent from the rule layer.} Fails on the
+exhibition of any seed rule invoking witness-retaining anti-unification; the count is zero across
+$3{,}843$ rules at the stated revision and is a command, not a judgement.
+\item \textsc{[shape]}~\textbf{Self-repair is bounded by graph-nativeness.} Fails if the agent can be
+shown to improve a host-language faculty by its own operation rather than by an author's --- which
+would remove the ceiling this paper reports and much of its point.
+\item \textsc{[detail]}~\textbf{The $318$ families are derivable and novel.} Fails if a sampled transfer
+is found to be lossy, ill-defined, or to reproduce a recogniser already in the corpus.
+\item \textsc{[shape]}~\textbf{The parallelogram result is about the corpus, not the agent.} This paper
+commits to the negative: no claim is made that the agent derived those rules, and a reader who extracts
+one has found an error rather than a result.
+\item \textsc{[detail]}~\textbf{The corrected analogy count is the defensible one.} Fails if
+token-anchoring and the structural-support requirement can be shown to discard genuine correspondences
+rather than artefacts, which would make $321$ an over-correction rather than a correction.
+\end{enumerate}
+
+\end{document}
