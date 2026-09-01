@@ -11,19 +11,19 @@
 
 \title{Adaptability\\\large One Operation Behind Shape Matching and Analogy, and Why It Is Not Called Intelligence}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-30.4}\\[2pt]1 September 2026 \textbullet\ document revision 3}
+\date{\textbf{Draft \textemdash\ draft-2026-08-30.4}\\[2pt]1 September 2026 \textbullet\ document revision 4}
 
 \usepackage{fancyhdr}
 \pagestyle{fancy}\fancyhf{}\fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r3}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r4}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r3}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r4}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-30.4 r3} (1 September 2026).
+\textbf{DRAFT --- draft-2026-08-30.4 r4} (1 September 2026).
 Circulated for comment, not as a finished result. This is the theory half of a pair; the companion
 reports what is built and what is not. Sections marked as falsifiability commitments are the intended
 points of attack.}}
@@ -145,30 +145,50 @@ Nor does adaptation imply improvement. An adaptation is an addition that covers 
 covering it was worth the cost is a separate question with a separate answer, and a system that adapts
 readily to noise is worse than one that refuses.
 
-\section{A domain where it did not carry the load}\label{sec:counter}
-The account would be worth less if it were only presented where it holds, and the companion programme
-contains a case that cuts against it. It is reported here rather than there because a theory should
-carry its own counter-evidence.
+\section{Capability has more than one source}\label{sec:counter}
+There is a temptation, on meeting the account above, to ask whether adaptation is \emph{the} mechanism
+by which a system comes to do something. The companion programme contains a measurement that answers
+that question, and the answer is that the question was malformed.
 
-In program synthesis the machinery above is present: a held codebook proposes, an enumerator searches,
-and an execution verdict decides. Stripping the learned content out of that loop --- keeping the same
-mechanisms and removing what had been acquired --- \emph{changed nothing whatever}. The two arms did not
-merely score alike; they solved the \emph{identical set of tasks}, and the difference has been measured
-repeatedly at zero.
+\emph{Where verification is cheap and exact, search does the work and holding does not pay.} In program
+synthesis the machinery above is present --- a held codebook proposes, an enumerator searches, an
+execution verdict decides --- and stripping the learned content out changed nothing whatever. The two
+arms did not merely score alike; they solved the \emph{identical set of tasks}, with the difference
+measured at zero repeatedly. The capability sat on the enumerator and the verdict.
 
-\emph{So in that domain the capability sat on the enumerator and the verdict, not on what was held.}
-That is a real limit on the reach of this account and the honest reading is narrow: adaptation is not
-the only route to competence, and where search is cheap and verification is exact, search will do the
-work and holding will not pay. What the case does not show is that adaptation failed --- the ladder was
-available and the domain did not need it, which is a different finding and a less flattering one to
-report than a failure would be, because it suggests the mechanism can be present and idle without
-anything indicating so.
+\emph{Where verification is expensive or unavailable, holding is the only route.} In one-shot character
+recognition the same programme measured the opposite: composing held parts, rather than treating a
+character as a bag of them, is worth twenty-one points and is the one effect in that arc that survived
+a powered re-measurement with intervals separated. Nothing there can be checked cheaply --- a candidate
+reading of an unfamiliar character has no oracle --- so search has nothing to search against, and what
+is held is what decides.
 
-The distinguishing prediction follows from that. \emph{Adaptation should pay where verification is
-expensive or unavailable}, since that is where search cannot substitute for it, and should not pay
-where a candidate can be cheaply checked. A domain in which holding helps and verification is cheap
-would be evidence against this reading; one in which holding never helps anywhere would be evidence
-against the account.
+\begin{remark}[The two are not rivals, and the regime is the question]\label{rem:plural}
+Read as a contest those measurements conflict. Read as a regime split they do not, and the split is the
+content: \emph{enumeration substitutes for a codebook exactly where candidates can be checked, and
+cannot substitute for one where they cannot.} A system with an exact cheap oracle need hold nothing,
+because it can afford to propose everything; a system without one must hold structure, because
+proposing everything buys it no way to tell which proposal was right.
+
+That is the same shape this programme keeps arriving at rather than a new one. Its measurement
+discipline already runs on \emph{bins propose and continuous decides}; its account of the substrate
+already separates what acquires from what executes; the ladder of Section~\ref{sec:ladder} is itself
+four sources with different regimes rather than one mechanism with exceptions. \emph{Asking which
+single source carries capability is the error the rest of the account is arranged to avoid}, and this
+section exists because the first version of it made that error --- reporting a regime as a limit.
+
+What follows is a prediction rather than a reconciliation, and it is the useful part.
+\emph{Adaptation should pay in inverse proportion to the cheapness of verification.} A domain with an
+exact, cheap oracle in which held structure nevertheless contributes measurably would be evidence
+against this reading; so would a domain with no oracle at all in which holding contributes nothing.
+\end{remark}
+
+\emph{And one uncomfortable consequence should be stated rather than left implicit.} In the synthesis
+case the ladder was available and the domain did not need it. That is not a failure --- nothing broke,
+and no prediction of this account was falsified --- but it means \emph{the mechanism can be present and
+idle with nothing indicating so}. A system cannot tell from the inside whether it is adapting or merely
+searching in a regime where searching suffices, and neither can an observer without the ablation that
+was run here.
 
 \section{Prior positions}\label{sec:prior}
 None of the machinery here is new and it should not be dressed as though it were. Four literatures own
@@ -221,9 +241,11 @@ preference.
 minting under an unchanged codebook, or none at all.
 \item \textsc{[detail]}~\textbf{Coupling forces a dimension.} Fails if a residual coupled across
 observed dimensions is absorbed by a member rather than a dimension, without loss.
-\item \textsc{[shape]}~\textbf{Adaptation pays where verification is expensive.} Fails if a domain is
+\item \textsc{[shape]}~\textbf{Capability has plural sources, selected by regime.} Fails if a domain is
 exhibited in which candidates are cheaply and exactly checkable and held structure nevertheless
-contributes measurably --- or if no domain can be found in which holding contributes at all.
+contributes measurably, or in which no oracle exists and holding contributes nothing --- either would
+break the inverse relation this account asserts between the value of holding and the cheapness of
+verification.
 \item \textsc{[shape]}~\textbf{Adaptability is per case, not a rank.} Fails if a single ordering of
 systems by adaptability can be constructed that survives changing the held set.
 \end{enumerate}
