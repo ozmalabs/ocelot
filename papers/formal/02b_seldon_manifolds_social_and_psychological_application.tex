@@ -1,0 +1,221 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,hyperref,enumitem,microtype}
+\usepackage[margin=1in]{geometry}
+\usepackage{natbib}
+
+\newtheorem{definition}{Definition}[section]
+\newtheorem{proposition}[definition]{Proposition}
+\theoremstyle{remark}
+\newtheorem{remark}[definition]{Remark}
+
+\title{Seldon Manifolds --- Social and Psychological Application\\\large Contact Comfort, Delay of Gratification, and What a Substrate Produces Without Being Fitted To It}
+\author{Matthew Parslow\\Independent Researcher}
+\date{\textbf{Draft \textemdash\ draft-2026-08-30.4}\\[2pt]1 September 2026 \textbullet\ document revision 1}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[C]{\thepage}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r1}}
+\renewcommand{\headrulewidth}{0pt}
+\fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r1}}\renewcommand{\headrulewidth}{0pt}}
+\begin{document}
+\maketitle
+\begin{center}
+\fbox{\parbox{0.92\textwidth}{\small
+\textbf{DRAFT --- draft-2026-08-30.4 r1} (1 September 2026).
+Circulated for comment, not as a finished result. This is the applied companion to
+\emph{Seldon Manifolds --- Psychological Grounding}. That paper asks whether a nervous system
+implements anything of the manifold's shape; this one reports what happens when the substrate is
+run instead, and what the outputs do and do not license. Sections marked as falsifiability
+commitments are the intended points of attack.}}
+\end{center}
+\vspace{1em}
+
+\begin{abstract}
+Two classical experiments were put to a substrate built for other reasons. Contact comfort
+\citep{harlow1958} reproduces, with an ablation control establishing which structure carries it.
+The delay-of-gratification task does something more useful than reproduce: the substrate exhibits,
+constructively, why the measure is confounded --- identical dispositions produce different wait
+times under different beliefs about reliability, and dispositions differing fourfold produce
+identical wait times under compensating beliefs. That agrees with what the empirical literature
+already found \citep{kidd2013,watts2018}, which is the point rather than a discovery: an account
+that had to be told this would be worth less than one in which it falls out. \emph{Nothing here is
+evidence about children or monkeys.} It is evidence about what this substrate does, and the paper
+is careful throughout about which of the two is being claimed.
+\end{abstract}
+
+\section{What this paper is, and what it is not}\label{sec:scope}
+The theory paper says what a Seldon manifold is; the grounding companion asks whether a biological
+nervous system implements anything of that shape and answers in pieces. This paper runs the third
+question, which is the one the substrate can settle on its own: put the substrate in the position of
+a classical experimental subject and report what it does.
+
+\emph{The results below are about a substrate and not about people.} A simulation that reproduces an
+experimental finding has established something about the simulation. It becomes evidence about the
+world only through an argument this paper does not make and the grounding companion makes only in
+pieces. What a reproduction does establish is narrower and still worth having: that the finding is
+\emph{available} from the substrate's own machinery without being put there, which is a fact about
+what that machinery entails.
+
+Two disciplines are enforced by the runs themselves rather than promised here. Each records the
+commit it ran against and the seed it ran with, so a claim below is either reproducible or
+withdrawn. And each carries a \emph{source audit} --- an automated check that the decisions were
+taken by graph rules rather than by the host language, reported with the run and reproduced in the
+results tables.
+
+\section{Contact comfort}\label{sec:harlow}
+\citet{harlow1958} found infant macaques preferring a cloth surrogate offering no food to a wire
+surrogate offering it, and fleeing to the cloth under stress. The substrate was given a contact
+drive and the same two-surrogate arrangement.
+
+\begin{center}\small
+\begin{tabular}{@{}lrr@{}}
+\toprule
+$n=200$ per arm & \textbf{contact drive present} & \textbf{ablated}\\
+\midrule
+cloth-directed fraction & $0.797$ \ [$0.792$, $0.803$] & $0.000$ \ [$0.000$, $0.000$]\\
+flee-to-cloth under stress & $1.000$ \ [$1.000$, $1.000$] & $0.000$ \ [$0.000$, $0.000$]\\
+infants preferring cloth & $200/200$ & $0/200$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The intervals are separated and the preference is above half, which is the finding. The second
+column is what makes it worth reporting: \emph{ablating the contact drive removes the preference
+entirely rather than reducing it}, so the effect is carried by that structure and not by the
+arrangement. A glass-box readout taken from the graph rather than from behaviour gives cloth
+proximity $53$ against wire $8$ at equal bond strength.
+
+\begin{remark}[The ethics gate, and why a simulation needs one]\label{rem:ethics}
+Harlow's procedure is among the most criticised in the discipline's history, and a substrate that
+reproduces it is running a deprivation protocol on something. The run therefore carries a gate: the
+stressed state must be restored \emph{byte-identically} afterwards, verified by comparison of the
+serialised graph. It is: arousal moves $63 \rightarrow 347 \rightarrow 63$ across deprivation and
+restoration with the restoration non-oriented, and the graph returns byte-identical.
+
+This is offered as a discipline rather than as a settlement. \emph{Byte-identical restoration
+establishes that nothing persisted, not that nothing happened.} Whether a state that is entered and
+perfectly reversed is thereby of no account is a question this paper raises and does not answer, and
+a reader who thinks the gate insufficient is disagreeing with something the paper also does not
+claim to have settled.
+\end{remark}
+
+\section{Delay of gratification}\label{sec:marshmallow}
+The delay task is the more interesting case, because the substrate does not merely reproduce it.
+
+The arrangement is a factorial grid: three dispositions (a drive weight of $2$, $4$, $8$) crossed
+with three beliefs about how reliable the promised second reward is ($60$, $80$, $100$ on a scale of
+$100$), $n=60$ per cell, grid fixed in advance of the run.
+
+\begin{remark}[Both factors are real, and each has a null control]\label{rem:dissolution}
+Holding the belief distribution fixed and varying disposition alone gives mean waits of $12.05$
+[$10.40$, $13.67$] against $4.13$ [$3.68$, $4.58$], intervals separated. Holding disposition fixed
+and varying belief alone gives $2.92$ [$2.60$, $3.27$] against $13.23$ [$11.63$, $14.97$], separated.
+
+Each has a matched null control in which the factor is held \emph{constant} and the intervals are
+required to overlap, which they do in both cases. A run in which the machinery manufactured an
+effect would fail there, and the controls are reported because a positive result without them says
+less than it appears to.
+\end{remark}
+
+\emph{The measure is not identifiable for disposition}, and the grid shows it in both directions.
+One disposition ($w=4$) under three beliefs ($60$, $80$, $100$) waits $3$, $8$, $13$ ticks: a naive
+score reads one subject as three levels of self-control. Three dispositions differing fourfold
+($w=2,4,8$) under compensating beliefs ($60$, $68$, $85$) wait $5$, $5$, $5$: the same score reads
+three subjects as identical.
+
+\begin{remark}[Impatience as the rational output of a correct belief]\label{rem:rational-impatience}
+The sharpest form holds disposition fixed at its \emph{most patient} setting and varies only the
+belief. Under an unreliable prior it waits $5.12$ [$4.90$, $5.32$]; under a reliable one, $23.82$
+[$23.60$, $24.03$]. The intervals are separated and the deterministic anchors are $5$ and $25$.
+
+So a patient subject waits briefly, and does so because waiting briefly is what its belief
+recommends. \emph{The short wait is attributable to the prior and not to a deficit}, and no
+disposition needs to be posited to explain it. What a naive reading scores as poor self-control is
+here a correct inference from an environment that does not keep its promises.
+\end{remark}
+
+\begin{remark}[This agrees with the literature, which is the point]\label{rem:priority}
+\citet{kidd2013} showed children's wait times moving with experimentally manipulated reliability of
+the environment, and \citet{watts2018} found the long-run predictive power of the original measure
+much reduced once background is controlled. The finding above is theirs and is not claimed here.
+
+What is claimed is smaller and different in kind. \emph{A substrate assembled for unrelated reasons,
+carrying no term for self-control and no term for the task, produces the confound as a consequence
+of its ordinary machinery.} An account that had to be told about the confound would be worth less
+than one in which it falls out, and this is the second. That is a fact about the substrate's
+entailments and not additional evidence for the psychology, which already has better.
+\end{remark}
+
+\section{What the runs enforce}\label{sec:discipline}
+Both experiments carry automated gates whose results are reported with them, because a claim that
+the decisions were taken in the substrate rather than in the host language is not one a reader
+should take on trust.
+
+The delay run records zero occurrences of the host rule-engine entry points, and zero occurrences of
+reinforcement vocabulary --- no reward signal, no punishment, no reinforcement, no backpropagation,
+no gradient --- so the waiting is not shaped. The decisions are named: valuation by two graph rules,
+choice by a third taking an argmax over candidate values, with the host confined to setting the
+disposition, supplying the belief, sweeping elapsed time and reading the chosen action. World
+constants are integers and are listed. The canonical seed set is checked untouched by digest.
+
+\emph{None of this establishes that the model is right.} It establishes that the model is the thing
+being reported, which is a different and lower bar, and one that a great deal of published
+simulation work does not clear.
+
+\section{The wider record}\label{sec:record}
+Two experiments are reported here in full. They are drawn from a larger body of pre-registered runs
+in the same substrate --- at the time of writing, one hundred and five pre-registrations and
+seventy-one result documents, covering social conduct, institutional decision, bond formation and
+the dynamics of coercive relationships.
+
+That record is not summarised here and should not be read as supporting anything above. \emph{A
+result is reported in this programme when it has been written up against a pre-registration, not
+when it exists}, and the two below are the two that have. The remainder is named so that a reader
+knows the selection was made from something, and so that a later paper reporting more of it is
+understood as continuing this one rather than announcing a new result.
+
+\section{Falsifiability commitments}\label{sec:falsifiability}
+\begin{enumerate}[leftmargin=*]
+\item \textsc{[detail]}~\textbf{Contact preference is carried by the contact drive.} Fails if the
+preference survives ablation of that drive at comparable magnitude, in which case the arrangement
+rather than the drive is producing it.
+\item \textsc{[shape]}~\textbf{The delay measure is not identifiable for disposition.} Fails if some
+assignment of beliefs recovers disposition uniquely from wait time in this substrate --- that is, if
+the two directions exhibited above can both be blocked without adding structure for the purpose.
+\item \textsc{[shape]}~\textbf{Impatience does not require a deficit.} Fails if a short wait cannot
+be produced from a patient disposition by belief alone, which is the arm reported in
+Remark~\ref{rem:rational-impatience} and would be settled against by its non-replication.
+\item \textsc{[detail]}~\textbf{The waiting is not shaped.} Fails on any occurrence of reinforcement
+machinery in the path that produces the choice; the audit is reported with each run and can be
+re-run.
+\item \textsc{[shape]}~\textbf{Reproduction is not evidence about organisms.} This paper commits to
+the negative: no claim below the level of the substrate is made, and a reader who finds one has
+found an error rather than a result.
+\end{enumerate}
+
+\begin{thebibliography}{9}
+
+\bibitem[Harlow(1958)]{harlow1958}
+Harry~F. Harlow.
+\newblock The nature of love.
+\newblock \emph{American Psychologist}, 13(12):673--685, 1958.
+
+\bibitem[Kidd et al.(2013)]{kidd2013}
+Celeste Kidd, Holly Palmeri, and Richard~N. Aslin.
+\newblock Rational snacking: Young children's decision-making on the marshmallow task is moderated
+by beliefs about environmental reliability.
+\newblock \emph{Cognition}, 126(1):109--114, 2013.
+
+\bibitem[Watts et al.(2018)]{watts2018}
+Tyler~W. Watts, Greg~J. Duncan, and Haonan Quan.
+\newblock Revisiting the marshmallow test: A conceptual replication investigating links between
+early delay of gratification and later outcomes.
+\newblock \emph{Psychological Science}, 29(7):1159--1177, 2018.
+
+\end{thebibliography}
+\end{document}

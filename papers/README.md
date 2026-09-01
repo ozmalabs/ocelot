@@ -58,6 +58,7 @@ the paper.
 | `formal/01b_graphic_equalisation_mind_and_self_grounding.tex` | The Law of Graphic Equalisation — Mind and Self Grounding (frames, the run/record, free will, personal identity, death) |
 | `formal/02_seldon_manifolds_theory_referenced.tex` | Seldon Manifolds — Theory |
 | `formal/02a_seldon_manifolds_psychological_grounding.tex` | Seldon Manifolds — Psychological Grounding (forward models, acceptable regions, the aperture of one embodiment) |
+| `formal/02b_seldon_manifolds_social_and_psychological_application.tex` | Seldon Manifolds --- Social and Psychological Application | applied: what the substrate does in a classical experiment's position |
 | `formal/03_law_of_narrative_momentum_theory_referenced.tex` | The Law of Narrative Momentum — Theory |
 | `formal/04_narrativium_theory_referenced.tex` | Narrativium — Theory |
 | `formal/A1_constructive_graphic_equalisation_implementation_referenced.tex` | A Constructive Realisation of Graphic Equalisation |
