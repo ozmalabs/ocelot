@@ -11,19 +11,19 @@
 
 \title{Adaptability\\\large One Operation Behind Shape Matching and Analogy, and Why It Is Not Called Intelligence}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-30.4}\\[2pt]1 September 2026 \textbullet\ document revision 1}
+\date{\textbf{Draft \textemdash\ draft-2026-08-30.4}\\[2pt]1 September 2026 \textbullet\ document revision 2}
 
 \usepackage{fancyhdr}
 \pagestyle{fancy}\fancyhf{}\fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r1}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r2}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r1}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r2}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-30.4 r1} (1 September 2026).
+\textbf{DRAFT --- draft-2026-08-30.4 r2} (1 September 2026).
 Circulated for comment, not as a finished result. This is the theory half of a pair; the companion
 reports what is built and what is not. Sections marked as falsifiability commitments are the intended
 points of attack.}}
@@ -145,6 +145,44 @@ Nor does adaptation imply improvement. An adaptation is an addition that covers 
 covering it was worth the cost is a separate question with a separate answer, and a system that adapts
 readily to noise is worse than one that refuses.
 
+\section{Prior positions}\label{sec:prior}
+None of the machinery here is new and it should not be dressed as though it were. Four literatures own
+it, and what this account adds is an arrangement rather than an operation.
+
+\emph{Anti-unification.} The operation is \citet{plotkin1970}'s least general generalisation: given two
+structures, produce the most specific structure of which both are instances. That is exactly rung two
+and rung three read backwards. \emph{What differs is what is kept.} The classical formulation returns
+the generalisation and discards the substitutions that recover the inputs from it; here the
+substitutions are the point, because \emph{the witness is the transform} and applying it elsewhere is
+the whole operation. An lgg that throws away its witness cannot adapt anything.
+
+\emph{Structure-mapping.} \citet{gentner1983} established that analogy runs on relational structure
+rather than surface features, and that systematic relational systems are preferred to isolated matches
+--- both of which this account assumes rather than argues. \emph{What differs is the purpose.}
+Structure-mapping is a theory of comparison: what makes two things analogous and how a person aligns
+them. This is a theory of acquisition, in which the comparison is instrumental --- the alignment exists
+to yield a transform that mints a competence the system did not have. Gentner's theory answers what an
+analogy \emph{is}; the question here is what one is \emph{for}.
+
+\emph{Analogical proportion.} The four-term form, $a$ is to $b$ as $c$ is to $d$, has a developed logical
+treatment \citep{prade2014}, and parallelogram completion is that form with $d$ unknown. Taken directly
+and without modification.
+
+\emph{Embedding arithmetic, and the reason its critique does not transfer.} The word
+\emph{parallelogram} comes from vector offsets in learned embedding spaces \citep{mikolov2013}, and that
+method's evaluation has been substantially criticised: \citet{levy2014} showed its behaviour is largely
+accounted for by similarity terms rather than by the offset, and \citet{linzen2016} showed the standard
+benchmark is confounded by nearest-neighbour baselines that need no analogy at all.
+
+\emph{Those criticisms are correct and they do not apply here}, for a reason that is a real difference
+and not a defence. The offset method is metric: it returns the nearest point to a computed location, so
+it always returns something, and the question is only whether the something is right. The operation
+here is symbolic and exact --- anti-unification either yields a witness that is well-defined and
+lossless, or it fails and yields nothing. \emph{There is no nearest neighbour to fall back on and no
+threshold to tune}, which removes the failure mode the critique identifies and replaces it with a
+different one: refusing cases a metric method would have answered. That is the cost of the exchange and
+it is the honest form of it.
+
 \section{Falsifiability commitments}\label{sec:falsifiability}
 \begin{enumerate}[leftmargin=*]
 \item \textsc{[shape]}~\textbf{Shape matching and analogy are one operation.} Fails if a case of one
@@ -162,4 +200,39 @@ observed dimensions is absorbed by a member rather than a dimension, without los
 systems by adaptability can be constructed that survives changing the held set.
 \end{enumerate}
 
+\begin{thebibliography}{9}
+
+\bibitem[Gentner(1983)]{gentner1983}
+Dedre Gentner.
+\newblock Structure-mapping: A theoretical framework for analogy.
+\newblock \emph{Cognitive Science}, 7(2):155--170, 1983.
+
+\bibitem[Levy and Goldberg(2014)]{levy2014}
+Omer Levy and Yoav Goldberg.
+\newblock Linguistic regularities in sparse and explicit word representations.
+\newblock In \emph{Proceedings of the Eighteenth Conference on Computational Natural Language
+Learning}, pages 171--180, 2014.
+
+\bibitem[Linzen(2016)]{linzen2016}
+Tal Linzen.
+\newblock Issues in evaluating semantic spaces using word analogies.
+\newblock In \emph{Proceedings of the 1st Workshop on Evaluating Vector-Space Representations for
+NLP}, pages 13--18, 2016.
+
+\bibitem[Mikolov et al.(2013)]{mikolov2013}
+Tomas Mikolov, Wen-tau Yih, and Geoffrey Zweig.
+\newblock Linguistic regularities in continuous space word representations.
+\newblock In \emph{Proceedings of NAACL-HLT 2013}, pages 746--751, 2013.
+
+\bibitem[Plotkin(1970)]{plotkin1970}
+Gordon~D. Plotkin.
+\newblock A note on inductive generalization.
+\newblock In \emph{Machine Intelligence 5}, pages 153--163. Edinburgh University Press, 1970.
+
+\bibitem[Prade and Richard(2014)]{prade2014}
+Henri Prade and Gilles Richard.
+\newblock From analogical proportion to logical proportions.
+\newblock \emph{Studies in Computational Intelligence}, pages 217--244, 2014.
+
+\end{thebibliography}
 \end{document}
