@@ -16,20 +16,20 @@
 \newcommand{\Hist}{\mathcal{H}}
 \title{Assessing an Account of This Kind\\\large What a Universal Framework Can Risk, What It Earns Instead, and What the Record Shows}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-30.4}\\[2pt]30 August 2026 \textbullet\ document revision 24}
+\date{\textbf{Draft \textemdash\ draft-2026-08-30.4}\\[2pt]30 August 2026 \textbullet\ document revision 25}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r24}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r25}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r24}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r25}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-30.4 r24} (30 August 2026).
+\textbf{DRAFT --- draft-2026-08-30.4 r25} (30 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -456,32 +456,55 @@ success rate is auditable and the failures are in the record rather than absent 
 transfer meets the strict date test cleanly: a defect census produced under an embodied control problem
 led, eight days later, to a fix in a conversation module that had been untouched since its creation.
 
-\subsection{What the substrate is, and how large}\label{sec:substrate-size}
+\subsection{What the substrate is, and what carries the weight}\label{sec:substrate-size}
 A reader of the companions that report results has so far been given almost nothing about the thing
 producing them, which makes those papers read as arriving from nowhere. What follows is a reference
-point. Every number in it was obtained by running a command against the tree rather than estimated.
+point, and two facts in it do the work. The inventory does not.
 
 \emph{The architecture.} A typed property graph $g$; rewrite rules $r$ with \emph{match}, \emph{where}
-and \emph{effects} clauses run to fixpoint; and an admissibility grammar $\Gamma$ of productions
-deciding which edges may exist. A Rust core of $89$ files exposes a term language of $239$ variants ---
-bindings, traversal, reductions, set algebra, arithmetic, geometry, program intermediate
-representation, codec primitives, and reflection over terms themselves. The agent's cognition is
-\emph{graph data}, not code: $805$ seed manifests carry its rules, concepts, grammar productions and
-reflexes, and are loaded by dependency closure at boot. The host language is confined to translating
-external input into graph mutations and reading state back out.
+and \emph{effects} clauses run to fixpoint; and an admissibility grammar $\Gamma$ deciding which edges
+may exist. A Rust core of $89$ files exposes a term language of $239$ variants. The agent's cognition
+is \emph{graph data}, not code: $805$ seed manifests carry its rules, concepts, productions and
+reflexes, loaded by dependency closure at boot. The host language translates external input into graph
+mutations and reads state back out, and does nothing else.
 
-The core learning mechanism decodes an observation against a held, growable codebook, treats what is
-not covered as residual, and mints a new entry only when a residual recurs --- ordered so that exact
-recognition is tried first, then one uniform change along a known dimension, then the inference of a
-new dimension, and only then novelty. The rule fixpoint \emph{is} that loop.
+\emph{The breadth is the least of it.} The substrate has been pointed at perception, ink, speech,
+spatial navigation, several vehicles, a humanoid body, a first-person shooter, program synthesis, a
+benchmark's answer keys, four classical psychology paradigms, a simulated town, a video codec and a
+cipher. \emph{That list proves nothing on its own and this paper does not offer it as proof} --- the
+companion is explicit that graphs are expressive and almost anything can be drawn as one, and a
+catalogue of domains is exactly the evidence that objection predicts. Two things are not.
 
-\emph{The record.} $1{,}566$ research documents, of which $519$ are pre-registrations and $475$ are
-results; $1{,}216$ run-output files; $685$ graph-native gate files. It has been pointed at perception,
-ink and handwriting, speech, spatial navigation, four kinds of vehicle, a humanoid body, a first-person
-shooter, program synthesis, a benchmark's answer keys, four classical psychology paradigms, a simulated
-town, a video codec, a cipher, and its own rule layer. \emph{The most consistently reported outcome
-across all of them is a null that localises a cause}, which is the record's character and is the reason
-this section is possible to write honestly at all.
+\paragraph{Transfer, which is what the composition claim actually rests on.}
+The substrate paper's headline commitment fails if the recurrence of one structure across domains is an
+artefact of description rather than a property of those domains. Breadth cannot answer that. What can
+is structure built once for one frame and consumed \emph{unmodified} by another, and the record's
+strongest instance is stated above: a decoder seed byte-identical by hash from its creation to the
+present, across five dated points and seven consuming frames. The cleanest case is stronger still,
+because it removes the author from the loop --- a comparison procedure built for speech was picked up
+sixteen days later by the commit that \emph{created} the ink frame's first files. \emph{The beneficiary
+did not exist when the structure was made}, which is the closest thing in this record to an
+uncontrolled counterfactual, and it is why the transfer claims survived an audit that removed most of
+what had been offered beside them.
+
+\paragraph{Hardware, which is what makes it a mechanism rather than a description.}
+An account that only ever runs as an analysis cannot fail on a clock. This one closes control loops:
+a graph decision at $46\,\mu\mathrm{s}$ at the ninety-ninth percentile, a fault detected in
+$8.33\,\mathrm{ms}$, a recovery loop held at $240\,\mathrm{Hz}$.
+
+The portability boundary was tested across two microarchitectures and, usefully, \emph{found} --- and it
+does not sit where a reader would guess. The Rust engine is generic \texttt{x86-64} and needs no
+recompile: verified here independently by disassembling the shipped binary and finding \emph{zero}
+AVX-512 registers in it, against $24{,}669$ AVX2 ones. What breaks byte-identity between the two boxes
+is a \emph{numerical library in the host language} dispatching on CPU features at runtime, and what
+does not transfer at all is timing, which is specific to the microarchitecture it was measured on.
+\emph{So the substrate is the portable part and the host layer is not}, which is the architecture's own
+claim showing up somewhere it was not arranged to.
+
+One thing must not be read into this. A companion analysis concludes that the digit recogniser's
+int16 form would fit a commodity microcontroller. \emph{That is arithmetic over model size and a
+real-time factor, not a run}, no such device has been used, and it is a projection rather than a
+result.
 
 \subsection{What is wrong with that record}\label{sec:record-wrong}
 The preceding subsection would be advertising without this one.
