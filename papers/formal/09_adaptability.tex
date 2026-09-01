@@ -11,19 +11,19 @@
 
 \title{Adaptability\\\large One Operation Behind Shape Matching and Analogy, and Why It Is Not Called Intelligence}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-30.4}\\[2pt]1 September 2026 \textbullet\ document revision 23}
+\date{\textbf{Draft \textemdash\ draft-2026-08-30.4}\\[2pt]1 September 2026 \textbullet\ document revision 24}
 
 \usepackage{fancyhdr}
 \pagestyle{fancy}\fancyhf{}\fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r23}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r24}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r23}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r24}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-30.4 r23} (1 September 2026).
+\textbf{DRAFT --- draft-2026-08-30.4 r24} (1 September 2026).
 Circulated for comment, not as a finished result. This is the theory half of a pair; the companion
 reports what is built and what is not. Sections marked as falsifiability commitments are the intended
 points of attack.}}
@@ -734,21 +734,35 @@ itself measurable}, which keeps this a correction to the construction rather tha
 Two observations about the current arrangement bear on the quantities above, and they enter in
 different ways --- worth separating before either is used.
 
-\emph{The first is structural rather than a reading of a trend.} Attention is a weighted relation
-computed between elements, which is an adjacency; a system built from stacked relational operations is
-representing relations whatever vocabulary its authors prefer, so the preceding remark applies to it
-directly and not by analogy. Around that, the architectural direction of travel --- retrieval against
-held stores, routing among held components, tools, and intermediate structure written out in
-inspectable form rather than kept in activations --- is toward holding more and deciding against what is
-held. \emph{How far that has gone is a measurement, and none is made here.} The structural half does
-not depend on it.
+\emph{The first is structural, and should be separated from the trend reading that usually travels with
+it.} Attention is a weighted relation computed between elements, which is an adjacency; a system built
+from stacked relational operations is representing relations whatever vocabulary its authors prefer, so
+the preceding remark applies to it directly and not by analogy. \emph{That is a claim about the model.}
+The claim ordinarily made alongside it --- that such systems are becoming more graph-shaped --- is about
+something else, and here the difference matters.
 
-\emph{It also names a fifth quantity the earlier list omitted.} Whether a converging system's held
-structure is \emph{readable} decides which of this paper's results applies to it. A system whose
-competence is legible can be copied, on the schedule of Remark~\ref{rem:schedule}; a system whose
-competence is not must be reconstructed from observation, at the price of Remark~\ref{rem:reconstruct}.
-Those are very different bills, the difference is measurable as the share of competence held outside
-the opaque part, and nothing above measures it.
+\emph{The graph structure is accumulating around the model rather than inside it}, and for this paper
+that is the sharper finding rather than a weaker one. Retrieval against explicitly relational stores
+\citep{edge2024}, agent memory held as a typed and temporal graph, routing among held components, and
+intermediate structure written out instead of kept in activations are all \emph{external} structure ---
+and external structure is readable by construction. The direction has been surveyed and named:
+\citet{zhou2026} document a migration across 2022--2026 from capability identified with weights, through
+context, to a harness layer, and define it as \emph{the progressive relocation of cognitive burdens from
+the model's internal computation into persistent, inspectable, and reusable external structures}.
+Whether the models are becoming graphs is arguable. \emph{That the competence is moving into readable
+structure beside them is documented.}
+
+\emph{Which settles what the fifth quantity is, and shows that nobody has measured it.} Whether a
+converging system's held structure is \emph{readable} decides which of this paper's results applies:
+legible competence can be copied on the schedule of Remark~\ref{rem:schedule}, illegible competence must
+be reconstructed from observation at the price of Remark~\ref{rem:reconstruct}, and those are very
+different bills. The survey naming the migration reports no quantity for it --- no share of performance
+attributable to external components, no fraction of competence held outside the weights --- and this
+paper adds none. \emph{The trend is documented and its magnitude is not}, in that literature as here,
+which makes this a gap with a name rather than a local omission. Work from the other direction narrows
+the opaque part without measuring the split: sparse autoencoders and circuit recovery now extract
+interpretable structure from weights, though consistency between extractions remains contested and
+recovery does not yet run cheaply at scale.
 
 \emph{The second observation is a commitment of capital, and it enters as a rate and not as a reason.}
 That a great deal is currently staked on a change of this kind is evidence about expectations, and
@@ -903,6 +917,11 @@ Lee~J. Cronbach, Goldine~C. Gleser, Harinder Nanda, and Nageswari Rajaratnam.
 and Profiles}.
 \newblock Wiley, New York, 1972.
 
+\bibitem[Edge et al.(2024)]{edge2024}
+Darren Edge, Ha Trinh, Newman Cheng, Joshua Bradley, Alex Chao, Apurva Mody, Steven Truitt, and Jonathan Larson.
+\newblock From local to global: A graph RAG approach to query-focused summarization.
+\newblock arXiv:2404.16130, 2024.
+
 \bibitem[Gentner(1983)]{gentner1983}
 Dedre Gentner.
 \newblock Structure-mapping: A theoretical framework for analogy.
@@ -979,6 +998,11 @@ Alan~M. Turing.
 David~H. Wolpert and William~G. Macready.
 \newblock No free lunch theorems for optimization.
 \newblock \emph{IEEE Transactions on Evolutionary Computation}, 1(1):67--82, 1997.
+
+\bibitem[Zhou et al.(2026)]{zhou2026}
+Chenyu Zhou, Huacan Chai, Wenteng Chen, Zihan Guo, Rong Shan, Yuanyi Song, Tianyi Xu, Yingxuan Yang, Aofan Yu, Weiming Zhang, Congming Zheng, Jiachen Zhu, Zeyu Zheng, Zhuosheng Zhang, Xingyu Lou, Changwang Zhang, Zhihui Fu, Jun Wang, Weiwen Liu, Jianghao Lin, and Weinan Zhang.
+\newblock Externalization in LLM agents: A unified review of memory, skills, protocols and harness engineering.
+\newblock arXiv:2604.08224, 2026.
 
 \bibitem[Prade and Richard(2014)]{prade2014}
 Henri Prade and Gilles Richard.
