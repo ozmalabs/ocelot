@@ -11,19 +11,19 @@
 
 \title{Adaptability\\\large One Operation Behind Shape Matching and Analogy, and Why It Is Not Called Intelligence}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-30.4}\\[2pt]1 September 2026 \textbullet\ document revision 4}
+\date{\textbf{Draft \textemdash\ draft-2026-08-30.4}\\[2pt]1 September 2026 \textbullet\ document revision 5}
 
 \usepackage{fancyhdr}
 \pagestyle{fancy}\fancyhf{}\fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r4}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r5}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r4}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r5}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-30.4 r4} (1 September 2026).
+\textbf{DRAFT --- draft-2026-08-30.4 r5} (1 September 2026).
 Circulated for comment, not as a finished result. This is the theory half of a pair; the companion
 reports what is built and what is not. Sections marked as falsifiability commitments are the intended
 points of attack.}}
@@ -190,6 +190,45 @@ idle with nothing indicating so}. A system cannot tell from the inside whether i
 searching in a regime where searching suffices, and neither can an observer without the ablation that
 was run here.
 
+\section{What an oracle costs, and how often}\label{sec:oracle}
+The regime argument above is about capability and says nothing about price. Price runs the other way,
+and where the oracle is expensive it dominates.
+
+\emph{An oracle consulted at inference is paid per use, without end. An oracle consulted once, whose
+output is held, is paid once.} That is the whole of the asymmetry, and it is unaffected by how good the
+oracle is. A system that answers by calling something expensive has bought an answer; a system that
+calls the same thing once, holds what comes back as structure, and answers from the structure
+thereafter has bought a capability. The second transaction terminates.
+
+Two consequences follow and the second matters more.
+
+The first is arithmetic. Where an oracle is cheap per call, calling is correct and holding is
+premature; where it is expensive, the crossover arrives quickly and holding wins on cost even in the
+regime where searching would win on capability. \emph{So the two arguments can point in opposite
+directions, and which dominates is a fact about the price of the oracle rather than about the account.}
+
+The second is that the two purchases differ in kind. What is held is inspectable, mutable, and can be
+repaired by the system holding it; what is called is none of those, permanently. A capability bought
+per call sits outside whatever boundary the system's own self-correction runs to, and stays outside no
+matter how many times it is bought. \emph{Paying once and holding the result moves a capability inside
+that boundary; paying repeatedly guarantees it never enters.}
+
+\begin{remark}[The cost of buying once, stated plainly]\label{rem:oracle-cost}
+This is not free and the bill is easy to overlook. \emph{What is held is what was bought on the day it
+was bought.} A per-call oracle improves when the oracle improves, silently and without the caller doing
+anything; held structure does not, and a system that bought its competence once is carrying a snapshot.
+Against that, held structure can be audited and corrected by the system carrying it, which a call
+cannot be --- so the exchange is improvement-for-free against correctability, and neither term is
+obviously larger.
+
+The companion programme is an instance rather than a demonstration of this. Roughly half its
+implementation was performed by a language model rather than by its own rule-writing, and the running
+system makes no such calls at all --- a property enforced by a switch and a gate rather than asserted.
+So the arrangement described here exists and runs. \emph{What does not exist is a control}: nobody has
+built the same substrate without that development-time help, so the size of what was bought is not
+known, and the companion on assessment says so at greater length.
+\end{remark}
+
 \section{Prior positions}\label{sec:prior}
 None of the machinery here is new and it should not be dressed as though it were. Four literatures own
 it, and what this account adds is an arrangement rather than an operation.
@@ -241,6 +280,10 @@ preference.
 minting under an unchanged codebook, or none at all.
 \item \textsc{[detail]}~\textbf{Coupling forces a dimension.} Fails if a residual coupled across
 observed dimensions is absorbed by a member rather than a dimension, without loss.
+\item \textsc{[detail]}~\textbf{An oracle bought once is paid once.} Fails if held structure derived
+from an oracle requires continued access to that oracle to keep working --- if the purchase does not in
+fact terminate, the distinction drawn here is between two ways of paying continuously and is not worth
+drawing.
 \item \textsc{[shape]}~\textbf{Capability has plural sources, selected by regime.} Fails if a domain is
 exhibited in which candidates are cheaply and exactly checkable and held structure nevertheless
 contributes measurably, or in which no oracle exists and holding contributes nothing --- either would
