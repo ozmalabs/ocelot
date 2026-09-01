@@ -1,0 +1,183 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,hyperref,enumitem,microtype}
+\usepackage[margin=1in]{geometry}
+\usepackage{natbib}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{proposition}[definition]{Proposition}
+\theoremstyle{remark}
+\newtheorem{remark}[definition]{Remark}
+
+\title{Causal Attitude Networks on the Substrate\\\large What Moved, What Did Not, and What the Mean Field Costs}
+\author{Matthew Parslow\\Independent Researcher}
+\date{\textbf{Draft \textemdash\ draft-2026-08-30.4}\\[2pt]1 September 2026 \textbullet\ document revision 1}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[C]{\thepage}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r1}}
+\renewcommand{\headrulewidth}{0pt}
+\fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r1}}\renewcommand{\headrulewidth}{0pt}}
+\begin{document}
+\maketitle
+\begin{center}
+\fbox{\parbox{0.92\textwidth}{\small
+\textbf{DRAFT --- draft-2026-08-30.4 r1} (1 September 2026).
+Circulated for comment, not as a finished result. This paper reports a migration that is
+\emph{partial} and says where it stops. Sections marked as falsifiability commitments are the
+intended points of attack.}}
+\end{center}
+\vspace{1em}
+
+\begin{abstract}
+The Causal Attitude Network \citep{dalege2016} models an attitude as an Ising-family network of
+interacting evaluative components. It was reimplemented on this substrate as a mean-field
+self-consistency solver and run. Three things are reported and only one of them is a success. The
+\emph{alignment} is incomplete in a specific and locatable way: the dynamics have no term surface in
+the substrate's own vocabulary, so the model runs beside the graph rather than in it. The
+\emph{performance} question turns out not to be the complexity one it appears to be. And of two
+registered predictions, one is confirmed with a large effect and a control, and one is
+\emph{reversed} --- reported as measured rather than reinterpreted.
+\end{abstract}
+
+\section{What was moved, and what a move would mean}\label{sec:moved}
+An attitude in the CAN model is a network of evaluative components with pairwise couplings and
+external fields, and its behaviour is the behaviour of an Ising system: relaxation toward low-energy
+configurations, frustration where couplings conflict, and a temperature-like parameter governing how
+sharply it settles. The reimplementation supplies that as a solver on the graph, exposed to the host
+and driven by seed-resident network data.
+
+\emph{Moving a formalism onto this substrate means more than making it run there.} The substrate's
+claim is that decisions are taken by graph rules over graph data; a model that computes its result in
+a compiled routine and hands back an answer has been \emph{hosted}, not moved. The distinction is the
+whole of the alignment question below, and it is not rhetorical: the two cases differ in what can
+subsequently be inspected, mutated, minted and reasoned over by the rest of the account.
+
+\section{Alignment: the dynamics have no term surface}\label{sec:alignment}
+Fifteen rules written against the network were inert. The obvious diagnosis --- missing or malformed
+match clauses --- is not the reason.
+
+\emph{There is no DSL term surface for the dynamics at all.} The relaxation exists only across a
+host-language boundary, so a rule cannot express it, cannot be matched against it, and cannot mint
+against it. The rules were not broken; there was nothing for them to be written in terms of. That is
+a structural finding about the migration rather than a defect in fifteen rules, and it is why this
+paper describes the move as partial.
+
+One rule was then wired with real match, where and effects clauses using only the existing term
+vocabulary, and works on the production path. \emph{So the boundary is not a wall}, and the correct
+statement is the narrow one: what has been moved is the network's data and its results, not its
+dynamics, and moving the dynamics is available work rather than blocked work.
+
+\section{Performance: the complexity question is the wrong one}\label{sec:performance}
+The natural objection to putting an Ising model anywhere is that its ground-state problem is hard.
+\citet{barahona1982} makes the sharp version available: the planar two-dimensional problem
+\emph{without} an external field is solvable in polynomial time, while the same planar problem
+\emph{with} a field, and the three-dimensional problem either way, is NP-hard. Every network here
+carries a nonzero field, so the hard case is the relevant one.
+
+\emph{And it does not bind, because no exact ground state is being sought.} The solver computes a
+mean-field self-consistency fixed point --- polynomial per iteration, unconditionally, at every
+network size. The actionable question is therefore not whether this scales exactly, since no
+algorithm does and none is attempted, but how good the approximation is and when it fails to
+converge at all.
+
+\begin{remark}[The weakest member of a hierarchy that was borrowed whole]\label{rem:hierarchy}
+Mean field is the first and weakest step of a known ladder --- mean field, then Bethe and loopy
+belief propagation, then Kikuchi and generalized belief propagation \citep{yedidia2005} --- and it is
+weakest \emph{precisely} in the regime of loops, strong local correlation and frustration. That is
+the regime this implementation's own frustration and basin audits exist to detect, so the
+approximation is thinnest exactly where the measurement is aimed.
+
+The honest form of that observation is not that a mistake was made. \emph{An entire coherent piece of
+statistical-mechanics vocabulary was borrowed, and the better half of the same literature is sitting
+one step away unused.} A caveat comes with it and is not decoration: Bethe and loopy propagation are
+themselves known to lose stable solutions in the same frustrated, field-bearing, low-temperature
+regime, so the ladder's next rung is an improvement and not a cure.
+\end{remark}
+
+\section{Results}\label{sec:results}
+
+\begin{remark}[The registered scaling prediction is reversed]\label{rem:null}
+The primary registered prediction --- that coarse quantization would yield fewer distinct basins than
+fine, with the gap widening in network size --- \emph{is not confirmed, and the measured direction is
+closer to reversed}. Coarse yields \emph{more} distinct basins ($6$ against $4$ at $N=4$; $15$
+against $4$ at $N=8$), a higher entropy-weighted effective basin count, and higher mean frustration
+($2.10$ against $1.55$ at $N=4$; $15.32$ against $11.06$ at $N=8$). At $N=16$ the two conditions
+converge to near-parity on every measure.
+
+The manipulation check holds throughout --- coarse quantization does produce larger per-edge
+representational error at every $N$ --- so the intervention worked and the prediction about its
+consequence was wrong. That is the useful shape of a null and it is reported here rather than
+reinterpreted into a different prediction that would have survived.
+\end{remark}
+
+\begin{remark}[Resolution separates the basins, with a control that says so]\label{rem:bigville}
+A second registered run, on a population of simulated residents each carrying its own network at its
+own representational resolution, confirmed both of its predictions.
+
+The manipulation check is large: the coarse resident's mean rounding error is about $9.2$ times the
+fine resident's ($0.553$ against $0.060$). The primary prediction --- deliberately not the naive
+basin-count intuition, that having already been falsified above on the same engine --- is that under
+\emph{identical} scenario evidence the coarse network relaxes to a positive-energy, highly frustrated
+basin (frustration $9.86$, energy $+5.19$) while the fine one relaxes to a negative-energy,
+low-frustration basin (frustration $1.62$, energy $-1.77$). It does.
+
+A population-wide check across one hundred residents, reported as exploratory rather than
+pre-registered to the same standard, shows the same direction on average (mean frustration $3.29$ in
+the low-resolution group against $1.38$ in the high). \emph{The control is what makes this worth
+reporting}: holding resolution fixed across the population collapses the trait-to-frustration
+correlation from $-0.33$ to $-0.08$, so resolution rather than some correlated trait is carrying it.
+\end{remark}
+
+\begin{remark}[A discriminative null was found, not built]\label{rem:found}
+The relaxation exhibits a genuine binary between cohering and failing to cohere: clean convergence in
+one regime, a persistent two-cycle oscillation in another, confirmed against a same-parity control.
+
+That shape --- an operation that either resolves or returns a determinate nothing --- is one this
+programme has elsewhere and did not put here. \emph{It was already present, unexploited, in the
+borrowed model's own mathematics.} What is \emph{not} established is the tempting next step: whether
+low resolution specifically drives the failure, as against the particular realised coupling draw, is
+a weak and noisy same-direction lean across two independent samples of $24$ and $40$ trials. It is
+reported as a lean and not as an effect.
+\end{remark}
+
+\section{Falsifiability commitments}\label{sec:falsifiability}
+\begin{enumerate}[leftmargin=*]
+\item \textsc{[shape]}~\textbf{The migration is partial in the way stated.} Fails if the dynamics can
+be expressed in the existing term vocabulary without new term surface --- that is, if the fifteen
+rules were inert for an ordinary reason after all.
+\item \textsc{[detail]}~\textbf{Resolution drives basin quality.} Fails if the frustration and energy
+separation survives holding resolution fixed, or if the population correlation does not collapse
+under that control.
+\item \textsc{[detail]}~\textbf{The scaling prediction is reversed and not merely unconfirmed.} Fails
+if the basin counts recover the registered direction under a larger sample at $N=4$ and $N=8$.
+\item \textsc{[shape]}~\textbf{Mean field is the binding limitation, not complexity.} Fails if an
+exact solver at these network sizes changes the reported quantities materially, which would mean the
+approximation rather than the model was being measured.
+\item \textsc{[shape]}~\textbf{The oscillation is the model's and not the implementation's.} Fails if
+the two-cycle disappears under an equivalent solver written independently.
+\end{enumerate}
+
+\begin{thebibliography}{9}
+
+\bibitem[Barahona(1982)]{barahona1982}
+Francisco Barahona.
+\newblock On the computational complexity of Ising spin glass models.
+\newblock \emph{Journal of Physics A: Mathematical and General}, 15(10):3241--3253, 1982.
+
+\bibitem[Dalege et al.(2016)]{dalege2016}
+Jonas Dalege, Denny Borsboom, Frenk van Harreveld, Helma van den Berg, Mark Conner, and Han L.~J.
+van der Maas.
+\newblock Toward a formalized account of attitudes: The Causal Attitude Network (CAN) model.
+\newblock \emph{Psychological Review}, 123(1):2--22, 2016.
+
+\bibitem[Yedidia et al.(2005)]{yedidia2005}
+Jonathan~S. Yedidia, William~T. Freeman, and Yair Weiss.
+\newblock Constructing free-energy approximations and generalized belief propagation algorithms.
+\newblock \emph{IEEE Transactions on Information Theory}, 51(7):2282--2312, 2005.
+
+\end{thebibliography}
+\end{document}
