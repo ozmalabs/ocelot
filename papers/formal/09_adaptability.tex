@@ -11,19 +11,19 @@
 
 \title{Adaptability\\\large One Operation Behind Shape Matching and Analogy, and Why It Is Not Called Intelligence}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-30.4}\\[2pt]1 September 2026 \textbullet\ document revision 6}
+\date{\textbf{Draft \textemdash\ draft-2026-08-30.4}\\[2pt]1 September 2026 \textbullet\ document revision 7}
 
 \usepackage{fancyhdr}
 \pagestyle{fancy}\fancyhf{}\fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r6}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r7}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r6}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r7}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-30.4 r6} (1 September 2026).
+\textbf{DRAFT --- draft-2026-08-30.4 r7} (1 September 2026).
 Circulated for comment, not as a finished result. This is the theory half of a pair; the companion
 reports what is built and what is not. Sections marked as falsifiability commitments are the intended
 points of attack.}}
@@ -209,31 +209,57 @@ the more the mapping carries} --- generality does not remove the need for a matc
 the whole of the burden onto the match. There is no free lunch, and an account of adaptability that
 implied otherwise would be claiming one.
 
-\begin{remark}[Priors as a measurement problem, and where this account differs]\label{rem:chollet}
-\citet{chollet2019} makes precisely this the centre of measurement: intelligence as the efficiency of
-skill acquisition over a scope of tasks, \emph{relative to priors, experience and generalisation
-difficulty}. The corpus built on that definition is explicitly constructed over Core Knowledge priors
---- objectness, elementary geometry and topology, number, agency \citep{spelke2006} --- because a task
-set assuming no priors would be unsolvable and one assuming arbitrary priors would measure the priors
-alone.
+\begin{proposition}[There is no prior-free measurement]\label{prop:no-prior-free}
+A capability cannot be measured against a prior-free baseline, because no such baseline is a member of
+the space being measured.
+\end{proposition}
 
-\emph{What differs here is where priors sit in the theory rather than what is claimed about them.} For
-that programme priors are a term the measure must be taken relative to. Here they are not a correction
-applied to a score --- \emph{they are the held set the operation runs on}, and the ladder is the
-mechanism that converts them. The two are the same observation entered in different columns, and this
-account owes the earlier one the observation.
+\begin{proof}
+Measuring a capability \emph{relative to priors} requires a zero on the priors axis: a frame holding
+nothing, against which holdings can be counted. A frame holding nothing stands in no relation and draws
+no distinction, and by the companion's first proposition that is not a frame with nothing in it but no
+frame at all --- the set of frames with no particularity has no members, the only object answering to
+the description being the empty set, which is not a frame and does nothing.
 
-The uncomfortable consequence is the one worth stating plainly. \emph{A benchmark that assumes priors
-measures the priors at least as much as the operation}, and reporting a score without saying which
-priors were assumed reports a sum of two things as though it were one. Human performance on such a task
-set is not a ceiling established by human generality; it is what a particular, very expensive set of
-priors achieves when the task set was built to sit on top of it.
+So the zero of the priors axis lies outside the space. An axis so constituted supports comparison
+between members and does not support measurement of a member against its zero, and a quantity defined
+by that measurement is the frame-free denominator Axiom~$-1$ refuses.
+\end{proof}
 
-\emph{This account therefore predicts that a person lacking the relevant familiarity --- with puzzles,
-with grids, with the conventions of the interface --- should score near the floor rather than near the
-reported human figure.} Human baselines for that corpus exist \citep{legris2025}; whether they
-stratify by familiarity in a way that tests this has not been checked here, so the prediction is
-recorded as untested rather than supported.
+\emph{The consequence is not that such measurement is difficult.} It is that the thing being asked for
+does not exist to be approximated, which makes it a category error rather than an unsolved problem ---
+and one established by the account's own earlier results rather than assumed here. Most reported
+measures of intelligence are flawed for that reason and not for want of care: the control they would
+need is not merely absent, it is not constructible.
+
+\begin{remark}[What survives, and where this account differs from Chollet]\label{rem:chollet}
+Comparison survives entirely, and it is what this programme uses everywhere. \emph{Two prior-bearing
+frames can be compared on a task set}, and a difference between them is a real measurement. What cannot
+be done is to report either one's score as a property it \emph{has}, since that requires the zero the
+proposition removes. A benchmark result is a relation, and writing it as an attribute is the error.
+
+\citet{chollet2019} takes priors seriously in the same direction and does the harder half of the work:
+intelligence as the efficiency of skill acquisition \emph{relative to priors, experience and
+generalisation difficulty}, over a corpus built explicitly on Core Knowledge \citep{spelke2006}. This
+account owes that framing the observation and differs in two places. Priors here are not a term the
+measure is taken relative to --- \emph{they are the held set the operation runs on}, and the ladder is
+what converts them. And the relativisation is not a methodological refinement that a better experiment
+could tighten: by Proposition~\ref{prop:no-prior-free} it is the only form such a measure can take.
+
+\emph{Machinery and mapping cannot be separated from outside either, and for a different reason.} Two
+systems differing in both --- one with a stronger operation on a poorer prior, one with the reverse ---
+can agree on every item of any finite test. The decomposition is therefore underdetermined by
+measurement rather than hidden from it, and no amount of testing at a fixed grain settles it. What
+refinement buys is approach: a model of the split can be made arbitrarily fine and its residual driven
+toward zero without ever reaching it, which is this programme's ordinary intensive limit rather than a
+special defeat. \emph{You can approach one with unbounded analysis. You cannot arrive, and no finite
+experiment stands in for arriving.}
+
+That yields the prediction the previous section left standing, now in its proper form. A person lacking
+familiarity with a task set's conventions should score near its floor --- not because they are less
+capable, but because \emph{the score was never a property of the person}. Human baselines for that
+corpus exist \citep{legris2025}; whether they stratify by familiarity in a way that tests this has not
+been checked here, so it is recorded as untested.
 \end{remark}
 
 \section{What an oracle costs, and how often}\label{sec:oracle}
@@ -329,9 +355,12 @@ observed dimensions is absorbed by a member rather than a dimension, without los
 \item \textsc{[shape]}~\textbf{Adaptability is bounded by the priors.} Fails on a demonstration of a
 competence derived from a held set containing no path to it --- which would make adaptation a source of
 capability rather than a conversion of one, and would be a free lunch.
-\item \textsc{[detail]}~\textbf{A prior-assuming benchmark measures the priors.} Fails if performance
-on such a task set is shown to be independent of familiarity with its conventions, in a population
-matched on everything else.
+\item \textsc{[shape]}~\textbf{No prior-free baseline is constructible.} Fails on the exhibition of a
+frame holding nothing that nevertheless draws a distinction --- which would put the zero of the priors
+axis inside the space and make prior-free measurement well-formed after all.
+\item \textsc{[detail]}~\textbf{A prior-assuming benchmark measures a relation, not a property.} Fails
+if performance on such a task set is shown to be independent of familiarity with its conventions, in a
+population matched on everything else.
 \item \textsc{[detail]}~\textbf{An oracle bought once is paid once.} Fails if held structure derived
 from an oracle requires continued access to that oracle to keep working --- if the purchase does not in
 fact terminate, the distinction drawn here is between two ways of paying continuously and is not worth
