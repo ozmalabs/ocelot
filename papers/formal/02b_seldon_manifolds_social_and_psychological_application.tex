@@ -12,21 +12,21 @@
 
 \title{Seldon Manifolds --- Social and Psychological Application\\\large Contact Comfort, Delay of Gratification, and What a Substrate Produces Without Being Fitted To It}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-30.4}\\[2pt]1 September 2026 \textbullet\ document revision 1}
+\date{\textbf{Draft \textemdash\ draft-2026-08-30.4}\\[2pt]1 September 2026 \textbullet\ document revision 2}
 
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r1}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r2}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r1}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r2}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-30.4 r1} (1 September 2026).
+\textbf{DRAFT --- draft-2026-08-30.4 r2} (1 September 2026).
 Circulated for comment, not as a finished result. This is the applied companion to
 \emph{Seldon Manifolds --- Psychological Grounding}. That paper asks whether a nervous system
 implements anything of the manifold's shape; this one reports what happens when the substrate is
@@ -83,6 +83,13 @@ infants preferring cloth & $200/200$ & $0/200$\\
 \bottomrule
 \end{tabular}
 \end{center}
+
+\emph{What the interval is over needs saying, because two different estimands sit in that table.}
+Each of the $200$ subjects contributes a \emph{fraction} of its own directed behaviour, and the
+interval is the normal-approximation interval on the mean of those fractions --- between-subject
+$\mathrm{sd}=0.039$, so $\pm 1.96\,\mathrm{sd}/\sqrt{n}$. It is \emph{not} a binomial interval on a
+proportion of subjects, which at this $n$ would be about ten times wider ($[0.742, 0.853]$). The
+across-subject count is the third row and is reported separately for that reason.
 
 The intervals are separated and the preference is above half, which is the finding. The second
 column is what makes it worth reporting: \emph{ablating the contact drive removes the preference
@@ -151,6 +158,54 @@ than one in which it falls out, and this is the second. That is a fact about the
 entailments and not additional evidence for the psychology, which already has better.
 \end{remark}
 
+\section{Learned helplessness, and what the contingency manipulation shows}\label{sec:helplessness}
+\citet{seligman1967} established that the deficit follows from \emph{non-contingency} between action
+and outcome rather than from aversive experience as such, which is what the contingent control arm is
+for. Both arms were run at $n=200$ over $60$ ticks.
+
+\begin{center}\small
+\begin{tabular}{@{}lrr@{}}
+\toprule
+$n=200$ per arm & \textbf{contingent} & \textbf{non-contingent}\\
+\midrule
+contingency belief & $1.000$ \ [$1.000$, $1.000$] & $0.256$ \ [$0.253$, $0.259$]\\
+escape-attempt rate & $1.000$ \ [$1.000$, $1.000$] & $0.031$ \ [$0.031$, $0.032$]\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Intervals over per-subject means as above, separated on both measures. \emph{The arms differ only in
+whether the action is coupled to the outcome}, and the aversive experience is matched --- which is
+the point of the original design and the reason the result is about contingency and not about
+suffering. The same ethics gate applies: belief and arousal move under induction
+($0.500 \rightarrow 0.245$; $0.0 \rightarrow -9.25$) and restore byte-identically.
+
+\section{A negative: no privileged upright frame}\label{sec:inversion}
+Recognition of inverted faces is disproportionately impaired relative to other inverted objects
+\citep{yin1969}, and local feature inversion within an upright face is far more visible than within an
+inverted one \citep{thompson1980}. \emph{The substrate does not reproduce either, and the reason is
+diagnosed rather than guessed.}
+
+Four pre-registered arms. An inversion-cost arm returns a differential of exactly zero: configural and
+part-based recognition are identical upright and inverted. A Thatcher arm finds no frame gating in
+$12$ of $12$ configural cases. A reference-frame arm collapses all $4$ inversion pairs --- the
+substrate treats a configural pattern and its $180^{\circ}$ twin as \emph{one identity} --- while a
+part-based control remains discriminable, so the collapse is a property of the configural channel and
+not of the measure. A floor arm confirms both states are reachable and $100$ noise seeds force no
+spurious maps.
+
+\begin{remark}[Why this negative is the useful kind]\label{rem:negative}
+The mechanism is identified: uniform inversion folds to a rotation the composition already treats as
+free, so \emph{there is no privileged upright frame to be costly to leave}. The substrate is
+reference-frame invariant where a human visual system is not, and the invariance is the same property
+that makes the composition work elsewhere.
+
+That is a boundary on this programme and is reported as one. A paper reporting only reproductions
+would be the less informative document, and the correct reading of this arm is not that the substrate
+is deficient but that \emph{holistic upright-biased processing is an additional commitment a
+psychology has and this substrate does not} --- available to be added, and not present by accident.
+\end{remark}
+
 \section{What the runs enforce}\label{sec:discipline}
 Both experiments carry automated gates whose results are reported with them, because a claim that
 the decisions were taken in the substrate rather than in the host language is not one a reader
@@ -199,6 +254,21 @@ found an error rather than a result.
 \end{enumerate}
 
 \begin{thebibliography}{9}
+
+\bibitem[Seligman and Maier(1967)]{seligman1967}
+Martin~E.~P. Seligman and Steven~F. Maier.
+\newblock Failure to escape traumatic shock.
+\newblock \emph{Journal of Experimental Psychology}, 74(1):1--9, 1967.
+
+\bibitem[Yin(1969)]{yin1969}
+Robert~K. Yin.
+\newblock Looking at upside-down faces.
+\newblock \emph{Journal of Experimental Psychology}, 81(1):141--145, 1969.
+
+\bibitem[Thompson(1980)]{thompson1980}
+Peter Thompson.
+\newblock Margaret Thatcher: A new illusion.
+\newblock \emph{Perception}, 9(4):483--484, 1980.
 
 \bibitem[Harlow(1958)]{harlow1958}
 Harry~F. Harlow.
