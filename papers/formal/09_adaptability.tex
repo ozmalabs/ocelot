@@ -11,19 +11,19 @@
 
 \title{Adaptability\\\large One Operation Behind Shape Matching and Analogy, and Why It Is Not Called Intelligence}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-30.4}\\[2pt]1 September 2026 \textbullet\ document revision 5}
+\date{\textbf{Draft \textemdash\ draft-2026-08-30.4}\\[2pt]1 September 2026 \textbullet\ document revision 6}
 
 \usepackage{fancyhdr}
 \pagestyle{fancy}\fancyhf{}\fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r5}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r6}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r5}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r6}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-30.4 r5} (1 September 2026).
+\textbf{DRAFT --- draft-2026-08-30.4 r6} (1 September 2026).
 Circulated for comment, not as a finished result. This is the theory half of a pair; the companion
 reports what is built and what is not. Sections marked as falsifiability commitments are the intended
 points of attack.}}
@@ -190,6 +190,52 @@ idle with nothing indicating so}. A system cannot tell from the inside whether i
 searching in a regime where searching suffices, and neither can an observer without the ablation that
 was run here.
 
+\section{What the held set costs, and who paid for it}\label{sec:priors}
+Definition~\ref{def:adapt} says an adaptation is \emph{derived} from what is held. That word has a
+consequence the account cannot avoid and should not want to: \emph{adaptability is bounded by the
+priors}. Nothing can be derived that has no path from the held set, so a system's reach is set by what
+it already carries, and a system carrying nothing is not maximally general but incapable.
+
+\emph{Priors are expensive, and the expense is usually invisible because somebody else paid it.} A
+human takes the better part of a year to walk and longer to do it well. Visual competence is acquired
+rather than shipped, which is most visible in species born least mature. By the time a person is
+capable of the tasks we use to demonstrate capability, the overwhelming majority of what makes them
+capable was assembled over years, and none of it is counted when the demonstration is scored.
+
+That is the informal form of a formal result. \citet{wolpert1997} establish that no search or learning
+procedure outperforms another averaged over all problems; performance on the problems actually faced is
+therefore bought, and what buys it is a prior matched to them. \emph{The more general the machinery,
+the more the mapping carries} --- generality does not remove the need for a matched prior, it relocates
+the whole of the burden onto the match. There is no free lunch, and an account of adaptability that
+implied otherwise would be claiming one.
+
+\begin{remark}[Priors as a measurement problem, and where this account differs]\label{rem:chollet}
+\citet{chollet2019} makes precisely this the centre of measurement: intelligence as the efficiency of
+skill acquisition over a scope of tasks, \emph{relative to priors, experience and generalisation
+difficulty}. The corpus built on that definition is explicitly constructed over Core Knowledge priors
+--- objectness, elementary geometry and topology, number, agency \citep{spelke2006} --- because a task
+set assuming no priors would be unsolvable and one assuming arbitrary priors would measure the priors
+alone.
+
+\emph{What differs here is where priors sit in the theory rather than what is claimed about them.} For
+that programme priors are a term the measure must be taken relative to. Here they are not a correction
+applied to a score --- \emph{they are the held set the operation runs on}, and the ladder is the
+mechanism that converts them. The two are the same observation entered in different columns, and this
+account owes the earlier one the observation.
+
+The uncomfortable consequence is the one worth stating plainly. \emph{A benchmark that assumes priors
+measures the priors at least as much as the operation}, and reporting a score without saying which
+priors were assumed reports a sum of two things as though it were one. Human performance on such a task
+set is not a ceiling established by human generality; it is what a particular, very expensive set of
+priors achieves when the task set was built to sit on top of it.
+
+\emph{This account therefore predicts that a person lacking the relevant familiarity --- with puzzles,
+with grids, with the conventions of the interface --- should score near the floor rather than near the
+reported human figure.} Human baselines for that corpus exist \citep{legris2025}; whether they
+stratify by familiarity in a way that tests this has not been checked here, so the prediction is
+recorded as untested rather than supported.
+\end{remark}
+
 \section{What an oracle costs, and how often}\label{sec:oracle}
 The regime argument above is about capability and says nothing about price. Price runs the other way,
 and where the oracle is expensive it dominates.
@@ -280,6 +326,12 @@ preference.
 minting under an unchanged codebook, or none at all.
 \item \textsc{[detail]}~\textbf{Coupling forces a dimension.} Fails if a residual coupled across
 observed dimensions is absorbed by a member rather than a dimension, without loss.
+\item \textsc{[shape]}~\textbf{Adaptability is bounded by the priors.} Fails on a demonstration of a
+competence derived from a held set containing no path to it --- which would make adaptation a source of
+capability rather than a conversion of one, and would be a free lunch.
+\item \textsc{[detail]}~\textbf{A prior-assuming benchmark measures the priors.} Fails if performance
+on such a task set is shown to be independent of familiarity with its conventions, in a population
+matched on everything else.
 \item \textsc{[detail]}~\textbf{An oracle bought once is paid once.} Fails if held structure derived
 from an oracle requires continued access to that oracle to keep working --- if the purchase does not in
 fact terminate, the distinction drawn here is between two ways of paying continuously and is not worth
@@ -294,6 +346,11 @@ systems by adaptability can be constructed that survives changing the held set.
 \end{enumerate}
 
 \begin{thebibliography}{9}
+
+\bibitem[Chollet(2019)]{chollet2019}
+Fran\c{c}ois Chollet.
+\newblock On the measure of intelligence.
+\newblock arXiv:1911.01547, 2019.
 
 \bibitem[Gentner(1983)]{gentner1983}
 Dedre Gentner.
@@ -317,10 +374,25 @@ Tomas Mikolov, Wen-tau Yih, and Geoffrey Zweig.
 \newblock Linguistic regularities in continuous space word representations.
 \newblock In \emph{Proceedings of NAACL-HLT 2013}, pages 746--751, 2013.
 
+\bibitem[LeGris et al.(2025)]{legris2025}
+Solim LeGris, Wai Keen Vong, Brenden~M. Lake, and Todd~M. Gureckis.
+\newblock A comprehensive behavioral dataset for the Abstraction and Reasoning Corpus.
+\newblock \emph{Scientific Data}, 12, 2025.
+
 \bibitem[Plotkin(1970)]{plotkin1970}
 Gordon~D. Plotkin.
 \newblock A note on inductive generalization.
 \newblock In \emph{Machine Intelligence 5}, pages 153--163. Edinburgh University Press, 1970.
+
+\bibitem[Spelke and Kinzler(2006)]{spelke2006}
+Elizabeth~S. Spelke and Katherine~D. Kinzler.
+\newblock Core knowledge.
+\newblock \emph{Developmental Science}, 10(1):89--96, 2006.
+
+\bibitem[Wolpert and Macready(1997)]{wolpert1997}
+David~H. Wolpert and William~G. Macready.
+\newblock No free lunch theorems for optimization.
+\newblock \emph{IEEE Transactions on Evolutionary Computation}, 1(1):67--82, 1997.
 
 \bibitem[Prade and Richard(2014)]{prade2014}
 Henri Prade and Gilles Richard.
