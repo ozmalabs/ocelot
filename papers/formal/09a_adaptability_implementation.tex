@@ -11,19 +11,19 @@
 
 \title{Adaptability --- Implementation\\\large What Is Built, What Has Run, and the One Place They Do Not Meet}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-30.4}\\[2pt]1 September 2026 \textbullet\ document revision 4}
+\date{\textbf{Draft \textemdash\ draft-2026-08-30.4}\\[2pt]1 September 2026 \textbullet\ document revision 5}
 
 \usepackage{fancyhdr}
 \pagestyle{fancy}\fancyhf{}\fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r4}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r5}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r4}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-30.4\,r5}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-30.4 r4} (1 September 2026).
+\textbf{DRAFT --- draft-2026-08-30.4 r5} (1 September 2026).
 Circulated for comment, not as a finished result. The companion states the theory; this paper reports
 the implementation and its principal gap. Sections marked as falsifiability commitments are the intended
 points of attack.}}
@@ -118,6 +118,41 @@ that the agent derived them.
 And it is not a large amount of work in prospect. The absence of new term variants in the demonstration
 is the relevant measurement: what would be required is a rule surface over an algebra that already
 evaluates, which is the same move this programme has made before and reported.
+
+\section{A second instance of the same seam}\label{sec:reading}
+The pattern of Section~\ref{sec:gap} is not confined to analogy, and the clearest other case is the one
+most directly about acquisition: reading a scientific paper and minting from what it says.
+
+The path is built and is the ladder pointed at literature. A web adapter presents a retrieved document
+as a typed graph; the agent navigates a preprint archive, retrieves a paper, and grounds it. Grounding
+the abstract yields the paper's \emph{subject} --- and the record's own note on that step is a negative
+rather than a success: \emph{grounded-to-primitive was false}, so the agent knew what the paper was
+about and not what it claimed. The body pass exists to close exactly that gap: the claim-bearing
+environments are parsed, and each claim is grounded through the construction grammar --- a term as a
+genus plus its differentia, recursively toward primitives already held --- carrying a \emph{depth}
+alongside the result, so that grounded-to-topic and grounded-to-primitive are distinguishable outcomes
+rather than one verdict.
+
+\emph{And where a claim rests on a construction the agent does not hold, that is detected and queued to
+acquire.} That is rung four with the residual named: not a failure to read, but a located absence with
+a next action attached.
+
+\begin{remark}[Its status, stated exactly]\label{rem:reading-status}
+The grounding half is gated. Five tests cover it, two of them confirming that the grounding seed is
+load-bearing and loads only through the loader --- so the capability is not an artefact of a script
+arranging its own inputs.
+
+\emph{What does not exist is a results document.} No measured record of the reading arc was found: no
+figure for how many claims ground to primitive against topic, none for how often an un-held
+construction is correctly detected, none for what happens to the queue. The status is therefore built
+and gated, with an arc recorded in its own source and no measurement, and this paper reports it at that
+status rather than at the one the machinery invites.
+
+And the seam is the same one. The grounding faculty is host-resident, with a single seed referencing
+it. So the two capabilities this programme has for acquiring what it was not given --- transfer between
+held rules, and reading claims out of a document --- \emph{are both real, both partly gated, and both
+sit outside the boundary within which the system can repair itself}.
+\end{remark}
 
 \section{The contrast the record supplies}\label{sec:contrast}
 One further measurement belongs here, because it is uncomfortable in the right direction.
