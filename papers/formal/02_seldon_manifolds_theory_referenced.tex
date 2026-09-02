@@ -33,21 +33,21 @@
 
 \title{Seldon Manifolds --- Theory\\\large The Geometry of Reachable Futures}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \texorpdfstring{\textemdash}{---}\ draft-2026-09-02.1}\\[2pt]2 September 2026 \texorpdfstring{\textbullet}{\textperiodcentered}\ document revision 27}
+\date{\textbf{Draft \texorpdfstring{\textemdash}{---}\ draft-2026-09-02.1}\\[2pt]2 September 2026 \texorpdfstring{\textbullet}{\textperiodcentered}\ document revision 28}
 
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r27}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r28}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r27}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r28}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-09-02.1 r27} (2 September 2026).
+\textbf{DRAFT --- draft-2026-09-02.1 r28} (2 September 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. It is a companion to \emph{The Law of Graphic Equalisation ---
 Theory} (referred to below as Graphic Equalisation), and inherits that paper's
@@ -403,6 +403,32 @@ inconsistency-driven splitting of aggregated states is variable-resolution discr
 \citep{munos2002}, and description length supplies a stopping rule \citep{rissanen1978}. What is not
 available there is the interpretation --- that no referent continuum stands behind the grain --- and
 that interpretation, not the refinement machinery, is what this construction adds here.
+
+\begin{remark}[The eye is the instance, and why it has to be]\label{rem:eye}
+\emph{A fixation is one work.} The retina is the lane array, the fovea its lanes at fine grain and the
+periphery its lanes at coarse grain, and one fixation is one decode over all of them at once --- the
+held program of Graphic Equalisation's one-write remark (Remark~\ref{GE-rem:one-write}), in an eye. The
+eye does not pay per cell and cannot: observation is funded by throughput (the physics companion,
+Section~\ref{PH-sec:budget}), and a field held at foveal grain everywhere is admissible but ill-formed,
+paying search on every cell (Graphic Equalisation's Definition~\ref{GE-def:well-formed}). So one held
+program per fixation, and the saccade is the frame choosing its next single work --- a write to the
+aperture itself, which is Definition~\ref{def:deformability} applied to the frame's own gate. Saccadic
+suppression is then ``between writes nothing happens'' (Graphic
+Equalisation's Remark~\ref{GE-rem:collapse-write}): the visual frame's cycle is the fixation, and the
+blank across the saccade is the interval between two cycles rather than a defect. The next fixation
+goes where the last decode failed to cohere at the grain held, which is this section's splitting
+criterion with the retina as the cell, and Remark~\ref{rem:aperture-shape}'s salience-by-fit as the
+target rule.
+
+The status is narrower than the mechanism, and is fixed by the exceptions rather than by the cases that
+fit. This is forced by physics and observed behaviour and not by the nature of existence: a
+well-formedness necessity under finite throughput against a scene whose required grain exceeds the
+budget, and not a substrate claim. A retina with no fovea and coarse uniform grain is the case where the
+task never demands fine grain, and a uniform sensor is then the cheap cut. What is forced everywhere is
+one decode per cycle, and the fovea appears where the budget binds. Foveae arising independently in
+several lineages is accordingly Proposition~\ref{GE-prop:compression-convergence} with the constraint
+stateable.
+\end{remark}
 
 \section{Unresolved structure, and the present as a limit}\label{sec:unresolved}
 
@@ -1264,6 +1290,11 @@ Section~\ref{sec:foveation}, as against the refinement machinery it shares with 
 refinement and variable-resolution discretisation. Fails if cell-splitting can be shown to require a
 finer signal arriving --- a hidden variable at a grain below the frame's own --- rather than
 incoherence at the grain already held.
+\item \textsc{[detail]}~\textbf{One decode per fixation.} The reading of
+Remark~\ref{rem:eye}. Fails if visual processing cost is shown to scale with the number of
+resolved elements within a fixation rather than with the number of fixations, or if a
+foveated retina is found where the task's required grain never exceeds the throughput
+budget.
 \item \textsc{[detail]}~\textbf{Horizon extension beats vividness for beyond-horizon items.} The
 prediction of Remark~\ref{rem:aperture-shape}. Fails if, for an item lying beyond a frame's
 represented horizon, increasing its vividness or the information about it raises its salience as
