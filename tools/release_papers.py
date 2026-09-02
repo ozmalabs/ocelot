@@ -48,32 +48,63 @@ CLEARED = ["00_is",
 # Phrases that set out the excluded document's contents rather than naming it.
 FORBIDDEN = ["proposal closure", "execution semantics", "reference execution"]
 
-READING_ORDER = """Graphic Equalisation --- suggested reading order (%s)
+READING_ORDER = """Graphic Equalisation --- where to start (%(draft)s)
 
-The order matters, and it is not the numbering.
+WHY YOU WOULD READ ANY OF THIS
 
-  1.  00_is
-      One claim, no machinery: to be is to stand in relation and to cohere
-      in it. Short. Its work is to make "everything is a graph" a thing you
-      can see rather than a slogan you are asked to accept.
+One assumption: that to be is to stand in relation and to cohere in it, with
+no time, no cause, no rule and no observer added to it. The claim is that
+results you already hold then arrive as consequences rather than postulates,
+and that a few questions your field treats as open are malformed rather than
+hard.
 
-  2.  01a_graphic_equalisation_physics_grounding
-      What the claim buys in physics. Conclusions before their scaffolding,
-      and meant to provoke: c as a frame's own unit, the two relativities as
-      one budget spent two ways, the Born rule recovered rather than forced.
+Concretely --- and these are the places to attack, not the places to admire:
 
-  3.  01c_graphic_equalisation_cosmology_grounding
-      The same, narrower and sharper: horizons, the measure problem, what
-      "typical universe" turns out to name. Short, because the in-frame half
-      of cosmology is in 01a above.
+  - the invariance of c is a theorem given the substrate's own units, rather
+    than a postulate;
+  - special and general relativity are one change-budget spent two ways, on
+    motion or on change-load;
+  - the Born rule is recovered from closure, no-privilege and free
+    continuation, rather than assumed;
+  - the measure problem of eternal inflation is ill-posed rather than
+    unsolved, which predicts that the regularisations will not converge;
+  - "a typical universe" names two different objects, and neither of them
+    supports the inference usually drawn from it;
+  - and the route from isotropy to homogeneity is exact and conditional on a
+    quantifier with no referent --- which the Ehlers-Geren-Sachs theorem
+    states in its own antecedent.
 
-  4.  01_law_of_graphic_equalisation_theory_referenced
-      The monograph, which grounds everything asserted in 1--3. Without it
-      the rest is unearned. Read first, it gives no reason to continue --
-      which is why it is fourth and not first.
+If none of that is worth an argument, nothing below will be.
 
-The remaining documents in this directory extend the same account and can be
-read in any order after these four. Nothing here depends on them.
+WHAT IT COSTS, AND WHERE TO STOP
+
+%(cost)s
+
+The first three are the case for caring. The fourth is the case itself. You
+can decide after the first three whether the fourth is worth it, and that is
+the intended shape of the thing rather than an accident of length.
+
+THE ORDER, WHICH IS NOT THE NUMBERING
+
+  1.  00_is  --- %(p0)s
+      One claim, no machinery. Its work is to make "everything is a graph"
+      something you can see rather than a slogan you are asked to accept.
+
+  2.  01a_graphic_equalisation_physics_grounding  --- %(p1)s
+      What the claim buys in physics: the first three items above, and the
+      constants, the second law and entanglement besides.
+
+  3.  01c_graphic_equalisation_cosmology_grounding  --- %(p2)s
+      The last three items above. Short, because the in-frame half of
+      cosmology is in 01a and the division is deliberate.
+
+  4.  01_law_of_graphic_equalisation_theory_referenced  --- %(p3)s
+      The monograph, which grounds everything asserted in 1-3. Without it the
+      rest is unearned; read first, it gives no reason to continue. That is
+      why it is fourth.
+
+The remaining documents extend the same account and can be read in any order
+afterwards. Nothing in the four above depends on them.
 """
 
 PAPERS = "papers/formal"
@@ -194,8 +225,27 @@ def main():
         # The order is load-bearing and lives nowhere else. A recipient gets a
         # directory of PDFs; a covering email carrying the order gets separated
         # from them. So it ships with them.
+        pages = {}
+        for pdf, dest in plan:
+            try:
+                info = subprocess.run(["pdfinfo", os.path.join(out, dest)],
+                                      capture_output=True, text=True).stdout
+                pages[dest.split("_draft")[0]] = int(
+                    re.search(r"Pages:\s+(\d+)", info).group(1))
+            except Exception:
+                pass
+        order = ["00_is", "01a_graphic_equalisation_physics_grounding",
+                 "01c_graphic_equalisation_cosmology_grounding",
+                 "01_law_of_graphic_equalisation_theory_referenced"]
+        pp = ["%d pages" % pages[k] if k in pages else "" for k in order]
+        first3 = sum(pages[k] for k in order[:3] if k in pages)
+        last = pages.get(order[3], 0)
+        cost = ("The first three come to %d pages. The fourth is %d on its own."
+                % (first3, last)) if first3 and last else ""
         io.open(os.path.join(out, "READ_IN_THIS_ORDER.txt"), "w",
-                encoding="utf-8").write(READING_ORDER % list(drafts.values())[0])
+                encoding="utf-8").write(READING_ORDER % {
+                    "draft": list(drafts.values())[0], "cost": cost,
+                    "p0": pp[0], "p1": pp[1], "p2": pp[2], "p3": pp[3]})
 
     print("cleared and released (%s):" % list(drafts.values())[0])
     for _, dest in plan:
