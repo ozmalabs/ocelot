@@ -1,37 +1,45 @@
 \documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,hyperref,enumitem,microtype}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,enumitem,microtype}
 \usepackage[margin=1in]{geometry}
 \usepackage{natbib}
+\usepackage{xr-hyper}
+\usepackage{hyperref}
+\externaldocument[SM-]{02_seldon_manifolds_theory_referenced}
+\externaldocument[GE-]{01_law_of_graphic_equalisation_theory_referenced}
 
 \newtheorem{definition}{Definition}[section]
 \newtheorem{proposition}[definition]{Proposition}
 \theoremstyle{remark}
 \newtheorem{remark}[definition]{Remark}
 
-\title{Seldon Manifolds --- Social and Psychological Application\\\large Contact Comfort, Delay of Gratification, and What a Substrate Produces Without Being Fitted To It}
+\title{Seldon Manifolds --- Social and Psychological Application\\\large Four Classical Experiments, and What a Substrate Produces Without Being Fitted To It}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-09-02.1}\\[2pt]2 September 2026 \textbullet\ document revision 3}
+\date{\textbf{Draft \texorpdfstring{\textemdash}{---}\ draft-2026-09-02.1}\\[2pt]2 September 2026 \texorpdfstring{\textbullet}{\textperiodcentered}\ document revision 4}
 
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r3}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r4}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r3}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r4}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-09-02.1 r3} (2 September 2026).
-Circulated for comment, not as a finished result. This is the applied companion to
-\emph{Seldon Manifolds --- Psychological Grounding}. That paper asks whether a nervous system
-implements anything of the manifold's shape; this one reports what happens when the substrate is
-run instead, and what the outputs do and do not license. Sections marked as falsifiability
-commitments are the intended points of attack.}}
+\textbf{DRAFT --- draft-2026-09-02.1 r4} (2 September 2026).
+Circulated for comment, not as a finished result. It is the applied companion to
+\emph{Seldon Manifolds --- Psychological Grounding} (referred to below as the Seldon grounding)
+and, behind those, to \emph{Seldon Manifolds --- Theory} (referred to below as \emph{Seldon}) and
+\emph{The Law of Graphic Equalisation --- Theory} (referred to below as Graphic Equalisation), and
+inherits their definitions, epistemic boundary, and level-of-claims. Those are the only forms used
+below. The Seldon grounding asks whether a nervous system implements anything of the manifold's
+shape; this paper reports what happens when the substrate is run instead, and what the outputs do
+and do not license. Sections marked as falsifiability commitments are the intended points of
+attack.}}
 \end{center}
 \vspace{1em}
 
@@ -54,23 +62,32 @@ does, and the paper is careful throughout about which of the two is being claime
 \end{abstract}
 
 \section{What this paper is, and what it is not}\label{sec:scope}
-The theory paper says what a Seldon manifold is; the grounding companion asks whether a biological
+\emph{Seldon} says what a Seldon manifold is; the Seldon grounding asks whether a biological
 nervous system implements anything of that shape and answers in pieces. This paper runs the third
 question, which is the one the substrate can settle on its own: put the substrate in the position of
 a classical experimental subject and report what it does.
 
 \emph{The results below are about a substrate and not about people.} A simulation that reproduces an
 experimental finding has established something about the simulation. It becomes evidence about the
-world only through an argument this paper does not make and the grounding companion makes only in
+world only through an argument this paper does not make and the Seldon grounding makes only in
 pieces. What a reproduction does establish is narrower and still worth having: that the finding is
 \emph{available} from the substrate's own machinery without being put there, which is a fact about
 what that machinery entails.
 
 Two disciplines are enforced by the runs themselves rather than promised here. Each records the
-commit it ran against and the seed it ran with, so a claim below is either reproducible or
-withdrawn. And each carries a \emph{source audit} --- an automated check that the decisions were
-taken by graph rules rather than by the host language, reported with the run and reproduced in the
-results tables.
+commit it ran against and the seed it ran with, so a claim below is either reproducible from the
+record or withdrawn. And each carries a \emph{source audit} --- an automated check that the
+decisions were taken by graph rules rather than by the host language, reported in the record with
+the run.
+
+One standard governs the whole of that, and this paper is \emph{entirely} such a report. What is
+offered here is a pre-registered implementation record which is not circulated with these papers,
+and it is a claim a reader may decline to credit on exactly the terms Graphic Equalisation sets for
+the same case. The commits, the seeds and the audits make each claim below reproducible by the
+programme and not by a reader holding only this paper; a reader who declines to credit them is
+declining on terms this paper accepts rather than disputes. Such a report states what was compared,
+what was found, and the scope the run holds under; it names no implementation identifiers, and it
+is not re-disclaimed at each section below.
 
 \section{Contact comfort}\label{sec:harlow}
 \citet{harlow1958} found infant macaques preferring a cloth surrogate offering no food to a wire
@@ -96,11 +113,18 @@ $\mathrm{sd}=0.039$, so $\pm 1.96\,\mathrm{sd}/\sqrt{n}$. It is \emph{not} a bin
 proportion of subjects, which at this $n$ would be about ten times wider ($[0.742, 0.853]$). The
 across-subject count is the third row and is reported separately for that reason.
 
+Several cells in this table and in the one in Section~\ref{sec:helplessness} are degenerate
+intervals ($[1.000, 1.000]$ or $[0.000, 0.000]$). \emph{A degenerate interval records zero
+between-subject variance at this $n$} --- every subject returned the same value, the mechanism
+being deterministic given its inputs --- and is not a claim of certainty about the quantity.
+
 The intervals are separated and the preference is above half, which is the finding. The second
 column is what makes it worth reporting: \emph{ablating the contact drive removes the preference
 entirely rather than reducing it}, so the effect is carried by that structure and not by the
-arrangement. A glass-box readout taken from the graph rather than from behaviour gives cloth
-proximity $53$ against wire $8$ at equal bond strength.
+arrangement. A glass-box readout taken from the graph rather than from
+behaviour agrees with the behavioural measure: over the sixty-one ticks of one subject's run, the
+serialised graph records the cloth surrogate as the chosen approach target on $53$ of them and the
+wire surrogate on $8$. The proximity figure is that tally of ticks and not a distance.
 
 \begin{remark}[The ethics gate, and why a simulation needs one]\label{rem:ethics}
 Harlow's procedure is among the most criticised in the discipline's history, and a substrate that
@@ -132,6 +156,11 @@ Each has a matched null control in which the factor is held \emph{constant} and 
 required to overlap, which they do in both cases. A run in which the machinery manufactured an
 effect would fail there, and the controls are reported because a positive result without them says
 less than it appears to.
+
+Two quantities are separately operative here, and \emph{Seldon}'s two-field construction
+(Definition~\ref{SM-def:trap}) is the theoretical form of the same situation: where two fields both
+bear on a continuation, the comparison between them cannot be stated within either. The measure
+below is a single number asked to carry both.
 \end{remark}
 
 \emph{The measure is not identifiable for disposition}, and the grid shows it in both directions.
@@ -143,7 +172,10 @@ three subjects as identical.
 \begin{remark}[Impatience as the rational output of a correct belief]\label{rem:rational-impatience}
 The sharpest form holds disposition fixed at its \emph{most patient} setting and varies only the
 belief. Under an unreliable prior it waits $5.12$ [$4.90$, $5.32$]; under a reliable one, $23.82$
-[$23.60$, $24.03$]. The intervals are separated and the deterministic anchors are $5$ and $25$.
+[$23.60$, $24.03$]. The intervals are separated. The \emph{deterministic anchors} at those two cells are $5$ and
+$25$: the mechanism carries no noise, so one subject's wait at a given cell of the grid is exact,
+and the $n=60$ spread quoted above comes from the jitter in the disposition and belief drawn for
+each subject rather than from the mechanism.
 
 So a patient subject waits briefly, and does so because waiting briefly is what its belief
 recommends. \emph{The short wait is attributable to the prior and not to a deficit}, and no
@@ -183,7 +215,9 @@ Intervals over per-subject means as above, separated on both measures. \emph{The
 whether the action is coupled to the outcome}, and the aversive experience is matched --- which is
 the point of the original design and the reason the result is about contingency and not about
 suffering. The same ethics gate applies: belief and arousal move under induction
-($0.500 \rightarrow 0.245$; $0.0 \rightarrow -9.25$) and restore byte-identically.
+($0.500 \rightarrow 0.245$; $0.0 \rightarrow -9.25$ --- the deterministic trace of the induction
+episode, the $0.256$ in the table being the $n=200$ mean over the reported arms) and restore
+byte-identically.
 
 \section{A negative: no privileged upright frame}\label{sec:inversion}
 Recognition of inverted faces is disproportionately impaired relative to other inverted objects
@@ -191,17 +225,23 @@ Recognition of inverted faces is disproportionately impaired relative to other i
 inverted one \citep{thompson1980}. \emph{The substrate does not reproduce either, and the reason is
 diagnosed rather than guessed.}
 
-Four pre-registered arms. An inversion-cost arm returns a differential of exactly zero: configural and
-part-based recognition are identical upright and inverted. A Thatcher arm finds no frame gating in
+Four pre-registered arms. An inversion-cost arm returns a differential of exactly zero --- the
+differential being the configural channel's inversion cost minus the part-based channel's, each
+cost being the fraction of inverted patterns no longer recognised as their own identity: configural
+and part-based recognition are identical upright and inverted. A Thatcher arm finds no frame gating in
 $12$ of $12$ configural cases. A reference-frame arm collapses all $4$ inversion pairs --- the
 substrate treats a configural pattern and its $180^{\circ}$ twin as \emph{one identity} --- while a
 part-based control remains discriminable, so the collapse is a property of the configural channel and
-not of the measure. A floor arm confirms both states are reachable and $100$ noise seeds force no
-spurious maps.
+not of the measure. A floor arm confirms that both verdicts the measure can return are reached --- upright and
+inverted exemplars are recognised as their own identity, and the locally-inverted probe is not
+recognised --- so the zero differential is a measurement and not a dead instrument; $100$ noise
+seeds force no spurious maps.
 
 \begin{remark}[Why this negative is the useful kind]\label{rem:negative}
 The mechanism is identified: uniform inversion folds to a rotation the composition already treats as
-free, so \emph{there is no privileged upright frame to be costly to leave}. The substrate is
+free --- a transform in the basis the composition holds, in Graphic Equalisation's sense, rather
+than a new thing to be recognised --- so \emph{there is no privileged upright frame to be costly to
+leave}. The substrate is
 reference-frame invariant where a human visual system is not, and the invariance is the same property
 that makes the composition work elsewhere.
 
@@ -228,18 +268,29 @@ being reported, which is a different and lower bar, and one that a great deal of
 simulation work does not clear.
 
 \section{The wider record}\label{sec:record}
-Four experiments are reported here in full. They are drawn from a larger body of pre-registered runs
-in the same substrate --- at the time of writing, one hundred and five pre-registrations and
-seventy-one result documents, covering social conduct, institutional decision, bond formation and
-the dynamics of coercive relationships.
+Four experiments are reported here in full, and they come from three different lines of the same
+substrate's record rather than from one. Contact comfort and delay of gratification come from the
+affect line, which runs on drives, appraisal and the regulation of affect; learned helplessness
+comes from the social-simulation line, which runs on conduct, institutional decision, bond
+formation and the dynamics of coercive relationships; face inversion comes from the vision line.
+Each of the three holds a larger body of pre-registered runs than the four reported here. No count
+of them is given: a count is a thing that can be held while the list beneath it changes, so what is
+claimed here is the provenance of the four and not the size of what they were drawn from.
 
 That record is not summarised here and should not be read as supporting anything above. \emph{A
 result is reported in this programme when it has been written up against a pre-registration, not
-when it exists}, and the four above are the four that have. The remainder is named so that a reader
-knows the selection was made from something, and so that a later paper reporting more of it is
-understood as continuing this one rather than announcing a new result.
+when it exists}, and each of the four above stands on that footing. The remainder is named so that
+a reader knows the selection was made from something, and so that a later paper reporting more of
+it is understood as continuing this one rather than announcing a new result.
 
 \section{Falsifiability commitments}\label{sec:falsifiability}
+
+\noindent\emph{On the tags.} Each commitment below is marked \textsc{[shape]} or \textsc{[detail]}.
+A \textsc{[detail]} failing is a revision: the account survives with that mechanism replaced. A
+\textsc{[shape]} failing costs \emph{range} rather than a mechanism, because what fails is something
+the substrate is claimed to require or to permit --- so the account does not hold where it claimed to,
+which is the more serious of the two and is still a boundary rather than an annihilation.
+
 \begin{enumerate}[leftmargin=*]
 \item \textsc{[detail]}~\textbf{Contact preference is carried by the contact drive.} Fails if the
 preference survives ablation of that drive at comparable magnitude, in which case the arrangement
@@ -247,7 +298,7 @@ rather than the drive is producing it.
 \item \textsc{[shape]}~\textbf{The delay measure is not identifiable for disposition.} Fails if some
 assignment of beliefs recovers disposition uniquely from wait time in this substrate --- that is, if
 the two directions exhibited above can both be blocked without adding structure for the purpose.
-\item \textsc{[shape]}~\textbf{Impatience does not require a deficit.} Fails if a short wait cannot
+\item \textsc{[detail]}~\textbf{Impatience does not require a deficit.} Fails if a short wait cannot
 be produced from a patient disposition by belief alone, which is the arm reported in
 Remark~\ref{rem:rational-impatience} and would be settled against by its non-replication.
 \item \textsc{[detail]}~\textbf{Helplessness follows non-contingency, not aversive experience.} Fails
@@ -260,50 +311,54 @@ is the negative of Section~\ref{sec:inversion} stated as a claim about what the 
 \emph{is}, rather than as a report that something did not happen: the diagnosis says uniform inversion
 folds to a rotation the composition treats as free, so a composition that does not treat it as free
 should show the cost. If it does not, the diagnosis is wrong and the absence has some other cause.
+The arm adding that frame has not been run, so this entry states what \emph{would} be risked rather
+than what currently is.
 \item \textsc{[detail]}~\textbf{The pair collapse belongs to the configural channel.} Fails if the
 part-based control also collapses under the same manipulation, which would make the result a property
 of the measure rather than of what is being measured.
 \item \textsc{[detail]}~\textbf{The waiting is not shaped.} Fails on any occurrence of reinforcement
 machinery in the path that produces the choice; the audit is reported with each run and can be
 re-run.
-\item \textsc{[shape]}~\textbf{Reproduction is not evidence about organisms.} This paper commits to
-the negative: no claim below the level of the substrate is made, and a reader who finds one has
-found an error rather than a result.
 \end{enumerate}
 
+\noindent\emph{Scope note (not a falsifier).} Reproduction is not evidence about organisms. No claim
+below the level of the substrate is made anywhere above, and a reader who finds one has found an
+error rather than a result --- which is a fact about what this paper says rather than a commitment
+that could be settled against it.
+
 \begin{thebibliography}{9}
-
-\bibitem[Seligman and Maier(1967)]{seligman1967}
-Martin~E.~P. Seligman and Steven~F. Maier.
-\newblock Failure to escape traumatic shock.
-\newblock \emph{Journal of Experimental Psychology}, 74(1):1--9, 1967.
-
-\bibitem[Yin(1969)]{yin1969}
-Robert~K. Yin.
-\newblock Looking at upside-down faces.
-\newblock \emph{Journal of Experimental Psychology}, 81(1):141--145, 1969.
-
-\bibitem[Thompson(1980)]{thompson1980}
-Peter Thompson.
-\newblock Margaret Thatcher: A new illusion.
-\newblock \emph{Perception}, 9(4):483--484, 1980.
 
 \bibitem[Harlow(1958)]{harlow1958}
 Harry~F. Harlow.
 \newblock The nature of love.
 \newblock \emph{American Psychologist}, 13(12):673--685, 1958.
 
-\bibitem[Kidd et al.(2013)]{kidd2013}
+\bibitem[Kidd et~al.(2013)]{kidd2013}
 Celeste Kidd, Holly Palmeri, and Richard~N. Aslin.
 \newblock Rational snacking: Young children's decision-making on the marshmallow task is moderated
 by beliefs about environmental reliability.
 \newblock \emph{Cognition}, 126(1):109--114, 2013.
 
-\bibitem[Watts et al.(2018)]{watts2018}
+\bibitem[Seligman and Maier(1967)]{seligman1967}
+Martin~E.~P. Seligman and Steven~F. Maier.
+\newblock Failure to escape traumatic shock.
+\newblock \emph{Journal of Experimental Psychology}, 74(1):1--9, 1967.
+
+\bibitem[Thompson(1980)]{thompson1980}
+Peter Thompson.
+\newblock Margaret Thatcher: A new illusion.
+\newblock \emph{Perception}, 9(4):483--484, 1980.
+
+\bibitem[Watts et~al.(2018)]{watts2018}
 Tyler~W. Watts, Greg~J. Duncan, and Haonan Quan.
 \newblock Revisiting the marshmallow test: A conceptual replication investigating links between
 early delay of gratification and later outcomes.
 \newblock \emph{Psychological Science}, 29(7):1159--1177, 2018.
+
+\bibitem[Yin(1969)]{yin1969}
+Robert~K. Yin.
+\newblock Looking at upside-down faces.
+\newblock \emph{Journal of Experimental Psychology}, 81(1):141--145, 1969.
 
 \end{thebibliography}
 \end{document}
