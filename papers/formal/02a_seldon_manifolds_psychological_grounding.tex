@@ -1,9 +1,13 @@
 \documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,hyperref,enumitem,microtype}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,enumitem,microtype}
 \usepackage[margin=1in]{geometry}
 \usepackage{natbib}
+\usepackage{xr-hyper}
+\usepackage{hyperref}
+\externaldocument[SM-]{02_seldon_manifolds_theory_referenced}
+\externaldocument[GE-]{01_law_of_graphic_equalisation_theory_referenced}
 
 \newtheorem{definition}{Definition}[section]
 \newtheorem{proposition}[definition]{Proposition}
@@ -15,24 +19,27 @@
 
 \title{Seldon Manifolds --- Psychological Grounding\\\large Forward Models, Acceptable Regions, and the Aperture of One Embodiment}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-09-02.1}\\[2pt]2 September 2026 \textbullet\ document revision 9}
+\date{\textbf{Draft \texorpdfstring{\textemdash}{---}\ draft-2026-09-02.1}\\[2pt]2 September 2026 \texorpdfstring{\textbullet}{\textperiodcentered}\ document revision 11}
 
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r9}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r11}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r9}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r11}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-09-02.1 r9} (2 September 2026).
-Circulated for comment, not as a finished result. This is the grounding companion to
-\emph{Seldon Manifolds --- Theory}, which sets out what a Seldon manifold is and how it works;
-this paper asks only whether one particular substrate implements anything of that shape. Sections
+\textbf{DRAFT --- draft-2026-09-02.1 r11} (2 September 2026).
+Circulated for comment, not as a finished result. It is the grounding companion to
+\emph{Seldon Manifolds --- Theory} (referred to below as \emph{Seldon}) and, behind that, to
+\emph{The Law of Graphic Equalisation --- Theory} (referred to below as Graphic Equalisation), and
+inherits their definitions, epistemic boundary, and level-of-claims. Those are the only forms used
+below. \emph{Seldon} sets out what a Seldon manifold is and how it works; this paper asks only
+whether one particular substrate implements anything of that shape. Sections
 marked as falsifiability commitments are the intended points of attack.}}
 \end{center}
 \vspace{1em}
@@ -51,8 +58,8 @@ is truncated by a reflex rather than by a cost calculation; and within-frame for
 where a domain has recurrent structure to hold and worth nothing where it does not. The honest
 summary is that the pieces are real, the human instantiation is narrow, and its quality is
 frame-relative rather than general. One line of evidence the construct would most naturally have
-leaned on --- that representations coarsen with psychological distance --- does not survive its
-best-powered test, and is not relied upon here.
+leaned on --- that representations coarsen with psychological distance --- did not survive its
+best-powered test and is in dispute, and is not relied upon here.
 \end{abstract}
 
 \section{Scope}\label{sec:scope}
@@ -99,9 +106,10 @@ argument that the evidence here does not supply.
 \end{remark}
 
 \section{An acceptable region, and correction only on departure}\label{sec:region}
-The theory paper holds that a frame may represent a region of acceptable futures and intervene only
-when its projection leaves that region. Motor control implements something with this shape, and the
-implementation is measured twice over.
+\emph{Seldon} holds that a frame may represent a region of acceptable futures
+(Definition~\ref{SM-def:acceptable}) and intervene only when its projection leaves that region
+(Proposition~\ref{SM-prop:min-intervention}). Motor control implements something with this shape, and
+the implementation is attested twice over --- once measured and once derived.
 
 The first is structural. Partitioning the variability of a practised movement into components that
 do and do not affect the task outcome shows that variance within the task-equivalent subspace is
@@ -121,7 +129,10 @@ cost. It is therefore not a smallest-sufficient-push result and should not be ci
 controller does not project forward at decision time: the horizon is consumed offline in a backward
 pass, leaving an online policy that is a single operation on a state estimate. An architecture that
 re-projects at each step is closer to receding-horizon control, which \citet{todorov2002} treat as a
-separate approach.
+separate approach. And where that principle's antecedent fails the region is not enough on its own:
+\emph{Seldon} states the condition (Corollary~\ref{SM-cor:trap-antecedent}), in which a frame remains
+inside every bound it holds while its capacity to leave has already gone, so a discipline reading
+acceptability alone has nothing to fire on.
 \end{remark}
 
 The idea that acting well means keeping a projection inside a region is older than either result.
@@ -159,44 +170,14 @@ on one variable \citep{wilde1982,evans1986}.
 \end{remark}
 
 \section{Resolution falls with horizon}\label{sec:resolution}
-The theory paper treats resolution and horizon as separate axes under a shared budget, with
-resolution characteristically degrading as horizon extends. There is a measured version of this with
-a functional form. In interval timing the standard deviation of an estimate is proportional to the
+\emph{Seldon} treats resolution (Definition~\ref{SM-def:resolution}) and horizon as separate axes
+under a shared budget, spent where a distinction would change an operative decision
+(Hypothesis~\ref{SM-hyp:adaptive-resolution}) and characteristically degrading as horizon extends.
+There is a measured version of this with a functional form. In interval timing the standard deviation of an estimate is proportional to the
 interval being estimated, so the coefficient of variation stays constant as the interval grows
 \citep{gibbon1977,rakitin1998,zeki2019}. Absolute uncertainty therefore scales with distance: the
 further out, the coarser, in a fixed ratio. The result is fifty years old, holds across species, and
 is not in dispute.
-
-\begin{remark}[Salience follows the aperture, and an aperture is a shape]\label{rem:salience}
-Resolution is not spent evenly across what a manifold holds. What governs the spending is the
-\emph{aperture} --- and the word is used here in its ordinary sense, because that sense is the right
-one. \emph{An aperture is a shape, not a size.} What passes is settled by the fit between two forms,
-which is why the measured case above is a ratio: the boundary between an opening that can be walked
-through and one requiring rotation sits at a constant ratio of aperture to shoulder width
-\citep{warrenwhang1987}, and the response to a poor fit is not more looking but \emph{turning} --- a
-reshaping of the passer to match. That is the whole mechanism, in a doorway.
-
-A frame running a manifold asks the same question of a future: does this shape pass the aperture of
-what remains acceptable. Where it passes with room, it is given little, and that is not inattention
---- \emph{room is the answer}, and a representation that has answered spends nothing further. Where
-it does not, resolution goes there, because that is where the answer could change and where a
-reshaping might be found.
-
-Two consequences follow, and the second is the useful one. \emph{Salience tracks fit and not
-magnitude}: something enormous that passes attracts less than something small that does not, which is
-the ordinary experience of ignoring a large stable quantity while attending to a minor tightening one.
-And a thing lying beyond the horizon attracts little regardless of size, not because it is judged
-small but because \emph{it is never presented to the aperture at all} and no question of fit arises.
-That is a property of the representation rather than a failure of perception, and it predicts that the
-usual remedies for such blindness --- more information, greater vividness --- do less than extending
-the horizon does, because only the second puts the thing where a fit can be judged.
-
-Whether human frames do this is not established here, and the claim is modest: manifolds of this kind
-appear extant in human frames and severely limited, running short horizons at coarse resolution, which
-is what the timing result above describes on one axis. Nothing here shows that salience is
-\emph{allocated by} fit rather than merely correlating with it, and that distinction is what an
-experiment would have to settle.
-\end{remark}
 
 \begin{remark}[A stronger candidate that does not survive]\label{rem:clt}
 There is an obvious alternative anchor, and it should be named because a reader will otherwise
@@ -206,18 +187,19 @@ distance stated for cognition generally rather than for timing. A meta-analysis 
 experiments reported a reliable medium effect \citep{soderberg2015}. But a registered multi-laboratory
 replication across four distance types, with nearly twelve thousand participants, found effects of
 $d\approx0.03$--$0.08$ with the social effect reversed, and a bias-corrected re-analysis of the
-existing literature finds strong evidence of publication bias \citep{calderon2025,maier2022}. The
-theory's authors contest the replication \citep{liberman2026}, and both critical papers are
-preprints, so the accurate statement is that the effect is in serious dispute rather than that it is
-refuted --- and either way it cannot carry weight. The timing result above is narrower and secure,
+existing literature finds strong evidence of publication bias \citep{calderon2026,maier2022}. The
+theory's authors contest the replication \citep{liberman2026}; the registered report has since
+appeared in a peer-reviewed journal, while the bias-corrected re-analysis remains a preprint. So the
+accurate statement is that the effect is in serious dispute rather than that it is refuted --- and
+either way it cannot carry weight. The timing result above is narrower and secure,
 and is used instead.
 \end{remark}
 
 \section{Horizon is plural and frame-relative}\label{sec:horizon}
-This section is the one place in this programme where the frame-relativity is \emph{measured} rather
-than inherited, which is worth marking before the evidence rather than after. Graphic Equalisation's
-founding axiom requires it --- every represented quantity is held in some frame, so a horizon is one
-frame's and there is no view from nowhere at which the horizon is. That is an entailment and carries
+This section is one of the places in this programme where the frame-relativity is \emph{measured}
+rather than inherited, which is worth marking before the evidence rather than after. Graphic Equalisation's
+founding axiom (Axiom~\ref{GE-ax:no-view}) requires it --- every represented quantity is held in
+some frame, so a horizon is one frame's and there is no view from nowhere at which the horizon is. That is an entailment and carries
 no empirical risk on its own. What follows does: the axiom predicts that a system built of many frames
 should exhibit many horizons rather than one, and that is a claim about brains which could have come
 out otherwise. It does not.
@@ -227,8 +209,8 @@ which they integrate information, from tens of milliseconds in sensory areas to 
 higher-order ones \citep{hasson2008,hasson2015}, and predictive representations differ in reach
 along the same gradient, with anterior prefrontal cortex showing the largest predictive horizons and
 posterior hippocampus the smallest \citep{brunec2022}. Different subsystems hold different horizons
-over the same world, which is the theory paper's frame-relativity appearing within one skull rather
-than between agents.
+over the same world, which is \emph{Seldon}'s frame-relativity (Remark~\ref{SM-rem:aperture})
+appearing within one skull rather than between agents.
 
 \section{The manifold is indexed to the body}\label{sec:body}
 The strongest support in this paper is for the claim that different agents hold different manifolds
@@ -242,8 +224,23 @@ body-free version of the boundary for either of them to be wrong about.
 
 \begin{remark}[The extension is not free]\label{rem:affordance-limit}
 This is the perception of immediately available action, not a multi-step future. That the same
-frame-relativity holds of extended horizons is an argument the theory paper makes and this
+frame-relativity holds of extended horizons is an argument \emph{Seldon} makes and this
 literature does not supply.
+\end{remark}
+
+\begin{remark}[Salience follows the aperture]\label{rem:salience}
+The doorway result just given is also the smallest setting for a claim \emph{Seldon} makes about
+apertures generally (Remark~\ref{SM-rem:aperture-shape}): an aperture is a shape and not a size, so
+what passes is settled by the fit between two forms rather than by a comparison of magnitudes,
+resolution is spent where the fit is in doubt, and salience therefore tracks fit rather than
+magnitude. The response to a poor fit in the doorway is not more looking but \emph{turning} --- a
+reshaping of the passer to match --- which is that whole mechanism, in a doorway.
+
+Whether human frames do this is not established here, and the claim is modest: manifolds of this kind
+appear extant in human frames and severely limited, running short horizons at coarse resolution, which
+is what the timing result of Section~\ref{sec:resolution} describes on one axis. Nothing here shows
+that salience is \emph{allocated by} fit rather than merely correlating with it, and that distinction
+is what an experiment would have to settle.
 \end{remark}
 
 \section{Bounded search, and how it stops}\label{sec:search}
@@ -281,9 +278,13 @@ recognition should be called the principal discriminator rather than the only on
 
 The anticipation is genuinely prospective where it has been isolated: skilled performers respond to
 advance kinematic information before the event they are anticipating occurs, with the effect
-established across dozens of studies and hundreds of effect sizes
-\citep{muller2006,mann2007}, and the advantage disappears when attention is forced elsewhere
-\citep{muller2010}.
+established across dozens of studies and hundreds of effect sizes \citep{muller2006,mann2007}, and
+the advantage is eliminated when attention is forced to switch between cues rather than held on the
+informative ones \citep{muller2010}. This is the psychological side of the case \emph{Seldon} calls
+the closest operational instance of its whole assembly it has found (Section~\ref{SM-sec:onedim}):
+the batsman reading a bowler's arm and the soaring pilot computing whether reach remaining covers
+the distance to goal are the same within-frame forecasting over a domain with recurrent structure to
+hold, run at two grains and two horizons.
 
 It also does not transfer. Far transfer from trained domains shrinks as study design improves and
 vanishes against active controls \citep{sala2017cdps,sala2017lb,melbylervag2016}. The mechanism
@@ -308,9 +309,13 @@ Three further components have implemented counterparts.
 complex phenomena with far greater precision and depth than they possess, and discover this only on
 attempting explanation \citep{rozenblit2002}; attended observers miss salient unexpected events
 entirely \citep{simons1999}; and adults who can distinguish their own knowledge from another's
-routinely fail to deploy that distinction online \citep{keysar2003}. This supports the theory
-paper's treatment of a blind spot as a distinct deficit from coarseness, and rules out any mechanism
-in which a frame audits its own dimension set from inside.
+routinely fail to deploy that distinction online \citep{keysar2003}. This supports \emph{Seldon}'s
+treatment of a blind spot (Definition~\ref{SM-def:blind-spot}) as a distinct deficit from coarseness
+(Remark~\ref{SM-rem:two-deficits}). It does not by itself rule out a mechanism in which a frame audits
+its own dimension set from inside: three findings that people do not are not a demonstration that
+nothing could. The impossibility claim is Graphic Equalisation's
+(Proposition~\ref{GE-prop:runner-opaque}); the psychology above is consistent with it and offers no
+counterexample to it.
 
 \emph{Reshaping rather than navigating is implemented.} Committing in advance so as to remove a
 future option is a documented and modelled behaviour \citep{rachlin1972,ainslie1975}, and the
@@ -319,8 +324,9 @@ class of self-control \citep{duckworth2016}.
 
 \emph{The dimension set can grow.} Perceptual learning includes attentional weighting, differentiation
 and unitisation, and people demonstrably learn to separate dimensions that were previously fused
-\citep{goldstone1998,goldstone2001}. A represented dimension set is therefore not fixed, which the
-theory paper requires and does not otherwise evidence.
+\citep{goldstone1998,goldstone2001}. A represented dimension set is therefore not fixed, which
+\emph{Seldon} requires of its represented dimensions (Definition~\ref{SM-def:dimension}) and does not
+otherwise evidence.
 
 \section{What the evidence does not support}\label{sec:limits}
 Four things should be stated plainly, since a grounding paper that reports only the matches is not
@@ -334,8 +340,9 @@ That a nervous system holds a Seldon manifold is not shown here and is not claim
 reported both as unable to construct coherent imagined experiences \citep{hassabis2007} and as
 unimpaired at imagining the future \citep{squire2010}, with a third position arguing that the verbal
 measures used cannot adjudicate between them \citep{miloyan2019}. The dispute is live. It is
-compatible with the theory paper's treatment of the manifold as optional machinery, but it should be
-presented as unresolved rather than as settled favourably.
+compatible with \emph{Seldon}'s treatment of the manifold as optional machinery
+(Remark~\ref{SM-rem:optional-machinery}), but it should be presented as unresolved rather than as
+settled favourably.
 
 \emph{Forecasting error is on magnitude, not structure --- and this is a reframing.} People
 systematically overestimate the intensity and duration of their future emotional reactions
@@ -345,84 +352,106 @@ question is interpreted \citep{levine2012}, and when measured in daily life peop
 \citep{moeck2026}. A manifold whose shape is right and whose field magnitudes are miscalibrated is
 what this describes. That is a legitimate reading and it is still a reading, offered as such.
 
-\emph{The per-agent axes are not established.} The theory paper allows different frames to differ
-independently in horizon, resolution and represented dimensions. No study assembled here measures
+\emph{The per-agent axes are not established.} \emph{Seldon} allows different frames to differ
+independently in horizon, resolution and represented dimensions (Remark~\ref{SM-rem:aperture}).
+No study assembled here measures
 those in one sample, and at least one natural axis does not separate --- imagery vividness and
-richness of future simulation covary rather than dissociating. Separable per-agent axes are a
-synthesis, not a finding.
+richness of future simulation covary rather than dissociating, with higher visual-imagery capacity
+predicting more sensory and contextual detail in imagined future events as well as in remembered past
+ones \citep{dargembeau2006}. Separable per-agent axes are a synthesis, not a finding.
 
 \section{Falsifiability commitments}\label{sec:falsifiability}
 
-\noindent\emph{On the tags.} Each commitment below is marked \textsc{[shape]} where failing it costs
-this grounding its \emph{reach} --- the account would no longer apply to the domain, or would apply
-only by giving up what it was brought here to explain --- and \textsc{[detail]} where failing it costs
-a specific mechanism while the grounding stands. The substrate paper has carried these marks for some
-time and the groundings did not, which had the discipline applied where the risk is smallest: the
-substrate risks little by design and the groundings carry the exposure. They were assigned in a single
-pass under the rule just stated, and are the least-audited judgement in this document --- a reader who
-thinks one is marked in the flattering direction is disagreeing with a fast call, not an argued
-position.
-\begin{itemize}[leftmargin=1.4em]
+\noindent\emph{On the tags.} Each commitment below is marked \textsc{[shape]} or \textsc{[detail]}.
+A \textsc{[detail]} failing is a revision: the account survives with that mechanism replaced. A
+\textsc{[shape]} failing costs \emph{range} rather than a mechanism, because what fails is something
+the substrate is claimed to require or to permit --- so the account does not hold where it claimed to,
+which is the more serious of the two and is still a boundary rather than an annihilation. The marks
+were assigned in a single pass under the rule just stated, and are the least-audited judgement in this
+document --- a reader who thinks one is marked in the flattering direction is disagreeing with a fast
+call, not an argued position.
+\begin{enumerate}[leftmargin=*]
 \item \textsc{[shape]}~\textbf{A predictive forward model.} Fails if the attenuation of self-produced sensation does
 not track prediction error, or if prediction is not separable from control.
 \item \textsc{[shape]}~\textbf{Region rather than target.} Fails if task-irrelevant variability is corrected as
 strongly as task-relevant variability, i.e.\ if there is no uncontrolled subspace.
 \item \textsc{[detail]}~\textbf{Resolution scaling with distance.} Fails if the coefficient of variation of temporal
 estimates is not approximately constant across intervals.
+\item \textsc{[detail]}~\textbf{Salience tracks fit, not magnitude.} Fails if resolution is allocated by the
+magnitude of a represented quantity rather than by its fit against what remains acceptable. The test
+is an allocation manipulation that sets fit and magnitude against each other --- fit held while
+magnitude varies, and the reverse --- not a correlation between measured salience and measured fit,
+which the account and its rivals both predict.
+\item \textsc{[shape]}~\textbf{Horizon is plural within one agent.} Fails if integration windows and predictive
+horizons across cortical regions collapse to one value, or if a single horizon suffices to model
+within-agent prediction across timescales \citep{hasson2008,brunec2022}.
 \item \textsc{[shape]}~\textbf{Body-indexed boundaries.} Fails if perceived action boundaries do not scale with the
 relevant bodily dimension, or if one boundary fits all bodies.
+\item \textsc{[detail]}~\textbf{Search is shallow and stops reflexively.} Fails if fitted planning depth is not
+bounded at a few steps, or if pruning is cost-sensitive where it has been made overwhelmingly
+counterproductive.
 \item \textsc{[shape]}~\textbf{Structure-dependent forecasting.} Fails if within-domain forecasting advantage is
 independent of the domain's recurrent structure, or if it transfers to unrelated domains under
 active controls.
-\end{itemize}
+\item \textsc{[detail]}~\textbf{Blind spots are not introspectively auditable.} Fails if a frame can be shown to
+enumerate its own missing dimensions from inside.
+\item \textsc{[detail]}~\textbf{The dimension set grows.} Fails if perceptual learning never separates
+dimensions that were previously fused.
+\end{enumerate}
 
 \noindent\emph{Scope note (not a falsifier).} This paper would be over-claiming if any section were
 read as evidence that a nervous system holds a Seldon manifold, or as validation of a construct that
 does not require it. It sits outside the list because a misreading is a fact about a reader rather
-than a result about the world, and counting it as a commitment inflated the list by one.
+than a result about the world.
 
 \begin{thebibliography}{99}
+\sloppy
 \bibitem[Ainslie(1975)]{ainslie1975}
 George Ainslie.
 \newblock Specious reward: a behavioral theory of impulsiveness and impulse control.
 \newblock \emph{Psychological Bulletin}, 82(4):463--496, 1975.
 
-\bibitem[Blakemore et al.(1999)]{blakemore1999}
+\bibitem[Blakemore et~al.(1999)]{blakemore1999}
 Sarah-Jayne Blakemore, Chris D. Frith, and Daniel M. Wolpert.
 \newblock Spatio-temporal prediction modulates the perception of self-produced stimuli.
-\newblock \emph{Journal of Cognitive Neuroscience}, 11(5):551--559, 1999.
+\newblock \emph{Journal of Cognitive Neuroscience}, \mbox{11(5):551--559}, 1999.
 
 \bibitem[Brunec and Momennejad(2022)]{brunec2022}
 Iva K. Brunec and Ida Momennejad.
 \newblock Predictive representations in hippocampal and prefrontal hierarchies.
 \newblock \emph{Journal of Neuroscience}, 42(2):299--312, 2022.
 
-\bibitem[Calderon et al.(2025)]{calderon2025}
-Sofia Calderon, Erik Mac Giolla, Karl Ask, and Timothy J. Luke.
-\newblock Effects of psychological distance on mental abstraction: a registered report of four tests of construal level theory.
-\newblock PsyArXiv preprint, 2025.
+\bibitem[Calderon et~al.(2026)]{calderon2026}
+Sofia Calderon, Erik Mac Giolla, Karl Ask, \ldots, and Timothy J. Luke.
+\newblock Effects of psychological distance on mental abstraction: a registered report of four tests of construal-level theory.
+\newblock \emph{Advances in Methods and Practices in Psychological Science}, 9(2):25152459251401177, 2026.
 
 \bibitem[Campitelli and Gobet(2004)]{campitelli2004}
 Guillermo Campitelli and Fernand Gobet.
 \newblock Adaptive expert decision making: skilled chess players search more and deeper.
 \newblock \emph{ICGA Journal}, 27(4):209--216, 2004.
 
-\bibitem[Caplin et al.(2011)]{caplin2011}
+\bibitem[Caplin et~al.(2011)]{caplin2011}
 Andrew Caplin, Mark Dean, and Daniel Martin.
 \newblock Search and satisficing.
 \newblock \emph{American Economic Review}, 101(7):2899--2922, 2011.
 
-\bibitem[Connors et al.(2011)]{connors2011}
+\bibitem[Connors et~al.(2011)]{connors2011}
 Michael H. Connors, Bruce D. Burns, and Guillermo Campitelli.
 \newblock Expertise in complex decision making: the role of search in chess 70 years after de Groot.
 \newblock \emph{Cognitive Science}, 35(8):1567--1579, 2011.
+
+\bibitem[D'Argembeau and Van der Linden(2006)]{dargembeau2006}
+Arnaud D'Argembeau and Martial Van der Linden.
+\newblock Individual differences in the phenomenology of mental time travel: the effect of vivid visual imagery and emotion regulation strategies.
+\newblock \emph{Consciousness and Cognition}, 15(2):342--350, 2006.
 
 \bibitem[de Groot(1965)]{degroot1965}
 Adriaan D. de Groot.
 \newblock \emph{Thought and Choice in Chess}.
 \newblock Mouton, The Hague, 1965. Originally published in Dutch, 1946.
 
-\bibitem[Duckworth et al.(2016)]{duckworth2016}
+\bibitem[Duckworth et~al.(2016)]{duckworth2016}
 Angela L. Duckworth, Tamar Szab\'o Gendler, and James J. Gross.
 \newblock Situational strategies for self-control.
 \newblock \emph{Perspectives on Psychological Science}, 11(1):35--55, 2016.
@@ -437,7 +466,7 @@ Leonard Evans.
 \newblock Risk homeostasis theory and traffic accident data.
 \newblock \emph{Risk Analysis}, 6(1):81--94, 1986.
 
-\bibitem[Flanagan et al.(2003)]{flanagan2003}
+\bibitem[Flanagan et~al.(2003)]{flanagan2003}
 J. Randall Flanagan, Philipp Vetter, Roland S. Johansson, and Daniel M. Wolpert.
 \newblock Prediction precedes control in motor learning.
 \newblock \emph{Current Biology}, 13(2):146--150, 2003.
@@ -457,7 +486,7 @@ James J. Gibson and Laurence E. Crooks.
 \newblock A theoretical field-analysis of automobile-driving.
 \newblock \emph{American Journal of Psychology}, 51(3):453--471, 1938.
 
-\bibitem[Gilbert et al.(1998)]{gilbert1998}
+\bibitem[Gilbert et~al.(1998)]{gilbert1998}
 Daniel T. Gilbert, Elizabeth C. Pinel, Timothy D. Wilson, Stephen J. Blumberg, and Thalia P. Wheatley.
 \newblock Immune neglect: a source of durability bias in affective forecasting.
 \newblock \emph{Journal of Personality and Social Psychology}, 75(3):617--638, 1998.
@@ -482,27 +511,27 @@ Robert L. Goldstone and Mark Steyvers.
 \newblock The sensitization and differentiation of dimensions during category learning.
 \newblock \emph{Journal of Experimental Psychology: General}, 130(1):116--139, 2001.
 
-\bibitem[Hassabis et al.(2007)]{hassabis2007}
+\bibitem[Hassabis et~al.(2007)]{hassabis2007}
 Demis Hassabis, Dharshan Kumaran, Seralynne D. Vann, and Eleanor A. Maguire.
 \newblock Patients with hippocampal amnesia cannot imagine new experiences.
 \newblock \emph{Proceedings of the National Academy of Sciences}, 104(5):1726--1731, 2007.
 
-\bibitem[Hasson et al.(2008)]{hasson2008}
+\bibitem[Hasson et~al.(2008)]{hasson2008}
 Uri Hasson, Eunice Yang, Ignacio Vallines, David J. Heeger, and Nava Rubin.
 \newblock A hierarchy of temporal receptive windows in human cortex.
 \newblock \emph{Journal of Neuroscience}, 28(10):2539--2550, 2008.
 
-\bibitem[Hasson et al.(2015)]{hasson2015}
+\bibitem[Hasson et~al.(2015)]{hasson2015}
 Uri Hasson, Janice Chen, and Christopher J. Honey.
 \newblock Hierarchical process memory: memory as an integral component of information processing.
 \newblock \emph{Trends in Cognitive Sciences}, 19(6):304--313, 2015.
 
-\bibitem[Huys et al.(2012)]{huys2012}
+\bibitem[Huys et~al.(2012)]{huys2012}
 Quentin J. M. Huys, Neir Eshel, Elizabeth O'Nions, Luke Sheridan, Peter Dayan, and Jonathan P. Roiser.
 \newblock Bonsai trees in your head: how the Pavlovian system sculpts goal-directed choices by pruning decision trees.
 \newblock \emph{PLoS Computational Biology}, 8(3):e1002410, 2012.
 
-\bibitem[Huys et al.(2015)]{huys2015}
+\bibitem[Huys et~al.(2015)]{huys2015}
 Quentin J. M. Huys, Ni\'all Lally, Paul Faulkner, Neir Eshel, Erich Seifritz, Samuel J. Gershman, Peter Dayan, and Jonathan P. Roiser.
 \newblock Interplay of approximate planning strategies.
 \newblock \emph{Proceedings of the National Academy of Sciences}, 112(10):3098--3103, 2015.
@@ -512,22 +541,22 @@ Daniel Kahneman and Amos Tversky.
 \newblock Prospect theory: an analysis of decision under risk.
 \newblock \emph{Econometrica}, 47(2):263--291, 1979.
 
-\bibitem[Keysar et al.(2003)]{keysar2003}
+\bibitem[Keysar et~al.(2003)]{keysar2003}
 Boaz Keysar, Shuhong Lin, and Dale J. Barr.
 \newblock Limits on theory of mind use in adults.
 \newblock \emph{Cognition}, 89(1):25--41, 2003.
 
-\bibitem[Kilteni et al.(2019)]{kilteni2019}
+\bibitem[Kilteni et~al.(2019)]{kilteni2019}
 Konstantina Kilteni, Christian Houborg, and H. Henrik Ehrsson.
 \newblock Rapid learning and unlearning of predicted sensory delays in self-generated touch.
 \newblock \emph{eLife}, 8:e42888, 2019.
 
-\bibitem[Kolekar et al.(2020)]{kolekar2020}
+\bibitem[Kolekar et~al.(2020)]{kolekar2020}
 Sarvesh Kolekar, Joost de Winter, and David Abbink.
 \newblock Human-like driving behaviour emerges from a risk-based driver model.
 \newblock \emph{Nature Communications}, 11:4850, 2020.
 
-\bibitem[Levine et al.(2012)]{levine2012}
+\bibitem[Levine et~al.(2012)]{levine2012}
 Linda J. Levine, Heather C. Lench, Robin L. Kaplan, and Martin A. Safer.
 \newblock Accuracy and artifact: reexamining the intensity bias in affective forecasting.
 \newblock \emph{Journal of Personality and Social Psychology}, 103(4):584--605, 2012.
@@ -542,27 +571,29 @@ Lola L. Lopes and Gregg C. Oden.
 \newblock The role of aspiration level in risky choice.
 \newblock \emph{Journal of Mathematical Psychology}, 43(2):286--313, 1999.
 
-\bibitem[Maier et al.(2022)]{maier2022}
+\bibitem[Maier et~al.(2022)]{maier2022}
 Maximilian Maier, Franti\v{s}ek Barto\v{s}, Minjeong Oh, Eric-Jan Wagenmakers, David Shanks, and Adam J. L. Harris.
 \newblock Adjusting for publication bias reveals that evidence for and size of construal level theory effects is substantially overestimated.
 \newblock PsyArXiv preprint, 2022.
 
-\bibitem[Mann et al.(2007)]{mann2007}
+\bibitem[Mann et~al.(2007)]{mann2007}
 Derek T. Y. Mann, A. Mark Williams, Paul Ward, and Christopher M. Janelle.
 \newblock Perceptual-cognitive expertise in sport: a meta-analysis.
 \newblock \emph{Journal of Sport and Exercise Psychology}, 29(4):457--478, 2007.
 
-\bibitem[Melby-Lerv\aa g et al.(2016)]{melbylervag2016}
+\bibitem[Melby-Lerv\aa g et~al.(2016)]{melbylervag2016}
 Monica Melby-Lerv\aa g, Thomas S. Redick, and Charles Hulme.
 \newblock Working memory training does not improve performance on measures of intelligence or other measures of ``far transfer''.
 \newblock \emph{Perspectives on Psychological Science}, 11(4):512--534, 2016.
 
-\bibitem[Mellers et al.(2014)]{mellers2014}
-Barbara Mellers, Lyle Ungar, Jonathan Baron, Jaime Ramos, Burcu Gurcay, Katrina Fincher, et al.
+\bibitem[Mellers et~al.(2014)]{mellers2014}
+Barbara Mellers, Lyle Ungar, Jonathan Baron, Jaime Ramos, Burcu Gurcay, Katrina Fincher,
+Sydney E. Scott, Don Moore, Pavel Atanasov, Samuel A. Swift, Terry Murray, Eric Stone,
+and Philip E. Tetlock.
 \newblock Psychological strategies for winning a geopolitical forecasting tournament.
 \newblock \emph{Psychological Science}, 25(5):1106--1115, 2014.
 
-\bibitem[Miall et al.(2007)]{miall2007}
+\bibitem[Miall et~al.(2007)]{miall2007}
 R. Chris Miall, Lars O. D. Christensen, Owen Cain, and James Stanley.
 \newblock Disruption of state estimation in the human lateral cerebellum.
 \newblock \emph{PLoS Biology}, 5(11):e316, 2007.
@@ -572,29 +603,29 @@ R. Chris Miall and Daniel M. Wolpert.
 \newblock Forward models for physiological motor control.
 \newblock \emph{Neural Networks}, 9(8):1265--1279, 1996.
 
-\bibitem[Miloyan et al.(2019)]{miloyan2019}
+\bibitem[Miloyan et~al.(2019)]{miloyan2019}
 Beyon Miloyan, Kimberley A. McFarlane, and Thomas Suddendorf.
 \newblock Measuring mental time travel: is the hippocampus really critical for episodic memory and episodic foresight?
 \newblock \emph{Cortex}, 117:371--384, 2019.
 
-\bibitem[Moeck et al.(2026)]{moeck2026}
+\bibitem[Moeck et~al.(2026)]{moeck2026}
 Ella K. Moeck, Karta K. Grewal, Amit Mehta, Katharine H. Greenaway, Peter Koval, and Elise K. Kalokerinos.
 \newblock Affective forecasting accuracy in everyday life.
 \newblock \emph{Affective Science}, 7:306--318, 2026.
 
-\bibitem[Momennejad et al.(2017)]{momennejad2017}
+\bibitem[Momennejad et~al.(2017)]{momennejad2017}
 Ida Momennejad, Evan M. Russek, Jin H. Cheong, Matthew M. Botvinick, Nathaniel D. Daw, and Samuel J. Gershman.
 \newblock The successor representation in human reinforcement learning.
 \newblock \emph{Nature Human Behaviour}, 1(9):680--692, 2017.
 
-\bibitem[M\"uller et al.(2006)]{muller2006}
+\bibitem[M\"uller et~al.(2006)]{muller2006}
 Sean M\"uller, Bruce Abernethy, and Damian Farrow.
 \newblock How do world-class cricket batsmen anticipate a bowler's intention?
 \newblock \emph{Quarterly Journal of Experimental Psychology}, 59(12):2162--2186, 2006.
 
-\bibitem[M\"uller et al.(2010)]{muller2010}
-Sean M\"uller, Bruce Abernethy, Jason Reece, Melissa Rose, et al.
-\newblock An in-situ examination of the timing of information pick-up for interception by cricket batsmen of different skill levels.
+\bibitem[M\"uller et~al.(2010)]{muller2010}
+Sean M\"uller, Bruce Abernethy, Michael Eid, Rohan McBean, and Matthew Rose.
+\newblock Expertise and the spatio-temporal characteristics of anticipatory information pick-up from complex movement patterns.
 \newblock \emph{Perception}, 39(6):745--760, 2010.
 
 \bibitem[Rachlin and Green(1972)]{rachlin1972}
@@ -602,7 +633,7 @@ Howard Rachlin and Leonard Green.
 \newblock Commitment, choice and self-control.
 \newblock \emph{Journal of the Experimental Analysis of Behavior}, 17(1):15--22, 1972.
 
-\bibitem[Rakitin et al.(1998)]{rakitin1998}
+\bibitem[Rakitin et~al.(1998)]{rakitin1998}
 Brian C. Rakitin, John Gibbon, Trevor B. Penney, Chara Malapani, Sean C. Hinton, and Warren H. Meck.
 \newblock Scalar expectancy theory and peak-interval timing in humans.
 \newblock \emph{Journal of Experimental Psychology: Animal Behavior Processes}, 24(1):15--33, 1998.
@@ -652,22 +683,22 @@ Daniel J. Simons and Christopher F. Chabris.
 \newblock Gorillas in our midst: sustained inattentional blindness for dynamic events.
 \newblock \emph{Perception}, 28(9):1059--1074, 1999.
 
-\bibitem[Snider et al.(2015)]{snider2015}
+\bibitem[Snider et~al.(2015)]{snider2015}
 Joseph Snider, Dongpyo Lee, Howard Poizner, and Sergei Gepshtein.
 \newblock Prospective optimization with limited resources.
 \newblock \emph{PLoS Computational Biology}, 11(9):e1004501, 2015.
 
-\bibitem[Soderberg et al.(2015)]{soderberg2015}
+\bibitem[Soderberg et~al.(2015)]{soderberg2015}
 Courtney K. Soderberg, Shannon P. Callahan, Annie O. Kochersberger, Elinor Amit, and Alison Ledgerwood.
 \newblock The effects of psychological distance on abstraction: two meta-analyses.
 \newblock \emph{Psychological Bulletin}, 141(3):525--548, 2015.
 
-\bibitem[Squire et al.(2010)]{squire2010}
+\bibitem[Squire et~al.(2010)]{squire2010}
 Larry R. Squire, Anna S. van der Horst, Susan G. R. McDuff, Jennifer C. Frascino, Ramona O. Hopkins, and Kristin N. Mauldin.
 \newblock Role of the hippocampus in remembering the past and imagining the future.
 \newblock \emph{Proceedings of the National Academy of Sciences}, 107(44):19044--19048, 2010.
 
-\bibitem[St\"uttgen et al.(2012)]{stuttgen2012}
+\bibitem[St\"uttgen et~al.(2012)]{stuttgen2012}
 Peter St\"uttgen, Peter Boatwright, and Robert T. Monroe.
 \newblock A satisficing choice model.
 \newblock \emph{Marketing Science}, 31(6):878--899, 2012.
