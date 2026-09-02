@@ -25,7 +25,7 @@ So this is a gate rather than a copy script, and it fails closed:
 Usage:
     python3 tools/release_papers.py [--out DIR] [--dry-run]
 """
-import argparse, os, re, shutil, subprocess, sys
+import argparse, io, os, re, shutil, subprocess, sys
 
 CLEARED = ["00_is",
            "01_law_of_graphic_equalisation_theory_referenced",
@@ -47,6 +47,34 @@ CLEARED = ["00_is",
 
 # Phrases that set out the excluded document's contents rather than naming it.
 FORBIDDEN = ["proposal closure", "execution semantics", "reference execution"]
+
+READING_ORDER = """Graphic Equalisation --- suggested reading order (%s)
+
+The order matters, and it is not the numbering.
+
+  1.  00_is
+      One claim, no machinery: to be is to stand in relation and to cohere
+      in it. Short. Its work is to make "everything is a graph" a thing you
+      can see rather than a slogan you are asked to accept.
+
+  2.  01a_graphic_equalisation_physics_grounding
+      What the claim buys in physics. Conclusions before their scaffolding,
+      and meant to provoke: c as a frame's own unit, the two relativities as
+      one budget spent two ways, the Born rule recovered rather than forced.
+
+  3.  01c_graphic_equalisation_cosmology_grounding
+      The same, narrower and sharper: horizons, the measure problem, what
+      "typical universe" turns out to name. Short, because the in-frame half
+      of cosmology is in 01a above.
+
+  4.  01_law_of_graphic_equalisation_theory_referenced
+      The monograph, which grounds everything asserted in 1--3. Without it
+      the rest is unearned. Read first, it gives no reason to continue --
+      which is why it is fourth and not first.
+
+The remaining documents in this directory extend the same account and can be
+read in any order after these four. Nothing here depends on them.
+"""
 
 PAPERS = "papers/formal"
 DRAFT_RE = re.compile(r"draft-\d{4}-\d{2}-\d{2}(?:\.\d+)?")
@@ -163,6 +191,11 @@ def main():
                 shutil.move(os.path.join(out, f), os.path.join(sup, f))
         for pdf, dest in plan:
             shutil.copy2(pdf, os.path.join(out, dest))
+        # The order is load-bearing and lives nowhere else. A recipient gets a
+        # directory of PDFs; a covering email carrying the order gets separated
+        # from them. So it ships with them.
+        io.open(os.path.join(out, "READ_IN_THIS_ORDER.txt"), "w",
+                encoding="utf-8").write(READING_ORDER % list(drafts.values())[0])
 
     print("cleared and released (%s):" % list(drafts.values())[0])
     for _, dest in plan:
