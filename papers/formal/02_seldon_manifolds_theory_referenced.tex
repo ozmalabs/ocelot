@@ -3,6 +3,7 @@
 \usepackage[T1]{fontenc}
 \usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,enumitem,microtype}
 \usepackage[margin=1in]{geometry}
+\usepackage{url}
 \usepackage{graphicx}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning,calc,fit,backgrounds,patterns}
@@ -11,6 +12,9 @@
 \usepackage{hyperref}
 \externaldocument[GE-]{01_law_of_graphic_equalisation_theory_referenced}
 \externaldocument[PH-]{01a_graphic_equalisation_physics_grounding}
+\externaldocument[NV-]{04_narrativium_theory_referenced}
+\externaldocument[SG-]{02a_seldon_manifolds_psychological_grounding}
+\externaldocument[NM-]{03_law_of_narrative_momentum_theory_referenced}
 
 \newtheorem{definition}{Definition}[section]
 \newtheorem{proposition}[definition]{Proposition}
@@ -29,28 +33,28 @@
 
 \title{Seldon Manifolds --- Theory\\\large The Geometry of Reachable Futures}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \texorpdfstring{\textemdash}{---}\ draft-2026-09-02.1}\\[2pt]2 September 2026 \texorpdfstring{\textbullet}{\textperiodcentered}\ document revision 26}
+\date{\textbf{Draft \texorpdfstring{\textemdash}{---}\ draft-2026-09-02.1}\\[2pt]2 September 2026 \texorpdfstring{\textbullet}{\textperiodcentered}\ document revision 27}
 
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r26}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r27}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r26}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r27}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-09-02.1 r26} (2 September 2026).
+\textbf{DRAFT --- draft-2026-09-02.1 r27} (2 September 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. It is a companion to \emph{The Law of Graphic Equalisation ---
 Theory} (referred to below as Graphic Equalisation), and inherits that paper's
 definitions, epistemic boundary, and level-of-claims. The other documents of the
 programme referred to below carry short names too, and those are the only forms
 used: the physics companion (\emph{\ldots\ Physics Grounding}),
-\emph{Narrativium}, the Narrative-momentum paper, the Seldon grounding
+\emph{Narrativium}, the momentum paper, the Seldon grounding
 (\emph{Seldon Manifolds --- Psychological Grounding}), and the applied paper
 (\emph{Seldon Manifolds --- Social and Psychological Application}).
 Definitions, numbering and claims may change between drafts;
@@ -159,7 +163,8 @@ frame constructs, not a structure the world contains, and the construction is wh
 frame holding one can shape which futures stay reachable rather than only discover which are. That is
 also what makes the grounding question well formed. Asking whether some system \emph{has} a Seldon
 manifold treats it as a natural kind and gets nothing; asking whether a system implements anything of
-this shape, and at what fidelity, is answerable, and is the form the Seldon grounding takes.
+this shape, and at what fidelity, is answerable, and is the form the Seldon grounding takes (its
+Section~\ref{SG-sec:scope}).
 
 \begin{remark}[Succession does not require an observer]\label{rem:ratchet-first}
 Realised change, and the succession its enabling-order carries, exist independently of any frame representing them. Graphic Equalisation withholds even a ratchet-mechanism over the changes --- succession is a relation carried by which change enables which, not an engine the substrate runs --- but that order is substrate-level regardless of any observer. Seldon manifolds, by contrast, are \emph{optional observer or agent machinery} for representing reachable unresolved continuations. Nature does not have to run a Seldon manifold in order to evolve.
@@ -209,7 +214,8 @@ Let $\mathbf u=(u_t,\ldots,u_{t+h-1})$ denote an admissible intervention sequenc
 \[
 G_{j+1}=T(G_j,u_j,b_j).
 \]
-The frame need not know which $\mathbf b$ will be realised. Its uncertainty about that sequence may be represented probabilistically if useful, but probability is an epistemic overlay on the reachable family rather than a primitive of the Graph Law.
+The frame need not know which $\mathbf b$ will be realised. Its uncertainty about that sequence may be represented probabilistically if useful, but probability is an epistemic overlay on the reachable family rather than a primitive of the Graph Law
+(Graphic Equalisation's Hypothesis~\ref{GE-hyp:the-law}).
 
 \begin{corollary}[Singleton under complete fixing]\label{cor:singleton}
 If the frame fixes the causally complete antecedent, all future interventions, and all causally operative future containing conditions over horizon $h$, then the Seldon manifold contains one distinguishable continuation at that resolution.
@@ -282,7 +288,8 @@ not by a comparison of magnitudes, which is why the cleanest measured instance o
 a ratio rather than a length: the boundary between an opening that can be walked through and one
 requiring rotation sits at a constant ratio of aperture to shoulder width, and the response to a poor
 fit is not more looking but \emph{turning} --- a reshaping of the passer to match. The Seldon
-grounding reports that measurement; what is claimed here is that the shape of it is general.
+grounding reports that measurement (its Section~\ref{SG-sec:body}); what is claimed here is that the
+shape of it is general.
 
 A frame running a manifold asks the same question of a future: does this shape pass the aperture of
 what remains acceptable (Definition~\ref{def:acceptable}). Where it passes with room, it is given
@@ -443,7 +450,7 @@ D_{\Frame}(0)=1 .
 \end{definition}
 
 \begin{remark}[What is changing, and what is not]\label{rem:not-more-deterministic}
-The Graph Law is deterministic throughout, at every horizon. What varies with $h$ is how much determining structure is \emph{resolved in-frame}. It is therefore incorrect to say that the universe becomes more deterministic as the present is approached; determinism is not a quantity that varies. The observer's determinability does.
+The Graph Law (Hypothesis~\ref{GE-hyp:the-law}) is deterministic throughout, at every horizon. What varies with $h$ is how much determining structure is \emph{resolved in-frame}. It is therefore incorrect to say that the universe becomes more deterministic as the present is approached; determinism is not a quantity that varies. The observer's determinability does.
 \end{remark}
 
 Consistently with Graphic Equalisation's distinction between \emph{determinable} and \emph{determined} (Proposition~\ref{GE-prop:determinable}), a continuation may be fully determinable from present structure without having been realised. The manifold represents determinable continuations; collapse produces determined ones.
@@ -519,7 +526,8 @@ instantiates, and the geometry of those fields carries as much as the extent doe
 frame holds is a fact about its requirements rather than about the substrate, on the same
 optional-machinery discipline that governs represented dimensions generally
 (Remark~\ref{rem:optional-machinery}). Three are named below because the rest of this account uses
-them and \emph{Narrativium} supplies the second of them; the set is illustrative and not closed.
+them and \emph{Narrativium} supplies the second of them (its
+Definition~\ref{NV-def:narrativium}); the set is illustrative and not closed.
 
 \begin{definition}[Cost field and contours]\label{def:contours}
 Where the frame instantiates the relevant dimension, let $C_{\Frame}$ assign to each continuation in
@@ -572,16 +580,20 @@ that frame's capacity, which is why one landscape confines one frame and not ano
 A cost field alone is not the whole of it, and taking any fixed set of fields for the whole is the
 error the construction most invites. Cost is a flow --- what reaching a continuation takes --- while
 what may matter equally is the state left behind it: the capacity a frame expects to hold
-\emph{after} arriving. That field is not new here. It is the quantity \emph{Narrativium} defines, and
+\emph{after} arriving. That field is not new here. It is the quantity \emph{Narrativium} defines
+(its Definition~\ref{NV-def:narrativium}), and
 this paper takes it from there rather than defining a second one: write $N_{\Frame}$ for its value over
 the continuations in $\Seldon_{h,\rho}(\Frame_t)$, subject to the same instantiation condition as
 $C_{\Frame}$. The flow/state contrast, the construction of $N$ as a measure over a reachable
-deformation set, and its deformation-class typing all belong to that paper; what is used here is only
-that the field exists over the same manifold as the cost field.
+deformation set (that paper's Definition~\ref{NV-def:reachable-deformation}), and its
+deformation-class typing (its Section~\ref{NV-sec:deformation-class}) all belong to that paper; what
+is used here is only that the field exists over the same manifold as the cost field.
 
 The two collapse into one field wherever capacity is purely depletive, so that what remains is what
-was held less what was spent. \emph{Narrativium} establishes no such law and exhibits transitions
-that net-gain, so the fields are not in general reducible to one another --- though it also names
+was held less what was spent. \emph{Narrativium} establishes no such law
+(its Proposition~\ref{NV-prop:no-conservation}) and exhibits transitions
+that net-gain (its Proposition~\ref{NV-prop:spend-gain}), so the fields are not in general reducible
+to one another --- though it also names
 groundings that do supply a conserved accounting, and there the two coincide. What their divergence
 buys is the representation of two cases a single field cannot carry: an expensive continuation that
 raises capacity, and a cheap one that lowers it.
@@ -628,19 +640,19 @@ apart; the economic case is the poverty trap \citep{azariadis2005}.
 
 What is left after that is narrower than it first looks. It is not that the capacity field is
 primitive: empowerment is already independent of any auxiliary objective, and \emph{Narrativium}
-constructs $N$ from a reachable set. Nor is it that the trap is cross-field: the ecological
+constructs $N$ from a reachable set (its Definition~\ref{NV-def:narrativium}). Nor is it that the trap is cross-field: the ecological
 literature has that, and it is only the potential-field local minimum --- where the descent itself
 stalls --- that the cross-field definition distinguishes it from. What survives is that both fields
 are carried over \emph{one frame's represented} reachable set under the instantiation condition,
 which is the commitment set out below rather than a claim standing beside it.
 \end{remark}
 
-Two relationships to the companions belong here rather than in a section of their own. This paper
-distinguishes retained distinguishable future possibility (Muchness, Definition~\ref{def:muchness})
-from the capacity to deform it ($N$); the contrast is set out in full in \emph{Narrativium}, which
-develops $N$. And Narrative is unnecessary for defining $\Seldon$, but where a containing frame
-carries operative history-bearing state, that state may orient the manifold; this is the subject of
-the Narrative-momentum paper.
+This paper distinguishes retained distinguishable future possibility (Muchness,
+Definition~\ref{def:muchness}) from the capacity to deform it ($N$); the contrast is set out in
+\emph{Narrativium} (its Section~\ref{NV-sec:not-muchness}). Narrative is unnecessary for defining
+$\Seldon$, but where a containing frame carries operative history-bearing state, that state may
+orient the manifold (the momentum paper, Section~\ref{NM-sec:narrative} and its
+Definition~\ref{NM-def:narrative}).
 
 \subsection*{Deformability, and the price of changing the field}
 
@@ -755,7 +767,8 @@ to exhibit it.
 Two things follow that generalise past gliders. The first is that the gain is a property of
 \emph{where the frame is} rather than of what it did, which is what it means for capacity to be a
 field over the manifold instead of a ledger over the path --- \emph{Narrativium}'s state-versus-flow
-distinction, met in the smallest case that can meet it. The second is that the capacity field has
+distinction (its Section~\ref{NV-sec:measurement-expenditure}), met in the smallest case that can meet
+it. The second is that the capacity field has
 \emph{sources}: structure outside the frame's own economy that does work on it. A closed reading, in
 which a frame holds what it started with less what it has spent, is not the general case but the
 special one in which no source is in range. The frame's economy is not sealed, and nothing in the
@@ -945,7 +958,8 @@ I_{\Frame}(u)=\max\!\left(0,\Much_t-\Much_{t+1}^{(u)}\right).
 \]
 Here $0$ is a legitimate value on an existing irreversibility dimension, not absence of the dimension (Definition~\ref{def:dimension}).
 
-The option value of preserving reversible choices under uncertain future information has a long history in economics \citep{arrow1974,henry1974,dixit1994}. The present definition is more primitive: it identifies irreversibility structurally with loss of reachable distinctions. No substrate-level probability distribution is required. If a frame overlays probabilities on unresolved future conditions, an expected irreversibility statistic is an epistemic derived quantity, not part of the deterministic Graph Law.
+The option value of preserving reversible choices under uncertain future information has a long history in economics \citep{arrow1974,henry1974,dixit1994}. The present definition is more primitive: it identifies irreversibility structurally with loss of reachable distinctions. No substrate-level probability distribution is required. If a frame overlays probabilities on unresolved future conditions, an expected irreversibility statistic is an epistemic derived quantity, not part of the deterministic Graph Law
+(Hypothesis~\ref{GE-hyp:the-law}).
 
 \begin{proposition}[Reversibility preference]\label{prop:reversibility}
 If two interventions achieve the same represented objective to equivalent tolerance and otherwise differ only in that one preserves a strict superset of potentially valuable future distinctions, any represented valuation assigning non-negative value to retained optionality weakly prefers the more reversible intervention.
@@ -977,6 +991,8 @@ may be useful where interactions are approximately separable. More generally,
 \Delta\Seldon=\Phi(u_1,\ldots,u_n;G,\Gamma,W).
 \]
 Dynamic-game reachability provides established mathematics for reachable sets under interacting or adversarial controls \citep{mitchell2005}. The Seldon statement is more general and does not require zero-sum or game-theoretic valuation.
+
+This shared-arena case differs from one graph individuated by several frames: each individuating frame carries its own represented dimensions, resolution, and reachable geometry unless a containing relation explicitly couples them.
 
 Why it does not require it is worth stating, since a reader will otherwise supply game theory as the
 obvious home for this construction. The one-shot game with known payoffs abstracts away the thing
@@ -1058,8 +1074,6 @@ so what carries between encounters is reputation, capacity and relationships rat
 moves in one matrix, and a manifold over a player's own reachable futures is the object that carries
 it. Neither claim contradicts the results cited; both are claims about what the results are results
 \emph{about}.
-
-This shared-arena case differs from one graph individuated by several frames: each individuating frame carries its own represented dimensions, resolution, and reachable geometry unless a containing relation explicitly couples them.
 
 \section{Reachability compression}\label{sec:compression}
 
@@ -1234,10 +1248,7 @@ states what \emph{would} be risked rather than what currently is.
 \textsc{[detail]} failing is a revision: the account survives with that mechanism replaced. A
 \textsc{[shape]} failing costs \emph{range} rather than a mechanism, because what fails is something
 the substrate is claimed to require or to permit --- so the account does not hold where it claimed to,
-which is the more serious of the two and is still a boundary rather than an annihilation. They were
-assigned in a single pass under that rule, and are the least-audited judgement in this document --- a
-reader who thinks one is marked in the flattering direction is disagreeing with a fast call, not an
-argued position.
+which is the more serious of the two and is still a boundary rather than an annihilation.
 
 \begin{enumerate}[leftmargin=*]
 \item \textsc{[detail]}~\textbf{Descent predicts trajectory.} Fails if the continuations a frame actually takes, absent intervention, are not the cheap ones --- if the descent direction of the cost field does not predict where an uninterrupted frame goes.
@@ -1253,6 +1264,10 @@ Section~\ref{sec:foveation}, as against the refinement machinery it shares with 
 refinement and variable-resolution discretisation. Fails if cell-splitting can be shown to require a
 finer signal arriving --- a hidden variable at a grain below the frame's own --- rather than
 incoherence at the grain already held.
+\item \textsc{[detail]}~\textbf{Horizon extension beats vividness for beyond-horizon items.} The
+prediction of Remark~\ref{rem:aperture-shape}. Fails if, for an item lying beyond a frame's
+represented horizon, increasing its vividness or the information about it raises its salience as
+much as bringing it inside the horizon does.
 \item \textsc{[shape]}~\textbf{Deterministic counterfactual typing.} Fails if the Seldon construction requires multiple fundamentally random realised outcomes from one causally complete antecedent rather than multiple deterministic continuations under differing represented future conditions.
 \item \textsc{[shape]}~\textbf{Reachability utility.} Fails for a claimed task class if reachable geometry cannot preserve distinctions needed for prediction or control that trajectory-level representation preserves.
 \item \textsc{[shape]}~\textbf{Dimension/value typing.} Fails if an absent future dimension must be represented as the numerical value zero rather than remaining undefined until instantiated.
@@ -1274,8 +1289,7 @@ and leaving one is not, and what the entry adds is the existence direction, whic
 read as risking. \emph{Deterministic counterfactual typing} is inherited --- it is Graphic
 Equalisation's graph-law determinism (Proposition~\ref{GE-prop:determinism}) reaching the Seldon
 construction, so failing it there fails it here --- and the same commitment also appears in the
-Narrative-momentum paper and as a conformance test in the corpus's constructive realisation: four
-listings, one risk.
+momentum paper (its Section~\ref{NM-sec:falsifiability}): three listings, one risk.
 
 \section{Conclusion}\label{sec:conclusion}
 
@@ -1294,7 +1308,7 @@ Graphic Equalisation supplies deterministic admissible continuation and collapse
 }
 \]
 
-The distinction between reachable geometry and realised history is essential: the manifold contains counterfactual futures because the frame has not fixed all future interventions and containing conditions, not because the Graph Law is stochastic.
+The distinction between reachable geometry and realised history is essential: the manifold contains counterfactual futures because the frame has not fixed all future interventions and containing conditions, not because the Graph Law (Hypothesis~\ref{GE-hyp:the-law}) is stochastic.
 
 The future, in this framework, is not primarily a destination. It is a reachable geometry.
 
@@ -1316,11 +1330,6 @@ Jean-Pierre Aubin and H\'el\`ene Frankowska.
 \newblock \emph{Dynamic Regulation of Controlled Systems, Inertia Principle and Heavy Viable Solutions}.
 \newblock IIASA Working Paper WP-89-086, Laxenburg, 1989.
 
-\bibitem[Aubin et~al.(2011)]{aubinbayen2011}
-Jean-Pierre Aubin, Alexandre M. Bayen, and Patrick Saint-Pierre.
-\newblock \emph{Viability Theory: New Directions}.
-\newblock Springer, Berlin, 2nd edition, 2011.
-
 \bibitem[Aubin(1990)]{aubin1990}
 Jean-Pierre Aubin.
 \newblock A survey of viability theory.
@@ -1336,6 +1345,11 @@ Jean-Pierre Aubin.
 Jean-Pierre Aubin.
 \newblock \emph{Mutational and Morphological Analysis: Tools for Shape Evolution and Morphogenesis}.
 \newblock Birkh\"auser, Boston, 1999.
+
+\bibitem[Aubin et~al.(2011)]{aubinbayen2011}
+Jean-Pierre Aubin, Alexandre M. Bayen, and Patrick Saint-Pierre.
+\newblock \emph{Viability Theory: New Directions}.
+\newblock Springer, Berlin, 2nd edition, 2011.
 
 \bibitem[Axelrod(1984)]{axelrod1984}
 Robert Axelrod.
@@ -1525,7 +1539,8 @@ R\'emi Munos and Andrew Moore.
 \bibitem[National Hurricane Center(2026)]{nhccone}
 National Hurricane Center.
 \newblock Definition of the NHC track forecast cone.
-\newblock National Oceanic and Atmospheric Administration, \texttt{nhc.noaa.gov/aboutcone.shtml}.
+\newblock National Oceanic and Atmospheric Administration.
+\newblock \url{https://www.nhc.noaa.gov/aboutcone.shtml}.
 \newblock Each circle is sized so that two-thirds of historical official forecast errors over a
 five-year sample fall within it; the 2026 radii are set from the 2021--2025 sample.
 
