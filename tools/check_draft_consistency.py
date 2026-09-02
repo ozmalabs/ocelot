@@ -68,6 +68,30 @@ def main() -> int:
                 f"{', '.join('r' + r for r in sorted(foot_revs))}"
             )
 
+    # The title block and the notice box each carry a date, and a bump that
+    # rewrites one form and not the other leaves a document showing two.
+    # Nothing above catches it: the draft string and the revision both agree.
+    # Cost one defect, which shipped.
+    dates = {}
+    for tex in sorted(FORMAL.glob("*.tex")):
+        src = tex.read_text(encoding="utf-8")
+        # Front matter only. Dates in the body are citations and are content:
+        # scanning the whole file flags a paper for quoting a report's date.
+        head = src.split(r"\begin{abstract}")[0].split(r"\section{")[0]
+        found = set(re.findall(r"\d{1,2} (?:January|February|March|April|May|June|July|"
+                              r"August|September|October|November|December) \d{4}", head))
+        if len(found) > 1:
+            problems.append(f"{tex.name}: shows more than one date: {sorted(found)}")
+        elif found:
+            dates[tex.name] = found.pop()
+    if len(set(dates.values())) > 1:
+        by_date = {}
+        for n, d in dates.items():
+            by_date.setdefault(d, []).append(n)
+        problems.append("the set is not on one date: "
+                        + "; ".join(f"{d} -> {len(v)} file(s)"
+                                    for d, v in sorted(by_date.items())))
+
     # Generator inputs carry the draft string too, and are not .tex, so a
     # set-wide bump done over *.tex leaves them behind. That stays invisible
     # until somebody regenerates, at which point the stale string comes back
