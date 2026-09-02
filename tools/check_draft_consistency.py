@@ -35,9 +35,8 @@ of them are correct.
 Exits non-zero on any finding. Run from anywhere:
     python3 tools/check_draft_consistency.py
 """
-import hashlib
-import json
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -162,33 +161,32 @@ def main() -> int:
                 f"(worst {max(bad):.0f}pt) --- visible in the PDF"
             )
 
-    # Content-vs-revision. The manifest records what each revision NAMED; a
-    # bump updates it silently, an edit without one does not. Only the
-    # offending entry is withheld from the update, so the guard keeps firing
-    # until the revision moves rather than forgiving itself on the next run.
-    man_path = FORMAL / ".revisions.json"
-    try:
-        manifest = json.loads(man_path.read_text(encoding="utf-8"))
-    except Exception:
-        manifest = {}
+    # Content-vs-revision, compared against the LAST COMMIT rather than the last
+    # run. The defect this exists for is a change that reaches a commit -- and a
+    # release -- under a version string it has outgrown; comparing against the
+    # previous run instead would fire on every intra-session edit and inflate
+    # the revision to silence itself, which is the same disease. Stateless: git
+    # already holds what each revision named.
+    def _norm(text):
+        text = DRAFT_RE.sub("", re.sub(r"document revision \d+", "", text))
+        return re.sub(r"\br\d+\b", "", text)
     for tex in sorted(FORMAL.glob("*.tex")):
-        src = tex.read_text(encoding="utf-8")
-        rev = DATE_REV_RE.search(src)
-        rev = rev.group(1) if rev else None
-        # Hash the text with every version string normalised out, so a bump
-        # alone is never mistaken for a content change.
-        body = DRAFT_RE.sub("", re.sub(r"document revision \d+", "", src))
-        body = re.sub(r"\br\d+\b", "", body)
-        digest = hashlib.sha256(body.encode("utf-8")).hexdigest()[:16]
-        prev = manifest.get(tex.name)
-        if prev and prev.get("rev") == rev and prev.get("hash") != digest:
+        cur = tex.read_text(encoding="utf-8")
+        rel = f"papers/formal/{tex.name}"
+        old = subprocess.run(["git", "show", f"HEAD:{rel}"], cwd=FORMAL.parent.parent,
+                             capture_output=True, text=True)
+        if old.returncode:
+            continue                      # new file, or not a git checkout
+        cur_rev = DATE_REV_RE.search(cur)
+        old_rev = DATE_REV_RE.search(old.stdout)
+        if not (cur_rev and old_rev) or cur_rev.group(1) != old_rev.group(1):
+            continue                      # revision moved: the change is declared
+        if _norm(cur) != _norm(old.stdout):
             problems.append(
-                f"{tex.name}: text changed but revision stayed at r{rev} "
-                f"--- two different texts now answer to one version string; bump it"
+                f"{tex.name}: text differs from the last commit but the revision "
+                f"is still r{cur_rev.group(1)} --- two texts would answer to one "
+                f"version string; bump before committing"
             )
-            continue
-        manifest[tex.name] = {"rev": rev, "hash": digest}
-    man_path.write_text(json.dumps(manifest, indent=1, sort_keys=True) + "\n", encoding="utf-8")
 
     if problems:
         print(f"draft consistency: {len(problems)} problem(s)\n")
