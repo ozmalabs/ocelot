@@ -1,9 +1,14 @@
 \documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,hyperref,enumitem,microtype}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,enumitem,microtype}
 \usepackage[margin=1in]{geometry}
 \usepackage{natbib}
+\usepackage{xr-hyper}
+\usepackage{hyperref}
+\externaldocument[GE-]{01_law_of_graphic_equalisation_theory_referenced}
+\externaldocument[SM-]{02_seldon_manifolds_theory_referenced}
+\externaldocument[NV-]{04_narrativium_theory_referenced}
 
 \newtheorem{definition}{Definition}[section]
 \newtheorem{proposition}[definition]{Proposition}
@@ -20,24 +25,30 @@
 
 \title{The Law of Narrative Momentum --- Theory\\\large First-Class History, Cost-Conditioned Persistence, and Revision}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-09-02.1}\\[2pt]2 September 2026 \textbullet\ document revision 28}
+\date{\textbf{Draft \texorpdfstring{\textemdash}{---}\ draft-2026-09-02.1}\\[2pt]2 September 2026 \texorpdfstring{\textbullet}{\textperiodcentered}\ document revision 29}
 
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r28}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r29}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r28}}\renewcommand{\headrulewidth}{0pt}}
-\newenvironment{falsifiable}{\par\smallskip\noindent\textit{Falsifier.}\ }{\par\smallskip}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r29}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-09-02.1 r28} (2 September 2026).
+\textbf{DRAFT --- draft-2026-09-02.1 r29} (2 September 2026).
 This document is under active revision and is circulated for comment, not as a
-finished result. Definitions, numbering and claims may change between drafts;
+finished result. It is a companion to \emph{The Law of Graphic Equalisation ---
+Theory} (referred to below as Graphic Equalisation) and to \emph{Seldon
+Manifolds --- Theory} (\emph{Seldon}), and inherits their definitions,
+epistemic boundary, and level-of-claims. The other documents of the programme
+referred to below carry short names too, and those are the only forms used:
+\emph{Narrativium} (\emph{Narrativium --- Theory}) and the physics companion
+(\emph{\ldots\ Physics Grounding}).
+Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
 falsifiability commitments are the intended points of attack.}}
 \end{center}
@@ -49,7 +60,7 @@ This paper develops Narrative as a real, measurable, frame-relative quantity rat
 
 Narrative is defined as a discrete frame-level measure of realised-history structure that remains operative in the present representation of a graph. The Narrative dimension need not exist in every frame; where it is absent, Narrative is undefined rather than numerically zero. Where history-bearing structure persists across collapse, it enters the next antecedent configuration and thereby biases subsequent reachable geometry toward continuations compatible with that realised structure. Momentum is consequently not introduced by an unexplained grounding arrow from Narrative to a second ontological object. It is the directional dynamical consequence of operative Narrative in a geometry that supplies direction.
 
-The law is stated primarily in \emph{cost} form, which is its primary commitment and requires no directional dimension: surviving history-bearing structure does not remove continuations from the admissible set but prices them, so a continuation that reuses that structure costs nothing further while one requiring it altered must pay the alteration cost. Directional persistence is recovered as the special case for frames that instantiate a direction.
+The law is stated in \emph{cost} form, which is its primary commitment and requires no directional dimension: surviving history-bearing structure does not remove continuations from the admissible set but prices them, so a continuation that reuses that structure costs nothing further while one requiring it altered must pay the alteration cost. Directional persistence is recovered as the special case for frames that instantiate a direction.
 
 The resulting law is structurally adjacent to established work on hysteresis, path dependence, belief revision, predictive coding, motor schemas, and institutional lock-in, but is not identical to any one of them. The contribution here is the common frame-relative formulation: realised history becomes first-class state, present state carries only the history that remains causally operative, and persistence follows from its presence in the next possibility relation.
 \end{abstract}
@@ -57,17 +68,24 @@ The resulting law is structurally adjacent to established work on hysteresis, pa
 \section{Dependencies and scope}\label{sec:dependencies}
 
 \paragraph{Reading for the claim.}
-As in the foundational paper, the components used here are individually established and cited as such; the claim is their arrangement, which is not reachable by evaluating those components separately, since they are stipulated to be known. The composition's own falsifiability commitment is stated in the foundational paper and is inherited here.
+As in Graphic Equalisation, the components used here are individually established and cited as such; the claim is their arrangement, which is not reachable by evaluating those components separately, since they are stipulated to be known. The composition's own falsifiability commitment is stated in Graphic Equalisation and is inherited here.
 
 Graphic Equalisation supplies deterministic realised transition
 \[
 G_t\xrightarrow{\mathcal C_t}G_{t+1},
 \]
-and the Seldon-manifold theory supplies counterfactual reachable geometry
+and \emph{Seldon} supplies counterfactual reachable geometry (its Definition~\ref{SM-def:seldon})
 \[
 \Seldon_{h,\rho}(\Frame_t).
 \]
 This paper adds a measurable higher-frame quantity carrying realised history. It does not require cognition, self-models, language, or deliberative agency.
+
+\emph{Narrativium} supplies the complementary quantity and is not this one: Narrative Momentum
+describes persistence and Narrativium capacity for deformation, so $\Narr$ is operative
+history-bearing structure and $N$ the reachable capacity to change it (\emph{Narrativium},
+Definition~\ref{NV-def:narrativium}), which is where that contrast and its counterpart against
+Muchness are set out. Revision horizons produced by comparing current capacity with minimum revision
+cost are developed there rather than here.
 
 Hysteresis, path dependence, formal belief revision, and predictive processing are the nearest established structures and are prior art for particular history-dependent behaviours, each treated in Section~\ref{sec:prior-art}; the present claim is the cross-domain identity of the frame-relative structure underlying them.
 
@@ -82,7 +100,7 @@ Before that relation exists,
 \[
 D_{\Narr,W:G}=\operatorname{NULL},
 \]
-and $\Narr_{W:G,t}$ is undefined. This is the dimension/value typing of Graphic Equalisation, stated in full in Seldon Manifolds: NULL is not the value zero, and zero is a legitimate value once the dimension exists.
+and $\Narr_{W:G,t}$ is undefined. This is the dimension/value typing of Graphic Equalisation, stated in full in \emph{Seldon} (Definition~\ref{SM-def:dimension}): NULL is not the value zero, and zero is a legitimate value once the dimension exists.
 
 \begin{definition}[Narrative]\label{def:narrative}
 Where $D_{\Narr,W:G}$ exists,
@@ -98,7 +116,7 @@ The integer is a state index rather than a globally fixed unit. A grounding may 
 The absence of Narrative as a primitive in $G=(g,r,\Gamma)$ does not make Narrative non-physical or metaphorical. Where the defining relation exists in $W$, Narrative is ordinary first-class state in $W$.
 \end{proposition}
 
-This is a direct use of the higher-frame principle established in Graphic Equalisation: a relation may be absent from the lower graph while being fully real in a frame containing the relation required to define it.
+This is a direct use of the higher-frame principle established in Graphic Equalisation (Proposition~\ref{GE-prop:higher-frame}): a relation may be absent from the lower graph while being fully real in a frame containing the relation required to define it.
 
 \section{Narrative and realised history}\label{sec:history}
 Realised history is the represented succession
@@ -145,20 +163,40 @@ Momentum is a \emph{currently instantiated structural consequence} of prior chan
 The past need not continue to exist for momentum to be real. What is real is the structure prior change left behind, instantiated now.
 \end{proposition}
 
-This is Graphic Equalisation's history principle applied to a specific quantity: history matters only where it survives as present structure. A momentum term is exactly such surviving structure.
+This is Graphic Equalisation's history principle (its Corollary~\ref{GE-cor:history}) applied to a specific quantity: history matters only where it survives as present structure. A momentum term is exactly such surviving structure.
+
+\begin{definition}[Free continuation]\label{def:free-continuation}
+The Narrative is what a subgraph runs when \emph{no rule fires}: the surviving
+history-bearing structure $S$ of Hypothesis~\ref{hyp:narrative-momentum} simply
+carrying forward, with nothing writing against it. That is the free continuation
+in its pure form. Having rules adds only the \emph{possibility} of a write; the
+Narrative is what is left running when none occurs.
+\end{definition}
+
+\begin{definition}[Internal and external Narrative]\label{def:internal-external}
+The \emph{internal} Narrative of a frame is $S$ read in the terms its current
+rule set fixes --- what that rule set could write against. An \emph{external}
+Narrative is another frame's cross-frame reading of the same $S$ (the
+``velocity'' below). Change the current rule set and the internal reading changes
+with it, since the terms have changed; what is read is still $S$, and there is no
+rule-set-independent \emph{reading} of it. The Narrative is therefore relative in
+the reading and not in the carrying.
+\end{definition}
 
 \begin{remark}[Momentum is the un-rewritten Narrative; to change course is to change it]\label{rem:momentum-delta}
 What a frame carries forward is not a bare delta but its operative Narrative --- the surviving history-bearing structure $S$ of Hypothesis~\ref{hyp:narrative-momentum}. The Narrative is not pointed at through any indirection; it is the frame's own standing structure, and a delta is a write \emph{to} it --- a self-change of $S$, gated by the container (Graphic Equalisation) --- not a separate thing the frame carries. Continuation is then not a repeated action but the absence of one \emph{in the frame's own terms}
 --- what a containing frame is charged to sustain it is that container's rule content and not this
 frame's, so the claim here is about what the frame does and not about what its persistence costs
-anyone: nothing re-applies $S$ each step, because there is no step --- no global tick --- for it to be re-applied at (Graphic Equalisation, collapse as a local write). $S$ persists until a rule writes against it, and that write is the only priced operation. This is why the ``Nothing pushes'' reading (Remark~\ref{rem:nothing-pushes}) is exact rather than a manner of speaking: persistence is the free default and change the paid exception, because retaining the Narrative destroys nothing and altering it does (Graphic Equalisation, Remark on evaluation as a write). Put as a definition: the Narrative is what a subgraph runs when \emph{no rule fires} --- the free continuation in its pure form, $S$ simply carrying forward with nothing writing against it. Having rules adds only the \emph{possibility} of a write; the Narrative is what is left running when none occurs. And the Narrative is relative in the reading, not in the carrying: the \emph{internal} Narrative --- the frame's own --- is $S$ read in the terms its current rule set fixes, what that rule set could write against, while an \emph{external} Narrative is another frame's cross-frame reading of the same structure (the ``velocity'' below). Change the current rule set and the internal reading changes with it, since the terms have changed; what is read is still $S$, and there is no rule-set-independent \emph{reading} of it. To change course is therefore, literally, to change the Narrative --- a write to $S$ --- and its price is the alteration cost $C_{\mathrm{alt}}$ of Hypothesis~\ref{hyp:narrative-momentum}, which in the mechanical grounding is the impulse $J=\Delta\mathbf p$ (Remark~\ref{rem:impulse}).
+anyone: nothing re-applies $S$ each step, because there is no step --- no global tick --- for it to be re-applied at (Graphic Equalisation, Remark~\ref{GE-rem:collapse-write}, collapse as a local write). $S$ persists until a rule writes against it, and that write is the only priced operation. This is why the ``Nothing pushes'' reading (Remark~\ref{rem:nothing-pushes}) is exact rather than a manner of speaking: persistence is the free default and change the paid exception, because retaining the Narrative destroys nothing and altering it does (Graphic Equalisation, Proposition~\ref{GE-prop:evaluation-writes}, evaluation as a write).
 
-It also fixes what the momentum quantity is. Read from the Narrative, it is a difference, $\Delta$, and not a difference per unit time, $\Delta/\Delta T$: the divisor is the inferred time dimension, which is not available in-frame (Graphic Equalisation, the missing denominator). ``Velocity'' is therefore an observer's cross-frame reading of the Narrative's persisting difference, not the substrate quantity, and the substrate statement of the first law is that the Narrative continues un-rewritten until a write --- a change of the Narrative --- changes it.
+To change course is therefore, literally, to change the Narrative --- a write to $S$, and so an end to the free continuation of Definition~\ref{def:free-continuation}. What is written is $S$ itself, whatever terms it is read in (Definition~\ref{def:internal-external}); the price is the alteration cost $C_{\mathrm{alt}}$ of Hypothesis~\ref{hyp:narrative-momentum}, which in the mechanical grounding is the impulse $J=\Delta\mathbf p$ (Remark~\ref{rem:impulse}).
+
+It also fixes what the momentum quantity is. Read from the Narrative, it is a difference, $\Delta$, and not a difference per unit time, $\Delta/\Delta T$: the divisor is the inferred time dimension, which is not available in-frame (Graphic Equalisation, Remark~\ref{GE-rem:no-denominator}, the missing denominator). ``Velocity'' is therefore an external Narrative in the sense of Definition~\ref{def:internal-external} --- an observer's cross-frame reading of the Narrative's persisting difference --- and not the substrate quantity, and the substrate statement of the first law is that the Narrative continues un-rewritten until a write --- a change of the Narrative --- changes it.
 \end{remark}
 
 \begin{remark}[The Narrative level stack: inferred, carried, read]\label{rem:level-stack}
 Narrative is frame-relative for a reason it inherits rather than assumes: Graphic Equalisation's
-founding axiom places every distinction and represented quantity in some frame, and a
+founding axiom (its Axiom~\ref{GE-ax:no-view}) places every distinction and represented quantity in some frame, and a
 history-bearing measure is such a quantity, so a frame-free Narrative would be the view from nowhere
 that axiom denies. Because Narrative is frame-relative, then, it is stacked, and the levels differ not only in whose trajectory they describe but in \emph{how a frame can come to know them at all}. Three levels are distinguishable from any given frame.
 
@@ -201,7 +239,7 @@ The hypothesis posits no force, no tendency, and no stored impetus. The whole as
 \end{remark}
 
 \begin{remark}[Irreversibility is a limit case, not a removal]\label{rem:irreversibility}
-Where $C_{\mathrm{alt}}(S,a)$ exceeds any expenditure available in the frame, $a$ is unreachable in practice while remaining admissible. From inside the frame this is indistinguishable from inadmissibility; it is different in kind, and conflating them relocates a budget fact into the grammar. Irreversibility is therefore frame- and budget-relative rather than absolute, consistent with the companion manifold paper's treatment of it as a property of a deformation rather than of an act.
+Where $C_{\mathrm{alt}}(S,a)$ exceeds any expenditure available in the frame, $a$ is unreachable in practice while remaining admissible. From inside the frame this is indistinguishable from inadmissibility; it is different in kind, and conflating them relocates a budget fact into the grammar. Irreversibility is therefore frame- and budget-relative rather than absolute, consistent with \emph{Seldon}'s treatment of it as a property of a deformation rather than of an act (its Definition~\ref{SM-def:irreversible}).
 \end{remark}
 
 \begin{corollary}[Material redirection]\label{cor:redirection}
@@ -212,8 +250,8 @@ Redirection therefore requires paying $C_{\mathrm{alt}}$ --- an interaction that
 Where frame $W$ instantiates a directional dimension and $\Narr_{W:G,t}$ is operative, the cost conditioning of Hypothesis~\ref{hyp:narrative-momentum} projects into that dimension, and subsequent reachable geometry retains a directional component aligned with the continuation the Narrative represents --- because the cheapest continuations are those reusing $S$. This is the statement in directional language, and it holds only where the frame supplies the direction. Two frames may instantiate opposed directional dimensions over the same $S$ and disagree about the sign of the retained component while agreeing on the conditioning that produces it.
 \end{corollary}
 
-\begin{remark}[Why the cost form is the substrate-level statement]
-Under the directional statement alone, a frame with no directional dimension makes the law vacuous, which would be a strange property for a claim about what is reachable. The cost form applies wherever a possibility set exists, requires no basis, and is invariant under the choice of one --- a gauge condition of the same kind the companion construction paper imposes on relative weighting. A worn route does not possess a direction, it possesses differential cost, and two travellers moving oppositely along it experience opposite directions from identical structure.
+\begin{remark}[Why the cost form is the substrate-level statement]\label{rem:cost-form-substrate}
+Under the directional statement alone, a frame with no directional dimension makes the law vacuous, which would be a strange property for a claim about what is reachable. The cost form applies wherever a possibility set exists and requires no basis --- a gauge condition: invariant under the choice of basis. A worn route does not possess a direction, it possesses differential cost, and two travellers moving oppositely along it experience opposite directions from identical structure.
 \end{remark}
 
 The key recursion is
@@ -285,7 +323,7 @@ The same alteration has two established mechanical prices: $m\mathbf v$ in impul
 \end{remark}
 
 \begin{remark}[A grounding, not an analogy]\label{rem:not-analogy}
-The correspondence should not be described as analogical. Ordinary physical momentum and Narrative momentum have the same structural form under Proposition~\ref{prop:momentum-present} --- prior deformation leaves present structure that constrains reachable continuation --- and differ only in which relations carry that surviving structure, represented rather than material. Under Axiom~$-1$ an inertial reference frame and a representational frame are the same kind of object --- a locus at which distinctions are made, with quantities indexed to it and no view from nowhere available. They differ in how much structure is instantiated, not in kind. A mechanical grounding is therefore an \emph{instance} of the present claims in a frame carrying a great deal of structure, and calling it an analogy would reintroduce the privileged-physical / derivative-representational division that Axiom~$-1$ removes.
+The correspondence should not be described as analogical. Ordinary physical momentum and Narrative momentum have the same structural form under Proposition~\ref{prop:momentum-present} --- prior deformation leaves present structure that constrains reachable continuation --- and differ only in which relations carry that surviving structure, represented rather than material. Under Axiom~$-1$ an inertial reference frame and a representational frame are the same kind of object (Graphic Equalisation, Section~\ref{GE-sec:scope}) --- a locus at which distinctions are made, with quantities indexed to it and no view from nowhere available. They differ in how much structure is instantiated, not in kind. A mechanical grounding is therefore an \emph{instance} of the present claims in a frame carrying a great deal of structure, and calling it an analogy would reintroduce the privileged-physical / derivative-representational division that Axiom~$-1$ removes.
 
 What must not be overread is \emph{scope}, which is a different and real constraint: Narrative is not asserted to carry SI momentum units, non-mechanical groundings need not obey conservation of mechanical momentum, and no claim is made that a non-mechanical grounding inherits any mechanical law beyond the structural form stated in Hypothesis~\ref{hyp:narrative-momentum}.
 \end{remark}
@@ -313,63 +351,40 @@ structure rather than stored history. The maternal contribution is the standing 
 continued response is the free continuation, and a generation in which the direction reverses is the
 case where following the standing structure costs less than writing against it.
 
+\begin{proposition}[Nothing is pending that is not held]\label{prop:no-unheld-pending}
+Nothing can be pending that is not currently held. Pending states are real and this does not deny
+them; what it denies is pending in the void --- a system in a state of waiting with nothing
+instantiating the wait.
+\end{proposition}
+
+Every case offered as a counterexample is an instance: a stalled instruction is held in the pipeline
+that stalled it, an outstanding cache miss is held in the register tracking it, a signal in flight is
+held in the medium carrying it, and the maternal contribution is held in the mother. In each the
+waiting has an address. A delay is not an interval of nothing happening; it is structure, somewhere,
+for the duration --- which is why the causal-set treatment Graphic Equalisation cites
+(Section~\ref{GE-sec:causal-order}) defines an order-interval as the \emph{set of elements} between
+two others rather than as a gap, and takes its measure by counting them. It is also the same
+requirement Graphic Equalisation's economics makes of a read: what is returned has to be somewhere,
+and there is no channel outside the structure for it to be in. A pending state with no holder would
+be information existing nowhere.
+
 \begin{remark}[The lag is a description, not a rival mechanism]\label{rem:evo-tests}
-The published account describes the effect as a \emph{lag}: the response persists because the
-maternal contribution is one generation behind. Treating that as a competing mechanism, and staking a falsifier on distinguishing the two, would be a mistake. It is not a competitor, and the
-reason is the foundational paper's.
-
-\emph{Transmission cannot lag, because there is no time for it to lag in.} A lag is a delay, and a
-delay requires a time dimension for the delay to occur in --- which the substrate does not supply
-(Graphic Equalisation, on time as inferred rather than primitive). What is available beneath it is
-causal order, and in causal order ``lags by a generation'' says only that the effect appears at the
-next position. That is a \emph{location} and not a mechanism: it states where the continuation is
-observed and not why there is one.
-
-Structurally there is no delay at all. An offspring's present structure includes a contribution
-assembled from its parent's, and it acts on what it holds, now. Nothing is catching up. The
-appearance of lateness belongs to an observer indexing generations against an external clock, and the
-temporal metaphor --- \emph{the system is still responding to selection that has stopped} --- borrows
-explanatory force it does not have, since nothing is responding to anything absent; a structure is
-carrying forward.
-
-The published account describes the effect as a \emph{lag}, and it is tempting to treat that as
-something to correct --- either as a rival mechanism, or as a description that a finer aperture would
-dissolve. Neither is right, and the reason is this.
-
 \emph{Kirkpatrick and Lande hold the position this paper holds.} Their carrier is the maternal
 phenotype, written into the model as a matrix acting on the mother's trait values --- present
 structure, in the offspring's own generation, doing the work. Nobody in that literature claims past
-selection acts at a distance, and there is no mechanism there for it to. So an argument mounted against them would be
-aimed at a position no one occupies, and the correction would be agreement dressed as a correction.
+selection acts at a distance, and there is no mechanism there for it to. An argument mounted against
+them would be aimed at a position no one occupies, and the correction would be agreement dressed as a
+correction.
 
-One claim in the vicinity survives and is worth keeping at its proper size, because it is one
-sentence rather than an argument built on it. \emph{Nothing can be pending that is not
-currently held.}
-
-Pending states are real and this does not deny them. What it denies is pending in the void --- a
-system in a state of waiting with nothing instantiating the wait. Every case offered as a
-counterexample is an instance: a stalled instruction is held in the pipeline that stalled it, an
-outstanding cache miss is held in the register tracking it, a signal in flight is held in the medium
-carrying it, and the maternal contribution is held in the mother. In each the waiting has an address.
-A delay is not an interval of nothing happening; it is structure, somewhere, for the duration ---
-which is why the causal-set treatment cited above defines an order-interval as the \emph{set of
-elements} between two others rather than as a gap, and takes its measure by counting them.
-
-That is also the same requirement the foundational paper's economics makes of a read: what is
-returned has to be somewhere, and there is no channel outside the structure for it to be in. A
-pending state with no holder would be information existing nowhere.
-
-\begin{falsifiable}
-Fails if a system can be exhibited in a pending state --- a determinate outcome not yet realised,
-whose realisation depends on nothing further arriving --- with no structure anywhere holding the
-pendency. Exhibiting that the holder is not \emph{resolved} by a particular observer is not such a
-case.
-\end{falsifiable}
-
-What the case supplies is therefore an illustration and not a repair: a carrier that is written down,
-parameterised and estimated, in a domain with no contact with this account, doing what
-Section~\ref{sec:momentum-present} says a carrier does. That is what a grounding is for, and it is
-enough.
+The published account describes the effect as a \emph{lag} --- the response persists because the
+maternal contribution is one generation behind --- and in causal order, which is what the substrate
+supplies beneath an inferred time dimension (Graphic Equalisation,
+Proposition~\ref{GE-prop:time-inferred}, time as inferred rather than primitive), ``lags by a
+generation'' states where the continuation is observed and not why there is one: it is a location,
+not a mechanism. What the case supplies is therefore an illustration and not a repair --- a carrier
+that is written down, parameterised and estimated, in a domain with no contact with this account,
+doing what Section~\ref{sec:momentum-present} says a carrier does. That is what a grounding is for,
+and it is enough.
 
 Two things it does not supply, and which are easy to claim on its behalf. It does not test the cost form,
 which the abstract calls this paper's primary commitment: there is no cost quantity anywhere in the
@@ -377,9 +392,11 @@ cited work, and describing a sign change in the maternal-effect matrix as ``foll
 structure costs less than writing against it'' redescribes rather than measures. And the model damps:
 the response decays by the leading eigenvalue of that matrix each generation, so the standing
 structure is rescaled rather than materially unchanged, which is not the free continuation of
-Hypothesis~\ref{hyp:narrative-momentum} but a decaying recursion. Whether that damping is a failure
+Definition~\ref{def:free-continuation} but a decaying recursion. Whether that damping is a failure
 of the antecedent or a case the hypothesis should be widened to cover is open, and is the sharpest
-question the biological case puts to this paper.
+question the biological case puts to this paper; falsifiability
+commitment~\ref{fals:carried-rate} carries where that wager currently stands and is not restated
+here.
 
 None of which makes the published treatment wrong. Quantitative genetics is a time-indexed model by
 construction and the lag description is exact within it. What this account observes is that the
@@ -390,28 +407,29 @@ Section~\ref{sec:momentum-present} rather than an analogy to it.
 
 Two limits. This is not the claim that evolutionary momentum \emph{is} Narrative momentum under
 another name --- it is one mechanism in one domain, and the shared word is a fact about vocabulary
-rather than an argument. And by the composition commitment of the foundational paper, an independent
+rather than an argument. And by the composition commitment of Graphic Equalisation, an independent
 re-derivation of this kind evidences the constraints that force it rather than the arrangement this
 account proposes, so none of it is offered as confirmation.
 
-\section{Cognitive and institutional groundings}\label{sec:groundings}
-In cognition, Narrative-supporting relations may include expectations, habits, motor programmes, autobiographical commitments, causal explanations, or identity-bearing relations; predictive coding, motor-schema theory, and formal belief revision supply the established cases (Section~\ref{sec:prior-art}).
-
-In institutions, contracts, procedures, staffing, compatibility commitments, infrastructure, capital allocation, and reputation can carry Narrative, with path-dependence research as the direct precedent (Section~\ref{sec:prior-art}). Routine output may therefore remain stable even when the institution's capacity to materially revise the structure carrying that routine has degraded.
-
-These are groundings of the abstract structure.
-
-\section{Relationship to Narrativium}\label{sec:narrativium}
-Narrative Momentum describes persistence and Narrativium capacity for deformation: $\Narr$ is operative history-bearing structure, $N$ the reachable capacity to change it, and the companion Narrativium paper sets out that contrast and its counterpart against Muchness. Revision horizons produced by comparing current capacity with minimum revision cost are developed separately.
-
 \section{Positioning and prior art}\label{sec:prior-art}
 The core ingredients of Narrative Momentum are individually old. Hysteresis theory formalises selective memory in dynamical systems \citep{mayergoyz1991,mayergoyz2003}. Path dependence and increasing returns formalise historically conditioned lock-in in economics and institutions \citep{david1985,arthur1989,pierson2000}. AGM theory formalises dependency-sensitive belief revision \citep{agm1985}. Predictive coding and motor-schema theories formalise history-bearing internal structure affecting future processing and action \citep{rao1999,schmidt1975}.
+
+Those literatures are also where the two candidate groundings beyond the mechanical and the
+biological would be worked, and it is worth naming what would carry Narrative in each. In cognition,
+Narrative-supporting relations may include expectations, habits, motor programmes, autobiographical
+commitments, causal explanations, or identity-bearing relations, with predictive coding, motor-schema
+theory, and formal belief revision supplying the established cases. In institutions, contracts,
+procedures, staffing, compatibility commitments, infrastructure, capital allocation, and reputation
+can carry Narrative, with path-dependence research as the direct precedent; routine output may
+therefore remain stable even when the institution's capacity to materially revise the structure
+carrying that routine has degraded. Neither is worked here, and by the claimed-class discipline of
+Section~\ref{sec:falsifiability} neither is claimed.
 
 The claimed contribution is the reduction rather than the ingredients: these phenomena can be expressed as instances of one frame-relative pattern,
 \[
 \boxed{\parbox{0.88\textwidth}{\centering realised history $\rightarrow$ operative present structure $\rightarrow$ cost-conditioned persistence of reachable continuations.}}
 \]
-Graphic Equalisation supplies the causal reason the pattern works: only present structure enters the next deterministic transition relation. Seldon manifolds supply the geometry in which that persistence is expressed. Narrative names the measurable higher-frame state that carries the surviving history.
+Graphic Equalisation supplies the causal reason the pattern works: only present structure enters the next deterministic transition relation. \emph{Seldon} supplies the geometry in which that persistence is expressed. Narrative names the measurable higher-frame state that carries the surviving history.
 
 \section{Falsifiability commitments}\label{sec:falsifiability}
 
@@ -425,30 +443,35 @@ member of it. Nothing may be added to or removed from a class in response to a r
 has been named the commitment is not yet live, and the honest reading of such an entry is that it
 states what \emph{would} be risked rather than what currently is.
 
-\noindent\emph{On the tags.} Each commitment below is marked \textsc{[shape]} where failing it costs
-this grounding its \emph{reach} --- the account would no longer apply to the domain, or would apply
-only by giving up what it was brought here to explain --- and \textsc{[detail]} where failing it costs
-a specific mechanism while the grounding stands. The substrate paper has carried these marks for some
-time and the groundings did not, which had the discipline applied where the risk is smallest: the
-substrate risks little by design and the groundings carry the exposure. They were assigned in a single
-pass under the rule just stated, and are the least-audited judgement in this document --- a reader who
-thinks one is marked in the flattering direction is disagreeing with a fast call, not an argued
-position.
+\noindent\emph{On the tags.} Each commitment below is marked \textsc{[shape]} or \textsc{[detail]}.
+A \textsc{[detail]} failing is a revision: the account survives with that mechanism replaced. A
+\textsc{[shape]} failing costs \emph{range} rather than a mechanism, because what fails is something
+the substrate is claimed to require or to permit --- so the account does not hold where it claimed to,
+which is the more serious of the two and is still a boundary rather than an annihilation. The marks
+were assigned in a single pass under the rule just stated, and are the least-audited judgement in this
+document --- a reader who thinks one is marked in the flattering direction is disagreeing with a fast
+call, not an argued position.
 \begin{enumerate}[leftmargin=*]
-\item \textsc{[shape]}~\textbf{First-class Narrative.} Fails for a claimed grounding if Narrative cannot be measured as frame-level state and exists only as an after-the-fact interpretive label.
-\item \textsc{[shape]}~\textbf{Discrete Narrative.} \emph{(Inherited: the substrate paper's discrete
-sufficiency commitment, narrowed to Narrative-dependent behaviour. Not an independent risk.)} Fails if Narrative-dependent observable behaviour requires a non-discrete primitive that no dynamically quantised discrete representation can preserve.
-\item \textsc{[shape]}~\textbf{Historical sufficiency.} \emph{(Inherited, not additional: this is the
-substrate paper's ``no implicit historical state'' in this paper's vocabulary, and failing it there
-fails it here. It is listed because a reader of this paper alone should see what it rests on, not
-because it is a second wager.)} Fails if erased history with no present causal trace systematically changes future transition structure.
+\item \textsc{[shape]}~\textbf{First-class Narrative.} Fails for a claimed grounding if Narrative cannot be measured as frame-level state and exists only as an after-the-fact interpretive label. This is live for the maternal-inheritance grounding of Section~\ref{sec:evolutionary}; it is stated, not live, for the cognitive and institutional candidates named in Section~\ref{sec:prior-art}, which are not claimed.
+\item\label{fals:discrete} \textsc{[shape]}~\textbf{Discrete Narrative.} Fails if Narrative-dependent observable behaviour requires a non-discrete primitive that no dynamically quantised discrete representation can preserve.
+\item\label{fals:historical-sufficiency} \textsc{[shape]}~\textbf{Historical sufficiency.} Fails if erased history with no present causal trace systematically changes future transition structure.
 \item \textsc{[shape]}~\textbf{Narrative Momentum (cost form).} Fails for a specified system class if a continuation requiring operative history-bearing structure to be altered carries no greater cost than one reusing it, absent any interaction that alters that structure. This is the primary commitment, and it is testable without a directional dimension. It also fails if history is found to remove continuations from the admissible set rather than to price them, which would place the effect in $\Gamma$ (Remark~\ref{rem:membership-vs-cost}).
 \item \textsc{[shape]}~\textbf{Narrative Momentum (directional form).} Fails for a frame instantiating a directional dimension if operative Narrative-supporting structure and its represented direction persist while the associated directional tendency repeatedly vanishes or reverses without a relevant interaction. Failure here without failure of the cost form indicts the frame's directional instrumentation rather than the law.
-\item \textsc{[detail]}~\textbf{Momentum without a carried rate.} Fails if every measured case of continued change after forcing ceases is fully accounted for by a decaying recursion on inherited state --- the published maternal-effect form --- with no case in which a rate persists undamped in the way Hypothesis~\ref{hyp:narrative-momentum} requires. The cited biological cases are damped, so on present evidence this commitment is closer to failing than to holding (Remark~\ref{rem:evo-tests}).
+\item\label{fals:carried-rate} \textsc{[detail]}~\textbf{Momentum without a carried rate.} Fails if every measured case of continued change after forcing ceases is fully accounted for by a decaying recursion on inherited state --- the published maternal-effect form --- with no case in which a rate persists undamped in the way Hypothesis~\ref{hyp:narrative-momentum} requires. The cited biological cases are damped, so on present evidence this commitment is closer to failing than to holding (Remark~\ref{rem:evo-tests}).
 \item \textsc{[detail]}~\textbf{Structural lock-in.} Fails if increasing the structure that must be revised systematically lowers minimum revision cost after relevant capacity and geometry are controlled.
 \item \textsc{[shape]}~\textbf{History-sensitive projection.} Fails if histories that produce different operative present relations never produce different reachable projections in the claimed domain; conversely, the hypothesis is misapplied if different histories with identical causally complete present state are claimed to produce different deterministic successors.
 \item \textsc{[detail]}~\textbf{The Narrative level stack.} Fails if a frame can read its container's Narrative directly rather than inferring it from imposed change, or if reading a subgraph proceeds abductively from imposed change in the same way inferring a container must. (No claim is made that any level is compulsory: each may be \textsc{null}, and the modes are claimed to differ in kind, not in difficulty.)
+\item \textsc{[detail]}~\textbf{Material Narrative revision.} Fails if the materiality threshold of Definition~\ref{def:narrative-revision} cannot be fixed for a claimed grounding at a stated frame and resolution --- if no realised $\Delta\Narr\neq0$ can be sorted in advance into those that alter subsequent distinctions or direction and those that do not, so that materiality is only ever readable after the outcome. The definition would then name whatever turned out to matter rather than state a condition on a change.
+\item \textsc{[detail]}~\textbf{Nothing pending that is not held.} Fails if a system can be exhibited in a pending state --- a determinate outcome not yet realised, whose realisation depends on nothing further arriving --- with no structure anywhere holding the pendency (Proposition~\ref{prop:no-unheld-pending}). Exhibiting that the holder is not \emph{resolved} by a particular observer is not such a case.
 \end{enumerate}
+
+\noindent Two of these are inherited rather than additional.
+Commitment~\ref{fals:discrete} is Graphic Equalisation's discrete sufficiency commitment
+(its Hypothesis~\ref{GE-hyp:discrete}) narrowed to Narrative-dependent behaviour, and
+commitment~\ref{fals:historical-sufficiency} is its ``no implicit historical state''
+(its Proposition~\ref{GE-prop:no-implicit-historical-state}) in this paper's vocabulary; failing
+either there fails it here. They are listed because a reader of this paper alone should see what it
+rests on, not because either is a second wager.
 
 \section{Conclusion}\label{sec:conclusion}
 Narrative is not a metaphor smuggled into dynamics. It is first-class state in the frame that contains the relations from which it is measured:
@@ -460,45 +483,21 @@ Momentum no longer requires a magical bridge. Narrative is already dynamical sta
 The constituent ideas have long precedents. The proposed novelty is that the same minimal recursive structure accounts for their common form without making Narrative a primitive of every graph or treating history as a force that acts from the past without surviving present structure.
 
 \begin{thebibliography}{99}
-\bibitem[Mayergoyz(1991)]{mayergoyz1991}
-I. D. Mayergoyz.
-\newblock \emph{Mathematical Models of Hysteresis}.
-\newblock Springer, New York, 1991.
-
-\bibitem[Mayergoyz(2003)]{mayergoyz2003}
-I. D. Mayergoyz.
-\newblock \emph{Mathematical Models of Hysteresis and Their Applications}.
-\newblock Academic Press, 2nd ed., 2003.
-
-\bibitem[David(1985)]{david1985}
-P. A. David.
-\newblock Clio and the economics of QWERTY.
-\newblock \emph{American Economic Review}, 75(2):332--337, 1985.
-
-\bibitem[Arthur(1989)]{arthur1989}
-W. B. Arthur.
-\newblock Competing technologies, increasing returns, and lock-in by historical events.
-\newblock \emph{The Economic Journal}, 99(394):116--131, 1989.
-
-\bibitem[Pierson(2000)]{pierson2000}
-P. Pierson.
-\newblock Increasing returns, path dependence, and the study of politics.
-\newblock \emph{American Political Science Review}, 94(2):251--267, 2000.
-
-\bibitem[Alchourr\'on et al.(1985)]{agm1985}
-C. E. Alchourr\'on, P. G\"ardenfors, and D. Makinson.
+\bibitem[Alchourr\'on et~al.(1985)]{agm1985}
+Carlos E. Alchourr\'on, Peter G\"ardenfors, and David Makinson.
 \newblock On the logic of theory change: Partial meet contraction and revision functions.
 \newblock \emph{Journal of Symbolic Logic}, 50(2):510--530, 1985.
 
-\bibitem[Rao and Ballard(1999)]{rao1999}
-R. P. N. Rao and D. H. Ballard.
-\newblock Predictive coding in the visual cortex: a functional interpretation of some extra-classical receptive-field effects.
-\newblock \emph{Nature Neuroscience}, 2:79--87, 1999.
+\bibitem[Arthur(1989)]{arthur1989}
+W. Brian Arthur.
+\newblock Competing technologies, increasing returns, and lock-in by historical events.
+\newblock \emph{The Economic Journal}, 99(394):116--131, 1989.
 
-\bibitem[Schmidt(1975)]{schmidt1975}
-R. A. Schmidt.
-\newblock A schema theory of discrete motor skill learning.
-\newblock \emph{Psychological Review}, 82(4):225--260, 1975.
+\bibitem[David(1985)]{david1985}
+Paul A. David.
+\newblock Clio and the economics of QWERTY.
+\newblock \emph{American Economic Review}, 75(2):332--337, 1985.
+
 \bibitem[Kirkpatrick and Lande(1989)]{kirkpatricklande1989}
 Mark Kirkpatrick and Russell Lande.
 \newblock The evolution of maternal characters.
@@ -509,12 +508,37 @@ Russell Lande and Mark Kirkpatrick.
 \newblock Selection response in traits with maternal inheritance.
 \newblock \emph{Genetical Research}, 55(3):189--197, 1990.
 
+\bibitem[Mayergoyz(1991)]{mayergoyz1991}
+Isaak D. Mayergoyz.
+\newblock \emph{Mathematical Models of Hysteresis}.
+\newblock Springer, New York, 1991.
+
+\bibitem[Mayergoyz(2003)]{mayergoyz2003}
+Isaak D. Mayergoyz.
+\newblock \emph{Mathematical Models of Hysteresis and Their Applications}.
+\newblock Academic Press, 2nd ed., 2003.
+
 \bibitem[McAdam and Boutin(2004)]{mcadamboutin2004}
 Andrew G. McAdam and Stan Boutin.
 \newblock Maternal effects and the response to selection in red squirrels.
 \newblock \emph{Proceedings of the Royal Society B}, 271(1534):75--79, 2004.
 
-\bibitem[Thorne et al.(1998)]{thorne1998}
+\bibitem[Pierson(2000)]{pierson2000}
+Paul Pierson.
+\newblock Increasing returns, path dependence, and the study of politics.
+\newblock \emph{American Political Science Review}, 94(2):251--267, 2000.
+
+\bibitem[Rao and Ballard(1999)]{rao1999}
+Rajesh P. N. Rao and Dana H. Ballard.
+\newblock Predictive coding in the visual cortex: a functional interpretation of some extra-classical receptive-field effects.
+\newblock \emph{Nature Neuroscience}, 2:79--87, 1999.
+
+\bibitem[Schmidt(1975)]{schmidt1975}
+Richard A. Schmidt.
+\newblock A schema theory of discrete motor skill learning.
+\newblock \emph{Psychological Review}, 82(4):225--260, 1975.
+
+\bibitem[Thorne et~al.(1998)]{thorne1998}
 Jeffrey L. Thorne, Hirohisa Kishino, and Ian S. Painter.
 \newblock Estimating the rate of evolution of the rate of molecular evolution.
 \newblock \emph{Molecular Biology and Evolution}, 15(12):1647--1657, 1998.
