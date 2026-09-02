@@ -48,63 +48,72 @@ CLEARED = ["00_is",
 # Phrases that set out the excluded document's contents rather than naming it.
 FORBIDDEN = ["proposal closure", "execution semantics", "reference execution"]
 
-READING_ORDER = """Graphic Equalisation --- where to start (%(draft)s)
+READING_ORDER = """Graphic Equalisation --- what is claimed, and where (%(draft)s)
 
-WHY YOU WOULD READ ANY OF THIS
+One assumption: that to be is to stand in relation and to cohere in it, with no
+time, no cause, no rule and no observer added. What follows is claimed to
+descend from it. Each entry names where it is argued, so that it can be checked
+there rather than taken on anyone's word.
 
-One assumption: that to be is to stand in relation and to cohere in it, with
-no time, no cause, no rule and no observer added to it. The claim is that
-results you already hold then arrive as consequences rather than postulates,
-and that a few questions your field treats as open are malformed rather than
-hard.
+WHAT IS CLAIMED, AND WHERE IT IS ARGUED
 
-Concretely --- and these are the places to attack, not the places to admire:
+  the invariance of c is a theorem given the substrate's own units, not a
+  postulate
+      01a, "c as the change-to-time rate"
 
-  - the invariance of c is a theorem given the substrate's own units, rather
-    than a postulate;
-  - special and general relativity are one change-budget spent two ways, on
-    motion or on change-load;
-  - the Born rule is recovered from closure, no-privilege and free
-    continuation, rather than assumed;
-  - the measure problem of eternal inflation is ill-posed rather than
-    unsolved, which predicts that the regularisations will not converge;
-  - "a typical universe" names two different objects, and neither of them
-    supports the inference usually drawn from it;
-  - and the route from isotropy to homogeneity is exact and conditional on a
-    quantifier with no referent --- which the Ehlers-Geren-Sachs theorem
-    states in its own antecedent.
+  special and general relativity are one change-budget spent two ways, on
+  motion or on change-load
+      01a, "Special and general relativity reconciled"
 
-If none of that is worth an argument, nothing below will be.
+  the Born rule is recovered from closure, no-privilege and free continuation
+  rather than assumed
+      01a, "Amplitudes are a rule on Narrative; recovering the Born rule"
 
-WHAT IT COSTS, AND WHERE TO STOP
+  the measure problem of eternal inflation is ill-posed rather than unsolved,
+  which predicts that the regularisations will not converge
+      01c, "The measure problem is the no-prior-free proposition"
+
+  "a typical universe" names two different objects, and neither supports the
+  inference usually drawn from it
+      01c, "Anthropic reasoning inherits the same defect"
+
+  the route from isotropy to homogeneity is exact and conditional on a
+  quantifier with no referent, which Ehlers-Geren-Sachs states in its own
+  antecedent
+      01c, "The cosmological principle divides"
+
+Each of those is stated as a proposition with its grounds attached, and each
+carries falsifiability commitments in its paper's closing section. They are
+meant to be attacked at those locations.
+
+IF YOU CAME FOR ONE OF THEM
+
+Go to it. The papers are cross-referenced and each states its own dependencies;
+nothing above requires the others to have been read first.
+
+IF YOU ARE STARTING COLD
+
+  1.  00_is  --- %(p0)s
+      The one claim, with no machinery: what it commits to and what it does
+      not.
+
+  2.  01a_graphic_equalisation_physics_grounding  --- %(p1)s
+      The first three claims above, with the constants, the second law and
+      entanglement besides.
+
+  3.  01c_graphic_equalisation_cosmology_grounding  --- %(p2)s
+      The last three. Short because the in-frame half of cosmology is in 01a;
+      the division is deliberate and stated.
+
+  4.  01_law_of_graphic_equalisation_theory_referenced  --- %(p3)s
+      The monograph, which grounds everything asserted in 1-3.
 
 %(cost)s
 
-The first three are the case for caring. The fourth is the case itself. You
-can decide after the first three whether the fourth is worth it, and that is
-the intended shape of the thing rather than an accident of length.
+Read first, the monograph gives no reason to continue; read fourth, it is what
+the first three are drawing on. That is the only reason for the order.
 
-THE ORDER, WHICH IS NOT THE NUMBERING
-
-  1.  00_is  --- %(p0)s
-      One claim, no machinery. Its work is to make "everything is a graph"
-      something you can see rather than a slogan you are asked to accept.
-
-  2.  01a_graphic_equalisation_physics_grounding  --- %(p1)s
-      What the claim buys in physics: the first three items above, and the
-      constants, the second law and entanglement besides.
-
-  3.  01c_graphic_equalisation_cosmology_grounding  --- %(p2)s
-      The last three items above. Short, because the in-frame half of
-      cosmology is in 01a and the division is deliberate.
-
-  4.  01_law_of_graphic_equalisation_theory_referenced  --- %(p3)s
-      The monograph, which grounds everything asserted in 1-3. Without it the
-      rest is unearned; read first, it gives no reason to continue. That is
-      why it is fourth.
-
-The remaining documents extend the same account and can be read in any order
-afterwards. Nothing in the four above depends on them.
+The remaining documents extend the same account and depend on none of the four.
 """
 
 PAPERS = "papers/formal"
@@ -222,9 +231,11 @@ def main():
                 shutil.move(os.path.join(out, f), os.path.join(sup, f))
         for pdf, dest in plan:
             shutil.copy2(pdf, os.path.join(out, dest))
-        # The order is load-bearing and lives nowhere else. A recipient gets a
-        # directory of PDFs; a covering email carrying the order gets separated
-        # from them. So it ships with them.
+        # Ships with the papers because a covering note sent separately gets
+        # separated from them. Written as an index rather than a pitch: a
+        # reader who sought this out has already decided, and persuasion aimed
+        # at them reads as apology. Naming where each claim is argued works
+        # whoever the reader is, and does not lean on the author's standing.
         pages = {}
         for pdf, dest in plan:
             try:
@@ -242,7 +253,7 @@ def main():
         last = pages.get(order[3], 0)
         cost = ("The first three come to %d pages. The fourth is %d on its own."
                 % (first3, last)) if first3 and last else ""
-        io.open(os.path.join(out, "READ_IN_THIS_ORDER.txt"), "w",
+        io.open(os.path.join(out, "WHAT_IS_CLAIMED.txt"), "w",
                 encoding="utf-8").write(READING_ORDER % {
                     "draft": list(drafts.values())[0], "cost": cost,
                     "p0": pp[0], "p1": pp[1], "p2": pp[2], "p3": pp[3]})
