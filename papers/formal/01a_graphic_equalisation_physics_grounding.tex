@@ -11,20 +11,20 @@
 \theoremstyle{remark}\newtheorem{remark}[definition]{Remark}
 \title{The Law of Graphic Equalisation --- Physics Grounding\\\large Change, $c$, the Reconciliation of Special and General Relativity, the Recovery of the Born Rule, the Dimensional Constants, and the Second Law}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-09-02.1}\\[2pt]2 September 2026 \textbullet\ document revision 36}
+\date{\textbf{Draft \textemdash\ draft-2026-09-02.1}\\[2pt]2 September 2026 \textbullet\ document revision 38}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r36}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r38}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r36}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r38}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-09-02.1 r36} (2 September 2026).
+\textbf{DRAFT --- draft-2026-09-02.1 r38} (2 September 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. It is a companion to \emph{The Law of Graphic Equalisation ---
 Theory} (referred to below as Graphic Equalisation), and inherits that paper's
@@ -1180,12 +1180,56 @@ many lifetimes in, and \citet{rothe2006} report the crossing around ten. \emph{S
 visible because the thing hiding it decays away, not because the tail grows}, and ``deviations appear
 at long times'' is a fact about what is resolvable rather than about what is happening.
 
-\emph{That is not the missing derivation and should not be mistaken for it.} The gap is that the
-constant hazard here is a claim about what the \emph{nucleus} retains, while the exponent comes from
-the \emph{composite} spectrum being bounded below --- different objects, and this section does not
-bridge them. A route exists and is not taken: a spectrum bounded below is a frame with no infinite
-descent beneath it, which the substrate's treatment of absence might be made to give. Whether it does
-is unexamined here, and naming a route is not walking it.
+\emph{That is not the missing derivation.} The gap is that the constant hazard here is a claim about
+what the \emph{nucleus} retains, while the deviation comes from the \emph{composite} spectrum being
+bounded below. Those are different objects. The bridge is the floor itself, and the substrate does
+supply it.
+
+\begin{proposition}[The spectrum is bounded below because absence is]\label{prop:spectrum-floor}
+Action and energy come in $\hbar$-steps (Section~\ref{sec:planck}), but stepping alone gives no
+floor: the integers are stepped and run both ways. What floors it is that in-frame energy is a
+\emph{count} --- of quanta present, in $\hbar$ units --- and a count is a cardinality of what is
+there. \emph{Absence is zero and not a negative quantity}; there is no less-than-nothing to count
+down into. The substrate's unbounded direction for a count is the extensive frontier, always one more
+step outward, which is $\mathbb{N}$ and is floored at zero by construction, never $\mathbb{Z}$. A
+frame's energy spectrum is therefore a subset of $\mathbb{N}$ scaled by its quantum, and bounded
+below at absence.
+
+What is derived is that a floor \emph{exists}, not where it reads. The zero of energy is an offset
+and offsets are frame-units (Proposition~\ref{prop:dim-boundary}), so a spectrum running to
+arbitrarily negative numbers is no counterexample: a binding energy is negative against a
+conventional zero and the system is still bounded below by its own ground state, which is the floor
+this proposition is about. The claim is boundedness, which is invariant. The number at which the
+bound sits is not, and nothing here needs it to be.
+\end{proposition}
+
+That is the \emph{spectrum condition} --- positivity of the energy, an axiom where it is usually
+found \citep{streater1964} --- arriving as a consequence rather than a postulate, and it closes the
+argument the other way round from how it was posed. Exact exponential survival needs spectral support
+running to $-\infty$; the floor forbids it; so \emph{the deviation is not merely permitted by this
+account but required by it}, and required by the same fact about absence the substrate uses
+everywhere else.
+
+\emph{The exponent is a different matter and the account is right not to fix it.} For a spectral
+density behaving as $(E-E_{\min})^{\beta}$ just above the floor, the survival amplitude falls as
+$t^{-(1+\beta)}$ and the probability as $t^{-2(1+\beta)}$, so the exponent is set by $\beta$ --- how
+many distinguishable configurations sit just above absence. That is a fact about how the frame's
+dimensions are arranged, which is contingent rule-content (Section~\ref{sec:dimensions}) and not
+substrate structure. \emph{So the substrate fixes that there is a tail and cannot fix its exponent,
+and the reason is principled rather than a shortfall}: the exponent is contingent, and a substrate
+result that delivered a universal one would be claiming more than the substrate knows.
+
+Which converts the exposure into a test. \emph{The exponent should track the density of states at
+threshold and not be universal} --- differently structured systems should tail differently, and the
+free-particle $s$-wave case with $\beta=\tfrac12$ giving $t^{-3}$ is one value among the available
+ones rather than the value. A universal exponent, the same across systems with different threshold
+structure, would falsify this.
+
+One identification is doing the work and is worth marking rather than burying: \emph{in-frame energy
+is a count of quanta}. That is clean in the occupation-number picture and less clean for interacting
+systems, where the count is not sharp and the physical states are dressed. Nothing above survives if
+that identification fails for the interacting case, and this section does not establish that it
+holds there.
 
 \section{Cosmology: the initial state, the seed, and self-location}\label{sec:cosmology}
 By Graphic Equalisation's no-start-end result the event order has no intrinsic
@@ -1780,6 +1824,11 @@ Erwin Schr\"odinger.
 John H. Selby, Carlo Maria Scandolo, and Bob Coecke.
 \newblock Reconstructing quantum theory from diagrammatic postulates.
 \newblock \emph{Quantum}, 5:445, 2021.
+
+\bibitem[Streater and Wightman(1964)]{streater1964}
+Raymond F. Streater and Arthur S. Wightman.
+\newblock \emph{PCT, Spin and Statistics, and All That}.
+\newblock W. A. Benjamin, New York, 1964.
 
 \bibitem[Surya(2019)]{surya2019}
 Sumati Surya.
