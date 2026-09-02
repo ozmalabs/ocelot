@@ -1,46 +1,47 @@
 \documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,hyperref,enumitem,microtype}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,enumitem,microtype}
 \usepackage{natbib}
 \usepackage[margin=1in]{geometry}
-\newtheorem{axiom}{Axiom}
+\usepackage{xr-hyper}
+\usepackage{hyperref}
+\externaldocument[GE-]{01_law_of_graphic_equalisation_theory_referenced}
+\externaldocument[IS-]{00_is}
+\externaldocument[PH-]{01a_graphic_equalisation_physics_grounding}
 \newtheorem{definition}{Definition}[section]
-\newtheorem{theorem}[definition]{Theorem}
-\newtheorem{proposition}[definition]{Proposition}
-\newtheorem{hypothesis}[definition]{Hypothesis}
-\newtheorem{corollary}[definition]{Corollary}
 \theoremstyle{remark}\newtheorem{remark}[definition]{Remark}
-\newcommand{\Poss}{\mathcal{P}}
-\newcommand{\Coll}{\mathcal{C}}
-\newcommand{\Hist}{\mathcal{H}}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r8}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r9}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r8}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r9}}\renewcommand{\headrulewidth}{0pt}}
 \title{Frames, Relation, and the Empty Limit\\\large A Metaphysical Companion to Graphic Equalisation}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-09-02.1}\\[2pt]2 September 2026 \textbullet\ document revision 8}
+\date{\textbf{Draft \texorpdfstring{\textemdash}{---}\ draft-2026-09-02.1}\\[2pt]2 September 2026 \texorpdfstring{\textbullet}{\textperiodcentered}\ document revision 9}
 
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-09-02.1 r8} (2 September 2026).
+\textbf{DRAFT --- draft-2026-09-02.1 r9} (2 September 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. It is the metaphysical companion to \emph{The Law of Graphic
-Equalisation} (Theory), and separated from it deliberately: the material here is
-more speculative than that paper's, and was cut from its conclusion rather than
-allowed to borrow that paper's standing.}}
+Equalisation --- Theory} (referred to below as Graphic Equalisation), and inherits
+its definitions, epistemic boundary, and level-of-claims. The other documents
+referred to below carry short names too, and those are the only forms used:
+\emph{Is} (the base paper) and the physics companion (\emph{\ldots\ Physics
+Grounding}). It is kept separate from Graphic Equalisation deliberately: the
+material here is more speculative than that paper's, and should not borrow that
+paper's standing.}}
 \end{center}
 \vspace{1em}
 
 \begin{abstract}
-Two questions are taken up that the theory paper raises and should not answer. First, whether a
+Two questions are taken up that Graphic Equalisation raises and should not answer. First, whether a
 well-formed frame approaches a view from nowhere, and in what sense the limit exists. Second, whether
 relations are prior to relata, and what the substrate can say about a question of that shape. The
 answers offered are deflationary in both cases and neither is claimed as new: the limit of
@@ -50,20 +51,24 @@ account contributes is a mechanism for a gradient that has usually been describe
 \end{abstract}
 
 \section{Scope}\label{sec:scope}
-This paper depends on \emph{The Law of Graphic Equalisation} (Theory) for its vocabulary, and
-particularly on that paper's definition of a frame as an instantiated boundary relation, its
-definition of well-formedness, and its single prohibition with the formal analogue attached to it.
-Nothing here is used by that paper; the dependency runs one way. The material was written as part of
-that paper's conclusion and moved here because a conclusion is not where speculative metaphysics
-should acquire the standing of the work it concludes.
+This paper depends on Graphic Equalisation for its vocabulary, and particularly on that paper's
+definition of a frame as an instantiated boundary relation (Graphic Equalisation's
+Definition~\ref{GE-def:frame}), its definition of well-formedness (its
+Definition~\ref{GE-def:well-formed}), and its single prohibition with the formal analogue attached to
+it (its Proposition~\ref{GE-prop:prohibition}). Nothing here is used by that paper; the dependency
+runs one way. It is kept separate because a conclusion is not where speculative metaphysics should
+acquire the standing of the work it concludes.
 
 \section{Objectivity as a direction}\label{sec:direction}
 
 What makes a frame a \emph{somewhere} rather than an \emph{anywhere} is its unnecessary structure:
 what it holds that does no work, the purposes encoded in it that it does not serve, the distinctions
-not earning their cost. Well-formedness is defined by the removal of exactly that, so a better-formed
-frame is a less particular one, and frames doing the same work grow more alike as each is better
-formed. Objectivity on this reading is a direction rather than a standpoint, and the direction is
+not earning their cost. Well-formedness is defined by the removal of exactly that, and that
+definition's cost of held structure (Graphic Equalisation's Definition~\ref{GE-def:well-formed}) is
+the mechanism this paper uses throughout; so a better-formed frame is a less particular one, and
+frames doing the same work grow more alike as each is better formed (Graphic Equalisation's
+Proposition~\ref{GE-prop:convergence-observed}, which rests on the near-uniqueness posit of its
+Hypothesis~\ref{GE-hyp:cheap-cut}). Objectivity on this reading is a direction rather than a standpoint, and the direction is
 real and traversable, which is why enquiry makes progress that feels like approaching something.
 
 It is tempting to call the limit of that direction a view from nowhere. The temptation should be resisted, and the reason is internal rather
@@ -73,9 +78,11 @@ and a purpose is a somewhere. Convergence under better-formedness is therefore c
 Two frames doing the same work converge on each other. Two frames doing different work do not, and
 nothing in the mechanism suggests they should.
 
-Three further obstacles stand between the direction and any terminus, and they are independent. No
-level is self-transparent, so even a perfectly well-formed frame cannot observe its own running. A
-frame's measurement of its own throughput returns its own unit whatever the underlying rate. And the
+Three further obstacles stand between the direction and any terminus, and they are independent. The
+first two are Graphic Equalisation's, being two of the three clauses of its single prohibition
+(Proposition~\ref{GE-prop:prohibition}): no level is self-transparent, so even a perfectly
+well-formed frame cannot observe its own running; and a frame's measurement of its own throughput
+returns its own unit whatever the underlying rate. The third is this paper's own addition. The
 last of the particularity cannot be stripped without removing the criterion of well-formedness along
 with it, since that criterion is the work: strip the purpose and there is no ranking left, hence no
 cut, hence no frame.
@@ -87,11 +94,16 @@ not a frame and does nothing. Approaching the limit is genuine progress; arrivin
 dissolution rather than arrival.
 \end{remark}
 
+This is the empty end of \emph{Is}'s two zeros (\emph{Is}, Section~\ref{IS-sec:one-not-enough}),
+reached from the direction of well-formedness rather than of relation; Graphic Equalisation's
+zero-bits reading (Graphic Equalisation's Remark~\ref{GE-rem:everything-nothing}) is the same point measured.
+
 Two things that remark does not license. It is not a claim that objectivity is unavailable or that
 enquiry is futile, since the direction is real and the convergence is measurable. And it is not an
 appeal to the uncomputability of a shortest description, which would not support it: minimal
-descriptions are not unique, description length is machine-relative up to a constant, and the
-convergence claimed here is relative to what supplies a frame's primitives, for the same reason
+descriptions are not unique, description length is machine-relative up to a constant --- an objection
+Graphic Equalisation accepts as a thesis rather than deflects, the constant being the frame (Graphic
+Equalisation's Remark~\ref{GE-rem:mdl-ontic}) --- and the convergence claimed here is relative to what supplies a frame's primitives, for the same reason
 everything else in this account is.
 
 \begin{remark}[Relation to prior positions]\label{rem:nowhere-prior}
@@ -109,11 +121,13 @@ cost of what a frame holds that does no work.
 
 \section{Relations and relata}\label{sec:relation}
 
-To exist, in this substrate, is to stand in a relation. What survives every attempted removal is
-structure with relations among its parts, and nothing more: rules running is what a world
-in which anything \emph{happens} costs, not the condition of there being anything at all. Particularity is relation --- to
-be cut out is to be related to what one is cut from --- so the imperfection of \S\ref{sec:direction}
-is not a defect accompanying existence but the relation constituting it.
+\emph{Is} holds that to be is to stand in relation (\emph{Is}, Proposition~\ref{IS-prop:is}) and that
+to exist is to cohere in it (\emph{Is}, Proposition~\ref{IS-prop:cohere}), and Graphic Equalisation
+that rules running is what a world in which anything \emph{happens} costs, not the condition of there
+being anything at all (Graphic Equalisation's Remark~\ref{GE-rem:only-g}). What is added here is
+confined to the \emph{priority} question, which neither settles. Particularity is relation --- to be cut out is to be
+related to what one is cut from --- so the imperfection of Section~\ref{sec:direction} is not a defect
+accompanying existence but the relation constituting it.
 
 The priority question follows immediately and should not be answered. Are relations prior to relata,
 or relata to relations?
@@ -128,23 +142,30 @@ statement is that the question is \emph{underdetermined by this substrate}, not 
 \emph{simpliciter}. The stronger form does not survive the observation that its premise is the position it purports to leave open.
 \end{remark}
 
-What can be said beyond the underdetermination is what the theory paper says of any such choice.
+What can be said beyond the underdetermination is what Graphic Equalisation says of any such choice.
 Relation-first is the better-formed hypothesis here: it requires no posit this account does not
 already use, where relata-first requires a grounding claim that does no work in it. Better-formedness
 licenses assuming it and does not make it true, which is the same form of answer the physics
-companion gives to the choice of a synchronisation convention --- and the recurrence of that form
-across a physical and a metaphysical question is the most interesting thing in this paper.
+companion gives to the choice of a synchronisation convention (the physics companion's
+Remark~\ref{PH-rem:oneway-rule}, the better-formed-hence-assumed argument, with its
+Remark~\ref{PH-rem:reichenbach-malament} for the two halves of that situation) --- and the recurrence
+of that form across a physical and a metaphysical question is the most interesting thing in this
+paper.
+
+That horn is one \emph{Is} has already taken on its own argument: it holds relational determinacy to
+be a commitment rather than a result, and the one place to disagree with it (\emph{Is},
+Section~\ref{IS-sec:claim}), and holds the \emph{constructive} priority of relata unavailable at that
+level, an order of construction being a sequence and there being no time there for one to run in
+(\emph{Is}, Section~\ref{IS-sec:prior}); what is claimed here is the underdetermination of the
+\emph{metaphysical} priority, which is compatible with both and does not inherit either.
 
 \begin{remark}[Relation to prior positions]\label{rem:relation-prior}
-The field does not leave this open, and saying so is more useful than borrowing its authority.
-\citet{ladymanross2007} argue the strong form directly --- relations as more fundamental than objects,
-relata as abstractions from them --- so they are a proponent of one horn and not a witness for
-neutrality; the moderate position that relata and relations are inseparable without either being
-prior is \citet{esfeld2004}'s. The denial that anything possesses intrinsic, self-establishing
-existence is far older \citep{nagarjuna1995}, with the qualification that Madhyamaka declines the
-positive thesis as well, so it is an ally for the negative half of this section and not for the
-positive one; and the antecedent doctrine of dependent origination predates its systematic form by
-several centuries.
+The positions and their characterisations --- \citet{ladymanross2007} on the strong horn,
+\citet{esfeld2004} on the moderate one, and the far older denial that anything possesses intrinsic,
+self-establishing existence \citep{nagarjuna1995} --- are set out in \emph{Is}
+(Section~\ref{IS-sec:prior}) and are not restated here; what this section adds is the qualification
+that Madhyamaka declines the positive thesis as well, so it is an ally for the negative half of this
+section and not for the positive one.
 \end{remark}
 
 \begin{remark}[What the Yoneda lemma does and does not supply]\label{rem:yoneda}
@@ -168,15 +189,14 @@ The familiar case is worth taking up, both because it locates the material and b
 does not block it. Under every admissible sharpening of ``chicken'', the genetic novelty is in the
 zygote, so the first organism satisfying the sharpening developed inside an egg laid by a bird that
 did not. The answer is invariant under precisification, which is exactly the case in which vagueness
-is harmless, and it does not require a sharp boundary to exist. The earlier claim that the question
-presupposes such a boundary was wrong.
+is harmless, and it does not require a sharp boundary to exist.
 
 Where the puzzle's force actually lives is an ambiguity in \emph{egg} rather than in \emph{chicken}:
 an egg laid by a chicken and an egg containing a chicken are different objects, and the two readings
 give opposite answers. That is a disambiguation and not a discovery about carving.
 
 What the substrate contributes is confined to the second question the puzzle can be asked as: whether
-the kind is prior to its instances, or the instances to the kind. That is \S\ref{sec:relation}'s
+the kind is prior to its instances, or the instances to the kind. That is Section~\ref{sec:relation}'s
 question and is underdetermined for the reason given there. The diagnosis worth keeping is of the
 puzzle's \emph{feel} rather than of its content --- pressed on the temporal reading one retreats to
 the constitutive, and pressed on the constitutive one retreats to the temporal, so an answer seems
@@ -184,32 +204,44 @@ always to be available somewhere other than where one is standing.
 
 \section{Falsifiability}\label{sec:falsifiability}
 
-\noindent\emph{On the tags.} Each commitment below is marked \textsc{[shape]} where failing it costs
-this grounding its \emph{reach} --- the account would no longer apply to the domain, or would apply
-only by giving up what it was brought here to explain --- and \textsc{[detail]} where failing it costs
-a specific mechanism while the grounding stands. The substrate paper has carried these marks for some
-time and the groundings did not, which had the discipline applied where the risk is smallest: the
-substrate risks little by design and the groundings carry the exposure. They were assigned in a single
-pass under the rule just stated, and are the least-audited judgement in this document --- a reader who
-thinks one is marked in the flattering direction is disagreeing with a fast call, not an argued
-position.
+\noindent\emph{On the tags.} Each commitment below is marked \textsc{[shape]} or \textsc{[detail]}.
+A \textsc{[detail]} failing is a revision: the account survives with that mechanism replaced. A
+\textsc{[shape]} failing costs \emph{range} rather than a mechanism, because what fails is something
+the substrate is claimed to require or to permit --- so the account does not hold where it claimed to,
+which is the more serious of the two and is still a boundary rather than an annihilation. The marks
+were assigned in a single pass under the rule just stated, and are the least-audited judgement in this
+document --- a reader who thinks one is marked in the flattering direction is disagreeing with a fast
+call, not an argued position.
 
-This paper's claims are weaker than the theory paper's and its commitments are correspondingly
+This paper's claims are weaker than Graphic Equalisation's and its commitments are correspondingly
 narrower.
 
 \begin{enumerate}[leftmargin=*]
 \item \textsc{[shape]}~\textbf{Convergence is purpose-relative.} Fails if frames doing demonstrably different work
 converge on the same structure as each becomes better formed, which would indicate a
-purpose-independent optimum and restore the terminus this paper denies.
+purpose-independent optimum and restore the terminus this paper denies. The convergence relied on is
+Graphic Equalisation's (Proposition~\ref{GE-prop:convergence-observed}), so this item also inherits
+that paper's near-uniqueness posit (Hypothesis~\ref{GE-hyp:cheap-cut}) and fails with it.
 \item \textsc{[shape]}~\textbf{The limit is empty.} Fails if a frame can be exhibited that holds no structure not
 earning its cost and still does work --- that is, if the criterion of well-formedness survives the
 removal of the purpose it is relative to.
 \item \textsc{[shape]}~\textbf{Underdetermination, not unknowability.} Fails if a discriminating observation between
 relation-first and relata-first can be specified from within any frame, in which case the question is
-settled rather than underdetermined; and fails in the other direction if the argument of
-Remark~\ref{rem:underdetermined} can be shown not to presuppose its conclusion, in which case the
-stronger unknowability claim is recoverable.
+settled rather than underdetermined.
+\item \textsc{[detail]}~\textbf{The recurrence is one form of answer, not two.} Fails if the licence
+invoked here for relation-first and the one invoked for a synchronisation convention in the physics
+companion (that paper's Remark~\ref{PH-rem:oneway-rule}) turn out to rest on different grounds ---
+one on cost and the other on something else --- in which case the recurrence is a resemblance and the
+claim made for it above is empty.
 \end{enumerate}
+
+What would strengthen rather than falsify item 3: a demonstration that the argument of
+Remark~\ref{rem:underdetermined} does not presuppose its conclusion, which would recover the stronger
+unknowability claim rather than refute the weaker one made here --- a supersession and not a
+falsification, which is why it is not in the list. And Remark~\ref{rem:yoneda}'s negative --- that
+``an object is its relations'' is false as stated --- carries no exposure and needs none, being a
+reading of a theorem rather than a commitment of this account: what could go wrong with it is a
+misreading, which is what the remark is for.
 
 \begin{thebibliography}{99}
 
