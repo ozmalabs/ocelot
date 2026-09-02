@@ -7,7 +7,7 @@
 
 \title{The Law of Graphic Equalisation\\\large Statement}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-30.4}\\[2pt]30 August 2026 \textbullet\ statement}
+\date{\textbf{Draft \textemdash\ draft-2026-09-02.1}\\[2pt]2 September 2026 \textbullet\ statement}
 
 \begin{document}
 \maketitle

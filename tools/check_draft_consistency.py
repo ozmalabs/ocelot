@@ -68,6 +68,21 @@ def main() -> int:
                 f"{', '.join('r' + r for r in sorted(foot_revs))}"
             )
 
+    # Generator inputs carry the draft string too, and are not .tex, so a
+    # set-wide bump done over *.tex leaves them behind. That stays invisible
+    # until somebody regenerates, at which point the stale string comes back
+    # into a document that was already checked and passed. Cost one defect.
+    for other in sorted(FORMAL.iterdir()):
+        if other.suffix in (".tex", ".pdf", ".log", ".aux", ".out", ".toc") or other.is_dir():
+            continue
+        found = set(DRAFT_RE.findall(other.read_text(encoding="utf-8", errors="replace")))
+        if found and (len(found) > 1 or (drafts and found != {sorted(drafts.values())[0]})):
+            problems.append(
+                f"{other.name}: generator input carries {sorted(found)} "
+                f"but the documents are on {sorted(set(drafts.values()))} "
+                f"--- regenerating from it would reintroduce the old string"
+            )
+
     if len(set(drafts.values())) > 1:
         by_draft = {}
         for n, d in drafts.items():
