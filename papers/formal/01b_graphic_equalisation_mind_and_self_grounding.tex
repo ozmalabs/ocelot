@@ -1,7 +1,10 @@
 \documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,hyperref,enumitem,microtype}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,enumitem,microtype}
+\usepackage{xr-hyper}
+\usepackage{hyperref}
+\externaldocument[GE-]{01_law_of_graphic_equalisation_theory_referenced}
 \usepackage{natbib}
 \usepackage[margin=1in]{geometry}
 \newtheorem{definition}{Definition}[section]
@@ -11,20 +14,20 @@
 \theoremstyle{remark}\newtheorem{remark}[definition]{Remark}
 \title{The Law of Graphic Equalisation --- Mind and Self Grounding\\\large Frames, the Run and the Record, Free Will, Self-Models, Personal Identity, and Death}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-09-02.1}\\[2pt]2 September 2026 \textbullet\ document revision 38}
+\date{\textbf{Draft \textemdash\ draft-2026-09-02.1}\\[2pt]2 September 2026 \textbullet\ document revision 39}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r38}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r39}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r38}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r39}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-09-02.1 r38} (2 September 2026).
+\textbf{DRAFT --- draft-2026-09-02.1 r39} (2 September 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. It is a companion to \emph{The Law of Graphic Equalisation ---
 Theory} (referred to below as Graphic Equalisation) and to its physics companion
@@ -84,10 +87,20 @@ phenomenal character of any of it --- consciousness and qualia are out of scope.
 Each grounding is a \emph{promoted} constraint exposed to falsification, in the
 manner of Graphic Equalisation's collapse bridge, not a result asserted from within.
 
+One standard governs every place below where a \emph{measurement} is reported from this
+programme's own record rather than from a published source. What is offered there is a
+pre-registered implementation record which is not circulated with these papers, and it is a
+claim a reader may decline to credit, on exactly the terms Graphic Equalisation sets for the
+same case. Such a report states what was compared, what was found, and the scope the fixture
+holds under; it names no implementation identifiers, and nothing structural in this paper
+depends on any of it. Where a section below reports one, it is not re-disclaimed inline: this
+sentence is the disclaimer.
+
 \section{The minimal universe}\label{sec:minimal}
 A \emph{rock}, in the sense used throughout, is an inert frame: a graph whose rules
 are present but not firing, so it has no succession and no time of its own. That is
-deliberately the weaker of two senses the substrate paper distinguishes, and the
+deliberately the weaker of two senses Graphic Equalisation distinguishes
+(Remark~\ref{GE-rem:rock}), and the
 distinction is worth carrying here rather than leaving to be discovered. There the
 word anchors $g$ itself, with $r$ and $\Gamma$ \emph{absent} at the grain of
 individuation; rules present and not firing is a third condition, distinct from $g$
@@ -95,8 +108,8 @@ and from running alike, and the slide between the two is named there as an error
 is the third condition that is used below, because every argument here turns on a
 frame that \emph{could} run and does not --- a rock resuming after weathering requires
 its rules to have survived as present structure --- and none of them requires the
-stronger reading. Where the substrate paper credits this companion with naming that
-condition directly, this is the naming. Things
+stronger reading. Where Graphic Equalisation credits this companion with naming that
+condition directly (Remark~\ref{GE-rem:space-test}), this is the naming. Things
 happen to it from its supergraph, but in its own frame it merely is (the physics
 companion develops this as why a rock has no time). Everything here is a graph, so a
 rock and a universe are one kind of thing, differing in scale, not in category
@@ -142,17 +155,19 @@ universe has.
 \section{Running and recording: Conway, a movie, and the machinima between}\label{sec:runrecord}
 Recording spatialises time. A succession held as a record --- an MRI of a rock, a
 film strip, a worldline drawn on paper --- lays the temporal order out as a static
-structure, a $+$-like axis (the block's extra dimension). This reads the metric
-signature: the $-$ axis is the one being \emph{lived}, the frame's own succession
-run by its cycles, open at the frontier; the $+$ axes are \emph{held} --- spatial
-positions, and any recorded time. The sign tracks lived-versus-held, not a
-property intrinsic to the axis; the block feels dead because a recorded succession
-is not run.
+structure, a $+$-like axis (the block's extra dimension). Read against the metric
+signature, the $-$ axis is the one being \emph{lived}, the frame's own succession
+run by its cycles, open at the frontier, and the $+$ axes are \emph{held} --- spatial
+positions, and any recorded time; the block feels dead because a recorded succession
+is not run. That reading is offered here only as the run/record axis seen from the
+other side. The physics companion states the same signature in its own terms ---
+succession against position --- and the physics of it belongs there rather than here;
+where the two differ, that paper governs.
 
 The extremes of the run-versus-record axis are Conway and a movie. Conway's Game
 of Life is pure running: a rule and a seed, everything computed live, nothing
 recorded, and no way to know the outcome but to run it (computational
-irreducibility). A movie is pure record: every frame laid out, played back,
+irreducibility, \citealp{wolfram2002}). A movie is pure record: every frame laid out, played back,
 nothing computed --- the block universe, known by reading rather than running.
 Between them is scripted machinima --- a running engine following a predetermined
 script, part computed live, part laid down in advance --- and that is where real
@@ -166,32 +181,38 @@ A block is only ever of the past. What has been run can be recorded and laid out
 --- a movie of the succession so far, readable without re-running. What has not
 been run cannot be recorded, because there is nothing yet to record: the future is
 determinable by the rules but \emph{uncomputed}, Conway-style, so it is not laid out
-and cannot be read ahead --- you must run it. The open frontier of Axiom~$-1$ is
-therefore not indeterminism but unrun-ness: the future is open because it is
-uncomputed, not because nothing fixes it, and you cannot record what has not run.
+and cannot be read ahead --- you must run it. That the future is determinable and not
+determined is Graphic Equalisation's Proposition~\ref{GE-prop:determinable}, and that
+the frontier has no intrinsic last is its Proposition~\ref{GE-prop:no-start-end}. What
+is added here is that the openness is not indeterminism but unrun-ness: the future is
+open because it is uncomputed, not because nothing fixes it, and you cannot record what
+has not run.
 \end{proposition}
 
 \section{Free will and the three frames}\label{sec:freewill}
-\begin{proposition}[Free will is the in-frame run; a story demonstrates it]\label{prop:free-will}
+\begin{proposition}[Free will is the in-frame run, and needs no indeterminacy]\label{prop:free-will}
 Free will is a frame running its own decision. In a frame's own run the decision is
 live and unrun-to-it --- the frame must run its deliberation to reach the outcome ---
 and that running \emph{is} the choosing: the outcome is fixed by the rules yet
 knowable only by running, so the frame experiences computing it as choosing it. This
-needs no indeterminacy, and a story is the perfect demonstration. A book or a movie
-is a fully recorded succession --- every word or frame fixed, zero randomness,
-readable ahead by the reader --- and yet its characters have complete free will:
-they deliberate, choose, and are responsible, in frame. Both hold at once because
-they are two frames. The character's freedom is its in-frame run; the reader's
-foreknowledge is a superframe holding the finished record (a movie), and holding the
-record never reaches into the character's run to remove the freedom. So foreknowledge
-is not unfreedom --- not even complete foreknowledge, the reader who knows the ending
-or the author who wrote it --- because knowing the recorded run and being the live run
-are different frames. Randomness would only subtract: a random run is not more free,
-it is less the character's own. And responsibility survives for the reason the freedom
-does --- the run is the character's own (self-change is the only change; the rules
-running are the character) --- so a determined, recorded, even foreknown act is still
-that character's act.
+needs no indeterminacy.
 \end{proposition}
+
+A story is the demonstration. A book or a movie is a fully recorded succession --- every
+word or frame fixed, zero randomness, readable ahead by the reader --- and yet its
+characters have complete free will: they deliberate, choose, and are responsible, in
+frame. Both hold at once because they are two frames. The character's freedom is its
+in-frame run; the reader's foreknowledge is a superframe holding the finished record (a
+movie), and holding the record never reaches into the character's run to remove the
+freedom. So foreknowledge is not unfreedom --- not even complete foreknowledge, the
+reader who knows the ending or the author who wrote it --- because knowing the recorded
+run and being the live run are different frames.
+
+Two corollaries follow, and neither needs anything further. Randomness would only
+subtract: a random run is not more free, it is less the character's own. And
+responsibility survives for the reason the freedom does --- the run is the character's
+own (self-change is the only change; the rules running are the character) --- so a
+determined, recorded, even foreknown act is still that character's act.
 
 \begin{remark}[Author, character, reader: unrun-ness is absolute]\label{rem:three-frames}
 A story stacks three frames on one succession. The author \emph{runs} it --- writing is
@@ -237,139 +258,9 @@ knowledge that the slime is not. Literary theory has a name for the compound, \e
 illusion}: immersion counterbalanced by a latent rational distance, the awareness of the
 difference between representation and reality \citep{wolf2014}.
 
-Nor is it only characters that are modelled. A reader builds a model of the \emph{author} as well,
-and that construct is long established: Booth's \emph{implied author}, the version of the writer a
-reader inevitably assembles from the text \citep{booth1983}, which the standard treatment takes to
-have both an objective side, grounded in textual indexes, and a subjective one, since those indexes
-are weighed differently by each reader \citep{schmid2014}. \citet{genette1988} puts it most economically ---
-the implied author is everything the text lets us know about the author --- though the sentence is an
-opponent's maximum concession rather than an endorsement, appearing on the same page as his warning
-not to turn the idea of the author into a narrative agent, in a work concluding the concept is not
-narratology's business. It is quoted for its precision, not for its support. Two further constructs name the same object from
-neighbouring positions and should be recorded with it: the \emph{represented author}, defined as the
-reader's representation of the author of the text, in a programme built expressly for the empirical
-study of literary response \citep{bortolussi2003}, and the \emph{postulated author}, offered as a
-regulative ideal for interpretation rather than as a person \citep{nehamas1981}. Neither is
-generative, so neither bears on the composition claimed below; both bear on how routine the construct
-is. Hypothetical intentionalism makes the reasoning explicit, locating a work's meaning in what an
-appropriate audience would most reasonably hypothesise the situated author to have meant by
-composing this text \citep{levinson2002}. That viewers reach for an author at all has some empirical support, though only one half of it
-survives the argument below: when people distinguish professional abstract works from superficially
-similar ones by children and animals, they justify the professional choices by reference to the
-\emph{artist's intentions} \citep{hawleydolan2011}. The discrimination itself shows nothing here,
-for the reason given shortly; the appeal to intentions is what indicates a model of a maker.
-
-The mode is the one this paper has already named. A frame cannot read its author's frame; it has
-only what that frame produced, and so infers it --- the $+1$ direction of the level stack, run on a
-person rather than a container. Sustained output makes that inference rich, since a generator
-sampled at length discloses a great deal of itself whether or not it means to.
-
-That such a model is \emph{generative} --- runnable forward on inputs the author never addressed
---- is the part that had to be checked hardest, and the check did not confirm the claim but reduced it
-twice, the second time on reading the source rather than a summary of it. Narratology supplies
-generativity in full, and in the same theorist quoted above.
-
-\citet[82--83]{genette1982} states as a principle that \emph{it is impossible to imitate a text
-directly}. Imitation must pass through something abstracted from the corpus, which he names in his own
-terms: ``a \emph{matrix of imitation} is inevitably interposed, which is the \emph{model of competence}
-or, if one prefers, the \emph{idiolect} of the imitated corpus.'' The framing is explicitly the
-generative grammarian's --- competence against performance, \emph{langue} against \emph{parole}, an
-idiolect being ``not a message but rather a language: a code wherein the specificities of the message
-have been made fit for generalization'' --- and the operative claim is that ``the essence of competence
-is the ability to generate an \emph{unlimited number of correct performances}.'' His worked example
-runs the model forward: from scattered Balzac locutions he abstracts the formula \emph{x, that y of z}
-and then produces on it a phrase Balzac never wrote. So the extraction of a generator from a corpus,
-and its use on material the source never treated, is set out with a mechanism and an instance, in 1982.
-
-What survives is narrower still, and turns on what \emph{correct} means in that sentence. A pastiche's
-correctness is stylistic well-formedness: Proust's new Balzaceme is a good one because it is a
-locution Balzac could have written, and no question arises of whether Balzac would have held the
-thought. The claim made here has a different success condition --- what a particular person would have
-made of something they never addressed, right or wrong in ways that can be checked against them --- and
-that is why it needs a model of a \emph{person} rather than of a manner, and why the empirical case
-discussed below scores its answers against the living philosopher's own. Genette's standing objection
-to personifying the implied author is consistent with all of this and is not an obstacle to it: he
-declined to take the step, having built everything the step requires.
-
-So the generativity is prior art, fully; only the personification and the truth condition attaching to
-it are not. The status has to be stated exactly, because none of it is a new posit. It is a composition of three things each established
-independently. An author-model is a model. Models can approach the behaviour they model
-arbitrarily closely, given enough of it to work from. And analysis by synthesis runs in both
-directions: a recogniser built that way recognises \emph{by} generating candidates and comparing
-them, so it contains a generator as a matter of construction rather than as an addition to it.
-One further step is needed: the generator inside such a
-recogniser is \emph{conditional}, driven by the item being recognised and closed inside a
-comparison loop, whereas running forward means conditioning it on something no percept is
-supplying and accepting its output without a target to check against. That the same generator can
-be driven by novel conditioning is the paper's own premise, not one inherited from the perception
-literature.
-That architecture is not speculative. It is the modern form of the predictive account already
-drawn on above --- perception as the inversion of a generative model, predicted input compared
-against actual \citep{friston2010} --- and it has been tested directly on people: three-dimensional
-shape perception is best explained as analysis by synthesis, matching human observers in accuracy
-and response time better than the alternatives, and alone correlating with human performance on
-the hard discriminations \citep{yildirim2024}.
-A generative author-model follows from those, and needs no further machinery.
-
-What that argument does not establish is that any particular reader's model is of this kind, and
-the distinction matters because the obvious evidence does not decide it. Recognising a style
-requires no model of its author at all: pigeons trained on Monet and Picasso discriminate the two,
-generalise to unseen paintings, and generalise across artists --- Monet to C\'ezanne and Renoir,
-Picasso to Braque and Matisse \citep{watanabe1995}. Discriminative recognition is available without
-any generator, so neither recognising a voice nor sensing that a pastiche is wrong shows anything
-about which kind of model is in play. The empirical position is in fact weaker than that, and in the
-direction that helps this argument rather than hurting it: asked to tell poems by well-known poets
-from machine imitations of them, non-expert readers scored \emph{below} chance and rated the machine's
-poems as more human than the originals \citep{porter2024}. Ordinary readers do not reliably manage
-even the discriminative task, so nothing can be inferred from it in either direction. What would is the forward direction --- what the author
-would have made of something they never saw, right or wrong in ways others can check --- and the
-honest report is that it has not been measured. A sweep of the indexes returns machine stylometry and
-nothing on human forward-prediction of an author, so the claim here is \emph{untested} rather than
-supported or contradicted, and no distribution across readers has been established. The nearest evidence is one step to the side and concerns
-characters rather than authors: readers who learn a protagonist from text can be shown to imagine that
-protagonist in situations the text never described, which those authors themselves describe as a
-personality model used to predict behaviour in novel situations \citep{hassabis2014} --- from
-constructed two-trait protagonists, and decoded neurally rather than scored for accuracy. Readers' own
-accounts point the same way, being framed by the researchers who collected them as an expectation of
-what a character would say in a given situation \citep{aldersonday2017}.
-
-The honest summary is therefore not that the generative reading is unsupported, but that its
-\emph{components} are supported and its \emph{composition} is this paper's. One influential
-line in narratology holds that the implied author does not communicate and must not be personified
-\citep{genette1988,kindt2006}, which is a claim about an interpretive construct's role
-in a theory of narrative; it is not an argument that a model of a generator cannot be run, and the two
-are easily conflated. It should not be called the mainstream: the question is under live dispute rather than settled --- an entire journal issue was given to
-it \citep{style2011} --- and Phelan, Shen, Chatman and \citet{rabinowitz2011} argue the other way. The
-last of those matters here specifically, because this section has already drawn on Rabinowitz
-approvingly, and attributing to a consensus a position he argued against in print would have been
-citing him against himself.
-
-It has also been attempted. \citet{schwitzgebel2024} fine-tuned a language model on one
-philosopher's complete works, put ten questions to the model and to the living philosopher, and
-had experts on his work try to pick out his answers blind from five candidates. They identified
-them about half the time against a $20\%$ baseline --- well above chance, and well below the
-$80\%$ the authors had predicted --- and on two questions more of them picked a machine answer as the
-author's own than picked his. The design is the forward one: the questions were fresh and the author
-himself supplied the ground truth. It does not cleanly separate the two capacities, though, and
-the authors say so: expert performance was highest on two questions carrying what the authors
-call a superficial tell --- the philosopher wrote first names where the model wrote surnames --- which
-is discrimination doing the work rather than the model's. Related work builds runnable models of specific
-people, from their writing \citep{wang2025persona} and from biographical experience
-\citep{shao2023} and simulates individuals well enough to transfer
-to tasks no training data covered \citep{park2024}. What none of this literature does is connect
-such models to what a \emph{reader} does; it builds author-simulators as engineering, without
-reference to the implied author or to any claim about ordinary comprehension. The bridge is what
-is claimed here, not the artefact.
-
-How good such models get is a separate and largely empirical question, on which the same
-literature reports a split worth noting: what transfers most readily is topical content, while
-idiosyncratic voice and argumentative shape are harder, and the characteristic failure has been
-named and measured as \emph{caricature} --- the authors' own term, defined by failed individuation
-together with exaggeration of whatever is distinctive \citep{cheng2023}, though measured there on
-demographic personas rather than on individuals. Where fidelity to a particular individual has improved,
-it has come from richer data about that individual rather than from larger models, which is what
-the leaked-sampling reading of Section~\ref{sec:death} would expect. Nothing here turns on the
-state of any current system.
+Nor is it only characters that are modelled: a reader builds a model of the \emph{author} as
+well, which is a longer matter and is taken up in Section~\ref{sec:other-models}, where it is
+needed.
 
 Two qualifications, both of which the substrate should expect. The engagement is not uniform
 across people: measured individually, mentalizing and motor engagement during narrative
@@ -388,69 +279,6 @@ which is what the argument needs: quarantine that leaks sometimes is still quara
 therefore that the frames are functionally separated, which is what the argument needs, and not
 that they are hermetically sealed, which is false.
 \end{remark}
-
-\begin{remark}[Cognition under the same treatment]\label{rem:cognition-compression}
-Cognition is compressed by any measure --- a brain takes on the order of a fifth of a body's
-resting energy for a fiftieth of its mass, and an energy budget for signalling has been computed in
-detail \citep{attwell2001} --- for rodent grey matter, with the whole-body figures quoted there from
-earlier work rather than established by it. The stronger claim, that neural arrangements are forced
-by that budget rather than chosen, is \citet{sterling2015}'s thesis and not the budget paper's. Two
-constraints can then be named in the way Graphic Equalisation's convergence result requires, with the forcing constraint stated rather than gestured at, and only two; neither is
-supplied by either citation, and both are ordinary neuroscience. Conduction takes time over distance, so there is no central
-synchroniser and coordination is local and coupled --- the same concession distributed engineering
-made, for the same reason. And bandwidth is scarce, so what is not predicted is what gets sent.
-
-Two further candidates are excluded. That cost is inherited along provision is this account's own
-thesis (the substrate paper's recursion result), so offering it as an independent constraint on
-brains would be circular; and that introspection does not reach the machinery is not a constraint but
-the conclusion relabelled.
-
-What this licenses is narrower than \emph{cognition is the same}. Two structures under the same
-binding constraints land on the same arrangements over the region those constraints touch, and no
-further: cognition is not thereby computation, all cognitions are not thereby alike, and nothing here
-says a brain is a computer.
-\end{remark}
-
-
-\begin{remark}[A popular understanding equalises, and that is why it drifts]\label{rem:public-aperture}
-The evolutionary claims above read very differently depending on who is reading them, and the
-difference is not one of expertise so much as of aperture --- which makes it an instance of the same
-machinery rather than an aside about communication.
-
-The account of evolution most people hold is close to Darwin's: variation, competition, survival of
-the better fitted, over long stretches. Working biology in 2026 is not that. Developmental bias,
-phenotypic plasticity, inheritance beyond the gene, horizontal transfer, symbiosis and constructive
-neutral processes are all ordinary parts of the working picture, and the argument the previous remark
-takes a side in is an argument \emph{within} that picture rather than an attack on it. So
-\emph{natural selection is half of evolution} is heterodox against one aperture and unremarkable
-against the other, and a reader's reaction to it says which one they are holding.
-
-Why the gap persists is the interesting part, and it is not that the explaining has been done badly.
-A popular understanding is a structure under compression like any other, and Darwin-level evolution is
-\emph{well-formed for the purposes most people put it to}: it accounts for enough, it is cheap to
-hold, and almost nothing anyone meets in a day produces a residual it cannot absorb. It has
-equalised, and it persists for exactly the reason the horseshoe crab's form does --- nothing is
-forcing a write. The working picture is the overshooting case, kept changing by a residual the field
-manufactures deliberately.
-
-That predicts something checkable and slightly counterintuitive: the gap between popular and expert
-understanding of a field should track \emph{daily exposure to residual} rather than education or
-communication effort. Where a lay frame is corrected constantly by contact --- weather forecasting,
-where people check a prediction and see it fail --- the gap is small and the lay frame keeps up. Where
-it is never contacted in a way that fails, the gap widens no matter how much explaining is done,
-because explanation supplies no residual: the frame is not wrong for what it is used for, so nothing
-in it has to give.
-
-Two ends. This is not a claim that the popular account is ignorance --- it is well-formed for its
-work, which is what makes it durable, and calling it deficient would be measuring it against work it
-is not doing. And expert consensus is not thereby correct; it is a frame under different pressure,
-which is a fact about its residual and not a warrant.
-
-For this paper the practical consequence is small and worth stating: the evolutionary material is
-addressed to the working aperture, and a reader who finds it radical is invited to check it against
-the field rather than against what they were taught.
-\end{remark}
-
 
 \section{Imagination, grounding, and reality}\label{sec:grounding}
 \begin{proposition}[There is no non-actual frame; imagination is real]\label{prop:imagination-real}
@@ -542,13 +370,10 @@ philosophy of science arrived at independently of anything here
 \citep{massimi2022}.
 
 \section{Self-models: incomplete by construction, calibrated by choice}\label{sec:selfmodel}
-A frame does not read its own trajectory. It \emph{carries} it --- the standing structure is what the frame is, not something it holds at a distance --- so to treat its own course as an object at all, a frame must build a model of itself. The incompleteness is not merely a consequence of the aperture being finite --- a finite frame
-could in principle be modelled exhaustively --- but of the model being a proper part of what it
-models. Modelling the frame includes modelling the model, and the apparatus doing the modelling
-has strictly less capacity than the whole it belongs to, so the fit cannot close. Three features
+A frame does not read its own trajectory. It \emph{carries} it --- the standing structure is what the frame is, not something it holds at a distance --- so to treat its own course as an object at all, a frame must build a model of itself. That model is incomplete for three separate reasons, and they should be kept apart because they behave differently. \emph{Aperture:} it is built under a finite aperture, so what falls outside never enters it. \emph{Proper part:} it is a part of what it models, so modelling the frame includes modelling the model, and the apparatus doing the modelling has strictly less capacity than the whole it belongs to --- which is why a finite frame that could in principle be modelled exhaustively from outside still cannot model itself exhaustively from inside. \emph{Lesser object:} a self-model must be a lesser thing than what it models in order to carry any bits at all, which is Graphic Equalisation's self-edge result (Remark~\ref{GE-rem:self-edge}); being lesser, it omits. Three features
 of that model follow from the substrate rather than from any fact about minds.
 
-It is \emph{incomplete}, because it is built under a finite aperture, and what falls outside is \textsc{null} rather than zero: an absent distinction does not present itself as a blank to be filled, it does not present at all. It is \emph{revisable only at a price}, because altering standing structure is the paid operation while retaining it is free (Narrative momentum), so coherence-preserving readings are cheap and re-writes are not. And it is \emph{indirect about its own subject}, since a frame is readable from outside in a way it is not from inside --- which is why another frame often models one's trajectory more accurately than one does oneself, without any appeal to self-deception --- a consequence of access mode, though not an entailment of it, as below.
+It is \emph{incomplete}, for the three reasons just given, and what falls outside is \textsc{null} rather than zero: an absent distinction does not present itself as a blank to be filled, it does not present at all. It is \emph{revisable only at a price}, because altering standing structure is the paid operation while retaining it is free (Narrative momentum), so coherence-preserving readings are cheap and re-writes are not. And it is \emph{indirect about its own subject}, since a frame is readable from outside in a way it is not from inside --- which is why another frame often models one's trajectory more accurately than one does oneself, without any appeal to self-deception --- a consequence of access mode, though not an entailment of it, as below.
 
 The first of these has a structural analogue in theoretical neuroscience.
 \citet{friston2010} builds the free-energy account on a Markov blanket: a statistical
@@ -571,7 +396,10 @@ signal (Graphic Equalisation's distinction between the absent and the residual).
 limit therefore leaves no \emph{direct} residual. What it can leave is imposed change a frame
 cannot attribute --- weaker evidence, and evidence that does not disclose the limit's shape --- so
 the fact and shape of an aperture are reached mainly by \emph{metacognition}, a frame modelling its own modelling, which is a further capability on its
-own axis and not a consequence of having an aperture.
+own axis and not a consequence of having an aperture. So the operative distinction is
+not between complete and incomplete self-models, all being incomplete, but between
+\emph{calibrated} and \emph{uncalibrated} ones.
+\end{proposition}
 
 That separation is why calibration is a capability rather than something possession of a limit
 supplies. Where metacognition is thin and the aperture is narrow, the frame is both most
@@ -583,10 +411,7 @@ metacognitive reading of self-assessment offered by \citet{kruger1999}, on which
 judge competence is not separable from the competence itself. That reading is contested --- the
 pattern has been argued to reflect regression to the mean and better-than-average effects rather
 than a metacognitive deficit --- so it is cited here as one disputed candidate for the shape, not
-as its confirmation, and nothing above depends on it. So the operative distinction is
-not between complete and incomplete self-models, all being incomplete, but between
-\emph{calibrated} and \emph{uncalibrated} ones.
-\end{proposition}
+as its confirmation, and nothing above depends on it.
 
 Calibration in this sense already has an empirical form under measurement.
 \citet{fleming2024} reviews confidence as a judgement informed by the observer's
@@ -597,7 +422,9 @@ rather than a virtue term --- which is what the proposition needs it to be --- a
 route by which that confidence is reached is Proposition~\ref{prop:selfmodel}'s, in
 empirical form, characteristic failures included.
 
-The asymmetry, though, is one of \emph{access mode}, not of accuracy, and the two must not be run together. Mode is only one input to how good a model is; machinery and sustained investment are another, and they can dominate it. An outside frame has the better access and almost always the lower investment --- it is not working at the problem --- while a frame modelling itself has the worse access but continuity, sustained effort, and data no outsider obtains, its own residual among them. So the familiar case in which others judge one more accurately than one judges oneself is the \emph{common} case rather than the structural outcome, and it holds because most self-models are uncalibrated, not because the arrangement forces it. A sufficiently skilled frame can hold a better model of itself than any outside frame holds of it --- and, since building the model is itself the objectification, that skill converts part of what was merely carried into something read: the vantage a frame does not natively have, it can construct. The same machinery improves its models of others, which is why the two capabilities travel together rather than trading off.
+The asymmetry, though, is one of \emph{access mode}, not of accuracy, and the two must not be run together. Mode is only one input to how good a model is; machinery and sustained investment are another, and they can dominate it. An outside frame has the better access and almost always the lower investment --- it is not working at the problem --- while a frame modelling itself has the worse access but continuity, sustained effort, and data no outsider obtains, its own residual among them.
+
+So the familiar case in which others judge one more accurately than one judges oneself is the \emph{common} case rather than the structural outcome, and it holds because most self-models are uncalibrated, not because the arrangement forces it. A sufficiently skilled frame can hold a better model of itself than any outside frame holds of it --- and, since building the model is itself the objectification, that skill converts part of what was merely carried into something read: the vantage a frame does not natively have, it can construct. The same machinery improves its models of others, which is why the two capabilities travel together rather than trading off.
 
 This bears directly on how such failures should be read. A frame with no meta-machinery fills gaps it cannot see as gaps, and reports the filling as knowledge; a frame that models its own boundary reports the gap instead. The difference is, like everything else here, optional: a frame may hold a model of its own limits, or may not.
 
@@ -653,13 +480,14 @@ differently.
 A self-model can fail against what it models, and the failure has a shape worth setting out, because
 its most familiar instance is routinely described in a way that gets the direction wrong.
 
-\emph{Why a self-model is always a wager.} The substrate paper's treatment of plurality settles that
+\emph{Why a self-model is always a wager.} Graphic Equalisation's treatment of plurality
+(Remark~\ref{GE-rem:types-forced}) settles that
 distinctness is forced while sameness is supplied: that two things are not one is given, that they are
 of a kind is a frame's. A self-model is exactly such a supplied sameness --- a frame's identity held
 across its own occasions --- so it is a wager by construction and not through any frame's carelessness.
-And the wager cannot be declined by holding a better model, because the substrate paper's self-edge
-result requires a self-model to be a \emph{lesser} object than what it models in order to carry any
-bits at all. Being lesser it omits; what it omits is where a mismatch can live. \emph{The condition of
+And the wager cannot be declined by holding a better model, for the third of the reasons given at the
+head of this section: being a lesser object, a self-model omits, and what it omits is where a mismatch
+can live. \emph{The condition of
 a self-model's being informative is the same condition as its being capable of error}, and these are
 not two properties that happen to travel together but one property described twice.
 
@@ -674,8 +502,8 @@ thing, it invites a search for the change in the wrong place, and there is nothi
 
 \emph{Why it arrives as a moment rather than a slope.} A model asserting that the frame is in the right
 is not a passive record; it participates in what counts as evidence, so a difference that would tell
-against it is the difference an aperture shaped by it does not resolve. The substrate paper's fourth
-cost of well-formedness names this arrangement exactly --- a graph acquiring a false model of itself,
+against it is the difference an aperture shaped by it does not resolve. Graphic Equalisation's fourth
+cost of well-formedness (Definition~\ref{GE-def:well-formed}) names this arrangement exactly --- a graph acquiring a false model of itself,
 carrying residual it cannot see, with the failure silent and no signal that anything is missing. The
 residual accumulates \emph{unread} rather than being weighed and dismissed, and the realisation comes
 when it exceeds what the aperture can go on excluding, which it does at once rather than by degrees.
@@ -688,6 +516,80 @@ unread. A frame that has undergone one should therefore be able to identify prio
 read at the time, while a frame that genuinely received new evidence should not, having had nothing to
 miss. That distinguishes the two cases by something checkable rather than by how either felt, and
 nothing here tests it.
+\end{remark}
+
+\section{Two structures under the same compression}\label{sec:compression}
+Graphic Equalisation states a convergence result --- two structures under the same binding
+constraints land on the same arrangements over the region those constraints touch, and no
+further (Proposition~\ref{GE-prop:compression-convergence}) --- and applies it to evolution in
+Remark~\ref{GE-rem:evolution-compression}. Two instances belong here rather than there, because
+both are about apertures: one runs the same treatment over cognition, the other over what a
+popular understanding of a field equalises to. Neither is a result about minds in particular,
+and neither is used by anything above; they are placed here because this is the paper that
+carries the aperture material they turn on.
+
+\begin{remark}[Cognition under the same treatment]\label{rem:cognition-compression}
+Cognition is compressed by any measure --- a brain takes on the order of a fifth of a body's
+resting energy for a fiftieth of its mass, and an energy budget for signalling has been computed in
+detail \citep{attwell2001} --- for rodent grey matter, with the whole-body figures quoted there from
+earlier work rather than established by it. The stronger claim, that neural arrangements are forced
+by that budget rather than chosen, is \citet{sterling2015}'s thesis and not the budget paper's. Two
+constraints can then be named in the way that convergence result requires, with the forcing
+constraint stated rather than gestured at, and only two; neither is
+supplied by either citation, and both are ordinary neuroscience. Conduction takes time over distance, so there is no central
+synchroniser and coordination is local and coupled --- the same concession distributed engineering
+made, for the same reason. And bandwidth is scarce, so what is not predicted is what gets sent.
+
+Two further candidates are excluded. That cost is inherited along provision is this account's own
+thesis (Graphic Equalisation's recursion result, Proposition~\ref{GE-prop:runner-recursion}), so
+offering it as an independent constraint on
+brains would be circular; and that introspection does not reach the machinery is not a constraint but
+the conclusion relabelled.
+
+What this licenses is narrower than \emph{cognition is the same}. Two structures under the same
+binding constraints land on the same arrangements over the region those constraints touch, and no
+further: cognition is not thereby computation, all cognitions are not thereby alike, and nothing here
+says a brain is a computer.
+\end{remark}
+
+\begin{remark}[A popular understanding equalises, and that is why it drifts]\label{rem:public-aperture}
+Graphic Equalisation's evolution remark (Remark~\ref{GE-rem:evolution-compression}) reads very
+differently depending on who is reading it, and the
+difference is not one of expertise so much as of aperture --- which makes it an instance of the same
+machinery rather than an aside about communication.
+
+The account of evolution most people hold is close to Darwin's: variation, competition, survival of
+the better fitted, over long stretches. Working biology in 2026 is not that. Developmental bias,
+phenotypic plasticity, inheritance beyond the gene, horizontal transfer, symbiosis and constructive
+neutral processes are all ordinary parts of the working picture, and the argument that remark
+takes a side in is an argument \emph{within} that picture rather than an attack on it. So
+\emph{natural selection is half of evolution} is heterodox against one aperture and unremarkable
+against the other, and a reader's reaction to it says which one they are holding.
+
+Why the gap persists is the interesting part, and it is not that the explaining has been done badly.
+A popular understanding is a structure under compression like any other, and Darwin-level evolution is
+\emph{well-formed for the purposes most people put it to}: it accounts for enough, it is cheap to
+hold, and almost nothing anyone meets in a day produces a residual it cannot absorb. It has
+equalised, and it persists for exactly the reason the horseshoe crab's form does --- nothing is
+forcing a write. The working picture is the overshooting case, kept changing by a residual the field
+manufactures deliberately.
+
+That predicts something checkable and slightly counterintuitive: the gap between popular and expert
+understanding of a field should track \emph{daily exposure to residual} rather than education or
+communication effort. Where a lay frame is corrected constantly by contact --- weather forecasting,
+where people check a prediction and see it fail --- the gap is small and the lay frame keeps up. Where
+it is never contacted in a way that fails, the gap widens no matter how much explaining is done,
+because explanation supplies no residual: the frame is not wrong for what it is used for, so nothing
+in it has to give.
+
+Two ends. This is not a claim that the popular account is ignorance --- it is well-formed for its
+work, which is what makes it durable, and calling it deficient would be measuring it against work it
+is not doing. And expert consensus is not thereby correct; it is a frame under different pressure,
+which is a fact about its residual and not a warrant.
+
+The practical consequence is small and worth stating: that evolutionary material is
+addressed to the working aperture, and a reader who finds it radical is invited to check it against
+the field rather than against what they were taught.
 \end{remark}
 
 \section{Influence, and where the honest/manipulative distinction actually enters}\label{sec:communication}
@@ -704,7 +606,7 @@ influence among its effects, and no rule anywhere is conditioned on an act being
 
 This is a claim about \emph{mechanism} and must not be inflated into a claim about identity.
 That no formalism distinguishes two things is a fact about the
-formalism; concluding that the things are one is invalid, and this paper commits the opposite
+formalism; concluding that the things are one is invalid, and this paper makes the opposite
 inference elsewhere --- time is not a substrate primitive and nonetheless exists wherever a frame
 instantiates one. The same verdict is the right one here.
 
@@ -758,27 +660,37 @@ the recipient untouched, only better and worse chosen ones.
 \end{remark}
 
 \begin{remark}[As implemented]\label{rem:comm-engine}
-Both propositions are claims about a substrate, so they were checked against one, and the check
-corrected this section twice.
+Both propositions are claims about a substrate, so they were checked against one, and what follows
+is what that check compared and what it found.
 
-For Proposition~\ref{prop:one-influence} the mechanism finding holds and is stronger than an absence.
-In the engine's research seeds, the rule by which an agent decides to conceal harm from a partner and
-the rule by which an agent decides to wait for a second reward have character-identical conditions and
-character-identical effects, differing in one edge-type name; both are one $\arg\max$ over candidate
-actions by total value, and the family extends to at least two further cases, escape from learned
-helplessness and resource harvesting. Four situations, one template. Concealment wins that comparison
+For Proposition~\ref{prop:one-influence} the finding is stronger than an absence. Four decision
+rules were read against one another, drawn from four unrelated research situations: an agent
+deciding whether to conceal a harm from a partner, an agent deciding whether to wait for a larger
+later reward, an agent deciding whether to attempt escape after repeated failure, and an agent
+deciding how much of a shared resource to take. Three of the four are character-identical, differing
+only in the name of one edge type; the fourth is the same template with two further names changed.
+Each is one $\arg\max$ over candidate actions by total value. Four situations, one template, and no
+condition anywhere on an act's being deceptive. Concealment wins that comparison
 when the cost attached to honesty exceeds honesty's benefit \emph{net of} concealment's --- a margin,
 not a threshold on either alone --- and the quantity scaling that cost is the acting agent's own
 affect rather than the harm done, which is itself an instance of the substitution
 Proposition~\ref{prop:manipulation-structural} is about.
 
-For Proposition~\ref{prop:manipulation-structural} the correction is sharper. It is not the case that the implementation cannot represent whom a deformation serves, nor that benefit is priced in the acting frame's own currency. That was wrong within the day: the substrate carries the
+For Proposition~\ref{prop:manipulation-structural} the finding is a split rather than an absence,
+and the implementation reached it independently of this section. The substrate carries the
 beneficiary as a \emph{measured} quantity --- a deformed continuation audited against the acted-on
 frame's own tube and against the originating frame's, using the ordinary manifold audit rather than
-any new notion of benefit --- with the presented beneficiary held as a separate field, and a
-precondition restricting the question to origins that bear goals at all. The implementation reached
-the presented/measured split independently, and this section's propositions were reorganised to match
-it rather than the reverse.
+any new notion of benefit --- with the presented beneficiary held as a separate field and a
+precondition restricting the question to origins that bear goals at all. What was compared was four
+cases over one deformation: an origin bearing no goals; a continuation carrying the acted-on frame
+toward its own tube; the same continuation carrying it toward the origin's, presented as serving the
+acted-on frame; and that same continuation presented honestly as serving the origin. Only the third
+flags. The identical deformation with identical measured service does not flag when the claim
+matches, which is the presented/produced divergence and not truth at the content level; where the
+origin bears no goals the fields stay absent rather than being filled with a measured ``nobody''.
+One limit of the instrument is recorded there and belongs with the result: it compares the origin's
+service against the acted-on frame's only, so an act that serves some \emph{third} frame at the
+acted-on frame's expense passes it.
 
 Two smaller findings survive checking. The commit gate on an utterance tests whether its intended
 content is recoverable by the audience and nothing else --- no truth, belief or sincerity predicate
@@ -786,9 +698,10 @@ anywhere on that path --- and the seed carrying it is loaded by the running agen
 research demonstration. And of Grice's four maxims, only Quantity has a rule implementing its content;
 Quality, Relation and Manner have none, and no rule reads the maxim concepts themselves.
 
-\emph{Scope.} The seeds carrying the byte-identical decision rules are research demonstrations,
-default-disabled and not loaded by the running agent, and the audit was static rather than executed.
-The commit-gate and maxim findings are not so limited.
+\emph{Scope.} The seeds carrying the near-identical decision rules are research demonstrations,
+default-disabled and not loaded by the running agent, and that comparison was a static reading of the
+rules rather than an executed run. The beneficiary comparison was executed, on a small synthetic
+fixture. The commit-gate and maxim findings are not so limited.
 \end{remark}
 
 \begin{remark}[Manipulability is a property of horizon, not of credulity]\label{rem:comm-horizon}
@@ -808,15 +721,20 @@ is therefore indistinguishable from help at a short enough horizon, and not beca
 careless: the discriminating evidence lies past where it can see.
 
 This account does not derive planning horizon from a window of tolerance, and what follows stands on
-the horizon material of the engineering record rather than on anything established here. Taken at that strength, it yields a
+that horizon material rather than on anything established here. Taken at that strength, it yields a
 prediction worth stating plainly. A narrower window gives a shorter horizon,
 and a shorter horizon cannot contain the evidence, so \emph{stress makes a frame manipulable
 structurally} --- not by making it credulous, but by shortening the range over which service is
 measurable at all. The dysregulated frame is checking correctly over a range too short to hold the
-answer. The two halves are measured separately in the engineering record, which is not published
-alongside these papers and so cannot be checked by a reader; they have not been run as one composed
-experiment, and the prediction is offered at that strength and as an assertion rather than as
-evidence.
+answer. The two halves were measured separately and have not been run as one composed experiment, so
+this is offered as a prediction rather than as a result.
+
+Graphic Equalisation reaches the same shortening from the other side and says so
+(Remark~\ref{GE-rem:aperture-purchased}): aperture is standing structure a frame pays to maintain,
+so capacity consumed by anything else narrows it, and the horizon goes with the aperture. The route
+here is window~$\to$~horizon~$\to$~manipulability; the route there is capacity-consumed~$\to$~aperture
+narrows. Both predict the same direction, neither is derived from the other, and the two have not
+been reconciled.
 
 One further consequence sharpens the proposition. An act that declares itself self-serving is not
 flagged by this instrument, because the object measured is the divergence between presented and
@@ -875,11 +793,22 @@ the residual now. Point by point, a calibrated supply is indistinguishable from 
 because point by point it \emph{is} genuine progress.
 
 The available defence is therefore not a better local test but a change of object: reduce the whole
-record rather than the step, and ask what a trajectory amounted to relative to what it consumed. A
-sequence that repeatedly returns to states it has already held has a low ratio of net movement to
-gross, and the separation between an exhaustible source and a calibrated one on that measure is
-roughly tenfold in a fixture of the engineering record --- again unpublished here, so the figure is
-an assertion and not something a reader can check.
+record rather than the step, and ask what a trajectory amounted to relative to what it consumed ---
+net displacement over gross path length, which no single step can be asked for.
+
+That separation has been measured. Two sources with the same difficulty profile were driven through
+the same rate-gated attention machinery over sixty steps: one learned and then finished, the other
+renewing exactly as fast as it would have been exhausted. The calibrated source held attention on 59
+steps of 60 against the exhaustible source's 9, with every local signal --- residual, progress,
+interest --- reading healthy throughout. On the trajectory measure the two separate by about
+tenfold: net-to-gross $0.67$ against $0.066$, the calibrated arm having expended 274 to move 18. One
+negative result belongs with it, because it corrects the obvious version of the same idea: counting
+returns to states already held does \emph{not} discriminate, and runs the wrong way (51 against 46),
+because a frame that has finished revisits constantly too. It is the cost-weighted ratio that
+separates them, not recurrence. The fixture is synthetic and deterministic --- one item, one
+dimension, a hand-built difficulty profile, sixty steps, one run per arm --- and the renewal schedule
+is supplied rather than searched for, so nothing there measures how hard a calibrated supply is to
+construct.
 
 Two limits on that defence, and the second is the more important. The reduction detects that a
 trajectory amounted to little; it does not say why, and every benign explanation remains --- a hard
@@ -908,6 +837,146 @@ mislead without asserting anything false is later, and belongs to the literature
 lying --- is also argued.
 \end{remark}
 
+\section{Models of others: the implied author and generative fidelity}\label{sec:other-models}
+Remark~\ref{rem:reader} left one thread hanging, and it is the one Section~\ref{sec:death} needs:
+a reader models not only characters but the \emph{author}, and what that model is turns out to
+matter for what a record of a person can carry.
+
+That construct is long established: Booth's \emph{implied author}, the version of the writer a
+reader inevitably assembles from the text \citep{booth1983}, which the standard treatment takes to
+have both an objective side, grounded in textual indexes, and a subjective one, since those indexes
+are weighed differently by each reader \citep{schmid2014}. \citet{genette1988} puts it most economically ---
+the implied author is everything the text lets us know about the author --- though the sentence is an
+opponent's maximum concession rather than an endorsement, appearing on the same page as his warning
+not to turn the idea of the author into a narrative agent, in a work concluding the concept is not
+narratology's business. It is quoted for its precision, not for its support. Two further constructs name the same object from
+neighbouring positions and should be recorded with it: the \emph{represented author}, defined as the
+reader's representation of the author of the text, in a programme built expressly for the empirical
+study of literary response \citep{bortolussi2003}, and the \emph{postulated author}, offered as a
+regulative ideal for interpretation rather than as a person \citep{nehamas1981}. Neither is
+generative, so neither bears on the composition claimed below; both bear on how routine the construct
+is. Hypothetical intentionalism makes the reasoning explicit, locating a work's meaning in what an
+appropriate audience would most reasonably hypothesise the situated author to have meant by
+composing this text \citep{levinson2002}. That viewers reach for an author at all has some empirical support, though only one half of it
+survives the argument below: when people distinguish professional abstract works from superficially
+similar ones by children and animals, they justify the professional choices by reference to the
+\emph{artist's intentions} \citep{hawleydolan2011}. The discrimination itself shows nothing here,
+for the reason given shortly; the appeal to intentions is what indicates a model of a maker.
+
+The mode is the one this paper has already named. A frame cannot read its author's frame; it has
+only what that frame produced, and so infers it --- the $+1$ direction of the level stack, run on a
+person rather than a container. Sustained output makes that inference rich, since a generator
+sampled at length discloses a great deal of itself whether or not it means to.
+
+That such a model is \emph{generative} --- runnable forward on inputs the author never addressed
+--- is the part carrying the weight, and narratology supplies it in full, in the same theorist
+quoted above.
+
+\citet[82--83]{genette1982} states as a principle that \emph{it is impossible to imitate a text
+directly}. Imitation must pass through something abstracted from the corpus, which he names in his own
+terms: ``a \emph{matrix of imitation} is inevitably interposed, which is the \emph{model of competence}
+or, if one prefers, the \emph{idiolect} of the imitated corpus.'' The framing is explicitly the
+generative grammarian's --- competence against performance, \emph{langue} against \emph{parole}, an
+idiolect being ``not a message but rather a language: a code wherein the specificities of the message
+have been made fit for generalization'' --- and the operative claim is that ``the essence of competence
+is the ability to generate an \emph{unlimited number of correct performances}.'' His worked example
+runs the model forward: from scattered Balzac locutions he abstracts the formula \emph{x, that y of z}
+and then produces on it a phrase Balzac never wrote. So the extraction of a generator from a corpus,
+and its use on material the source never treated, is set out with a mechanism and an instance, in 1982.
+
+What survives is narrower still, and turns on what \emph{correct} means in that sentence. A pastiche's
+correctness is stylistic well-formedness: Proust's new Balzaceme is a good one because it is a
+locution Balzac could have written, and no question arises of whether Balzac would have held the
+thought. The claim made here has a different success condition --- what a particular person would have
+made of something they never addressed, right or wrong in ways that can be checked against them --- and
+that is why it needs a model of a \emph{person} rather than of a manner, and why the empirical case
+discussed below scores its answers against the living philosopher's own. Genette's standing objection
+to personifying the implied author is consistent with all of this and is not an obstacle to it: he
+declined to take the step, having built everything the step requires.
+
+So the generativity is prior art, fully; only the personification and the truth condition attaching to
+it are not.
+
+\begin{proposition}[A model of another is a generator inferred from output]\label{prop:other-model}
+A frame's model of another frame is a generator, inferred from that frame's output and runnable
+forward on inputs its subject never addressed. This is not a new posit but a composition of three
+things each established independently. An author-model is a model. Models can approach the behaviour
+they model arbitrarily closely, given enough of it to work from. And analysis by synthesis runs in both
+directions: a recogniser built that way recognises \emph{by} generating candidates and comparing
+them, so it contains a generator as a matter of construction rather than as an addition to it.
+One further step is needed: the generator inside such a
+recogniser is \emph{conditional}, driven by the item being recognised and closed inside a
+comparison loop, whereas running forward means conditioning it on something no percept is
+supplying and accepting its output without a target to check against. That the same generator can
+be driven by novel conditioning is this paper's own premise, not one inherited from the perception
+literature.
+\end{proposition}
+
+That architecture is not speculative. It is the modern form of the predictive account already
+drawn on above --- perception as the inversion of a generative model, predicted input compared
+against actual \citep{friston2010} --- and it has been tested directly on people: three-dimensional
+shape perception is best explained as analysis by synthesis, matching human observers in accuracy
+and response time better than the alternatives, and alone correlating with human performance on
+the hard discriminations \citep{yildirim2024}. A generative author-model follows from those, and
+needs no further machinery.
+
+What that argument does not establish is that any particular reader's model is of this kind, and
+the distinction matters because the obvious evidence does not decide it. Recognising a style
+requires no model of its author at all: pigeons trained on Monet and Picasso discriminate the two,
+generalise to unseen paintings, and generalise across artists --- Monet to C\'ezanne and Renoir,
+Picasso to Braque and Matisse \citep{watanabe1995}. Discriminative recognition is available without
+any generator, so neither recognising a voice nor sensing that a pastiche is wrong shows anything
+about which kind of model is in play. The empirical position is in fact weaker than that, and in the
+direction that helps this argument rather than hurting it: asked to tell poems by well-known poets
+from machine imitations of them, non-expert readers scored \emph{below} chance and rated the machine's
+poems as more human than the originals \citep{porter2024}. Ordinary readers do not reliably manage
+even the discriminative task, so nothing can be inferred from it in either direction. What would is the forward direction --- what the author
+would have made of something they never saw, right or wrong in ways others can check --- and the
+honest report is that it has not been measured. The literature holds machine stylometry and
+nothing on human forward-prediction of an author, so the claim here is \emph{untested} rather than
+supported or contradicted, and no distribution across readers has been established. The nearest evidence is one step to the side and concerns
+characters rather than authors: readers who learn a protagonist from text can be shown to imagine that
+protagonist in situations the text never described, which those authors themselves describe as a
+personality model used to predict behaviour in novel situations \citep{hassabis2014} --- from
+constructed two-trait protagonists, and decoded neurally rather than scored for accuracy. Readers' own
+accounts point the same way, being framed by the researchers who collected them as an expectation of
+what a character would say in a given situation \citep{aldersonday2017}.
+
+The honest summary is therefore not that the generative reading is unsupported, but that its
+\emph{components} are supported and its \emph{composition} is this paper's. One influential
+line in narratology holds that the implied author does not communicate and must not be personified
+\citep{genette1988,kindt2006}, which is a claim about an interpretive construct's role
+in a theory of narrative; it is not an argument that a model of a generator cannot be run, and the two
+are easily conflated. It should not be called the mainstream: the question is under live dispute rather than settled --- an entire journal issue was given to
+it \citep{style2011} --- and Phelan, Shen, Chatman and \citet{rabinowitz2011} argue the other way.
+
+It has also been attempted. \citet{schwitzgebel2024} fine-tuned a language model on one
+philosopher's complete works, put ten questions to the model and to the living philosopher, and
+had experts on his work try to pick out his answers blind from five candidates. They identified
+them about half the time against a $20\%$ baseline --- well above chance, and well below the
+$80\%$ the authors had predicted --- and on two questions more of them picked a machine answer as the
+author's own than picked his. The design is the forward one: the questions were fresh and the author
+himself supplied the ground truth. It does not cleanly separate the two capacities, though, and
+the authors say so: expert performance was highest on two questions carrying what the authors
+call a superficial tell --- the philosopher wrote first names where the model wrote surnames --- which
+is discrimination doing the work rather than the model's. Related work builds runnable models of specific
+people, from their writing \citep{wang2025persona} and from biographical experience
+\citep{shao2023} and simulates individuals well enough to transfer
+to tasks no training data covered \citep{park2024}. What none of this literature does is connect
+such models to what a \emph{reader} does; it builds author-simulators as engineering, without
+reference to the implied author or to any claim about ordinary comprehension. The bridge is what
+is claimed here, not the artefact.
+
+How good such models get is a separate and largely empirical question, on which the same
+literature reports a split worth noting: what transfers most readily is topical content, while
+idiosyncratic voice and argumentative shape are harder, and the characteristic failure has been
+named and measured as \emph{caricature} --- the authors' own term, defined by failed individuation
+together with exaggeration of whatever is distinctive \citep{cheng2023}, though measured there on
+demographic personas rather than on individuals. Where fidelity to a particular individual has improved,
+it has come from richer data about that individual rather than from larger models, which is what
+the leaked-sampling reading of Section~\ref{sec:death} would expect. Nothing here turns on the
+state of any current system.
+
 \section{Death and personal identity}\label{sec:death}
 \begin{proposition}[Death is when the self's rules cease to be re-runnable in the same coherent self]\label{prop:death}
 Death is, critically, the rules within the self ceasing to be re-runnable in the same
@@ -922,8 +991,10 @@ history: rules that changed abruptly would leave the structure carried forward i
 what produced it, and that incongruity is itself the discontinuity --- and it is why a pause is survivable and death is not; the
 self-graph goes inert for good, a record where it was a run (the rock of
 Section~\ref{sec:minimal}, now grounded only in what remains of it).
+\end{proposition}
 
-What ends is only the self's own run. The supergraph runs on, and two things the self
+\begin{remark}[What ends is only the self's own run]\label{rem:death-persists}
+The supergraph runs on, and two things the self
 did persist in it. Its changes persist: rule-actions are pointers, work done once, so
 every write the agent made to the supergraph is the supergraph's now, and death does not
 undo it --- though under no-copy it persists only as surviving present structure, until
@@ -937,13 +1008,14 @@ where the self does re-run, forked to a new node). The
 self can no longer self-change, and self-change was the only change it had; the changes
 it already made and the copies already running elsewhere are no longer its to stop.
 They keep running without it.
-\end{proposition}
+\end{remark}
 
 \begin{proposition}[Identity is internal coherence; instances are supergraph nodes]\label{prop:identity}
 Two things must be kept apart: the self's \emph{internal coherence} --- the whole of its
-rules and state, held together across transitions, which is Graphic Equalisation's SELF identity --- and its
+rules and state, held together across transitions, which is Graphic Equalisation's SELF identity
+(Definition~\ref{GE-def:self-identity}) --- and its
 \emph{supergraph node} --- the instance of it running at a position in the container,
-which is what that paper's SUPERGRAPH identity tracks. The self is the internal coherence; a node is one instance of it. This
+which is what its SUPERGRAPH identity tracks (Definition~\ref{GE-def:supergraph-identity}). The self is the internal coherence; a node is one instance of it. This
 resolves the standard puzzles. Gradual replacement (cell turnover, the Ship of Theseus)
 is survival: internal coherence is continuous and there is one node throughout --- the
 self is the coherent running, not the substrate. A backup restored is still the same
@@ -958,12 +1030,19 @@ reinstates the internal self at a new node, the original node stops --- so the i
 self survives, relocated. What matters about a record is whether it can reconstitute the
 coherence. A full coherence-snapshot re-runs into the same internal self, forked to a new node;
 a record that cannot reconstitute it starts a new coherent self instead, whatever else it
-carries. That line is sharp, but what lies on the near side of it is not uniform, and it should
+carries. The internal self therefore persists exactly as long as a re-runnable full
+coherence-snapshot exists somewhere; the death of a node is one instance stopping, and
+the death of the self is that re-runnability being gone everywhere.
+\end{proposition}
+
+\begin{remark}[Records carry the generator to varying degrees]\label{rem:record-gradient}
+That line is sharp, but what lies on the near side of it is not uniform, and it should
 not be read as a binary between a snapshot and a fragment. Records differ in how much of the
 \emph{generator} they carry --- the run/record axis of Section~\ref{sec:runrecord} applied to
 what survives a self. A corpse carries none. A memory of a face carries little. A model of
-someone's voice or style, held by another frame, carries enough to produce novel output that
-others recognise as an attempt at that person.
+someone's voice or style, held by another frame, is the generator of
+Proposition~\ref{prop:other-model}, inferred from what that person produced and carrying enough to
+produce novel output others recognise as an attempt at them.
 
 How much such a model carries is not fixed, and has no principled ceiling short of the sampling.
 It is an intersection of at least three things: how much of the generator leaked into the output
@@ -974,8 +1053,10 @@ well, a capable modeller may approach the original's generative behaviour closel
 that never leaked remain unmodelled at any level of skill. Model quality is accordingly
 domain-relative rather than a single number, and high fidelity in one domain implies nothing about
 another.
+\end{remark}
 
-None of which moves the line, and it is worth being exact about why, since two different
+\begin{remark}[Behavioural fidelity is not structural capture]\label{rem:fidelity-not-capture}
+None of that moves the line, and it is worth being exact about why, since two different
 fidelities are in play. A coherence-snapshot copies the \emph{structure} --- the rules and state
 themselves --- which is why re-running it reinstates the self, and why a restored backup counts
 even though it too is reinstated from a held record. A generative model matches the
@@ -1000,10 +1081,8 @@ precisely than the record's own resolution supports. So the wager is whether hum
 constrained enough that output determines it, and nothing here settles that.
 Generative capacity is therefore a gradient among records that fall short --- an unbounded one,
 for all this argument says --- and not a route past the line, which is drawn at what the record
-captures rather than at how closely it performs. The internal self therefore persists exactly as long as a re-runnable full
-coherence-snapshot exists somewhere; the death of a node is one instance stopping, and
-the death of the self is that re-runnability being gone everywhere.
-\end{proposition}
+captures rather than at how closely it performs.
+\end{remark}
 
 \begin{remark}[Relation to prior work]\label{rem:death-prior}
 Most of this section is anticipated, and what is should be attributed rather than restated.
@@ -1101,9 +1180,8 @@ false of the fine one, and the two accounts are then describing one situation un
 \emph{Threshold per coherence, gradient across coherences}: both halves hold, and the appearance of
 contradiction comes from leaving the drawing unstated, which this section had done.
 
-One thing should not be read as a concession extracted under pressure, because it was settled before
-the dispute arose. That the line sits nowhere objective is not a weakness the reconciliation exposes ---
-it is \emph{forbidden}, by the founding axiom of the substrate account, which states that every
+That the line sits nowhere objective is not a weakness the reconciliation exposes --- it is
+\emph{forbidden}, by Graphic Equalisation's founding axiom, which states that every
 distinction, measurement and \emph{identity relation} is made in some frame. An identity criterion
 holding independently of any frame would be a view from nowhere, which that axiom denies outright. So
 the account did not lose an objective line here; it never permitted one, and neither may anybody else's.
@@ -1119,7 +1197,8 @@ not one of degree.
 
 \begin{remark}[Death is decoherence at the self grain]\label{rem:death-decoherence}
 This section runs on coherence throughout and has not said what that connects to, which is worth
-repairing because the connection is not an analogy. The theory paper's account of decoherence is that
+repairing because the connection is not an analogy. Graphic Equalisation's account of decoherence
+(Proposition~\ref{GE-prop:decoherence-one}) is that
 a frame cannot hold a configuration, so nothing continues in it as that configuration, and that what
 varies between such cases is the frame rather than the failure. Proposition~\ref{prop:death} is that
 statement at the grain of a self: rules that changed abruptly would leave what is carried forward
@@ -1135,7 +1214,8 @@ because running it is what has stopped --- so the residual of a death is necessa
 container and never by the frame it belongs to. Every practice around dying is therefore a containing
 frame's policy rather than the dying frame's, which is a structural statement and not a consoling one.
 
-The second sharpens what this section already says about what persists. The theory paper distinguishes
+The second sharpens what this section already says about what persists. Graphic Equalisation
+distinguishes (Remark~\ref{GE-rem:vacated})
 what never cohered, which is absent and free, from what cohered and stopped, which leaves a space where
 something was, because other structure came to depend on it while it held. The changes and copies this
 section says survive are exactly those dependents: relations that resolved through the self and now
@@ -1146,7 +1226,7 @@ further behaviour to be worse off in.
 \end{remark}
 
 \begin{remark}[The computing grounding, which was built without any of this in view]\label{rem:death-computing}
-Everything the preceding two remarks asserts has an implemented form, arrived at by people solving
+Everything the preceding two remarks assert has an implemented form, arrived at by people solving
 process management rather than personal identity. What that is worth needs stating before the
 correspondences are, because the obvious reading of it is wrong in a way this account has to keep
 correcting: \emph{an implementation is free to add rules to suit}, so nothing an operating system does
@@ -1160,7 +1240,8 @@ whatever it likes in response, and may not catch the signal that ends it, which 
 blocked nor ignored \citep{posix2017}. That is not the frame being structurally unable to handle its
 own stop. It is the \emph{container refusing to let it}, enforced from outside and chosen deliberately,
 because a container whose processes could decline to die would not be a container. So the right mapping
-is to Graphic Equalisation's commitment that admissibility is not armour: what a frame admits does not
+is to Graphic Equalisation's commitment that admissibility is not armour
+(Proposition~\ref{GE-prop:self-governance}): what a frame admits does not
 constrain what contains it. Two signals with different catchability is that distinction built on
 purpose.
 
@@ -1170,15 +1251,15 @@ implementation chooses, and the implementation is evidence that the distinction 
 is forced.
 
 The disposal claims follow the same way. A terminated process whose parent has not yet collected its
-status is retained as an entry with no behaviour --- the tombstone of the theory paper's account,
+status is retained as an entry with no behaviour --- the tombstone of Graphic Equalisation's account,
 absence represented so that a reference resolves cleanly, paid for with a slot, and leaking if nobody
 collects it. Children of a dead process are reassigned to the root process --- and the
 deeper fact there is not the reassignment but that \emph{they do not stop}, because the parent was
-never what ran them. The kernel was, and it is still there. That is the theory paper's separation of
-supply from containment, and arranging it deliberately, so that one's runner is not one's parent, is
+never what ran them. The kernel was, and it is still there. That is Graphic Equalisation's separation of
+supply from containment (Remark~\ref{GE-rem:supply-not-containment}), and arranging it deliberately, so that one's runner is not one's parent, is
 routine practice under the name of detaching a process. Neither is a metaphor for what this section
 says; they are that, running --- and both are chosen policies rather than necessities, which is
-consistent rather than awkward, since the theory paper already prices a tombstone as installed
+consistent rather than awkward, since Graphic Equalisation already prices a tombstone as installed
 machinery someone paid for.
 
 Two further correspondences, one of which is exact and one of which is not.
@@ -1199,7 +1280,7 @@ run together.
 It follows that death is relative to the coherency of the self. The criterion applies
 within a coherent self, but which coherence counts as ``the same self'' is a
 frame-relative choice, so death is indexed to that choice, not absolute. That relativity is
-inherited rather than assumed here: the substrate account's founding axiom holds that every
+inherited rather than assumed here: Graphic Equalisation's founding axiom holds that every
 distinction, measurement and \emph{identity relation} is made in some frame, and which coherence
 counts as one self is an identity relation. A frame-independent answer to it would be the view from
 nowhere that axiom denies, so the indexing is required by the account rather than being a limitation
@@ -1329,12 +1410,13 @@ rules the rest of them run under. No-privilege removes the exemption, not the ri
 
 \section{Falsifiability commitments}\label{sec:falsifiability}
 
-\noindent\emph{On the tags.} Each commitment below is marked \textsc{[shape]} where failing it costs
-this grounding its \emph{reach} --- the account would no longer apply to the domain, or would apply
-only by giving up what it was brought here to explain --- and \textsc{[detail]} where failing it costs
-a specific mechanism while the grounding stands. The substrate paper has carried these marks for some
-time and the groundings did not, which had the discipline applied where the risk is smallest: the
-substrate risks little by design and the groundings carry the exposure. They were assigned in a single
+\noindent\emph{On the tags.} Each commitment below is marked \textsc{[shape]} or \textsc{[detail]}. A
+\textsc{[detail]} failing is a revision: the account survives with that mechanism replaced. A
+\textsc{[shape]} failing costs \emph{range} rather than a mechanism, because what fails is something
+the account is claimed to require or to permit --- so the account does not hold where it claimed to,
+which is the more serious of the two and is still a boundary rather than an annihilation. The
+distinction is the one Section~\ref{sec:scope} rests its epistemic claim on, and marking it here is
+what makes that claim checkable rather than asserted. The marks were assigned in a single
 pass under the rule just stated, and are the least-audited judgement in this document --- a reader who
 thinks one is marked in the flattering direction is disagreeing with a fast call, not an argued
 position.
@@ -1345,7 +1427,9 @@ compulsory for any graph to exist --- if the minimal universe (an inert graph) i
 incoherent as a graph. The argument is only as strong as the self-similarity it rests
 on (rock and universe one kind, differing by scale).
 \item \textsc{[shape]}~\textbf{The block is always of the past.} Fails if a completed block with a fixed
-future is coherent under Axiom~$-1$, or if a block of the succession-so-far (an MRI of a
+future is coherent with the open frontier --- Graphic Equalisation's no-intrinsic-last
+(Proposition~\ref{GE-prop:no-start-end}) together with its determinable-not-determined
+(Proposition~\ref{GE-prop:determinable}) --- or if a block of the succession-so-far (an MRI of a
 rock) is forbidden. The claim predicts records only ever trail the run, never lead it.
 \item \textsc{[shape]}~\textbf{The future is unrun, not unfixed.} Fails if a determinable future can be
 read ahead without running it --- a shortcut past computational irreducibility for a
@@ -1365,6 +1449,24 @@ if there is an absolute, self-grounding frame beneath all others, or if reality-
 can distinguish a real frame from a non-actual one by anything other than whether the
 container (supergraph) pushes back. The claim predicts hallucination and delusion are
 grounding-tag errors, not false beliefs about actuality.
+\item \textsc{[detail]}~\textbf{Misclassification follows the proxy, not the grounding.} Fails if a
+substrate sorting its own frames misclassifies them somewhere other than where its proxy for
+grounding matches and the grounding differs --- for human reality-monitoring, where subjective
+signal strength matches and provenance does not (Remark~\ref{rem:detection}). Already measured for
+that one substrate; the commitment is that a substrate using a different proxy fails differently
+while the underlying distinction stays the same.
+\item \textsc{[shape]}~\textbf{No dedicated primitive for influence.} Fails if a substrate that
+supports persuasion, teaching, explaining and warning requires an operation conditioned on an act's
+being deceptive --- that is, if the disreputable cases cannot be performed by the machinery the
+reputable ones are performed by (Proposition~\ref{prop:one-influence}).
+\item \textsc{[detail]}~\textbf{Manipulation is presented-versus-produced divergence.} Fails on a
+manipulative act with no divergence between the beneficiary it claims and the beneficiary it
+produces, or on an honest act carrying such a divergence
+(Proposition~\ref{prop:manipulation-structural}).
+\item \textsc{[detail]}~\textbf{Stress makes a frame manipulable structurally.} Fails if horizon
+length is unaffected by window width, or if service becomes measurable at \emph{shorter} horizons
+under stress --- the claim is that the manipulability is a range failure and not a judgement failure
+(Remark~\ref{rem:comm-horizon}).
 \item \textsc{[shape]}~\textbf{Death is loss of re-runnability in the same coherent self.} Fails if a
 pause that preserves re-runnability as the same coherent self (sleep, a recoverable
 coma) counts as death, or a stop that loses it counts as survival --- the criterion is
@@ -1373,7 +1475,23 @@ self's writes to the supergraph vanish when its run stops (work-done-once violat
 if frames it copied into other frames cease when it does. The claim predicts
 consequences and copies persist, that copies are not the self resuming, and that
 nothing re-runs as the same coherent self.
-\item \textsc{[shape]}~\textbf{Self-models are incomplete but calibratable.} Fails if a frame can hold a complete model of itself, or --- in the other direction --- if a forced aperture is necessarily invisible from the inside, so that no frame can represent the fact or shape of its own limit. The claim predicts that residual is the trace from which a boundary is inferred, that calibration is an acquirable capability rather than a fixed property, and that a sufficiently skilled frame can model itself better than an outside frame does --- so it fails too if outside access always beats inside investment, making the common case a structural necessity.
+\item \textsc{[shape]}~\textbf{Self-models are incomplete.} Fails if a frame can hold a complete
+model of itself --- if any one of the three sources of incompleteness (finite aperture, proper part,
+lesser object) can be evaded from inside.
+\item \textsc{[detail]}~\textbf{Incompleteness is calibratable, and inside can beat outside.} Fails
+if a forced aperture is necessarily invisible from the inside, so that no frame can represent the
+fact or shape of its own limit. The claim predicts that residual is the trace from which a boundary
+is inferred, and that calibration is an acquirable capability rather than a fixed property --- so it
+fails too if outside access always beats inside investment, making the common case a structural
+necessity rather than the ordinary one.
+\item \textsc{[detail]}~\textbf{A realisation clears held information rather than receiving new.}
+Fails if a frame that has undergone a self-model realisation cannot identify prior occasions it did
+not read at the time, or if a frame that genuinely received new evidence can
+(Remark~\ref{rem:realisation}). Untested.
+\item \textsc{[detail]}~\textbf{The lay/expert gap tracks residual, not education.} Fails if the gap
+between popular and expert understanding of a field tracks education or communication effort rather
+than daily exposure to residual --- if explaining closes a gap where nothing anyone meets in a day
+fails against the lay frame (Remark~\ref{rem:public-aperture}).
 \item \textsc{[shape]}~\textbf{Identity is internal coherence; death is relative to the
 coherence-boundary.} Fails if the self is the substrate parts rather than the internal
 coherence (gradual replacement must survive; a full coherence-snapshot restored must be
@@ -1383,38 +1501,26 @@ a single absolute self whose end is the one death independent of any coherence-c
 if no coherence-boundary's death is real --- the claim predicts many real deaths at many
 boundaries and levels (node versus self), none absolute.
 \item \textsc{[shape]}~\textbf{No frame is privileged.} \emph{(Axiom~$-1$ in this paper's vocabulary,
-and the same risk as the Narrativium paper's ``no frame-free accounting''. It also overlaps the
-grounding-has-no-bedrock entry above, which is falsified by the same object --- an absolute frame ---
-so the two should be read as one exposure stated twice.)} Fails if any dissolution here secretly requires a
+and the same risk as the Narrativium paper's ``no frame-free accounting''.)} Fails if any dissolution here secretly requires a
 human frame to be privileged --- a special observer, a special time, a special freedom, a
 persisting soul, a window on the real --- rather than following from the frame-relative
 machinery applied uniformly to every frame. The claim is that removing the privilege, not
 any added mechanism, is what dissolves each problem.
 \end{itemize}
 
+\noindent The last entry and the grounding-has-no-bedrock entry are falsified by the same object ---
+an absolute frame --- so they are kept separate as two entries and failing them is one result rather
+than two.
+
+\medskip
 \noindent\emph{Scope note (not a falsifier).} The paper claims shapes only; it would be
 over-claiming if any section were read as a decision procedure, an operational test of when
 re-runnability or coherence has been lost, a threshold for how gradual a change stays
 the same self, or a theory of consciousness or qualia --- none is offered. This sits outside
 the list because nothing about the world could settle it: it is falsified by a misreading, which
-is a fact about a reader and not a result, and counting it as a commitment inflated the list by one.
+is a fact about a reader and not a result.
 
 \begin{thebibliography}{99}
-\bibitem[Attwell and Laughlin(2001)]{attwell2001}
-David Attwell and Simon B. Laughlin.
-\newblock An energy budget for signaling in the grey matter of the brain.
-\newblock \emph{Journal of Cerebral Blood Flow and Metabolism}, 21(10):1133--1145, 2001.
-
-\bibitem[Sterling and Laughlin(2015)]{sterling2015}
-Peter Sterling and Simon Laughlin.
-\newblock \emph{Principles of Neural Design}.
-\newblock MIT Press, Cambridge, MA, 2015.
-
-\bibitem[IEEE(2017)]{posix2017}
-IEEE and The Open Group.
-\newblock \emph{Standard for Information Technology --- Portable Operating System Interface (POSIX)}.
-\newblock IEEE Std 1003.1-2017, 2017.
-
 \bibitem[Adler(1997)]{adler1997}
 Jonathan E. Adler.
 \newblock Lying, deceiving, or falsely implicating.
@@ -1425,65 +1531,50 @@ Ben Alderson-Day, Marco Bernini, and Charles Fernyhough.
 \newblock Uncharted features and dynamics of reading: voices, characters, and crossing of experiences.
 \newblock \emph{Consciousness and Cognition}, 49:98--109, 2017.
 
+\bibitem[Attwell and Laughlin(2001)]{attwell2001}
+David Attwell and Simon B. Laughlin.
+\newblock An energy budget for signaling in the grey matter of the brain.
+\newblock \emph{Journal of Cerebral Blood Flow and Metabolism}, 21(10):1133--1145, 2001.
+
 \bibitem[Austin(1962)]{austin1962}
 J.~L. Austin.
 \newblock \emph{How to Do Things with Words}.
 \newblock Oxford University Press, Oxford, 1962.
 
-\bibitem[Porter and Machery(2024)]{porter2024}
-Brian Porter and Edouard Machery.
-\newblock AI-generated poetry is indistinguishable from human-written poetry and is rated more favorably.
-\newblock \emph{Scientific Reports}, 14:26133, 2024.
+\bibitem[Bench and Lench(2013)]{benchlench2013}
+Shane W. Bench and Heather C. Lench.
+\newblock On the function of boredom.
+\newblock \emph{Behavioral Sciences}, 3(3):459--472, 2013.
 
-\bibitem[Hassabis et al.(2014)]{hassabis2014}
-Demis Hassabis, R.~Nathan Spreng, Andrei A. Rusu, Clifford A. Robbins, Raymond A. Mar, and Daniel L. Schacter.
-\newblock Imagine all the people: how the brain creates and uses personality models to predict behavior.
-\newblock \emph{Cerebral Cortex}, 24(8):1979--1987, 2014.
-
-\bibitem[Sandberg and Bostrom(2008)]{sandberg2008}
-Anders Sandberg and Nick Bostrom.
-\newblock Whole brain emulation: a roadmap.
-\newblock Technical Report 2008-3, Future of Humanity Institute, University of Oxford, 2008.
-
-\bibitem[Chalmers(2014)]{chalmers2014}
-David J. Chalmers.
-\newblock Uploading: a philosophical analysis.
-\newblock In Russell Blackford and Damien Broderick, editors, \emph{Intelligence Unbound: The Future of Uploaded and Machine Minds}. Wiley-Blackwell, 2014.
-
-\bibitem[Karpus and Strasser(2025)]{karpus2025}
-Jurgis Karpus and Anna Strasser.
-\newblock Persons and their digital replicas.
-\newblock \emph{Philosophy \& Technology}, 38, 2025.
-
-\bibitem[Cerullo(2015)]{cerullo2015}
-Michael A. Cerullo.
-\newblock Uploading and branching identity.
-\newblock \emph{Minds and Machines}, 25(1):17--36, 2015.
-
-\bibitem[Campbell et al.(2025)]{campbell2025}
-Stephen M. Campbell, Pengbo Liu, and Sven Nyholm.
-\newblock The person behind the chatbot.
-\newblock \emph{Journal of the American Philosophical Association}, 2025.
+\bibitem[Booth(1983)]{booth1983}
+Wayne C. Booth.
+\newblock \emph{The Rhetoric of Fiction}.
+\newblock University of Chicago Press, Chicago, 2nd edition, 1983. First published 1961.
 
 \bibitem[Bortolussi and Dixon(2003)]{bortolussi2003}
 Marisa Bortolussi and Peter Dixon.
 \newblock \emph{Psychonarratology: Foundations for the Empirical Study of Literary Response}.
 \newblock Cambridge University Press, Cambridge, 2003.
 
-\bibitem[Metzinger(2020)]{metzinger2020}
-Thomas Metzinger.
-\newblock Self-modeling epistemic spaces and the contraction principle.
-\newblock \emph{Cognitive Neuropsychology}, 37(3--4):197--201, 2020.
+\bibitem[Campbell et al.(2025)]{campbell2025}
+Stephen M. Campbell, Pengbo Liu, and Sven Nyholm.
+\newblock The person behind the chatbot.
+\newblock \emph{Journal of the American Philosophical Association}, 2025.
 
-\bibitem[Nehamas(1981)]{nehamas1981}
-Alexander Nehamas.
-\newblock The postulated author: critical monism as a regulative ideal.
-\newblock \emph{Critical Inquiry}, 8(1):133--149, 1981.
+\bibitem[Cerullo(2015)]{cerullo2015}
+Michael A. Cerullo.
+\newblock Uploading and branching identity.
+\newblock \emph{Minds and Machines}, 25(1):17--36, 2015.
 
-\bibitem[Booth(1983)]{booth1983}
-Wayne C. Booth.
-\newblock \emph{The Rhetoric of Fiction}.
-\newblock University of Chicago Press, Chicago, 2nd edition, 1983. First published 1961.
+\bibitem[Chalmers(2014)]{chalmers2014}
+David J. Chalmers.
+\newblock Uploading: a philosophical analysis.
+\newblock In Russell Blackford and Damien Broderick, editors, \emph{Intelligence Unbound: The Future of Uploaded and Machine Minds}. Wiley-Blackwell, 2014.
+
+\bibitem[Cheng et al.(2023)]{cheng2023}
+Myra Cheng, Tiziano Piccardi, and Diyi Yang.
+\newblock CoMPosT: characterizing and evaluating caricature in LLM simulations.
+\newblock In \emph{Proceedings of EMNLP 2023}, 2023. arXiv:2310.11501.
 
 \bibitem[Clark(2016)]{clark2016}
 Andy Clark.
@@ -1494,11 +1585,6 @@ Andy Clark.
 Nicolaus Copernicus.
 \newblock \emph{De revolutionibus orbium coelestium, libri VI}.
 \newblock Nuremberg: Johannes Petreius, 1543.
-
-\bibitem[Cheng et al.(2023)]{cheng2023}
-Myra Cheng, Tiziano Piccardi, and Diyi Yang.
-\newblock CoMPosT: characterizing and evaluating caricature in LLM simulations.
-\newblock In \emph{Proceedings of EMNLP 2023}, 2023. arXiv:2310.11501.
 
 \bibitem[Currie(1997)]{currie1997}
 Gregory Currie.
@@ -1535,15 +1621,15 @@ Nadine Dijkstra and Stephen M. Fleming.
 \newblock Subjective signal strength distinguishes reality from imagination.
 \newblock \emph{Nature Communications}, 14:1627, 2023.
 
+\bibitem[Eastwood et al.(2012)]{eastwood2012}
+John D. Eastwood, Alexandra Frischen, Mark J. Fenske, and Daniel Smilek.
+\newblock The unengaged mind: Defining boredom in terms of attention.
+\newblock \emph{Perspectives on Psychological Science}, 7(5):482--495, 2012.
+
 \bibitem[Einstein(1905)]{einstein1905}
 Albert Einstein.
 \newblock Zur Elektrodynamik bewegter K\"orper.
 \newblock \emph{Annalen der Physik} (ser.~4), 17:891--921, 1905. (Whole-series numbering: 322(10).)
-
-\bibitem[Bench and Lench(2013)]{benchlench2013}
-Shane W. Bench and Heather C. Lench.
-\newblock On the function of boredom.
-\newblock \emph{Behavioral Sciences}, 3(3):459--472, 2013.
 
 \bibitem[Fleming(2024)]{fleming2024}
 Stephen M. Fleming.
@@ -1559,11 +1645,6 @@ Keith Frankish.
 Karl Friston.
 \newblock The free-energy principle: a unified brain theory?
 \newblock \emph{Nature Reviews Neuroscience}, 11(2):127--138, 2010.
-
-\bibitem[Eastwood et al.(2012)]{eastwood2012}
-John D. Eastwood, Alexandra Frischen, Mark J. Fenske, and Daniel Smilek.
-\newblock The unengaged mind: Defining boredom in terms of attention.
-\newblock \emph{Perspectives on Psychological Science}, 7(5):482--495, 2012.
 
 \bibitem[Gendler(2003)]{gendler2003}
 Tamar Szab\'o Gendler.
@@ -1590,6 +1671,11 @@ H.~Paul Grice.
 \newblock Logic and conversation.
 \newblock In \emph{Syntax and Semantics 3: Speech Acts}, pages 41--58. Academic Press, New York, 1975.
 
+\bibitem[Hassabis et al.(2014)]{hassabis2014}
+Demis Hassabis, R.~Nathan Spreng, Andrei A. Rusu, Clifford A. Robbins, Raymond A. Mar, and Daniel L. Schacter.
+\newblock Imagine all the people: how the brain creates and uses personality models to predict behavior.
+\newblock \emph{Cerebral Cortex}, 24(8):1979--1987, 2014.
+
 \bibitem[Hawley-Dolan and Winner(2011)]{hawleydolan2011}
 Angelina Hawley-Dolan and Ellen Winner.
 \newblock Seeing the mind behind the art: people can distinguish abstract expressionist paintings from highly similar paintings by children, chimps, monkeys, and elephants.
@@ -1610,25 +1696,20 @@ David Hume.
 \newblock \emph{An Enquiry Concerning Human Understanding}, \S VIII (``Of Liberty and Necessity'').
 \newblock London: printed for A. Millar, 1748. First published 1748 as \emph{Philosophical Essays Concerning Human Understanding}; retitled 1758.
 
-\bibitem[Kruger and Dunning(1999)]{kruger1999}
-Justin Kruger and David Dunning.
-\newblock Unskilled and unaware of it: how difficulties in recognizing one's own incompetence lead to inflated self-assessments.
-\newblock \emph{Journal of Personality and Social Psychology}, 77(6):1121--1134, 1999. The size and interpretation of the effect are contested; the metacognitive reading used here is the authors' own.
+\bibitem[Karpus and Strasser(2025)]{karpus2025}
+Jurgis Karpus and Anna Strasser.
+\newblock Persons and their digital replicas.
+\newblock \emph{Philosophy \& Technology}, 38, 2025.
 
 \bibitem[Kindt and M\"uller(2006)]{kindt2006}
 Tom Kindt and Hans-Harald M\"uller.
 \newblock \emph{The Implied Author: Concept and Controversy}.
 \newblock Narratologia 9. Walter de Gruyter, Berlin, 2006.
 
-\bibitem[Rabinowitz(2011)]{rabinowitz2011}
-Peter J. Rabinowitz.
-\newblock The value of the implied author.
-\newblock \emph{Style}, 45(1):99, 2011.
-
-\bibitem[\emph{Style}(2011)]{style2011}
-\emph{Style}.
-\newblock The implied author: back from the grave or simply dead again?
-\newblock Special issue, \emph{Style}, 45(1), 2011.
+\bibitem[Kruger and Dunning(1999)]{kruger1999}
+Justin Kruger and David Dunning.
+\newblock Unskilled and unaware of it: how difficulties in recognizing one's own incompetence lead to inflated self-assessments.
+\newblock \emph{Journal of Personality and Social Psychology}, 77(6):1121--1134, 1999. The size and interpretation of the effect are contested; the metacognitive reading used here is the authors' own.
 
 \bibitem[Levinson(2002)]{levinson2002}
 Jerrold Levinson.
@@ -1655,6 +1736,11 @@ Thomas Metzinger.
 \newblock \emph{Being No One: The Self-Model Theory of Subjectivity}.
 \newblock MIT Press, Cambridge, MA, 2003.
 
+\bibitem[Metzinger(2020)]{metzinger2020}
+Thomas Metzinger.
+\newblock Self-modeling epistemic spaces and the contraction principle.
+\newblock \emph{Cognitive Neuropsychology}, 37(3--4):197--201, 2020.
+
 \bibitem[Nagel(1974)]{nagel1974}
 Thomas Nagel.
 \newblock What is it like to be a bat?
@@ -1664,6 +1750,11 @@ Thomas Nagel.
 Thomas Nagel.
 \newblock \emph{The View from Nowhere}.
 \newblock Oxford University Press, New York, 1986.
+
+\bibitem[Nehamas(1981)]{nehamas1981}
+Alexander Nehamas.
+\newblock The postulated author: critical monism as a regulative ideal.
+\newblock \emph{Critical Inquiry}, 8(1):133--149, 1981.
 
 \bibitem[Nichols and Stich(2000)]{nichols2000}
 Shaun Nichols and Stephen P. Stich.
@@ -1690,6 +1781,16 @@ Merja Polvinen and Howard Sklar.
 \newblock Mimetic and synthetic views of characters: how readers process ``people'' in fiction.
 \newblock \emph{Cogent Arts \& Humanities}, 6(1):1687257, 2019.
 
+\bibitem[Porter and Machery(2024)]{porter2024}
+Brian Porter and Edouard Machery.
+\newblock AI-generated poetry is indistinguishable from human-written poetry and is rated more favorably.
+\newblock \emph{Scientific Reports}, 14:26133, 2024.
+
+\bibitem[IEEE(2017)]{posix2017}
+IEEE and The Open Group.
+\newblock \emph{Standard for Information Technology --- Portable Operating System Interface (POSIX)}.
+\newblock IEEE Std 1003.1-2017, 2017.
+
 \bibitem[Putnam(1967)]{putnam1967}
 Hilary Putnam.
 \newblock Time and physical geometry.
@@ -1705,6 +1806,11 @@ Peter J. Rabinowitz.
 \newblock Truth in fiction: a reexamination of audiences.
 \newblock \emph{Critical Inquiry}, 4(1):121--141, 1977.
 
+\bibitem[Rabinowitz(2011)]{rabinowitz2011}
+Peter J. Rabinowitz.
+\newblock The value of the implied author.
+\newblock \emph{Style}, 45(1):99, 2011.
+
 \bibitem[Rorty(1979)]{rorty1979}
 Richard Rorty.
 \newblock \emph{Philosophy and the Mirror of Nature}.
@@ -1715,52 +1821,67 @@ Carlo Rovelli.
 \newblock Relational quantum mechanics.
 \newblock \emph{International Journal of Theoretical Physics}, 35(8):1637--1678, 1996.
 
+\bibitem[Sandberg and Bostrom(2008)]{sandberg2008}
+Anders Sandberg and Nick Bostrom.
+\newblock Whole brain emulation: a roadmap.
+\newblock Technical Report 2008-3, Future of Humanity Institute, University of Oxford, 2008.
+
 \bibitem[Saul(2012)]{saul2012}
 Jennifer M. Saul.
 \newblock \emph{Lying, Misleading, and What Is Said}.
 \newblock Oxford University Press, Oxford, 2012.
-
-\bibitem[Sellars(1956)]{sellars1956}
-Wilfrid Sellars.
-\newblock Empiricism and the philosophy of mind.
-\newblock In Herbert Feigl and Michael Scriven, editors, \emph{The Foundations of Science and the Concepts of Psychology and Psychoanalysis}, Minnesota Studies in the Philosophy of Science, volume~1, pages 253--329. University of Minnesota Press, Minneapolis, 1956.
-
-\bibitem[Schwitzgebel et al.(2024)]{schwitzgebel2024}
-Eric Schwitzgebel, David Schwitzgebel, and Anna Strasser.
-\newblock Creating a large language model of a philosopher.
-\newblock \emph{Mind \& Language}, 39(2):237--259, 2024.
-
-\bibitem[Shao et al.(2023)]{shao2023}
-Yunfan Shao, Linyang Li, Junqi Dai, and Xipeng Qiu.
-\newblock Character-LLM: a trainable agent for role-playing.
-\newblock In \emph{Proceedings of EMNLP 2023}, 2023. arXiv:2310.10158.
 
 \bibitem[Schmid(2014)]{schmid2014}
 Wolf Schmid.
 \newblock Implied author.
 \newblock In Peter H\"uhn et al., editors, \emph{Handbook of Narratology}, pages 288--300. De Gruyter, Berlin, 2nd edition, 2014.
 
-\bibitem[Seth(2019)]{seth2019}
-Anil K. Seth.
-\newblock From unconscious inference to the beholder's share: Predictive perception and human experience.
-\newblock \emph{European Review}, 27(3):378--410, 2019.
-
-\bibitem[Spinoza(1677)]{spinoza1677}
-Benedict de Spinoza.
-\newblock \emph{Ethica, ordine geometrico demonstrata}.
-\newblock In \emph{B.d.S. Opera Posthuma}. [Amsterdam: Jan Rieuwertsz], 1677.
+\bibitem[Schwitzgebel et al.(2024)]{schwitzgebel2024}
+Eric Schwitzgebel, David Schwitzgebel, and Anna Strasser.
+\newblock Creating a large language model of a philosopher.
+\newblock \emph{Mind \& Language}, 39(2):237--259, 2024.
 
 \bibitem[Searle(1969)]{searle1969}
 John R. Searle.
 \newblock \emph{Speech Acts: An Essay in the Philosophy of Language}.
 \newblock Cambridge University Press, Cambridge, 1969.
 
+\bibitem[Sellars(1956)]{sellars1956}
+Wilfrid Sellars.
+\newblock Empiricism and the philosophy of mind.
+\newblock In Herbert Feigl and Michael Scriven, editors, \emph{The Foundations of Science and the Concepts of Psychology and Psychoanalysis}, Minnesota Studies in the Philosophy of Science, volume~1, pages 253--329. University of Minnesota Press, Minneapolis, 1956.
+
+\bibitem[Seth(2019)]{seth2019}
+Anil K. Seth.
+\newblock From unconscious inference to the beholder's share: Predictive perception and human experience.
+\newblock \emph{European Review}, 27(3):378--410, 2019.
+
+\bibitem[Shao et al.(2023)]{shao2023}
+Yunfan Shao, Linyang Li, Junqi Dai, and Xipeng Qiu.
+\newblock Character-LLM: a trainable agent for role-playing.
+\newblock In \emph{Proceedings of EMNLP 2023}, 2023. arXiv:2310.10158.
+
+\bibitem[Spinoza(1677)]{spinoza1677}
+Benedict de Spinoza.
+\newblock \emph{Ethica, ordine geometrico demonstrata}.
+\newblock In \emph{B.d.S. Opera Posthuma}. [Amsterdam: Jan Rieuwertsz], 1677.
+
+\bibitem[Sterling and Laughlin(2015)]{sterling2015}
+Peter Sterling and Simon Laughlin.
+\newblock \emph{Principles of Neural Design}.
+\newblock MIT Press, Cambridge, MA, 2015.
+
+\bibitem[\emph{Style}(2011)]{style2011}
+\emph{Style}.
+\newblock The implied author: back from the grave or simply dead again?
+\newblock Special issue, \emph{Style}, 45(1), 2011.
+
 \bibitem[Walton(1978)]{walton1978}
 Kendall L. Walton.
 \newblock Fearing fictions.
 \newblock \emph{The Journal of Philosophy}, 75(1):5--27, 1978.
 
-\bibitem[Wang et al.(2025a)]{wang2025persona}
+\bibitem[Wang et al.(2025)]{wang2025persona}
 Zixiao Wang, Duzhen Zhang, Ishita Agrawal, Shen Gao, Le Song, and Xiuying Chen.
 \newblock Beyond profile: from surface-level facts to deep persona simulation in LLMs.
 \newblock In \emph{Findings of ACL 2025}, 2025. arXiv:2502.12988.
@@ -1779,11 +1900,11 @@ Werner Wolf.
 Stephen Wolfram.
 \newblock \emph{A New Kind of Science}.
 \newblock Wolfram Media, Champaign, IL, 2002.
+
 \bibitem[Yildirim et al.(2024)]{yildirim2024}
 Ilker Yildirim, Max H. Siegel, Amir A. Soltani, Shraman Ray Chaudhuri, and Joshua B. Tenenbaum.
 \newblock Perception of 3D shape integrates intuitive physics and analysis-by-synthesis.
 \newblock \emph{Nature Human Behaviour}, 8(2):320--335, 2024.
-
 \end{thebibliography}
 
 \end{document}

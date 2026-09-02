@@ -1,9 +1,12 @@
 \documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,hyperref,enumitem,microtype}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,enumitem,microtype}
 \usepackage{natbib}
 \usepackage[margin=1in]{geometry}
+\usepackage{xr-hyper}
+\usepackage{hyperref}
+\externaldocument[GE-]{01_law_of_graphic_equalisation_theory_referenced}
 \newtheorem{definition}{Definition}[section]
 \newtheorem{theorem}[definition]{Theorem}
 \newtheorem{proposition}[definition]{Proposition}
@@ -11,24 +14,28 @@
 \theoremstyle{remark}\newtheorem{remark}[definition]{Remark}
 \title{The Law of Graphic Equalisation --- Physics Grounding\\\large Change, $c$, the Reconciliation of Special and General Relativity, the Recovery of the Born Rule, the Dimensional Constants, and the Second Law}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-09-02.1}\\[2pt]2 September 2026 \textbullet\ document revision 41}
+\date{\textbf{Draft \texorpdfstring{\textemdash}{---}\ draft-2026-09-02.1}\\[2pt]2 September 2026 \texorpdfstring{\textbullet}{\textperiodcentered}\ document revision 42}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r41}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r42}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r41}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r42}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-09-02.1 r41} (2 September 2026).
+\textbf{DRAFT --- draft-2026-09-02.1 r42} (2 September 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. It is a companion to \emph{The Law of Graphic Equalisation ---
 Theory} (referred to below as Graphic Equalisation), and inherits that paper's
-definitions, epistemic boundary, and level-of-claims. Sections marked as
+definitions, epistemic boundary, and level-of-claims. The other documents of the
+programme named below carry short names too, and those are the only forms used:
+\emph{Is} (the base paper), the mind companion (\emph{\ldots\ Mind and Self
+Grounding}), the Narrative-momentum paper, and the Born note (\emph{\ldots\ Born
+Recovery}). Sections marked as
 falsifiability commitments are the intended points of attack.}}
 \end{center}
 \vspace{1em}
@@ -39,7 +46,7 @@ change-substrate. Its central move is that a frame's time is an inferred count o
 \emph{cycles} and that the invariant speed $c$ is the frame's own
 change-throughput unit, $1$ by construction rather than by postulate; from that
 one economy the relativities, the dimensional constants, and the second law
-follow as \emph{shapes}. Special relativity's $c$-invariance becomes a theorem;
+follow as \emph{shapes}. Special relativity's $c$-invariance becomes a definitional consequence;
 the two relativities reconcile as one fixed change-budget
 spent two ways, on motion or on change-load; the dimensional constants
 ($c,\hbar,k_{\mathrm B},G$) are each a frame's own base unit and their magnitudes
@@ -49,7 +56,7 @@ aperture cell, and the Planck scale the frontier. The second law is no-copy
 accumulated, with entropy frame-relative, the demon exorcised by cost, and local
 order affordable as paid minting. On this one substrate quantum theory and
 relativity reconcile at the level of shape: $c$-invariance and the special--general
-reconciliation are theorems given the substrate's own units, and the Born rule is
+reconciliation are definitional consequences given the substrate's own units, and the Born rule is
 recovered --- not forced --- on the same primitives (closure, no-privilege, free
 continuation). The same primitives give entanglement as a superframe dimension,
 the double slit as possibility structure under superframe forcing, and identical
@@ -82,27 +89,42 @@ The minimal-universe argument that licenses the contingency verdicts below --- a
 rock is a universe, and the minimal universe does without time, the gauge group,
 the constants and the dimensions, so none can be compulsory --- together with the
 run/record axis, free will, personal identity, and death, is developed in the
-companion paper \emph{The Law of Graphic Equalisation --- Mind and Self
-Grounding}, which treats philosophy of mind as applied physics of the run.
+mind companion, which treats philosophy of mind as applied physics of the run.
 
-\section{$c$ as the change-to-time rate}\label{sec:c-rate}
+\section{\texorpdfstring{$c$}{c} as the change-to-time rate}\label{sec:c-rate}
 Graphic Equalisation establishes that time is not a substrate dimension but is
 \emph{inferred} by a frame, whose unit is a \emph{cycle} --- one traversal of a
 closed rule-loop, of no fixed length. Once time is the inferred count of cycles,
 the invariant speed $c$ has a natural reading, consistent with the
-missing-denominator result (there is no rate \emph{in} substrate-time, since
-there is no substrate-time to divide by). $c$ is the fixed \emph{rate} at which
+missing-denominator result (Graphic Equalisation's Remark~\ref{GE-rem:no-denominator}: there is no
+rate \emph{in} substrate-time, since there is no substrate-time to divide by). $c$ is the fixed \emph{rate} at which
 change is realised --- per unit of the substrate's throughput, a cycle consuming
 a variable amount of it --- from which a frame's time is inferred. So $c$ is
 prior to time: the conversion between change-count and inferred duration, which
 is exactly what a constant relating the temporal and spatial parts of an interval
-is.
+is. That is \emph{runner} $c$, the first of the three things the word names here,
+and the separation has to come before anything is claimed of any of them.
 
-\begin{proposition}[$c$ is each frame's own unit, hence invariant by construction]\label{prop:c-unit}
-$c$ is each frame's own base rate, its change-throughput, so every frame measures
-its own $c$ as the unit, $1$ --- and a unit cannot be measured as anything else.
-Its invariance is therefore a theorem, not a postulate: not that all frames
-happen to agree on a speed, but that each is reporting its own unit.
+\begin{definition}[Three things called $c$]\label{def:three-c}
+Three things are called $c$ in this paper and only the third is empirical, while
+only the first is what the substrate is about. \emph{Runner $c$} is the rate at
+which the substrate running the frame actually runs; it is never readable from
+inside, and no route described here reaches it. \emph{Unit $c$} is $1$ by
+construction in the frame's own closure units; it is definitional, carries no
+risk, and is what makes the invariance a definitional consequence rather than a
+coincidence. \emph{Observed $c$} is the number a frame obtains by measurement,
+retention and inference through whatever counters its rules happen to provide.
+The first two are fixed; the third is contingent rule content.
+\end{definition}
+
+\begin{proposition}[Unit $c$ is each frame's own unit, hence invariant by construction]\label{prop:c-unit}
+A frame's own closure rate is its unit, and a unit is read as $1$ --- not because
+anything has been measured, but because the frame holds nothing else in its own
+terms for the unit to be read against. The invariance of \emph{unit} $c$ is
+therefore a definitional consequence and not a postulate: not that all frames
+happen to agree on a speed, but that each is reporting its own unit. Nothing is
+thereby claimed of runner $c$, which is not readable, or of observed $c$, which is
+contingent (Definition~\ref{def:three-c}).
 \end{proposition}
 A value \emph{other} than $1$ is a cross-frame quantity: the familiar number
 appears only when one frame is compared with another --- change-throughput
@@ -137,7 +159,9 @@ about self-measurement, and that the variation in cycle length, which is not a f
 self-measurement, carries the physics.
 
 \section{The change-budget: speed, dilation, mass, aperture}\label{sec:budget}
-The fixed throughput $c$ splits between
+The budget is the substrate's throughput per cycle, and $c$ is its \emph{unit}
+rather than its size (Definition~\ref{def:three-c}); nothing below turns on the
+number, only on the fixity. That fixed throughput splits between
 \emph{spatial motion} and \emph{internal change} (proper time), and a speed is
 the fraction spent on motion. At rest the whole budget is internal change and the
 clock ticks fully; approaching $c$ moves budget to motion, leaving less for
@@ -160,7 +184,7 @@ rather than as a mechanism.)
 retention]\label{rem:c-indirect}
 Being $1$ by construction has an epistemic consequence that is easy to miss and belongs with the
 rest. A well-formed set of primitives does not leak its provenance (Graphic
-Equalisation's definition, where the contingency of that is set out), and $c$ \emph{is} the rate at
+Equalisation's Definition~\ref{GE-def:well-formed}, where the contingency of that is set out), and $c$ \emph{is} the rate at
 which whatever supplies them supplies them, as the frame meets it. So $c$ is not a datum a frame can read off directly: any in-frame attempt to measure it is itself
 funded by the same throughput, and returns $1$ whatever the underlying rate --- a clock cannot time
 its own tick. That is exactly why the unit-reading carries no risk and no content.
@@ -173,11 +197,12 @@ measurements after it from distance set against duration ---
 and that route is available to any frame that can hold a predecessor and compare. The two ends are
 not in tension: what is absent is the direct read, and what is present is the inference, exactly as
 with a frame's own aperture limit, which leaves no direct residual and is nevertheless inferable from
-imposed change and trace (Mind and Self Grounding).
+imposed change and trace (the mind companion).
 
 Two things follow. Knowing $c$ has a price, and it is the one the write-economics already names: the
 inference needs at least two events and a retained record of the first, and retention is the paid
-copy (Graphic Equalisation's write-economics). A frame with no memory does not have a
+copy (Graphic Equalisation's write-economics, Proposition~\ref{GE-prop:economics}). A frame with no
+memory does not have a
 poor estimate of $c$; it has no access to the question. And the indirection is what makes the claim
 \emph{empirical} at all. If $c$ were directly readable it would be definitional and unfalsifiable;
 because the only route to a number runs through measurement and inference, a disagreement could in
@@ -192,14 +217,10 @@ definition is not a fact about the world that experiment reports; it is a conver
 frame's length and time units. What the substrate adds is not that convention but a reason it could
 be adopted without loss.
 
-Three things have been called $c$ here and they should be separated, because only the third is
-empirical and only the first is what the substrate is about. \emph{Runner $c$} is the rate at which
-the substrate running the frame actually runs; it is never readable from inside, and no route
-described here reaches it. \emph{Unit $c$} is $1$ by construction in the frame's own closure units;
-it is definitional, carries no risk, and is what makes the invariance a theorem rather than a
-coincidence. \emph{Observed $c$} is the number a frame obtains by measurement, retention and
-inference through whatever counters its rules happen to provide. The first two are fixed. The third
-is contingent rule content, and the following remark is about what that contingency permits.
+What this remark has been about throughout is the third of the three
+(Definition~\ref{def:three-c}): runner $c$ is unreachable and unit $c$ is fixed, so everything
+empirical sits in observed $c$. That is contingent rule content, and the following remark is about
+what the contingency permits.
 \end{remark}
 
 \begin{remark}[The one-way speed of light is not a hard measurement but an absent
@@ -213,8 +234,8 @@ has been worked out in detail \citep{reichenbach1958,anderson1998}. Nothing belo
 the substrate supplies is a reason for it that is not specific to light.
 
 The reason is the unit. A frame does not count changes but \emph{cycles}, each one traversal of a
-closed loop, so the unit of inferred time is a closure (Graphic Equalisation's cycle-unit
-proposition). A round trip closes: it departs from and returns to one location, is timed against one
+closed loop, so the unit of inferred time is a closure (Graphic Equalisation's
+Proposition~\ref{GE-prop:cycle-unit}). A round trip closes: it departs from and returns to one location, is timed against one
 retained record, and needs no agreement with anything elsewhere. A one-way path does not close. There
 is accordingly no unit \emph{derived from the frame's own closure} in which its duration is
 expressed --- not a duration too small or too fast to catch, but a quantity for which that unit has no
@@ -226,7 +247,9 @@ frame needs two separated clocks that agree on simultaneity, and establishing th
 sending something between them at the rate being measured. The apparatus presupposes its own result,
 exactly as an in-frame measurement of $c$ returns $1$ because it is funded by the throughput it is
 trying to read.
+\end{remark}
 
+\begin{remark}[The inaccessibility is rule content, not a theorem]\label{rem:oneway-rule}
 The qualification that makes this contingent rather than necessary has to be stated, because the
 argument as given proves more than it is entitled to. Nothing forbids rules under which some
 dimension steps $N$ times per closure cycle, and those steps would be perfectly observable from
@@ -237,7 +260,8 @@ universe and the argument above does not apply to it. So the inaccessibility is 
 content, not a theorem about frames. What can be said generally is narrower and survives: a frame
 cannot establish that any counter it holds is faithful to the rate beneath its primitives. Provenance
 is not sealed --- primitives leak, and inference from in-frame observables is exactly how a number for
-$c$ was ever obtained (Graphic Equalisation, the leak proposition) --- but every such inference is
+$c$ was ever obtained (Graphic Equalisation's Proposition~\ref{GE-prop:leak}) --- but every such
+inference is
 itself performed by primitives whose provenance is open in the same way, so the check relocates
 rather than closing. Where the counter is locked to the closure cycle, observed $c$ tracks unit $c$
 and nothing is measurable one-way; where it is not, observed $c$ may differ from the cycle rate, by
@@ -249,9 +273,10 @@ it is what three centuries of measurement did, and it constrains without settlin
 
 There is an economic reason to expect the locked case without needing to legislate it. A dimension
 stepping at a common rate everywhere is structure the substrate must maintain across every location,
-and maintenance is paid (Graphic Equalisation's write-economics); the closure cycle already supplies a
+and maintenance is paid (Graphic Equalisation's Proposition~\ref{GE-prop:economics}); the closure cycle already supplies a
 unit at no such cost. The locked case is in that sense the \emph{better-formed} one --- fewer parts,
-nothing held that does no work, the same well-formedness the companion paper's cost result turns on.
+nothing held that does no work, the same well-formedness Graphic Equalisation's cost result turns on
+(Proposition~\ref{GE-prop:economics}).
 It is therefore both the cheaper hypothesis and the shorter description, and a frame with no direct
 access should assume it on those grounds \citep{rissanen1978}. Such dimensions are accordingly
 expected to be rare, which is not a reason they cannot occur; our own universe's apparent lack of one
@@ -262,7 +287,11 @@ better formed makes something likely, expected, and rational to assume; it does 
 necessary, and there is no step from the one to the other. It is also why the standard
 synchronisation feels non-arbitrary rather than merely stipulated --- it is the minimum-description
 choice, which is exactly the kind of thing that gets adopted universally without ever being proved.
-The failure to guard against is therefore not assuming it, which is correct practice, but promoting a well-founded assumption to a theorem. Both ends need stating, because the negative half is the smaller half. A frame learns a great deal
+The failure to guard against is therefore not the assuming, which is correct practice. It is the
+promotion of a well-founded assumption to a theorem.
+\end{remark}
+
+Both ends need stating, because the negative half is the smaller half. A frame learns a great deal
 here: the two-way speed, its isotropy, and the constraints that isotropy places on any anisotropic
 account are all in hand and tightly bounded by experiment. The sharpest item on that side is one-way
 after all, and it is worth spelling out because it reads at first like a counterexample. The
@@ -276,40 +305,24 @@ same separation, so the offset is common to them and absent from the difference
 measurements in different directions do not share an offset under an anisotropic convention, and
 their ratio is convention-dependent again.
 
-This is the closure criterion delivering the positive result rather than an exception to it. A ratio
-is dimensionless and so never needed expressing in the frame's cycle at all; and the comparison is
-local, two arrivals set against one record at one place, which closes. The criterion then has three
-cases to sort rather than two, and sorts them by one rule: the two-way speed closes and is
-measurable; the absolute one-way speed does not close and is not; the one-way ratio closes at the
-comparison though neither leg does, and is. Getting all three from the same criterion is a check the
-account passes, rather than a convention it adopts. And the impossibility is indexed to frames
-\emph{inside} the structure being measured, which is Axiom~$-1$ in its plainest form. That
-qualification has to be read as a real one and not as decoration, and closing it off by adding that nothing here supplies an outside would be wrong, and wrong against this paper's own machinery. The framework supplies outsides routinely: a superframe is one, and
+\begin{proposition}[Closure sorts three cases]\label{prop:closure-three}
+The closure criterion sorts three cases rather than two, and sorts them by one rule. The two-way
+speed closes and is measurable; the absolute one-way speed does not close and is not; the one-way
+ratio closes at the comparison though neither leg does, and is. A ratio is dimensionless and so never
+needed expressing in the frame's cycle at all, and the comparison is local --- two arrivals set
+against one record at one place, which closes.
+\end{proposition}
+
+This is the closure criterion delivering the positive result rather than an exception to it, and
+getting all three cases from the same criterion is a check the account passes rather than a
+convention it adopts. And the impossibility is indexed to frames \emph{inside} the structure being
+measured, which is Axiom~$-1$ in its plainest form. That qualification has to be read as a real one
+and not as decoration. The framework supplies outsides routinely: a superframe is one, and
 Section~\ref{sec:entanglement}'s reading of entanglement as a superframe dimension is load-bearing
 for the recovery of the Born rule two sections later. \emph{Not measurable in frame} is therefore the
 whole of the claim, and it does not extend to \emph{not measurable}.
 
-Quantum mechanics is the standing demonstration that the in-frame description is not exhaustive, and
-it is an empirical one rather than an interpretive preference. Correlations violating Bell's
-inequality are not functions of the separated subframes' own states \citep{bell1964}, which is
-precisely what this paper means by a dimension held at the superframe, and they have been exhibited
-without the loopholes that once allowed the conclusion to be resisted \citep{hensen2015}. So
-structure beyond a subframe's own description is not merely coherent in this framework; it is
-measured.
-
-The limit on that optimism should be stated in the same breath, because the obvious route is closed
-by an established result rather than an open question. No-signalling means entanglement cannot carry
-information between separated locations, so it cannot be used to synchronise their clocks, and the
-superframe access we demonstrably have is therefore not access to distant simultaneity. What a superframe does deliver is
-worth being exact about, since it is more than nothing and less than an outside: holding both
-locations, it has units that close across them, so quantities the subframes cannot obtain are
-ordinary in \emph{its} terms --- and being a frame, it is blind to its own runner in precisely the way
-they were to theirs. Each level dissolves the one below's restriction and reproduces the restriction
-at its own. So ``impossible'' was the wrong word twice over: wrong for a restriction that holds of one
-frame and is lifted by the frame above it, and wrong again for suggesting that some sufficient ascent
-would lift it altogether, when what ascent yields is a different somewhere rather than a view from
-nowhere.
-
+\begin{remark}[Reichenbach and Malament are the two halves of one situation]\label{rem:reichenbach-malament}
 The strongest reply is worth engaging rather than omitting, and it is congenial. Standard synchrony
 is not merely one convention among equals: it is the only nontrivial simultaneity relation definable
 from causal connectibility together with an inertial worldline \citep{malament1977}, so
@@ -337,7 +350,9 @@ position on the metaphysics. This deflation is not the consensus reading, and sh
 as one: Malament is frequently cited as telling against conventionality rather than as orthogonal to
 it, and the disagreement about how much conventionality \emph{matters} survives everything said here.
 What does not survive is the impression that the two results contradict.
+\end{remark}
 
+\begin{remark}[One move: removing time as a primitive]\label{rem:one-move}
 It is worth naming the general move this is an instance of, because the result looks specific and is
 not. \emph{Removing time as a primitive is what makes the pair coherent.} Where time is a background
 against which events are laid out, distant simultaneity is a fact about the world that a frame may
@@ -384,8 +399,9 @@ frame decoherence''; anything with a number is weak.
 \begin{remark}[Two uses of ``decoherence'', and what relates them]\label{rem:two-decoherences}
 This paper uses the word in two ways and they should be separated before either does more work. The
 sentence above is the \emph{substrate} sense: a frame cannot hold the configuration, so nothing
-continues in it as that configuration --- the sense the theory paper treats generally
-(its decoherence remark), where what varies between cases is the frame and not the failure. Everywhere
+continues in it as that configuration --- the sense Graphic Equalisation treats generally
+(its Proposition~\ref{GE-prop:decoherence-one}), where what varies between cases is the frame and not
+the failure. Everywhere
 else below it is the \emph{standard} sense: environmental coupling averaging over relative phase so
 that branches stop interfering and a preferred basis is selected \citep{zurek2003}. Nothing here
 derives that mechanism; einselection is imported, not recovered, and the reader should not take its
@@ -396,15 +412,15 @@ a frame fails to hold something as one coherent structure and the difference pas
 the environment absorbs the phase in one case, the ordering the frame cannot supply is available only
 above it in the other. What differs is the \emph{outcome} --- the standard case selects exactly one
 branch, the substrate case realises none --- and on this account that difference is not in the failure
-but in whether the container can absorb what it receives, which is the theory paper's frame-indexing
+but in whether the container can absorb what it receives, which is Graphic Equalisation's frame-indexing
 applied here. The two are therefore plausibly one operation at different containers, and that is
 offered as a reading rather than a derivation: it would be established by showing the selection
 follows from absorption alone, which is not shown here.
 \end{remark}
 
 \section{Special and general relativity reconciled}\label{sec:sr-gr}
-The two relativities are one mechanism, because the one fixed budget $c$ can be
-drained two ways.
+The two relativities are one mechanism, because the one fixed throughput budget
+--- whose unit is $c$ --- can be drained two ways.
 
 \begin{proposition}[SR and GR are one change-budget spent two ways]\label{prop:sr-gr}
 Special relativity is the budget spent on \emph{motion}: a moving graph puts
@@ -426,15 +442,15 @@ construction.
 
 \begin{corollary}[Relativity reconciles because $c$ is defined, not postulated]\label{cor:reconcile}
 Because $c$ is here \emph{defined} (Proposition~\ref{prop:c-unit}) rather than
-postulated, special relativity's postulate of $c$-invariance becomes a theorem,
-and its effects follow as consequences rather than as separate surprises, with
+postulated, special relativity's postulate of $c$-invariance becomes a definitional
+consequence, and its effects follow rather than arriving as separate surprises, with
 the classical paradoxes dissolving into aperture differences --- each moving clock
 right, each reading its own $c=1$. Special and general relativity then reconcile
 (Proposition~\ref{prop:sr-gr}) as velocity- and gravity-dilation of one budget,
 joined at the equivalence principle.
 \end{corollary}
 
-\section{Relativity and collapse}\label{sec:collapse}
+\subsection{Relativity and collapse}\label{sec:collapse}
 Relativity also reconciles with the collapse picture of quantum measurement, by a
 division Graphic Equalisation already carries (Section~\ref{sec:c-rate}): the
 continuous in the maps between frames, the discrete in a frame's own states. The continuous
@@ -484,7 +500,7 @@ grounds; these results forbid it on quantum-mechanical ones, given the auxiliary
 Any coupling is a measurement relative to the coupled frames, so no conscious or
 privileged observer is required and none is distinguished --- a plate, a rock, or
 a friend measure relative to whatever they couple to. \emph{Measure} here is the
-coupling itself and not an act: the companion on the base holds that what stands
+coupling itself and not an act: \emph{Is} holds that what stands
 in relation without transformation or grammar can be observed and cannot observe,
 and that is consistent with this, because observing in its sense is \emph{making}
 a distinction and requires rules, while measuring in this sense is standing in the
@@ -507,8 +523,8 @@ Section~\ref{sec:amplitudes}.
 \section{Entanglement is dimensional access through frames}\label{sec:entanglement}
 An entangled pair is one system in the superframe, described by a joint dimension
 --- the correlation --- that is a first-class quantity of the superframe and
-\textsc{null} in each subframe individually (Graphic Equalisation's higher-frame
-first-class structure). Each subframe has dimensional access to it only through
+\textsc{null} in each subframe individually (Graphic Equalisation's
+Proposition~\ref{GE-prop:higher-frame}, higher-frame first-class structure). Each subframe has dimensional access to it only through
 its own boundary, and only in part; the full dimension lives one level up, along
 the structural-depth axis rather than the spatial one.
 
@@ -525,8 +541,8 @@ carving of the world.
 
 \begin{proposition}[A subframe's local state is mixed because the purity is a superframe dimension]\label{prop:mixed}
 Described alone, an entangled particle has no pure state --- it is mixed --- because
-its pure description requires the joint dimension, which is \textsc{null} in its
-subframe. Tracing out the partner is not discarding locally-available
+its pure description requires the joint dimension, which is
+\textnormal{\textsc{null}} in its subframe. Tracing out the partner is not discarding locally-available
 information; the missing information was never a subframe dimension. The reduced
 state is mixed exactly because the purity is a superframe dimension, inaccessible
 from below.
@@ -544,6 +560,28 @@ not paradoxical. Kochen--Specker contextuality \citep{kochen1967} is the access
 itself --- measuring projects the superframe dimension into the subframe's
 aperture, so a realised value is context-dependent by construction.
 \end{corollary}
+
+Quantum mechanics is the standing demonstration that the in-frame description is not exhaustive, and
+it is an empirical one rather than an interpretive preference. Correlations violating Bell's
+inequality are not functions of the separated subframes' own states \citep{bell1964}, which is
+precisely what this paper means by a dimension held at the superframe, and they have been exhibited
+without the loopholes that once allowed the conclusion to be resisted \citep{hensen2015}. So
+structure beyond a subframe's own description is not merely coherent in this framework; it is
+measured.
+
+The limit on that optimism should be stated in the same breath, because the obvious route is closed
+by an established result rather than an open question. No-signalling means entanglement cannot carry
+information between separated locations, so it cannot be used to synchronise their clocks, and the
+superframe access we demonstrably have is therefore not access to distant simultaneity
+(Proposition~\ref{prop:closure-three}). What a superframe does deliver is
+worth being exact about, since it is more than nothing and less than an outside: holding both
+locations, it has units that close across them, so quantities the subframes cannot obtain are
+ordinary in \emph{its} terms --- and being a frame, it is blind to its own runner in precisely the way
+they were to theirs. Each level dissolves the one below's restriction and reproduces the restriction
+at its own. So ``impossible'' was the wrong word twice over: wrong for a restriction that holds of one
+frame and is lifted by the frame above it, and wrong again for suggesting that some sufficient ascent
+would lift it altogether, when what ascent yields is a different somewhere rather than a view from
+nowhere.
 
 \begin{remark}[Spookiness is an aperture artefact: the light-switch identity]\label{rem:light-switch}
 The confusion entanglement provokes is identical in structure to that of a person
@@ -621,8 +659,9 @@ motivates linearity, it does not yet prove it.
 origin, so a global phase rotation is a change of nothing (Graphic Equalisation's
 no-privilege principle applied to the phase). The realised probability must
 therefore be invariant under a global $U(1)$, hence a function of the modulus alone,
-$P=f(|a|)$. This step is earned, and it is the no-privilege thesis of the mind
-companion doing physics work.
+$P=f(|a|)$. This step is earned, and it is the no-privilege thesis --- Graphic
+Equalisation's Axiom~$-1$, carried through the mind companion --- doing physics
+work.
 
 \emph{Squared (forced, given the above).} Two alternatives with no privileged
 relative phase --- decohered, their relative phase averaged over --- are classically
@@ -685,21 +724,19 @@ content: a compositional, diagrammatic axiom set is written in the same currency
 typed-graph substrate with subframe nesting, so the mapping attempted here is a
 translation between two graphical calculi rather than between a graph and a convex body.
 It is a reason to think the mapping can be checked, not evidence that it holds.
-The framework appears to supply those axioms from its own
-principles: purification --- every mixed state is pure in a larger system --- is entanglement
-as a superframe dimension (Section~\ref{sec:entanglement}); continuous reversibility is free
-continuation (an information-preserving write is reversible); context-independence is no privileged rule set; and
-composition is subframe nesting. If that mapping holds, Hilbert space
-and the Born rule follow by the cited reconstructions, as $|\cdot|^{2}$ followed from Gleason.
 
-Honest boundary: this is the same move again, one level deeper, and the mapping has now been
-worked axiom by axiom against the Hardy and CDP reconstructions, with a result worth stating.
-The two \emph{most} quantum axioms are supplied natively --- Hardy's continuous reversible
-transformation by free continuation (an information-preserving write is reversible, and the
-cycle-phase is continuous), and CDP's purification by entanglement as a superframe dimension
-(Section~\ref{sec:entanglement}) --- while most of the rest match native commitments
-(probability from realisation, compression and simplicity from the substrate's minimum
-description length, subspaces from subframe-as-frame). A
+This is the same move again, one level deeper, and the mapping has been worked axiom by axiom
+against the Hardy and CDP reconstructions in the Born note, with a result worth stating rather than
+promised. The two \emph{most} quantum axioms are supplied natively, and each from a different
+substrate principle: Hardy's continuous reversible transformation between pure states by free
+continuation (an information-preserving write is reversible, and the cycle-phase is continuous), and
+CDP's purification --- every mixed state is pure in a larger system --- by entanglement as a
+superframe dimension (Section~\ref{sec:entanglement}). Context-independence is no privileged rule
+set, and composition is subframe nesting. Most of the rest match native commitments rather than
+statements (probability from realisation, compression and simplicity from the substrate's minimum
+description length, subspaces from subframe-as-frame), and the Born note rates them as genre-matches
+on that ground. Given the mapping, Hilbert space and the Born rule follow by the cited
+reconstructions, as $|\cdot|^{2}$ followed from Gleason. A
 closure-phase frame is likewise consistent with complex amplitudes at one system (the Bloch sphere,
 $K=4$, rather than the real disk's $K=3$), though a phase-less frame is equally constructible
 and the substrate does not require either. The remaining question --- \emph{local tomography},
@@ -714,15 +751,7 @@ rather than forcing it, exactly as it admits, without forcing, one value of $N$ 
 group; a real-amplitude composition ($K_{AB}=10$) is another admissible configuration, and
 our universe's selection of the complex one is self-location. Given that contingent choice the
 Born rule and Hilbert structure follow, which is how this paper treats all physics --- shapes
-from contingent rule-content, the content never forced. The honest residual is then one posit plus technical conditions. The
-operational-probabilistic instantiation --- convex states, affine effects, a transformation
-monoid, and composition --- is argued in a companion note on the Born recovery (unpublished), from the
-substrate's weighted, ordered realisations together with the Narrative-momentum paper's
-first law (a frame carries its present structure forward until a write, so statistics depend
-only on the current state); it rests on the classical total-probability backbone rather than
-on any quantum assumption. Pending are the generalized-probabilistic-theory hygiene
-conditions: finite tomographic dimension, topological closure of the state space, and the
-full composition axioms. Nothing here requires that complex be derived:
+from contingent rule-content, the content never forced. Nothing here requires that complex be derived:
 seeking to force complex over real would contradict the framework's own stance. Complex quantum
 theory has here the same status as $N=3$ --- admitted and self-located, not compelled. In a
 word, the framework \emph{recovers} the Born rule rather than deriving it per se: it reproduces
@@ -736,20 +765,41 @@ the unpredictability of measurement on superinformation media \citep{marletto201
 reaches a different answer from the same kind of premises, and is engaged directly in
 Section~\ref{sec:prior-art}.
 
+\emph{Honest residuals, collected.} This section carries four and they are of different kinds.
+\begin{enumerate}[leftmargin=*]
+\item \textbf{Uncoupled to additive.} The rigorous step from ``uncoupled'' to full additivity and
+norm-preservation (unitarity) is not made here, and the linearity of the imposed supergraph map is
+not handed over for free. The mechanism motivates linearity; it does not prove it. This is the one
+posit the recovery rests on.
+\item \textbf{Complex over real is self-located, not forced.} The substrate admits both the complex
+composition ($K_{AB}=16$) and the real one ($K_{AB}=10$) and compels neither, so local tomography is
+the signature of a contingent selection rather than a gap to be closed.
+\item \textbf{The hygiene conditions.} The generalized-probabilistic-theory conditions are pending:
+finite tomographic dimension, topological closure of the state space, and the full composition
+axioms.
+\item \textbf{The operational-probabilistic instantiation.} Convex states, affine effects, a
+transformation monoid, and composition are argued in the Born note --- from the substrate's weighted,
+ordered realisations together with the Narrative-momentum paper's first law (a frame carries its
+present structure forward until a write, so statistics depend only on the current state), resting on
+the classical total-probability backbone rather than on any quantum assumption. That argument is
+that note's and not this section's, and it is a draft attempt rated step by step rather than an
+established result.
+\end{enumerate}
+
 \subsection*{The reconciliation: Born, SR, and GR on one substrate}
 The recovery has a consequence larger than the Born rule. Special and general relativity are
 already reconciled here as one change-budget spent two ways (Proposition~\ref{prop:sr-gr},
-Corollary~\ref{cor:reconcile}), with $c$'s invariance a theorem rather than a postulate
-(Proposition~\ref{prop:c-unit}) --- a theorem given the substrate's own units. Quantum collapse and relativity, the
-two historically unreconciled descriptions, are on this substrate not rivals but the
-in-frame \emph{event} and the cross-frame \emph{map} of one change-substrate, joined at $c$
-(Section~\ref{sec:collapse}). With the Born rule now
+Corollary~\ref{cor:reconcile}), with $c$'s invariance a definitional consequence rather than a
+postulate (Proposition~\ref{prop:c-unit}) --- definitional given the substrate's own units. Quantum
+collapse and relativity, the two historically unreconciled descriptions, are already the in-frame
+\emph{event} and the cross-frame \emph{map} of one change-substrate joined at $c$
+(Section~\ref{sec:collapse}), and not rivals. With the Born rule now
 \emph{recovered} on the very same primitives --- closure for the phase, no-privilege for phase-
 and context-independence, free continuation for the reversible structure --- Born, SR, and GR
 stand reconciled on one substrate: the same $c$, the same no-privilege, the same closure loop
 underwrite all three.
 
-Honest boundary: the strength is uneven --- the SR--GR half a theorem given $c$-as-unit,
+Honest boundary: the strength is uneven --- the SR--GR half a definitional consequence given $c$-as-unit,
 the quantum--relativity half structural. This is emphatically \emph{not} a quantum theory of
 gravity: no field is quantised, no metric is derived, no dimensionless constant is fixed.
 What is reconciled is the \emph{conflict} --- that quantum theory and relativity are two
@@ -778,9 +828,9 @@ took,'' because which-path is \emph{undetermined}, not \emph{undisclosed}, until
 coupling realises it --- a question with no answer of any kind until a coupling settles
 it. The ``both paths'' is not a particle in two places but the frame's
 $\mathcal P$. Second, a superframe applies changes to a subframe \emph{without}
-passing through the subframe's admissibility (Graphic Equalisation: admissibility
-is self-governance, not armour --- a graph's grammar governs its self-originated
-transformation, not world-caused forcing). So the interference is the superframe
+passing through the subframe's admissibility (Graphic Equalisation's
+Proposition~\ref{GE-prop:self-governance}: admissibility is self-governance, not armour --- a graph's
+grammar governs its self-originated transformation, not world-caused forcing). So the interference is the superframe
 applying its combined-amplitude structure to the particle; the particle does not
 select a path by its own rules, and cannot veto the combination.
 
@@ -840,10 +890,11 @@ no magic numbers --- standalone quantities that simply are, attached to nothing.
 The type claim is forced rather than preferred, and the forcing is at the floor. A ratio is a
 relation between two quantities: two ends and something carried across. A magic number is a
 \emph{label} --- a value borne by one thing, answering to nothing else --- and the base has no labels
-for it to be written as, carrying relata and relations and no marks on either (the companion's floor,
+for it to be written as, carrying relata and relations and no marks on either (\emph{Is}'s floor,
 made explicit there). \emph{So a standalone constant has nowhere to live.} Where a theory carries one
 anyway, it is carrying a value whose relata it has not identified, which is a write nobody can read
-back --- the silent fourth cost of Graphic Equalisation's well-formedness --- and the defect is in the
+back --- the silent fourth cost of Graphic Equalisation's well-formedness
+(Definition~\ref{GE-def:well-formed}) --- and the defect is in the
 theory rather than in the world.
 
 What this does to the open question is change its shape and not its status. \emph{It explains no
@@ -951,7 +1002,7 @@ aperture, not a separate granularity of the world.
 Third, the \emph{dimensionless} constants are contingent rule-content: the
 framework cannot derive $\alpha$ or the mass ratios, but it can say what kind of
 thing they are --- the contingent specifics of this substrate's rule-set (Graphic
-Equalisation's nothing-compulsory principle), so ``why $\alpha$'' is not ``why this necessary
+Equalisation's Remark~\ref{GE-rem:nothing-compulsory}), so ``why $\alpha$'' is not ``why this necessary
 value'' but ``why this rule-set,'' answered by self-location
 (Proposition~\ref{prop:self-location}). Two type claims are now in play and they agree: a
 dimensionless constant is contingent rule-content, and it is a \emph{ratio} rather than a label
@@ -1030,29 +1081,35 @@ here it is grounded rather than assumed --- entropy is \emph{what this frame doe
 not distinguish}.
 
 \begin{proposition}[The second law is no-copy accumulated]\label{prop:second-law}
-Every \emph{write} of the discarding class discards its predecessor --- the substrate paper prices
-reversible operation rather than forbidding it, so this restricts to that class rather than claiming
-it of all writes, and the claim carried here is that the class is the general case. The prior state
-goes \textsc{null}
-unless paid to keep --- so each write pushes structure below the aperture, into
-the un-distinguished. (A free continuation discards nothing. In the frame's own terms it is not an
-event at all --- the substrate paper has it as the absence of one, and nothing
-re-applies the standing structure. What makes it a \emph{write} here is this
-grounding's container rather than the substrate: the physical superframe charges
-for persistence, so what is free to the frame is paid in the frame that holds it,
-and it is then the reversible, entropy-neutral case. That is a claim about these
-rules and not about all of them, which is why the arrow tracks writes and not mere
-succession.) Change therefore accumulates entropy, because change forgets
-by default and forgetting is exactly this demotion. The arrow of entropy is the
-no-copy asymmetry, which is the same asymmetry as accumulated change-cost (the
-Landauer floors summing) and as causation (a change enables its successor, not
-its predecessor). A clarification is needed here, because the substrate paper separates two things this
+Every \emph{write} of the discarding class discards its predecessor: the prior state goes
+\textnormal{\textsc{null}} unless paid to keep, so each write pushes structure below the aperture,
+into the un-distinguished. Change therefore accumulates entropy, because change forgets by default
+and forgetting is exactly this demotion. The arrow of entropy is the no-copy asymmetry, which is the
+same asymmetry as accumulated change-cost (the Landauer floors summing) and as causation (a change
+enables its successor, not its predecessor); a free continuation discards nothing and is the neutral
+case.
+\end{proposition}
+
+Two restrictions are carried in that statement and neither is decoration. Graphic Equalisation prices
+reversible operation rather than forbidding it, so the proposition restricts to the discarding class
+rather than claiming it of all writes, and what is claimed is that the class is the general case. And
+a free continuation is not an event in the frame's own terms at all --- Graphic Equalisation has it as
+the absence of one, and nothing re-applies the standing structure. What makes it a \emph{write} here
+is this grounding's container rather than the substrate: the physical superframe charges for
+persistence, so what is free to the frame is paid in the frame that holds it, and it is then the
+reversible, entropy-neutral case. That is a claim about these rules and not about all of them, which
+is why the arrow tracks writes and not mere succession.
+
+\begin{remark}[Absence is not residual]\label{rem:absence-not-residual}
+A clarification is needed here, because Graphic Equalisation separates two things this
 could run together. What falls below an aperture is \emph{absent} to that frame rather than
 held-and-unresolved, and absence is not residual --- they have opposite consequences there. Entropy as
 defined above is the microstructure a frame cannot tell apart, which is absence at its grain, and it is
 \emph{not} the same quantity as un-absorbed residual, which is inadmissibility a grammar did see and
 left in place. The two rise together under coarsening and remain distinct in kind.
+\end{remark}
 
+\begin{remark}[The increase is one-sided accounting]\label{rem:one-sided}
 One further separation, and it is what makes the proposition a reading rather than a law. Demotion
 below an aperture is not loss: what falls below one frame's grain is above another's, so the transfer
 \emph{balances} across the boundary and is unbalanced only when accounted from one side. The
@@ -1061,14 +1118,16 @@ quantity read in-frame, which is the category this programme's own discipline sa
 this kind of artefact. That is why the law is asymptotic and statistical rather than exact, and why it
 can be locally reversed by anything that pays: the payer is the other side of a ledger that was
 balanced all along.
+\end{remark}
 
+\begin{remark}[A relocation of the arrow's source, not a new arrow]\label{rem:arrow-relocation}
 Nothing in that is new physics. Open-system thermodynamics already has entropy falling locally while
 rising globally, and the demon is already answered by accounting for the demon. What this account adds
 is only where the boundary is: the boundary is a \emph{frame}, so the asymmetry is not a fact about
 systems but about individuation, and the second law is what the balance looks like from inside one of
 the two frames it balances between. The claim is a relocation of the arrow's source, not a new
 arrow.
-\end{proposition}
+\end{remark}
 
 \begin{corollary}[The demon is exorcised, and local order is affordable]\label{cor:demon-life}
 Landauer's $k_{\mathrm B}T\ln 2$ (Section~\ref{sec:constants}) is the price of
@@ -1094,7 +1153,7 @@ accumulation of change under no-copy, memory being present structure of a
 discarded past and entropy being the same discarding counted. The \emph{causal}
 arrow is not that. It is the asymmetry of enablement itself --- a change makes
 another possible and the second does not thereby make the first possible --- and
-it holds whether or not a predecessor survives, which is why the substrate paper
+it holds whether or not a predecessor survives, which is why Graphic Equalisation
 rests the event order on it rather than on no-copy. So two arrows are identical
 and the third agrees with them without being them, and the ``why do they agree''
 puzzle is answered in two parts rather than one: two descriptions of a single
@@ -1114,20 +1173,21 @@ length and each does a variable amount of change (Graphic Equalisation's result 
 inferred time is a cycle, and requires closure), so there is no frame-free conversion from the
 nucleus's count to the observer's. Retention is paid, and nothing here pays to retain the phase.
 \emph{So there is no age for a decay probability to depend on}, and a hazard with nothing retained to
-depend on is constant \emph{with respect to everything the nucleus holds}. That is the claim, and the
-qualification is load-bearing rather than cautious: a hazard constant \emph{simpliciter} is
-exponential decay and nothing else, and exact exponentiality turns out to require something this
-account denies.
+depend on is constant \emph{with respect to everything the nucleus holds}.
 \end{proposition}
 
-The last step is the one that earns the proposition, because it is where the account says more than
-its rival. \emph{Irreducible chance does not predict a distribution.} That decay is undetermined is
+The qualification in that last clause is load-bearing rather than cautious. A hazard constant
+\emph{simpliciter} is exponential decay and nothing else, and exact exponentiality turns out to
+require something this account denies --- which is the subject of the deviations below.
+
+The qualification is what earns the proposition, because it is where the account says more than its
+rival. \emph{Irreducible chance does not predict a distribution.} That decay is undetermined is
 consistent with any law whatever --- peaked, heavy-tailed, bimodal --- and the exponential has to be
 put in by hand alongside it, as an observed fact about nuclei rather than a consequence of their
 being undetermined. Here the exponential is forced: memorylessness is not an extra postulate but the
 absence of a retained quantity, and constant hazard has exactly one survival law. \emph{A nucleus
-that carried its own age would be a more expensive object}, and the write-economics says who pays
-for the carrying. A determinate countdown --- a nucleus that knows its remaining ticks --- is the
+that carried its own age would be a more expensive object}, and Graphic Equalisation's
+write-economics (Proposition~\ref{GE-prop:economics}) says who pays for the carrying. A determinate countdown --- a nucleus that knows its remaining ticks --- is the
 model this proposition is most likely to be mistaken for, and it is refuted by the data it is meant
 to explain: survivors of a countdown are nearer their deadline, the hazard rises with age, and the
 observed law would be peaked rather than exponential.
@@ -1145,7 +1205,8 @@ organic molecules \citep{rothe2006}. A constant hazard admits neither, so the pr
 account of both.
 
 It has one for the short end and it is a prediction rather than a repair.
-The companion's cycle-unit result makes inferred time a \emph{cycle} and requires closure for it, so
+Graphic Equalisation's cycle-unit result (Proposition~\ref{GE-prop:cycle-unit}) makes inferred time a
+\emph{cycle} and requires closure for it, so
 below one closure cycle of the \emph{observing} frame there is no inferred-time interval for a law
 to be exponential in. Exponentiality is a statement in inferred time; short of a cycle there is no
 such statement, and a departure there is expected on this account and unexplained on the bare
@@ -1175,8 +1236,9 @@ One further thing the account does supply is the \emph{visibility} structure, wh
 separating from the derivation it does not supply. The deviation is not absent through most of a
 decay and then present at the end. It is there throughout and sits beneath the aperture
 (Section~\ref{sec:constants}), and what changes at long times is not the tail but the exponential: a
-power law and a falling exponential cross once $e^{-\Gamma t}$ has dropped below $t^{-n}$, which is many lifetimes in --- seven to ten for $\beta$ between $\tfrac12$ and $1$, on the exact
-threshold form --- and \citet{rothe2006} report the crossing around ten. \emph{So the tail becomes
+power law and a falling exponential cross once $e^{-\Gamma t}$ has dropped below $t^{-n}$, which is
+many lifetimes in, of order ten as observed: \citet{rothe2006} report the crossing around ten. The
+exact crossing depends on the tail's prefactor and is not estimated here. \emph{So the tail becomes
 visible because the thing hiding it decays away, not because the tail grows}, and ``deviations appear
 at long times'' is a fact about what is resolvable rather than about what is happening.
 
@@ -1186,6 +1248,12 @@ bounded below. Those are different objects. The bridge is the floor itself, and 
 supply it.
 
 \begin{proposition}[The spectrum is bounded below because absence is]\label{prop:spectrum-floor}
+A frame's spectrum is bounded below because absence is: occupation is a count, so it is non-negative,
+and the sign of a frequency is an orientation rather than a rate. With both,
+$H=\sum_k n_k\hbar\omega_k\ge 0$ term by term. What is derived is that a floor \emph{exists}, not
+where it reads.
+\end{proposition}
+
 Stepping alone gives no floor: the integers are stepped and run both ways. \emph{One substrate fact is needed and it is applied in two places}, the second of which is where
 the sign problem hides.
 
@@ -1201,12 +1269,13 @@ Section~\ref{sec:planck} are the action quantum and are not needed for this.
 either sign, and this is where the negative-energy problem historically entered. The negative case is
 \emph{not} a cycle run backwards: it is the same cycle traversed in the opposite \emph{phase},
 running forward like any other. \emph{Negative time does not exist and phase does}, which is the
-distinction the companion states in general (its remark that a cycle reads two ways --- how many, and
-where within): a count of completed cycles has no direction to run backwards in, while a phase is
+distinction Graphic Equalisation states in general (its Remark~\ref{GE-rem:phase-not-time}, that a
+cycle reads two ways --- how many, and where within): a count of completed cycles has no direction to run backwards in, while a phase is
 oriented and carries no duration at all. Reading the second as the first is what manufactures a
 backwards time, and the manufactured object is then what needs forbidding. So the sign is an \emph{orientation} --- which way round the relation
 is read, carried by the edge and not by any magnitude --- while the rate itself is a count of cycles
-against the frame's own cycle (Graphic Equalisation's cycle-unit), non-negative for the reason
+against the frame's own cycle (Graphic Equalisation's Proposition~\ref{GE-prop:cycle-unit}),
+non-negative for the reason
 occupation is. \emph{So this is one premise applied twice and not two}: absence floors the count, and
 the apparent second sign was never a quantity. What looked like a negative-energy state is a
 positive-energy state read in the opposite orientation --- the reinterpretation physics adopted, with
@@ -1214,13 +1283,12 @@ the sea of filled states as the alternative that is not needed here.
 
 With both, $H=\sum_k n_k\hbar\omega_k\ge 0$ term by term, and a frame's spectrum is bounded below.
 
-What is derived is that a floor \emph{exists}, not where it reads. The zero of energy is an offset
+The zero of energy is an offset
 and offsets are frame-units (Proposition~\ref{prop:dim-boundary}), so a spectrum running to
 arbitrarily negative numbers is no counterexample: a binding energy is negative against a
 conventional zero and the system is still bounded below by its own ground state, which is the floor
 this proposition is about. The claim is boundedness, which is invariant. The number at which the
 bound sits is not, and nothing here needs it to be.
-\end{proposition}
 
 That is the \emph{spectrum condition} --- positivity of the energy, an axiom where it is usually
 found \citep{streater1964} --- arriving as a consequence rather than a postulate, and it closes the
@@ -1251,7 +1319,7 @@ that identification fails for the interacting case, and this section does not es
 holds there.
 
 \section{Cosmology: the initial state, the seed, and self-location}\label{sec:cosmology}
-By Graphic Equalisation's no-start-end result the event order has no intrinsic
+By Graphic Equalisation's Proposition~\ref{GE-prop:no-start-end} the event order has no intrinsic
 first, so the beginning of the universe is not an intrinsic edge but a
 \emph{chosen entry} --- a boundary condition imposed from the containing frame.
 This is why physics supplies initial conditions separately from its laws: the
@@ -1286,11 +1354,7 @@ not two facts one explaining the other.
 This inverts the fine-tuning inference. The constants are not tuned \emph{to} a
 pre-existing observer; the observer is what those constants produce, so the
 apparent coincidence is the co-determination of observer and seed mistaken for a
-tuning aimed at a target. It is the same move as being surprised that the Graph
-Law applies to everything: it applies because that \emph{is} what everything,
-measured, is --- a constitutive identity, not a contingent breadth, the
-discriminator being independent re-derivation (Graphic Equalisation's composition
-falsifier). What remains out of reach is only \emph{derivation}: no formula
+tuning aimed at a target. What remains out of reach is only \emph{derivation}: no formula
 computes $\alpha$ or the seed. The \emph{why} is answered; the \emph{value} is
 not derived. Reference points take no ``why'' --- they are where the why is
 asked.
@@ -1300,11 +1364,14 @@ Time is not a must. A frame whose rules are not firing --- inert, a rock --- has
 no time at all: nothing happens in it, there is no succession, and in its own
 frame it merely \emph{is}. What an external clock calls ``later'' is, for the
 rock, only another \emph{is}; the weathering it undergoes is the \emph{supergraph's}
-succession applied to it from above (admissibility being self-governance, not
-armour), not the rock's own. Time belongs to active, inferring frames --- those
-with a firing closure loop to iterate (Graphic Equalisation's cycle-unit) and the
+succession applied to it from above (Graphic Equalisation's
+Proposition~\ref{GE-prop:self-governance}: admissibility is self-governance, not armour), not the
+rock's own. Time belongs to active, inferring frames --- those
+with a firing closure loop to iterate (Graphic Equalisation's Proposition~\ref{GE-prop:cycle-unit})
+and the
 inference to represent the succession. The rock has neither, so it has no time;
-its rules exist but are inert.
+its rules exist but are inert \emph{at the grain at which it is a rock}. Nothing
+here claims a grain at which nothing runs.
 
 \begin{proposition}[The observed time is one-dimensional]\label{prop:one-time}
 Every time we have observed is one-dimensional, and self-change gives a reason it
@@ -1312,8 +1379,11 @@ tends that way: change is self-change on one structure, strictly ordered --- no
 two of a frame's own changes are concurrent --- so a frame lays down one
 succession at a time. But this is a tendency, not a theorem. Independent
 successions are no more prohibited than four spatial dimensions are; what selects
-the single observed time axis is the same filter that selects three spatial
-dimensions --- decoherence and stability --- not a necessity. So one-dimensional
+the single observed time axis is conjectured here to be the same filter that
+selects three spatial dimensions --- decoherence and stability --- and not a
+necessity. That is a conjecture and is marked as one: unlike the $N=3$ case, which
+has Ehrenfest's stability result behind it, no comparable result is cited for the
+time axis and none is claimed. So one-dimensional
 time is observed and selected, not forced; multi-dimensional time is unobserved,
 not forbidden. Time itself remains optional, absent from every inert frame.
 \end{proposition}
@@ -1331,13 +1401,16 @@ one-succession-and-many-positions read as a signature.
 
 The contingent-not-necessary status of these verdicts --- and of the gauge group,
 the dimensionless constants, the arrow, and the value of $c$ --- is licensed by the
-minimal-universe argument (Section~\ref{sec:scope}): a rock is a universe, and the
-minimal universe does without them, so none can be compulsory.
+minimal-universe argument (Section~\ref{sec:scope}): a rock is a universe at the
+grain at which it is a rock, and the minimal universe does without them, so none
+can be compulsory.
 
 \section{Identical particles are functional identity}\label{sec:identical}
-Graphic Equalisation's Axiom~$-1$ holds that two things with no difference that
-makes a difference are the same, and its no-frame-free-identity theorem that one
-cannot say which of two is which independently of an individuating frame. This is
+Graphic Equalisation's Axiom~$-1$ holds that there is no operational view from
+nowhere; that two things with no difference that makes a difference are the same
+is its \emph{consequence} --- functional identity --- and its
+Theorem~\ref{GE-thm:no-frame-free} adds that one cannot say which of two is which
+independently of an individuating frame. This is
 the quantum treatment of identical particles exactly: two electrons carry no
 label, and ``which is which'' names no difference and so has no content.
 Classical physics labels identical objects --- treats two identical bodies as
@@ -1349,9 +1422,9 @@ Classical Maxwell--Boltzmann counting labels identical particles and over-counts
 arrangements; quantum Bose--Einstein and Fermi--Dirac counting treats them as one
 where they are indistinguishable. The Gibbs paradox --- the spurious entropy of
 mixing two identical gases --- resolves by not labelling them, which is
-Axiom~$-1$, and ties to Section~\ref{sec:second-law}: entropy is what a frame
-distinguishes, so identical particles, having nothing to distinguish, add no
-mixing entropy. The $1/N!$ Gibbs correction is functional identity made
+Axiom~$-1$, and ties to Section~\ref{sec:second-law}: mixing entropy counts
+arrangements the frame can tell apart, and an exchange of identical particles is
+not one. The $1/N!$ Gibbs correction is functional identity made
 quantitative.
 \end{proposition}
 
@@ -1400,7 +1473,7 @@ the budget additionally \emph{splits} --- throughput spent on motion or on inter
 is what yields mass as reserved budget, general relativity as change-load rather than only the
 special-relativistic metric, and the equivalence principle as the seam between the two
 (Section~\ref{sec:sr-gr}). And their result is a result about spacetime; the same economy is run
-here through collapse, entanglement and the amplitude weights (Sections~\ref{sec:collapse}
+here through collapse, entanglement and the amplitude weights (Sections~\ref{sec:measurement}
 to~\ref{sec:amplitudes}), and belongs to a substrate of which physics is one embodiment rather
 than to physics alone.
 \citet{knuth2014} derive the Minkowski metric and the Lorentz transformations from consistent
@@ -1439,8 +1512,8 @@ is the constant-magnitude four-velocity of Minkowski geometry
 
 \paragraph{Relativity as postulate.} Einstein's special \citep{einstein1905} and
 general \citep{einstein1916} relativity take $c$-invariance and the equivalence
-principle as postulates; the present account renders the first a theorem
-(Proposition~\ref{prop:c-unit}) and the second a common cause
+principle as postulates; the present account renders the first a definitional
+consequence (Proposition~\ref{prop:c-unit}) and the second a common cause
 (Section~\ref{sec:sr-gr}), at the cost of claiming only the shapes.
 
 \paragraph{Observer-first programmes.} The starting point of
@@ -1527,10 +1600,12 @@ draws the boundary at the dimensionless remainder.
 
 \section{Falsifiability commitments}\label{sec:falsifiability}
 
-\noindent\emph{On the tags.} Each commitment below is marked \textsc{[shape]} where failing it costs
-this grounding its \emph{reach} --- the account would no longer apply to the domain, or would apply
-only by giving up what it was brought here to explain --- and \textsc{[detail]} where failing it costs
-a specific mechanism while the grounding stands. The substrate paper has carried these marks for some
+\noindent\emph{On the tags.} Each commitment below is marked \textsc{[shape]} or \textsc{[detail]}.
+A \textsc{[detail]} failing is a revision: the account survives with that mechanism replaced. A
+\textsc{[shape]} failing costs \emph{range} rather than a mechanism, because what fails is something
+the substrate is claimed to require or to permit --- so the account does not hold where it claimed to,
+which is the more serious of the two and is still a boundary rather than an annihilation.
+Graphic Equalisation has carried these marks for some
 time and the groundings did not, which had the discipline applied where the risk is smallest: the
 substrate risks little by design and the groundings carry the exposure. They were assigned in a single
 pass under the rule just stated, and are the least-audited judgement in this document --- a reader who
@@ -1540,17 +1615,21 @@ Each is exposed to attack; the scope caveat of Section~\ref{sec:scope} applies
 throughout.
 \begin{enumerate}[leftmargin=*]
 \item \textsc{[shape]}~\textbf{$c$ as frame-unit.} That a frame reads its own base rate as $1$ is
-definitional and not itself at risk; the falsifiable claim is the cross-frame step. Fails if
-two frames in relative motion can be exhibited reading \emph{different} $c$ for the same
-signal --- that is, if aperture does not self-calibrate --- or if $c$-invariance requires a
+definitional and not itself at risk (Definition~\ref{def:three-c}: unit $c$); the falsifiable claim
+is about \emph{observed} $c$. Fails if two frames, each obtaining $c$ by the indirect route ---
+measurement, retention and inference --- are exhibited reaching different values for one signal, that
+is, if aperture does not self-calibrate; or if $c$-invariance requires a
 postulate that cannot be recovered as the unit reading.
 \item \textsc{[shape]}~\textbf{One budget, two dilations.} Fails if velocity time dilation and
 gravitational time dilation cannot be exhibited as the same fixed budget spent on
 motion and on change-load respectively --- if the equivalence principle is not
-their common cause here.
-\item \textsc{[shape]}~\textbf{Dimensional/dimensionless boundary.} Fails if a genuinely
-dimensionless constant can be set to $1$ by unit choice, or if a dimensional
-constant carries an irreducible value not absorbable into a frame's units.
+their common cause here. Concretely, the account predicts no \emph{third} dilation channel: a clock
+slowed by something that is neither relative motion nor local change-load would exhibit the failure,
+and a demonstration that the two known channels draw on separately budgeted throughputs would too.
+\item \textsc{[shape]}~\textbf{Dimensional/dimensionless boundary.} Fails on exhibition of a
+dimensionless constant that is a ratio of nothing --- irreducibly standalone, not expressible as one
+quantity against another even in principle --- or if a dimensional constant carries an irreducible
+value not absorbable into a frame's units.
 \item \textsc{[shape]}~\textbf{Second law as no-copy.} Fails if entropy can rise in a frame whose
 \emph{writes} preserve their predecessors, or fall in one without a paid write
 exporting cost. (Free continuations preserve their predecessors and so are the entropy-neutral case;
@@ -1583,7 +1662,7 @@ standpoint that could have obtained a different one --- if there is an
 observer-independent ``we'' separable from the seed. (The claim is that the
 \emph{why} is self-location and the \emph{value} is not derived; both together,
 not either alone.)
-\item \textsc{[shape]}~\textbf{Amplitude is directional Narrative; Born reduces to linearity.} Fails
+\item \textsc{[detail]}~\textbf{Amplitude is directional Narrative; Born reduces to linearity.} Fails
 if the complex amplitude cannot be identified with a magnitude-times-direction
 operative-history structure, or if the Born square admits no closed-loop (conjugate)
 reading. Sharper: given complex, \emph{linearly superposing} amplitudes and no
@@ -1592,7 +1671,7 @@ decohered alternatives, with uniqueness from Gleason), so the claim fails if all
 probability is not the squared modulus. It fails also if the mapping onto the
 informational reconstructions cannot be made good. (Linearity is \emph{not} claimed
 derived; the residue is stated in Section~\ref{sec:amplitudes}.)
-\item \textsc{[shape]}~\textbf{Interference is possibility plus superframe forcing.} Fails if
+\item \textsc{[detail]}~\textbf{Interference is possibility plus superframe forcing.} Fails if
 interference requires the particle's own admissibility to select among paths, or
 if a which-path coupling that collapses before the screen does not remove the
 fringes --- i.e.\ if superposition is not the possibility structure and the
@@ -1604,7 +1683,30 @@ observed time is $1$-D is claimed decoherence-selected, not forced ---
 multi-dimensional time is unobserved, not prohibited; that space is $N$-D with
 $N=3$ is likewise contingent and self-located. The minimal-universe licence, the
 block universe, free will, personal identity, and death are treated in the
-companion mind paper and carry their falsifiers there.)
+mind companion and carry their falsifiers there.)
+
+\item \textsc{[detail]}~\textbf{The one-way speed is an absent quantity.} Fails on a determination of
+the one-way speed \emph{in this universe} that rests on no synchrony stipulation. What fails then is
+the empirical claim that our rules supply no unlocked counter, not the cycle unit itself: a second
+dimension's step count is a different unit and not a finer reading of the same one
+(Remark~\ref{rem:oneway-rule}).
+
+\item \textsc{[detail]}~\textbf{The decay tail is required, its exponent is not.} Fails if the
+long-time exponent is universal across systems with different threshold structure. The substrate
+fixes that there \emph{is} a tail --- exact exponentiality would need spectral support running to
+$-\infty$, which the floor forbids --- and cannot fix the exponent, which tracks the density of
+states at threshold (Section~\ref{sec:decay}).
+
+\item \textsc{[shape]}~\textbf{In-frame energy is a count of quanta.} Fails if in-frame energy is not
+a count of quanta for interacting systems, where the count is not sharp and the physical states are
+dressed. Nothing in the spectrum-floor argument survives if that identification fails there, and this
+paper does not establish that it holds (Proposition~\ref{prop:spectrum-floor}).
+
+\item \textsc{[detail]}~\textbf{Apparent constancy tracks denominator size.} The constants most
+likely to yield a measurable variation are those whose denominators are smallest against the
+perturbations available to them, and not the ones deemed most fundamental. Fails if a measured
+variation, when found, appears first in constants ordered by depth rather than by that ratio
+(Proposition~\ref{prop:dim-boundary}).
 \end{enumerate}
 
 \noindent\emph{Scope note (not a falsifier).} The paper claims shapes only; it would be
@@ -1618,12 +1720,12 @@ Emily Adlam and Carlo Rovelli.
 \newblock Information is physical: cross-perspective links in relational quantum mechanics.
 \newblock \emph{Philosophy of Physics}, 1(1), 2023.
 
-\bibitem[Ali Ahmad et al.(2022)]{aliahmad2022}
+\bibitem[Ali Ahmad et~al.(2022)]{aliahmad2022}
 Shadi Ali Ahmad, Thomas D. Galley, Philipp A. H\"ohn, Maximilian P.~E. Lock, and Alexander R.~H. Smith.
 \newblock Quantum relativity of subsystems.
 \newblock \emph{Physical Review Letters}, 128(17):170401, 2022.
 
-\bibitem[Anderson et al.(1998)]{anderson1998}
+\bibitem[Anderson et~al.(1998)]{anderson1998}
 Ronald Anderson, I.~Vetharaniam, and Geoffrey E. Stedman.
 \newblock Conventionality of synchronisation, gauge dependence and test theories of relativity.
 \newblock \emph{Physics Reports}, 295(3--4):93--180, 1998.
@@ -1643,7 +1745,7 @@ Bureau International des Poids et Mesures.
 \newblock \emph{The International System of Units (SI)}.
 \newblock 9th edition, 2019.
 
-\bibitem[Bombelli et al.(1987)]{bombelli1987}
+\bibitem[Bombelli et~al.(1987)]{bombelli1987}
 Luca Bombelli, Joohan Lee, David Meyer, and Rafael D. Sorkin.
 \newblock Space-time as a causal set.
 \newblock \emph{Physical Review Letters}, 59(5):521--524, 1987.
@@ -1653,7 +1755,7 @@ Luca Bombelli, Joohan Lee, David Meyer, and Rafael D. Sorkin.
 \newblock A no-go theorem for observer-independent facts.
 \newblock \emph{Entropy}, 20(5):350, 2018.
 
-\bibitem[Chiribella et al.(2011)]{chiribella2011}
+\bibitem[Chiribella et~al.(2011)]{chiribella2011}
 Giulio Chiribella, Giacomo Mauro D'Ariano, and Paolo Perinotti.
 \newblock Informational derivation of quantum theory.
 \newblock \emph{Physical Review A}, 84(1):012311, 2011.
@@ -1718,12 +1820,12 @@ Lucien Hardy.
 \newblock Quantum theory from five reasonable axioms.
 \newblock arXiv:quant-ph/0101012, 2001.
 
-\bibitem[Hau et al.(1999)]{hau1999}
+\bibitem[Hau et~al.(1999)]{hau1999}
 Lene Vestergaard Hau, S.~E. Harris, Zachary Dutton, and Cyrus H. Behroozi.
 \newblock Light speed reduction to 17 metres per second in an ultracold atomic gas.
 \newblock \emph{Nature}, 397(6720):594--598, 1999.
 
-\bibitem[Hensen et al.(2015)]{hensen2015}
+\bibitem[Hensen et~al.(2015)]{hensen2015}
 B.~Hensen, H.~Bernien, A.~E. Dr\'eau, A.~Reiserer, N.~Kalb, M.~S. Blok, J.~Ruitenberg, R.~F.~L. Vermeulen, R.~N. Schouten, C.~Abell\'an, W.~Amaya, V.~Pruneri, M.~W. Mitchell, M.~Markham, D.~J. Twitchen, D.~Elkouss, S.~Wehner, T.~H. Taminiau, and R.~Hanson.
 \newblock Loophole-free {B}ell inequality violation using electron spins separated by 1.3 kilometres.
 \newblock \emph{Nature}, 526(7575):682--686, 2015.
@@ -1753,10 +1855,10 @@ Edwin T. Jaynes.
 \newblock Information theory and statistical mechanics.
 \newblock \emph{Physical Review}, 106:620--630, 1957.
 
-\bibitem[Khalfin(1958)]{khalfin1957}
+\bibitem[Khalfin(1957)]{khalfin1957}
 Leonid A. Khalfin.
 \newblock Contribution to the decay theory of a quasi-stationary state.
-\newblock \emph{Soviet Physics JETP}, 6(6):1053--1063, 1958.
+\newblock Russian original 1957; \emph{Soviet Physics JETP}, 6(6):1053--1063, 1958.
 
 \bibitem[Knuth and Bahreyni(2014)]{knuth2014}
 Kevin H. Knuth and Newshaw Bahreyni.
@@ -1793,10 +1895,10 @@ Llu\'is Masanes and Markus P. M\"uller.
 \newblock A derivation of quantum theory from physical requirements.
 \newblock \emph{New Journal of Physics}, 13(6):063001, 2011.
 
-\bibitem[Minkowski(1909)]{minkowski1908}
+\bibitem[Minkowski(1908)]{minkowski1908}
 Hermann Minkowski.
 \newblock Raum und Zeit.
-\newblock \emph{Physikalische Zeitschrift}, 10:75--88, 1909. Address delivered 1908.
+\newblock Address delivered 1908; \emph{Physikalische Zeitschrift}, 10:104--111, 1909.
 
 \bibitem[M\"uller(2020)]{muller2020}
 Markus P. M\"uller.
@@ -1819,7 +1921,7 @@ Jorma Rissanen.
 \newblock Modeling by shortest data description.
 \newblock \emph{Automatica}, 14(5):465--471, 1978.
 
-\bibitem[Rothe et al.(2006)]{rothe2006}
+\bibitem[Rothe et~al.(2006)]{rothe2006}
 Carsten Rothe, Sergey I. Hintschich, and Andrew P. Monkman.
 \newblock Violation of the exponential-decay law at long times.
 \newblock \emph{Physical Review Letters}, 96(16):163601, 2006.
@@ -1839,7 +1941,7 @@ Erwin Schr\"odinger.
 \newblock \emph{What Is Life? The Physical Aspect of the Living Cell}.
 \newblock Cambridge University Press, Cambridge, 1944.
 
-\bibitem[Selby et al.(2021)]{selby2021}
+\bibitem[Selby et~al.(2021)]{selby2021}
 John H. Selby, Carlo Maria Scandolo, and Bob Coecke.
 \newblock Reconstructing quantum theory from diagrammatic postulates.
 \newblock \emph{Quantum}, 5:445, 2021.
@@ -1859,13 +1961,13 @@ Jean-Philippe Uzan.
 \newblock Varying constants, gravitation and cosmology.
 \newblock \emph{Living Reviews in Relativity}, 14:2, 2011.
 
-\bibitem[Webb et al.(2011)]{webb2011}
+\bibitem[Webb et~al.(2011)]{webb2011}
 John K. Webb, Julian A. King, Michael T. Murphy, Victor V. Flambaum, Robert F. Carswell, and
 Matthew B. Bainbridge.
 \newblock Indications of a spatial variation of the fine structure constant.
 \newblock \emph{Physical Review Letters}, 107(19):191101, 2011.
 
-\bibitem[Wilkinson et al.(1997)]{wilkinson1997}
+\bibitem[Wilkinson et~al.(1997)]{wilkinson1997}
 Steven R. Wilkinson, Cyrus F. Bharucha, Martin C. Fischer, Kirk W. Madison, Patrick R. Morrow,
 Qian Niu, Bala Sundaram, and Mark G. Raizen.
 \newblock Experimental evidence for non-exponential decay in quantum tunnelling.
