@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 r"""Check the formal paper set for draft-string and revision inconsistencies.
 
-Five defects this catches, all of which have actually occurred:
+Six defects this catches, all of which have actually occurred:
 
   1. Two documents on different draft strings (the set is bumped together, so a
      reader comparing two papers is never comparing two drafts).
@@ -12,6 +12,14 @@ Five defects this catches, all of which have actually occurred:
      them do.
   4. Typesetting overflow: a display or line running more than 20pt past the
      margin, which is visible in the PDF and has shipped before.
+  6. Text changed under an UNCHANGED revision number. Every paper's notice tells
+     a reader to cite its version string, so two different texts sharing one
+     string is the defect that string exists to prevent. Neither this checker
+     nor the release gate could see it before: both compared a document against
+     ITSELF (title block vs footer, PDF footer vs source) and those agreed. It
+     took a manifest of content hashes to ask the question that mattered --
+     "is this the same text r27 named yesterday?" Cost: five cleared papers
+     edited without a bump, caught by hand while preparing a release.
   5. Revision-history language: a document narrating its own drafting ("an
      earlier version of this remark claimed ..."). A paper is what it says
      now; what a draft used to say subtracts. Scanned on FLATTENED text,
@@ -27,6 +35,8 @@ of them are correct.
 Exits non-zero on any finding. Run from anywhere:
     python3 tools/check_draft_consistency.py
 """
+import hashlib
+import json
 import re
 import sys
 from pathlib import Path
@@ -151,6 +161,34 @@ def main() -> int:
                 f"{log.stem}: {len(bad)} display(s) over the margin by more than 20pt "
                 f"(worst {max(bad):.0f}pt) --- visible in the PDF"
             )
+
+    # Content-vs-revision. The manifest records what each revision NAMED; a
+    # bump updates it silently, an edit without one does not. Only the
+    # offending entry is withheld from the update, so the guard keeps firing
+    # until the revision moves rather than forgiving itself on the next run.
+    man_path = FORMAL / ".revisions.json"
+    try:
+        manifest = json.loads(man_path.read_text(encoding="utf-8"))
+    except Exception:
+        manifest = {}
+    for tex in sorted(FORMAL.glob("*.tex")):
+        src = tex.read_text(encoding="utf-8")
+        rev = DATE_REV_RE.search(src)
+        rev = rev.group(1) if rev else None
+        # Hash the text with every version string normalised out, so a bump
+        # alone is never mistaken for a content change.
+        body = DRAFT_RE.sub("", re.sub(r"document revision \d+", "", src))
+        body = re.sub(r"\br\d+\b", "", body)
+        digest = hashlib.sha256(body.encode("utf-8")).hexdigest()[:16]
+        prev = manifest.get(tex.name)
+        if prev and prev.get("rev") == rev and prev.get("hash") != digest:
+            problems.append(
+                f"{tex.name}: text changed but revision stayed at r{rev} "
+                f"--- two different texts now answer to one version string; bump it"
+            )
+            continue
+        manifest[tex.name] = {"rev": rev, "hash": digest}
+    man_path.write_text(json.dumps(manifest, indent=1, sort_keys=True) + "\n", encoding="utf-8")
 
     if problems:
         print(f"draft consistency: {len(problems)} problem(s)\n")
