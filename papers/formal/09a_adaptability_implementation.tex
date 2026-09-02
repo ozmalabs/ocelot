@@ -1,9 +1,15 @@
 \documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,hyperref,enumitem,microtype}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,enumitem,microtype}
+\usepackage{xr-hyper}
+\usepackage{hyperref}
+\externaldocument[AD-]{09_adaptability}
+\externaldocument[GE-]{01_law_of_graphic_equalisation_theory_referenced}
+\externaldocument[AS-]{06_assessing_an_account_of_this_kind}
 \usepackage[margin=1in]{geometry}
 \usepackage{natbib}
+\input{09a.counts}
 \newtheorem{definition}{Definition}[section]
 \newtheorem{proposition}[definition]{Proposition}
 \theoremstyle{remark}
@@ -11,31 +17,43 @@
 
 \title{Adaptability --- Implementation\\\large What Is Built, What Has Run, and the One Place They Do Not Meet}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-09-02.1}\\[2pt]2 September 2026 \textbullet\ document revision 5}
+\date{\textbf{Draft \texorpdfstring{\textemdash}{---}\ draft-2026-09-02.1}\\[2pt]2 September 2026 \texorpdfstring{\textbullet}{\textperiodcentered}\ document revision 6}
 
 \usepackage{fancyhdr}
 \pagestyle{fancy}\fancyhf{}\fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r5}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r6}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r5}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r6}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-09-02.1 r5} (2 September 2026).
-Circulated for comment, not as a finished result. The companion states the theory; this paper reports
-the implementation and its principal gap. Sections marked as falsifiability commitments are the intended
-points of attack.}}
+\textbf{DRAFT --- draft-2026-09-02.1 r6} (2 September 2026).
+Circulated for comment, not as a finished result. It is a companion to \emph{Adaptability} (referred
+to below as the adaptability paper), to \emph{The Law of Graphic Equalisation --- Theory} (Graphic
+Equalisation) and to \emph{Assessing an Account of This Kind} (the assessment companion), and inherits
+their definitions, epistemic boundary, and level-of-claims; those short names are the only forms used
+below. The adaptability paper states the theory; this paper reports the implementation and its
+principal gap. Sections marked as falsifiability commitments are the intended points of attack.}}
 \end{center}
 \vspace{1em}
 
 \begin{abstract}
-The operation the companion describes is built, has run at scale, and has been measured, including a
-large correction against itself. It is also, in one specific and consequential way, in the wrong place.
-\emph{The algebra is native; the faculty that uses it is not.} Every count below was obtained by
-running a command against the tree.
+The operation the adaptability paper describes is built, has been measured on the agent's own corpus,
+and has been corrected against itself, that correction being the principal result reported here. It is
+also, in one specific and consequential way, in the wrong place. \emph{The algebra is native; the
+faculty that uses it is not.}
 \end{abstract}
+
+\emph{The standing of what is reported here should be said once and then relied on.} Every figure
+below comes from this programme's own pre-registered implementation record and from the working tree
+that record describes, neither of which is circulated with these papers, and each is therefore a claim
+a reader may decline to credit on exactly the terms Graphic Equalisation's Section~\ref{GE-sec:scope}
+sets out. What is offered against that is exactness rather than authority: \emph{the counts in this
+paper are generated from the tree rather than transcribed into it}, at commit \countsCommit{} read on
+\countsReadOn, by a script kept beside the paper and re-run at every revision, so a reader who does
+hold the tree can re-run them and a reader who does not can at least see what was counted.
 
 \section{What is built}\label{sec:built}
 The transform algebra is native to the engine. Anti-unification retaining its witness, substitution,
@@ -51,14 +69,20 @@ That much is graph-resident and gated.
 \begin{remark}[Transfer by parallelogram completion]\label{rem:parallelogram}
 The strongest demonstration takes four of the agent's own rules arranged as a $2\times 2$ over two
 independent dimensions. \emph{Parallelogram} is borrowed from the embedding-arithmetic literature and
-the companion sets out the lineage, along with the reason that literature's known critique does not
-carry over to an exact symbolic operation. Anti-unification over two corners derives the transform; substitution applies it
-to the third; the result is a rule \emph{absent from all $2{,}851$ distinct recognisers in the corpus}
-which, installed, fires correctly on the missing cell.
+the adaptability paper's Section~\ref{AD-sec:prior} sets out the lineage, along with the reason that
+literature's known critique does not carry over to an exact symbolic operation. Anti-unification over
+two corners derives the transform; substitution applies it to the third; the result is a rule
+\emph{absent from every distinct recogniser the corpus held} --- $\nRecognisersAtRecord$ of them when
+the transfer was measured, on \recogniserRecordOn{} --- which, installed, fires correctly on the missing
+cell and on no other. \emph{That one is verified behaviourally.}
 
 $318$ such families exist in the corpus, and $200$ of $200$ sampled transfers are algebraically
-lossless, well-defined and novel. \emph{No new term variants, no graph mirror and no engine change were
-required to demonstrate this} --- the capability was reachable with what already existed.
+lossless, well-defined and novel. \emph{Algebraically is the whole of what that second figure says.}
+One transfer was installed and run; the other $199$ establish that the operation is well-defined and
+that its output is not already held, and not that the derived rule fires. Reading $200$ of $200$ as
+$200$ installations would be reading a stronger result than was taken. \emph{No new term variants, no
+graph mirror and no engine change were required} --- the capability was reachable with what already
+existed.
 \end{remark}
 
 \begin{remark}[The concept-grain faculty, and its own correction]\label{rem:retraction}
@@ -71,32 +95,35 @@ requirement of structural support the count fell to $321$, of which $78$ are cor
 shared across pairs.
 
 That is reported here as the faculty's principal measured result, not as an embarrassment adjacent to
-one. A ninety-six per cent retraction is what the correction was worth, and the corrected number is the
-one this paper stands behind.
+one. A ninety-six per cent retraction is what the correction was worth. \emph{What this paper stands
+behind is the withdrawal}, which rests on a stated mechanical defect in the matcher and applies to
+every one of the $8{,}253$. It does not stand equally behind the survivors: nobody has read the $321$
+and confirmed each, so $321$ is an upper bound with $78$ corroborated inside it, and a reading of them
+could move it down again.
 \end{remark}
 
 \section{The gap}\label{sec:gap}
 \emph{The two halves above do not meet, and the seam is exactly locatable.}
 
-Anti-unification with witness retained appears \textbf{seven times} in the faculty's host-language
-module and \textbf{zero times} across the $3{,}843$ rules carried by the $805$ seed manifests. The
-faculty is $1{,}241$ lines of host code, and it \emph{does} call the native algebra --- so this is not a
-capability that was built and left unused. It has run, it has been measured, and its output survives
-correction.
+Anti-unification with witness retained appears $\nWitnessInFaculty$ times in the faculty's
+host-language module and $\nWitnessRetainingUses$ times across the $\nRules$ rules carried by the
+$\nManifests$ seed manifests. The faculty is $\nFacultyLines$ lines of host code, and it \emph{does}
+call the native algebra --- so this is not a capability that was built and left unused. It has run, it
+has been measured, and its output survives correction.
 
 What it is not is graph-resident. The transform algebra is reachable from the host language and not from
 a rule.
 
 \begin{remark}[Why that matters here more than anywhere else]\label{rem:selfrepair}
-This programme's boundary on self-repair is sharp and is stated elsewhere in it: \emph{the agent can
-repair and extend its cognition exactly where that cognition is graph-native}, because what it can vary,
-inspect and mint against is graph data. A faculty in the host language can be used and cannot be
-improved by the thing using it.
+This programme's boundary on self-repair is sharp, and it is a standing rule of the implementation
+record rather than a finding of this paper: \emph{the agent can repair and extend its cognition exactly
+where that cognition is graph-native}, because what it can vary, inspect and mint against is graph
+data. A faculty in the host language can be used and cannot be improved by the thing using it.
 
 So of all the faculties that could have been left outside, \emph{this is the worst one} --- because it
 is the adaptation mechanism. The system's ability to acquire competences it was not given is itself a
 competence it cannot acquire. That is not a contradiction, but it is a ceiling, and it is the ceiling
-the companion's ladder was built to remove.
+the adaptability paper's ladder (its Section~\ref{AD-sec:ladder}) was built to remove.
 
 The measured retraction above sharpens it. A ninety-six per cent artefact rate was found by an audit
 performed \emph{on} the faculty from outside. A graph-resident faculty is the kind of thing this
@@ -106,9 +133,26 @@ cannot receive it.}
 \end{remark}
 
 \section{What the gap is not}\label{sec:not}
-It is not that the algebra is unreachable in principle. Neighbouring operations from the same family are
-already used in rules --- coverage in twelve seed files, unification in eleven, substitution in three.
-The vocabulary is live; the one operation that carries the transform is the one no rule invokes.
+It is not that the algebra is unreachable in principle. Neighbouring operations from the same family
+are already invoked by rules, and the census is exact rather than impressionistic --- a match on the
+term as a rule actually carries it, not on the term's name appearing somewhere in a file. The coverage
+predicate is invoked $\nCoverageUses$ times, across $\nCoverageFiles$ seed manifests, and its open
+variant $\nOpenCoverageUses$ times. The \emph{witness-discarding} anti-unification --- the classical
+least general generalisation, which returns the generalisation and throws away the substitutions that
+recover its inputs --- is invoked $\nWitnessDiscardingUses$ times, across $\nWitnessDiscardingFiles$
+manifests. Structural similarity is invoked $\nStructuralSimilarityUses$ times.
+
+\emph{Unification is invoked $\nUnificationUses$ times, and substitution $\nSubstitutionUses$.} The
+substitution operation's name does occur as text in $\nSubstitutionNamedFiles$ manifests, none of which
+invoke it --- which is what a looser search returns, and is why this census is taken on the term rather
+than on the text.
+
+\emph{That is a sharper finding than a bare absence, and it points the same way.} The vocabulary the
+rule layer actually holds is the classical one: cover a case, and generalise two structures while
+discarding what distinguished them. The two operations that carry a transform --- retaining the witness,
+and re-applying it --- are exactly the two that no rule invokes. The adaptability paper's
+Section~\ref{AD-sec:prior} states the consequence in its own terms: an lgg that throws away its witness
+cannot adapt anything.
 
 It is not that the demonstration is unsound. The parallelogram result stands on its own terms, and its
 numbers are reported above with the caveat they deserve: it was demonstrated in analysis scripts rather
@@ -123,10 +167,10 @@ evaluates, which is the same move this programme has made before and reported.
 The pattern of Section~\ref{sec:gap} is not confined to analogy, and the clearest other case is the one
 most directly about acquisition: reading a scientific paper and minting from what it says.
 
-The path is built and is the ladder pointed at literature. A web adapter presents a retrieved document
+The path is built and is the ladder pointed at literature. An adapter presents a retrieved document
 as a typed graph; the agent navigates a preprint archive, retrieves a paper, and grounds it. Grounding
 the abstract yields the paper's \emph{subject} --- and the record's own note on that step is a negative
-rather than a success: \emph{grounded-to-primitive was false}, so the agent knew what the paper was
+rather than a success: \emph{grounding to primitive was false}, so the agent knew what the paper was
 about and not what it claimed. The body pass exists to close exactly that gap: the claim-bearing
 environments are parsed, and each claim is grounded through the construction grammar --- a term as a
 genus plus its differentia, recursively toward primitives already held --- carrying a \emph{depth}
@@ -138,20 +182,26 @@ acquire.} That is rung four with the residual named: not a failure to read, but 
 a next action attached.
 
 \begin{remark}[Its status, stated exactly]\label{rem:reading-status}
-The grounding half is gated. Five tests cover it, two of them confirming that the grounding seed is
-load-bearing and loads only through the loader --- so the capability is not an artefact of a script
-arranging its own inputs.
+\emph{Two things are built here, only one of them is gated, and they are reported apart because
+reporting them together would credit the second with the first's standing.}
 
-\emph{What does not exist is a results document.} No measured record of the reading arc was found: no
-figure for how many claims ground to primitive against topic, none for how often an un-held
-construction is correctly detected, none for what happens to the queue. The status is therefore built
-and gated, with an arc recorded in its own source and no measurement, and this paper reports it at that
-status rather than at the one the machinery invites.
+The grounding faculty the path stands on --- taking a definition in prose and descending it toward
+primitives already held --- is gated. Five tests cover it, two of them confirming that its seed is
+load-bearing and installs only through the loader, so the faculty is not an artefact of a script
+arranging its own inputs. \emph{What those tests exercise is the faculty on prose fed to it.} They do
+not exercise the retrieval, the abstract-and-body split, or the depth distinction.
+
+\emph{Those are built and are not gated.} The retrieval path and the body pass exist and their arc is
+recorded in their own source; no test drives them. \emph{And no results document exists for either
+half.} There is no figure for how many claims ground to primitive against topic, none for how often an
+un-held construction is correctly detected, none for what happens to the queue. So the status is a
+gated faculty, an ungated path built on it, and no measurement of the arc end to end --- and this paper
+reports it at that status rather than at the one the machinery invites.
 
 And the seam is the same one. The grounding faculty is host-resident, with a single seed referencing
 it. So the two capabilities this programme has for acquiring what it was not given --- transfer between
-held rules, and reading claims out of a document --- \emph{are both real, both partly gated, and both
-sit outside the boundary within which the system can repair itself}.
+held rules, and reading claims out of a document --- \emph{are both real, both only partly gated, and
+both sit outside the boundary within which the system can repair itself}.
 \end{remark}
 
 \section{The contrast the record supplies}\label{sec:contrast}
@@ -160,8 +210,8 @@ One further measurement belongs here, because it is uncomfortable in the right d
 Program synthesis in this substrate is \emph{graph-native} in the way analogy is not: its enumerator is
 a term, and the decisions --- propose, evaluate, accept --- are seed rules. And its clearest result
 about held content is a null. Running the loop with the acquired content and running it stripped
-produced $54$ of $257$ in both arms, \emph{on the identical set of tasks}, with the difference measured
-at zero repeatedly.
+produced $54$ of $257$ in both arms, and not merely as equal totals: \emph{the two arms returned
+byte-identical result sets}, the same tasks solved and the same tasks missed.
 
 So the record contains both of these at once. \emph{The faculty that is graph-native produced a clean
 null about the value of what it held; the faculty that is not produced the strongest positive result
@@ -169,29 +219,47 @@ in the corpus, in analysis scripts.} Neither observation rescues the other, and 
 together because taking either alone would misrepresent the record --- the first is not a reason to
 doubt the second, and the second is not a reason to discount the first.
 
-The reading that survives both is narrow, and the companion states its general form: capability has
-plural sources selected by regime, so which faculty happens to be graph-resident says nothing about
-which one carries a given domain. \emph{Being graph-resident is what makes a faculty improvable by the
-system carrying it, and it is not what makes a faculty work.} The gap in
-Section~\ref{sec:gap} is a ceiling on self-repair, and this section is the reminder that removing it
-would not by itself buy a capability.
+The reading that survives both is narrow, and the adaptability paper's Remark~\ref{AD-rem:plural}
+states its general form: capability has plural sources selected by regime, so which faculty happens to
+be graph-resident says nothing about which one carries a given domain. \emph{Being graph-resident is
+what makes a faculty improvable by the system carrying it, and it is not what makes a faculty work.}
+The gap in Section~\ref{sec:gap} is a ceiling on self-repair, and this section is the reminder that
+removing it would not by itself buy a capability.
 
 \section{Falsifiability commitments}\label{sec:falsifiability}
+Each commitment below is marked \textsc{[shape]} or \textsc{[detail]}, in the sense of Graphic
+Equalisation's Section~\ref{GE-sec:falsifiability}. A \textsc{[detail]} failing is a revision: the
+account survives with that mechanism replaced. A \textsc{[shape]} failing costs \emph{range} rather
+than a mechanism, because what fails is something the substrate is claimed to require or to permit ---
+so the account does not hold where it claimed to, which is the more serious of the two and is still a
+boundary rather than an annihilation.
+
 \begin{enumerate}[leftmargin=*]
-\item \textsc{[detail]}~\textbf{The transform algebra is absent from the rule layer.} Fails on the
-exhibition of any seed rule invoking witness-retaining anti-unification; the count is zero across
-$3{,}843$ rules at the stated revision and is a command, not a judgement.
+\item \textsc{[detail]}~\textbf{The two transform-carrying operations are absent from the rule layer.}
+Fails on the exhibition of any seed rule invoking witness-retaining anti-unification \emph{or}
+substitution. Both counts are $0$ across the $\nRules$ rules of the $\nManifests$ manifests, taken at
+commit \countsCommit{} on \countsReadOn, and are a command rather than a judgement.
 \item \textsc{[shape]}~\textbf{Self-repair is bounded by graph-nativeness.} Fails if the agent can be
 shown to improve a host-language faculty by its own operation rather than by an author's --- which
 would remove the ceiling this paper reports and much of its point.
-\item \textsc{[detail]}~\textbf{The $318$ families are derivable and novel.} Fails if a sampled transfer
-is found to be lossy, ill-defined, or to reproduce a recogniser already in the corpus.
-\item \textsc{[shape]}~\textbf{The parallelogram result is about the corpus, not the agent.} This paper
-commits to the negative: no claim is made that the agent derived those rules, and a reader who extracts
-one has found an error rather than a result.
+\item \textsc{[detail]}~\textbf{The $318$ families are algebraically derivable and novel.} Fails if a
+sampled transfer is found to be lossy, ill-defined, or to reproduce a recogniser already in the corpus.
+\item \textsc{[detail]}~\textbf{A transfer that passes the algebra fires.} Fails if a derived rule that
+is lossless, well-defined and novel, once installed, does not fire on its missing cell or fires
+elsewhere. One case has been run; this commits the other $317$.
 \item \textsc{[detail]}~\textbf{The corrected analogy count is the defensible one.} Fails if
 token-anchoring and the structural-support requirement can be shown to discard genuine correspondences
-rather than artefacts, which would make $321$ an over-correction rather than a correction.
+rather than artefacts, which would make $321$ an over-correction rather than a correction --- or, in
+the other direction, if reading the $321$ finds a material fraction of them spurious, which would make
+$321$ an upper bound that has not yet been brought down.
+\item \textsc{[detail]}~\textbf{The body pass distinguishes topic from primitive.} Fails if, on a paper
+whose claims rest only on constructions the agent already holds, the body pass grounds no claim to
+primitive --- in which case the depth carried alongside the result is recording a distinction the
+machinery does not in fact draw.
 \end{enumerate}
+
+\noindent\emph{Scope note (not a falsifier).} The parallelogram result is about the corpus, not the
+agent. No claim is made that the agent derived those rules, and a reader who extracts one has found an
+error rather than a result.
 
 \end{document}
