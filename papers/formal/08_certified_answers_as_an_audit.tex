@@ -1,9 +1,12 @@
 \documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,hyperref,enumitem,microtype}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,enumitem,microtype}
 \usepackage[margin=1in]{geometry}
 \usepackage{natbib}
+\usepackage{xr-hyper}
+\usepackage{hyperref}
+\externaldocument[GE-]{01_law_of_graphic_equalisation_theory_referenced}
 \newtheorem{definition}{Definition}[section]
 \newtheorem{proposition}[definition]{Proposition}
 \theoremstyle{remark}
@@ -11,22 +14,24 @@
 
 \title{Certified Answers as an Audit\\\large Five Provably-False Keys on Humanity's Last Exam, and the Discipline That Makes Them Worth Reporting}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-09-02.1}\\[2pt]2 September 2026 \textbullet\ document revision 1}
+\date{\textbf{Draft \texorpdfstring{\textemdash}{---}\ draft-2026-09-02.1}\\[2pt]2 September 2026 \texorpdfstring{\textbullet}{\textperiodcentered}\ document revision 2}
 
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r1}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r2}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r1}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r2}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-09-02.1 r1} (2 September 2026).
-Circulated for comment, not as a finished result. \emph{This paper reports no benchmark score and
+\textbf{DRAFT --- draft-2026-09-02.1 r2} (2 September 2026).
+Circulated for comment, not as a finished result. It is a companion to \emph{The Law of Graphic
+Equalisation --- Theory} (referred to below as Graphic Equalisation), and inherits its definitions,
+epistemic boundary, and level-of-claims. \emph{This paper reports no benchmark score and
 makes no claim to one.} Sections marked as falsifiability commitments are the intended points of
 attack.}}
 \end{center}
@@ -36,10 +41,10 @@ attack.}}
 A system that answers a question only when it can certify the answer, and otherwise returns an honest
 miss, is not a competitor on a benchmark. It is an \emph{auditor} of one. Run across the text-only
 portion of Humanity's Last Exam \citep{phan2025}, deriving every answer before the key is read, it
-certified $43$ answers: $36$ confirm their keys and $5$ convict them, with no accusation withdrawn and
-one of its own earlier flags retracted after re-derivation found a sign error in the system rather
-than in the key. The five convictions are set out with their diagnoses. \emph{Coverage is $1.8\%$ and
-that is the honest headline}: this is not a result about how much the system can answer, it is a
+certified $43$ answers: $36$ confirm their keys and $5$ convict them, with no banked conviction
+withdrawn, and one pre-banking flag retracted after re-derivation located a sign error in the system
+rather than in the key. The five convictions are set out with their diagnoses. \emph{Coverage is
+$1.8\%$ and that is the honest headline}: this is not a result about how much the system can answer, it is a
 result about what certified answering makes visible when it is pointed at the key rather than at the
 score.
 \end{abstract}
@@ -47,7 +52,7 @@ score.
 \section{Why a frontier benchmark must contain errors}\label{sec:why}
 This is arithmetic and not an accusation, and stating it first prevents the rest reading as one.
 
-A benchmark of some $2{,}370$ research-grade questions is authored at the pointy end of every field it
+A benchmark of some $2{,}500$ research-grade questions is authored at the pointy end of every field it
 covers, which is exactly where its reviewers stand at the edge of their own knowledge. At any
 plausible post-review error rate the expected number of wrong keys exceeds one. \emph{The instrument
 built to test reasoning is bound by the same arithmetic of error rates as everything else}, and a
@@ -58,6 +63,32 @@ difficulty is the reason it is useful here. It is an argument that a certain kin
 is the right instrument for finding the errors any such benchmark must have.
 
 \section{Certification turns answering into auditing}\label{sec:audit}
+\paragraph{The system, and the standing of what is claimed.}
+The system is the substrate described in Graphic Equalisation, run with its general faculties: no
+per-question code, no answers baked in, and nothing added to it for this benchmark. The derivations,
+the certificates, and the running dossier they are recorded in are this programme's own
+pre-registered implementation record, which is likewise not circulated with these papers, and it is a
+claim a reader may decline to credit on exactly the terms Graphic Equalisation's
+Section~\ref{GE-sec:scope} sets out. What is different here, and it is the reason this paper can be
+short, is that the five diagnoses below are stated fully enough to be \emph{re-derived from this page}: a kernel rank, a
+sudden-approximation argument, a basis-function count, the parity of a theorem, and a grammar with
+its enumeration. A reader who declines to credit the record entirely can still check every conviction
+drawn from it.
+
+\paragraph{What was audited.}
+The \emph{public} split of Humanity's Last Exam \citep{phan2025}, which the benchmark's own paper
+gives as $2{,}500$ questions and which is accompanied by a private held-out set not touched here. The
+run covered the text-only portion of that split, which numbered $2{,}370$ questions in the snapshot
+audited. That count is this programme's own count of the snapshot and not a figure the benchmark
+publishes: the benchmark states that around $14\%$ of its questions require an image, which would put
+the text-only portion lower. \emph{The dataset revision is not recorded in the dossier}, and the
+public dataset repository has been modified since the run, so nothing here establishes that these
+five keys stand in the current revision --- a conviction against a since-corrected key is a different
+finding from one against a standing key, and this paper cannot tell a reader which of the two it
+holds. Each conviction below carries the benchmark's own public identifier for the question, so the
+question and its key can be located directly.
+
+\paragraph{The arrangement.}
 The system answers only where it can derive the answer under an independent certificate --- a second
 derivation by a structurally different route, a held-exact computation, or a conservation or limiting
 case forced by the stem. Where it cannot, it returns a miss. \emph{The key is read only afterwards,
@@ -84,7 +115,7 @@ Each is stated as: what the key says, what was certified, and where the key's re
 The diagnosis matters more than the disagreement --- a conviction that cannot say \emph{why} the key
 is wrong is only a second opinion.
 
-\paragraph{Mathematics --- rank of a Hurewicz kernel (key $28$, certified $95$).}
+\paragraph{Mathematics --- rank of a Hurewicz kernel ({\small\texttt{66f407a066abc59ffb9a82ae}}; key $28$, certified $95$).}
 For $Y = X_1 \# X_2 \# X_3$ with $\pi_1(Y) = \mathbb{Z}/5 * \mathbb{Z}/8 * \mathbb{Z}/2$, the kernel of
 abelianisation is free by Kurosh, and its rank is $95$ by three independent routes: an orbifold Euler
 characteristic ($\chi(K) = 80\cdot(-47/40) = -94$, rank $= 1 - \chi(K)$), a Schreier deficiency count,
@@ -93,32 +124,70 @@ $\prod(n_i - 1) = 28$, which is the correct kernel rank only for \textbf{two} fr
 against $[5,8] \rightarrow 28$, and against a divergent control $[2,2,2]$ where the construction gives
 the correct $5$ and the key's formula gives $1$.
 
-\paragraph{Physics --- sudden expansion of an infinite well (key $4.03\%$, certified $0\%$).}
+\paragraph{Physics --- sudden expansion of an infinite well ({\small\texttt{671cb3074d6192736975115b}}; key $4.03\%$, certified $0\%$).}
 The ground state of a well of width $L$ with the right wall moved \emph{instantaneously} to $3L$. Under
 a sudden change the state vector does not have time to evolve, so the expectation of the energy is
 unchanged. \emph{A decrease of $4.03\%$ requires $\langle E \rangle$ to change, which the word
 ``instantaneous'' in the stem forbids.}
 
-\paragraph{Chemistry --- contracted basis functions for toluene in 6-31G (key $54$, certified $79$).}
-Counting per atom under 6-31G gives $9$ for carbon and $2$ for hydrogen, so
-$7\cdot 9 + 8\cdot 2 = 79$. \emph{The key's $54$ corresponds to no coherent count} --- it matches none
+\paragraph{Chemistry --- contracted basis functions for toluene, 6-31G ({\small\texttt{67213cb9043b1e724244a1c6}}; key $54$, certified $79$).}
+The item is filed in the benchmark under Physics. Counting per atom under 6-31G gives $9$ for carbon
+and $2$ for hydrogen, so $7\cdot 9 + 8\cdot 2 = 79$. \emph{The key's $54$ corresponds to no coherent count} --- it matches none
 of the standard countings of the same basis.
 
-\paragraph{Mathematics --- domino tilings of an Aztec diamond (key $6$, certified $8$).}
+\paragraph{Mathematics --- domino tilings of an Aztec diamond ({\small\texttt{6724eed8b60e229bf3eecbbf}}; key $6$, certified $8$).}
 The tiling count of an Aztec diamond of order $n$ is $2^{n(n+1)/2}$ \citep{elkies1992}, so it is a
 power of two for every $n$: $2$, $8$, $64$, $1024$, and so on. \emph{Six is not a power of two.} The
 certified answer of $8$ is the order-two count, obtained by two independent routes. This is the
 cleanest of the five, because refuting the key requires only the parity of a theorem and no
 recomputation of the question at all.
 
-\paragraph{Computer science --- true boolean expressions of length five (key $44$, certified $47$).}
-Two structurally independent routes --- filtering all $7^5$ strings through a recursive-descent parser,
-and generating bottom-up from the grammar --- both yield $90$ valid expressions of which $47$ are true,
-on the identical string set. \emph{The key is self-refuting}: the setter's own enumeration includes two
+\paragraph{Computer science --- true boolean expressions of length five ({\small\texttt{66ebb1e8709fbb756c1f7b74}}; key $44$, certified $47$).}
+Alone among the five this one is not checkable without its grammar, so the grammar is given. Terminals
+are quoted and $\mid$ separates alternatives; $E$ is the start symbol.
+
+\begin{center}\small
+\begin{tabular}{@{}r@{\;\;}c@{\;\;}l@{}}
+$\Sigma$ & $=$ & \texttt{T}\quad\texttt{F}\quad\texttt{!}\quad\texttt{\&}\quad\texttt{\textbar}\quad\texttt{(}\quad\texttt{)}\\[2pt]
+$E$ & $\to$ & $E$~\texttt{'\textbar'}~$A$ \quad$\mid$\quad $A$\\
+$A$ & $\to$ & $A$~\texttt{'\&'}~$U$ \quad$\mid$\quad $U$\\
+$U$ & $\to$ & \texttt{'!'}~$U$ \quad$\mid$\quad \texttt{'('}~$E$~\texttt{')'} \quad$\mid$\quad \texttt{'T'} \quad$\mid$\quad \texttt{'F'}\\
+\end{tabular}
+\end{center}
+
+\noindent
+That is: \texttt{\&} binds tighter than \texttt{\textbar}, \texttt{!} is prefix, and both binary
+operators associate to the left --- the standard convention, and the only structural freedom is which
+of the two binary operators binds tighter. Two structurally independent routes over it --- filtering
+all $7^5$ strings through a recursive-descent parser, and generating bottom-up from the productions
+--- both yield $90$ valid expressions of length five, of which $47$ are true, on the identical string
+set. \emph{The key is self-refuting}: the setter's own enumeration of its $44$ includes two
 expressions that evaluate to false while filed as true, and omits five genuinely true expressions of
-equal standing. It retains both redundant parentheses and repeated negation, so no consistent grammar
-excludes what it excludes, and no precedence convention yields $44$ --- standard precedence gives $47$,
-the opposite convention gives $43$.
+equal standing.
+
+\begin{center}\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+Expression & Value & In the key's enumeration\\
+\midrule
+\texttt{!(!F)}  & false & listed as true\\
+\texttt{(!!F)}  & false & listed as true\\
+\midrule
+\texttt{!!(T)}  & true  & omitted\\
+\texttt{!!F\textbar T} & true & omitted\\
+\texttt{!(!T)}  & true  & omitted\\
+\texttt{(!!T)}  & true  & omitted\\
+\texttt{T\textbar!!F}  & true  & omitted\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+so that $44 = 47 - 5 + 2$, which is a hand-enumeration error and not a different convention. The
+enumeration retains both redundant parentheses --- \texttt{((T))} --- and repeated negation ---
+\texttt{!!!!T} --- so no consistent grammar excludes what it excludes, and no precedence convention
+yields $44$: the standard one gives $47$, and the opposite one --- \texttt{\textbar} binding tighter
+than \texttt{\&} --- gives $43$ over the same $90$ valid strings.
 
 \section{What was not convicted, and why that section matters more}\label{sec:tierb}
 Six further questions produced a sound internal value disagreeing with the key, and none was banked,
@@ -150,6 +219,13 @@ non-random condition. \emph{The right reading is that certified coverage doubles
 additional cost}, and the audit is what is reported.
 
 \section{Falsifiability commitments}\label{sec:falsifiability}
+Each commitment below is marked \textsc{[shape]} or \textsc{[detail]}, in the sense of Graphic
+Equalisation's Section~\ref{GE-sec:falsifiability}. A \textsc{[detail]} failing is a revision: the
+account survives with that mechanism replaced. A \textsc{[shape]} failing costs \emph{range} rather
+than a mechanism, because what fails is something the substrate is claimed to require or to permit ---
+so the account does not hold where it claimed to, which is the more serious of the two and is still a
+boundary rather than an annihilation.
+
 \begin{enumerate}[leftmargin=*]
 \item \textsc{[shape]}~\textbf{Zero false accusations.} Fails on the exhibition of a rescuing reading
 for any one of the five, in which case that conviction is withdrawn and the count is reported lower.
@@ -157,28 +233,39 @@ Each is stated with its diagnosis specifically so that this is attemptable.
 \item \textsc{[detail]}~\textbf{The certificate is independent of the key.} Fails if any certified
 value can be shown to depend on the key having been read, which the ordering is designed to prevent
 and which the record is kept to make checkable.
-\item \textsc{[shape]}~\textbf{The diagnoses locate the error.} Fails where a key is wrong for a
+\item \textsc{[detail]}~\textbf{The diagnoses locate the error.} Fails where a key is wrong for a
 different reason than the one given --- the conviction survives and the explanation does not, which is
 a distinct and weaker failure and is reported as such.
-\item \textsc{[detail]}~\textbf{Tier-B is not a holding pen.} Fails if any Tier-B item is later
-convicted on evidence available at the time it was set aside, which would mean the bar was applied
-inconsistently rather than conservatively.
-\item \textsc{[shape]}~\textbf{Coverage is not the claim.} This paper commits to the negative: no
-statement about benchmark performance is made or implied, and a reader who extracts one has found an
-error rather than a result.
+\item \textsc{[detail]}~\textbf{Tier-B is not a holding pen.} Fails if any of the six items named by
+kind in Section~\ref{sec:tierb} is later convicted on evidence available at the time it was set aside,
+which would mean the bar was applied inconsistently rather than conservatively.
+\item \textsc{[detail]}~\textbf{The finding is about a discipline and not about this benchmark.}
+Section~\ref{sec:why} predicts that \emph{any} frontier benchmark contains wrong keys. Fails if the
+same certified-answering run, over a second benchmark of comparable size and review standard, convicts
+nothing --- in which case what is reported here is a fact about one benchmark rather than about what
+certified answering makes visible. This is the one commitment on the list for which the test has not
+been run.
 \end{enumerate}
 
-\begin{thebibliography}{9}
+\noindent\emph{Scope note (not a falsifier).} Coverage is not the claim. This paper commits to the
+negative: no statement about benchmark performance is made or implied, and a reader who extracts one
+has found an error rather than a result.
+
+\begin{thebibliography}{99}
 
 \bibitem[Elkies et al.(1992)]{elkies1992}
 Noam Elkies, Greg Kuperberg, Michael Larsen, and James Propp.
-\newblock Alternating-sign matrices and domino tilings (Part~I).
-\newblock \emph{Journal of Algebraic Combinatorics}, 1(2):111--132, 1992.
+\newblock Alternating-sign matrices and domino tilings, Parts~I and~II.
+\newblock \emph{Journal of Algebraic Combinatorics}, 1(2):111--132 and 1(3):219--234, 1992.
+\newblock The tiling formula is proved across both parts.
 
 \bibitem[Phan et al.(2025)]{phan2025}
-Long Phan et al.
+Long Phan, Alice Gatti, Ziwen Han, Nathaniel Li, Josephina Hu, et~al.
 \newblock Humanity's Last Exam.
-\newblock 2025.
+\newblock arXiv:2501.14249, 2025 (v1, 24 January 2025; v11, 28 July 2026).
+\newblock Dataset (public split, $2{,}500$ questions):
+\url{https://huggingface.co/datasets/cais/hle}; that repository's last recorded modification is
+20 January 2026.
 
 \end{thebibliography}
 \end{document}
