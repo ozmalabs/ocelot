@@ -16,21 +16,21 @@
 \newcommand{\Hist}{\mathcal{H}}
 \title{The Law of Graphic Equalisation --- Theory\\\large Minimal Recursive Dynamics, Collapse, Frame-Relative Identity, and Residual}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-09-02.1}\\[2pt]2 September 2026 \textbullet\ document revision 272}
+\date{\textbf{Draft \textemdash\ draft-2026-09-02.1}\\[2pt]2 September 2026 \textbullet\ document revision 273}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r272}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r273}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r272}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r273}}\renewcommand{\headrulewidth}{0pt}}
 \makeatletter\renewcommand\thepart{\Roman{part}}\makeatother
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-09-02.1 r272} (2 September 2026).
+\textbf{DRAFT --- draft-2026-09-02.1 r273} (2 September 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -2067,6 +2067,28 @@ This is measurable rather than merely stipulative, and it has been measured. A p
 \begin{proposition}[The unit of inferred time is a cycle, and requires closure]\label{prop:cycle-unit}
 A frame does not count its individual changes --- those are below its aperture --- but its own \emph{cycles}, each one traversal of a closed rule-loop. The unit of inferred time is therefore a cycle, not a change, and a cycle has no fixed length: each does a variable amount of change, so inferred time is non-uniform in underlying change (a nonlinear grounding, which Discrete Sufficiency already permits) and a fuller cycle reads as a longer moment (subjective dilation). A cycle exists only for a graph with \emph{closure} --- a graph without it runs to fixed point once and stops, one pass and no repeated tick --- so having time requires closure as well as inference (Proposition~\ref{prop:time-inferred}): a one-shot computation, lacking a loop to iterate, has no time, and a frame's experienced ``now'' is one cycle of its own loop.
 \end{proposition}
+
+\begin{remark}[Negative time does not exist; phase does]\label{rem:phase-not-time}
+A cycle admits two readings and they are different kinds, so a great deal turns on not running them
+together. \emph{How many} is the count of completed cycles, which is what
+Proposition~\ref{prop:cycle-unit} calls inferred time: extensive, floored at none, and one-way for
+the reason every cost here accumulates one way. \emph{Where within} is \emph{phase}: a position on a
+cyclic dimension, oriented --- there is a sense in which one traverses it --- but carrying no
+duration at all.
+
+So a sign on a phase is not a sign on a time. \emph{There is no negative time}: a count of completed
+cycles does not run below none, and nothing in this account supplies a direction for it to run
+backwards in. \emph{There is signed phase}, and its sign says which way round the cycle is being
+read. Conflating the two manufactures a backwards-running time out of what was only an orientation,
+and the manufactured object then needs a mechanism to forbid it --- a mechanism nothing owed,
+because the thing it forbids was a category error rather than a possibility.
+
+The physics companion carries the worked case: a negative frequency, $e^{+i\omega t}$ against
+$e^{-i\omega t}$, is not a cycle run backwards but the same cycle traversed in the opposite phase,
+running forward like any other. Read as negative time it becomes a negative energy and wants a sea of
+filled states to absorb it; read as phase it is an orientation on a relation and wants nothing. The
+reading is the whole of the difference.
+\end{remark}
 
 \begin{remark}[The processor is a constructible demonstration]\label{rem:processor}
 A running program is a worked instance, carried by most people on earth. An instruction is the program's step, and it does not take a fixed physical time: an addition is one cycle, a memory load one on a cache hit and hundreds on a miss, a branch may stall, and the core reorders and overlaps beneath it. Yet from the program's point of view every instruction is \emph{one} step --- its own unit, read as $1$ by construction, since a step is a step --- so the program's inferred time is its step-count, uniform to it and non-uniform in physical time. The variable timing's \emph{mechanism} is opaque to the program --- the cache miss and the reorder are below its aperture, beneath its primitives (Proposition~\ref{prop:runner-opaque}) --- while its \emph{effects} are not, since a program can time its own reads and infer what it cannot see, which is the leak of Proposition~\ref{prop:leak} and the basis of the attacks cited there, which is why ``time is a variable-length cycle, not a fixed duration'' reads as exotic even though the device demonstrates it continuously. How much weight this carries requires separating two things, and the separation recovers something real.
