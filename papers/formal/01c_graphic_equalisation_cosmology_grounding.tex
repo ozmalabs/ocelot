@@ -1,9 +1,16 @@
 \documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,hyperref,enumitem,microtype}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,enumitem,microtype}
 \usepackage{natbib}
 \usepackage[margin=1in]{geometry}
+\usepackage{xr-hyper}
+\usepackage{hyperref}
+\externaldocument[IS-]{00_is}
+\externaldocument[GE-]{01_law_of_graphic_equalisation_theory_referenced}
+\externaldocument[PH-]{01a_graphic_equalisation_physics_grounding}
+\externaldocument[NV-]{04_narrativium_theory_referenced}
+\externaldocument[AD-]{09_adaptability}
 \newtheorem{definition}{Definition}[section]
 \newtheorem{theorem}[definition]{Theorem}
 \newtheorem{proposition}[definition]{Proposition}
@@ -11,22 +18,28 @@
 \theoremstyle{remark}\newtheorem{remark}[definition]{Remark}
 \title{Graphic Equalisation --- Cosmology Grounding\\\large Horizons, Measures, and What Has No Outside}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-09-02.1}\\[2pt]2 September 2026 \textbullet\ document revision 6}
+\date{\textbf{Draft \texorpdfstring{\textemdash}{---}\ draft-2026-09-02.1}\\[2pt]2 September 2026 \texorpdfstring{\textbullet}{\textperiodcentered}\ document revision 7}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r6}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r7}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r6}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r7}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-09-02.1 r6} (2 September 2026).
+\textbf{DRAFT --- draft-2026-09-02.1 r7} (2 September 2026).
 This document is under active revision and is circulated for comment, not as a
-finished result. Definitions, numbering and claims may change between drafts;
+finished result. It is a companion to \emph{The Law of Graphic Equalisation ---
+Theory} (referred to below as Graphic Equalisation) and to its physics companion
+\emph{The Law of Graphic Equalisation --- Physics Grounding} (the physics
+companion), and inherits their definitions, epistemic boundary, and
+level-of-claims. The other documents referred to below carry short names too, and
+those are the forms used: \emph{Is} (the base paper), \emph{Narrativium}, and the
+adaptability paper. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
 falsifiability commitments are the intended points of attack.}}
 \end{center}
@@ -36,12 +49,14 @@ falsifiability commitments are the intended points of attack.}}
 This companion develops the cosmological groundings of the substrate, and its work is mostly negative in
 a specific and useful way: it identifies which cosmological questions are ill-posed rather than merely
 hard, and says why on the account's own results. The spine is the measure problem of eternal inflation,
-which is the no-prior-free proposition in another domain --- a probability over pocket universes requires
-a frame-free denominator, and the companion proves no such thing is a member of the space, so the
-difficulty is not a missing regularisation but a request that cannot be met. Around that: the universe
+which is the adaptability paper's no-prior-free proposition in another domain --- a probability over
+pocket universes requires a frame-free denominator, and that paper proves no such thing is a member of
+the space, so the difficulty is not a missing regularisation but a request that cannot be met. Around
+that: the universe
 \emph{as a whole} is one of the three degenerate readings the base paper already prices at zero, so the
 observable universe is the object rather than a sample of one; a particle horizon is an instantiated
-boundary relation, and what lies beyond it is neither absent nor concealed but \textsc{null} in this
+boundary relation, and what lies beyond it is neither absent nor concealed but
+\textnormal{\textsc{null}} in this
 frame --- a superframe dimension, real and related through the container we are a subframe of, and
 unreadable from here in the way an entangled partner's purity is unreadable, so that what is refused is
 the value and not the existence; and the cosmological principle
@@ -54,69 +69,75 @@ unsolved, and both are correct in kind for reasons given here.
 \end{abstract}
 
 \section{Scope, and what this adds}\label{sec:scope}
-\emph{The physics companion already holds cosmology's in-frame half, and the division between them is
-principled rather than editorial.} Questions asked \emph{from inside} a frame --- what the seed was, why
+The physics companion already holds cosmology's in-frame half, and the division between them is
+principled rather than editorial. Questions asked \emph{from inside} a frame --- what the seed was, why
 these constants, where the arrow of time comes from --- are physics questions, and that companion
 answers them: the Big Bang as a chosen entry rather than an intrinsic edge, the Past Hypothesis as a
-seed and therefore rightly an assumption, fine-tuning inverted by self-location. \emph{None of it is
-repeated here.}
+seed and therefore rightly an assumption, fine-tuning inverted by self-location. None of it is
+repeated here.
 
-\emph{What is left is the boundary set, and this paper is short because that set is small}: what the
+What is left is the boundary set, and this paper is short because that set is small: what the
 subject of cosmology is, what a horizon is, what may be said of what lies past one, and what becomes of
 probability when the sample space has no outside. \emph{The split follows the account's own line between
 what is in a frame and what is between frames} --- one companion for the questions with an answer
 inside, one for the questions about the edge. \emph{A reader who finds this document thin has found that
 division working rather than a gap in it}, and the two are meant to be read in order.
 
-\emph{Two disciplines carry over and are stated once.} The account prices operations and does not
+Two disciplines carry over and are stated once. The account prices operations and does not
 license them, and it distinguishes what is \emph{observed} from what is \emph{modelled} --- a
 distinction the base paper makes for its own object and which does most of the work below.
 
-\emph{The result in one line, since the rest is the case for it.} \emph{You cannot have the ensemble and
+The result in one line, since the rest is the case for it. \emph{You cannot have the ensemble and
 you cannot have a totality --- and this paper can say why.} That is the whole of what is on offer.
 Cosmology already knows it cannot have them: the measure problem is called unsolved, homogeneity is
-called an assumption, and both are called that by people with no interest in this account. \emph{Those
-are correct instincts held without grounds, and the grounds are what is supplied here.}
+called an assumption, and both are called that by people with no interest in this account. Those
+are correct instincts held without grounds, and the grounds are what is supplied here.
 
-\emph{The difference is practical rather than decorative.} An unsolved problem invites better
+The difference is practical rather than decorative. An unsolved problem invites better
 regularisations and more of them; \emph{an ill-posed one redirects the effort spent on that}, which is
 worth something to whoever would otherwise spend it. Knowing why you cannot have a thing is not the same
 as being told again that you cannot.
 
 \section{The universe is not an object}\label{sec:not-an-object}
-\emph{Cosmology's ordinary subject does not exist, and the base paper already says so.} That paper gives
-three readings which each yield nothing: a single relatum with nothing to relate to, the empty case, and
+Cosmology's ordinary subject does not exist, and the base paper already says so. That paper gives
+three readings which each yield nothing (\emph{Is}, Section~\ref{IS-sec:one-not-enough} and
+Proposition~\ref{IS-prop:cohere}): a single relatum with nothing to relate to, the empty case, and
 \emph{everything at once read from outside, which has nothing left over to stand in relation to it}. The
 universe as a whole is the third.
 
 \begin{proposition}[The totality is a degenerate reading]\label{prop:totality}
 There is no frame from which everything is the relatum, since a frame is an instantiated boundary
-relation and a boundary requires something on the other side. \emph{And the containment does not
+relation (Graphic Equalisation's Definition~\ref{GE-def:frame}) and a boundary requires something on the other side.
+\emph{And the containment does not
 terminate}: whatever frame is offered as the totality is individuated by something, which is then
 outside it. So \emph{the universe as a whole} names no object --- not because the outside is empty but
 because there is always one more step outward, which is this programme's unbounded frontier read in the
 extensive direction.
 \end{proposition}
 
-\emph{The consequence is a correction and not a limitation.} It is usual to say that we observe only
+This is a claim about \emph{frames}. What \emph{Is} posits --- everything, with no container, modelled
+and not observed (its Section~\ref{IS-sec:one-way}) --- is not a frame and is not the object cosmology
+individuates; the proposition says that no \emph{individuated} universe is the totality, which is the
+observed/modelled distinction of Section~\ref{sec:scope} doing the work it was announced for.
+
+The consequence is a correction and not a limitation. It is usual to say that we observe only
 part of the universe and must infer the rest. On this account the observable universe is not a sample of
 the object --- \emph{it is the object}, being what stands in relation to the frame doing the
 cosmology. The horizon does not truncate a larger thing; it individuates the thing there is.
 
-\emph{This is less revisionary than it sounds}, and the practice already runs this way. Cosmological
-parameters are fitted to what is inside the horizon, and the fits do not degrade for want of what is
-outside. A quantity that made no difference to any fit was doing no work in the account, which is the
-base paper's own test.
+This is less revisionary than it sounds, and the practice already runs this way. The fits that
+determine cosmological parameters are made to what is inside the horizon. A quantity that made no
+difference to any fit was doing no work in the account, which is the base paper's own test.
 
 \section{A horizon is a boundary relation}\label{sec:horizon}
-\emph{A particle horizon is the boundary relation itself, not a fence inside a larger space.} The
-companion's frame is an instantiated boundary $\mathcal{B}_{W:G}$, and individuation is performed by the
+A particle horizon is the boundary relation itself, not a fence inside a larger space. Graphic
+Equalisation's frame is an instantiated boundary $\mathcal{B}_{W:G}$, and individuation is performed by the
 container rather than by the thing. A horizon individuates a cosmological frame in exactly that sense,
 and its dependence on the observer's worldline is then expected rather than awkward: different
 worldlines instantiate different boundaries, so they have different frames, and there is no frame
 containing all of them from which to say which is right.
 
-\emph{It does not follow that there is nothing outside, and the account says the opposite.} A frame is
+It does not follow that there is nothing outside, and the account says the opposite. A frame is
 individuated by its container, so a frame that is individuated \emph{has} one --- \emph{the boundary
 relation is itself a relation to the outside}, and a cosmological frame could not be a frame without it.
 \emph{There is an outside. We are not in it.}
@@ -124,34 +145,36 @@ relation is itself a relation to the outside}, and a cosmological frame could no
 \begin{proposition}[The relation beyond a horizon runs up, not across]\label{prop:beyond}
 What lies past a horizon is not unrelated to us. It is related \emph{through the superframe we are both
 subframes of} --- the physics companion's result that a connection between subframes runs up rather than
-across --- and its content is accordingly a superframe dimension: \textsc{null} in our frame and
+across (Corollary~\ref{PH-cor:nonlocal}) --- and its content is accordingly a superframe dimension,
+first-class where it lives (Graphic Equalisation's Proposition~\ref{GE-prop:higher-frame}) and
+\textnormal{\textsc{null}} in our frame and
 unreadable from here, which is \emph{not the same status as absent}. The missing value was never a
 dimension of this frame, so failing to read it discards nothing locally available.
 \end{proposition}
 
-\emph{That distinction is the correction, and the entangled case already makes it.} A traced-out partner
+That distinction is the correction, and the entangled case already makes it. A traced-out partner
 is not information thrown away; the purity was never in the subframe. \emph{So what lies beyond a
 horizon is real, related, and inaccessible} --- three properties ordinary usage runs together and the
 account keeps apart.
 
-\emph{What remains refused is only the reading.} An extrapolation past the horizon is a model of a
+What remains refused is only the reading. An extrapolation past the horizon is a model of a
 superframe dimension made from below, which is a legitimate thing to hold and an illegitimate thing to
 call measured. \emph{The prohibition is on the value, not on the existence}, and it costs the practice
 nothing, since no measurement inside discriminates between competing values of a dimension that is
 \textsc{null} here.
 
 \begin{remark}[Where this could be wrong, and it is testable]\label{rem:bubble}
-\emph{This is not idle, and on the corrected reading it is not awkward either.} Searches for signatures
+This is not idle, and on the corrected reading it is not awkward either. Searches for signatures
 of bubble collisions in the microwave background \citep{feeney2011,planck2016} are searches for a
-coupling to something past the horizon. \emph{A detection would refute nothing here.} Measuring projects a superframe dimension into
+coupling to something past the horizon. A detection would refute nothing here. Measuring projects a superframe dimension into
 the subframe's aperture, which is this account's standing description of what measuring does --- so a
-found signature is a dimension becoming accessible and not an outside coming into being. \emph{The
-aperture widens; the dimension was there.} What it would refute is this paper's assumption about the
+found signature is a dimension becoming accessible and not an outside coming into being. The
+aperture widens; the dimension was there. What it would refute is this paper's assumption about the
 present aperture, which is an assumption about us and not about the world.
 \end{remark}
 
 \section{The cosmological principle divides}\label{sec:cosmological-principle}
-\emph{Isotropy is observed. Homogeneity is inferred, and the inference has a modal leg.} What is measured
+Isotropy is observed. Homogeneity is inferred, and the inference has a modal leg. What is measured
 is that the sky looks the same in every direction to high precision. What is wanted is that the universe
 is the same everywhere, and the step between them is the Copernican principle: that our position is not
 special among positions.
@@ -165,48 +188,50 @@ its value is a superframe dimension and the inference reads one from below. What
 which is measured, together with homogeneity within the horizon, which is also measured.
 \end{proposition}
 
-\emph{The standard derivation makes the point for us, inside its own hypothesis.} The
+The standard derivation makes the point for us, inside its own hypothesis. The
 Ehlers--Geren--Sachs theorem \citep{ehlers1968} obtains Friedmann--Lema\^{i}tre--Robertson--Walker
 geometry not from isotropy measured here but from isotropy measured \emph{by a family of observers
 everywhere}; its realistic form \citep{stoeger1995} weakens exactness and not universality, and the
 observational programme built on it is explicit that what is being combined with the microwave
-measurements is the Copernican principle \citep{clarkson2012,maartens2011}. \emph{So the modal step is
-not appended to the derivation. It is the antecedent.} The theorem is sound and the inference is valid;
+measurements is the Copernican principle \citep{clarkson2012,maartens2011}. So the modal step is
+not appended to the derivation. It is the antecedent. The theorem is sound and the inference is valid;
 what it requires is a measurement over a domain no frame reaches, which is the one thing that cannot be
 supplied from inside.
 
-\emph{This is the sharpest form of the section's claim and it is cosmology's own statement of it.} The
+This is the sharpest form of the section's claim and it is cosmology's own statement of it. The
 route from isotropy to homogeneity is not sloppy and is not naive --- \emph{it is exact, and it is
 conditional on a quantifier}, and the account's whole contribution here is to say why that quantifier
 has no referent.
 
-\emph{The field's own vocabulary already concedes this.} Homogeneity is called an assumption, not a
+The field's own vocabulary already concedes this. Homogeneity is called an assumption, not a
 result, and it is called that by people with no interest in this account. \emph{What is added here is
 not the suspicion but the reason}: it is not an assumption because the measurement is hard, but because
 the quantity it asserts stands in no relation to the frame asserting it.
 
 \section{The measure problem is the no-prior-free proposition}\label{sec:measure}
-\emph{This is the case where the account does real work}, and it is the case cosmology already knows is
+This is the case where the account does real work, and it is the case cosmology already knows is
 broken.
 
 Eternal inflation produces unboundedly many pocket universes \citep{guth2007}. To extract a prediction
 --- what a typical observer sees, how likely a given constant is --- one needs a probability measure over
-them. \emph{The theory does not supply one.} Different regularisations give different answers, some give
+them. The theory does not supply one. Different regularisations give different answers, some give
 absurd ones, and the difficulty is named and open \citep{freivogel2011}: the youngness paradox and the
 Boltzmann-brain problem \citep{bousso2007} are what the disagreement looks like when a stipulation is
 pushed to its consequences.
 
 \begin{proposition}[The measure problem is ill-posed, not unsolved]\label{prop:measure}
 A measure over all pockets requires a standpoint from which all of them are counted, and by the
-companion's no-prior-free proposition the zero of such an axis is not a member of the space: a frame
+adaptability paper's no-prior-free proposition (Proposition~\ref{AD-prop:no-prior-free}) the zero of
+such an axis is not a member of the space: a frame
 standing in no relation to what it counts draws no distinction and returns nothing. \emph{So the
 quantity being sought does not exist to be approximated.} The regularisations disagree because they are
-supplying, by stipulation, a denominator the theory cannot supply --- and by the Narrativium companion's
-distinction a stipulated conversion carries exactly the authority of whoever stipulated it, which is why
+supplying, by stipulation, a denominator the theory cannot supply --- and by \emph{Narrativium}'s
+distinction between principled and stipulated conversions (Remark~\ref{NV-rem:kappa-kinds}) a
+stipulated conversion carries exactly the authority of whoever stipulated it, which is why
 the answers track the stipulation rather than the physics.
 \end{proposition}
 
-\emph{The consequence is the same one the adaptability companion reaches for intelligence.} The
+The consequence is the same one the adaptability paper reaches about intelligence. The
 difficulty is not that the measurement is hard but that the control it needs is not constructible, and
 an account that kept looking for a better regularisation would be searching for a member of an empty
 set. \emph{This is a dissolution and not a solution}, and it predicts that the disagreement between
@@ -214,19 +239,19 @@ measures will not converge --- which is a claim about the literature's future ra
 world, and is checkable.
 
 \begin{remark}[What this does not do to inflation]\label{rem:inflation}
-\emph{Nothing here bears on inflation as physics.} Inflationary models make horizon-scale predictions
+Nothing here bears on inflation as physics. Inflationary models make horizon-scale predictions
 that are tested inside a frame and stand or fall on those. What is refused is a specific inferential
 move --- probability over an ensemble with no outside --- and a theory can be entirely correct while one
-inference drawn from it is malformed. \emph{Conflating the two would be the error this paper is
-otherwise about.}
+inference drawn from it is malformed. Conflating the two would be the error this paper is
+otherwise about.
 \end{remark}
 
 \section{Anthropic reasoning inherits the same defect}\label{sec:anthropic}
-\emph{Typicality arguments are the measure problem wearing a different hat}, and worse than that: the
+Typicality arguments are the measure problem wearing a different hat, and worse than that: the
 term they turn on names two different objects, and the argument survives only by sliding between them.
 
-\emph{Read one way, \textbf{universe} means the ensemble} --- all of them, the population a typical
-member is typical of. \emph{Read the other, it means what the word ordinarily means}: the observable,
+Read one way, \textbf{universe} means the ensemble --- all of them, the population a typical
+member is typical of. Read the other, it means what the word ordinarily means: the observable,
 relative universe, the one a frame stands in relation to. Cosmological usage takes the second and infers
 with the first.
 
@@ -238,68 +263,107 @@ over a set a thing exhausts}. \emph{Neither reading supports the inference}, and
 unrelated reasons, which is why moving between them looks like an answer.
 \end{proposition}
 
-\emph{This is stronger than the usual complaint}, which is that the reference class is hard to choose.
+This is stronger than the usual complaint, which is that the reference class is hard to choose.
 The difficulty is not that the class is hard to pick but that on one reading there is no class and on
 the other the class has one member.
 
-\emph{The base paper's care about \textbf{everything} is the same care and should be repeated exactly.}
+The base paper's care about \textbf{everything} is the same care and should be repeated exactly.
 It does not say that everything \emph{is} nothing --- it says the unqualified identity is asserted from a
 standpoint at which it does not hold, and that what is true is a claim about \emph{readings}: everything
 at once, read from outside, has nothing left over to stand in relation to it and so yields nothing.
-\emph{So \textbf{everything} does not name a population whose members could be counted. It names an
-operation that returns nothing}, and a distribution cannot be defined over the output of that operation.
+So \textbf{everything} does not name a population whose members could be counted. It names an
+operation that returns nothing, and a distribution cannot be defined over the output of that operation.
 
-\emph{Between the two zeros is where the distinctions live}, which is the base paper's own sentence and
+Between the two zeros is where the distinctions live, which is the base paper's own sentence and
 is the whole of what cosmology has to work with: not the ensemble, which reads as nothing, and not a
 totality, which does not close --- but this frame, which is where everything measurable is.
 
-\emph{The physics companion reaches the same place from the other direction} and the two should be read
-together: there, fine-tuning is dissolved by self-location, since a different seed is a different
+The physics companion reaches the same place from the other direction and the two should be read
+together: there, fine-tuning is dissolved by self-location
+(Proposition~\ref{PH-prop:self-location}), since a different seed is a different
 observer and there is no trans-seed standpoint from which to compare. Here the same absence removes the
 distribution. \emph{One prohibition, met twice.}
 
 \section{Two measurements that disagree}\label{sec:tension}
-\emph{A word on the Hubble tension, and it is a word of caution rather than a result.} Early-universe and
-late-universe determinations of the expansion rate disagree beyond their stated errors.
+A word on the Hubble tension, and it is a word of caution rather than a result. Early-universe and
+late-universe determinations of the expansion rate disagree beyond their stated errors, and the
+disagreement is the field's own open problem \citep{divalentino2021}.
 
-\emph{The account says only what it says.} By the adaptability companion's result a measurement is a
-property of a four-place arrangement, and two determinations made under different arrangements are two
+The account says only what it says. By the adaptability paper's result a measurement is a
+property of a four-place arrangement (Remark~\ref{AD-rem:chollet}), and two determinations made under
+different arrangements are two
 measurements rather than one measurement made twice --- so comparing them requires an argument that the
 moved coordinate does not bear. \emph{That is exactly what the field is doing}, at length and carefully,
-which is why this section claims nothing further. \emph{The account does not dissolve the tension, does
-not favour either value, and does not predict which coordinate is at fault.} It says the comparison is
+which is why this section claims nothing further. The account does not dissolve the tension, does
+not favour either value, and does not predict which coordinate is at fault. It says the comparison is
 the work, which cosmologists established without help.
 
 \section{What is not claimed}\label{sec:not-claimed}
-\emph{No cosmological parameter is derived here, and none could be.} No observation is predicted. Nothing
+No cosmological parameter is derived here, and none could be. No observation is predicted. Nothing
 above distinguishes between inflationary models, settles the expansion tension, or bears on dark energy's
 equation of state.
 
-\emph{Nor is any of the negative work a criticism of practice.} Homogeneity is already called an
+Nor is any of the negative work a criticism of practice. Homogeneity is already called an
 assumption; the measure problem is already called unsolved; the tension is already treated as a
 comparison problem. \emph{The account agrees with the field's instincts and supplies reasons for them},
 which is worth less than a prediction and more than nothing.
 
 \section{Falsifiability commitments}\label{sec:falsifiability}
-\emph{An aperture wider than assumed.} A confirmed signature of a bubble collision, or of any structure
-causally beyond the particle horizon, would show a superframe dimension to be accessible from here.
-That refutes neither the account nor this paper's reading of what lies outside --- both hold that it is
-there --- but it refutes this paper's assumption about the \emph{present aperture}, which is the
-load-bearing assumption of the horizon section and is about us rather than about the world.
 
-\emph{Convergence of measures.} If the regularisations of eternal inflation converge on one measure by
-an argument internal to the theory, requiring no stipulation from outside, then
-Proposition~\ref{prop:measure} is wrong and the problem was hard rather than ill-posed.
+\noindent\emph{On the tags.} Each commitment below is marked \textsc{[shape]} or \textsc{[detail]}.
+A \textsc{[detail]} failing is a revision: the account survives with that mechanism replaced. A
+\textsc{[shape]} failing costs \emph{range} rather than a mechanism, because what fails is something
+the substrate is claimed to require or to permit --- so the account does not hold where it claimed to,
+which is the more serious of the two and is still a boundary rather than an annihilation. The marks
+were assigned in a single pass under the rule just stated, and are the least-audited judgement in this
+document.
 
-\emph{Anisotropy that survives.} Isotropy is the leg this paper keeps. A large-scale anisotropy that
-survives scrutiny would remove the observed half of the cosmological principle, and this paper would
-have kept the wrong leg.
+\begin{enumerate}[leftmargin=*]
+\item \textsc{[detail]}~\textbf{An aperture wider than assumed.} A confirmed signature of a bubble
+collision, or of any structure causally beyond the particle horizon, would show a superframe dimension
+to be accessible from here. That refutes neither the account nor this paper's reading of what lies
+outside --- both hold that it is there --- but it refutes this paper's assumption about the
+\emph{present aperture}, which is the load-bearing assumption of Section~\ref{sec:horizon} and is about
+us rather than about the world. What changes on refutation is stateable: that section's claim that no
+measurement inside discriminates between competing values of a dimension that is
+\textnormal{\textsc{null}} here would be false for that dimension, and the prohibition on reading its
+value would lift for that dimension alone. Marked \textsc{[detail]} because what is replaced is an
+assumption about the present width of our aperture, not a claim about the substrate.
 
-\emph{Derivation of a seed.} If a cosmological initial condition is ever derived rather than installed
---- from within, with no boundary condition imported --- then the physics companion's seed result and
-this paper's dependence on it both fail.
+\item \textsc{[shape]}~\textbf{Convergence of measures.} If the regularisations of eternal inflation
+converge on one measure by an argument internal to the theory, requiring no stipulation from outside,
+then Proposition~\ref{prop:measure} is wrong and the problem was hard rather than ill-posed. Marked
+\textsc{[shape]} because what would fail with it is the no-prior-free proposition
+(Proposition~\ref{AD-prop:no-prior-free}) in this domain, which is not a mechanism this paper could
+replace; it is this paper's real exposure.
 
-\begin{thebibliography}{9}
+\item \textsc{[detail]}~\textbf{Anisotropy that survives.} Isotropy is the leg this paper keeps. A
+large-scale anisotropy that survives scrutiny would remove the observed half of the cosmological
+principle. It does not touch Proposition~\ref{prop:copernican}, which declines the inference from
+isotropy to homogeneity and is left standing \emph{a fortiori} if the antecedent fails; what it costs is
+this paper's sentence that isotropy is measured, and with it the surviving-leg framing of
+Section~\ref{sec:cosmological-principle}. Marked \textsc{[detail]} for that reason, and listed rather
+than dropped because that framing is what the section is built on.
+
+\item \textsc{[detail]}~\textbf{Typicality on a single reading.} Proposition~\ref{prop:typical} fails if
+a typicality argument can be stated on one reading of \textbf{universe} held throughout --- either a
+countable ensemble carrying a frame-internal measure, which is item~2 again, or a relative universe
+whose reference class has more members than the one the frame exhausts --- without sliding between the
+two. The claim is the equivocation, so exhibiting the argument without it is what refutes it.
+
+\item \textsc{[shape]}~\textbf{Derivation of a seed} (inherited). If a cosmological initial condition
+is ever derived rather than installed --- from within, with no boundary condition imported --- then the
+physics companion's seed result (Proposition~\ref{PH-prop:past-hyp}) and this paper's dependence on it
+both fail. The commitment belongs to that companion and is carried here because this paper leans on it.
+\end{enumerate}
+
+\noindent Proposition~\ref{prop:beyond} is split across the list rather than missing from it. Its
+inaccessibility half is item~1. Its \emph{related through the superframe} half carries no separate
+exposure: it is the physics companion's nonlocality corollary
+(Corollary~\ref{PH-cor:nonlocal}) applied at cosmological scale, inherited entire, and it fails where
+that fails and nowhere else.
+
+\begin{thebibliography}{99}
 
 \bibitem[Bousso and Freivogel(2007)]{bousso2007}
 Raphael Bousso and Ben Freivogel.
@@ -310,6 +374,12 @@ Raphael Bousso and Ben Freivogel.
 Chris Clarkson.
 \newblock Establishing homogeneity of the universe in the shadow of dark energy.
 \newblock \emph{Comptes Rendus Physique}, 13:682--718, 2012.
+
+\bibitem[Di Valentino et al.(2021)]{divalentino2021}
+Eleonora Di~Valentino, Olga Mena, Supriya Pan, Luca Visinelli, Weiqiang Yang,
+  Alessandro Melchiorri, David~F. Mota, Adam~G. Riess, and Joseph Silk.
+\newblock In the realm of the Hubble tension --- a review of solutions.
+\newblock \emph{Classical and Quantum Gravity}, 38(15):153001, 2021.
 
 \bibitem[Ehlers et al.(1968)]{ehlers1968}
 J\"{u}rgen Ehlers, P. Geren, and Rainer~K. Sachs.
