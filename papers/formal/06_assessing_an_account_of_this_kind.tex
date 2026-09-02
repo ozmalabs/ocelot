@@ -1,39 +1,46 @@
 \documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,hyperref,enumitem,microtype}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,enumitem,microtype}
 \usepackage{natbib}
 \usepackage[margin=1in]{geometry}
-\newtheorem{axiom}{Axiom}
-\newtheorem{definition}{Definition}[section]
-\newtheorem{theorem}[definition]{Theorem}
-\newtheorem{proposition}[definition]{Proposition}
-\newtheorem{hypothesis}[definition]{Hypothesis}
-\newtheorem{corollary}[definition]{Corollary}
-\theoremstyle{remark}\newtheorem{remark}[definition]{Remark}
-\newcommand{\Poss}{\mathcal{P}}
-\newcommand{\Coll}{\mathcal{C}}
-\newcommand{\Hist}{\mathcal{H}}
+\usepackage{xr-hyper}
+\usepackage{hyperref}
+\externaldocument[GE-]{01_law_of_graphic_equalisation_theory_referenced}
+\externaldocument[MS-]{01b_graphic_equalisation_mind_and_self_grounding}
+\externaldocument[PH-]{01a_graphic_equalisation_physics_grounding}
+\newtheorem{proposition}{Proposition}[section]
+% Record figures quoted below are generated from the repository by
+% tools/build_assessment_counts.py; the file names the commit and date.
+\input{06.counts}
 \title{Assessing an Account of This Kind\\\large What a Universal Framework Can Risk, What It Earns Instead, and What the Record Shows}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-09-02.1}\\[2pt]2 September 2026 \textbullet\ document revision 26}
+\date{\textbf{Draft \texorpdfstring{\textemdash}{---}\ draft-2026-09-02.1}\\[2pt]2 September 2026 \texorpdfstring{\textbullet}{\textperiodcentered}\ document revision 27}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r26}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r27}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r26}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r27}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-09-02.1 r26} (2 September 2026).
+\textbf{DRAFT --- draft-2026-09-02.1 r27} (2 September 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
-cite the version string above if referring to it. Sections marked as
-falsifiability commitments are the intended points of attack.}}
+cite the version string above if referring to it. It is a companion to
+\emph{The Law of Graphic Equalisation --- Theory} (referred to below as Graphic
+Equalisation), to its physics companion \emph{The Law of Graphic Equalisation ---
+Physics Grounding} (the physics companion), and to \emph{The Law of Graphic
+Equalisation --- Mind and Self Grounding} (the mind companion), and inherits
+their definitions, epistemic boundary, and level-of-claims. The
+Narrative-momentum paper carries a short name too --- \emph{Narrativium} ---
+and that is the form used below, for the paper and for the quantity it names.
+Sections marked as falsifiability commitments are the intended points of
+attack.}}
 \end{center}
 \vspace{1em}
 \begin{abstract}
@@ -44,7 +51,7 @@ paper. This companion carries it: what a framework claiming to hold of everythin
 why usefulness rather than falsification is what it earns, why implementability supplies the surface on
 which it can fail, what the implementation record currently shows and does not, and how the choice of
 question bounds the value of any answer. It ends by holding itself to the same standard, with three commitments of its own, a paper arguing about what an account may be held to being subject to the same. Nothing here is required to read the
-substrate account. It is required to argue with it.
+substrate account (Graphic Equalisation). It is required to argue with it.
 \end{abstract}
 
 \section{What a framework can and cannot risk}\label{sec:risk}
@@ -66,19 +73,19 @@ is that a contingent commitment carried by a framework is therefore structure do
 so a maximally well-formed framework has \emph{no} falsifiable content --- and that step is too quick,
 because this account's own write-economics is contingent and does a great deal of work. The claim that
 survives is narrower: a contingent commitment does no framework-work \emph{where the framework would
-stand without it}, and such commitments are what the substrate paper's definition of well-formedness prices as idle. What
+stand without it}, and such commitments are what Graphic Equalisation's definition of well-formedness (Definition~\ref{GE-def:well-formed}) prices as idle. What
 remains falsifiable in a framework is accordingly the part that is load-bearing and could have been
 otherwise, which is a smaller set than the contingent one and is not empty --- and because it is not empty, the
 strong reading does not hold either: \emph{this account is not unfalsifiable-by-construction}. What
 survives is narrower. The part of a framework that is pure framework carries no falsifiable content,
 and that part is not a concession but what well-formedness looks like at this level; it is why the
-commitments the substrate paper identifies as derivations rather than wagers are the framework showing through
+commitments Graphic Equalisation identifies as derivations rather than wagers are the framework showing through
 rather than tests that could not be found. The rest of the account is load-bearing, could have been
 otherwise, and is answerable --- which is what that paper's list of commitments is for.
 
 That defence is defeasible and should not be left to do more than it can, since it does not
 distinguish a well-formed universal framework from a vacuous one --- both are unfalsifiable. What
-separates them is available in the substrate paper's definition of well-formedness and requires reading both of its
+separates them is available in Graphic Equalisation's definition of well-formedness (Definition~\ref{GE-def:well-formed}) and requires reading both of its
 halves rather than one. Well-formedness is paying for nothing \emph{that does no work}. A framework is
 held structure; by its own criterion it must therefore earn its retention by doing work, and one that
 affords nothing is inert structure at the top level --- the fourth cost of that definition, applied to
@@ -94,7 +101,7 @@ transferring between domains without rework, predictions that could have failed 
 is a specific claim, checkable by someone who does not accept the framework, which is what the
 falsifiers were for.
 
-One limit is imposed by the substrate paper's standard and is not evaded. A test whose stopping condition
+One limit is imposed by Graphic Equalisation's standard and is not evaded. A test whose stopping condition
 lies with the assessor is not a test, and ``is it useful enough?'' has exactly that shape. So
 usefulness is offered as a \emph{record} and never as a threshold: instances, enumerable and
 individually checkable, rather than a verdict on the total. And a secondary axis remains for the case
@@ -105,7 +112,9 @@ comparative rather than empirical.
 \section{Where an unfalsifiable framework becomes falsifiable}\label{sec:implementable}
 One item of the record differs from
 the others in kind and completes the argument above. This framework is \emph{implementable, forwards},
-and has been implemented (the constructive companion). That is not a claim about elegance: the
+and has been implemented. What stands behind that is this programme's own pre-registered
+implementation record, which is likewise not circulated with these papers, so it is a claim a reader
+may decline to credit on the terms Graphic Equalisation states. That is not a claim about elegance: the
 substrate is at its core an analysis-by-synthesis engine, in which recognition proceeds by generating
 candidates and comparing them, so generation and recognition are one operation run in two directions
 rather than two theories requiring separate justification --- and where the two directions are exact
@@ -120,8 +129,9 @@ is free to add rules to suit and the framework does not determine one.
 
 What it establishes is that the account is \emph{specified enough to be built from}, which is a
 property most frameworks lack and which cannot be faked --- one discovers that a framework is
-underspecified only by attempting to build it, which is the substrate paper's result that a boundary is known only by crossing it at the
-scale of the account itself. And it supplies the thing Section~\ref{sec:risk} conceded was
+underspecified only by attempting to build it, which is Graphic Equalisation's result that a boundary is
+known only by crossing it (Proposition~\ref{GE-prop:boundary-by-crossing}), at the scale of the
+account itself. And it supplies the thing Section~\ref{sec:risk} conceded was
 missing. \emph{The framework's purely framework-level part cannot be falsified; its contentful claims can, and any implementation of it can.} A running system makes
 the commitments concrete enough to break, and breaks, and is corrected --- so the unfalsifiable core
 acquires a falsifiable surface, which is where the empirical discipline actually operates. Nothing here
@@ -144,7 +154,7 @@ reader estimates something belonging to none of them.
 
 One instrument is ruled out by this account's own prediction, which is worth stating because it is the
 instrument anyone would reach for first. \emph{Self-report is invalid here.} A description that is
-right reads as obvious (the substrate paper's treatment of carvings), so a reader who could already do the thing and
+right reads as obvious (Graphic Equalisation's treatment of carvings, Section~\ref{GE-sec:carvings}), so a reader who could already do the thing and
 merely could not say it will report a large gain --- and a reader who genuinely gained nothing will
 report the same. Agreement measures recognition, and recognition is what this account predicts
 regardless of whether any capability moved. What has to be measured is \emph{performance on a task},
@@ -156,7 +166,8 @@ is not a wide interval but the absence of one.
 
 \emph{A second self-application, carrying the same limit.} The production of this account exhibits a
 mechanism the account prices elsewhere, and saying so requires the care the previous paragraph
-demands. The substrate paper's definition of well-formedness charges search on every operation over
+demands. Graphic Equalisation's definition of well-formedness (Definition~\ref{GE-def:well-formed})
+charges search on every operation over
 what is held, scaling with how much is held. \emph{Decomposition is search}: to ask what a claim says
 about some case it was not written for, one has to hold the claim. So a claim narrow enough to be held
 entire is a claim that can be tried anywhere, and a claim that must be looked up is one whose
@@ -175,22 +186,22 @@ One consequence separates from the rest because it can be read off the documents
 \emph{The account grows while what it claims shrinks.} A decomposition that succeeds converts a posit
 into a consequence, which lengthens the text by the derivation and shortens the ledger by an entry, so
 pages and postulates move in opposite directions. A reader taking length as a proxy for how much is
-being asked will therefore read the trend backwards --- which is the companion's point about a short
+being asked will therefore read the trend backwards --- which is Graphic Equalisation's point about a short
 generator with long output, met a second time in the making of the thing rather than in its structure.
 
 The direction has the floor that every other use of it has. Narrowing helps while it stays lossless;
-past that it yields a small account of nothing, which is the limit \S\ref{sec:question} reaches from the
+past that it yields a small account of nothing, which is the limit Section~\ref{sec:question} reaches from the
 other side --- the most well-formed question asks and receives nothing, and arriving there would be
 dissolution rather than arrival.
 
-\emph{And one thing review cannot do, established by its failing to.} Six review passes over this
-corpus, each running some twenty-odd lenses, did not find that describing the substrate as a
-\emph{typed} graph asserted something the substrate does not have. Nor that a companion had reinstated
-\emph{substance} in the sentence claiming to have decomposed it away, with the word already on that
-companion's own list of things removed. Neither was hidden. Both sat in prominent sentences through
-every pass.
+\emph{And one thing review cannot do.} Two commitments in this corpus are carried as vocabulary
+rather than as claims. Describing the substrate as a \emph{typed} graph asserts something the
+substrate does not have; and a companion reinstates \emph{substance} in the sentence claiming to have
+decomposed it away, with the word already on that companion's own list of things removed. Neither is
+hidden --- both sit in prominent sentences --- and review does not stop on either.
 
-The reason is the one the substrate paper gives for numbering its axiom where it does: \emph{the import
+The reason is the one Graphic Equalisation gives for numbering its axiom where it does
+(Remark~\ref{GE-rem:why-minus-one}): \emph{the import
 is free}. A lens checks claims --- against each other, against their sources, against what they were
 said to replace. A commitment arriving as vocabulary is not a claim in the text; it is a claim in the
 reader, supplied on reading and never written down. So the lens has nothing to stop on, and a reviewer
@@ -200,15 +211,17 @@ asserts is constitutionally unable to examine what a text lets its reader assume
 
 There is a sharper reason than blindness, and it decides which imports survive. \emph{The ones that
 last are the true ones.} A graph described as typed is typed --- kinds arise wherever a plurality is
-operated over, which is wherever anything runs --- so every lens asking whether the description holds
+operated over, which is wherever anything runs (Remark~\ref{GE-rem:types-forced}) --- so every lens
+asking whether the description holds
 returned yes, correctly. What was wrong was never the content but the \emph{ordering}: a derived thing
 taken as given. A false import is refuted by a counterexample and does not last a single pass; a
 true-but-derived one is refuted by nothing, and passes every check that asks whether it is so. So
 review does not merely fail to catch these --- it \emph{selects} for them, retaining exactly the
 imports no counterexample will ever remove. The same holds of the second instance: there is one
-graph-data stuff in the obvious sense, which is why the sentence read as harmless for as long as it did.
+\emph{kind of} stuff, graph data, in the obvious sense (Remark~\ref{GE-rem:one-substance}), which is
+why the sentence read as harmless for as long as it did.
 
-What did find them was not review but removal --- the companion's one operation, applied to a word
+What did find them was not review but removal --- Graphic Equalisation's one operation, applied to a word
 rather than to a posit, which is a candidate class its stated list did not have and now does. That
 gives a division of labour rather than a defeat. Review checks assertions and catches the defect this
 record shows most of, a correction made at its site and not swept to what points at it. Removal
@@ -217,10 +230,6 @@ in exactly one direction}, accumulating imported vocabulary while its explicit c
 careful, and the two are easily mistaken for one another from inside.
 
 \section{What kind of contribution this is}\label{sec:contribution}
-This material was carried in the substrate paper's scope section, where it sized the section and
-answered questions that are this companion's rather than that one's. It is reproduced here
-unchanged in substance.
-
 At best a correct account of a substrate; at worst a useful but incomplete description. Which of
 those it is cannot be settled from inside it, and the more useful statement is about the \emph{form}
 of what is offered rather than its correctness.
@@ -247,10 +256,11 @@ sequitur --- novel cases would be more checkable, not less, since each would be 
 prediction --- and it converts prior art into a virtue, which is the move this passage most needs not
 to make.
 
-That is exactly the exposure the substrate paper's falsifiability section's composition commitment already
-carries, so no separate defence is added for it. And one further limit follows from this paper's own
+That is exactly the exposure the composition commitment of Graphic Equalisation's falsifiability
+section (Section~\ref{GE-sec:falsifiability}) already carries, so no separate defence is added for it. And one further limit follows from this paper's own
 machinery and is stated here:
-its compression-convergence proposition predicts that unifications of this kind will be
+Graphic Equalisation's convergence-under-compression proposition
+(Proposition~\ref{GE-prop:compression-convergence}) predicts that unifications of this kind will be
 \emph{available}, because structures compressed under shared constraints come to resemble one another.
 So finding one is not itself evidence that the account is right. The unification is the contribution;
 it is not the confirmation.
@@ -260,14 +270,17 @@ refute, so the exposures are named here. Two are definite.
 \emph{A case the vocabulary covers while the mechanism does no work} damages the claim, and what
 counts as doing work is the economics: if the account cannot say what a case costs, or says it
 wrongly, the vocabulary is decorating. And \emph{a domain under weak compression exhibiting the
-arrangement} damages its compression-convergence proposition directly --- ritual, ornament and
+arrangement} damages Graphic Equalisation's convergence-under-compression proposition
+(Proposition~\ref{GE-prop:compression-convergence}) directly --- ritual, ornament and
 systems maintained past their purpose are where cost pressure is not binding and the arrangement
 should therefore be absent. That test is developed where the proposition is stated, and it belongs
 here too, since this is where a reader forms the objection.
 
 Beyond those, this paper carries ordinary predictions that can fail on their own:
-the substrate paper's located-degradation hypothesis specifies where classification failures should concentrate,
-and the commitments in the substrate paper's falsifiability section marked \textsc{[shape]} are refutations rather
+Graphic Equalisation's located-degradation hypothesis (Hypothesis~\ref{GE-hyp:located-degradation})
+specifies where classification failures should concentrate,
+and the commitments in Graphic Equalisation's falsifiability section
+(Section~\ref{GE-sec:falsifiability}) marked \textsc{[shape]} are refutations rather
 than revisions if they fail. Understating that exposure would be a defect of the same kind as
 overstating the contribution.
 
@@ -275,16 +288,18 @@ What is claimed is a shape rather than a set of details. The details in this acc
 repeatedly and are expected to change again: definitions have been renamed, propositions weakened,
 citations corrected, and quantities that looked primitive have turned out to be roles played across a
 relation. Those revisions are ordinary and the account is written to make them cheap --- which is why
-the falsifiability commitments are stated separately from the constructions, and why corrections are
-left in the text rather than smoothed out of it.
+the falsifiability commitments are stated separately from the constructions, and why a correction is
+recorded in the review record rather than narrated in the text: a paper is what it says now.
 
 The word \emph{shape} is doing real work there and must be pinned down, because ``the details may be
 wrong but the shape is right'' is the classic form of a theory retreating from its tests. Two things
-keep it from being that. The commitments in the substrate paper's falsifiability section are stated at the level
+keep it from being that. The commitments in Graphic Equalisation's falsifiability section
+(Section~\ref{GE-sec:falsifiability}) are stated at the level
 of the shape rather than the details --- whether a primitive beyond the triple is required, whether a
 non-discrete quantity is needed, whether the arrangement recurs where its constraints do not hold ---
 so a detail failing is a revision while a commitment failing is a refutation, and
-the substrate paper's falsifiability section marks each commitment \textsc{[shape]} or \textsc{[detail]} so that
+Graphic Equalisation's falsifiability section marks each commitment \textsc{[shape]} or
+\textsc{[detail]} so that
 the distinction is a fact about the list rather than a claim about it. And the shape is specified enough to be reported wrongly: several of the corrections in
 this paper were shape-level, not cosmetic.
 
@@ -297,10 +312,11 @@ account's most heavily revised single day, many revisions to this paper produced
 dozen corrections to claims it had already made, of which four were shape-level --- a primitive that
 turned out to be a role, two components that turned out not to be required, and a property that
 turned out to be well-formedness rather than necessity. Roughly one shape correction to three detail
-corrections, on that day. A single day is not a rate, and it is offered as the beginning of a series
-rather than as a measurement.
+corrections, on that day. A single day is not a rate. It was offered as the beginning of a series,
+and the series was not continued: no later day has been tallied, here or in the engineering record,
+so the figure stands as one observation and not as a trend.
 
-\subsection*{The standard this should be held to, and where it currently stands}
+\subsection{The standard this should be held to, and where it currently stands}\label{sec:standard}
 
 An account claiming to be about a substrate rather than a domain invites one demand, and it is worth
 stating in its strong form rather than a convenient one: it must handle a rock, the observable
@@ -330,10 +346,10 @@ asks; what none of them establishes is confirmation:
 
 \begin{description}[leftmargin=*,style=nextline]
 \item[Rock.] Strongest. It is $g$ with $r$ and $\Gamma$ absent at the grain of individuation
-(its remark that only $g$ is required), and it is the definitional reference point rather than an application.
+(Remark~\ref{GE-rem:only-g}), and it is the definitional reference point rather than an application.
 \item[Computers.] Strong as a worked instance and explicitly disqualified as independent evidence,
 since the vocabulary is borrowed; what survives is the forced convergence, which is separable
-(its compression-convergence proposition).
+(Proposition~\ref{GE-prop:compression-convergence}).
 \item[Cognition.] Substantial but grounding-level: aperture, self-models, the closure of primitives,
 and convergence under a metabolic budget. It explains shapes; it derives no psychology.
 \item[Observable universe.] Shape-level only. The physics companion recovers the \emph{form} of
@@ -361,14 +377,16 @@ which is the axis this paper occupies, and a claim about breadth is not a demoti
 
 That is not a licence. Each competence has to be real --- the competent man can
 actually butcher the hog, and breadth with no depth anywhere is dilettantism rather than generality
---- which is why every entry above is tied to a commitment in the substrate paper's falsifiability section that
+--- which is why every entry above is tied to a commitment in Graphic Equalisation's falsifiability section
+(Section~\ref{GE-sec:falsifiability}) that
 can fail on its own. And the evidence that counts is not this account covering five domains, which it
 could do by being flexible enough to cover anything. It would be those domains' own practitioners arriving
 at the same arrangement independently, in their own idiom, without reference to this account --- an
 engineer forced to abandon a global clock by finite signal speed rather than any number of paragraphs
 in which the substrate is shown to accommodate one.
 
-That clause is qualified rather than withdrawn. its compression-convergence proposition predicts exactly such
+That clause is qualified rather than withdrawn. Graphic Equalisation's convergence-under-compression
+proposition (Proposition~\ref{GE-prop:compression-convergence}) predicts exactly such
 independent re-derivations as a consequence of shared constraints, which calibrates what they show
 rather than abolishing it, and the second reading over-corrects. A re-derivation does discriminate against the artefact-of-description reading, since someone who reached
 the arrangement without this vocabulary cannot have been led there by it. What it does not do is
@@ -382,10 +400,16 @@ The implementation is the other place to look, and it is the better one, because
 has been measured repeatedly and with intervals. One thing must be said before any of those numbers
 are, since this section demands checkability of everyone else: \emph{the measurements below are not in
 this corpus}. They come from the engineering record --- commit history, per-run result documents, an
-audit of capability acquisition --- which is not published alongside these papers, and the constructive
-companion is a normative specification containing none of them. Until that record is available a reader
+audit of capability acquisition --- which is not published alongside these papers, and no circulated
+paper contains them. Until that record is available a reader
 cannot check any figure quoted here, which by this section's own standard makes them assertions rather
-than evidence, and they are marked as such throughout. The frame they concern is one whose capabilities
+than evidence, and they are marked as such throughout. Where a figure below counts something in that
+record --- files, seeds, manifests, stems, red identifiers --- it is not typed here but read from the
+record itself at build time, at the commit and on the date named in the generated file this paper
+takes them from (\countsCommit, read on \countsReadOn); the failure baseline is a dated measurement
+of its own and carries that date at its site. A count written by hand drifts silently, which is the
+defect Section~\ref{sec:record-wrong} is about, and it should not be committed by the section
+reporting it. The frame they concern is one whose capabilities
 are enumerable, whose before-and-after is a control, and whose tasks are scored rather than assented
 to --- so a framework-motivated change either moves a measured number or does not. What that
 record says is worth reporting in the deflationary direction, since it is mostly null:
@@ -441,9 +465,9 @@ five dated points and seven consuming frames, never modified. Structure built on
 unaltered by frames that did not exist at the time is what the account predicts, and it is what the
 record shows.
 
-The qualification given earlier was too generous and must be replaced by the measurement. It said most
-instances are components reused without modification and \emph{fewer} are cases where the receiving
-frame's measured behaviour improved. The true count of the second kind is \emph{zero}: every measured
+The measurement separates two kinds of instance and only one of them is populated. Most are
+components reused without modification; the other kind --- a receiving frame whose measured behaviour
+improved --- has a true count of \emph{zero}: every measured
 before-and-after improvement in the history is within a frame, and no cross-frame transfer has a
 measured benefit attached to it at all. The account's central evidential claim is therefore supported at
 the level of portability and unsupported at the level of benefit.
@@ -461,8 +485,8 @@ point, and two facts in it do the work. The inventory does not.
 
 \emph{The architecture.} A typed property graph $g$; rewrite rules $r$ with \emph{match}, \emph{where}
 and \emph{effects} clauses run to fixpoint; and an admissibility grammar $\Gamma$ deciding which edges
-may exist. A Rust core of $89$ files exposes a term language of $239$ variants. The agent's cognition
-is \emph{graph data}, not code: $805$ seed manifests carry its rules, concepts, productions and
+may exist. A Rust core of $\nRustFiles$ files exposes a term language of $\nTermVariants$ variants. The agent's
+cognition is \emph{graph data}, not code: $\nSeedManifests$ seed manifests carry its rules, concepts, productions and
 reflexes, loaded by dependency closure at boot. The host language translates external input into graph
 mutations and reads state back out, and does nothing else.
 
@@ -474,7 +498,7 @@ companion is explicit that graphs are expressive and almost anything can be draw
 catalogue of domains is exactly the evidence that objection predicts. Two things are not.
 
 \paragraph{Transfer, which is what the composition claim actually rests on.}
-The substrate paper's headline commitment fails if the recurrence of one structure across domains is an
+Graphic Equalisation's headline commitment fails if the recurrence of one structure across domains is an
 artefact of description rather than a property of those domains. Breadth cannot answer that. What can
 is structure built once for one frame and consumed \emph{unmodified} by another, and the record's
 strongest instance is stated above: a decoder seed byte-identical by hash from its creation to the
@@ -508,12 +532,12 @@ result.
 The preceding subsection would be advertising without this one.
 
 \emph{Most of the evidence is untracked.} The results directory is excluded from version control:
-seventeen of $1{,}216$ files are in it. The external corpora are excluded. Most measured evidence
+$\nResultsTracked$ of $\nResultsOnDisk$ files are in it. The external corpora are excluded. Most measured evidence
 therefore exists in exactly one working tree, and several arcs with real numbers have log files and no
 results document.
 
-\emph{Pre-registration is real and incomplete.} Eighty-four pre-registration stems have no matching
-results file. In one domain, thirty-eight have seeds but neither gate tests nor results, and the honest
+\emph{Pre-registration is real and incomplete.} Of $\nPreregTotal$ pre-registration stems,
+$\nPreregNoResults$ have no matching results file. In one domain, thirty-eight have seeds but neither gate tests nor results, and the honest
 tag for those is seeded-but-unmeasured.
 
 \emph{The grammar is declared more often than it is used.} Rule effects write edges directly rather
@@ -527,8 +551,13 @@ never loaded at boot. It is a data-production result and not a knowledge result,
 says so of its own sampled files.
 
 \emph{The gate is materially red.} The enumerated failure baseline --- a list of node identifiers
-rather than a count, for reasons this programme had to learn --- stands at $216$ red node identifiers
-out of $1{,}092$ files swept, under stated conditions, and is now some weeks old.
+rather than a count, for reasons this programme had to learn --- stands at $\nBaselineRed$ red node
+identifiers, measured on \baselineMeasuredOn\ under the conditions its own file records. The sweep
+that produced it covered $\nFilesSwept$ test files: $\nFilesGreen$ green, $\nFilesRed$ red, and
+$\nFilesUnestablished$ on which nothing was established --- files that exceeded the per-file time
+budget or whose every test was guarded out by an absent optional dependency. Those three do not sum
+to the red identifier count and are not meant to: a red \emph{file} may carry several red node
+identifiers, and the identifiers are the baseline. The measurement is now some weeks old.
 
 None of that is offered as a reason to discount the results the companions report, each of which
 carries its own controls and its own seed. It is offered because a reader given the first subsection
@@ -548,8 +577,8 @@ That contrast generalises, and it is a rule rather than a preference. \emph{An a
 cannot apologise.} An apology is an instruction about how its own text should be read --- \emph{this
 looks like X, take it as Y} --- issued from a standpoint outside the reading, and there is no such
 standpoint: the writer is in a frame and the reader is in another, and no sentence legislates across
-that gap. It is also held structure doing no work, which the substrate paper's definition of
-well-formedness prices as idle at the top level. So the prohibition is not decorum. It is the account's
+that gap. It is also held structure doing no work, which Graphic Equalisation's definition of
+well-formedness (Definition~\ref{GE-def:well-formed}) prices as idle at the top level. So the prohibition is not decorum. It is the account's
 own axiom applied to its prose, and an apology fails on both counts at once.
 
 The point is not that the impulse behind an apology is wrong, since it is usually a real weakness
@@ -560,13 +589,15 @@ and hands over something. Where this record shows apologies removed, none of the
 were dropped with them: each was already carried, or came to be carried, as a commitment in a
 falsifiability list. That is the translation, and it is available every time.
 
-Stated concretely rather than as a range of numbers: at the low end it is a working start whose consequences are
-local and modest --- and the stronger phrasing available here, that it is a unification which did not previously exist with its sharpest consequences for the foundations of quantum mechanics, fails twice over: it smuggles a priority claim into the floor of the interval where it carries the
-least hedging, and it contradicts the substrate paper's own scorecard, which rates the quantum entry
-\emph{weakest} and the one on which the demand bites hardest; at the high end it is a
-general framework of the kind that changes how a civilisation does things. The author's weight sits
+Stated concretely rather than as a range of numbers: at the low end it is a working start whose
+consequences are local and modest. A stronger phrasing is available at that end and is refused --- that
+it is a unification which did not previously exist, with its sharpest consequences for the foundations
+of quantum mechanics --- and it fails twice over. It smuggles a priority claim into the floor of the
+interval, which is where the interval carries the least hedging. And it contradicts Graphic
+Equalisation's own scorecard, which rates the quantum entry \emph{weakest} and the one on which the
+demand bites hardest. At the high end it is a general framework of the kind that changes how a
+civilisation does things. The author's weight sits
 nearer the upper bound.
-
 
 Three considerations put the weight lower. The reference class of unifying frameworks announced as
 transformative has a poor record, and the exceptions were identified as exceptions only after decades
@@ -581,15 +612,16 @@ useful framework and a civilisational one.
 The account supplies a stronger reason than any of those, and it is the one that should govern.
 \emph{The upper bound is a claim about other frames, not about this work.} Impact is a capability
 change measured against the absorption capacity of whoever receives it --- a magnitude relative to
-frames the author is not in, gated by their apertures and paid out of their Narrativium. By this
-substrate paper's Axiom $-1$ there is no position from which one's own impact is visible, so an author's weighting
+frames the author is not in, gated by their apertures and paid out of their Narrativium. By Graphic
+Equalisation's Axiom~\ref{GE-ax:no-view} there is no position from which one's own impact is visible, so an author's weighting
 of their own upper bound is not evidence about the world and cannot be, whatever its merits as a
 prediction.
 
-One thing must be established rather than assumed, the paper having already ruled the assumption out. It read the upward weight as
-\emph{functional} --- as an expectation of mattering that the builder needs in order to justify the
-spend. That is not what happened here. \emph{It was built, and then it mattered}, which is the
-found-then-explained order the substrate paper insists on when it says explanation is not what licenses
+One thing must be established rather than assumed. Reading the upward weight as \emph{functional} ---
+as an expectation of mattering that the builder needs in order to justify the spend --- assumes the
+rationalist order this account denies of everything else, and it is not what happened here.
+\emph{It was built, and then it mattered}, which is the
+found-then-explained order Graphic Equalisation insists on when it says explanation is not what licenses
 a structure but what is done with it once held. Assuming the rationalist order for an author's
 motivation, immediately after denying it for everything else, was the same error one level up.
 
@@ -615,8 +647,8 @@ precisely there. What this substrate has demonstrated is growth at small grain -
 quantum, a codebook grows, the loop closes and terminates --- and the gap between that and substantial
 self-improvement is unbridged and is not a matter of scale alone.
 
-The audit reported above bears on that clause, and its reading requires a distinction this paper had
-been running together. \emph{Self-direction and self-implementation are different things, and only the
+The audit reported above bears on that clause, and its reading turns on a distinction that is easily
+run together. \emph{Self-direction and self-implementation are different things, and only the
 second is absent.} Deciding what to build next --- decoding the residual, identifying where the largest
 unabsorbed thing sits, choosing the cheapest structure that would absorb it --- has been exercised
 extensively and is what set the acquisition order discussed above. Writing the resulting structure has
@@ -626,21 +658,87 @@ system modifying itself mostly churns, or efficiently makes itself worse in a do
 
 So the finding that \emph{nearly half the primitives introduced have no consumer in any seed}, with the
 anti-unification and substitution and transfer operations having essentially none, is not composition
-having been attempted and failed. It is the executor being elsewhere. That reading is more favourable
-than the one this paragraph first gave, and it should be corrected to it.
+having been attempted and failed. It is the executor being elsewhere.
 
 It does not, however, relieve the antecedent, and it sharpens two problems rather than resolving them.
 If direction is the substrate's and implementation is the model's, then the falling structural cost
 measured above is attributable to either, and the confound the audit named --- assistance improving over
 the same period --- becomes harder to remove rather than easier. And self-direction exercised
-extensively is the claim with the thinnest ledger behind it --- though that statement needs its own
-correction first, because the audit producing it searched about a quarter of the available record. The
-working history runs to some four thousand commits and nineteen hundred documents over five months,
-including several hundred pre-registrations with results documented against them, and the sweep covered
-the smaller of the two repositories holding it. Re-checked against the whole, the finding survives:
+extensively is the claim with the thinnest ledger behind it, and the audit producing that statement
+searched about a quarter of the available record. The
+working history spans two repositories, neither circulated with these papers, and the sweep covered
+the smaller of them. This one begins at a squashed import and so carries none of the history before
+it; the larger commit and document figures the audit worked from are the other repository's, and a
+reader given only what is circulated cannot reconstruct either. What is checkable in the smaller is
+the pre-registration record reported in Section~\ref{sec:record-wrong} --- several hundred stems with
+results documented against them, over five months of work. Re-checked against the whole, the finding
+survives:
 explicit sequencing-error language is close to absent, and material comparing an estimated cost against
 an actual one runs to a handful of documents rather than to none. It now rests on a search adequate to
 support it rather than on one that was not.
+
+What this does not supply should still be said. Per-choice quality is assessable; \emph{ordering}
+optimality is not, since a sequence of individually well-localising choices may still have been
+available in a better order. The position is therefore narrower than a bare appeal to the
+counterfactual and better than it: each choice can be graded from the record, the sequence as a whole
+cannot, and the part that is gradeable has not been tabulated.
+
+Two further gaps, both specifiable. ``An order of magnitude in reasoning and efficiency'' has no
+operationalisation here --- tokens per solved task on a shared benchmark would be one, and no such
+comparison has been run. And the conditional's own premise supplies compute, which means the
+counterfactual that matters is the same expenditure without this substrate, and that control does not
+exist.
+
+The argument above does not depend on the motivation. Whatever the weighting's status as a
+prediction, the upper bound remains a claim about other frames' absorption and is not assessable
+from here.
+
+The asymmetry is characteristic and should not be mistaken for a licence. An interval that includes
+large values does not make the large reading available --- it makes it \emph{unsupported}, which is a
+different thing that is easy to elide when the numbers are flattering. What would narrow it is already
+specified above: pre-registered tasks with blind assessment, denominators conditioned per frame, effort
+costed per capability against acquisition order, and an audit of the transfers that failed. None of
+that is exotic and none of it has been done.
+
+The standard held to here is therefore not that the differential is large, or that it
+is established. The limitations are stated with the claims.
+
+The trajectory claim is quantified in that record, and the result is that \emph{it is true in one reading
+and false in another, with the answer flipping on a modelling choice this paper had not made}. Taking a
+capability to be a shipped seed with its own tests, and counting the acquisition order across two
+hundred and thirty-eight of them: the number of \emph{new primitive kinds} required per capability falls
+from $0.24$ over the first hundred and forty-two to \emph{zero} over the last ninety-six, intervals
+separated, with the five most recently entered domains requiring none at all while composing more held
+structure than earlier ones did. That is the predicted shape, measured.
+
+The volume reading does not agree. Total implementation code grows linearly throughout with no
+saturation, and the marginal code per capability returns to founding-era levels whenever a new domain is
+entered. So structural cost falls to zero and volume cost does not fall at all, and which of the two
+\emph{is} ``the cost of the $N$th capability'' is a choice rather than a finding. The honest report is
+both numbers and the statement that the account did not specify which it meant.
+
+Three further results bound the favourable one. Nearly half the primitives introduced have \emph{no consumer in any seed}, so the growth of the
+primitive set and the composition of it are not the same story --- one exception is large and real, a
+decode primitive used by eighteen seeds across eight domains over fifty-four days. Rework \emph{rises}
+with acquisition order rather than falling, with later capabilities revised more often than early ones
+despite less exposure. And the confound that cannot be removed from this data has a name now: the same
+period saw the author's assistance improve substantially, so a falling cost per capability is not
+separable from a falling cost of assistance without a second builder. The attribution is arguable, since a competent engineer might have
+reached the same two changes without the framework and the prereg records only that the prediction
+preceded the result. The frame measured is an implementation and not a reader, so nothing here
+transfers to what these papers do for a person. And it is the same hand throughout, which Graphic Equalisation's
+own rule disqualifies as independent support exactly as it disqualifies the computing case.
+
+\paragraph{Three debts.}
+Stated rather than deferred. The comparison against a named rival framework has not been
+run here. This paper does not itself compile the record described above; the groundings do that,
+severally. And the implementation's own failures --- the sharpest evidence available under this
+section's argument --- sit in an engineering history that is not published with these papers, so
+neither they nor the figures quoted above can currently be checked by a reader. Publishing that record
+is the single change that would move most of the estimate above from assertion to evidence. The corpus is therefore two kinds of thing and the reader should
+hold them apart. The substrate risks little by design, which is the claim just made. The
+\emph{groundings} carry the risk, and Graphic Equalisation's commitments that bear on them are falsifiable in the
+ordinary sense.
 
 \section{The scale of the record, and what an absent error log shows}\label{sec:scale}
 
@@ -658,7 +756,8 @@ falsifying observation instead. That is correct as far as it goes.
 It does not go far enough, because an unaudited process predicts the same observation. Few errors is
 what a good procedure produces and also what a procedure whose errors are not recorded produces, so
 the observation does not discriminate between them --- and treating it as confirmation is precisely the
-move the substrate paper spends its falsifiability section refusing.
+move Graphic Equalisation spends its falsifiability section (Section~\ref{GE-sec:falsifiability})
+refusing.
 
 This account's own machinery states the position more sharply than the ambiguity does. A recognizer
 that always answers can never produce a residual, and a grain with no residual cannot grow; that was
@@ -693,27 +792,29 @@ A choice producing a \emph{large} residual is frequently a good one. Much did no
 did, and the part that did locates the boundary --- so a large partial residual is a specification for
 what to mint next, and is the most informative outcome a write can have. A choice producing \emph{complete} residual
 is different in kind rather than worse, and calling it uninformative gets it backwards. Nothing cohered and no continuation was realised, but that outcome
-\emph{eliminates} --- with a qualification the first version of this passage omitted and which the rest
-of the paper requires. What is eliminated is the region \emph{in the searching frame's own space}:
+\emph{eliminates} --- with a qualification the rest of the paper requires. What is eliminated is the region \emph{in the searching frame's own space}:
 this frame cannot hold it, and that is a fact about this frame rather than about what can be held
 anywhere. Residual is mismatch and not diagnosis, and it does not become diagnosis by being complete.
 Within a search that is enough, since a search is conducted in a frame and removing a region from it is
 real work --- and \emph{the amount removed scales with the scope of the question asked}. The largest question that returns full residual
 removes the largest region of the solution space, which is the most informative negative result
-available and is not a small thing to have bought with one write. The substrate paper already relies on that
+available and is not a small thing to have bought with one write. Graphic Equalisation already relies on that
 elsewhere, where the composition commitment is deliberately negative-only because the negative side is
 the closeable one. A choice producing \emph{no} residual is the genuinely uninformative case --- absorbed,
 cheap, and telling the frame nothing it did not already hold.
 
-So the value of a choice has two dimensions rather than one: the \emph{scope} of the question, and the
-\emph{kind} of residual it returns. A large partial residual localises within a large space and is what
-construction wants; a complete residual on a large question eliminates a large space and is what
-refutation wants. Both are good writes and they do different work. What is weak is a question of small
-scope, which neither localises much nor eliminates much whatever kind of residual it returns.
+\begin{proposition}[A choice is graded by scope and by the kind of residual]\label{prop:scope-residual}
+The value of a choice has two dimensions rather than one: the \emph{scope} of the question it asks,
+and the \emph{kind} of residual it returns. A large partial residual localises within a large space
+and is what construction wants; a complete residual on a large question eliminates a large space and
+is what refutation wants. Both are good writes and they do different work. What is weak is a question
+of small scope, which neither localises much nor eliminates much whatever kind of residual it
+returns. So a sequencing choice is assessable by the scope of the question it asked and by whether
+its residual localised or eliminated, without knowing what a different choice would have produced.
+\end{proposition}
 
-That gives a criterion the counterfactual is not needed for. \emph{A sequencing choice is assessable by
-the scope of the question it asked and by whether its residual localised or eliminated}, both of which
-are visible in the record without knowing what a different choice would have produced. It is this programme's own standing rule one level down --- a null
+\noindent That is a criterion the counterfactual is not needed for, and both of its terms are visible
+in the record. It is this programme's own standing rule one level down --- a null
 that localises the cause and generalises the lesson is a better outcome than a pass that does not.
 
 The criterion applies to a review as readily as to a build, and applying it corrects the obvious way of
@@ -745,7 +846,8 @@ that a good question should \emph{produce} something. \emph{The most well-formed
 asks and receives nothing.} It costs a single write; it returns no structure into the frame, so there
 is nothing further to hold, to search, or to maintain; and at maximum scope it removes the largest
 region of possibility available. Maximum work done, minimum retention incurred --- which is
-the substrate paper's definition of well-formedness at its limit, and the same shape as this programme's observation that
+Graphic Equalisation's definition of well-formedness (Definition~\ref{GE-def:well-formed}) at its
+limit, and the same shape as this programme's observation that
 the empty limit is not a frame and does nothing, so reaching it would be dissolution rather than arrival.
 
 The abuse it converts into must be marked, because the sentence reads as a licence for never answering
@@ -785,7 +887,7 @@ removed, but \emph{what is the shortest structure that accounts for all of it}. 
 maximal by construction, since answering it requires taking everything at once rather than a piece ---
 and its answer, pushed to the limit, is the smallest thing there is. \emph{The biggest possible question
 has the smallest possible answer}, and this account's name for that answer is $g$: what exists,
-relationally, and nothing further (the substrate paper's minimal case).
+relationally, and nothing further (Graphic Equalisation's minimal case, Remark~\ref{GE-rem:only-g}).
 
 That is not a coincidence but what compression means. The more a description must account for, the more
 the structure shared across it dominates the structure peculiar to any part, and at the limit the only
@@ -794,8 +896,7 @@ opposite ends of the same write: at maximum scope with nothing cohering, the lar
 eliminated; at maximum scope with the shortest sufficient account, the least structure is retained.
 This paper begins at the second of those, and the reason it begins there is the first.
 
-That also explains the shape of its own testability, and corrects Section~\ref{sec:risk}'s opening in the
-process. Asking what exists is a claim of the form \emph{everything is like this}, and its two
+That also explains the shape of its own testability. Asking what exists is a claim of the form \emph{everything is like this}, and its two
 directions are not symmetric: establishing it would require enumerating everything, and the extensive
 frontier is unbounded by this account's own argument --- always one more step outward, never held
 complete --- so the enumeration cannot terminate even in principle. Bounding it requires \emph{one extant thing that does not fit}. The
@@ -804,7 +905,7 @@ what is being asked and of a property this paper has already argued for.
 
 The word matters. A counterexample does not
 \emph{refute} an account of this kind; it \emph{locates its boundary}, which is what residual does
-everywhere else in the substrate account and there is no reason it would behave differently when the frame in
+everywhere else in Graphic Equalisation and there is no reason it would behave differently when the frame in
 question is this one. That is not a softening. An account whose range turns out to be the vocabulary
 rather than the world has been deflated to almost nothing, which is exactly what the composition
 commitment threatens --- but the finding is a boundary, stated as one, and not a verdict of falsity
@@ -817,11 +918,15 @@ claim with \emph{content}, and this one has content --- that what exists is rela
 operative resolution, and governed by admissibility --- so a thing could exist and fail to be any of
 those. The counterexample is conceivable, which is what makes it a claim rather than a language.
 
-And that supplies what Section~\ref{sec:risk} said falsification could not: the discriminator between a
-well-formed universal framework and a vacuous one. It is not that one is more useful or cheaper,
-though both hold. \emph{It is whether attempting a counterexample has an outcome.} A framework nothing
-could fail to fit is a vocabulary and should be assessed as one; a framework something could fail to
-fit is a theory about what exists, and is answerable in the only direction such a theory can be.
+And that supplies what Section~\ref{sec:risk} said falsification could not.
+
+\begin{proposition}[The discriminator]\label{prop:discriminator}
+What separates a well-formed universal framework from a vacuous one is not that one is more useful or
+cheaper, though both hold. It is whether \emph{attempting} a counterexample has an outcome. A
+framework nothing could fail to fit is a vocabulary and should be assessed as one; a framework
+something could fail to fit is a theory about what exists, and is answerable in the only direction
+such a theory can be.
+\end{proposition}
 
 The test has to be stated as \emph{attempt} rather than as \emph{conceive}, because the conceivability
 reading gets the most basic case backwards. Put a counterexample to the relational claim and the
@@ -835,7 +940,7 @@ anything, while putting one here returns a determinate nothing. \emph{I tried an
 a different result from \emph{there was nothing to try}, and the difference is what this section's
 discriminator is for.
 
-\emph{What a question does, stated as the operation it is.} This section and the companion on mind hold
+\emph{What a question does, stated as the operation it is.} This section and the mind companion hold
 the two halves of one thing and have not put them together. Here: a question fixes a frame's aperture
 and its change grammar, and therefore what will count as residual at all, while the answer is a
 realisation within what was fixed. There: a realisation is not the receipt of new information but the
@@ -848,7 +953,8 @@ follows without anything further being added.
 Two things follow that are worth having. The first is why questions are cheap and productive at once:
 the residual a good question exposes was already there and already paid for, so what the question costs
 is one write and what it returns is everything that write makes readable. The second is that the
-\emph{am I the one in the wrong here} case of the companion is not an analogy for this but an instance
+\emph{am I the one in the wrong here} case of the mind companion (Remark~\ref{MS-rem:realisation}) is not an analogy for this but an
+instance
 of it, differing only in that the frame is asking about itself --- which is why it arrives as a moment,
 the aperture having been excluding until it could not.
 
@@ -875,10 +981,10 @@ account outright. That is where a counterexample would come from, and it is why 
 And the universality is \emph{load-bearing} in a specific and limited way: the transfer claims this
 programme makes are about its economics, so what they require is that the economics range widely, not
 that every clause of the account be a strict universal --- which the conclusion denies of the
-write-economics itself. The objection has identified the feature the account is built on and called it a defect.
+write-economics itself (Remark~\ref{GE-rem:writeability}). The objection has identified the feature the account is built on and called it a defect.
 
-There is no need to argue the point further here, because it is already the substrate paper's primary
-commitment: the composition falsifier states that the account fails if its structure is recoverable
+There is no need to argue the point further here, because it is already Graphic Equalisation's primary
+commitment (Section~\ref{GE-sec:falsifiability}): the composition falsifier states that the account fails if its structure is recoverable
 across unrelated domains \emph{only} because a sufficiently general vocabulary can be applied to
 anything. The objection is not a rebuttal to be deflected. It is the test, stated by the account, in
 the account's own words, and left open.
@@ -887,7 +993,8 @@ The triviality objection is one instance of something that has held of nearly ev
 programme, and stating the general form is more useful than answering the instances one at a time.
 \emph{The same claim is both trivial and consequential}, and this is neither a paradox nor a rhetorical
 posture --- it is what the account predicts of a correct compression at large scope, and it has three
-separate derivations already given above. A cheap cut looks like a joint once found, so a good
+separate derivations already given above. A cheap cut looks like a joint once found
+(Hypothesis~\ref{GE-hyp:cheap-cut}, Proposition~\ref{GE-prop:convergence-observed}), so a good
 compression reads as inevitable in retrospect. The unmarked half of a distinction goes unnamed because
 naming it does no local work for anyone. And a description that is right reads as obvious, recognition
 being the success condition for description rather than an embarrassment about it.
@@ -897,11 +1004,12 @@ judgement and consequential is a cross-frame one}: held, the thing follows immed
 nobody; transferred, it changes what other frames can represent and do. Those are measured in different
 frames, so a claim of conflict between them would have to be made from a third --- which does not
 vindicate the pairing, and establishes only that its two halves are not each other's counterexample.
-That is the substrate account's in-frame/cross-frame discipline applied to the reception of its own claims, and is the same reason the value of a disclosure is
+That is Graphic Equalisation's in-frame/cross-frame discipline applied to the reception of its own claims, and is the same reason the value of a disclosure is
 relative to whoever receives it.
 
 The guard is that this signature is necessary and not sufficient, and stating it requires care because
-the obvious phrasing imports a dichotomy the substrate paper's founding axiom forbids. A framework is not
+the obvious phrasing imports a dichotomy Graphic Equalisation's founding axiom
+(Axiom~\ref{GE-ax:no-view}) forbids. A framework is not
 \emph{right} or \emph{wrong} --- those would be verdicts from no frame. \emph{Newton was not wrong.}
 Newtonian mechanics is exact within its range and is still used; what relativity did was locate its
 boundary, not refute it, and a framework that is superseded has had its edge found rather than been
@@ -916,75 +1024,11 @@ something that does not cohere, and the residual locates the edge.
 One hazard follows from all of this and should be named, since it is how frameworks of this kind
 usually die. The prohibitions are what keep the claim from being a vocabulary, so relaxing any of them
 to accommodate an awkward case does not cost a detail --- it moves the whole account toward the trivial
-reading the objection describes. Every such relaxation in the substrate paper is therefore marked as one.
-
-What this does not supply should still be said. Per-choice quality is assessable; \emph{ordering}
-optimality is not, since a sequence of individually well-localising choices may still have been
-available in a better order. The position is therefore narrower than a bare appeal to the
-counterfactual and better than it: each choice can be graded from the record, the sequence as a whole
-cannot, and the part that is gradeable has not been tabulated.
-
-Two further gaps, both specifiable. ``An order of magnitude in reasoning and efficiency'' has no
-operationalisation here --- tokens per solved task on a shared benchmark would be one, and no such
-comparison has been run. And the conditional's own premise supplies compute, which means the
-counterfactual that matters is the same expenditure without this substrate, and that control does not
-exist.
-
-What survives unchanged is the argument above it, which never depended on the motivation. Whatever its
-status as a prediction, the upper bound remains a claim about other frames' absorption and is not
-assessable from here.
-
-The asymmetry is characteristic and should not be mistaken for a licence. An interval that includes
-large values does not make the large reading available --- it makes it \emph{unsupported}, which is a
-different thing that is easy to elide when the numbers are flattering. What would narrow it is already
-specified above: pre-registered tasks with blind assessment, denominators conditioned per frame, effort
-costed per capability against acquisition order, and an audit of the transfers that failed. None of
-that is exotic and none of it has been done.
-
-The standard held to here is therefore not that the differential is large, or that it
-is established. The limitations are stated with the claims.
-
-
-The trajectory claim has since been quantified, and the result is that \emph{it is true in one reading
-and false in another, with the answer flipping on a modelling choice this paper had not made}. Taking a
-capability to be a shipped seed with its own tests, and counting the acquisition order across two
-hundred and thirty-eight of them: the number of \emph{new primitive kinds} required per capability falls
-from $0.24$ over the first hundred and forty-two to \emph{zero} over the last ninety-six, intervals
-separated, with the five most recently entered domains requiring none at all while composing more held
-structure than earlier ones did. That is the predicted shape, measured.
-
-The volume reading does not agree. Total implementation code grows linearly throughout with no
-saturation, and the marginal code per capability returns to founding-era levels whenever a new domain is
-entered. So structural cost falls to zero and volume cost does not fall at all, and which of the two
-\emph{is} ``the cost of the $N$th capability'' is a choice rather than a finding. The honest report is
-both numbers and the statement that the account did not specify which it meant.
-
-Three further results bound the favourable one. Nearly half the primitives introduced have \emph{no consumer in any seed}, so the growth of the
-primitive set and the composition of it are not the same story --- one exception is large and real, a
-decode primitive used by eighteen seeds across eight domains over fifty-four days. Rework \emph{rises}
-with acquisition order rather than falling, with later capabilities revised more often than early ones
-despite less exposure. And the confound that cannot be removed from this data has a name now: the same
-period saw the author's assistance improve substantially, so a falling cost per capability is not
-separable from a falling cost of assistance without a second builder. The attribution is arguable, since a competent engineer might have
-reached the same two changes without the framework and the prereg records only that the prediction
-preceded the result. The frame measured is an implementation and not a reader, so nothing here
-transfers to what these papers do for a person. And it is the same hand throughout, which the substrate paper's
-own rule disqualifies as independent support exactly as it disqualifies the computing case.
-
-\medskip
-Three debts, stated rather than deferred. The comparison against a named rival framework has not been
-run here. This paper does not itself compile the record described above; the groundings do that,
-severally. And the implementation's own failures --- the sharpest evidence available under this
-section's argument --- sit in an engineering history that is not published with these papers, so
-neither they nor the figures quoted above can currently be checked by a reader. Publishing that record
-is the single change that would move most of the estimate above from assertion to evidence. What follows is therefore two kinds of thing and the reader should
-hold them apart. The substrate risks little by design, which is the claim just made. The
-\emph{groundings} carry the risk, and the substrate paper's commitments that bear on them are falsifiable in the
-ordinary sense.
+reading the objection describes. Every such relaxation in Graphic Equalisation is therefore marked as one.
 
 \section{Modal clothing, and how to check for it}\label{sec:modal}
-One habit is worth naming because it is easy, invisible in the writing, and was caught three times in
-this corpus within a day. An empirical regularity gets written in modal clothing: \emph{the substrate
+One habit is worth naming because it is easy and invisible in the writing. An empirical regularity
+gets written in modal clothing: \emph{the substrate
 forbids} for \emph{nobody has found}, \emph{cannot} for \emph{does not, in every case measured},
 \emph{impossible} for \emph{unattested}. The cost is not stylistic. A regularity stated as a
 prohibition acquires a quantifier over everything, which in an account with an unbounded frontier and
@@ -997,37 +1041,25 @@ it is a record, the honest form names the record --- \emph{every frame anyone ha
 modal form is an overreach that costs the claim its test. If it is an argument, the modal form is
 correct and the argument should be cited at the site.
 
-The corpus has this right in most places and got it wrong in one cluster, which is the useful part of
-the observation. The physics companion had already made the correction independently and left it
-visible --- \emph{so ``impossible'' was the wrong word twice over} --- while the three failures were all
-in economics material written in a single day. The lesson is not that the discipline was missing. It is
+The corpus has this right in most places and wrong in one cluster, which is the useful part of the
+observation. The physics companion states the correction in its own terms --- \emph{so ``impossible''
+was the wrong word twice over} (Section~\ref{PH-sec:entanglement}) --- while the failures sit in
+material that did not inherit it. The lesson is not that the discipline was missing. It is
 that new material does not inherit a discipline established elsewhere unless someone carries it across,
 which is the same defect as a repair applied at the site of an objection and not swept.
 
 \section{This paper's own commitments}\label{sec:own-commitments}
-A paper arguing about what an account may be held to should be held to something, and this one carried
-no commitments at all while naming a claim as the one worth testing. That is the defect it spends its
-length describing, committed by the document describing it, so the list is owed here.
+A paper arguing about what an account may be held to should be held to something. Naming a claim as
+the one worth testing and committing to nothing is the defect this paper spends its length
+describing, so the list is owed here.
 
 \begin{enumerate}[leftmargin=*]
 \item \textsc{[shape]}~\textbf{The $N$th capability costs less than the first.} The claim named above
 as worth testing, stated so that it can fail. It fails if, over a record of capability additions
 sequenced without regard to this account, the structural cost of the $N$th does not fall as $N$ grows
 --- where \emph{structural cost} is the count of new primitives a capability requires that no existing
-one supplied, fixed here rather than chosen afterwards. The ambiguity reported above --- cost falling to zero on
-one reading and not at all on the other --- is resolved in that direction here, and the limit of that
-repair has to be stated or the repair claims more than it does. The numbers are on the preceding page,
-so this definition is fixed \emph{after} seeing them and is prospective only: it covers the next
-record and not the one reported here, which remains a result whose reading was chosen with the answer
-visible. Three terms in it also need operationalising before the count is a measurement rather than a
-policy --- \emph{primitive}, \emph{capability}, and above all \emph{requires}, which is counterfactual
-while what gets counted is what a builder added. This paper's own audit shows the gap, reporting that
-nearly half the primitives introduced have no consumer in any seed; and a builder following the
-project's standing rule to compose rather than mint drives the count down by discipline rather than by
-substrate economy, which is a confound closer than the assistance one named earlier. Finally, the
-record demanded here --- capability additions sequenced without regard to this account --- is not the
-record this paper has, since that one is the same hand throughout and disqualified for exactly the
-reason stated above. The commitment is therefore live for a future record and not for this one.
+one supplied. The ambiguity reported above --- cost falling to zero on one reading and not at all on
+the other --- is resolved in the structural direction here.
 \item \textsc{[shape]}~\textbf{Usefulness does not substitute for falsification.} Fails if this
 paper's own argument --- that a framework earns its place by what it lets a builder do rather than by
 surviving a test --- is used anywhere in this corpus to decline a test that was available. The
@@ -1038,13 +1070,32 @@ engineering record, when published, does not contain the measurements this paper
 then every figure here is an assertion, which the paper says throughout and repeats in the debts above.
 \end{enumerate}
 
-\noindent The list of prohibitions above once carried \emph{cost attaching to the write} as a fifth
-member and no longer does. The substrate paper excludes it from its single prohibition, on the ground
+\noindent That resolution has a limit and two debts, and both have to be stated or the first
+commitment claims more than it does.
+
+\emph{It is prospective only.} The numbers are above, so the definition is fixed \emph{after} seeing
+them: it covers the next record and not the one reported here, which remains a result whose reading
+was chosen with the answer visible. And the record the commitment demands --- capability additions
+sequenced without regard to this account --- is not the record this paper has, since that one is the
+same hand throughout and disqualified for exactly the reason stated above. The commitment is
+therefore live for a future record and not for this one.
+
+\emph{Three of its terms are not yet operationalised}, and until they are the count is a policy rather
+than a measurement: \emph{primitive}, \emph{capability}, and above all \emph{requires}, which is
+counterfactual while what gets counted is what a builder added. This paper's own audit shows the gap,
+reporting that nearly half the primitives introduced have no consumer in any seed; and a builder
+following the project's standing rule to compose rather than mint drives the count down by discipline
+rather than by substrate economy, which is a confound closer than the assistance one named earlier.
+
+\noindent \emph{Cost attaching to the write} is not among the prohibitions above. Graphic
+Equalisation excludes it from its single prohibition (Proposition~\ref{GE-prop:prohibition}), on the
+ground
 that folding it in would be the over-unification that section warns against. It stays in this paper's
 argument as part of what keeps the account from being a vocabulary; it is not among the things the
 account forbids. Note that being \emph{derived} would not by itself settle this --- a derived
-constraint on what is possible is still a constraint, which is why the substrate paper keeps a
-falsifier for the write-economics regardless of where it sits in the ledger.
+constraint on what is possible is still a constraint, which is why Graphic Equalisation keeps a
+falsifier for the write-economics (Remark~\ref{GE-rem:writeability}) regardless of where it sits in
+the ledger.
 
 \begin{thebibliography}{99}
 \itemsep=2pt

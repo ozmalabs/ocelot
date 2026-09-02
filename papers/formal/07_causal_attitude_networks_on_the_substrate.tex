@@ -1,9 +1,13 @@
 \documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,hyperref,enumitem,microtype}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,enumitem,microtype}
 \usepackage[margin=1in]{geometry}
 \usepackage{natbib}
+\usepackage{xr-hyper}
+\usepackage{hyperref}
+\externaldocument[GE-]{01_law_of_graphic_equalisation_theory_referenced}
+
 \newtheorem{definition}{Definition}[section]
 \newtheorem{proposition}[definition]{Proposition}
 \theoremstyle{remark}
@@ -11,65 +15,164 @@
 
 \title{Causal Attitude Networks on the Substrate\\\large What Moved, What Did Not, and What the Mean Field Costs}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-09-02.1}\\[2pt]2 September 2026 \textbullet\ document revision 1}
+\date{\textbf{Draft \textemdash\ draft-2026-09-02.1}\\[2pt]2 September 2026 \textbullet\ document revision 2}
 
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r1}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r2}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r1}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r2}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-09-02.1 r1} (2 September 2026).
-Circulated for comment, not as a finished result. This paper reports a migration that is
-\emph{partial} and says where it stops. Sections marked as falsifiability commitments are the
-intended points of attack.}}
+\textbf{DRAFT --- draft-2026-09-02.1 r2} (2 September 2026).
+Circulated for comment, not as a finished result. \textbf{This revision reports the programme's record
+to 14 August 2026}; its first revision reported the same record as it stood on the morning of
+13 August, and the record moved past all three of that revision's findings within two days. Every
+remark below therefore carries the date of the rung it reports. Two of the first revision's five
+falsifiability commitments have fired against the record; both are reported as fired. Sections marked
+as falsifiability commitments are the intended points of attack.}}
 \end{center}
 \vspace{1em}
 
 \begin{abstract}
 The Causal Attitude Network \citep{dalege2016} models an attitude as an Ising-family network of
-interacting evaluative components. It was reimplemented on this substrate as a mean-field
-self-consistency solver and run. Three things are reported and only one of them is a success. The
-\emph{alignment} is incomplete in a specific and locatable way: the dynamics have no term surface in
-the substrate's own vocabulary, so the model runs beside the graph rather than in it. The
-\emph{performance} question turns out not to be the complexity one it appears to be. And of two
-registered predictions, one is confirmed with a large effect and a control, and one is
-\emph{reversed} --- reported as measured rather than reinterpreted.
+interacting evaluative components. It was reimplemented on this substrate \emph{twice}: first as a
+hosted mean-field self-consistency solver running beside the graph, then --- one day later --- as
+graph rules over graph data, in the existing vocabulary and with no new primitive in the compiled
+runtime. Five findings are reported and two of them correct this paper's own earlier revision. The
+\emph{alignment} claim, that the dynamics had no term surface, has failed: they have one, and the
+remaining boundary is consumer-side and about scope. The two-cycle oscillation reported as a
+property of the borrowed mathematics was a property of the update schedule, and vanishes on every one
+of $126$ re-tested cells under damping. The \emph{performance} question is still not the complexity
+one it appears to be, and the ladder above mean field has now been climbed: approximate propagation
+in both variants, with a two-sided result and a $20$--$200\times$ cost, and exact inference where the
+treewidth permits it. Of two registered predictions, one is confirmed with a large effect and a
+control, and one is \emph{reversed} --- and survives its own solver correction in direction while
+losing it in magnitude. All of this is reported as measured rather than reinterpreted.
 \end{abstract}
 
-\section{What was moved, and what a move would mean}\label{sec:moved}
+\section{What was moved, what a move would mean, and on what standard}\label{sec:moved}
 An attitude in the CAN model is a network of evaluative components with pairwise couplings and
 external fields, and its behaviour is the behaviour of an Ising system: relaxation toward low-energy
 configurations, frustration where couplings conflict, and a temperature-like parameter governing how
-sharply it settles. The reimplementation supplies that as a solver on the graph, exposed to the host
-and driven by seed-resident network data.
+sharply it settles.
 
 \emph{Moving a formalism onto this substrate means more than making it run there.} The substrate's
-claim is that decisions are taken by graph rules over graph data; a model that computes its result in
-a compiled routine and hands back an answer has been \emph{hosted}, not moved. The distinction is the
-whole of the alignment question below, and it is not rhetorical: the two cases differ in what can
-subsequently be inspected, mutated, minted and reasoned over by the rest of the account.
+claim --- the substrate is the one set out in \emph{The Law of Graphic Equalisation --- Theory}
+(referred to below as Graphic Equalisation) --- is that decisions are taken by graph rules over graph
+data; a model that computes its result in a compiled routine and hands back an answer has been
+\emph{hosted}, not moved. The distinction is the whole of the alignment question below, and it is not
+rhetorical: the two cases differ in what can subsequently be inspected, mutated, minted and reasoned
+over by the rest of the account. It is also the criterion that decides Remark~\ref{rem:native}, and
+the criterion was met after this paper's first revision said it had not been.
 
-\section{Alignment: the dynamics have no term surface}\label{sec:alignment}
-Fifteen rules written against the network were inert. The obvious diagnosis --- missing or malformed
-match clauses --- is not the reason.
+\paragraph{The standard, stated once.} Every figure below is a \emph{measurement} reported from this
+programme's own record rather than from a published source. What is offered is a pre-registered
+implementation record which is not circulated with these papers, and it is a claim a reader may
+decline to credit on exactly the terms Graphic Equalisation sets for the same case. Each rung of that
+record fixes its own commit, seed and sample before it runs, and reports what was compared, what was
+found, and the scope the run holds under; it names no implementation identifiers, and neither does
+this paper. The standard is not re-disclaimed at each remark. What each remark does carry is the
+\emph{date} of the rung it reports, because the defect this revision repairs was a dating one.
 
-\emph{There is no DSL term surface for the dynamics at all.} The relaxation exists only across a
-host-language boundary, so a rule cannot express it, cannot be matched against it, and cannot mint
-against it. The rules were not broken; there was nothing for them to be written in terms of. That is
-a structural finding about the migration rather than a defect in fifteen rules, and it is why this
-paper describes the move as partial.
+\section{Alignment: reimplemented twice}\label{sec:alignment}
+The model arrived as a hosted solver: a compiled mean-field self-consistency routine, exposed to the
+host and driven by seed-resident network data. The rules written against it did nothing, and the
+reason was worth having.
 
-One rule was then wired with real match, where and effects clauses using only the existing term
-vocabulary, and works on the production path. \emph{So the boundary is not a wall}, and the correct
-statement is the narrow one: what has been moved is the network's data and its results, not its
-dynamics, and moving the dynamics is available work rather than blocked work.
+\begin{remark}[The hosted stage, and the null that dated within a day]\label{rem:hosted}
+\emph{(Record of 13 August 2026.)} Fifteen rules written against the network were inert, and the
+obvious diagnosis --- missing or malformed match clauses --- was not the reason. There was no term
+surface for the dynamics at all: the relaxation existed only across a host-language boundary, so a
+rule could not express it, could not be matched against it, and could not mint against it. The rules
+were not broken; there was nothing for them to be written in terms of. Exactly one of the fifteen
+described the \emph{recognition} half rather than the update half, and that one was wired with real
+match, where and effects clauses using only the existing term vocabulary; it works on the production
+path. \emph{So the boundary was not a wall}, and the narrow statement that followed --- what had moved
+was the network's data and its results, not its dynamics --- was true for about one day.
+\end{remark}
+
+\begin{remark}[The dynamics are native, and two engine findings came with them]\label{rem:native}
+\emph{(Record of 13 August 2026.)} The update was then expressed in the existing term vocabulary as
+five rules and four admissibility productions, with \emph{no new primitive added to the compiled
+runtime}: eight tests, three of them live demonstrations with measured numbers. A concept's local field is the sum of its two field attributes and the coupling-weighted
+states of its neighbours; a single rule commits the thresholded value of that field --- three-valued,
+with a neutral band --- whenever it differs from the state held. The update is asynchronous by the
+engine's own execution model rather than by arrangement: one binding is applied and committed per
+pass, and the next match reads the graph as it now stands. Across twenty draws per condition it failed
+to converge on \emph{none}, in either vocabulary and under either state alphabet, where the continuous
+synchronous relaxation oscillated on $12/20$ coarse and $4/20$ fine draws. For the two-valued case the
+absence of a cycle is structural rather than observed --- every committed flip strictly decreases a
+bounded energy --- and for the three-valued case it is an empirical fact on these draws and is
+reported as one. This is the criterion Section~\ref{sec:moved} gives for \emph{moved} rather than
+\emph{hosted}, and it is met.
+
+Two engine-level findings were made and corrected while building, and both belong to the machinery
+rather than to the model. \emph{First}: where sibling rules compete to update the same kind of node,
+the pass scheduler lets the first with a replenished candidate pool take every pass and starve the
+others indefinitely. It presented as non-convergence and was diagnosed as its opposite --- nodes
+frozen at their initial value, the system already at a reachable fixed point it could not reach ---
+and was fixed by collapsing the sign branches into one rule that computes its target. \emph{Second}:
+the decoder's search prefers a redundant composite explanation to a clean single exact match at equal
+coverage, because a coverage tie is broken on accumulated fit rather than on fewest parts. That is an
+Occam violation in a tie-break; it was worked around by scoping the codebook to one candidate at a
+time, and is reported rather than fixed.
+\end{remark}
+
+\paragraph{What still runs compiled, and the one reason.} Of the six consumers remaining after that
+build, two were migrated and four were not --- and the four share \emph{one} confirmed cause, not the
+three separate ones an earlier audit had named. The rule engine has no per-network scope: firing it on
+behalf of one network advances every other network in the graph, confirmed directly rather than
+argued, by watching an untouched network's state move from $0$ to $1$ across a call made for a
+different one. Every consumer built as a loop over networks in the host therefore cannot fire a native
+rule without corrupting the networks its loop has not yet reached, and deciding when the engine should
+fire relative to such a loop is a question this arc never set out to answer and did not. Sixteen
+compiled functions were audited for removal and none was removed, because each still has at least one
+real consumer --- the migrations are gated rather than unconditional, so both paths stay live. Across
+the arc's full seven consumers: two fully native, one partly, four still compiled.
+
+\section{The solver: what the oscillation turned out to be}\label{sec:solver}
+
+\begin{remark}[The oscillation was the update schedule, and the record found it]\label{rem:found}
+\emph{(Record of 13 August 2026.)} What was observed is not in doubt and reproduces exactly. On a
+fixed eight-node draw with a fixed nonzero field per node and a fixed start, the relaxation returns
+different states at $400$ and $401$ iterations (opposite-parity gap $5.615746$) and the same state at
+$400$ and $402$: a persistent period-2 cycle against a same-parity control. This paper's first
+revision reported that as a genuine binary between cohering and failing to cohere --- an operation
+that either resolves or returns a determinate nothing --- already present, unexploited, in the
+borrowed model's own mathematics, and so as an instance of the claim that such failure comes in one
+manner and not in kinds (Graphic Equalisation, Proposition~\ref{GE-prop:decoherence-one}).
+
+\emph{It was the update schedule.} The relaxation iterated
+$\sigma_i \leftarrow \tanh\!\big(\beta(\sum_j J_{ij}\sigma_j + h_i)\big)$ fully synchronously --- every
+node's update in a sweep reading the previous sweep's state --- which is the textbook source of
+period-2 limit cycles in this family; a second, byte-identical copy of the same iteration was found in
+a sibling routine that the theoretical audit preceding the fix had not named. Blending each freshly
+computed value with its own prior value, at a factor registered in advance rather than tuned against
+these networks, makes the same draw converge cleanly (gap $0.000000$); setting that factor to $1$
+reproduces the old numbers bit for bit on the same binary. The before and the after are one draw and
+one code change apart, not two experiments. Blending cannot move or remove a fixed point, only the
+trajectory to one, which is why nothing that already converged changed --- and why the damped fixed
+point is a nearby genuine one rather than the average of the old cycle's two phases, exactly as a
+frustrated network with several fixed points should give.
+
+The elimination is total across everything re-tested: $126$ cells --- the original 24-trial registered
+sweep, previously $6/12$ and $8/12$ oscillating by condition; a 30-cell sharpening previously up to
+$100\%$ oscillating at $N=32$; and a 72-cell extension past the registered scope to $N=64$ and
+$\beta=4.0$ --- converge cleanly, every one, gap exactly zero. So the correction is precise, and it is
+the useful part of the whole arc: \emph{the binary this account has elsewhere was not present in the
+borrowed mathematics; what was present was a Jacobi iteration.} What is \emph{not} established is the
+general claim. No scheduling-independent failure to converge was found anywhere this search looked,
+and that is a bounded negative --- complete graphs only, $\beta \le 4.0$, $N \le 64$, one initial
+condition per trial --- rather than a proof that none exists. One later rung of the arc still calls
+the binary real and confirmed again; it ran on the uncorrected solver, and re-running its sweep under
+the corrected one is named in the record as a follow-on it did not perform.
+\end{remark}
 
 \section{Performance: the complexity question is the wrong one}\label{sec:performance}
 The natural objection to putting an Ising model anywhere is that its ground-state problem is hard.
@@ -78,45 +181,101 @@ The natural objection to putting an Ising model anywhere is that its ground-stat
 \emph{with} a field, and the three-dimensional problem either way, is NP-hard. Every network here
 carries a nonzero field, so the hard case is the relevant one.
 
-\emph{And it does not bind, because no exact ground state is being sought.} The solver computes a
-mean-field self-consistency fixed point --- polynomial per iteration, unconditionally, at every
-network size. The actionable question is therefore not whether this scales exactly, since no
-algorithm does and none is attempted, but how good the approximation is and when it fails to
-converge at all.
+\emph{And it does not bind, because no exact ground state was being sought.} The hosted solver computes
+a mean-field self-consistency fixed point --- polynomial per iteration, unconditionally, at every
+network size. The actionable question was therefore never whether this scales exactly, but how good
+the approximation is and when it fails to converge. That question now has an answer, and the answer
+sharpens rather than removes the point: exact inference \emph{is} now sought, where the treewidth
+permits it, and refused where it does not.
 
-\begin{remark}[The weakest member of a hierarchy that was borrowed whole]\label{rem:hierarchy}
-Mean field is the first and weakest step of a known ladder --- mean field, then Bethe and loopy
-belief propagation, then Kikuchi and generalized belief propagation \citep{yedidia2005} --- and it is
-weakest \emph{precisely} in the regime of loops, strong local correlation and frustration. That is
-the regime this implementation's own frustration and basin audits exist to detect, so the
-approximation is thinnest exactly where the measurement is aimed.
+\begin{remark}[The ladder, climbed]\label{rem:hierarchy}
+\emph{(Record of 14 August 2026.)} Mean field is the first and weakest step of a known ladder --- mean
+field, then Bethe and loopy belief propagation, then Kikuchi and generalized belief propagation
+\citep{yedidia2005} --- and it is weakest \emph{precisely} in the regime of loops, strong local
+correlation and frustration, which is the regime the frustration and basin audits exist to detect.
+This paper's first revision observed that an entire coherent piece of statistical-mechanics vocabulary
+had been borrowed while the better half of the same literature sat one step away unused, with a caveat
+attached: Bethe and loopy propagation are themselves known to lose stable solutions in the same
+frustrated, field-bearing, low-temperature regime. The step was then taken, and the caveat was tested
+rather than repeated.
 
-The honest form of that observation is not that a mistake was made. \emph{An entire coherent piece of
-statistical-mechanics vocabulary was borrowed, and the better half of the same literature is sitting
-one step away unused.} A caveat comes with it and is not decoration: Bethe and loopy propagation are
-themselves known to lose stable solutions in the same frustrated, field-bearing, low-temperature
-regime, so the ladder's next rung is an improvement and not a cure.
+\emph{Loopy propagation, both variants.} Max-product is the theoretically appropriate one here,
+because everything else in this toolbox is organised around a joint configuration rather than a
+per-node marginal; on the dense frustrated case it is never worse than sum-product across eight draws,
+and on every draw where it converges it ties or beats a twenty-restart search. Its convergence
+reliability then \emph{inverts across topology}: it converges on $5$ of $8$ dense adversarial draws but
+only $4$ of $15$ real sparse ones --- the opposite of the naive expectation that sparser is easier ---
+and the cause was measured rather than left as an anomaly, a sustained period-4 message oscillation
+traced to one structural 3-cycle plus small-integer weights producing exact ties between candidate
+scores. Sum-product converges everywhere ($15$ of $15$) and to worse joint states (mean frustration
+$2.142$ against $1.693$ for the restart search): the textbook warning that a marginal argmax is not a
+good joint configuration, measured here rather than cited. Neither variant reliably beats the restart
+search on the deployed networks, and both cost $20$--$200\times$ its wall-clock per solve. So the
+caveat held where it was aimed, and was not the whole story: the worse convergence is on the sparse
+networks, where it predicted none.
+
+\emph{Exact inference, where the width permits.} Off that ladder rather than on it, exact minimum-energy
+inference by clique-tree message passing was built for low-treewidth networks. It agrees with literal
+brute-force enumeration on five real networks, float-tight, and cross-checks against the same energy
+function every other consumer uses; it refuses cleanly on the case whose treewidth is $15$, in under
+two milliseconds and without mutating anything, rather than attempting an exponential search; and on a
+real cycle-topology network it finds a strictly lower-energy state ($-5.743$ against $-5.102$) than
+twenty random restarts. That last is the concrete content of what ``exact'' buys: a widened search
+finds the best of the basins its restarts land in, and this does not search basins at all.
+
+\emph{Tractability, measured.} The restart search exists because local-minimum risk was measured
+first, and not only on the adversarial case: $14$ of $30$ real deployed networks ($46.7\%$) show
+nonzero spread across twenty starts, so a sparse near-tree topology does not by itself guarantee a
+benign landscape. Treewidth was measured exactly on both graphs --- $2$ for the real template, $15$
+for the dense stress case --- which is what decides where exact inference applies at all. And the real
+coupling matrix has effective rank $\approx 1.98$ of $5$: the couplings this model carries are
+substantially less independent than their count suggests.
 \end{remark}
 
 \section{Results}\label{sec:results}
 
-\begin{remark}[The registered scaling prediction is reversed]\label{rem:null}
-The primary registered prediction --- that coarse quantization would yield fewer distinct basins than
-fine, with the gap widening in network size --- \emph{is not confirmed, and the measured direction is
-closer to reversed}. Coarse yields \emph{more} distinct basins ($6$ against $4$ at $N=4$; $15$
-against $4$ at $N=8$), a higher entropy-weighted effective basin count, and higher mean frustration
-($2.10$ against $1.55$ at $N=4$; $15.32$ against $11.06$ at $N=8$). At $N=16$ the two conditions
-converge to near-parity on every measure.
-
-The manipulation check holds throughout --- coarse quantization does produce larger per-edge
+\begin{remark}[The registered scaling prediction is reversed, and its magnitudes moved]\label{rem:null}
+\emph{(Record of 13 August 2026.)} The primary registered prediction --- that coarse quantization would
+yield fewer distinct basins than fine, with the gap widening in network size --- \emph{is not
+confirmed, and the measured direction is closer to reversed}. As first measured, coarse yields
+\emph{more} distinct basins ($6$ against $4$ at $N=4$; $15$ against $4$ at $N=8$), a higher
+entropy-weighted effective basin count, and higher mean frustration ($2.10$ against $1.55$ at $N=4$;
+$15.32$ against $11.06$ at $N=8$); at $N=16$ the two conditions converge to near-parity on every
+measure. The manipulation check holds throughout --- coarse quantization does produce larger per-edge
 representational error at every $N$ --- so the intervention worked and the prediction about its
 consequence was wrong. That is the useful shape of a null and it is reported here rather than
 reinterpreted into a different prediction that would have survived.
+
+Those figures were measured on the uncorrected solver of Remark~\ref{rem:found}. The reversal was
+subsequently replicated on five independent coupling draws per cell and the replicated cells re-run
+under the corrected one. \emph{The direction holds}: the effective basin count is higher for coarse at
+both sizes ($2.358$ against $2.145$ at $N=4$; $3.616$ against $2.088$ at $N=8$). \emph{The magnitudes
+do not}: frustration falls by roughly $7$--$10\times$ at $N=4$ and $2$--$2.5\times$ at $N=8$, and the
+effective basin count roughly halves, because restarts landing on different phases of an oscillation
+had been counted as distinct basins. And one sub-claim does not survive at all --- the concentration
+reading, that a coarse landscape is the less concentrated of the two, is gone at $N=4$ ($0.565$ against
+$0.560$) and reversed at $N=8$ ($0.405$ against $0.575$), which retires the gloss that coarse belief is
+the more easily knocked between alternatives. The single-draw frustration figures of the first
+paragraph were not themselves re-measured; the re-check ran on the replicated cells.
+
+Two further results the arc produced, both on the uncorrected solver and both carrying that caveat.
+\emph{A null}: there is no crossover network size anywhere in $\{4,8,12,16,24,32\}$ under a criterion
+registered in advance, on either the plain or the structured coupling design. The criterion never
+fires, and the pattern does not approach it --- the sign of the effective-basin gap flips three times
+across the six sizes. \emph{And the strongest positive result in the whole arc}, which is not about
+bin count at all: the sharpest resolution effect measured anywhere is the presence or absence of a
+\emph{neutral option}. A two-value vocabulary produces $1.6$--$2\times$ the frustration of every
+vocabulary with three or more values, at every size tested ($22.6$ against a $13.9$--$15.3$ band at
+$N=8$; $122.9$ against $48.4$--$61.9$ at $N=16$; $501.3$ against $246.9$--$275.2$ at $N=32$), while
+three through eleven values show no reliable ordering among themselves. Under the corrected solver
+this is the one earlier finding that does not merely survive but \emph{sharpens}, to $2.36\times$ at
+$N=8$ and $2.71\times$ at $N=16$. Removing the neutral option is not coarsening a scale; it is removing
+the representation's own way of declining to commit, and that is what the frustration is measuring.
 \end{remark}
 
 \begin{remark}[Resolution separates the basins, with a control that says so]\label{rem:bigville}
-A second registered run, on a population of simulated residents each carrying its own network at its
-own representational resolution, confirmed both of its predictions.
+\emph{(Record of 13 August 2026.)} A second registered run, on a population of simulated residents each
+carrying its own network at its own representational resolution, confirmed both of its predictions.
 
 The manipulation check is large: the coarse resident's mean rounding error is about $9.2$ times the
 fine resident's ($0.553$ against $0.060$). The primary prediction --- deliberately not the naive
@@ -132,33 +291,50 @@ reporting}: holding resolution fixed across the population collapses the trait-t
 correlation from $-0.33$ to $-0.08$, so resolution rather than some correlated trait is carrying it.
 \end{remark}
 
-\begin{remark}[A discriminative null was found, not built]\label{rem:found}
-The relaxation exhibits a genuine binary between cohering and failing to cohere: clean convergence in
-one regime, a persistent two-cycle oscillation in another, confirmed against a same-parity control.
-
-That shape --- an operation that either resolves or returns a determinate nothing --- is one this
-programme has elsewhere and did not put here. \emph{It was already present, unexploited, in the
-borrowed model's own mathematics.} What is \emph{not} established is the tempting next step: whether
-low resolution specifically drives the failure, as against the particular realised coupling draw, is
-a weak and noisy same-direction lean across two independent samples of $24$ and $40$ trials. It is
-reported as a lean and not as an effect.
-\end{remark}
-
 \section{Falsifiability commitments}\label{sec:falsifiability}
+Each commitment below is marked \textsc{[shape]} or \textsc{[detail]}. A \textsc{[detail]} failing is a
+revision: the account survives with that mechanism replaced. A \textsc{[shape]} failing costs
+\emph{range} rather than a mechanism, because what fails is something the substrate is claimed to
+require or to permit --- so the account does not hold where it claimed to, which is the more serious of
+the two and is still a boundary rather than an annihilation.
+
+Two of the five commitments made in this paper's first revision have \emph{fired} against the record
+this paper reports from. Both are recorded as fired and replaced below, not quietly removed.
+
 \begin{enumerate}[leftmargin=*]
-\item \textsc{[shape]}~\textbf{The migration is partial in the way stated.} Fails if the dynamics can
-be expressed in the existing term vocabulary without new term surface --- that is, if the fifteen
-rules were inert for an ordinary reason after all.
+\item \textsc{[shape]}~\textbf{The dynamics are native, and the remaining boundary is scope.} Fails if
+the native rules' results diverge from the hosted solver's on the same network, or if the per-network
+scoping cannot be enforced in rule matching. \emph{This replaces a commitment that fired.} The first
+revision committed that the migration was partial in the way it stated --- ``fails if the dynamics can
+be expressed in the existing term vocabulary without new term surface, that is, if the fifteen rules
+were inert for an ordinary reason after all.'' They can, and they were, one day after the stage that
+revision reported (Remark~\ref{rem:native}). The inertness diagnosis of Remark~\ref{rem:hosted} stands;
+the conclusion drawn from it does not.
 \item \textsc{[detail]}~\textbf{Resolution drives basin quality.} Fails if the frustration and energy
-separation survives holding resolution fixed, or if the population correlation does not collapse
-under that control.
+separation survives holding resolution fixed, or if the population correlation does not collapse under
+that control.
 \item \textsc{[detail]}~\textbf{The scaling prediction is reversed and not merely unconfirmed.} Fails
-if the basin counts recover the registered direction under a larger sample at $N=4$ and $N=8$.
-\item \textsc{[shape]}~\textbf{Mean field is the binding limitation, not complexity.} Fails if an
-exact solver at these network sizes changes the reported quantities materially, which would mean the
-approximation rather than the model was being measured.
-\item \textsc{[shape]}~\textbf{The oscillation is the model's and not the implementation's.} Fails if
-the two-cycle disappears under an equivalent solver written independently.
+if the basin counts recover the registered direction at $N=4$ and $N=8$ under a larger sample
+\emph{on the corrected solver}. The first revision's form of this commitment --- a larger sample on the
+uncorrected solver --- has been run and did not fire: five independent draws per cell hold the
+direction. It is restated here against the corrected solver, on which the direction also holds
+(Remark~\ref{rem:null}) and the magnitudes do not.
+\item \textsc{[shape]}~\textbf{Exact inference does not change what the separation says.} Fails if the
+frustration and energy separation of Remark~\ref{rem:bigville} does not survive exact clique-tree
+inference on the treewidth-2 networks where it applies. The first revision's form of this ---
+``fails if an exact solver at these network sizes changes the reported quantities materially'' --- had
+no instrument to fire against. It now has one (Remark~\ref{rem:hierarchy}), and running it against
+Remark~\ref{rem:bigville} is the one thing on this list not yet done.
+\item \textsc{[detail]}~\textbf{The oscillation is the solver's and not the model's.} Fails if a damped,
+asynchronous, or independently written solver reproduces a period-2 cycle on any of the $126$ re-tested
+cells. \emph{This replaces a commitment that fired.} The first revision committed, as
+\textsc{[shape]}, that ``the oscillation is the model's and not the implementation's --- fails if the
+two-cycle disappears under an equivalent solver written independently.'' It disappears under damping,
+on every cell re-tested (Remark~\ref{rem:found}). The replacement is \textsc{[detail]} because what is
+now claimed is a fact about one iteration scheme, not a shape the account requires.
+\item \textsc{[detail]}~\textbf{Max-product's convergence deficit on the sparse networks is the
+mechanism named.} Fails if breaking the tied candidate scores --- perturbing the small-integer weights
+--- does not restore convergence on the networks where the period-4 message oscillation was measured.
 \end{enumerate}
 
 \begin{thebibliography}{9}
