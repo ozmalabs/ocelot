@@ -21,19 +21,19 @@
 \newcommand{\Hist}{\mathcal{H}}
 \title{The Law of Graphic Equalisation --- Theory\\\large Minimal Recursive Dynamics, Collapse, Frame-Relative Identity, and Residual}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \texorpdfstring{\textemdash}{---}\ draft-2026-09-02.1}\\[2pt]2 September 2026 \texorpdfstring{\textbullet}{\textperiodcentered}\ document revision 277}
+\date{\textbf{Draft \texorpdfstring{\textemdash}{---}\ draft-2026-09-02.1}\\[2pt]2 September 2026 \texorpdfstring{\textbullet}{\textperiodcentered}\ document revision 278}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r277}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r278}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r277}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r278}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-09-02.1 r277} (2 September 2026).
+\textbf{DRAFT --- draft-2026-09-02.1 r278} (2 September 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -1335,6 +1335,18 @@ For a well-formed graph the rules rarely need to write against the standing stru
 Proposition~\ref{prop:economics} has a measured physical floor, and it is the strongest kind of evidence admitted here (a physical result settling an informational fact). Landauer's principle bounds below the energy dissipated by a logically irreversible operation \citep{landauer1961}; it is stated for erasure because erasure was the paradigm case studied. But under no-copy a substrate change destroys its predecessor unless it was paid to be kept, so change and irreversible operation coincide, and the Landauer bound is the floor cost of \emph{change} as such, with erasure merely its cleanest instance. That is the strong form of the claim and is not derived: an append-only rule is a change that is not irreversible, and nothing here forbids one, so what follows holds for the class of changes that discard, and that this class is the general one is itself part of what is claimed. Reversible computation is the confirming case rather than the exception: it reaches near-zero dissipation only by \emph{not} destroying its predecessors, i.e.\ by retaining the whole history \citep{bennett1973}, which is the paid copy of Proposition~\ref{prop:economics}. There is accordingly no free change under this economics (Remark~\ref{rem:writeability}) --- one either forgets and pays the energy floor or keeps and pays the storage floor --- and the thermodynamic arrow is the running total of these floors, which grounds the ``direction'' of Remark~\ref{rem:no-ratchet} physically: change dissipates irretrievably, so its costs accumulate one way.
 \end{remark}
 
+\begin{proposition}[Evaluation is a write, and free because information-preserving]\label{prop:evaluation-writes}
+A read is an operation that returns a datum; the returned datum has to be somewhere to be used, and in
+a substrate that is graph all the way down there is no return channel outside the structure, so the
+value materialises as structure and the write is the return. Evaluation is a write in that plain
+sense: a match outcome, a position in an ordering, and the fact of having tried are returned values,
+and returned values are structure. It is nonetheless unpaid, because it destroys nothing --- \emph{free}
+here means information-preserving rather than absent. What it costs does not follow from that: a rule's
+cost is set by whatever supplies its primitives and is inherited along provision, so reversibility is a
+structural fact about a map while cost is a fact about what supplies a primitive, and the two must not
+be run together.
+\end{proposition}
+
 \begin{remark}[Evaluation is a write, and that is why it is free]\label{rem:evaluation-writes}
 The economics above can be stated in a way that does not survive contact with the machinery, and the
 objection is worth answering rather than rewording. If running a rule that does not fire is a read,
@@ -1598,6 +1610,17 @@ which is the in-frame/cross-frame discipline of Section~\ref{sec:time-not-primit
 coherence verdict.
 \end{remark}
 
+\begin{proposition}[A handler relocates a failure; it does not close it]\label{prop:handler-relocates}
+A handler is installed policy that determines what a frame coheres a refused write to, and it can be
+set to cohere it to anything, including success. Swallowing does not undo the inadmissibility: the
+containing grammar still refused and the write still did not happen, so what is removed is the frame's
+\emph{record} of the refusal rather than the refusal. Detection is available and never free --- a frame
+holding a record of the attempt separately from the handler's report can compare the two --- but it is
+unavailable from the handler's own report, which is self-consistent by construction. The audit is
+therefore installed structure, and being itself a policy it is abusable in the same way one level in,
+so what its purchase buys is relocation rather than closure, terminating only in a containing frame.
+\end{proposition}
+
 \begin{remark}[A handler can be abused, and the abuse is invisible from inside]\label{rem:handler-abuse}
 If a handler decides what a frame coheres a failure to, it can be set to cohere it to anything,
 including success. Computing knows this as the swallowed exception --- the catch that discards what it
@@ -1630,6 +1653,17 @@ frame with most reason to detect this is the one whose own machinery is doing it
 fourth cost has this structure, and so does the presented-versus-produced divergence the companion
 paper on mind treats at the scale of one frame acting on another.
 \end{remark}
+
+\begin{proposition}[Termination propagates along supply, not containment]\label{prop:termination-supply}
+Being contained by something and being run by it are two relations, and they need not coincide.
+Termination propagates along the supply relation and not the containment relation: downward it need not
+reach at all, a container being able to stop while what it held runs on, and upward the supplier's stop
+is total, at whatever containment distance and with no handler available, since the operations a
+handler would run are the ones withdrawn. This splits the dependents of a stopped structure into three
+kinds rather than two. A dependent that merely \emph{refers} to it is left dangling and keeps running,
+wrongly; a dependent \emph{wholly run by} it simply stops; and a dependent only \emph{partly} supplied
+by it keeps running with an incomplete operation set, and its behaviour is undefined.
+\end{proposition}
 
 \begin{remark}[Termination propagates along supply, not containment]\label{rem:supply-not-containment}
 A consequence of primitives not exposing their provenance (Proposition~\ref{prop:runner-opaque}) that
@@ -1677,6 +1711,16 @@ one's way out of this, and it is worth noting that it is a purchase: the \emph{u
 partially supplied frame is not graceful, it is undefined.
 \end{remark}
 
+\begin{proposition}[A boundary is known only by crossing it]\label{prop:boundary-by-crossing}
+A frame that never fails discloses nothing about what it admits. Admissibility is invisible from inside
+its own range, since everything works, and the boundary is legible only where it is crossed --- so the
+way to learn a rule is to force the failure and read the residual. The test and the change are
+accordingly the same operation: knowledge of a boundary is bought by crossing it, and there is no
+cheaper instrument. It follows that every handler installed reduces what failure can teach, a frame
+that coheres its failures to tidy values reporting success and disclosing nothing, so that robustness
+and legibility are traded against one another rather than being two names for quality.
+\end{proposition}
+
 \begin{remark}[Forcing a failure is the instrument, and handlers blunt it]\label{rem:failure-instrument}
 Remark~\ref{rem:handler-abuse} treats a caused failure as a way of choosing an outcome. The same act
 has a second use which is not abuse at all, and it is how most of what is known about any grammar was
@@ -1709,6 +1753,17 @@ rather than being two names for quality. That the same system is customarily mad
 and quiet in production is this trade made deliberately --- two frames wanting opposite policies over
 identical structure, for the reason given here rather than by convention.
 \end{remark}
+
+\begin{proposition}[Dependents are held by the referring frames, not the referent]\label{prop:vacated-three-states}
+A thing does not carry a record of what depends on it: the dependencies live in the frames holding the
+references and not in the referent, so from the position of the structure being removed they are not
+visible at all, and knowing what would break requires the containing frames. Removal therefore yields
+three states rather than two. \emph{Absent} --- nothing ever cohered, nothing is held and nothing owed,
+and it is free. \emph{Vacated with the references left standing} --- a hole, unpaid, with consequences
+determined by whatever the dangling relations do next. \emph{Vacated with the absence represented} ---
+a tombstone, a cascade rule, a retained count of dependents --- which resolves cleanly and is installed
+machinery paid for under Proposition~\ref{prop:economics}.
+\end{proposition}
 
 \begin{remark}[What never cohered is absent; what cohered and stopped leaves a hole]\label{rem:vacated}
 A distinction the preceding material needs and has not drawn. Something that never cohered is simply
@@ -2264,12 +2319,15 @@ should be stated rather than defended --- the substrate risks little, and what r
 is carried by the groundings. A reviewer who objects that the substrate forbids too little to be
 tested is right about the substrate.
 
-What it forbids is that \emph{a frame cannot get outside itself}. Concretely, and confined to what is
-actually derivable here: a frame cannot be transparent to itself at the level it is running at
-(Proposition~\ref{prop:runner-opaque}); it cannot measure its own throughput in units
-independent of it, since the measurement is funded by the throughput --- which leaves a number
-obtainable and its absolute scale not; and it cannot hold a view from nowhere, which is Axiom~$-1$. Two further
-candidates are deliberately \emph{not} on this list. That a frame cannot obtain a quantity whose unit
+\begin{proposition}[The single prohibition]\label{prop:prohibition}
+The account forbids one thing: \emph{a frame cannot get outside itself}. Concretely, and confined to
+what is actually derivable here, it takes three forms. A frame cannot be transparent to itself at the
+level it is running at (Proposition~\ref{prop:runner-opaque}). It cannot measure its own throughput in
+units independent of it, since the measurement is funded by the throughput --- which leaves a number
+obtainable and its absolute scale not. And it cannot hold a view from nowhere, which is Axiom~$-1$.
+\end{proposition}
+
+Two further candidates are deliberately \emph{not} on this list. That a frame cannot obtain a quantity whose unit
 does not close within it is contingent rule content and the physics companion removes it explicitly.
 That a frame cannot decide anything without writing is the write-economics, which
 Remark~\ref{rem:writeability} carries as a pattern rather than a universal. Folding either into the
@@ -2765,24 +2823,24 @@ do.
 \item \textsc{[shape]}~\textbf{No implicit historical state.} Fails if an unrepresented past event alters later transition structure despite leaving no causal trace in graph or boundary state.
 \item \textsc{[shape]}~\textbf{Frame-relative identity.} Fails if sameness and persistence are derivable from $(g,r,\Gamma)$ alone without individuation.
 \item \textsc{[shape]}~\textbf{Residual is inadmissibility.} Fails if a graph-originated deformation can be left as residual by a containing frame that nonetheless admits it under $\Gamma_{W_c}$, or absorbed while inadmissible, so that residual and non-admission come apart.
-\item \textsc{[detail]}~\textbf{Cost is the write.} Fails if the boundary relation itself, or the retention of standing structure, carries an irreducible cost that is not any write's --- a frame charged for holding its boundary open, or for keeping structure standing, where no delta is written and none is occasioned. Those two are the non-write costs Proposition~\ref{prop:economics} itself names as free, so they are where the claim is exposed; reading is not the test, since a paid read is a write here (Remark~\ref{rem:evaluation-writes}) and the falsifier would be absorbed rather than met. Marked \textsc{[detail]} because Remark~\ref{rem:writeability} already carries the distribution of costs as a pattern rather than a universal: a structure with a different writeability profile refines the characterisation rather than breaking the substrate.
+\item \textsc{[detail]}~\textbf{Cost is the write.} Fails if the boundary relation itself, or the retention of standing structure, carries an irreducible cost that is not any write's --- a frame charged for holding its boundary open, or for keeping structure standing, where no delta is written and none is occasioned. Those two are the non-write costs Proposition~\ref{prop:economics} itself names as free, so they are where the claim is exposed; reading is not the test, since a paid read is a write here (Proposition~\ref{prop:evaluation-writes}) and the falsifier would be absorbed rather than met. Marked \textsc{[detail]} because Remark~\ref{rem:writeability} already carries the distribution of costs as a pattern rather than a universal: a structure with a different writeability profile refines the characterisation rather than breaking the substrate.
 \item \textsc{[shape]}~\textbf{Self-change is subset-change.} The claim is that a graph changes itself and its subgraphs directly (rule-governed), and affects its container only as a subset of it, by propagation through coupling. Fails if a graph changes its container by a means other than changing the region of it that the graph is --- a container-change not propagating from the graph's own subset --- or if a graph can self-terminate without acting on the container.
 \item \textsc{[shape]}~\textbf{Minting is a rule.} Fails if grammar-extension (growth) requires a primitive operation beneath the rules rather than a reflective rule subject to the same economics, admissibility, and antecedent-state principle (Proposition~\ref{prop:antecedent-state}) --- in particular, if a graph can mint its first distinctions without any seeded from its container.
 \item \textsc{[shape]}~\textbf{Partial-order sufficiency.} Fails if realised dynamics require a total order over collapses in distinct frames --- a global simultaneity --- rather than only the boundary-induced partial order.
 \item \textsc{[shape]}~\textbf{Globally-async/locally-sync.} Fails if coupling never induces local synchrony (boundary-related collapses remain unordered) or if synchrony is forced without coupling (a global instant exists independent of any boundary).
 \item \textsc{[shape]}~\textbf{Decoherence is one operation.} Fails if the manner in which an inadmissible write fails is a property of what was attempted rather than of the frame's rules --- that is, if one frame under one rule set yields structurally distinct failure modes for two inadmissible writes, with the difference not attributable to that frame's own policy (Proposition~\ref{prop:decoherence-one}). Different outcomes across \emph{different} frames do not bear on this; that is what the claim predicts.
-\item \textsc{[shape]}~\textbf{A swallowed failure is relocated, never closed.} Fails if a frame can \emph{settle} from inside that a swallowed failure went nowhere, rather than relocating the question to what it cannot inspect. Not that a frame cannot detect its own handler discarding a failure --- it can; the exposure is the settling. One of the four places named below at which the same event would be found.
-\item \textsc{[shape]}~\textbf{Dependents are not held by the referent.} Fails if realised graph dynamics require a structure to carry the set of things depending on it --- back-references primitive rather than installed --- so that the consequences of removing a structure are recoverable from that structure alone, without querying the frames holding the references and without paid machinery (Remark~\ref{rem:vacated}). A substrate in which deletion is always clean falsifies this, and would also remove the distinction between an absence and a vacancy.
-\item \textsc{[shape]}~\textbf{A boundary is known only by crossing it.} Fails if a frame can \emph{settle} the location of its own admissibility boundary without any write that crosses it. Extrapolation from inside the admissible region evidences a boundary and is not at issue; establishing one would be (Remark~\ref{rem:failure-instrument}). This is the epistemic member of the same family as the provenance commitment below, and fails in the same manner --- by a procedure that closes the question rather than relocating it.
-\item \textsc{[detail]}~\textbf{Robustness trades against legibility.} Fails if a policy can bound a frame's residuals without reducing what its failures disclose about its grammar --- a handler that both absorbs and reports with no loss (Remark~\ref{rem:failure-instrument}). Cheaply testable in software, and marked \textsc{[detail]} because the account survives its loss with the trade weakened to a tendency.
+\item \textsc{[shape]}~\textbf{A swallowed failure is relocated, never closed.} Fails if a frame can \emph{settle} from inside that a swallowed failure went nowhere, rather than relocating the question to what it cannot inspect (Proposition~\ref{prop:handler-relocates}). Not that a frame cannot detect its own handler discarding a failure --- it can; the exposure is the settling. One of the four places named below at which the same event would be found.
+\item \textsc{[shape]}~\textbf{Dependents are not held by the referent.} Fails if realised graph dynamics require a structure to carry the set of things depending on it --- back-references primitive rather than installed --- so that the consequences of removing a structure are recoverable from that structure alone, without querying the frames holding the references and without paid machinery (Proposition~\ref{prop:vacated-three-states}, argued at Remark~\ref{rem:vacated}). A substrate in which deletion is always clean falsifies this, and would also remove the distinction between an absence and a vacancy.
+\item \textsc{[shape]}~\textbf{A boundary is known only by crossing it.} Fails if a frame can \emph{settle} the location of its own admissibility boundary without any write that crosses it. Extrapolation from inside the admissible region evidences a boundary and is not at issue; establishing one would be (Proposition~\ref{prop:boundary-by-crossing}). This is the epistemic member of the same family as the provenance commitment below, and fails in the same manner --- by a procedure that closes the question rather than relocating it.
+\item \textsc{[detail]}~\textbf{Robustness trades against legibility.} Fails if a policy can bound a frame's residuals without reducing what its failures disclose about its grammar --- a handler that both absorbs and reports with no loss (Proposition~\ref{prop:boundary-by-crossing}, argued at Remark~\ref{rem:failure-instrument}). Cheaply testable in software, and marked \textsc{[detail]} because the account survives its loss with the trade weakened to a tendency.
 \item \textsc{[shape]}~\textbf{Capability and accessibility are distinct.} Fails if what a frame's gates admit and what it can reach from where it stands collapse into one quantity --- if there is no case of a frame able to represent and perform an arrangement it cannot reach, or none of a frame able to reach what it cannot represent (Section~\ref{sec:crossings}). The coupling claimed between them, that a capacity shortfall narrows aperture and so degrades capability over time, fails separately if aperture width is unaffected by demands on capacity.
 \item \textsc{[detail]}~\textbf{A hazard is a signed capability change above a frame-relative threshold.} Fails if a disclosure can be a hazard to a frame in which the negative sign is not admissible, or if the magnitude at which one counts is fixed independently of the frame bearing it rather than as a ratio to what that frame can absorb. Fails also if the threshold sits somewhere other than where the impact forces a write.
 \item \textsc{[detail]}~\textbf{Externalising lengthens the interval before a crossing is legible.} Fails if the time for a crossing's cost to become signable is independent of whether the frame bearing it can report --- that is, if costs placed on frames that cannot signal return no more slowly than costs placed on frames that can (Section~\ref{sec:crossings}).
 \item \textsc{[shape]}~\textbf{No free lunch.} Fails on a realised change whose cost is absent in the frame that made it \emph{and} in the container that sustains it, on inspection of both --- a payment traced to neither rather than merely not yet looked for. The burden is finite and on the negative side: asking instead for a cost absent at \emph{every} frame would demand an enumeration this account says cannot terminate, and for which Axiom~\ref{ax:no-view} supplies no standpoint. The claim is empirical, not modal. A costless change is admissible; none has been traced. Note that a frame experiencing freeness is not the counterexample and never was --- at the table the next plate genuinely costs the diner nothing, and the buffet pays --- so the test is whether the payment appears anywhere it is looked for, not whether some frame gets something for nothing.
-\item \textsc{[shape]}~\textbf{Termination follows supply, not containment.} Fails if containment alone determines it --- if a subgraph must stop when the graph containing it stops, even where its primitives are supplied from beyond that graph (Remark~\ref{rem:supply-not-containment}). The partial case carries its own clause: fails if a frame losing part of its supply must either stop or continue correctly, rather than running with an incomplete operation set and undefined behaviour, or if such a frame can enumerate what it has lost from inside --- which would also falsify the provenance commitment below.
+\item \textsc{[shape]}~\textbf{Termination follows supply, not containment.} Fails if containment alone determines it --- if a subgraph must stop when the graph containing it stops, even where its primitives are supplied from beyond that graph (Proposition~\ref{prop:termination-supply}). The partial case carries its own clause: fails if a frame losing part of its supply must either stop or continue correctly, rather than running with an incomplete operation set and undefined behaviour, or if such a frame can enumerate what it has lost from inside --- which would also falsify the provenance commitment below.
 \item \textsc{[shape]}~\textbf{The relativity of grounding is a consequence, and can fail as one.} Fails if a view can be informative without standing in relation to what it views, or if relation is not what carries information here. A consequence has content and can fail, which a posit or a costless guard could not (Remark~\ref{rem:axiom-in-bits}). The second disjunct is the companion's own identification of distinction with relation, so this is where the account is thinnest rather than where it is safest, and it is marked \textsc{[shape]} because what fails with it is the range of everything derived through it.
 \item \textsc{[detail]}~\textbf{Description length is constitutive, not merely a method.} Fails if a relation carrying no content \emph{given the others} nevertheless adds to what a thing is --- the conditional form of Remark~\ref{rem:self-edge}'s result, which Remark~\ref{rem:mdl-ontic} uses and does not prove. Marked \textsc{[detail]} because the account survives its failure: minimum description length reverts to the imported method the companion already had, and only the claim that the two are one principle at two grips is lost.
-\item \textsc{[shape]}~\textbf{Provenance is never closed by inference.} Fails if a frame can \emph{settle} the provenance of its own operator set from inside: if some in-frame procedure establishes, rather than merely evidences, whether its operators are self-supplied, how many distinct structures supply them, or whether a serial hidden supply underlies an apparently asynchronous frame. Not that primitives fail to leak --- they do, and Proposition~\ref{prop:leak} says so. This is the single prohibition of Section~\ref{sec:prohibition} in operational form, argued there.
+\item \textsc{[shape]}~\textbf{Provenance is never closed by inference.} Fails if a frame can \emph{settle} the provenance of its own operator set from inside: if some in-frame procedure establishes, rather than merely evidences, whether its operators are self-supplied, how many distinct structures supply them, or whether a serial hidden supply underlies an apparently asynchronous frame. Not that primitives fail to leak --- they do, and Proposition~\ref{prop:leak} says so. This is the single prohibition (Proposition~\ref{prop:prohibition}) in operational form, argued in Section~\ref{sec:prohibition}.
 \end{enumerate}
 
 Two claims are stated here rather than counted in the list above, being consequences rather than wagers --- the standard is the one the composition paragraph sets, that a test whose stopping condition lies with the assessor is not a test. \emph{Admissibility is not armour} (Proposition~\ref{prop:self-governance}) and \emph{higher-frame first-class structure} (Proposition~\ref{prop:higher-frame}) are closer to consequences of the definitions than to empirical risks: given a container that may force arbitrarily, self-admissibility not constraining it follows, and given that a frame's state about another frame is ordinary state, its independence from that other frame's primitives follows. They are retained because they are load-bearing and a reader should see what they commit to, and they are marked here as derivations rather than wagers.

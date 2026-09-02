@@ -19,7 +19,12 @@ spec does not pull, so drift in the other direction stays visible.
 """
 import io, os, re, sys
 
-ENVS = ('definition', 'proposition', 'corollary', 'hypothesis', 'remark')
+# 'axiom' and 'theorem' are pulled too. They were absent from this tuple while
+# the long paper carried both, so the two axioms and the identity theorem were
+# unreachable by @pull -- a spec asking for them got MISSING and the omission
+# read as a decision rather than as the parser gap it was.
+ENVS = ('definition', 'proposition', 'corollary', 'hypothesis', 'remark',
+        'axiom', 'theorem')
 
 
 def parse_blocks(tex):
@@ -45,7 +50,12 @@ def parse_blocks(tex):
 
 
 def parse_falsifiers(tex):
-    r"""short-name -> source, from the falsifiability section.
+    r"""(short-name -> source, short-name -> display title), in the long paper's order.
+
+    The display title is kept alongside the source because the statement now
+    prints the commitments it does NOT carry, by title, and a lowercased lookup
+    key is not a title. Insertion order is the long paper's order, which is the
+    order that list is printed in.
 
     Two forms are recognised, because the section carries both: the numbered
     \item commitments inside the enumerate, and any \paragraph-form commitment
@@ -55,7 +65,7 @@ def parse_falsifiers(tex):
     """
     sec = re.search(r'\\section\{Falsifiability commitments\}(.*?)'
                     r'(?=\n\\section\{)', tex, re.S)
-    items = {}
+    items, titles = {}, {}
     if sec:
         # The mark may be wrapped in \textnormal, because bold small caps have no
         # shape in lmodern and the \paragraph head is bold. A parser that only
@@ -70,6 +80,7 @@ def parse_falsifiers(tex):
                 % (pm.group(1).rstrip('.'),
                    re.sub(r'^\\paragraph\{(?:\\textnormal\{)?\\textsc\{\[[a-z]*\]\}\}?'
                           r'~?[^}]*\}\s*', '', body).strip()))
+            titles[pm.group(1).rstrip('.').lower()] = pm.group(1).rstrip('.')
     # EVERY enumerate in the section, not just the first. Commitments added
     # after the original list -- e.g. behind an explanatory paragraph, in a
     # \begin{enumerate}[resume] -- live in a second block, and a parser that
@@ -77,7 +88,7 @@ def parse_falsifiers(tex):
     # sat in the paper. That is how the two postulate-level commitments added
     # with the ledger correction failed to reach the statement.
     if not sec:
-        return items
+        return items, titles
     for blk in re.finditer(r'\\begin\{enumerate\}(?:\[[^\]]*\])?(.*?)\\end\{enumerate\}',
                            sec.group(1), re.S):
         for it in re.split(r'\n(?=\\item )', blk.group(1)):
@@ -87,21 +98,55 @@ def parse_falsifiers(tex):
             t = re.search(r'\\textbf\{([^}]*)\}', it)
             if t:
                 items[t.group(1).rstrip('.').lower()] = it
-    return items
+                titles[t.group(1).rstrip('.').lower()] = t.group(1).rstrip('.')
+    return items, titles
 
 
-def preamble_of(tex):
-    """The long paper's preamble, minus anything the spec supplies itself.
+def parse_aux(aux_path):
+    r"""label -> printed number, from the long paper's .aux.
+
+    A title tells a reader what to look for; a number tells them where it is.
+    The numbers are read rather than computed, because the statement renumbers
+    everything it pulls and only the long paper's own compile knows what the
+    long paper calls a block. Absent aux (a clean tree, a first build) is not an
+    error -- the caller falls back to the title-only form.
+    """
+    try:
+        aux = io.open(aux_path, encoding='utf-8').read()
+    except IOError:
+        return {}
+    out = {}
+    for m in re.finditer(r'\\newlabel\{([^}]+)\}\{\{([^{}]*)\}\{', aux):
+        lab, num = m.group(1), m.group(2).strip()
+        if lab.endswith('@cref') or not num:
+            continue
+        out.setdefault(lab, num)
+    return out
+
+
+def preamble_of(tex, body_text=''):
+    r"""The long paper's preamble, minus anything the spec supplies itself.
 
     Title, author and date are the short paper's own; leaving the long paper's
     in place emits two of each and makes the identity depend on which came last.
     The running footer is rewritten to name the source revision, because a
     generated file should say what it was generated from.
+
+    The \input of the generated counts file goes too, unless the statement
+    actually uses one of its macros: the counts are claims about the LONG
+    paper's size, and a generated document carrying a dependency it never reads
+    is a file that fails to build for a reason it has no stake in.
     """
     pre = tex.split(r'\begin{document}')[0]
+    uses_counts = any(('\\' + macro) in body_text for macro, _ in COUNT_MACROS) \
+        or '\\nResults' in body_text or '\\nBibitems' in body_text \
+        or '\\nCited' in body_text or '\\nSections' in body_text \
+        or '\\nParts' in body_text
     out = []
     for line in pre.split('\n'):
         if re.match(r'\\(title|author|date)\{', line):
+            continue
+        if not uses_counts and re.match(r'\s*\\input\{[^}]*counts[^}]*\}\s*$', line):
             continue
         out.append(line)
     pre = '\n'.join(out)
@@ -167,7 +212,8 @@ def main(spec_path):
     src_path = os.path.join(root, src_rel)
     long_tex = io.open(src_path, encoding='utf-8').read()
     blocks = parse_blocks(long_tex)
-    falsifiers = parse_falsifiers(long_tex)
+    falsifiers, fals_titles = parse_falsifiers(long_tex)
+    aux_numbers = parse_aux(os.path.splitext(src_path)[0] + '.aux')
 
     counts_rel = os.path.splitext(src_rel)[0].split('_')[0] + '.counts.tex'
     counts = write_counts(long_tex, os.path.join(root, counts_rel), src_rel)
@@ -214,10 +260,27 @@ def main(spec_path):
     sects = dict(re.findall(r'\\section\{([^}]*)\}\\label\{([^}]+)\}', long_tex))
     sects = {lab: t for t, lab in sects.items()}
 
+    # And it carries the long paper's NUMBER wherever the long paper's own .aux
+    # has one. A title is findable by search; a number is where to turn to. The
+    # environment name comes from the block table, so "Proposition 12.4" is read
+    # off the same parse that would have pulled the block.
+    def _envname(lab):
+        env = blocks.get(lab, (None,))[0]
+        return env.capitalize() if env else None
+
     def _refname(lab):
+        num = aux_numbers.get(lab)
         if lab in titles:
+            env = _envname(lab)
+            # The source already names the kind ("Remark~\ref{..}"), so the
+            # rendering supplies only the number and the title, not the kind
+            # again: "Remark~3.11 of the long paper (\emph{...})".
+            if num and env:
+                return '~%s of the long paper (\\emph{%s})' % (num, titles[lab])
             return '~(\\emph{%s}, long form)' % titles[lab]
         if lab in sects:
+            if num:
+                return '~%s of the long paper (\\emph{%s})' % (num, sects[lab])
             return '~(\\emph{%s}, long form)' % sects[lab]
         return '~(long form)'
 
@@ -245,7 +308,12 @@ def main(spec_path):
         lab = biblabels.get(key.strip())
         if not lab:
             return None
-        m = re.match(r'^(.*?)\((\d{4}[a-z]?)\)$', lab.strip())
+        # No trailing anchor: natbib's full label form carries the author list
+        # AFTER the year -- "Osvik et~al.(2006)Osvik, Shamir, and Tromer" -- so a
+        # regex anchored at the end failed to match and the whole raw label was
+        # emitted verbatim into the text. The year in parentheses is the split
+        # point wherever it falls.
+        m = re.match(r'^(.*?)\((\d{4}[a-z]?)\)', lab.strip())
         if not m:
             return lab.strip()
         who, year = m.group(1).strip(), m.group(2)
@@ -274,6 +342,24 @@ def main(spec_path):
                   lambda m: _cite(m, True), text)
     text = re.sub(r'\\citealp\{([^}]+)\}', lambda m: _cite(m, False).strip(' ()'), text)
 
+    # The spec's own sentence says the omitted commitments are listed below by
+    # title. Reporting them to the builder's terminal made that true of the
+    # build log and not of the artefact, and the reader of the PDF is who the
+    # sentence addresses. Generated from the same parse the @falsifier pulls
+    # use, in the long paper's order, so it cannot drift from either.
+    not_carried = [fals_titles[k] for k in falsifiers
+                   if ('falsifier:' + k) not in pulled and k in fals_titles]
+    if not_carried:
+        ix = text.find(r'\section{Falsifiability}')
+        j = text.rfind(r'\end{enumerate}') if ix < 0 else \
+            text.rfind(r'\end{enumerate}', ix)
+        if j >= 0:
+            j += len(r'\end{enumerate}')
+            text = (text[:j]
+                    + '\n\n\\medskip\\noindent\\emph{Not carried in this '
+                      'statement:} ' + '; '.join(not_carried) + '.\n'
+                    + text[j:])
+
     # Emit a reference list for exactly the works the statement names, lifted
     # verbatim from the long paper so the two can never disagree. Sorted by
     # the author-year label, since the flattened text gives the reader a name
@@ -286,9 +372,12 @@ def main(spec_path):
             if m:
                 entries[k] = m.group(0).rstrip()
         if entries:
-            refs = ['', r'\begin{thebibliography}{99}', r'\itemsep=2pt',
-                    r'\item[] \small\emph{The works named above, listed from the long paper so the two cannot disagree.}',
-                    '']
+            # The note is ABOUT the list, so it sits before it. As an \item[]
+            # inside the environment it typeset correctly and was, structurally,
+            # a bibliography entry.
+            refs = ['',
+                    r'\noindent\small\emph{The works named above, listed from the long paper so the two cannot disagree.}',
+                    '', r'\begin{thebibliography}{99}', r'\itemsep=2pt', '']
             for k in sorted(entries, key=lambda k: biblabels.get(k, k)):
                 refs.append(entries[k]); refs.append('')
             refs.append(r'\end{thebibliography}')
@@ -300,13 +389,17 @@ def main(spec_path):
         '%% GENERATED FILE --- DO NOT EDIT.\n'
         '%% Source of truth: %s\n'
         '%% Statement-only content: %s\n'
-        '%% Regenerate: tools/build_statement.py %s\n'
+        '%% Regenerate, from the repository root:\n'
+        '%% python3 tools/build_statement.py %s\n'
         '%% ==========================================================\n'
-        % (src_rel, os.path.basename(spec_path), os.path.relpath(spec_path,
-           os.path.dirname(os.path.dirname(os.path.abspath(spec_path)))))
+        # The path as the command is actually typed, from the repository
+        # root, so the spec's own regeneration note and this header name one
+        # command rather than two that differ in their base directory.
+        % (src_rel, os.path.basename(spec_path),
+           os.path.relpath(os.path.abspath(spec_path), os.getcwd()))
     )
     out_path = os.path.join(root, out_rel)
-    text = banner + preamble_of(long_tex) + '\n'.join(body) + '\n'
+    text = banner + preamble_of(long_tex, '\n'.join(body)) + '\n'.join(body) + '\n'
 
     # Anything emitted after \end{document} is in the file and not in the PDF.
     # The generator reported success and the falsifiability list looked whole,

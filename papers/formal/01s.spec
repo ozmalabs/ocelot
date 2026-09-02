@@ -7,7 +7,7 @@
 
 \title{The Law of Graphic Equalisation\\\large Statement}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-09-02.1}\\[2pt]2 September 2026 \textbullet\ statement}
+\date{\textbf{Draft \texorpdfstring{\textemdash}{---}\ draft-2026-09-02.1}\\[2pt]2 September 2026 \texorpdfstring{\textbullet}{\textperiodcentered}\ statement}
 
 \begin{document}
 \maketitle
@@ -18,9 +18,15 @@ Equalisation} (Theory) is the case for it. What is missing here is not detail bu
 \emph{argument} --- the removals that establish how little is required are the long
 paper's bulk and its actual work, so anything below that a reader wants shown rather
 than asserted is shown there. Calling this a short form would describe
-it by its length instead of by what it does. Every definition and proposition
-below is pulled from the long paper at build time, so those cannot drift from it. The
-connecting prose is written here and is not synchronised, so it can.}}
+it by its length instead of by what it does. Every axiom, definition, theorem and
+proposition below is pulled from the long paper at build time, and so are the
+falsifiability commitments attached to them, so none of those can drift from it; the
+commitments the long paper carries for material \emph{not} stated here are listed by
+title at the end, so the omission stays checkable in this document rather than only in
+the build log. The connecting prose is written here and is not synchronised, so it can.
+Four companions are named in the material below without being carried by it: \emph{Is}
+(the base claim this paper begins after), the physics companion, the mind companion,
+and \emph{Narrativium}.}}
 \end{center}
 \vspace{1em}
 
@@ -46,7 +52,15 @@ where a graph happens to represent it.
 The Law is that a graph's admissible continuations are fixed by its present structure, and that
 realisation selects one of them, which then becomes the antecedent for what follows.
 
+@pull hyp:the-law
+
+A realised deformation is not submitted for entry, so what a containing grammar declines is not undone
+by the declining; it stays where it is. That remainder is the residual, and admitting it is the only
+route by which a grammar grows.
+
 @pull def:residual
+@pull prop:residual-inadmissible
+@pull cor:mint-is-grammar
 @pull rem:only-g
 
 What this paper postulates over \emph{Is} is the ledger of Table~\ref{tab:ledger}: named entries, not
@@ -54,10 +68,25 @@ a count, each with where it is argued. The prose defending each entry is the lon
 
 @pull tab:ledger
 
+\section{Determinism and sufficiency}
+What the Law requires of a transition and what it does not require of the substrate are separate
+claims, and both are exposed here: an antecedent has to be there already for a continuation to be
+selected from it, the selection adds no primitive randomness of its own, and nothing beyond the three
+is needed to carry any of it.
+
+@pull prop:antecedent-state
+@pull prop:determinism
+@pull hyp:minimal-graph
+@pull hyp:discrete
+
 \section{Frames}
 A frame is how anything is reached at all: there is no view from nowhere, so every claim is a claim
 made in some frame, and the frame is not a container holding contents but the relation that
 demarcates them.
+
+\setcounter{axiom}{-2}
+@pull ax:no-view
+\setcounter{axiom}{0}
 
 @pull def:frame
 @pull cor:frame-dimension
@@ -74,13 +103,26 @@ located here rather than treated as a class of its own.
 @pull def:info-hazard
 @pull prop:hazard-threshold
 
+\section{Identity}
+Sameness is not read off the substrate. It is fixed by whatever frame individuates, which leaves two
+identity relations where ordinary usage has one --- the graph's own continuity with what produced it,
+and the tracking a container does of a situated instance.
+
+@pull thm:no-frame-free
+@pull def:self-identity
+@pull def:supergraph-identity
+
 \section{Economics}
-Cost attaches to writes rather than to holding, and what a write costs is set by whatever runs the
-rules rather than by any universal.
+Cost characteristically attaches to writes rather than to holding, and what a write costs is set by
+whatever runs the rules rather than by any universal. A graph changes itself directly and its
+container only as the region of it that it is, so the distribution of what is free, what is costly and
+what is directly writeable is a characterisation of a common configuration rather than a necessity.
 
 @pull prop:economics
+@pull prop:no-direct-self-alter
+@pull rem:writeability
 @pull def:well-formed
-@pull rem:evaluation-writes
+@pull prop:evaluation-writes
 @pull prop:leak
 
 \section{When a write is refused}
@@ -90,18 +132,22 @@ failure itself does not vary; the frames do, and a handler is an installed polic
 discovered semantics.
 
 @pull prop:decoherence-one
-@pull rem:handler-abuse
-@pull rem:vacated
-@pull rem:supply-not-containment
-@pull rem:failure-instrument
+@pull prop:handler-relocates
+@pull prop:vacated-three-states
+@pull prop:termination-supply
+@pull prop:boundary-by-crossing
 
 \section{Time}
-Time is not a substrate dimension. It is inferred by a frame from its own closure cycles, which is
-why a frame that runs no rules has none.
+Time is not a substrate dimension. It is inferred by a frame from its own closure cycles, so a frame
+with no closed loop has none, and what the past contributes is only whatever of it is still standing
+now.
 
+@pull ax:no-time
 @pull prop:time-inferred
 @pull prop:cycle-unit
 @pull def:present
+@pull prop:no-implicit-historical-state
+@pull cor:history
 
 \section{Primitives, and the single prohibition}
 @pull def:primitives
@@ -110,20 +156,23 @@ why a frame that runs no rules has none.
 @pull prop:runner-opaque
 @pull prop:runner-recursion
 
-The account forbids one thing: a frame cannot get outside itself. It cannot be transparent to itself
-at the level it is running at, cannot measure its own throughput in units independent of it --- which
-leaves the number obtainable and its absolute scale not --- and cannot hold a view from
-nowhere. That prohibition has a formal analogue --- a language of sufficient strength cannot define
-its own truth predicate, and must be given it from a metalanguage --- and the analogue is proved,
-though the mapping from frames to formal systems is argued rather than proved. What is forbidden is
-complete self-capture and not partial self-modelling, which is why reflective towers work and a frame
-can know a great deal about itself.
+The account forbids very little, and what it does forbid is one thing recurring rather than a list.
+
+@pull prop:prohibition
+
+That prohibition has a formal analogue --- a language of sufficient strength cannot define its own
+truth predicate, and must be given it from a metalanguage --- and the analogue is proved, though the
+mapping from frames to formal systems is argued rather than proved. What is forbidden is complete
+self-capture and not partial self-modelling, which is why reflective towers work and a frame can know
+a great deal about itself. Two candidates are deliberately not on the list: that a frame cannot obtain
+a quantity whose unit does not close within it is contingent rule content, and that a frame cannot
+decide anything without writing is a pattern of the write-economics rather than a universal.
 
 \section{Carvings}
 Since the rules draw the boundary and the rules are contingent, no carving is privileged. That does
 not make the notion vacuous: an ill-formed cut costs more writes, so a frame under a budget tends to
-be running cheaper cuts, and the cuts that look like joints are the cheap ones rather than the real
-ones. The step from shared work to similar cuts rests on a posit, labelled here as one.
+be running cheaper cuts, and what looks like a joint is where the cheap cuts of frames doing shared
+work coincide. The step from shared work to similar cuts rests on a posit, labelled here as one.
 
 @pull hyp:cheap-cut
 @pull prop:convergence-observed
@@ -133,8 +182,8 @@ ones. The step from shared work to similar cuts rests on a posit, labelled here 
 \section{Falsifiability}
 The substrate risks little by design and the groundings carry the risk. Below are the commitments
 attached to the material this statement carries. They are a subset: the long paper carries the full
-set, including those for results not stated here, and the generator reports the difference on every
-build so the omission stays visible rather than becoming a claim.
+set, including those for results not stated here, and the omitted commitments are listed below by
+title, so the omission stays visible rather than becoming a claim.
 
 \begin{enumerate}[leftmargin=*]
 @falsifier Composition
@@ -142,11 +191,15 @@ build so the omission stays visible rather than becoming a claim.
 @falsifier Discrete sufficiency
 @falsifier Antecedent-state principle
 @falsifier Graph-law determinism
+@falsifier No implicit historical state
+@falsifier Frame-relative identity
 @falsifier Located degradation
 @falsifier Convergence is not enforced
 @falsifier Provenance is never closed by inference
 @falsifier Solutions are nearly unique under a binding constraint
 @falsifier Cost is the write
+@falsifier Self-change is subset-change
+@falsifier Minting is a rule
 @falsifier Residual is inadmissibility
 @falsifier Realisation is single-valued
 @falsifier No-copy
@@ -156,13 +209,15 @@ build so the omission stays visible rather than becoming a claim.
 @falsifier Termination follows supply, not containment
 @falsifier A boundary is known only by crossing it
 @falsifier Robustness trades against legibility
+@falsifier Capability and accessibility are distinct
+@falsifier A hazard is a signed capability change above a frame-relative threshold
 @falsifier The relativity of grounding is a consequence, and can fail as one
 \end{enumerate}
 
 \end{document}
 
 # --- regeneration ---
-# From papers/formal/:  python3 ../../tools/build_statement.py 01s.spec
+# From the repository root:  python3 tools/build_statement.py papers/formal/01s.spec
 # The generator exits non-zero if a @pull label no longer exists in the long
 # paper, and lists every labelled block the spec does not pull, so material
 # added to the long paper surfaces as a review item rather than silently
