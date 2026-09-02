@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 r"""Check the formal paper set for draft-string and revision inconsistencies.
 
-Three defects this catches, all of which have actually occurred:
+Five defects this catches, all of which have actually occurred:
 
   1. Two documents on different draft strings (the set is bumped together, so a
      reader comparing two papers is never comparing two drafts).
@@ -12,6 +12,11 @@ Three defects this catches, all of which have actually occurred:
      them do.
   4. Typesetting overflow: a display or line running more than 20pt past the
      margin, which is visible in the PDF and has shipped before.
+  5. Revision-history language: a document narrating its own drafting ("an
+     earlier version of this remark claimed ..."). A paper is what it says
+     now; what a draft used to say subtracts. Scanned on FLATTENED text,
+     because line-based grep for these phrases missed 3 of 12 real sites ---
+     "an earlier\ndraft" and "and earlier\nversions" are invisible to it.
 
 Not a defect, and deliberately not checked: the generated statement carries
 \bibitem entries with no \cite commands, because the generator flattens
@@ -116,6 +121,26 @@ def main() -> int:
             + "; ".join(f"{d} -> {len(v)} file(s): {', '.join(sorted(v))}"
                         for d, v in sorted(by_draft.items()))
         )
+
+    # A paper is what it says now. Narrating a superseded draft ("an earlier
+    # version of this remark claimed ...") reads as candour and is errata: the
+    # distinction it was marking is always statable directly, and stating it
+    # directly is shorter. Flattened, because these phrases wrap: a line-based
+    # sweep reported the set clean while three sites remained, and the PDFs
+    # caught what the source scan had missed. Cost twelve sites across seven
+    # documents.
+    HIST = re.compile(
+        r"earlier\s+versions?|earlier\s+drafts?|previous\s+versions?|"
+        r"previous\s+drafts?|revised\s+label|older\s+reading|"
+        r"earlier\s+statement\s+of\s+this|an\s+earlier\s+remark"
+    )
+    for doc in sorted(list(FORMAL.glob("*.tex")) + list(FORMAL.glob("*.spec"))):
+        flat = re.sub(r"\s+", " ", doc.read_text(encoding="utf-8", errors="replace"))
+        for m in HIST.finditer(flat):
+            problems.append(
+                f"{doc.name}: revision-history language --- "
+                f"\"...{flat[max(0, m.start() - 45):m.end() + 45]}...\""
+            )
 
     for log in sorted(FORMAL.glob("*.log")):
         txt = log.read_text(encoding="utf-8", errors="replace")

@@ -17,8 +17,8 @@
 Equalisation} (Theory) is the case for it. What is missing here is not detail but
 \emph{argument} --- the removals that establish how little is required are the long
 paper's bulk and its actual work, so anything below that a reader wants shown rather
-than asserted is shown there. Calling this a short form, as an earlier version did,
-described it by its length instead of by what it does. Every definition and proposition
+than asserted is shown there. Calling this a short form would describe
+it by its length instead of by what it does. Every definition and proposition
 below is pulled from the long paper at build time, so those cannot drift from it. The
 connecting prose is written here and is not synchronised, so it can.}}
 \end{center}
