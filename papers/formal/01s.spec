@@ -48,7 +48,11 @@ realisation selects one of them, which then becomes the antecedent for what foll
 
 @pull def:residual
 @pull rem:only-g
-@pull rem:inherited
+
+What this paper postulates over \emph{Is} is the ledger of Table~\ref{tab:ledger}: named entries, not
+a count, each with where it is argued. The prose defending each entry is the long paper's.
+
+@pull tab:ledger
 
 \section{Frames}
 A frame is how anything is reached at all: there is no view from nowhere, so every claim is a claim
@@ -62,6 +66,14 @@ demarcates them.
 @pull def:change-grammar
 @pull def:states
 
+What a frame's gates admit, and what it can reach from where it stands, are two quantities and not
+one; a disclosure that moves a gate changes the first, and that is where an information hazard is
+located here rather than treated as a class of its own.
+
+@pull def:capability
+@pull def:info-hazard
+@pull prop:hazard-threshold
+
 \section{Economics}
 Cost attaches to writes rather than to holding, and what a write costs is set by whatever runs the
 rules rather than by any universal.
@@ -73,10 +85,11 @@ rules rather than by any universal.
 
 \section{When a write is refused}
 An inadmissible write yields no continuation in that frame. What happens after that --- whether
-anything propagates, whether a value is produced instead --- is rule content and not substrate, so the
-exception reading below is an analogy and the systems it names are policies rather than discoveries.
+anything propagates, whether a value is produced instead --- is rule content and not substrate. The
+failure itself does not vary; the frames do, and a handler is an installed policy rather than a
+discovered semantics.
 
-@pull rem:decoherence-one
+@pull prop:decoherence-one
 @pull rem:handler-abuse
 @pull rem:vacated
 @pull rem:supply-not-containment
@@ -91,7 +104,7 @@ why a frame that runs no rules has none.
 @pull def:present
 
 \section{Primitives, and the single prohibition}
-@pull def:runner
+@pull def:primitives
 @pull rem:nothing-compulsory
 @pull prop:rule-runner
 @pull prop:runner-opaque
@@ -110,8 +123,9 @@ can know a great deal about itself.
 Since the rules draw the boundary and the rules are contingent, no carving is privileged. That does
 not make the notion vacuous: an ill-formed cut costs more writes, so a frame under a budget tends to
 be running cheaper cuts, and the cuts that look like joints are the cheap ones rather than the real
-ones.
+ones. The step from shared work to similar cuts rests on a posit, labelled here as one.
 
+@pull hyp:cheap-cut
 @pull prop:convergence-observed
 @pull prop:compression-convergence
 @pull hyp:located-degradation
