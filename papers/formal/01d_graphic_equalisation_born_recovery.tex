@@ -1,9 +1,14 @@
 \documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,hyperref,enumitem,microtype}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,array,booktabs,enumitem,microtype}
 \usepackage{natbib}
 \usepackage[margin=1in]{geometry}
+\usepackage{xr-hyper}
+\usepackage{hyperref}
+\externaldocument[GE-]{01_law_of_graphic_equalisation_theory_referenced}
+\externaldocument[PH-]{01a_graphic_equalisation_physics_grounding}
+\externaldocument[NM-]{03_law_of_narrative_momentum_theory_referenced}
 \newtheorem{definition}{Definition}[section]
 \newtheorem{theorem}[definition]{Theorem}
 \newtheorem{proposition}[definition]{Proposition}
@@ -11,25 +16,26 @@
 \theoremstyle{remark}\newtheorem{remark}[definition]{Remark}
 \title{The Law of Graphic Equalisation --- Born Recovery\\\large An Axiom-by-Axiom Note}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \texorpdfstring{\textemdash}{---}\ draft-2026-09-02.1}\\[2pt]2 September 2026 \texorpdfstring{\textbullet}{\textperiodcentered}\ document revision 1}
+\date{\textbf{Draft \texorpdfstring{\textemdash}{---}\ draft-2026-09-02.1}\\[2pt]2 September 2026 \texorpdfstring{\textbullet}{\textperiodcentered}\ document revision 2}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r1}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r2}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r1}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r2}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-09-02.1 r1} (2 September 2026).
+\textbf{DRAFT --- draft-2026-09-02.1 r2} (2 September 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. It is a companion to \emph{The Law of Graphic Equalisation ---
 Theory} (referred to below as Graphic Equalisation) and to \emph{The Law of
 Graphic Equalisation --- Physics Grounding} (the physics companion), and inherits
-those papers' definitions, epistemic boundary, and level-of-claims. It is an
+those papers' definitions, epistemic boundary, and level-of-claims; \emph{The Law of
+Narrative Momentum} (the momentum paper) supplies the Narrative and the first law. It is an
 \emph{attempt}, rated step by step, and not a peer-reviewed result. Sections
 marked as falsifiability commitments are the intended points of attack.}}
 \end{center}
@@ -39,12 +45,12 @@ marked as falsifiability commitments are the intended points of attack.}}
 This note checks, one axiom at a time, whether the change-substrate of Graphic
 Equalisation supplies the operational axioms from which the informational
 reconstructions of quantum theory derive the complex Hilbert space and the Born
-rule. It is self-contained; the papers carry the surrounding framework. The
-honest verb throughout is \emph{recover}, not \emph{derive}: the substrate
+rule. The papers named above carry the surrounding framework, and are cited by
+number throughout rather than restated. The honest verb throughout is \emph{recover}, not \emph{derive}: the substrate
 reproduces the known rule within its own structures, given its admitted
 primitives and a contingent, self-located selection, rather than compelling it
-from necessity. Each step is rated solid, plausible or gap, and the residuals are
-named rather than hidden. Two findings carry the note. First, the substrate
+from necessity. Each step is rated solid, earned, plausible or contingent, and the
+residuals are named rather than hidden. Two findings carry the note. First, the substrate
 instantiates the operational-probabilistic core --- convex states, affine
 effects, a transformation monoid with reversibles, composition, normalised
 probabilities --- from the classical total-probability backbone and not from any
@@ -60,36 +66,38 @@ individually known, and the uniqueness is supplied by the cited theorems.
 \end{abstract}
 
 \section{The substrate, in one paragraph}\label{sec:substrate}
-Reality is modelled as typed graphs plus \emph{admissibility rules} --- a grammar
-of which edges may exist. A \emph{frame} is a subgraph that runs; its
-\emph{state} is an internal Narrative, the standing structure it carries forward.
-Where a frame instantiates a direction --- optional in general, present in this
-setting --- that Narrative has a magnitude and a \emph{phase} that is position on
-a \emph{closure cycle}, a loop that a realisation must close, so amplitudes are
-complex, $r\,e^{i\theta}$. A \emph{realisation} is a collapse: a local write that
-picks one outcome from the admissible set, with a weight. Realisations are
-strictly ordered; there is no in-frame concurrency. Nothing is privileged: there
-is no god's-eye frame, and no privileged phase origin or measurement basis. When
-no rule fires, a frame's Narrative simply carries forward --- \emph{free
-continuation}, the reversible default. \emph{Free} here means
-information-preserving, not absent: evaluating a rule is itself a write, for the
-plain computing reason that a read is an operation and it \emph{returns data},
-and in a substrate that is graph all the way down there is no return channel
-outside the structure, so the returned value materialises as structure. What it
-\emph{costs} is set by the substrate that runs the rules and not universally ---
-Landauer \citep{landauer1961} is a floor in the physical substrate, not the price
-in any --- and a frame cannot see its own runner's charge, which is why
-continuation presents as free from inside. Nothing in the mapping below depends
-on the economics: what it uses is that free continuation is \emph{injective},
-hence reversible, which is a structural fact independent of what anything charges
-for it. The invariant speed $c$ is the frame's own change-throughput unit, $1$ by
-construction, and therefore not directly readable from inside, since any in-frame
-measurement is funded by the same throughput and returns $1$ whatever the
-underlying rate. A frame reaches a \emph{number} for $c$ only indirectly, by
-measurement plus retention plus inference, which is both why the unit-reading
-carries no risk and why the cross-frame claim is empirical at all. Frames compose
-by \emph{nesting}, a subframe in a superframe; a correlation invisible in each
-subframe is a dimension of the superframe.
+Seven notions carry the mapping below. Each is defined in one of the three papers
+named above; this section fixes the references and adds nothing.
+A \emph{frame} is a subgraph that runs (Graphic Equalisation's
+Definition~\ref{GE-def:frame}), and frames compose by \emph{nesting}, a graph being a
+subset of its container (its Proposition~\ref{GE-prop:no-direct-self-alter}).
+A frame's state is its \emph{Narrative}, the standing structure it carries forward
+(the momentum paper's Definition~\ref{NM-def:narrative}), and where a frame
+instantiates a direction --- optional in general, present in this setting --- that
+Narrative has a magnitude and a direction (the momentum paper's
+Definition~\ref{NM-def:narrative-momentum}); the state proper is the \emph{internal}
+Narrative, as against what another frame reads off it (its
+Definition~\ref{NM-def:internal-external}).
+A \emph{closure cycle} is the loop a realisation must close, the cycle being the unit
+of inferred time (Graphic Equalisation's Proposition~\ref{GE-prop:cycle-unit}), and
+\emph{phase} is position on that cycle rather than a signed time (its
+Remark~\ref{GE-rem:phase-not-time}) --- so an amplitude is $r\,e^{i\theta}$.
+A \emph{realisation} is a collapse, a local write that picks one outcome from the
+admissible set and carries a weight (Graphic Equalisation's
+Definition~\ref{GE-def:collapse}), and
+realisations are strictly ordered, the order carried by the rules rather than by a
+clock (its Proposition~\ref{GE-prop:partial-order}).
+\emph{Free continuation} is what a frame does when no rule fires, the
+information-preserving default (the momentum paper's
+Definition~\ref{NM-def:free-continuation}); \emph{free} means information-preserving
+and not absent, since evaluating a rule is itself a write (Graphic Equalisation's
+Proposition~\ref{GE-prop:evaluation-writes}), and all the mapping below uses is that
+free continuation is \emph{injective}, hence reversible.
+Nothing is privileged: there is no god's-eye frame, and therefore no privileged phase
+origin and no privileged measurement basis (its Axiom~\ref{GE-ax:no-view}).
+\emph{Entanglement} is a superframe dimension: a subframe's local state is mixed
+because the purity is a dimension of the larger frame (the physics companion's
+Proposition~\ref{PH-prop:mixed} and its Corollary~\ref{PH-cor:nonlocal}).
 
 \section{The claim, honestly sized}\label{sec:claim}
 The substrate \emph{recovers} the Born rule --- reproduces it within its own
@@ -99,9 +107,11 @@ selection --- rather than \emph{deriving} it as a forced necessity.
 \begin{remark}[Recovery is the honest verb, and the right one]\label{rem:recover}
 Derivation per se would compel Born from primitives. The framework forces almost
 nothing, and that is the point of a graph substrate: what survives every
-attempted removal is a container relation across which rules run, and essentially
-everything else is contingent rule-content, as with the number of spatial
-dimensions or the gauge group. A contingent law can only be recovered given its
+attempted removal is a container relation across which rules run (Graphic
+Equalisation's Remark~\ref{GE-rem:only-g}), and essentially everything else is
+contingent rule-content, as with the number of spatial dimensions (the physics
+companion's Section~\ref{PH-sec:dimensions}) or the gauge group (its
+Remark~\ref{PH-rem:gauge-contingent}). A contingent law can only be recovered given its
 rule-content, never derived as compelled. Some steps below are forced \emph{given
 the premises} --- the squared modulus, from no-privilege together with the
 additivity of decohered alternatives --- while the premises themselves are
@@ -132,15 +142,23 @@ weights, compose in order, and depend only on the present.
 \begin{proposition}[The substrate instantiates the operational-probabilistic core]\label{prop:opt}
 Convex states, affine effects, a transformation monoid with reversibles,
 composition, and normalised probabilities are each supplied by the substrate's
-weighted, ordered realisations together with its history-optional,
-present-structure-acts first law. The instantiation rests on the classical
+weighted, ordered realisations together with the history-optional,
+present-structure-acts first law (the momentum paper's Section~\ref{NM-sec:law};
+Graphic Equalisation's Corollary~\ref{GE-cor:history}). The instantiation rests on the classical
 total-probability backbone and on no quantum assumption.
 \end{proposition}
 
-Ingredient by ingredient, with the substrate structure that supplies each:
+Ingredient by ingredient, with the substrate structure that supplies each. Four
+ratings are used here and in Section~\ref{sec:axioms}: \emph{solid}, the substrate
+structure is the requirement's statement; \emph{earned}, derived here from a
+substrate principle rather than read off one; \emph{plausible}, a commitment of the
+right kind, with statement-match not shown; \emph{contingent}, rule-content, admitted
+and self-located rather than supplied.
 
 \begin{center}\small
-\begin{tabular}{@{}p{0.26\textwidth}p{0.51\textwidth}p{0.11\textwidth}@{}}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.26\textwidth}
+                >{\raggedright\arraybackslash}p{0.51\textwidth}
+                >{\raggedright\arraybackslash}p{0.11\textwidth}@{}}
 \toprule
 \textbf{OPT requirement} & \textbf{Supplied by} & \textbf{Rating}\\
 \midrule
@@ -170,8 +188,8 @@ topological closure and compactness of the convex state space; the full
 composition axioms, associativity of sequential and parallel composition and the
 interchange law, which should follow from the ordering and nesting of realisations
 but each need checking; and the no-restriction and effect-realisability
-niceties. None of these is the ``does it convex-linearise at all'' worry that
-Level 0 originally named. That worry is resolved; these are carried forward in
+niceties. None of these is the question whether the state space convex-linearises
+at all, which Level 0 answers; they are carried forward in
 Section~\ref{sec:residuals}.
 
 \section{The distinctively-quantum axioms, mapped}\label{sec:axioms}
@@ -198,7 +216,9 @@ structure, from two different principles, is the substantive positive finding of
 this note. The remaining correspondences are weaker and are marked as such:
 
 \begin{center}\small
-\begin{tabular}{@{}p{0.30\textwidth}p{0.47\textwidth}p{0.11\textwidth}@{}}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.30\textwidth}
+                >{\raggedright\arraybackslash}p{0.47\textwidth}
+                >{\raggedright\arraybackslash}p{0.11\textwidth}@{}}
 \toprule
 \textbf{Axiom} & \textbf{Substrate structure} & \textbf{Rating}\\
 \midrule
@@ -206,7 +226,7 @@ Continuity of reversible transformations (Hardy; classical theory fails exactly 
 Purification (CDP; fails classically) & Entanglement as a superframe dimension: a mixed subframe state is the restriction of a pure superframe state. & solid\\
 Phase- and context-independence & No privileged phase origin and no privileged frame: probability is invariant under global phase and the same across measurement bases. & earned\\
 Probability & Weighted realisations; frequencies over an ensemble of collapses from one possibility structure. & plausible\\
-Simplicity and ideal compression & Minimum description length as a native commitment \citep{rissanen1978}. & plausible\\
+Simplicity and ideal compression & Minimum description length as a native commitment (Graphic Equalisation's Remark~\ref{GE-rem:mdl-ontic}) \citep{rissanen1978}. & plausible\\
 Subspaces & Subframe-as-frame: restriction to a subset of distinctions behaves as a smaller frame. & plausible\\
 Perfect distinguishability & Distinctions are first-class; a state that is not completely mixed carries one. & plausible\\
 Pure conditioning & Collapse of a pure Narrative yields a definite realised outcome. & plausible\\
@@ -221,24 +241,12 @@ one the substrate enforces is not shown. Marking them so is the point of the
 table; a reader who upgrades one of them is disagreeing with a rating, which is
 the intended form of the disagreement.
 
-\begin{proposition}[The squared modulus, given complex linear amplitudes and no privileged phase]\label{prop:square}
-Decohered alternatives are classically exclusive, so their probabilities add.
-Averaging the combined modulus over the relative phase,
-\[
-\big\langle f(|a\,e^{i\theta}+b|)\big\rangle_\theta = f(|a|)+f(|b|),
-\]
-since the cross term $2\,\mathrm{Re}(a^{\ast}b\,e^{i\theta})$ averages to zero.
-The square, $f(x)\propto x^{2}$, satisfies this and the obvious alternatives do
-not: a quartic overshoots by the surviving $\langle\cos^{2}\rangle=\tfrac12$
-term, and the linear undershoots. This \emph{selects} the square among the
-natural candidates; it does not prove it unique.
-\end{proposition}
-
-The uniqueness is exactly what Gleason supplies \citep{gleason1957}: over all
-measurement contexts, $|\cdot|^{2}$ is the only such measure in dimension at
-least three. What the framework supplies to Gleason are his premises --- a
-vector-valued state, from the linearity step, and a context-independent measure,
-from the absence of a privileged rule set --- and Gleason supplies what the
+The squared modulus is selected among the natural candidates by phase-averaged
+additivity, and made unique by Gleason, in the physics companion (its
+Proposition~\ref{PH-prop:born} and the argument following it); this note uses the
+result. What the framework supplies to Gleason \citep{gleason1957} are his premises
+--- a vector-valued state, from the linearity step, and a context-independent
+measure, from the absence of a privileged rule set --- and Gleason supplies what the
 framework does not.
 
 \begin{remark}[Two supporting identifications]\label{rem:identifications}
@@ -280,13 +288,14 @@ The framework forces almost nothing. Complex-over-real is contingent rule-conten
 exactly as the number of spatial dimensions is. Local tomography is therefore not
 a gap to be closed by a forcing argument; it is the signature of a contingent
 selection. A real-amplitude composition, $K_{AB}=10$, is another admissible
-configuration. Our universe is the complex one, self-located.
+configuration. Our universe is the complex one, self-located (the physics
+companion's Proposition~\ref{PH-prop:self-location}).
 \end{proposition}
 
-\begin{remark}[Why the forcing reading was a misframing]\label{rem:misframing}
-Treating ``does the substrate \emph{force} the complex composite?'' as the open
-question was an error of the framework's own kind, not merely an unproven step.
-Seeking to force complex over real would contradict the framework's stance that
+\begin{remark}[Why forcing is the wrong question]\label{rem:misframing}
+Whether the substrate \emph{forces} the complex composite is not the open question,
+and asking it would be an error of the framework's own kind rather than merely an
+unproven step. Seeking to force complex over real would contradict the framework's stance that
 it never forces contingent physics. The reading that survives is narrower and
 does real work: the admissible complex configuration yields $K_{AB}=16$ and the
 admissible real one yields $10$; a real composite would be a superframe that is
@@ -298,47 +307,30 @@ and it is the same status every other contingent constant in this programme has.
 Given the contingent choice, the Born rule and the Hilbert structure follow via
 the mapping and the cited reconstructions --- which is how the framework treats
 all physics: shapes follow from contingent rule-content, the rule-content itself
-never forced. Among the post-2011 reconstructions, \citet{masanes2011} obtain
+never forced. Of the post-2011 reconstructions, \citet{masanes2011} obtain
 finite-dimensional quantum theory from five physical requirements on states and
-transformations, and their formulation is the one this note would most like tested
-against, since its requirements are stated on single systems plus a composition
-rule --- which is exactly the seam where the substrate's answer turns contingent
-rather than forced. \citet{hoehn2017} and \citet{hoehnwever2017} reach qubit
-quantum theory from rules on an observer's acquisition of information, and are
-the nearest in shape to the substrate's own machinery; worth noting on the other
-side of the ledger is that those rules yield the correlation structure of qubits
-and rebits alike, so they do not by themselves select complex over real, which is
-independent support for reading the selection as contingent.
-\citet{selby2021} state every postulate diagrammatically, with symmetric
-purification central, which is the nearest in \emph{formal register}: a
-compositional, diagrammatic axiom set is written in the same currency as a typed
-graph substrate with subframe nesting, so the mapping attempted here is a
-translation between two graphical calculi rather than between a graph and a convex
-body. That is a reason to think the mapping can be checked, not evidence that it
-holds. \citet{muller2021} surveys the programme as a whole.
+transformations, and theirs is the formulation this note would most like tested
+against, since those requirements are stated on single systems plus a composition
+rule --- exactly the seam where the substrate's answer turns contingent rather than
+forced. Independent support for reading the selection as contingent comes from
+\citet{hoehn2017} and \citet{hoehnwever2017}, whose rules on an observer's
+acquisition of information yield the correlation structure of qubits and rebits
+alike and so do not by themselves select complex over real. The rest of the
+reconstruction landscape is the physics companion's
+(its Section~\ref{PH-sec:prior-art}).
 
 \section{What this reconciles}\label{sec:reconcile}
-On one substrate, quantum theory and relativity are not rivals: \emph{collapse} is
-an in-frame event, a local write, discrete; \emph{relativity} is a cross-frame
-map, continuous; and they are joined at $c$. Special and general relativity
-reconcile as one change-budget spent two ways, with the invariance of $c$ a
-definitional consequence given the substrate's own units --- the unit-reading
-itself carries no risk, and the falsifiable content is the cross-frame claim that
-aperture self-calibrates, so that two frames each obtaining $c$ by the indirect
-route cannot be exhibited reaching different values for one signal. The
-quantum--relativity reconciliation is \emph{structural} --- one substrate, the
-event/map seam --- with Born \emph{recovered}.
-
-This is emphatically \textbf{not} a quantum theory of gravity: no field is
-quantised, no metric derived, no dimensionless constant fixed. What is reconciled
-is the \emph{conflict}, at the level of shape. A rival recovery from a comparably
-admissibility-flavoured base reaches a different answer from the same kind of
-premises --- constructor theory \citep{deutsch2013}, in which probability is not
-fundamental at all and what look like probabilities emerge from the
-unpredictability of measurement on superinformation media \citep{marletto2016} ---
-and the recovery here is exposed to it rather than reinforced by it. The
-frame-relative reading of collapse on which all of this rests has its nearest
-ancestor in relational quantum mechanics \citep{rovelli1996}.
+Special and general relativity reconcile on this substrate as one change-budget
+spent two ways, with the invariance of $c$ a definitional consequence rather than a
+postulate, and quantum collapse and relativity are joined at $c$ as the in-frame
+event and the cross-frame map of one change-substrate (the physics companion's
+Proposition~\ref{PH-prop:sr-gr}, its Corollary~\ref{PH-cor:reconcile}, and its
+Section~\ref{PH-sec:collapse}). With Born \emph{recovered} on the same primitives,
+Born, SR and GR stand reconciled on one substrate --- the reconciliation is that
+companion's, argued in its subsection on Born, SR and GR, and it is a
+reconciliation of the \emph{conflict} at the level of shape, not a quantum theory
+of gravity: no field is quantised, no metric derived, no dimensionless constant
+fixed.
 
 \section{Residuals}\label{sec:residuals}
 What is open, unaddressed, and named:
@@ -358,8 +350,9 @@ linearity; it does not prove it, and the linearity of the imposed supergraph map
 is not handed over for free. This is the one posit the recovery rests on.
 \item \textbf{The squaring argument.} Whether the phase-average selection is tight
 enough on its own, or whether the full Gleason content is needed to reach
-uniqueness. As stated in Proposition~\ref{prop:square} it selects rather than
-proves, and Gleason is cited for the rest.
+uniqueness. As the physics companion states it (its Proposition~\ref{PH-prop:born}
+and the argument following it) the phase average selects rather than proves, and
+Gleason is cited for the rest.
 \item \textbf{Composition.} Under the natural reading the composite is
 local-tomographic and complex. Whether that reading is forced, permitted, or
 wrong is not settled here. The formulation of \citet{masanes2011} is the one this
@@ -371,10 +364,6 @@ doing honest work.
 subspaces, distinguishability and pure conditioning are genre-matches to native
 commitments, not statement-matches. Each would need tightening before the cited
 theorems could be applied without qualification.
-\item \textbf{In-frame energy as a count.} The identification on which the
-spectrum floor of the physics companion rests is clean in the occupation-number
-picture and less clean for interacting systems, where the count is not sharp and
-the physical states are dressed. It is not established here for that case.
 \end{enumerate}
 
 \section{Falsifiability commitments}\label{sec:falsifiability}
@@ -390,9 +379,12 @@ the two and is still a boundary rather than an annihilation.
 if the substrate does not instantiate an OPT --- if convex states, affine effects,
 a transformation monoid with reversibles, composition and normalised probabilities
 cannot all be had from weighted ordered realisations and the history-optional first
-law --- or if the hygiene conditions of Section~\ref{sec:residuals} cannot be met
-for the frames this note is about. Everything below is conditional on this, so it
-fails with it.
+law. Everything below is conditional on this, so it fails with it.
+\item \textsc{[detail]}~\textbf{The Level-0 hygiene conditions.} Fails if the
+conditions of Section~\ref{sec:residuals} --- a finite tomographic dimension,
+topological closure and compactness of the state space, the full composition axioms
+--- cannot be met for the frames this note is about. Each is a mechanism the note
+could lose and replace without losing the instantiation above.
 \item \textsc{[detail]}~\textbf{Linearity from free continuation.} Fails if the
 step from uncoupled independent continuation to full additivity and
 norm-preservation cannot be made rigorous --- in which case the vector structure is
@@ -406,34 +398,35 @@ failure elsewhere, since they are the axioms that separate quantum from classica
 and are what Proposition~\ref{prop:crux} claims.
 \item \textsc{[detail]}~\textbf{The squared modulus.} Fails if, given complex
 linearly superposing amplitudes and no privileged phase, the probability is not the
-squared modulus; and the selection argument of Proposition~\ref{prop:square} fails
-separately if another natural candidate satisfies the phase-averaged additivity,
-leaving the whole weight on Gleason.
+squared modulus; and the phase-averaged selection argument of the physics companion
+(its Proposition~\ref{PH-prop:born} and the argument following it) fails separately
+if another natural candidate satisfies the phase-averaged additivity, leaving the
+whole weight on Gleason.
+\item \textsc{[detail]}~\textbf{The composition seam.} Fails if the substrate's
+composition rule, tested against requirements stated on single systems plus a
+composition rule \citep{masanes2011}, yields a composite that is neither the complex
+admissible configuration ($K_{AB}=16$) nor the real one ($K_{AB}=10$) --- which
+would make the contingency verdict of Proposition~\ref{prop:contingent} a verdict
+about the wrong set.
 \item \textsc{[shape]}~\textbf{Complex over real is contingent.} Fails if the
 framework must \emph{force} complex over real rather than admit both and
 self-locate --- that is, if a substrate that admits a real-amplitude composition is
 thereby shown to be the wrong substrate, rather than one whose selection among
 admissible configurations is a matter of where the observer is.
-\item \textsc{[detail]}~\textbf{Recovery, not derivation.} Fails as an honest sizing
-if any step above is read as compelling the Born rule from primitives. The claim is
-the arrangement, and it is refused if the arrangement is presented as a necessity.
 \end{enumerate}
 
 \noindent\emph{Scope note (not a falsifier).} This note is shape-level and not
 quantitative: it fixes no dimensionless constant, derives no field equation, and
-offers no theory of quantum gravity.
+offers no theory of quantum gravity. Nor is it a derivation: the claim is the
+\emph{arrangement}, and no step above is offered as compelling the Born rule from
+primitives.
 
 \begin{thebibliography}{99}
 
-\bibitem[Chiribella et al.(2011)]{chiribella2011}
+\bibitem[Chiribella et~al.(2011)]{chiribella2011}
 Giulio Chiribella, Giacomo Mauro D'Ariano, and Paolo Perinotti.
 \newblock Informational derivation of quantum theory.
 \newblock \emph{Physical Review A}, 84(1):012311, 2011.
-
-\bibitem[Deutsch(2013)]{deutsch2013}
-David Deutsch.
-\newblock Constructor theory.
-\newblock \emph{Synthese}, 190(18):4331--4359, 2013.
 
 \bibitem[Gleason(1957)]{gleason1957}
 Andrew M. Gleason.
@@ -445,50 +438,25 @@ Lucien Hardy.
 \newblock Quantum theory from five reasonable axioms.
 \newblock arXiv:quant-ph/0101012, 2001.
 
-\bibitem[H\"ohn and Wever(2017)]{hoehnwever2017}
-Philipp A. H\"ohn and Christopher S.~P. Wever.
-\newblock Quantum theory from questions.
-\newblock \emph{Physical Review A}, 95(1):012102, 2017.
-
 \bibitem[H\"ohn(2017)]{hoehn2017}
 Philipp A. H\"ohn.
 \newblock Toolbox for reconstructing quantum theory from rules on information acquisition.
 \newblock \emph{Quantum}, 1:38, 2017.
 
-\bibitem[Landauer(1961)]{landauer1961}
-Rolf Landauer.
-\newblock Irreversibility and heat generation in the computing process.
-\newblock \emph{IBM Journal of Research and Development}, 5(3):183--191, 1961.
-
-\bibitem[Marletto(2016)]{marletto2016}
-Chiara Marletto.
-\newblock Constructor theory of probability.
-\newblock \emph{Proceedings of the Royal Society A}, 472(2192):20150883, 2016.
+\bibitem[H\"ohn and Wever(2017)]{hoehnwever2017}
+Philipp A. H\"ohn and Christopher S.~P. Wever.
+\newblock Quantum theory from questions.
+\newblock \emph{Physical Review A}, 95(1):012102, 2017.
 
 \bibitem[Masanes and M\"uller(2011)]{masanes2011}
 Llu\'is Masanes and Markus P. M\"uller.
 \newblock A derivation of quantum theory from physical requirements.
 \newblock \emph{New Journal of Physics}, 13(6):063001, 2011.
 
-\bibitem[M\"uller(2021)]{muller2021}
-Markus P. M\"uller.
-\newblock Probabilistic theories and reconstructions of quantum theory.
-\newblock \emph{SciPost Physics Lecture Notes}, 28, 2021.
-
 \bibitem[Rissanen(1978)]{rissanen1978}
 Jorma Rissanen.
 \newblock Modeling by shortest data description.
 \newblock \emph{Automatica}, 14(5):465--471, 1978.
-
-\bibitem[Rovelli(1996)]{rovelli1996}
-Carlo Rovelli.
-\newblock Relational quantum mechanics.
-\newblock \emph{International Journal of Theoretical Physics}, 35:1637--1678, 1996.
-
-\bibitem[Selby et al.(2021)]{selby2021}
-John H. Selby, Carlo Maria Scandolo, and Bob Coecke.
-\newblock Reconstructing quantum theory from diagrammatic postulates.
-\newblock \emph{Quantum}, 5:445, 2021.
 
 \end{thebibliography}
 \end{document}
