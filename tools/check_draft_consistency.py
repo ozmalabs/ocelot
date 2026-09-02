@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 r"""Check the formal paper set for draft-string and revision inconsistencies.
 
-Six defects this catches, all of which have actually occurred:
+Seven defects this catches, all of which have actually occurred:
 
   1. Two documents on different draft strings (the set is bumped together, so a
      reader comparing two papers is never comparing two drafts).
@@ -20,6 +20,13 @@ Six defects this catches, all of which have actually occurred:
      took a manifest of content hashes to ask the question that mattered --
      "is this the same text r27 named yesterday?" Cost: five cleared papers
      edited without a bump, caught by hand while preparing a release.
+  7. A bibliography out of alphabetical order. Author-year entries are hand-
+     maintained here, and a new citation lands wherever the edit happened to be
+     -- three separate slips in one session, one of them filing Khalfin under
+     Kn. Readers resolve author-year by scanning, so an out-of-order entry is
+     one a reader concludes is absent. Ties (same leading surname) are left
+     alone: single-author before multi-author is a real convention and not this
+     tool's business.
   5. Revision-history language: a document narrating its own drafting ("an
      earlier version of this remark claimed ..."). A paper is what it says
      now; what a draft used to say subtracts. Scanned on FLATTENED text,
@@ -187,6 +194,40 @@ def main() -> int:
                 f"is still r{cur_rev.group(1)} --- two texts would answer to one "
                 f"version string; bump before committing"
             )
+
+    # Bibliography order. Author-year entries are hand-maintained and a new
+    # citation lands wherever the edit was, so these drift. The tree already
+    # holds 44 such pairs across ten papers, predating this check; fixing them
+    # is a mechanical reshuffle of ten bibliographies and is not this guard's
+    # job. They are ENUMERATED rather than counted or characterised -- this
+    # repository's own standing rule, learned from a status line that stayed
+    # quotable while the thing it described grew. A pair on the list is
+    # declared debt. A pair not on it is new, and fails.
+    #
+    # The key is the LEADING surname only, so "Hohn" and "Hohn and Wever" tie
+    # and either order passes: single-author-before-multi-author is a real
+    # convention and not this tool's business.
+    def _surname(label):
+        t = label.split("(")[0]
+        t = re.split(r" and | et al\.", t)[0]
+        t = re.sub(r'\\[A-Za-z]+', "", t)
+        return re.sub(r"[^A-Za-z]", "", t).lower()
+    base_path = FORMAL / "bib_order_baseline.txt"
+    baseline = set()
+    if base_path.exists():
+        baseline = {l.strip() for l in base_path.read_text(encoding="utf-8").splitlines()
+                    if l.strip() and not l.startswith("#")}
+    for tex in sorted(FORMAL.glob("*.tex")):
+        labels = re.findall(r"\\bibitem\[([^\]]*)\]", tex.read_text(encoding="utf-8"))
+        keys = [_surname(l) for l in labels]
+        for i in range(1, len(keys)):
+            if keys[i] and keys[i - 1] and keys[i] < keys[i - 1]:
+                entry = f"{tex.name}::{labels[i]}"
+                if entry not in baseline:
+                    problems.append(
+                        f"{tex.name}: bibliography out of order --- "
+                        f"'{labels[i]}' follows '{labels[i-1]}' (new; not in baseline)"
+                    )
 
     if problems:
         print(f"draft consistency: {len(problems)} problem(s)\n")
