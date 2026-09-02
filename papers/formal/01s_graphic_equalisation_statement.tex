@@ -8,13 +8,21 @@
 \documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,enumitem,microtype}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,array,booktabs,enumitem,microtype}
 \usepackage{natbib}
 \usepackage[margin=1in]{geometry}
 \usepackage{fancyhdr}
 \usepackage{xr-hyper}
 \usepackage{hyperref}
 \externaldocument[IS-]{00_is}
+\externaldocument[PH-]{01a_graphic_equalisation_physics_grounding}
+\externaldocument[MS-]{01b_graphic_equalisation_mind_and_self_grounding}
+\externaldocument[SM-]{02_seldon_manifolds_theory_referenced}
+\externaldocument[SG-]{02a_seldon_manifolds_psychological_grounding}
+\externaldocument[NM-]{03_law_of_narrative_momentum_theory_referenced}
+\externaldocument[NV-]{04_narrativium_theory_referenced}
+\externaldocument[FR-]{05_frames_relation_and_the_empty_limit}
+\externaldocument[AS-]{06_assessing_an_account_of_this_kind}
 \newtheorem{axiom}{Axiom}
 \newtheorem{definition}{Definition}[section]
 \newtheorem{theorem}[definition]{Theorem}
@@ -28,10 +36,10 @@
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1 / statement / from long r278}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1 / statement / from long r279}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1 / statement / from long r278}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1 / statement / from long r279}}\renewcommand{\headrulewidth}{0pt}}
 
 \title{The Law of Graphic Equalisation\\\large Statement}
 \author{Matthew Parslow\\Independent Researcher}
@@ -142,7 +150,7 @@ A distinction is doing the work there. Being a
 frame is being individuated (Definition~\ref{def:frame}), and individuation is performed by the
 container, not by the thing: a boundary belongs to the frame that draws it. So a structure with no
 rules of its own is still a frame --- something else instantiated its boundary --- and what it lacks
-is not framehood but the capacity to individuate anything itself. Stripping $r$ does not leave ``no frame'', and reading it so would invalidate the mind companion's result, which reasons from a rock's being a frame to the universe's being one.
+is not framehood but the capacity to individuate anything itself. Stripping $r$ does not leave ``no frame'', and reading it so would invalidate the mind companion's result, which reasons from a rock's being a frame to the universe's being one (its Proposition~\ref{MS-prop:minimal-universe}).
 \end{remark}
 
 What this paper postulates over \emph{Is} is the ledger of Table~\ref{tab:ledger}: named entries, not
@@ -155,11 +163,11 @@ a count, each with where it is argued. The prose defending each entry is the lon
 \textbf{Status} & \textbf{Entry} & \textbf{Where argued, and what it replaced}\\
 \midrule
 Inherited &
-Both of the companion's propositions: to be is to stand in relation, and to cohere in it &
-\emph{Is}, Propositions~\ref{IS-prop:is} and~\ref{IS-prop:cohere}. Taking the second adds nothing, the companion deriving it from the first plus the measure (Remark~3.10 of the long paper (\emph{Coherence, not relation, is the criterion}))\\[2pt]
+Both of \emph{Is}'s propositions: to be is to stand in relation, and to cohere in it &
+\emph{Is}, Propositions~\ref{IS-prop:is} and~\ref{IS-prop:cohere}. Taking the second adds nothing, since it is derived there from the first plus the measure (Remark~3.10 of the long paper (\emph{Coherence, not relation, is the criterion}))\\[2pt]
 Admitted &
 That anything \emph{happens} &
-Unpaid, and one of two --- the other being the companion's claim that there is anything at all\\[2pt]
+Unpaid, and one of two --- the other being \emph{Is}'s claim that there is anything at all\\[2pt]
 Taken to follow &
 The transformations $r$, and $\Gamma$ with them &
 Something has to do the happening; the least graph that does anything is a rule. Two candidates remain open\\[2pt]
@@ -167,8 +175,8 @@ Postulated &
 A realisation operator; a destroy\slash preserve distinction &
 The attempt to dissolve collapse traded it for union\\[2pt]
 Not postulated, a consequence &
-Axiom~$-1$ &
-Follows from the companion's claim plus the measure (Remark~2.2 of the long paper (\emph{The axiom in bits})); guard in this paper, commitment in the groundings\\
+Axiom~\ref{ax:no-view} &
+Follows from \emph{Is}'s claim plus the measure (Remark~2.2 of the long paper (\emph{The axiom in bits})); guard in this paper, commitment in the groundings\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -260,8 +268,8 @@ located here rather than treated as a class of its own.
 A frame's \emph{capability} is what its gates admit --- what it can represent and what it can do. Its
 \emph{accessibility} is what it can \emph{reach} from where it stands, given what it holds to spend. A
 disclosure moves a gate and changes capability; whether the reachable point can then be crossed to
-depends on the Narrativium measured for the frame. The companion defining that quantity types it as a
-\emph{capacity} rather than as a cost, and keeps measurement and expenditure distinct; the phrasing
+depends on the Narrativium measured for the frame. \emph{Narrativium}, which defines that quantity, types it as a
+\emph{capacity} rather than as a cost (its Remark~\ref{NV-rem:narrativium-standing}), and keeps measurement and expenditure distinct; the phrasing
 here follows it.
 \end{definition}
 \begin{definition}[Information hazard]\label{def:info-hazard}
@@ -313,7 +321,7 @@ container only as the region of it that it is, so the distribution of what is fr
 what is directly writeable is a characterisation of a common configuration rather than a necessity.
 
 \begin{proposition}[Cost characteristically reduces to the write]\label{prop:economics}
-In the substrate as characterised here, the boundary relation itself is free, and the standing structure persisting is free \emph{to the frame}; the operation that costs is a delta that writes over that structure, and $r$ is what writes. Whether persistence is free \emph{simpliciter} is set by the rules of the superframes, which may sustain a frame without charge or require a write to keep it standing, and the substrate does not decide between them. \emph{Free} here means information-preserving rather than absent: evaluating a rule is itself a write, and is unpaid because it destroys nothing (Remark~7.16 of the long paper (\emph{Evaluation is a write, and that is why it is free})). To that extent
+In the substrate as characterised here, the boundary relation itself is free, and the standing structure persisting is free \emph{to the frame}; the operation that costs is a delta that writes over that structure, and $r$ is what writes. Whether persistence is free \emph{simpliciter} is set by the rules of the superframes, which may sustain a frame without charge or require a write to keep it standing, and the substrate does not decide between them. \emph{Free} here means information-preserving rather than absent: evaluating a rule is itself a write, and is unpaid because it destroys nothing (Remark~7.16 of the long paper (\emph{Where the check goes, and why the free case is the empty one})). To that extent
 \[
 \boxed{\text{cost is paid by rules.}}
 \]
@@ -476,7 +484,7 @@ The asynchronous, locally synchronous structure a frame observes (Remark~11.3 of
 
 Calling the runner unseeable rather than unseen runs two claims together. That a runner is hidden is \emph{contingent}. Nothing forbids a runner from exposing its own state to what it runs, and computational reflection does exactly that, as this paper acknowledges when placing itself against that literature (Section~18 of the long paper (\emph{Positioning and prior art})); a tower in which each level is available to the one above is a built artefact, not a thought experiment. A runner that does not expose itself is the \emph{well-formed} case, and for the reasons well-formedness always turns on: exposed runner state is structure maintained for work the frame does not do, and each exposure needs a runner of its own to run the reading of it.
 
-What does not depend on the cost model is weaker and survives reflection: \emph{no level is self-transparent}. Reading is an operation whose product lands one level up (Remark~7.16 of the long paper (\emph{Evaluation is a write, and that is why it is free})), so a level cannot hold the reading of itself while being the level that is running. Reflection makes the levels explicit and pays for each; it does not terminate in a level transparent to itself. A frame may therefore be given sight of what runs it, and cannot be given sight of its own running. Since the rules are graph and a frame can read and rewrite them (Definition~\ref{def:frame}), while its own running is not graph it holds, the asymmetry is exact: a frame is transparent to itself in precisely one respect and opaque in precisely the other. \emph{It can know what it is and cannot observe its being it.} Self-modification is available; self-observation at the level of the modifying is not.
+What does not depend on the cost model is weaker and survives reflection: \emph{no level is self-transparent}. Reading is an operation whose product lands one level up (Remark~7.16 of the long paper (\emph{Where the check goes, and why the free case is the empty one})), so a level cannot hold the reading of itself while being the level that is running. Reflection makes the levels explicit and pays for each; it does not terminate in a level transparent to itself. A frame may therefore be given sight of what runs it, and cannot be given sight of its own running. Since the rules are graph and a frame can read and rewrite them (Definition~\ref{def:frame}), while its own running is not graph it holds, the asymmetry is exact: a frame is transparent to itself in precisely one respect and opaque in precisely the other. \emph{It can know what it is and cannot observe its being it.} Self-modification is available; self-observation at the level of the modifying is not.
 \end{proposition}
 \begin{proposition}[A primitive is another graph's running, exposed]\label{prop:runner-recursion}
 Nothing supplying a primitive is a substance apart from graph data. An operator is the observable running of some other graph, which has primitives of its own, supplied in the same way. A graph's ``primitives'' are therefore the observable running of other graphs, exposed as an operator set, with no primitive runner at the base. A single chain --- code over machine code over microcode over silicon over electromagnetism over quantum physics --- is one path through that provision, and a common one, but not its shape: a process takes arithmetic from its processor, file operations from a kernel that relays them to a device, and remote calls from a machine that is not beneath it in any sense. Fan-out and relay are ordinary, and the tower is the degenerate case in which provision happens to be a chain. The regress bottoms not at a floor but at the epistemic frontier of Section~1 of the long paper (\emph{Scope and epistemic status}): below the lowest measured level is the unclaimed pre-relational substrate.
@@ -489,7 +497,7 @@ The account forbids one thing: \emph{a frame cannot get outside itself}. Concret
 what is actually derivable here, it takes three forms. A frame cannot be transparent to itself at the
 level it is running at (Proposition~\ref{prop:runner-opaque}). It cannot measure its own throughput in
 units independent of it, since the measurement is funded by the throughput --- which leaves a number
-obtainable and its absolute scale not. And it cannot hold a view from nowhere, which is Axiom~$-1$.
+obtainable and its absolute scale not. And it cannot hold a view from nowhere, which is Axiom~\ref{ax:no-view}.
 \end{proposition}
 
 That prohibition has a formal analogue --- a language of sufficient strength cannot define its own
@@ -553,7 +561,7 @@ title, so the omission stays visible rather than becoming a claim.
 \item \textsc{[shape]}~\textbf{Provenance is never closed by inference.} Fails if a frame can \emph{settle} the provenance of its own operator set from inside: if some in-frame procedure establishes, rather than merely evidences, whether its operators are self-supplied, how many distinct structures supply them, or whether a serial hidden supply underlies an apparently asynchronous frame. Not that primitives fail to leak --- they do, and Proposition~\ref{prop:leak} says so. This is the single prohibition (Proposition~\ref{prop:prohibition}) in operational form, argued in Section~15 of the long paper (\emph{The single prohibition, and its formal core}).
 \item \textsc{[detail]}~\textbf{Solutions are nearly unique under a binding constraint.} Hypothesis~\ref{hyp:cheap-cut}, the posit under Propositions~\ref{prop:convergence-observed} and~\ref{prop:compression-convergence}. Fails if structures optimising hard against the same binding constraint, over the same region, are exhibited arriving at arrangements that do not resemble each other --- in which case constraint narrows the space without selecting within it, and both propositions weaken to that.
 \item \textsc{[detail]}~\textbf{Cost is the write.} Fails if the boundary relation itself, or the retention of standing structure, carries an irreducible cost that is not any write's --- a frame charged for holding its boundary open, or for keeping structure standing, where no delta is written and none is occasioned. Those two are the non-write costs Proposition~\ref{prop:economics} itself names as free, so they are where the claim is exposed; reading is not the test, since a paid read is a write here (Proposition~\ref{prop:evaluation-writes}) and the falsifier would be absorbed rather than met. Marked \textsc{[detail]} because Remark~\ref{rem:writeability} already carries the distribution of costs as a pattern rather than a universal: a structure with a different writeability profile refines the characterisation rather than breaking the substrate.
-\item \textsc{[shape]}~\textbf{Self-change is subset-change.} The claim is that a graph changes itself and its subgraphs directly (rule-governed), and affects its container only as a subset of it, by propagation through coupling. Fails if a graph changes its container by a means other than changing the region of it that the graph is --- a container-change not propagating from the graph's own subset --- or if a graph can self-terminate without acting on the container.
+\item \textsc{[shape]}~\textbf{Self-change is subset-change.} The claim is that a graph changes itself and its subgraphs directly (rule-governed), and affects its container only as a subset of it, by propagation through coupling. Fails if a graph changes its container by a means other than changing the region of it that the graph is --- a container-change not propagating from the graph's own subset --- or if a \emph{container-supplied} graph can self-terminate without acting on the container (Corollary~10.7 of the long paper (\emph{Severing the channel removes termination})); a self-supplied graph stopping itself is not a counterexample, being the case that corollary excludes.
 \item \textsc{[shape]}~\textbf{Minting is a rule.} Fails if grammar-extension (growth) requires a primitive operation beneath the rules rather than a reflective rule subject to the same economics, admissibility, and antecedent-state principle (Proposition~\ref{prop:antecedent-state}) --- in particular, if a graph can mint its first distinctions without any seeded from its container.
 \item \textsc{[shape]}~\textbf{Residual is inadmissibility.} Fails if a graph-originated deformation can be left as residual by a containing frame that nonetheless admits it under $\Gamma_{W_c}$, or absorbed while inadmissible, so that residual and non-admission come apart.
 \item \textsc{[shape]}~\textbf{Realisation is single-valued.} Fails if realised dynamics are better accounted for by retaining the admissible set than by selecting one member of it --- and the qualification is the whole test: a treatment carrying all continuations forward must recover the observed statistics from the retained structure \emph{without adding a measure over it to do so}, since retention that needs a weighting has reintroduced selection under another name.
@@ -569,9 +577,9 @@ whether or not a change preserves what it followed.
 \item \textsc{[shape]}~\textbf{Termination follows supply, not containment.} Fails if containment alone determines it --- if a subgraph must stop when the graph containing it stops, even where its primitives are supplied from beyond that graph (Proposition~\ref{prop:termination-supply}). The partial case carries its own clause: fails if a frame losing part of its supply must either stop or continue correctly, rather than running with an incomplete operation set and undefined behaviour, or if such a frame can enumerate what it has lost from inside --- which would also falsify the provenance commitment below.
 \item \textsc{[shape]}~\textbf{A boundary is known only by crossing it.} Fails if a frame can \emph{settle} the location of its own admissibility boundary without any write that crosses it. Extrapolation from inside the admissible region evidences a boundary and is not at issue; establishing one would be (Proposition~\ref{prop:boundary-by-crossing}). This is the epistemic member of the same family as the provenance commitment below, and fails in the same manner --- by a procedure that closes the question rather than relocating it.
 \item \textsc{[detail]}~\textbf{Robustness trades against legibility.} Fails if a policy can bound a frame's residuals without reducing what its failures disclose about its grammar --- a handler that both absorbs and reports with no loss (Proposition~\ref{prop:boundary-by-crossing}, argued at Remark~9.12 of the long paper (\emph{Forcing a failure is the instrument, and handlers blunt it})). Cheaply testable in software, and marked \textsc{[detail]} because the account survives its loss with the trade weakened to a tendency.
-\item \textsc{[shape]}~\textbf{Capability and accessibility are distinct.} Fails if what a frame's gates admit and what it can reach from where it stands collapse into one quantity --- if there is no case of a frame able to represent and perform an arrangement it cannot reach, or none of a frame able to reach what it cannot represent (Section~10 of the long paper (\emph{Crossings, and what a disclosure moves})). The coupling claimed between them, that a capacity shortfall narrows aperture and so degrades capability over time, fails separately if aperture width is unaffected by demands on capacity.
+\item \textsc{[shape]}~\textbf{Capability and accessibility are distinct.} Fails if what a frame's gates admit and what it can reach from where it stands collapse into one quantity --- if there is no case of a frame able to represent and perform an arrangement it cannot reach, or none of a frame able to reach what it cannot represent (Definition~\ref{def:capability}). The coupling claimed between them, that a capacity shortfall narrows aperture and so degrades capability over time, fails separately if aperture width is unaffected by demands on capacity.
 \item \textsc{[detail]}~\textbf{A hazard is a signed capability change above a frame-relative threshold.} Fails if a disclosure can be a hazard to a frame in which the negative sign is not admissible, or if the magnitude at which one counts is fixed independently of the frame bearing it rather than as a ratio to what that frame can absorb. Fails also if the threshold sits somewhere other than where the impact forces a write.
-\item \textsc{[shape]}~\textbf{The relativity of grounding is a consequence, and can fail as one.} Fails if a view can be informative without standing in relation to what it views, or if relation is not what carries information here. A consequence has content and can fail, which a posit or a costless guard could not (Remark~2.2 of the long paper (\emph{The axiom in bits})). The second disjunct is the companion's own identification of distinction with relation, so this is where the account is thinnest rather than where it is safest, and it is marked \textsc{[shape]} because what fails with it is the range of everything derived through it.
+\item \textsc{[shape]}~\textbf{The relativity of grounding is a consequence, and can fail as one.} Fails if a view can be informative without standing in relation to what it views, or if relation is not what carries information here. A consequence has content and can fail, which a posit or a costless guard could not (Remark~2.2 of the long paper (\emph{The axiom in bits})). The second disjunct is \emph{Is}'s own identification of distinction with relation, so this is where the account is thinnest rather than where it is safest, and it is marked \textsc{[shape]} because what fails with it is the range of everything derived through it.
 \end{enumerate}
 
 \medskip\noindent\emph{Not carried in this statement:} Partial-order sufficiency; Globally-async/locally-sync; Externalising lengthens the interval before a crossing is legible; No free lunch; Description length is constitutive, not merely a method.

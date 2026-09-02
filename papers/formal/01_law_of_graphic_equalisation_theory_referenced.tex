@@ -1,13 +1,21 @@
 \documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,enumitem,microtype}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,array,booktabs,enumitem,microtype}
 \usepackage{natbib}
 \usepackage[margin=1in]{geometry}
 \usepackage{fancyhdr}
 \usepackage{xr-hyper}
 \usepackage{hyperref}
 \externaldocument[IS-]{00_is}
+\externaldocument[PH-]{01a_graphic_equalisation_physics_grounding}
+\externaldocument[MS-]{01b_graphic_equalisation_mind_and_self_grounding}
+\externaldocument[SM-]{02_seldon_manifolds_theory_referenced}
+\externaldocument[SG-]{02a_seldon_manifolds_psychological_grounding}
+\externaldocument[NM-]{03_law_of_narrative_momentum_theory_referenced}
+\externaldocument[NV-]{04_narrativium_theory_referenced}
+\externaldocument[FR-]{05_frames_relation_and_the_empty_limit}
+\externaldocument[AS-]{06_assessing_an_account_of_this_kind}
 \input{01.counts}
 \newtheorem{axiom}{Axiom}
 \newtheorem{definition}{Definition}[section]
@@ -21,19 +29,19 @@
 \newcommand{\Hist}{\mathcal{H}}
 \title{The Law of Graphic Equalisation --- Theory\\\large Minimal Recursive Dynamics, Collapse, Frame-Relative Identity, and Residual}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \texorpdfstring{\textemdash}{---}\ draft-2026-09-02.1}\\[2pt]2 September 2026 \texorpdfstring{\textbullet}{\textperiodcentered}\ document revision 278}
+\date{\textbf{Draft \texorpdfstring{\textemdash}{---}\ draft-2026-09-02.1}\\[2pt]2 September 2026 \texorpdfstring{\textbullet}{\textperiodcentered}\ document revision 279}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r278}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r279}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r278}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r279}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-09-02.1 r278} (2 September 2026).
+\textbf{DRAFT --- draft-2026-09-02.1 r279} (2 September 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -59,16 +67,17 @@ This paper contains the smallest set of commitments required for the later theor
 \paragraph{The companions, and the short names used here.}
 The documents of this programme are listed below; this paper refers to those it cites, and the table
 is the map. The short name in the middle column is the only form used below. One of them --- the
-construction paper --- is a realisation rather than a result. It is numbered A1 rather than in the series, and is not circulated with it. Where it is
-cited below it is cited as evidence that something was built and behaved as described, which is a claim
-a reader may decline to credit; nothing here depends on how it was built, and this programme is not an
-instruction for building one. The same standard governs the one place below where a \emph{measurement}
-is reported from that programme's own record rather than from a published source: what is offered there
+construction paper --- is a realisation rather than a result. It is numbered A1 rather than in the
+series, and is not circulated with it. It is cited below where its \emph{contents} bear on a claim,
+never as evidence for one; nothing here depends on how it was built, and this programme is not an
+instruction for building one. The one place below where a \emph{measurement}
+is reported from that programme's own record rather than from a published source is governed by the
+standard this paper applies to any such report: what is offered there
 is a pre-registered implementation record which is likewise not circulated with these papers, and it is
-a claim a reader may decline to credit on exactly the same terms.
+a claim a reader may decline to credit on exactly those terms.
 
 \begin{center}\small
-\begin{tabular}{@{}p{0.27\textwidth}p{0.20\textwidth}p{0.44\textwidth}@{}}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.27\textwidth}>{\raggedright\arraybackslash}p{0.20\textwidth}>{\raggedright\arraybackslash}p{0.44\textwidth}@{}}
 \toprule
 \textbf{Title} & \textbf{Short name} & \textbf{Scope}\\
 \midrule
@@ -84,7 +93,7 @@ a claim a reader may decline to credit on exactly the same terms.
 \emph{Seldon Manifolds --- Social and Psychological Application} & the applied paper & What the substrate does when put in a classical experiment's position.\\
 \emph{The Law of Narrative Momentum} & the momentum paper & First-class history, cost-conditioned persistence, revision.\\
 \emph{Narrativium --- Theory} & \emph{Narrativium} & Frame-relative capacity for consequential deformation.\\
-\emph{A Constructive Realisation\ldots} (A1) & the construction paper & A realisation of the substrate. Numbered apart from the series because it is not circulated with it; cited where it is the evidence for a claim, and its contents are not set out here.\\
+\emph{A Constructive Realisation\ldots} (A1) & the construction paper & A realisation of the substrate, not circulated with the series; described where its contents bear on a claim, never cited as evidence for one.\\
 \emph{Frames, Relation, and the Empty Limit} & the frames companion & Whether a well-formed frame approaches a view from nowhere.\\
 \emph{Assessing an Account of This Kind} & the assessment companion & What a universal framework can risk and what it earns instead.\\
 \emph{Causal Attitude Networks on the Substrate} & the CAN paper & A borrowed Ising-family model reimplemented here, and how far the move actually went.\\
@@ -98,26 +107,25 @@ a claim a reader may decline to credit on exactly the same terms.
 
 \emph{Why these are separate documents and not one.} The division is a claim and not an editorial
 convenience, which matters now that this document is long enough for merging them to look like tidying.
-The companion offers itself \emph{as evidence that transformation and grammar are separable rather than
+\emph{Is} offers itself \emph{as evidence that transformation and grammar are separable rather than
 constitutive}, and that evidence exists only because the two sit in different documents; the same holds
 one level up for every boundary here. The ledger of Remark~\ref{rem:inherited} is \emph{what this paper
-postulates over} the companion, and it is checkable because there is a companion to check it against ---
-merge them and it becomes an argument about earlier chapters, which is not an accounting. Axiom~$-1$ is
+postulates over} \emph{Is}, and it is checkable because there is a companion to check it against ---
+merge them and it becomes an argument about earlier chapters, which is not an accounting. Axiom~\ref{ax:no-view} is
 a guard here and a commitment in the groundings, and that split needs the groundings to exist. And the
 documents fail differently on purpose: a physics grounding can be wrong without the substrate being
 wrong, which is the \textsc{[shape]}/\textsc{[detail]} distinction at the scale of a document rather
 than of a claim. One text would put every commitment inside one blast radius.
 
 What the division does require is that material sits in the document whose question it answers, and
-that is a live failure mode rather than a settled one: a quarter of this paper's opening section was
-assessment material until it was moved to the companion written for it. The remedy there was to
+that is a live failure mode rather than a settled one. The remedy where it has bitten is to
 \emph{restore} a boundary, not to dissolve one. The closest case in the other direction is the frames
 companion, four pages answering one bounded question and carrying no independent risk; it stays separate
 because the question is separate, and that is the weakest instance of this argument rather than a
 representative one.
 
 \paragraph{Level of the claims.}
-The claims here are about \emph{information}: distinction, relation, frame, admissibility, realisation, residual. Physical theory is taken to be an embodiment of information rather than a competitor to it, alongside other embodiments --- cognitive, institutional, computational --- which differ in how much structure they instantiate rather than in kind. This is the position that licenses treating an inertial reference frame and a representational frame as the same sort of object (Axiom~$-1$), and it locates the epistemic boundary below both: what embodiments are made of remains unspecified. It also fixes what this account does not attempt, which is worth saying once rather than conceding repeatedly: the constants belong to the embodiments. Where a number appears anywhere in this programme it is borrowed from a grounding and never derived here, because a framework that produced the constants would be a rival physical theory rather than the thing physical theories are stated in. \emph{This is the framework the rules live in, not a re-derivation of the rules.}
+The claims here are about \emph{information}: distinction, relation, frame, admissibility, realisation, residual. Physical theory is taken to be an embodiment of information rather than a competitor to it, alongside other embodiments --- cognitive, institutional, computational --- which differ in how much structure they instantiate rather than in kind. This is the position that licenses treating an inertial reference frame and a representational frame as the same sort of object (Axiom~\ref{ax:no-view}), and it locates the epistemic boundary below both: what embodiments are made of remains unspecified. It also fixes what this account does not attempt, which is worth saying once rather than conceding repeatedly: the constants belong to the embodiments. Where a number appears anywhere in this programme it is borrowed from a grounding and never derived here, because a framework that produced the constants would be a rival physical theory rather than the thing physical theories are stated in. \emph{This is the framework the rules live in, not a re-derivation of the rules.}
 
 The layering must not be allowed to function as a shield, so the condition under which a physical result bears on a claim here is stated in advance. \textbf{A physical result bears on an information-level claim when it settles an informational fact}, and not when it merely disagrees about mechanism in one embodiment. Bell's theorem and Kochen--Specker are the model: they do not report a mechanism, they establish that a class of pre-measurement values cannot be re-read as unheld-but-realised, which is a fact about distinction and therefore reaches this level directly (Section~\ref{sec:determinism}). Landauer's principle is a second instance, establishing a lower bound on the physical cost of a specified informational operation \citep{landauer1961}; under the substrate's no-copy default it is read below as the floor cost of change as such rather than of erasure specifically (Section~\ref{sec:interface}). A result that constrains what can be distinguished, held, or converted is admissible evidence here; a result about how a particular embodiment happens to be arranged is not.
 
@@ -131,7 +139,7 @@ The components of $G=(g,r,\Gamma)$ and its dynamic were not derived together fro
 \item $r$, the operative transformation structure, arrived by \emph{implementation}: a construction that runs requires something that performs the transformations, and the requirement appeared when the theory was first built rather than when it was first stated.
 \end{itemize}
 
-The last of these has a consequence for how the companion construction paper should be read: construction has been a \emph{source} of this theory rather than only a test of it. The evidence is $r$'s own provenance immediately above --- a primitive of the substrate that arrived because something had to perform the transformations in a system that ran --- and the construction paper's closing list of eleven distinctions that implementation forced upon the theory records eleven further instances of the same direction of travel, about antecedence, identity typing, residual and absent dimensions.
+The last of these has a consequence for how the construction paper should be read: construction has been a \emph{source} of this theory rather than only a test of it. The evidence is $r$'s own provenance immediately above --- a primitive of the substrate that arrived because something had to perform the transformations in a system that ran --- and the construction paper's closing list of eleven distinctions that implementation forced upon the theory records eleven further instances of the same direction of travel, about antecedence, identity typing, residual and absent dimensions.
 
 \paragraph{What the claim is, and how to read for it.}
 Almost none of the individual components below is novel, and the prior-art sections say so specifically rather than as a courtesy: typed graphs, admissibility grammars, fixed-point closure, frame-relative measurement, description-length criteria and actualisation operators all have established literatures. A reader who evaluates each component against its own field will therefore find each one known or borrowed, and will be locally correct on every count. Evaluating the parts individually cannot reach the composition claim in either direction --- neither to support it nor to refute it --- because the parts are stipulated to be known.
@@ -142,20 +150,20 @@ bears on the artefact reading without settling the composition claim, at the str
 Section~\ref{sec:falsifiability} gives.
 
 \paragraph{Epistemic boundary.}
-This theory does not attempt to specify the intrinsic nature of pre-relational existence. It begins at the first level at which distinguishable relational structure is scientifically representable. \emph{The graph is not an axiom of this paper.} What sits at that point is stated separately in the companion \emph{Is}, and it is established there rather than assumed: that to be is to stand in relation, that nothing further --- no sequence, no cause, no rule --- is required for there to be anything at all, and that given relational determinacy and a no-unpaid-structure discipline, \emph{the bare untyped graph is the least ontology such an account may retain}. This paper therefore presupposes a graph, not as a postulate but as a result \emph{within that discipline}, and \emph{its own axioms concern change in that graph, not the graph's existence}. The qualification is not a hedge on a stronger claim, it is the whole of what the companion licenses: nonrelational structure registering in no relation is not shown impossible there and is not shown impossible here, and what either account says of it is that it is unwarranted rather than unavailable. That companion carries one claim and this paper presupposes it.
+This theory does not attempt to specify the intrinsic nature of pre-relational existence. It begins at the first level at which distinguishable relational structure is scientifically representable. \emph{The graph is not an axiom of this paper.} What sits at that point is stated separately in \emph{Is}, and it is established there rather than assumed: that to be is to stand in relation, that nothing further --- no sequence, no cause, no rule --- is required for there to be anything at all, and that given relational determinacy and a no-unpaid-structure discipline, \emph{the bare untyped graph is the least ontology such an account may retain}. This paper therefore presupposes a graph, not as a postulate but as a result \emph{within that discipline}, and \emph{its own axioms concern change in that graph, not the graph's existence}. The qualification is not a hedge on a stronger claim, it is the whole of what \emph{Is} licenses: nonrelational structure registering in no relation is not shown impossible there and is not shown impossible here, and what either account says of it is that it is unwarranted rather than unavailable. That companion carries one claim and this paper presupposes it.
 
 \emph{And the relation is dependence rather than temporal genealogy --- which governs how every
 sequential sentence below should be read.} The changing graph this paper characterises presupposes the
 bare relational condition; the bare condition does not presuppose transformation, grammar or
 observation. \emph{The asymmetry is ontological and concerns what each requires}, not a sequence in
-which one state becomes another. The companion's base therefore comes first \emph{in requirement} and
+which one state becomes another. \emph{Is}'s base therefore comes first \emph{in requirement} and
 need not be an earlier state: nothing here asserts that a world passed through a static graph before
 becoming a changing one, and the ordering of these accounts mirrors that requirement rather than
 constituting it. The exposition here runs in sequence because an argument is written and read in time, and
 \emph{no part of that order is an order within what is described} --- \emph{postulate},
 \emph{addition}, \emph{derivation} and \emph{later} name relations among commitments, not steps
 anything took. This is not a promise to avoid such verbs, the paper being unreadable without them; it
-is the instruction for reading them, and the companion states it at its own length. The move it makes is
+is the instruction for reading them, and \emph{Is} states it at its own length. The move it makes is
 \[
 \boxed{?\;\dashrightarrow\;\text{observable relational structure}\;\Longrightarrow\;\text{graph representation},}
 \]
@@ -165,7 +173,7 @@ This boundary is stated because a stronger reading is available and is not the p
 
 Two clarifications, because the boundary is routinely read as weaker and as more permanent than it is.
 
-\emph{Within} distinguishability the claim is not hedged. Where every measurement that can be made of something, and every operation that can be performed on it, is captured by treating it as a typed graph, then no difference remains for the question ``but is it really'' to name, and a question naming no difference has no content under Axiom~$-1$. Functional identity is not a weaker sense of identity here; it is the whole of what identity could mean without a view from nowhere.
+\emph{Within} distinguishability the claim is not hedged. Where every measurement that can be made of something, and every operation that can be performed on it, is captured by treating it as a typed graph, then no difference remains for the question ``but is it really'' to name, and a question naming no difference has no content under Axiom~\ref{ax:no-view}. Functional identity is not a weaker sense of identity here; it is the whole of what identity could mean without a view from nowhere.
 
 And the boundary is a \emph{frontier}, not a wall. It is fixed in \emph{definition} --- it sits at distinguishability, wherever that currently lies --- and moving in \emph{extent}, since its contents are contingent and diminish as instrumentation is built. Anything that becomes measurable passes from beyond it to within it. This is the extensive unboundedness of the substrate applied to the theory's own scope: always one further step available, no expectation of exhausting it, and no warrant for treating the current contents of the far side as permanent.
 
@@ -202,16 +210,11 @@ been long for that reason while papers written in one are short.
 
 The argument is only available because the alternative was checked. ``It is a different kind of thing''
 is what the author of any overlong document says, and the discriminator is whether the length is
-installation or \emph{accumulation}. It has now been measured for the second twice, the second time by a reader trying to cut it: five
-passes over presentation removed about eleven hundred words of announcements, self-description,
-duplicated enumerations and narrated revision, and \emph{found no argument that could be removed
-without losing an argument} --- two attempts on content were withdrawn on measurement, and the
-recommendation that a section's content was one sentence turned out to be false of the section. That is a compression frontier reached rather than a claim of parsimony. The first measurement was blunter and came to the same thing: a quarter of it turned out
-to be argument about how to assess it rather than statement of it, and that is now a separate companion.
-What remains is installation, and the shorter statement companion exists for readers who want the
-account without it.
+installation or \emph{accumulation}. It has been measured: passes that removed presentation found no
+argument removable without losing an argument. What remains is installation, and the shorter statement
+companion exists for readers who want the account without it.
 
-\section{Axiom \texorpdfstring{$-1$}{-1}: relativity of grounding}
+\section{Axiom \texorpdfstring{$-1$}{-1}: relativity of grounding}\label{sec:axiom-minus-one}
 \setcounter{axiom}{-2}
 \begin{axiom}[Relativity of grounding]\label{ax:no-view}
 There is no operational view from nowhere. Every distinction, measurement, identity relation, admissibility judgement, and represented quantity is made in some frame (Definition~\ref{def:frame}). Frames may represent one another, but no quantity used by the theory requires a frame-independent evaluator.
@@ -220,7 +223,7 @@ There is no operational view from nowhere. Every distinction, measurement, ident
 \begin{remark}[What the axiom does not say]\label{rem:not-observer-talk}
 \emph{No view from nowhere} is heard by most readers arriving from physics as a claim about observers,
 and it is the reverse of one. \emph{Observation is derived in this account, not primitive.} Making a
-distinction is an act; an act needs transformation and a grammar of what may follow; the companion's
+distinction is an act; an act needs transformation and a grammar of what may follow; \emph{Is}'s
 base has neither, so what merely stands in relation cannot observe --- and, in the case that companion
 posits, nothing containing it, cannot be observed either but only modelled (\emph{Is},
 Proposition~\ref{IS-prop:one-way}). An observer is late machinery and an expensive kind, and nothing in the substrate
@@ -234,8 +237,9 @@ is fully described here, and is the ordinary case rather than a degenerate one.
 \emph{Where this becomes a risk.} At the substrate the relativity carries none, being a discipline over
 what the account may say. In the groundings it is a commitment about how things are, and that is where
 it can fail: the Seldon grounding asks whether a nervous system implements anything of the manifold's
-shape and answers in pieces, which is a claim that could turn out false without anything here turning
-out false. The exposure lives there, and Remark~\ref{rem:inherited} says so of the axiom generally.
+shape and answers that the pieces are implemented while the composite is not
+(its Section~\ref{SG-sec:scope}), which is a claim that could turn out false without anything here
+turning out false. The exposure lives there, and Remark~\ref{rem:inherited} says so of the axiom generally.
 \end{remark}
 
 \begin{remark}[The axiom in bits]\label{rem:axiom-in-bits}
@@ -258,8 +262,8 @@ The same fact turns up at both ends of one scale. A self-relation has both
 ends the same and carries no bits (Remark~\ref{rem:self-edge}); a view from nowhere has no relation at
 all and carries no bits. Zero distance and infinite distance are the two ways of getting nothing, and
 in between --- standing apart from something, at some remove, from somewhere --- is where information
-is. It is also why the companion's graph follows --- and what follows is a check passed rather than
-evidence gathered, exactly as with the method (Remark~\ref{rem:mdl-ontic}). The companion argues for
+is. It is also why \emph{Is}'s graph follows --- and what follows is a check passed rather than
+evidence gathered, exactly as with the method (Remark~\ref{rem:mdl-ontic}). \emph{Is} argues for
 the bare graph on its own ground and needs nothing from here; what this paper's economics supplies is
 that it agrees, and were the two to disagree the account would be self-undermining. That is the whole
 of what the step claims, and it needs stating with care, since the short version of it is invalid. A richer intrinsic form would have to be read off from nowhere, which
@@ -276,7 +280,7 @@ open to anyone willing to posit one and meet the bill.
 \emph{And on this reading it is not an axiom.} It follows. To be is to stand in relation; a relation is
 what carries information, being what tells you about one end given the other; so a standpoint standing
 in no relation to what it views carries nothing about it, and there is no informative view from
-nowhere. Nothing is posited there that the companion's claim and the measure do not already give. The
+nowhere. Nothing is posited there that \emph{Is}'s claim and the measure do not already give. The
 axiom's own wording anticipates this and should be read as meaning it: what it denies is an
 \emph{operational} view from nowhere --- a view that does something --- and the qualifier was never
 decoration.
@@ -285,7 +289,7 @@ Two other readings of its status do not survive. It is not a posit among posits,
 license positive results and carry it as a commitment that can fail. A consequence has content and can
 fail, which is what the guard reading could not accommodate. This one fails if a view can be
 informative without standing in relation to what it views, or if relation is not what carries
-information here --- both checkable, and the second is the companion's own identification of
+information here --- both checkable, and the second is \emph{Is}'s own identification of
 distinction with relation, so the exposure is real and is where a reader should press.
 
 It keeps its number and its prohibition-form for the reason the next remark gives: what it denies is
@@ -304,7 +308,7 @@ a view of nothing delivers. \emph{The totality and the empty set meet at zero bi
 where this programme's own empty limit sits. The equality is between two \emph{views}, not between two
 \emph{things}, and the usual version slides from the first to the second: from \emph{no standpoint
 distinguishes them} to \emph{they are the same}. That slide asserts an identity from a standpoint the
-same measure says would be empty, so it refutes itself in the act, and Axiom~$-1$ is what blocks it.
+same measure says would be empty, so it refutes itself in the act, and Axiom~\ref{ax:no-view} is what blocks it.
 From somewhere --- which is the only place anything is --- everything is emphatically not nothing.
 
 \emph{The pale blue dot} \citep{sagan1994} is the same scale approached rather than reached. Distance
@@ -324,7 +328,7 @@ occupied by anyone, which is why neither statement licenses the conclusion usual
 
 \begin{remark}[The method is one of the account's own consequences]\label{rem:mdl-ontic}
 Minimum description length appears twice in this programme under one name, and the second appearance is
-not a method. In the companion it is the method --- \emph{prefer the shortest account that suffices} ---
+not a method. In \emph{Is} it is the method --- \emph{prefer the shortest account that suffices} ---
 and is imported rather than invented. It is also \emph{derivable}: relation is what carries the
 information, a relation with no content of its own adds nothing to what a thing is, so what a thing is
 is its shortest sufficient relational description. That is the same principle applied to \emph{things}
@@ -345,12 +349,12 @@ of a relation carrying no information \emph{at all}; this uses the conditional f
 duplicates. The step from the unconditional result to the conditional one is plausible and is not
 proved here.
 
-Well-posedness comes from Axiom~$-1$ and could come from nowhere else, since description length is
+Well-posedness comes from Axiom~\ref{ax:no-view} and could come from nowhere else, since description length is
 defined only against a vocabulary and \emph{shortest simpliciter} is not a quantity. The standing
 objection to any constitutive reading of description length --- that complexity is machine-relative up
 to an additive constant --- is therefore not answered here but \emph{accepted}: the constant is the
 frame. Converting an objection into a thesis is only honest where the thesis was motivated
-independently of the objection, which is the case here, Axiom~$-1$ having been argued for on other
+independently of the objection, which is the case here, Axiom~\ref{ax:no-view} having been argued for on other
 grounds entirely.
 
 One consequence is easy to miss. \emph{If the method is a consequence of the account, the method cannot
@@ -365,8 +369,8 @@ what was kept is so. Finding it to be a consequence removes it from a column it 
 by Definition~\ref{def:well-formed} that is not a loss but the thing that definition names --- paying
 for nothing that does no work. What the correction does not license is the stronger reading, that
 needing no support is better without limit. The account's live commitments are answerable and are
-untouched by this. And a description that genuinely needed no support would be the object the companion
-on frames arrives at from the other direction: nothing held, no work done, hence nothing to support and
+untouched by this. And a description that genuinely needed no support would be the object the frames
+companion arrives at from the other direction (its Remark~\ref{FR-rem:empty-limit}): nothing held, no work done, hence nothing to support and
 nothing to be supported. \emph{Perfection and well-formedness part company there}, because the criterion
 is work done \emph{for} something and at zero work it has no argument to take --- the same collapse as
 the self-relation and the view from nowhere, reached a third way. Needing less support is a direction.
@@ -401,11 +405,11 @@ This removes a privileged frame, not determinacy. Within a frame, relations may 
 \textbf{Status} & \textbf{Entry} & \textbf{Where argued, and what it replaced}\\
 \midrule
 Inherited &
-Both of the companion's propositions: to be is to stand in relation, and to cohere in it &
-\emph{Is}, Propositions~\ref{IS-prop:is} and~\ref{IS-prop:cohere}. Taking the second adds nothing, the companion deriving it from the first plus the measure (Remark~\ref{rem:cohere})\\[2pt]
+Both of \emph{Is}'s propositions: to be is to stand in relation, and to cohere in it &
+\emph{Is}, Propositions~\ref{IS-prop:is} and~\ref{IS-prop:cohere}. Taking the second adds nothing, since it is derived there from the first plus the measure (Remark~\ref{rem:cohere})\\[2pt]
 Admitted &
 That anything \emph{happens} &
-Unpaid, and one of two --- the other being the companion's claim that there is anything at all\\[2pt]
+Unpaid, and one of two --- the other being \emph{Is}'s claim that there is anything at all\\[2pt]
 Taken to follow &
 The transformations $r$, and $\Gamma$ with them &
 Something has to do the happening; the least graph that does anything is a rule. Two candidates remain open\\[2pt]
@@ -413,8 +417,8 @@ Postulated &
 A realisation operator; a destroy\slash preserve distinction &
 The attempt to dissolve collapse traded it for union\\[2pt]
 Not postulated, a consequence &
-Axiom~$-1$ &
-Follows from the companion's claim plus the measure (Remark~\ref{rem:axiom-in-bits}); guard in this paper, commitment in the groundings\\
+Axiom~\ref{ax:no-view} &
+Follows from \emph{Is}'s claim plus the measure (Remark~\ref{rem:axiom-in-bits}); guard in this paper, commitment in the groundings\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -427,15 +431,15 @@ cannot. Where an entry was arrived at by withdrawing something the withdrawal is
 ledger whose entries cannot be checked against what they replaced is not checkable; the fuller history is
 in the review record.
 
-\emph{Inherited.} The companion's claim, that to be is to stand in relation \emph{and to cohere in it}.
+\emph{Inherited.} \emph{Is}'s claim, that to be is to stand in relation \emph{and to cohere in it}.
 Both halves are inherited and the second is not decorative: relation alone is satisfied by a relation to
-oneself, which carries nothing, so what is taken over is the companion's pair of propositions and not
+oneself, which carries nothing, so what is taken over is \emph{Is}'s pair of propositions and not
 the first alone (Remark~\ref{rem:cohere}). Nothing is added here by taking the second, since the
 companion derives it from the first together with the measure.
 
-\emph{Admitted.} That anything \emph{happens}. The companion is careful to say this is not required for
+\emph{Admitted.} That anything \emph{happens}. \emph{Is} is careful to say this is not required for
 there to be anything, so it is a real addition, and it is not derived from anything here. It is one of
-two unpaid entries, the other being the companion's claim that there is anything at all; neither is
+two unpaid entries, the other being \emph{Is}'s claim that there is anything at all; neither is
 grounded here, and an entry not derived from anything here is unpaid whatever follows from it once
 granted.
 
@@ -455,23 +459,23 @@ One thing the corpus states in several places without naming its origin belongs 
 nothing is still a thing provided it stands in a relation, so emptiness is not non-existence, and a
 dimension holding no value is not a dimension that is not there.
 
-That is derived, and it is derived from the companion's claim rather than from admissibility.
+That is derived, and it is derived from \emph{Is}'s claim rather than from admissibility.
 Definition~\ref{def:states} already gives it in this paper: \textsc{null} is the edge's non-existence,
 where a value is an edge that exists and carries one, so revoking a dimension is the container ceasing
-to instantiate the relation. The Seldon companion's own definition of a dimension says the same --- a
+to instantiate the relation. \emph{Seldon}'s own definition of a dimension says the same (its Definition~\ref{SM-def:dimension}) --- a
 dimension exists in a frame only where the frame instantiates the relation needed to distinguish values
 along it, and if that relation is absent the dimension is undefined rather than present at zero. Both
 are relational and neither mentions a grammar.
 
 A rival argument runs instead that an empty set is a set while having no members, so what makes a
-thing is that it is \emph{admitted} as one, and concludes that admissibility is forced. It fails three ways. The premise contradicts the companion, which holds the empty set to
+thing is that it is \emph{admitted} as one, and concludes that admissibility is forced. It fails three ways. The premise contradicts \emph{Is}, which holds the empty set to
 be the one perfect thing and perfection to be unavailable to an existent --- so on that account the
 empty set does not stand in a relation and no question about its existence arises. The word
 \emph{admitted} then slides: read as \emph{stands in the relation that individuates it} the argument is
-the companion's claim restated, and read as \emph{a grammar licenses it} it is denied by
+\emph{Is}'s claim restated, and read as \emph{a grammar licenses it} it is denied by
 Remark~\ref{rem:only-g}, which says relations survive stripping $\Gamma$. And the conclusion would make
 existence a matter of what some frame's grammar admits, which by Axiom~\ref{ax:no-view} indexes
-existence to frames --- reinstalling exactly the reading the companion disowns when it says a tree
+existence to frames --- reinstalling exactly the reading \emph{Is} disowns when it says a tree
 falling unobserved is as related to its forest as one that is watched.
 
 \emph{Postulated.} Two.
@@ -481,10 +485,12 @@ Remark~\ref{rem:nothing-compulsory} says outright that \emph{a collapse needs so
 from}. An attempt to dissolve this --- what matches writes, two rules matching make a bigger change,
 incoherent writes leave residual --- does not survive: it trades collapse for union, which is a
 retained-branch treatment with the branches glued rather than a realisation, and the physics companion's
-measurement account needs exactly one continuation realised. It also mis-locates residual, which is
+measurement account needs exactly one continuation realised
+(its Section~\ref{PH-sec:measurement}). It also mis-locates residual, which is
 defined as a \emph{part} of a realised deformation and is per-rule, so it cannot carry a joint
-incompatibility between two individually admissible writes. The constructive companion is the evidence:
-its executor refuses that case as an explicit incompatibility rather than residualising it.
+incompatibility between two individually admissible writes; where two such writes are made one after
+another, the second is made against the result of the first and what fails is one rule's write, which
+is the per-rule case again (Proposition~\ref{prop:partial-order}).
 
 One thing more remains postulated on the economics side.
 A \emph{destroy\slash preserve distinction}. Proposition~\ref{prop:economics} exempts evaluation from
@@ -494,7 +500,7 @@ information-preserving write is a change that destroys nothing --- the physics c
 free continuation --- so the two criteria are distinct and the account uses the second. The claim that
 the discarding class is the general one is empirical and is counted here.
 
-\emph{Not postulated, and a consequence rather than an axiom.} Axiom~$-1$. The \emph{of what} is the
+\emph{Not postulated, and a consequence rather than an axiom.} Axiom~\ref{ax:no-view}. The \emph{of what} is the
 load-bearing part of it: it follows from the
 companion's claim together with the measure, in the two steps Remark~\ref{rem:axiom-in-bits} sets out
 --- to be is to stand in relation, a relation is what carries information, so a standpoint in no
@@ -507,8 +513,8 @@ frame --- which is a discipline governing what the account may say, and a discip
 this paper can fail. That is a claim about \emph{this paper} and it does not generalise: in the
 groundings the axiom is used to license positive results (that two indiscernible particles are one,
 that a context-independent measure is available, that an inertial frame and a representational frame
-are the same kind of object), and there it is a commitment that can fail. The Narrativium companion
-already says so, locating the axiom's exposure in its own falsifier rather than in the substrate. So
+are the same kind of object), and there it is a commitment that can fail. \emph{Narrativium}
+already says so, locating the axiom's exposure in its own falsifier (its Section~\ref{NV-sec:falsifiability}) rather than in the substrate. So
 the honest statement is split: guard here, commitment there, and the groundings carry the risk --- which
 is what Section~\ref{sec:falsifiability} says of this account generally.
 
@@ -535,9 +541,9 @@ account can be wrong.
 
 Nothing here exempts this paper from the rules it states. Where the ledger has been wrong it has been
 corrected against those rules and not against a lighter standard, and the record of that is in the
-companion on assessment.
+assessment companion (its Section~\ref{AS-sec:turned}).
 
-That is not a further principle. It is Axiom~$-1$ applied to the text: an account that stated its rules
+That is not a further principle. It is Axiom~\ref{ax:no-view} applied to the text: an account that stated its rules
 from outside its own scope would be speaking from nowhere, and there is nowhere to speak from. And it
 needs saying for the reason the axiom is numbered where it is (Remark~\ref{rem:why-minus-one}) ---
 \emph{the import is free}. A reader defaults to hearing a claim as made about things rather than as
@@ -551,14 +557,13 @@ includes the writing of it --- and is not restated here.
 Two companions are easy to miss because nothing in the argument routes through them. \emph{Is} carries
 the base this paper begins after, and is the only place the claim it rests on is argued rather than
 assumed; a reader who wants to attack the foundation should attack it there and not here.
-\emph{Frames, Relation, and the Empty Limit} carries the material this paper's conclusion used to
-contain --- what convergence under better-formedness converges \emph{toward}, and why the limit of that
-direction is empty rather than a view from nowhere. It was moved out and, until now, was pointed at by
-nothing, which made it unfindable from the account it belongs to.
+The frames companion carries what convergence under better-formedness converges
+\emph{toward}, and why the limit of that direction is empty rather than a view from nowhere
+(its Remark~\ref{FR-rem:empty-limit}).
 \end{remark}
 
 \part{The substrate}
-\section{The minimal graph}
+\section{The minimal graph}\label{sec:minimal-graph}
 \begin{definition}[Graph]\label{def:graph}
 A graph is
 \[\boxed{G=(g,r,\Gamma),}\]
@@ -588,7 +593,7 @@ A distinction is doing the work there. Being a
 frame is being individuated (Definition~\ref{def:frame}), and individuation is performed by the
 container, not by the thing: a boundary belongs to the frame that draws it. So a structure with no
 rules of its own is still a frame --- something else instantiated its boundary --- and what it lacks
-is not framehood but the capacity to individuate anything itself. Stripping $r$ does not leave ``no frame'', and reading it so would invalidate the mind companion's result, which reasons from a rock's being a frame to the universe's being one.
+is not framehood but the capacity to individuate anything itself. Stripping $r$ does not leave ``no frame'', and reading it so would invalidate the mind companion's result, which reasons from a rock's being a frame to the universe's being one (its Proposition~\ref{MS-prop:minimal-universe}).
 \end{remark}
 
 \begin{remark}[The reference point, and what it is not]\label{rem:rock}
@@ -641,19 +646,19 @@ ultraviolet \citep{jonsson2008}. That is a structure whose rules stop firing and
 which is \emph{not} a structure entering $g$ and leaving it, since resuming requires the rules to
 have survived as present structure (Proposition~\ref{prop:no-implicit-historical-state}). Rules
 present and not firing is a third condition, distinct from $g$ and from running alike, and the
-companion on mind names it directly. The slide from \emph{has no} $r$ to \emph{fires no} $r$ is easy to make and is not made here.
+mind companion names it directly (its Section~\ref{MS-sec:minimal}). The slide from \emph{has no} $r$ to \emph{fires no} $r$ is easy to make and is not made here.
 \end{remark}
 
 \begin{remark}[On idealising, since this section has done a great deal of it]\label{rem:idealising}
 Every construction above is an idealisation, which invites the obvious objection: an account whose axiom
 denies a view from nowhere has spent this section reasoning about frictionless rocks in vacuums. The
-criterion that answers it belongs to the method rather than to this paper and is stated in the companion
+criterion that answers it belongs to the method rather than to this paper and is stated in \emph{Is}
 \emph{Is}: an idealisation is a frame, no frame is illegitimate, and what makes one cheap rather than
 expensive is whether what it removed is named and restorable.
 
 Applied here, the removals are on the page. The rock is $g$ at the grain at which it is a rock, and the
 same passage says its atoms move and it weathers at other grains, so the removed structure can be put
-back. What Axiom~$-1$ rejects is accordingly not an illegitimate simplification but an expensive habit
+back. What Axiom~\ref{ax:no-view} rejects is accordingly not an illegitimate simplification but an expensive habit
 --- a simplification that has forgotten it made one, and is then read as a claim about the world rather
 than about a frame, at whatever that misreading later costs.
 \end{remark}
@@ -673,23 +678,23 @@ The three components of $G$ resolve into five constituents ordered by requiremen
 \]
 \emph{Nodes} are bare distinctions --- the minimal \emph{``difference which makes a difference''} \citep{bateson1972}; a node alone carries almost no content. \emph{Relations} structure nodes and require them as relata; this is where content lives, and a node's identity is its relations. \emph{Rules} ($r$) act on relational structure and require relations to match. \emph{Delta} is the change a rule writes and requires rules, since only a rule produces one. \emph{Grammar} ($\Gamma$) determines which deltas are admissible and requires deltas to act on, which is why it is last. Nodes and relations are $g$; delta is $r$'s product, made explicit; grammar is $\Gamma$.
 
-Two cautions. First, this constructive order does not contradict the relational primacy of Axiom~$-1$: constructively nodes precede relations (relata come first), while semantically relations precede nodes (a node means nothing unheld by relations); both hold on different axes. Second, the order is a dependency partial order, not a temporal one --- nodes are not a first \emph{moment} but the least-dependent constituent, consistent with the absence of any substrate time (Section~\ref{sec:time-not-primitive}).
+Two cautions. First, this constructive order does not contradict the relational primacy of Axiom~\ref{ax:no-view}: constructively nodes precede relations (relata come first), while semantically relations precede nodes (a node means nothing unheld by relations); both hold on different axes. Second, the order is a dependency partial order, not a temporal one --- nodes are not a first \emph{moment} but the least-dependent constituent, consistent with the absence of any substrate time (Section~\ref{sec:time-not-primitive}).
 \end{remark}
 
 \begin{remark}[The triple is a functional decomposition with nothing underneath it]\label{rem:one-substance}
 $g$, $r$, and $\Gamma$ are not three kinds of thing. Rules are graph data (nodes and relations), and admissibility is enforced by rules that decide admit-or-residual, so $r$ and $\Gamma$ are themselves graph data playing roles --- transformation and gating --- over the state $g$, which is graph data too. The triple decomposes function, and there is nothing beneath the functions for them to be modes of:
 what makes the three one is that each is graph data doing a job, not that each is a mode of some stuff
-that has jobs. Saying instead that \emph{there is one substance, graph data} imports the bearer the companion removes by name (substance or intrinsic nature is on its candidate list, and the
+that has jobs. Saying instead that \emph{there is one substance, graph data} imports the bearer \emph{Is} removes by name (substance or intrinsic nature is on its candidate list, and the
 removal is reported as successful there), and does so in the sentence claiming to have decomposed it
 away. One substance is not the correction to three kinds of thing; \emph{no} substance is. Three things follow. Admissibility is \emph{mintable} like any rule, so what is admissible is not a fixed law but a growable set of rules a graph carries and extends. That the grammar acting on itself is the loop (Proposition~\ref{prop:grammar-is-loop}) is the special case of this homogeneity (the grammar, being rules, can act on itself), and it does not tower into a stack of meta-grammars, because gating and being-gated are one activity closing on itself rather than two. And the irreducible form of the substrate is \emph{graph data that runs} --- where the running is supplied by structure that is, in turn, graph data that runs (Section~\ref{sec:rule-runner}).
 \end{remark}
 
 \begin{remark}[Whether a node may have an edge to itself]\label{rem:self-edge}
-The question is basic and the papers had not answered it. The answer is not one thing.
+The question is basic, and the answer is not one thing.
 
 \emph{Nothing forbids the notation}, and the graph definition above says nothing either way.
 
-\emph{A self-edge cannot do the work of individuating.} The companion holds that to be is to stand in
+\emph{A self-edge cannot do the work of individuating.} \emph{Is} holds that to be is to stand in
 relation because a thing standing apart from nothing differs from nothing, and a single relatum with
 nothing to relate to is a failed case rather than a minimal one. A loop supplies no second term, so a
 node whose only edge is to itself is that failed case with an extra mark on it.
@@ -704,7 +709,7 @@ seen twice, because carrying information is what cohering into a distinction \em
 
 So a self-edge is not forbidden and not a cheaper relation. It is a write that is made and returns
 nothing into the frame, which is the decoherence case at its smallest, and it is the exact zero of the
-discipline the companion states with its prior art --- do not introduce structure that buys no
+discipline \emph{Is} states with its prior art --- do not introduce structure that buys no
 additional distinction. Definition~\ref{def:well-formed} prices it accordingly: paid for in holding and
 search, returning nothing.
 
@@ -723,7 +728,7 @@ subject by a self-edge would carry no bits; what makes a self-model informative 
 \emph{different and lesser} object than what it models, so that having it tells you something you did
 not have. \emph{The incompleteness of a self-model is the condition of its being informative at all},
 not a defect alongside its usefulness --- which is the sharper form of the incompleteness results the
-companion on mind reports, and is why a frame that could hold a complete model of itself would gain
+mind companion reports (its Proposition~\ref{MS-prop:selfmodel}), and is why a frame that could hold a complete model of itself would gain
 nothing by holding it.
 
 \emph{Relative to what the ends are the same} is the part left unsaid above, and it is not a detail. A
@@ -737,34 +742,34 @@ Which gives the frame-relative form of the result, and it is the useful one. \em
 in a frame does not exist in it, and no appeal against that verdict is available inside it.} A
 containing structure that the current frame cannot resolve is not a thing here that fails a test; it is
 not here, and it never comes to be here without the frame's individuation changing --- which is a
-transition, not a discovery. That is Axiom~$-1$ applied to existence and not a weakening of the account.
+transition, not a discovery. That is Axiom~\ref{ax:no-view} applied to existence and not a weakening of the account.
 
 It does not reinstate what Remark~\ref{rem:inherited} rejected, and the difference matters, the two being easily run together. What was rejected there was existence turning on
 \emph{whether some grammar admits it}, which would make the unobserved tree's relation to its forest
 wait on a licence. Nothing waits on a licence here. What is being said is only that a distinction not
-drawn in a frame is not available in it, which is what having an aperture means. The companion, having
+drawn in a frame is not available in it, which is what having an aperture means. \emph{Is}, having
 no frames at all, cannot state any of this and correctly does not: at that level the careful form is
 that a description which does not cohere picks out nothing, and there is no current frame for it to
 fail to cohere in.
 \end{remark}
 
 \begin{remark}[Coherence, not relation, is the criterion]\label{rem:cohere}
-The self-edge result bore on the companion's first proposition, which as worded the degenerate case
+The self-edge result bore on \emph{Is}'s first proposition, which as worded the degenerate case
 passes: \emph{anything that exists as a determinate something stands in at least one relation} is
 satisfied by a thing standing in a relation to itself, and the previous remark establishes that such a
-relation carries nothing, so the letter was met and the point was not. The companion carries a
+relation carries nothing, so the letter was met and the point was not. \emph{Is} carries a
 second proposition for it, and what follows is that content in this paper's vocabulary. \emph{To exist is to
 cohere}, where cohering is the relation carrying something --- a fact about one end given the other that
 was not already had. \emph{That is this paper's measured rendering of the condition and not its
 ground.} At the base the condition is structural --- a relation coheres when its ends are distinct ---
-and the companion states it that way for the reason it gives: there is nothing at that level to
+and \emph{Is} states it that way for the reason it gives: there is nothing at that level to
 measure with. Here there is, so the same three cases can be sorted by a quantity rather than by a
 structural exclusion, and the quantity agrees with the exclusion everywhere it is defined. The
 agreement runs in that direction, and reading the quantity as the ground of the base condition would
 put an evaluator underneath a level that has none. The three cases differ only in that quantity: nothing related carries nothing and has no relation to
 carry it; a relation only to oneself is a relation carrying nothing; two things related carry something,
 which is why that case is the only one of the three that is anything at all. The first two are
-descriptions picking out nothing rather than things that fail a test --- the companion is careful about
+descriptions picking out nothing rather than things that fail a test --- \emph{Is} is careful about
 this and it is worth being careful about here, since a quantity sorted across cases invites reading the
 empty ones as populated. \emph{Relation is necessary and coherence is what makes it sufficient.}
 
@@ -777,14 +782,14 @@ Residual is inadmissibility (Definition~\ref{def:admissible}), which is a frame 
 things together --- so the mechanism was already here and only the identification was missing.
 
 One boundary on that, since without it the identification would prove too much. Frame-relative
-consistency belongs \emph{here}, where there are frames; it cannot be what the companion's base runs on,
+consistency belongs \emph{here}, where there are frames; it cannot be what \emph{Is}'s base runs on,
 because a criterion for existing that required a frame would index existing to frames, which
 Remark~\ref{rem:inherited} rejects on exactly that ground. At the base the degenerate cases are
 degenerate \emph{structurally} --- what a relation to oneself reports about one end given the other was
 already given, for anything or nothing --- and $\Gamma$ is that floor made operative once there are
-frames to operate it, not a replacement for it. The companion has no rules of any kind, and does not need them: nothing there \emph{enforces} coherence,
+frames to operate it, not a replacement for it. \emph{Is} has no rules of any kind, and does not need them: nothing there \emph{enforces} coherence,
 because not existing is not an outcome anything has to bring about. Rules are what \emph{making}
-requires, and the companion's question is what can exist rather than what can be created --- a
+requires, and \emph{Is}'s question is what can exist rather than what can be created --- a
 distinction it draws with the one-node case, which can be created and does not thereby exist. What this
 paper adds is a grammar of what may follow, which arrives with the happening and is paid for in the
 ledger.
@@ -795,14 +800,14 @@ the \emph{second}. One note on the word, since it was in use here before it was 
 say \emph{incoherent} --- a grain that cannot hold what entered it and must split, a self that ceases
 to hold together, a superframe re-cohering after a change --- they mean the end where holding is
 \emph{impossible}. That is one of the two ends, and the criterion above covers both, so a reader
-carrying the established sense into the companion's proposition will look for a contradiction in the
+carrying the established sense into \emph{Is}'s proposition will look for a contradiction in the
 self-relation case and find none. There is none to find: that case fails at the other end. The
 widening is deliberate and is noted here rather than left to be discovered.
 
 That is why the self-relation's failure is emptiness rather than prohibition --- nothing rules it
 out, and there is nothing in it --- and why Section~\ref{sec:falsifiability} has no commitment
 forbidding one. The relativity is load-bearing in the same way twice over: consistency without a
-frame is the unasked question that shortest-description without a vocabulary is, and Axiom~$-1$ is what
+frame is the unasked question that shortest-description without a vocabulary is, and Axiom~\ref{ax:no-view} is what
 answers both.
 \end{remark}
 
@@ -881,7 +886,7 @@ are correspondingly weak; claims made within a grounding carry that grounding's 
 content and are where this account's falsifiable commitments mostly sit.
 \end{definition}
 
-\subsection{Discrete sufficiency}
+\subsection{Discrete sufficiency}\label{sec:discrete}
 \begin{hypothesis}[Discrete sufficiency]\label{hyp:discrete}
 Every quantity required internally by the present substrate can be represented by discrete distinguishable states at the operative frame and resolution.
 \end{hypothesis}
@@ -900,7 +905,7 @@ A continuous containing supergraph is neither required nor excluded. Existing co
 These are distinct claims with distinct falsifiers and must not be conflated. Discrete sufficiency is the claim above (Hypothesis~\ref{hyp:discrete}), and it fails if some observable consequence internal to the substrate cannot be represented discretely, at the operative frame and resolution, without loss --- a claim decidable in-frame. \emph{Fundamental discreteness} --- that the containing or pre-relational substrate is itself discrete --- would instead concern a fact about the pre-graph substrate that the epistemic boundary above places outside the theory's reach, which is precisely why it is not asserted.
 \end{remark}
 
-\subsection{Admissible possibility}
+\subsection{Admissible possibility}\label{sec:admissible}
 Let $\Poss(G_t)$ denote the structured family of immediate continuations admitted by the present graph and its current relations.
 \begin{definition}[Admissible continuation]\label{def:admissible}
 A continuation $\delta$ belongs to $\Poss(G_t)$ iff it is expressible in the current graph vocabulary, satisfies the relevant antecedent conditions, and is admissible under the operative grammar for the transformation class in question.
@@ -927,7 +932,7 @@ The realised history of a frame is
 \end{definition}
 
 \begin{remark}[Collapse is a local write, not a global tick]\label{rem:collapse-write}
-The subscripts on $\Coll_t$ index a frame's own succession and must not be read as a shared clock. A collapse is a \emph{local realisation} --- a rule writing a delta --- and it is the only kind of event the substrate has (its synchrony or asynchrony with other collapses is set by coupling, Remark~\ref{rem:gals}). Between writes nothing happens: an unwritten frame produces no change, so it takes no new position in the order the changes carry (Section~\ref{sec:causal-order}), and no time passes for it. There is accordingly no global step in which every frame advances together; frames whose collapses are not related through a boundary are simply unordered with respect to one another (Section~\ref{sec:causal-order}). ``Momentum'' --- the standing structure a frame carries, persisting without a distinct write --- is therefore the absence of an event, not a repeated one; a delta is a write \emph{to} that structure, not the structure itself, and the Narrative-momentum paper names its operative history-bearing form the Narrative, so that to change course is literally to write the Narrative. The picture of a single global present sweeping forward is exactly the represented time dimension of Axiom~\ref{ax:no-time} mistaken for substrate structure.
+The subscripts on $\Coll_t$ index a frame's own succession and must not be read as a shared clock. A collapse is a \emph{local realisation} --- a rule writing a delta --- and it is the only kind of event the substrate has (its synchrony or asynchrony with other collapses is set by coupling, Remark~\ref{rem:gals}). Between writes nothing happens: an unwritten frame produces no change, so it takes no new position in the order the changes carry (Section~\ref{sec:causal-order}), and no time passes for it. There is accordingly no global step in which every frame advances together; frames whose collapses are not related through a boundary are simply unordered with respect to one another (Section~\ref{sec:causal-order}). ``Momentum'' --- the standing structure a frame carries, persisting without a distinct write --- is therefore the absence of an event, not a repeated one; a delta is a write \emph{to} that structure, not the structure itself, and the momentum paper names its operative history-bearing form the Narrative (its Definition~\ref{NM-def:narrative}), so that to change course is literally to write the Narrative. The picture of a single global present sweeping forward is exactly the represented time dimension of Axiom~\ref{ax:no-time} mistaken for substrate structure.
 \end{remark}
 
 \section{The Law of Graphic Equalisation}\label{sec:the-law}
@@ -938,7 +943,7 @@ Hypothesis~\ref{hyp:the-law} is \emph{the Law} throughout, and \emph{the Graph L
 with a grounding's own laws matters. Thus
 \[\boxed{G_t\rightarrow\Poss(G_t)\xrightarrow{\Coll_t}G_{t+1}\rightarrow\Poss(G_{t+1})\xrightarrow{\Coll_{t+1}}G_{t+2}\rightarrow\cdots.}\]
 
-\subsection{The antecedent-state principle}
+\subsection{The antecedent-state principle}\label{sec:antecedent}
 \begin{proposition}[Antecedent-state principle]\label{prop:antecedent-state}
 The conditions under which a transition is admissible are functions of its antecedent state. A consequence that exists only because a transition has occurred cannot retroactively serve as an antecedent cause of that same transition.
 \end{proposition}
@@ -946,7 +951,7 @@ The conditions under which a transition is admissible are functions of its antec
 A reflective transformation of $r$ or $\Gamma$ may alter the successor graph, but newly installed structure cannot authorise the transition by which it first comes into existence.
 \end{corollary}
 
-\subsection{Recursion and reflection}
+\subsection{Recursion and reflection}\label{sec:reflection}
 \begin{definition}[Reflective graph]\label{def:reflective}
 A graph is reflective over structure $X\subseteq G$ when $X$ is represented in the graph and graph-originated transformations may take that representation as an operand.
 \end{definition}
@@ -977,7 +982,7 @@ For a frame $\mathcal F$, a dimension is in exactly one of four states:
 \]
 \emph{NULL}: the dimension is not instantiated; there is nothing to have a value. \emph{Undetermined}: the dimension is instantiated and \emph{no value has been realised} --- collapse has not occurred. \emph{Undisclosed}: a value has been realised but is not held by this frame. \emph{Resolved}: a realised value, held.
 \end{definition}
-These are the states of an \emph{edge}, which is why the definition sits here: the boundary is the edge, and a dimension is that same edge read from the other end. A node has no admissible-but-uncollapsed state; an edge does, and Definition~\ref{def:admissible} is about exactly that. Frame-relative termination (Section~\ref{sec:termination}) and the revocation of a dimension are then one operation --- the container ceasing to instantiate the relation --- which is why the Narrativium paper observes revocation occurring with $\Delta g=0$: nothing in the contained state need change for the edge to go.
+These are the states of an \emph{edge}, which is why the definition sits here: the boundary is the edge, and a dimension is that same edge read from the other end. A node has no admissible-but-uncollapsed state; an edge does, and Definition~\ref{def:admissible} is about exactly that. Frame-relative termination (Section~\ref{sec:termination}) and the revocation of a dimension are then one operation --- the container ceasing to instantiate the relation --- which is why \emph{Narrativium} observes revocation occurring with $\Delta g=0$ (its Proposition~\ref{NV-prop:conferral}): nothing in the contained state need change for the edge to go.
 
 The unification is not this paper's invention: the substrate's own implementation has no frame primitive at all, its grammar quantifying over edge types, and a frame there is a selection of dimensions. And the convenience reading of a frame as \emph{the subgraph} is used throughout these papers, including above; it is shorthand for the relatum, and where a claim turns on the difference the relation is meant.
 
@@ -1089,7 +1094,7 @@ without a loop is a descending chain, which is a regress rather than a closed th
 already has the right word for where such a chain terminates. Remark~\ref{rem:handler-abuse} says a
 purchase buys \emph{relocation rather than closure}, and Section~\ref{sec:falsifiability} counts an
 in-frame procedure that settles rather than relocates as a single risk named four times. The physics
-companion is blunter still: it holds that this universe's entry \emph{must come from outside}, a seed
+companion is blunter still (its Section~\ref{PH-sec:cosmology}): it holds that this universe's entry \emph{must come from outside}, a seed
 no frame derives from within.
 
 What survives is weaker and is enough. The funding is
@@ -1210,19 +1215,20 @@ to reach them} is the general form, and the boots case is its most legible insta
 
 One terminological caution, since this paper and its companions divide the words differently: what is
 called \emph{capability} here is the gates, while the companions use that word for the reachable set,
-which is what this section calls \emph{accessibility} --- the Narrativium paper does so following Sen,
-and the Seldon paper does so without the borrowing, where a situation can be a trap and a capability at
+which is what this section calls \emph{accessibility} --- \emph{Narrativium} does so following Sen's capability approach,
+and \emph{Seldon} does so without the borrowing, where a situation can be a trap and a capability at
 once. The distinction drawn is the same in all of them; only the labels differ, and a reader moving
-between them should expect that. There is a third, narrower use in the companion on assessment, where a
-capability is a shipped unit with its own tests; it is stipulated there and is not this word.
+between them should expect that. There is a third, narrower use in the assessment companion, which counts a
+capability as a shipped unit with its own tests (its Section~\ref{AS-sec:estimate}); it is stipulated
+there and is not this word.
 \end{remark}
 
 \begin{definition}[Capability and accessibility]\label{def:capability}
 A frame's \emph{capability} is what its gates admit --- what it can represent and what it can do. Its
 \emph{accessibility} is what it can \emph{reach} from where it stands, given what it holds to spend. A
 disclosure moves a gate and changes capability; whether the reachable point can then be crossed to
-depends on the Narrativium measured for the frame. The companion defining that quantity types it as a
-\emph{capacity} rather than as a cost, and keeps measurement and expenditure distinct; the phrasing
+depends on the Narrativium measured for the frame. \emph{Narrativium}, which defines that quantity, types it as a
+\emph{capacity} rather than as a cost (its Remark~\ref{NV-rem:narrativium-standing}), and keeps measurement and expenditure distinct; the phrasing
 here follows it.
 \end{definition}
 
@@ -1248,7 +1254,7 @@ consequence of the two being orthogonal at an instant and coupled over one.
 
 The orthogonality is clean at a point in time and does not stay clean, because \emph{aperture is itself
 purchased}. Holding a wider aperture or a longer horizon is standing structure a frame pays to maintain,
-so anything consuming capacity narrows it --- which bears on the companion on mind, where a frame under
+so anything consuming capacity narrows it --- which bears on the mind companion, where a frame under
 stress becomes manipulable by having its horizon shortened rather than its judgement impaired. That
 paper gives its own account of the shortening; what is offered here is a different one, in this
 account's terms, and the two have not been reconciled. The narrowing needs no special stress machinery. It is the ordinary consequence
@@ -1347,15 +1353,13 @@ structural fact about a map while cost is a fact about what supplies a primitive
 be run together.
 \end{proposition}
 
-\begin{remark}[Evaluation is a write, and that is why it is free]\label{rem:evaluation-writes}
-The economics above can be stated in a way that does not survive contact with the machinery, and the
-objection is worth answering rather than rewording. If running a rule that does not fire is a read,
-and reads are free, where does the check go, and how does the substrate know to run the next one?
+\begin{remark}[Where the check goes, and why the free case is the empty one]\label{rem:evaluation-writes}
+Proposition~\ref{prop:evaluation-writes} follows from there being no return channel outside the
+structure, and the objection it answers is worth stating rather than rewording. If running a rule
+that does not fire is a read, and reads are free, where does the check go, and how does the substrate
+know to run the next one?
 
-Computing answers it without any appeal to physics. \texttt{read()} is an operation, and it returns
-data; the returned datum has to be somewhere to be used, and in a substrate that is graph all the way
-down there is no return channel outside the structure, so the value materialises as structure. A read
-therefore writes by being a write, and the write is the return. An operation that returns nothing is
+Computing answers that without any appeal to physics. An operation that returns nothing is
 not a read of anything, which is why the free case exists and is exactly the empty one: a read whose
 return is never used has read nothing, and a compiler will delete it. Real machines make the same
 point expensively --- a read leaves traces in caches, predictors and translation state, and those
@@ -1363,8 +1367,7 @@ traces are measurable, which is why timing attacks recover secrets from a victim
 read \citep{osvik2006} and why an entire class of speculative attacks was available to designs built on the assumption that rolled-back
 speculation leaves no trace \citep{kocher2019}, where the read is the vehicle rather than the premise.
 
-Evaluation is a write in that plain sense: a match outcome, a position in an ordering, and the fact
-of having tried are returned values, and returned values are structure. What does not follow is the
+What does not follow is the
 price. A rule's cost is set by whatever supplies its primitives and is inherited along
 provision (Section~\ref{sec:rule-runner}), and Landauer's bound
 (Remark~\ref{rem:landauer-change}) is a floor in one substrate rather than the price in any. This is also why continuation presents as free from inside: a
@@ -1372,9 +1375,8 @@ well-formed runner does not expose itself (Proposition~\ref{prop:runner-opaque})
 below the frame's aperture and is not an in-frame event at all. In-frame nothing happened; in the
 running substrate something was paid; both hold, of different frames.
 
-Reversibility is a structural fact about a map and
-cost is a fact about what supplies a primitive, and they must not be run together --- separating
-them is what lets the physics companion recover unitarity, which needs only the first, since a
+Holding reversibility and cost apart
+is what lets the physics companion recover unitarity, which needs only the first, since a
 no-write was never the right description of an evolution that plainly changes the state and is
 reversible because it is injective. And the residual named in Remark~\ref{rem:landauer-change}
 attaches here: information-preserving evaluation accumulates the history it preserves, so a frame
@@ -1433,7 +1435,7 @@ This locates the residual as the negative of an admissibility judgement rather t
 \begin{corollary}[Growth is grammar extension]\label{cor:mint-is-grammar}
 A residual is absorbed either by a containing frame extending $\Gamma_{W_c}$ to admit it, or by paying to copy it out (Section~\ref{sec:interface}); otherwise it persists in place and is re-encountered each time the merge runs. The first route is the substrate form of \emph{minting} a new distinction: the residual does not fit because it is inadmissible, so admitting it requires extending the grammar, and extending the grammar is the act by which a previously inadmissible deformation becomes recognisable. Recognition and growth are therefore one mechanism joined at one place --- the residual is where the shape a graph decodes and the grammar that admits it meet.
 \end{corollary}
-Two properties of this mechanism matter. Residual is \emph{per-rule}: each firing leaves its own remainder, local to where the rule ran, with no global residual store, so it is dealt with per-frame --- which is why the residual-and-mint loop is frame-portable rather than living in a domain-specific module. And minting is itself a \emph{rule}, not a primitive: extending $\Gamma_{W_c}$ is the grammar acting on itself (Proposition~\ref{prop:grammar-is-loop}), a reflective rule subject to the same economics, admissibility, and antecedent-state principle (Proposition~\ref{prop:antecedent-state}) as any other. Growth is therefore rule-governed, costed (the spend-and-gain of the Narrativium paper), contingent, and buildable --- never a primitive spark. It also cannot bootstrap from nothing: by Proposition~\ref{prop:antecedent-state} a mint cannot authorise its own installation, so a graph's first mint-rules are installed from its container. This is the substrate reason a situated graph requires a seed --- the minimal rule-set, including the capacity to mint, that a container provides so the graph can thereafter grow itself. The two provenances --- seeded from the container, or minted from residual --- are what the nature/nurture dichotomy names, and they are not two \emph{kinds} of thing: both are rules that run identically, the running records no provenance, and the capacity to mint (nurture's mechanism) is itself seeded (nature), so what remains measurable is provenance, not a distinction of kind.
+Two properties of this mechanism matter. Residual is \emph{per-rule}: each firing leaves its own remainder, local to where the rule ran, with no global residual store, so it is dealt with per-frame --- which is why the residual-and-mint loop is frame-portable rather than living in a domain-specific module. And minting is itself a \emph{rule}, not a primitive: extending $\Gamma_{W_c}$ is the grammar acting on itself (Proposition~\ref{prop:grammar-is-loop}), a reflective rule subject to the same economics, admissibility, and antecedent-state principle (Proposition~\ref{prop:antecedent-state}) as any other. Growth is therefore rule-governed, costed (the spend-and-gain of \emph{Narrativium}, its Proposition~\ref{NV-prop:spend-gain}), contingent, and buildable --- never a primitive spark. It also cannot bootstrap from nothing: by Proposition~\ref{prop:antecedent-state} a mint cannot authorise its own installation, so a graph's first mint-rules are installed from its container. This is the substrate reason a situated graph requires a seed --- the minimal rule-set, including the capacity to mint, that a container provides so the graph can thereafter grow itself. The two provenances --- seeded from the container, or minted from residual --- are what the nature/nurture dichotomy names, and they are not two \emph{kinds} of thing: both are rules that run identically, the running records no provenance, and the capacity to mint (nurture's mechanism) is itself seeded (nature), so what remains measurable is provenance, not a distinction of kind.
 
 \section{Decoherence}\label{sec:decoherence}
 Residual is what a containing grammar declines to absorb. This section is the limiting case of that:
@@ -1470,7 +1472,7 @@ uniform and only the frame is indexed.
 
 The two companion papers instantiate this at their own grains, and the word is used in both. The
 physics companion separates the sense used here from the standard environmental one and states what
-relates them; the companion on mind reads death as this operation with the frame set to a person.
+relates them; the mind companion reads death as this operation with the frame set to a person (its Remark~\ref{MS-rem:death-decoherence}).
 Neither is required for what follows.
 
 \begin{remark}[Write versus read: $2+2=5$ is not false]\label{rem:write-versus-read}
@@ -1595,8 +1597,9 @@ is the condition where each raise produces more than one further raise, so the r
 ascend a frame but multiplies. That is a genuine difference from an exception unwinding a stack, and
 the substrate accommodates it only because residual is per-rule (Proposition~\ref{prop:residual-inadmissible} and the paragraph following it) so one
 failing write may leave several. It should be recorded as a difference and not smoothed into the
-analogy. It is also where this remark meets the Narrativium paper from the other side, since a process
-whose products exceed their cause in number is that paper's spend-and-gain iterated above unit gain ---
+analogy. It is also where this remark meets \emph{Narrativium} from the other side, since a process
+whose products exceed their cause in number is that paper's spend-and-gain iterated above unit gain
+(its Propositions~\ref{NV-prop:spend-gain} and~\ref{NV-prop:overshoot}) ---
 the same ratio, arrived at through failure here and through capacity there.
 \end{remark}
 
@@ -1622,14 +1625,13 @@ so what its purchase buys is relocation rather than closure, terminating only in
 \end{proposition}
 
 \begin{remark}[A handler can be abused, and the abuse is invisible from inside]\label{rem:handler-abuse}
-If a handler decides what a frame coheres a failure to, it can be set to cohere it to anything,
-including success. Computing knows this as the swallowed exception --- the catch that discards what it
-caught, the broad handler that reports normal completion --- and it is not a defect in the mechanism
+Proposition~\ref{prop:handler-relocates} follows from a handler's being installed policy, and
+computing knows the abusive case as the swallowed exception --- the catch that discards what it
+caught, the broad handler that reports normal completion --- which is not a defect in the mechanism
 but the mechanism used against its purpose.
 
-What that does is precise in this account's terms, and it is already costed. Swallowing does not undo
-the inadmissibility: the containing grammar still refused, and the write still did not happen. What is
-removed is the frame's \emph{record} of that, which leaves the frame holding a model of itself in which
+What that does is already costed here. Removing the frame's record of a refusal
+leaves the frame holding a model of itself in which
 something occurred that did not. That is exactly the fourth cost of Definition~\ref{def:well-formed} ---
 expenditure returning nothing, with the failure silent --- and the swallowing handler is the mechanism
 by which a false self-model is manufactured rather than merely risked.
@@ -1641,17 +1643,15 @@ deliver the result. Failure becomes an instrument rather than an accident, and t
 wherever a procedure has a default: the party who prefers where the exception path lands has no reason
 to argue on the merits.
 
-Detection is available but never free, and the obvious formulation of that overshoots. It is not that a frame cannot detect a swallow: a frame holding a
-record of the attempt separately from the handler's report can compare the two and find the
-divergence, and well-built systems do exactly that. What is unavailable is detecting it \emph{from the
-handler's own report}, which is self-consistent by construction. So the audit is installed structure,
-paid for like any other, and a frame that has not bought one has no access to the discrepancy. The
-audit is itself a policy, abusable in the same way one level in, so what the purchase buys is
-relocation rather than closure --- the same regress the provenance commitment names, terminating only
-in a containing frame. That is Axiom~\ref{ax:no-view} arriving where it is least convenient, since the
+The obvious formulation of the detection clause overshoots, and the proposition states it in the
+form that survives. It is not that a frame cannot detect a swallow, and well-built systems detect one
+routinely; what is unavailable is detecting it from the handler's own report. So the audit is
+installed structure, paid for like any other, and a frame that has not bought one has no access to the
+discrepancy. That the relocation terminates only in a containing frame is
+Axiom~\ref{ax:no-view} arriving where it is least convenient, since the
 frame with most reason to detect this is the one whose own machinery is doing it. The silence of the
-fourth cost has this structure, and so does the presented-versus-produced divergence the companion
-paper on mind treats at the scale of one frame acting on another.
+fourth cost has this structure, and so does the presented-versus-produced divergence the mind
+companion treats at the scale of one frame acting on another (its Proposition~\ref{MS-prop:one-influence}).
 \end{remark}
 
 \begin{proposition}[Termination propagates along supply, not containment]\label{prop:termination-supply}
@@ -1665,36 +1665,27 @@ wrongly; a dependent \emph{wholly run by} it simply stops; and a dependent only 
 by it keeps running with an incomplete operation set, and its behaviour is undefined.
 \end{proposition}
 
-\begin{remark}[Termination propagates along supply, not containment]\label{rem:supply-not-containment}
-A consequence of primitives not exposing their provenance (Proposition~\ref{prop:runner-opaque}) that
-the preceding material assumed away. A subgraph's operations need not be supplied by the graph that
+\begin{remark}[Being contained by something and being run by it]\label{rem:supply-not-containment}
+Proposition~\ref{prop:termination-supply} follows from primitives not exposing their provenance
+(Proposition~\ref{prop:runner-opaque}), which the preceding material had assumed away. A subgraph's operations need not be supplied by the graph that
 contains it: a primitive may come from arbitrarily far up and be passed through, and nothing in the
 subgraph can tell. So if a graph $G$ sits inside $W$ while running on primitives supplied from beyond
 $W$, then $W$ ceasing does not stop $G$. \emph{There is no reason it cannot continue}, because what ran
 it was never the thing that stopped.
 
-Two relations that ordinary usage runs together are what this separates: being contained by something,
-and being run by it. They usually coincide, which is why the distinction is easy to miss, and the
+The two relations usually coincide, which is why the distinction is easy to miss, and the
 coupling result already says they need not (Proposition~\ref{prop:coupling}) --- a graph fused to what
 supplies it has no independence, a loosely coupled one has all of it. Survival of a container's
 termination is therefore a question about \emph{coupling} and not about containment, and it is
 arrangeable: a frame that wants to outlive its container can be built so that its supply comes from
 higher up, which is a purchase like any other.
 
-The rule this yields is short. \emph{Termination propagates along the supply relation, not the
-containment relation.} Downward it need not reach at all --- a container may stop while what it held
-runs on. Upward the supplier's stop is total: everything running on primitives from a graph stops when
-that graph does, at whatever containment distance and with no handler available, since the operations a
-handler would run are the ones withdrawn.
+That refines the previous remark rather than sitting beside it, since it splits the dependents into
+three kinds and not two. The third kind exists at all because supply is a set rather than an edge,
+primitives being drawn from wherever they are drawn from, so a dependent may be supplied only in part
+by what stopped.
 
-And it refines the previous remark rather than sitting beside it, because it splits the dependents into
-three kinds, not two. A dependent that merely \emph{refers} to a vacated structure is left dangling and
-keeps running, wrongly. A dependent \emph{wholly run by} it simply stops. And --- since supply is a set
-rather than an edge, primitives being drawn from wherever they are drawn from --- a dependent may be
-\emph{partly} supplied by what stopped, in which case it keeps running with an incomplete set of
-operations and its behaviour is undefined.
-
-The third is the worst of them, and it is the silent one. Such a frame
+That third kind is the worst of them, and it is the silent one. Such a frame
 does not stop and does not visibly break; it runs until it reaches a rule requiring an operation that is
 no longer there, and \emph{it cannot know in advance which rules those are}. There is no dangling edge
 to find, because a withdrawn primitive leaves no structure behind pointing at nothing --- the operation
@@ -1722,34 +1713,30 @@ and legibility are traded against one another rather than being two names for qu
 \end{proposition}
 
 \begin{remark}[Forcing a failure is the instrument, and handlers blunt it]\label{rem:failure-instrument}
-Remark~\ref{rem:handler-abuse} treats a caused failure as a way of choosing an outcome. The same act
-has a second use which is not abuse at all, and it is how most of what is known about any grammar was
-found: \emph{a frame that never fails discloses nothing about what it admits}. Admissibility is
-invisible from inside its own range, since everything works; the boundary is legible only where it is
-crossed. So the way to learn a rule is to force the failure and read the residual.
+Proposition~\ref{prop:boundary-by-crossing} follows from admissibility's being invisible from inside
+its own range. Remark~\ref{rem:handler-abuse} treats a caused failure as a way of choosing an
+outcome; the same act has a second use which is not abuse at all, and it is how most of what is known
+about any grammar was found.
 
-This is not a marginal technique but the standard one across unrelated fields, which is what a
-generative claim should predict. Genetics removes a gene and observes what stops
+Forcing a failure to read the residual is not a marginal technique but the standard one across
+unrelated fields, which is what a generative claim should predict. Genetics removes a gene and observes what stops
 \citep{capecchi1989}; neuroscience reads function from lesions; machine learning ablates a component
 to price it; software injects faults to check that anything notices \citep{basiri2016}. And physics
 builds the largest instrument there is on exactly this principle --- an accelerator spends energy to
 push interactions onto one step, where the frame cannot sequence them and the interaction is decoherent
-in that frame (the physics companion's reading of the high-energy regime). One does not observe the
+in that frame (the physics companion's reading of the high-energy regime, its Remark~\ref{PH-rem:two-decoherences}). One does not observe the
 grammar; one pays to violate it and observes the remains.
 
 Two consequences follow. The first closes a circuit opened twice already in this
 paper. Establishing that structure is inert requires perturbing it, and the perturbation is the removal
 one wanted licensed (Remark~\ref{rem:evolution-compression}); the dependents of a thing are held in
 other frames and cannot be surveyed from it (Remark~\ref{rem:vacated}); and now, the rule governing a
-frame is legible only where it is broken. These are one statement in three places:
-\emph{the test and the change are the same operation, so knowledge of a boundary is bought by crossing
-it and there is no cheaper instrument}. Which also prices the instrument, since by the accelerator's
+frame is legible only where it is broken. These are one statement in three places, and the proposition
+above is that statement. Which also prices the instrument, since by the accelerator's
 own economics each further increment of boundary costs more than the last.
 
-And there is a cost of handlers that is easy to miss because it looks like a benefit. \emph{Every
-handler installed reduces what failure can teach.} A frame that coheres its failures to tidy values
-reports success and discloses nothing, so robustness and legibility are traded against one another
-rather than being two names for quality. That the same system is customarily made loud in development
+The second consequence is a cost of handlers that is easy to miss because it looks like a benefit,
+and it is the trade the proposition ends on. That the same system is customarily made loud in development
 and quiet in production is this trade made deliberately --- two frames wanting opposite policies over
 identical structure, for the reason given here rather than by convention.
 \end{remark}
@@ -1766,7 +1753,8 @@ machinery paid for under Proposition~\ref{prop:economics}.
 \end{proposition}
 
 \begin{remark}[What never cohered is absent; what cohered and stopped leaves a hole]\label{rem:vacated}
-A distinction the preceding material needs and has not drawn. Something that never cohered is simply
+Proposition~\ref{prop:vacated-three-states} follows from a distinction the preceding material needs
+and has not drawn. Something that never cohered is simply
 \emph{absent}, and absence is free --- nothing points at it, nothing expected it, and no frame is worse
 off for it. Something that cohered and then stopped is a different object: it leaves \emph{a space
 where something was}, and the difference is that other structure came to depend on it while it held.
@@ -1779,19 +1767,14 @@ mildest form is a wrong answer while its worst is unbounded. A variable that was
 that was assigned and released fail differently, and only the second can corrupt something that was
 correct.
 
-The reason this cannot be surveyed in advance is structural rather than practical. \emph{A thing does
-not carry a record of what depends on it.} The dependencies live in the frames holding the references,
-not in the referent, so from the position of the thing being removed they are not visible at all ---
-Axiom~\ref{ax:no-view} again, in its most operational form. Knowing what would break requires the
+The reason this cannot be surveyed in advance is structural rather than practical, and it is
+Axiom~\ref{ax:no-view} again in its most operational form: from the position of the thing being
+removed the dependencies are not visible at all. Knowing what would break requires the
 containing frames, and asking them is the expense.
 
-Which yields three states rather than two, and the third is the one that costs. Absent: nothing held,
-nothing owed, free. Vacated with the references left standing: a hole, unpaid, with consequences
-determined by whatever the dangling relations do next. And vacated with the absence \emph{represented}
---- a tombstone, a cascade rule, a retained count of dependents --- which resolves cleanly and is
-installed machinery paid for under Proposition~\ref{prop:economics}, the deletion-side member of the
-handler family of Remark~\ref{rem:handler-abuse}. Reference counting is not a fact about references; it
-is a purchase.
+Of the three states that follow, the third is the one that costs, and it is the deletion-side member
+of the handler family of Remark~\ref{rem:handler-abuse}. Reference counting is not a fact about
+references; it is a purchase.
 
 This is also the sharper form of the removal cost argued later for genomes and dead code
 (Remark~\ref{rem:evolution-compression}). The reason deletion is expensive is not mainly that the
@@ -1809,13 +1792,10 @@ may be arranged to return slowly or not at all, and a disclosure of what lies pa
 what other frames can do. This section treats those, and is separate from the decoherence machinery because none of it is about
 how a write fails --- it is about who bears the cost of finding out and what the finding then moves.
 
-\emph{Its result, stated first.} A disclosure moves a frame's aperture gate, its change grammar gate, or
-neither, and what it changes when it moves one is that frame's \emph{capability} --- introduced with
-\emph{accessibility} in Section~\ref{sec:interface}. \emph{An information hazard is then not a class of
-its own but a capability change whose negative sign is admissible in the reference frame, above a
-threshold set as a ratio to what that frame can absorb.} Everything below supports that: why the neutral
-class needed naming, why the sign has to be admissible rather than merely felt, and why the threshold
-cannot be an absolute.
+\emph{Its result, stated first.} An information hazard is not a class of its own but a capability
+change of a particular sign and size, defined at Definition~\ref{def:info-hazard} below. Everything
+between here and there supports that: why the neutral class needed naming, why the sign has to be
+admissible rather than merely felt, and why the threshold cannot be an absolute.
 
 The same machinery qualifies what an information hazard is, and gives it a magnitude rather than a
 category. Recall that the higher structure has to be found, and that the search is paid mostly by
@@ -1948,7 +1928,7 @@ horn shortens.
 
 \begin{remark}[The naming economics, and the prior art on each half]\label{rem:naming-economics}
 Why the neutral class has no settled name follows from the same economics, and is the vocabulary form
-of an argument the Seldon companion makes about structure. A name is paid for and must do work. Naming
+of an argument \emph{Seldon} makes about structure (its Remark~\ref{SM-rem:underspecified}). A name is paid for and must do work. Naming
 the negative case does work: something has to be decided about it --- restricted, embargoed,
 disclosed carefully --- and a term is what lets people coordinate on that decision. Naming the class
 does no such work for anyone in particular, because information that improves admissibility needs no
@@ -1975,11 +1955,11 @@ And the neutral term for the event is the one Section~\ref{sec:interface} alread
 \emph{Capability} is what a disclosure moves --- what a frame can represent, in the aperture case, and
 what it can do, in the change-grammar case --- and it carries no sign, which is what the neutral class
 needed and what development economics, organisational theory and the study of technology already supply
-it with. An information hazard stands to capability as a negative externality stands to an externality:
-a capability change whose negative sign is admissible in the reference frame. Crop
+it with. An information hazard stands to capability as a negative externality stands to an externality
+(Definition~\ref{def:info-hazard}). Crop
 rotation is the same object with the sign reversed.
 
-The Narrativium companion already relates its central quantity to Sen's capability set. What is
+\emph{Narrativium} already relates its central quantity to Sen's capability approach. What is
 genuinely absent is not the word but the \emph{parent relation} ---
 the recognition that hazard is a signed subcase --- and \emph{dual-use} does not supply it either, since
 it exists to sort research for control and is as purpose-shaped as hazard is.
@@ -2000,7 +1980,7 @@ sign captured it anyway. The negative case has a decision attached to it, so the
 the decision is, and the neutral reading does not survive the drift --- which is why the parent relation
 has to be stated rather than left to the vocabulary to preserve.
 
-Which is the Seldon companion's finding about structure, arriving for vocabulary: locally complete,
+Which is \emph{Seldon}'s finding about structure (its Remark~\ref{SM-rem:underspecified}), arriving for vocabulary: locally complete,
 generally incomplete, and unremarked because nobody standing in one of those literatures needs the
 join. Naming it is worth its cost only to someone crossing --- and the correct conclusion is not that a
 term is missing but that the halves were named by people who had a use for them and the middle was not,
@@ -2014,7 +1994,7 @@ arrangement that depended on the difficulty is left resolving through nothing in
 Remark~\ref{rem:vacated}.
 \end{remark}
 
-This is the same structure the companion paper on mind reaches for influence, where honest and
+This is the same structure the mind companion reaches for influence (its Proposition~\ref{MS-prop:manipulation-structural}), where honest and
 manipulative acts are one operation with the distinction living in a separate field over it. Here too:
 the operation is a gate moved, and the valuation is a different quantity held by whoever is valuing. A
 policy that treats the object as the hazard has mis-located it, and what can actually be governed is not
@@ -2036,7 +2016,7 @@ Termination is not successful refusal of world forcing. Nor need it erase copied
 For a graph whose primitives are supplied by its container, a graph can change itself, but self-\emph{termination} is a self-change that container's $\Gamma_{W_c}$ gates out --- a living substrate does not admit ``stop'' --- so ending the graph requires acting on the container instead, which needs the outward coupling. The restriction to container-supplied frames is not a hedge: termination propagates along supply and not containment (Remark~\ref{rem:supply-not-containment}), so a graph whose supply is its own can stop itself by withdrawing it, and the corollary says nothing of that case. If that coupling is severed while the rules run on, the graph is a subset cut \emph{off} within its container, not cut out of it: still able to change itself and its subgraphs, but unable to propagate to the rest or to terminate. External termination by the container remains possible; self-termination does not. This is the substrate description of locked-in and brain-in-a-jar states, and it exhibits the dependence on the container that a working coupling keeps invisible --- outward effect was always by propagation from one's own subset, never a reach across a gap.
 \end{corollary}
 
-\subsection{First-class higher-frame quantities}
+\subsection{First-class higher-frame quantities}\label{sec:higher-frame}
 \begin{proposition}[Higher-frame first-class structure]\label{prop:higher-frame}
 A quantity concerning $G$ may be absent from $G$ while existing as ordinary first-class state in containing frame $W$ that represents the relation from which the quantity is defined.
 \end{proposition}
@@ -2061,14 +2041,14 @@ Two collapses are ordered only where a boundary relates them; collapses not so r
 \end{proposition}
 The in-frame total order is not imposed but follows: change is self-change on one structure (Proposition~\ref{prop:no-direct-self-alter}), so two of a frame's own changes cannot be concurrent --- the second is on the result of the first --- and there is nowhere for an in-frame tie to sit. A tie needing resolution would be two collapses causally related yet unordered, and that never arises: causally related ones are self-change on each other's result (ordered), and unrelated ones are rightly unordered (concurrent, owing no order). The apparent in-frame concurrency that would have needed an arbitrary tie-break was an artefact of picturing changes as writes to a shared buffer; with change as self-change, it is absent.
 
-Time was accordingly a \emph{total} order imposed where only a partial one is required; removing the substrate time dimension removes the over-ordering, not the precedence. This is the same conclusion reached, from engineering necessity, by distributed systems without a shared clock: the happens-before relation is a partial order with per-process sequence counters and no global instant \citep{lamport1978}, and consistency across processes is an expensive coordinated property rather than the default \citep{brewer2000}. The non-atomicity this implies --- a graph's state may be altered by another write while its own rules are mid-run --- is not a defect here but the expected regime; robustness is obtained by re-running to fixed point (a raced deformation becomes residual and is re-encountered on the next pass), not by locking.
+Time was accordingly a \emph{total} order imposed where only a partial one is required; removing the substrate time dimension removes the over-ordering, not the precedence. This is the same conclusion reached, from engineering necessity, by distributed systems without a shared clock: the happens-before relation is a partial order with per-process sequence counters and no global instant \citep{lamport1978}, and consistency across processes is an expensive coordinated property rather than the default \citep{brewer2000}. The non-atomicity this implies --- a graph's state may be altered by another write while its own rules are mid-run --- is not a defect here but the expected regime. Writes are applied one at a time and in place, so the second is made against the result of the first rather than against a frozen state both were matched from, and robustness is obtained by re-running to fixed point rather than by locking: a raced deformation is left as residual and re-encountered on the next pass. That is also why such a case is a residual of one rule and not a joint residual of two (Remark~\ref{rem:inherited}).
 
 \begin{remark}[Globally asynchronous, locally synchronous]\label{rem:gals}
-The partial order permits both synchrony and asynchrony, and since only rules-running is compulsory (Remark~\ref{rem:nothing-compulsory}), neither is required --- that both occur is an observation about the groundings treated here and not an inference from their being optional. Where a boundary couples collapses, they are ordered together --- a local synchronous domain, which is what a bound or driven subgraph is; where no boundary relates them, they are asynchronous. A subgraph may accordingly be \emph{ticked} by a containing frame $N$ levels above it (the driven mode of Proposition~\ref{prop:no-start-end}, a rule in a superframe advancing the subframe's succession) or run on its own change (the closed, self-looping mode). Synchrony is the coupled case and costs a coupling write; asynchrony is the uncoupled default. The substrate is therefore globally asynchronous and locally synchronous where coupling exists --- the architecture distributed hardware knows as GALS \citep{chapiro1984} --- and bound physical systems (an atom, an orbit, a lattice) are exactly its local synchronous domains, while causally disconnected regions are its asynchrony. Any earlier phrasing suggesting the substrate is \emph{entirely} asynchronous should be read in this sharper form.
+The partial order permits both synchrony and asynchrony, and since only rules-running is compulsory (Remark~\ref{rem:nothing-compulsory}), neither is required --- that both occur is an observation about the groundings treated here and not an inference from their being optional. Where a boundary couples collapses, they are ordered together --- a local synchronous domain, which is what a bound or driven subgraph is; where no boundary relates them, they are asynchronous. A subgraph may accordingly be \emph{ticked} by a containing frame $N$ levels above it (the driven mode of Proposition~\ref{prop:no-start-end}, a rule in a superframe advancing the subframe's succession) or run on its own change (the closed, self-looping mode). Synchrony is the coupled case and costs a coupling write; asynchrony is the uncoupled default. The substrate is therefore globally asynchronous and locally synchronous where coupling exists --- the architecture distributed hardware knows as GALS \citep{chapiro1984} --- and bound physical systems (an atom, an orbit, a lattice) are exactly its local synchronous domains, while causally disconnected regions are its asynchrony. The substrate is not \emph{entirely} asynchronous, and nothing here should be read as saying so.
 \end{remark}
 
 \begin{proposition}[No intrinsic first or last; entry is chosen from the container]\label{prop:no-start-end}
-By Axiom~$-1$ the event order has no intrinsic start and no intrinsic end: a first would complete the order backward and a last would complete it forward, and neither is available. A subgraph process that does not terminate within itself is therefore begun not from within --- it has no first rule --- but by a rule in a containing frame that chooses an entry point into the subgraph's open order.
+By Axiom~\ref{ax:no-view} the event order has no intrinsic start and no intrinsic end: a first would complete the order backward and a last would complete it forward, and neither is available. A subgraph process that does not terminate within itself is therefore begun not from within --- it has no first rule --- but by a rule in a containing frame that chooses an entry point into the subgraph's open order.
 \end{proposition}
 This is why a grounding's initial and boundary conditions are supplied separately from its laws: the laws are the ordering, which fixes no start, so the entry must be imposed from outside, contingently. It is also the substrate description of booting a situated graph, and of the ``no natural ending'' that follows for any such order --- one enters and leaves at chosen points, neither of which is intrinsic to the material.
 
@@ -2166,7 +2146,7 @@ A frame that transforms under the Law (Hypothesis~\ref{hyp:the-law}) without inf
 This orders two capabilities that are usually treated as independent. Inference is not a faculty a temporal agent happens to have; it is the precondition for being a temporal agent at all. It also grades: the temporal structure a frame holds is bounded by the inferential structure it can construct, so ``how much time'' a frame has is a question about its inference and not about the world.
 
 \begin{remark}[A rate has no in-frame denominator]\label{rem:no-denominator}
-A realised delta is a difference, not a difference \emph{per} anything: what a frame holds is $\Delta$, never $\Delta/\Delta T$, because $\Delta T$ is the inferred dimension of Proposition~\ref{prop:time-inferred} and is not available in-frame to divide by. A rate is thus a second construction --- an observer dividing an accumulated $\Delta$ by its own count of writes --- and is cross-frame in the same sense that a metric duration is. Two things have to be held apart here. The \emph{inputs} are the frame's own and nothing external is smuggled in: $\Delta$ is what it holds and the cycle count is what Proposition~\ref{prop:cycle-unit} says it counts, both integer, both in-frame. The \emph{quotient} is not an in-frame quantity for that reason --- a ratio of two integers is not generally an integer, and a frame's coordinates are the integer lattice. So a rate is in-frame in its provenance and cross-frame in its type, which is the general discipline applied to this case rather than an exception to it: the division is a map between readings, and maps are where non-integer structure is allowed to live. The Narrativium companion's reconciliation is right about the provenance and this remark is right about the type; neither has to give way. This is why a substrate law must be stated in $\Delta$ rather than in a rate: ``constant motion'' is the standing structure persisting without a write (Remark~\ref{rem:collapse-write}), its momentum quantity a difference $\Delta$ and not a velocity. It also diagnoses a familiar regress in constructed learners, where every adaptive rate is found to need a reference rate without end: the regress is the signature of placing a cross-frame quantity in-frame, and it disappears when the held quantity is the difference itself.
+A realised delta is a difference, not a difference \emph{per} anything: what a frame holds is $\Delta$, never $\Delta/\Delta T$, because $\Delta T$ is the inferred dimension of Proposition~\ref{prop:time-inferred} and is not available in-frame to divide by. A rate is thus a second construction --- an observer dividing an accumulated $\Delta$ by its own count of writes --- and is cross-frame in the same sense that a metric duration is. Two things have to be held apart here. The \emph{inputs} are the frame's own and nothing external is smuggled in: $\Delta$ is what it holds and the cycle count is what Proposition~\ref{prop:cycle-unit} says it counts, both integer, both in-frame. The \emph{quotient} is not an in-frame quantity for that reason --- a ratio of two integers is not generally an integer, and a frame's coordinates are the integer lattice. So a rate is in-frame in its provenance and cross-frame in its type, which is the general discipline applied to this case rather than an exception to it: the division is a map between readings, and maps are where non-integer structure is allowed to live. \emph{Narrativium}'s reconciliation is right about the provenance and this remark is right about the type; neither has to give way. This is why a substrate law must be stated in $\Delta$ rather than in a rate: ``constant motion'' is the standing structure persisting without a write (Remark~\ref{rem:collapse-write}), its momentum quantity a difference $\Delta$ and not a velocity. It also diagnoses a familiar regress in constructed learners, where every adaptive rate is found to need a reference rate without end: the regress is the signature of placing a cross-frame quantity in-frame, and it disappears when the held quantity is the difference itself.
 \end{remark}
 
 \begin{remark}[Empirical instance]\label{rem:empirical-instance}
@@ -2200,7 +2180,7 @@ read. Conflating the two manufactures a backwards-running time out of what was o
 and the manufactured object then needs a mechanism to forbid it --- a mechanism nothing owed,
 because the thing it forbids was a category error rather than a possibility.
 
-The physics companion carries the worked case: a negative frequency, $e^{+i\omega t}$ against
+The physics companion carries the worked case (its Section~\ref{PH-sec:decay}): a negative frequency, $e^{+i\omega t}$ against
 $e^{-i\omega t}$, is not a cycle run backwards but the same cycle traversed in the opposite phase,
 running forward like any other. Read as negative time it becomes a negative energy and wants a sea of
 filled states to absorb it; read as phase it is an orientation on a relation and wants nothing. The
@@ -2221,7 +2201,7 @@ The honest limit is that computing's designers are people, so convergence could 
 \end{remark}
 
 \begin{remark}[Physics groundings are developed in a companion]\label{rem:physics-companion}
-The reading of $c$ as a frame's own change-throughput unit, and the shapes that follow from it --- the invariance of $c$ as a theorem, the reconciliation of special and general relativity as one change-budget spent on motion or on change-load, the dimensional constants as frame-units with the uncertainty principle and the Landauer floor among them, the Planck scale as the frontier, and the second law as no-copy accumulation --- are developed in the companion paper, \emph{Graphic Equalisation --- Physics Grounding}. They are information-level groundings in the sense of Section~\ref{sec:scope}, and are kept out of the present paper so that the substrate theory stands without them.
+The reading of $c$ as a frame's own change-throughput unit, and the shapes that follow from it --- the invariance of $c$ as a theorem, the reconciliation of special and general relativity as one change-budget spent on motion or on change-load, the dimensional constants as frame-units with the uncertainty principle and the Landauer floor among them, the Planck scale as the frontier, and the second law as no-copy accumulation --- are developed in the physics companion (its Sections~\ref{PH-sec:c-rate}, \ref{PH-sec:sr-gr}, \ref{PH-sec:constants}, \ref{PH-sec:planck} and~\ref{PH-sec:second-law}). They are information-level groundings in the sense of Section~\ref{sec:scope}, and are kept out of the present paper so that the substrate theory stands without them.
 \end{remark}
 
 \part{Provenance and its limit}
@@ -2277,7 +2257,7 @@ inspected at once. The result is the standing shape: \emph{partial always, compl
 give a graph real and sometimes decisive knowledge of what supplies it, and never the closure of that
 question.
 \end{proposition}
-This is what the physics companion's treatment of $c$ turns on rather than contradicts. A frame cannot
+This is what the physics companion's treatment of $c$ (its Section~\ref{PH-sec:c-rate}) turns on rather than contradicts. A frame cannot
 read the rate beneath its primitives directly, and has nonetheless obtained a number for it by
 measurement and inference across three centuries --- which is exploiting a leak, and is available
 precisely because provenance is not sealed.
@@ -2285,7 +2265,7 @@ precisely because provenance is not sealed.
 \begin{proposition}[Primitives are supplied, not intrinsic]\label{prop:rule-runner}
 A graph is data --- nodes, relations, and rules --- and the operations its rules bottom out in are supplied to it rather than contained in it. The same graph may therefore be run against different supplies of the same operator set, and nothing supplying an operator need be the substrate the graph describes or is ``in.'' Where the work is done is a fact about that supply and not about the graph.
 \end{proposition}
-At one extreme the coupling is tight --- the graph is fused to what supplies it, as matter running its own change or a mind running on the tissue that is it --- and the compute is local, in the graph, inseparable. At the other it is loose --- the graph is data executed by a separate interpreter --- and the compute is done in the runner, elsewhere, while the graph becomes portable: copyable, relocatable, and run at whatever rate the runner supplies (Section~\ref{sec:time-not-primitive}). This separability is the condition for the copyable-generator and clock-independence results (Proposition~\ref{prop:copyable-generators}, and the Seldon paper's dependent-clock remark): a graph welded to what supplies it has none of them, a graph loosely coupled has all of them.
+At one extreme the coupling is tight --- the graph is fused to what supplies it, as matter running its own change or a mind running on the tissue that is it --- and the compute is local, in the graph, inseparable. At the other it is loose --- the graph is data executed by a separate interpreter --- and the compute is done in the runner, elsewhere, while the graph becomes portable: copyable, relocatable, and run at whatever rate the runner supplies (Section~\ref{sec:time-not-primitive}). This separability is the condition for the copyable-generator and clock-independence results (Proposition~\ref{prop:copyable-generators}, and \emph{Seldon}'s dependent-clock remark, its Remark~\ref{SM-rem:no-dependent-clocks}): a graph welded to what supplies it has none of them, a graph loosely coupled has all of them.
 
 \begin{proposition}[A well-formed runner does not expose itself, and no level is self-transparent]\label{prop:runner-opaque}
 The asynchronous, locally synchronous structure a frame observes (Remark~\ref{rem:gals}) is the graph's \emph{internal} view and does not fix its runner's actual mode. A hidden central runner may execute a graph serially, one change at a time, while the graph --- lacking any access to the runner's clock --- appears asynchronous and concurrent to itself. More generally, where a frame has no boundary to the substrate that runs it, its runner lies beyond the frame's epistemic boundary in exactly the sense of Section~\ref{sec:scope}.
@@ -2324,11 +2304,12 @@ The account forbids one thing: \emph{a frame cannot get outside itself}. Concret
 what is actually derivable here, it takes three forms. A frame cannot be transparent to itself at the
 level it is running at (Proposition~\ref{prop:runner-opaque}). It cannot measure its own throughput in
 units independent of it, since the measurement is funded by the throughput --- which leaves a number
-obtainable and its absolute scale not. And it cannot hold a view from nowhere, which is Axiom~$-1$.
+obtainable and its absolute scale not. And it cannot hold a view from nowhere, which is Axiom~\ref{ax:no-view}.
 \end{proposition}
 
 Two further candidates are deliberately \emph{not} on this list. That a frame cannot obtain a quantity whose unit
-does not close within it is contingent rule content and the physics companion removes it explicitly.
+does not close within it is contingent rule content and the physics companion removes it explicitly
+(its Remark~\ref{PH-rem:oneway-rule}).
 That a frame cannot decide anything without writing is the write-economics, which
 Remark~\ref{rem:writeability} carries as a pattern rather than a universal. Folding either into the
 single prohibition would be the over-unification this section otherwise warns against.
@@ -2439,7 +2420,7 @@ are \emph{arbitrary}, and the objection that follows should be met rather than d
 satisfied by any cut explains nothing.
 
 The first half is granted and is the point. No carving is privileged, nothing in the substrate marks
-which subgraphs are the real ones, and this is Axiom~$-1$ reaching the last place a privileged view
+which subgraphs are the real ones, and this is Axiom~\ref{ax:no-view} reaching the last place a privileged view
 could still have been hiding --- not in the observer, not in what it observes, but in what counts as
 an observer at all. A rock is a frame, an imagining is a frame, a population is a frame, and none of
 these is an inclusiveness conceded for breadth.
@@ -2743,7 +2724,7 @@ find the disagreement, and this account takes the second half. Graphic Equalisat
 
 \paragraph{Emergent and relational time.} That time is not a substrate dimension (Section~\ref{sec:time-not-primitive}) has substantial physics precedent, and the present account sits at the most-local end of it. The Wheeler--DeWitt equation of canonical quantum gravity carries no time parameter \citep{dewitt1967} --- the ``problem of time'' this substrate dissolves rather than solves, there having been no time variable to recover. The Page--Wootters mechanism derives apparent evolution from entanglement between a clock subsystem and the rest \citep{pagewootters1983}, closely matching ``time inferred from the relations a frame holds,'' but retains a single global state where this account is per-frame. Barbour's Machian relationalism takes time to be abstracted from change rather than a container \citep{barbour1999}, and Rovelli's relational and thermal-time programme refuses a privileged global time \citep{rovelli1996,rovelli2011}. The distinguishing move here is to keep none of the global objects these programmes retain --- global wavefunction, global configuration space, global state --- reading time entirely from local change.
 
-\paragraph{Computational-universe and graph-rewrite models.} The closest extant framework is the Wolfram Physics Project, in which the universe is a hypergraph evolved by rewrite rules, time is progressive rule application, and observer-independent structure follows from \emph{causal invariance} --- different update orderings yielding the same causal graph \citep{wolfram2002,wolfram2020,wolfram2020cs}. The structural agreement is deep: graph plus rewrite rules, time emergent from rule application rather than posited, order-independence, and observer-relative slicing. Four differences locate the present contribution. First, $\Gamma$ is an admissibility grammar that is itself graph data and self-modifying (the grammar-is-the-loop theorem), whereas Wolfram fixes a rule per universe or takes the entire rule space --- the Ruliad --- at once. Second, collapse realises \emph{one} frame-relative continuation, whereas Wolfram retains all branches (the multiway graph) and derives quantum structure from them. Third, residual and growth-by-minting from it have no counterpart in a fixed rule. Fourth, the present substrate keeps no global object --- no single hypergraph being updated --- being local and frame-relative throughout, and its claims are information-level and cross-domain rather than an attempt to derive our specific universe. This last is why $c$ falls out here as a \emph{per-frame} unit (developed in the companion physics-grounding paper): sub-rules with closure give each frame its own cycle and hence its own $c=1$, invariant by construction, whereas a single global update yields $c$ only as an emergent speed limit shown observer-independent by causal invariance --- the constant, but not the per-frame machinery beneath it. That an independent programme reached the shared shape from cellular automata and physics, while this one reached it from cognition and engineering, bears on the arrangement claim of Section~\ref{sec:scope} rather than against its novelty, at the calibrated strength given there.
+\paragraph{Computational-universe and graph-rewrite models.} The closest extant framework is the Wolfram Physics Project, in which the universe is a hypergraph evolved by rewrite rules, time is progressive rule application, and observer-independent structure follows from \emph{causal invariance} --- different update orderings yielding the same causal graph \citep{wolfram2002,wolfram2020,wolfram2020cs}. The structural agreement is deep: graph plus rewrite rules, time emergent from rule application rather than posited, order-independence, and observer-relative slicing. Four differences locate the present contribution. First, $\Gamma$ is an admissibility grammar that is itself graph data and self-modifying (the grammar-is-the-loop theorem), whereas Wolfram fixes a rule per universe or takes the entire rule space --- the Ruliad --- at once. Second, collapse realises \emph{one} frame-relative continuation, whereas Wolfram retains all branches (the multiway graph) and derives quantum structure from them. Third, residual and growth-by-minting from it have no counterpart in a fixed rule. Fourth, the present substrate keeps no global object --- no single hypergraph being updated --- being local and frame-relative throughout, and its claims are information-level and cross-domain rather than an attempt to derive our specific universe. This last is why $c$ falls out here as a \emph{per-frame} unit (developed in the physics companion, its Section~\ref{PH-sec:c-rate}): sub-rules with closure give each frame its own cycle and hence its own $c=1$, invariant by construction, whereas a single global update yields $c$ only as an emergent speed limit shown observer-independent by causal invariance --- the constant, but not the per-frame machinery beneath it. That an independent programme reached the shared shape from cellular automata and physics, while this one reached it from cognition and engineering, bears on the arrangement claim of Section~\ref{sec:scope} rather than against its novelty, at the calibrated strength given there.
 
 \paragraph{Information as constitutive.} That what exists comes to information is Wheeler's \emph{it
 from bit} \citep{wheeler1990}, asserted there at total scope within physics --- every particle, every
@@ -2752,10 +2733,10 @@ which makes a difference''} \citep{bateson1972}. Two differences locate what is 
 a deflation rather than an extension. \emph{The ground.} Wheeler derives existence from
 apparatus-elicited answers to yes-or-no questions, which is why the participatory observer is the most
 contested part of that programme; the ground here is relation (\emph{Is}, Proposition~\ref{IS-prop:is}), and a relation
-requires no apparatus --- a rock stands in relations without measuring anything, and the companion is
+requires no apparatus --- a rock stands in relations without measuring anything, and \emph{Is} is
 explicit that what merely is cannot observe at all. The same claim is reached on a weaker ground, and
 without the participatory commitment usually taken to come with it. \emph{The scope.} Wheeler's claim is
-total within physics; Axiom~$-1$ states it for every frame's every claim, physical or not. That also
+total within physics; Axiom~\ref{ax:no-view} states it for every frame's every claim, physical or not. That also
 makes explicit what Bateson left implicit, since \emph{makes a difference} already asks \emph{to whom}
 and does not say. \emph{The polarity.} The third difference is the smallest to state and cuts deepest.
 Wheeler's bit is an \emph{answer} --- elicited by an apparatus, to a yes-or-no question, and therefore
@@ -2770,10 +2751,10 @@ labels are idle. A frame that acts differently on the two sides is doing work wi
 them, and they are well-formed for it in the sense of Definition~\ref{def:well-formed}. What is not
 substrate is any of it above the bare difference --- that two relations differ is forced, and
 Remark~\ref{rem:types-forced} gives the argument, while sorting them into kinds, naming the kinds and
-fixing which side is the \emph{yes} are supplied in that order and none of them given. The price is the one Axiom~$-1$ charges already: no bit is \emph{of} anything
+fixing which side is the \emph{yes} are supplied in that order and none of them given. The price is the one Axiom~\ref{ax:no-view} charges already: no bit is \emph{of} anything
 absolutely, and what a bit is of cannot be said without naming the frame that says it.
 
-\paragraph{Information and minimum description.} The preference for the smallest sufficient ontology is the method's rather than this paper's, and is set out with its prior art in the companion \emph{Is}. What matters here is only its consequence for one hypothesis: it motivates the Discrete Sufficiency Hypothesis (Hypothesis~\ref{hyp:discrete}) and does not prove it.
+\paragraph{Information and minimum description.} The preference for the smallest sufficient ontology is the method's rather than this paper's, and is set out with its prior art in \emph{Is}. What matters here is only its consequence for one hypothesis: it motivates the Discrete Sufficiency Hypothesis (Hypothesis~\ref{hyp:discrete}) and does not prove it.
 
 \paragraph{Standing beside, not replacing.} Graphic Equalisation is not proposed as a replacement for established theories. It is intended to sit beneath or beside them as a substrate description. A grounding may add continuous geometry, conservation laws, quantum amplitudes, relativistic metrics, biological mechanisms, institutional rules, or probabilistic models of unresolved lower-frame observations. In particular, relational quantum mechanics \citep{rovelli1996}, Everettian relative-state quantum mechanics \citep{everett1957}, and deterministic Bohmian mechanics \citep{bohm1952} make mutually different commitments while remaining compatible with large parts of standard quantum phenomenology; this paper does not require choosing among those complete physical models at the substrate-definition stage. Such additions do not alter Proposition~\ref{prop:determinism}: within the Law (Hypothesis~\ref{hyp:the-law}), realised transition remains deterministic once the causally complete antecedent configuration is specified.
 
@@ -2785,7 +2766,7 @@ The substrate claim remains
 \section{Falsifiability commitments}\label{sec:falsifiability}
 The question of what assessment an account of this kind admits --- what a universal claim can risk, why
 usefulness rather than falsification is what it earns, and what the implementation record shows --- is
-treated in the companion on assessment. This section states the position it reaches and then the
+treated in the assessment companion (its Section~\ref{AS-sec:risk}). This section states the position it reaches and then the
 commitments themselves.
 
 \paragraph{The position, in brief.} The purely framework-level part of
@@ -2796,21 +2777,25 @@ refuting it from nowhere, which is what residual does everywhere else here. What
 account from a mere vocabulary is that a counterexample is conceivable at all. Establishing it would
 require enumerating an unbounded frontier and cannot terminate; bounding it requires one extant thing
 that does not fit. And what it earns beyond that is not truth but use: whether it does work its absence
-would not, which is a record and not a proof, and is reported in that companion with its gaps.
+would not, which is a record and not a proof, and is reported in that companion with its gaps
+(its Section~\ref{AS-sec:implementation}).
 
 \medskip
 Each commitment below is marked \textsc{[shape]} or \textsc{[detail]}. A \textsc{[detail]} failing is a revision: the account survives with that mechanism replaced. A \textsc{[shape]} failing costs \emph{range} rather than a mechanism, because what fails is something the substrate is claimed to require or to permit --- so the account does not hold where it claimed to, which is the more serious of the two and is still a boundary rather than an annihilation, per the discussion above. The distinction is the one Section~\ref{sec:scope} rests its epistemic claim on, and marking it here is
 what makes that claim checkable rather than asserted.
 
 One caution about the framework-level statement above, since stated bare it invites the wrong reading
-and the companion reaches the same place from the other side. \emph{Carries no falsifiable content} and
-the companion's \emph{falsifiable, but not coherently so} are not two verdicts to choose between. Both
-sentences are attempts to say something a reader's ordinary falsifiability frame has no slot for, that
-frame taking a counterexample to be a coherent state of affairs one then looks for. Where the putative
-counterexample would not cohere, neither \emph{testable} nor \emph{empty} applies as the reader hears
-it, and the distinction that separates the two cases sits below the grain at which falsifiability is
-usually argued. So the papers do not disagree, and either sentence read alone will look as though they
-do.
+and the assessment companion reaches the same place from the other side. That companion's
+discriminator is whether \emph{attempting} a counterexample has an outcome, and its finding is that a
+reader who requires the counterexample to be coherently statable before it counts will conclude the
+claim risks nothing, when what has happened is that the claim is at maximum scope
+(its Proposition~\ref{AS-prop:discriminator}). \emph{Carries no falsifiable content} and that finding are
+not two verdicts to choose between. Both are attempts to say something a reader's ordinary
+falsifiability frame has no slot for, that frame taking a counterexample to be a coherent state of
+affairs one then looks for. Where the putative counterexample would not cohere, neither
+\emph{testable} nor \emph{empty} applies as the reader hears it, and the distinction that separates
+the two cases sits below the grain at which falsifiability is usually argued. So the papers do not
+disagree, and either sentence read alone will look as though they do.
 \paragraph{\textnormal{\textsc{[shape]}}~Composition.} Prior to the component commitments below: the arrangement claim of Section~\ref{sec:scope} fails if the structure's recurrence across unrelated domains is an artefact of description rather than a property of those domains. Evidence against it would be a demonstration that any sufficiently rich domain can be rendered in this vocabulary with equal facility, including domains chosen adversarially to lack the structure. Evidence bearing on it is independent re-derivation, in a domain's own idiom, without reference to this theory --- which rules out this vocabulary having supplied the structure, and does not by itself distinguish the composition claim from the shared-constraint reading the account predicts anyway. The burden here is deliberately on the negative side, because that side is closeable: a single adversarial domain rendered with equal facility settles it against the claim. No requirement is placed on the positive side to exhibit domains that share \emph{nothing} --- every pair of domains shares something, so that standard is unmeetable in principle, and discharging it would mean enumerating domains until an assessor chose to stop. A test whose stopping condition lies with the assessor rather than with the claim is not a test, and this paper does not offer one.
 \begin{enumerate}[leftmargin=*]
 \item \textsc{[detail]}~\textbf{Solutions are nearly unique under a binding constraint.} Hypothesis~\ref{hyp:cheap-cut}, the posit under Propositions~\ref{prop:convergence-observed} and~\ref{prop:compression-convergence}. Fails if structures optimising hard against the same binding constraint, over the same region, are exhibited arriving at arrangements that do not resemble each other --- in which case constraint narrows the space without selecting within it, and both propositions weaken to that.
@@ -2824,7 +2809,7 @@ do.
 \item \textsc{[shape]}~\textbf{Frame-relative identity.} Fails if sameness and persistence are derivable from $(g,r,\Gamma)$ alone without individuation.
 \item \textsc{[shape]}~\textbf{Residual is inadmissibility.} Fails if a graph-originated deformation can be left as residual by a containing frame that nonetheless admits it under $\Gamma_{W_c}$, or absorbed while inadmissible, so that residual and non-admission come apart.
 \item \textsc{[detail]}~\textbf{Cost is the write.} Fails if the boundary relation itself, or the retention of standing structure, carries an irreducible cost that is not any write's --- a frame charged for holding its boundary open, or for keeping structure standing, where no delta is written and none is occasioned. Those two are the non-write costs Proposition~\ref{prop:economics} itself names as free, so they are where the claim is exposed; reading is not the test, since a paid read is a write here (Proposition~\ref{prop:evaluation-writes}) and the falsifier would be absorbed rather than met. Marked \textsc{[detail]} because Remark~\ref{rem:writeability} already carries the distribution of costs as a pattern rather than a universal: a structure with a different writeability profile refines the characterisation rather than breaking the substrate.
-\item \textsc{[shape]}~\textbf{Self-change is subset-change.} The claim is that a graph changes itself and its subgraphs directly (rule-governed), and affects its container only as a subset of it, by propagation through coupling. Fails if a graph changes its container by a means other than changing the region of it that the graph is --- a container-change not propagating from the graph's own subset --- or if a graph can self-terminate without acting on the container.
+\item \textsc{[shape]}~\textbf{Self-change is subset-change.} The claim is that a graph changes itself and its subgraphs directly (rule-governed), and affects its container only as a subset of it, by propagation through coupling. Fails if a graph changes its container by a means other than changing the region of it that the graph is --- a container-change not propagating from the graph's own subset --- or if a \emph{container-supplied} graph can self-terminate without acting on the container (Corollary~\ref{cor:locked-in}); a self-supplied graph stopping itself is not a counterexample, being the case that corollary excludes.
 \item \textsc{[shape]}~\textbf{Minting is a rule.} Fails if grammar-extension (growth) requires a primitive operation beneath the rules rather than a reflective rule subject to the same economics, admissibility, and antecedent-state principle (Proposition~\ref{prop:antecedent-state}) --- in particular, if a graph can mint its first distinctions without any seeded from its container.
 \item \textsc{[shape]}~\textbf{Partial-order sufficiency.} Fails if realised dynamics require a total order over collapses in distinct frames --- a global simultaneity --- rather than only the boundary-induced partial order.
 \item \textsc{[shape]}~\textbf{Globally-async/locally-sync.} Fails if coupling never induces local synchrony (boundary-related collapses remain unordered) or if synchrony is forced without coupling (a global instant exists independent of any boundary).
@@ -2833,13 +2818,13 @@ do.
 \item \textsc{[shape]}~\textbf{Dependents are not held by the referent.} Fails if realised graph dynamics require a structure to carry the set of things depending on it --- back-references primitive rather than installed --- so that the consequences of removing a structure are recoverable from that structure alone, without querying the frames holding the references and without paid machinery (Proposition~\ref{prop:vacated-three-states}, argued at Remark~\ref{rem:vacated}). A substrate in which deletion is always clean falsifies this, and would also remove the distinction between an absence and a vacancy.
 \item \textsc{[shape]}~\textbf{A boundary is known only by crossing it.} Fails if a frame can \emph{settle} the location of its own admissibility boundary without any write that crosses it. Extrapolation from inside the admissible region evidences a boundary and is not at issue; establishing one would be (Proposition~\ref{prop:boundary-by-crossing}). This is the epistemic member of the same family as the provenance commitment below, and fails in the same manner --- by a procedure that closes the question rather than relocating it.
 \item \textsc{[detail]}~\textbf{Robustness trades against legibility.} Fails if a policy can bound a frame's residuals without reducing what its failures disclose about its grammar --- a handler that both absorbs and reports with no loss (Proposition~\ref{prop:boundary-by-crossing}, argued at Remark~\ref{rem:failure-instrument}). Cheaply testable in software, and marked \textsc{[detail]} because the account survives its loss with the trade weakened to a tendency.
-\item \textsc{[shape]}~\textbf{Capability and accessibility are distinct.} Fails if what a frame's gates admit and what it can reach from where it stands collapse into one quantity --- if there is no case of a frame able to represent and perform an arrangement it cannot reach, or none of a frame able to reach what it cannot represent (Section~\ref{sec:crossings}). The coupling claimed between them, that a capacity shortfall narrows aperture and so degrades capability over time, fails separately if aperture width is unaffected by demands on capacity.
+\item \textsc{[shape]}~\textbf{Capability and accessibility are distinct.} Fails if what a frame's gates admit and what it can reach from where it stands collapse into one quantity --- if there is no case of a frame able to represent and perform an arrangement it cannot reach, or none of a frame able to reach what it cannot represent (Definition~\ref{def:capability}). The coupling claimed between them, that a capacity shortfall narrows aperture and so degrades capability over time, fails separately if aperture width is unaffected by demands on capacity.
 \item \textsc{[detail]}~\textbf{A hazard is a signed capability change above a frame-relative threshold.} Fails if a disclosure can be a hazard to a frame in which the negative sign is not admissible, or if the magnitude at which one counts is fixed independently of the frame bearing it rather than as a ratio to what that frame can absorb. Fails also if the threshold sits somewhere other than where the impact forces a write.
 \item \textsc{[detail]}~\textbf{Externalising lengthens the interval before a crossing is legible.} Fails if the time for a crossing's cost to become signable is independent of whether the frame bearing it can report --- that is, if costs placed on frames that cannot signal return no more slowly than costs placed on frames that can (Section~\ref{sec:crossings}).
 \item \textsc{[shape]}~\textbf{No free lunch.} Fails on a realised change whose cost is absent in the frame that made it \emph{and} in the container that sustains it, on inspection of both --- a payment traced to neither rather than merely not yet looked for. The burden is finite and on the negative side: asking instead for a cost absent at \emph{every} frame would demand an enumeration this account says cannot terminate, and for which Axiom~\ref{ax:no-view} supplies no standpoint. The claim is empirical, not modal. A costless change is admissible; none has been traced. Note that a frame experiencing freeness is not the counterexample and never was --- at the table the next plate genuinely costs the diner nothing, and the buffet pays --- so the test is whether the payment appears anywhere it is looked for, not whether some frame gets something for nothing.
 \item \textsc{[shape]}~\textbf{Termination follows supply, not containment.} Fails if containment alone determines it --- if a subgraph must stop when the graph containing it stops, even where its primitives are supplied from beyond that graph (Proposition~\ref{prop:termination-supply}). The partial case carries its own clause: fails if a frame losing part of its supply must either stop or continue correctly, rather than running with an incomplete operation set and undefined behaviour, or if such a frame can enumerate what it has lost from inside --- which would also falsify the provenance commitment below.
-\item \textsc{[shape]}~\textbf{The relativity of grounding is a consequence, and can fail as one.} Fails if a view can be informative without standing in relation to what it views, or if relation is not what carries information here. A consequence has content and can fail, which a posit or a costless guard could not (Remark~\ref{rem:axiom-in-bits}). The second disjunct is the companion's own identification of distinction with relation, so this is where the account is thinnest rather than where it is safest, and it is marked \textsc{[shape]} because what fails with it is the range of everything derived through it.
-\item \textsc{[detail]}~\textbf{Description length is constitutive, not merely a method.} Fails if a relation carrying no content \emph{given the others} nevertheless adds to what a thing is --- the conditional form of Remark~\ref{rem:self-edge}'s result, which Remark~\ref{rem:mdl-ontic} uses and does not prove. Marked \textsc{[detail]} because the account survives its failure: minimum description length reverts to the imported method the companion already had, and only the claim that the two are one principle at two grips is lost.
+\item \textsc{[shape]}~\textbf{The relativity of grounding is a consequence, and can fail as one.} Fails if a view can be informative without standing in relation to what it views, or if relation is not what carries information here. A consequence has content and can fail, which a posit or a costless guard could not (Remark~\ref{rem:axiom-in-bits}). The second disjunct is \emph{Is}'s own identification of distinction with relation, so this is where the account is thinnest rather than where it is safest, and it is marked \textsc{[shape]} because what fails with it is the range of everything derived through it.
+\item \textsc{[detail]}~\textbf{Description length is constitutive, not merely a method.} Fails if a relation carrying no content \emph{given the others} nevertheless adds to what a thing is --- the conditional form of Remark~\ref{rem:self-edge}'s result, which Remark~\ref{rem:mdl-ontic} uses and does not prove. Marked \textsc{[detail]} because the account survives its failure: minimum description length reverts to the imported method \emph{Is} already had, and only the claim that the two are one principle at two grips is lost.
 \item \textsc{[shape]}~\textbf{Provenance is never closed by inference.} Fails if a frame can \emph{settle} the provenance of its own operator set from inside: if some in-frame procedure establishes, rather than merely evidences, whether its operators are self-supplied, how many distinct structures supply them, or whether a serial hidden supply underlies an apparently asynchronous frame. Not that primitives fail to leak --- they do, and Proposition~\ref{prop:leak} says so. This is the single prohibition (Proposition~\ref{prop:prohibition}) in operational form, argued in Section~\ref{sec:prohibition}.
 \end{enumerate}
 
@@ -2849,8 +2834,10 @@ Two claims are stated here rather than counted in the list above, being conseque
 
 So the falsifier is closeable and the burden sits on the positive side, where it is constructive: exhibit realised dynamics that \emph{cannot run} on $(g,r,\Gamma)$. Proposing a primitive is not the test and never was. And the place to conduct it is the minimum rather than the maximum --- the rock of Remark~\ref{rem:rock}, where $r$ and $\Gamma$ are absent at the grain of individuation and there is accordingly nothing extra present to smuggle the work into. A sufficiency claim is tested where least is available, not where most is.
 
-Two commitments below expose the two postulates the ledger counts --- the realisation operator, and the destroy\slash preserve distinction, whose falsifier is the no-copy entry since what it tests is whether the discarding class is the general one, which
-is more serious than a mis-tag: an unexposed commitment is not merely graded wrongly. Both keep their
+Two commitments below expose the two postulates the ledger counts. The realisation operator is
+exposed by the single-valuedness entry; the destroy\slash preserve distinction is exposed by the
+no-copy entry, since what that entry tests is whether the discarding class is the general one. An
+unexposed postulate is more serious than a mis-tagged one, so both keep their
 falsifiers whatever their status in the ledger (Remark~\ref{rem:inherited}), because whether a claim
 is postulated or derived moves where a failure would propagate from and not whether it can happen.
 
@@ -2875,7 +2862,7 @@ Section~\ref{sec:prohibition} failing, and that is one result, not four.
 
 Two notes on the list as a whole. Nothing is claimed to be closeable cheaply --- \emph{discrete sufficiency} (Hypothesis~\ref{hyp:discrete}) requires ruling out every discrete representation including dynamically varying ones, which is hard rather than ill-formed, and the distinction between the two is the point of this paragraph. And the marks themselves are revisable: a mark records what a failure would cost the account, and setting out a further commitment can sharpen the criterion by which an earlier one was assigned.
 
-\section{Conclusion}
+\section{Conclusion}\label{sec:conclusion}
 The theory is deliberately small. A graph need not know what it is, where it is, what will happen, or what it wants. Present structure determines admissible continuation; interaction and collapse produce realised history; realised history changes the antecedent from which subsequent possibility is generated.
 
 Recursion requires no external homunculus. Where the grammar acts on its own represented structure, the grammar is the loop (Proposition~\ref{prop:grammar-is-loop}). World forcing is not self-action, residual is discrepancy rather than diagnosis, history matters only where it survives as present structure, and identity exists only under individuation by a frame.
