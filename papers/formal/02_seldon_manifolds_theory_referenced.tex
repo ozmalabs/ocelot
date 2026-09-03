@@ -33,21 +33,21 @@
 
 \title{Seldon Manifolds --- Theory\\\large The Geometry of Reachable Futures}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \texorpdfstring{\textemdash}{---}\ draft-2026-09-02.1}\\[2pt]2 September 2026 \texorpdfstring{\textbullet}{\textperiodcentered}\ document revision 28}
+\date{\textbf{Draft \texorpdfstring{\textemdash}{---}\ draft-2026-09-02.1}\\[2pt]2 September 2026 \texorpdfstring{\textbullet}{\textperiodcentered}\ document revision 29}
 
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r28}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r29}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r28}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r29}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-09-02.1 r28} (2 September 2026).
+\textbf{DRAFT --- draft-2026-09-02.1 r29} (2 September 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. It is a companion to \emph{The Law of Graphic Equalisation ---
 Theory} (referred to below as Graphic Equalisation), and inherits that paper's
@@ -848,16 +848,17 @@ nothing in the air-indexed manifold and, in the ground-indexed one, gains capaci
 displaced downwind without having chosen to be. One event, two frames, two different things
 happening --- and no version of it that is happening to nobody.
 
-The limit case settles what kind of difference this is. An aircraft whose stalling speed is below the
-prevailing wind can be flown at zero groundspeed, which is to say it can land vertically while
-flying: it descends straight down over the ground and, in the air mass, does nothing but an ordinary
-steady glide. Nothing is violated. Lift is a function of airspeed and the air does not know where the
-ground is. But the two manifolds now disagree about the shape of the trajectory itself --- vertical
-in one, slanted in the other --- which is past what a relabelling can produce and past what a skew
-can produce. Raise the wind further and the groundtrack reverses: the descent direction of the cost
-field, unchanged in the air-indexed frame, runs backwards in the ground-indexed one. The default
-direction of travel is a local fact about ambient structure, and here is the case where the two
-frames' locals point opposite ways.
+The limit case settles what kind of difference this is. At a horizontal headwind equal to the
+feasible forward horizontal component of a steady glide --- above stall speed and within the
+aircraft's operating envelope --- an aircraft has zero groundspeed \citep{faa2026pcg}: it descends
+straight down over the ground and, in the air mass, does nothing but an ordinary steady glide. Nothing
+is violated. Airspeed is relative to the surrounding air mass and groundspeed to the earth's surface;
+the zero is their wind-indexed vector difference, not a loss of lift. But the two manifolds now
+disagree about the shape of the trajectory itself --- vertical in one, slanted in the other --- which
+is past what a relabelling can produce and past what a skew can produce. A stronger headwind reverses
+the groundtrack: the descent direction of the cost field, unchanged in the air-indexed frame, runs
+backwards in the ground-indexed one. The default direction of travel is a local fact about ambient
+structure, and here is the case where the two frames' locals point opposite ways.
 
 The same situation is then a trap and a capability at once, and which one it is turns on the goal
 rather than on any further fact. Indexed to the ground, reach has collapsed to a point: if the goal
@@ -1457,6 +1458,14 @@ Avinash K. Dixit and Robert S. Pindyck.
 Herbert Edelsbrunner, David Letscher, and Afra Zomorodian.
 \newblock Topological persistence and simplification.
 \newblock \emph{Discrete \& Computational Geometry}, 28(4):511--533, 2002.
+
+\bibitem[Federal Aviation Administration(2026)]{faa2026pcg}
+Federal Aviation Administration.
+\newblock Pilot/Controller Glossary: airspeed and ground speed.
+\newblock FAA Order JO 7110.65, online glossary, accessed 3 September 2026.
+\newblock \url{https://www.faa.gov/air_traffic/publications/atpubs/pcg_html/}.
+\newblock Defines airspeed relative to the surrounding air mass and groundspeed relative to the
+surface of the earth.
 
 \bibitem[Forman(1998)]{forman1998}
 Robin Forman.

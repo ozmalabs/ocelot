@@ -96,7 +96,7 @@ demarcates them.
 @pull def:states
 
 What a frame's gates admit, and what it can reach from where it stands, are two quantities and not
-one; a disclosure that moves a gate changes the first, and that is where an information hazard is
+one; a disclosure that moves a gate changes what the gates admit, and that is where an information hazard is
 located here rather than treated as a class of its own.
 
 @pull def:capability
@@ -156,7 +156,7 @@ now.
 @pull prop:runner-opaque
 @pull prop:runner-recursion
 
-The account forbids very little, and what it does forbid is one thing recurring rather than a list.
+Stepping back: the account forbids very little, and what it does forbid is one thing recurring rather than a list.
 
 @pull prop:prohibition
 

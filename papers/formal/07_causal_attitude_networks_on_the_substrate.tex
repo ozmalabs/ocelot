@@ -15,21 +15,21 @@
 
 \title{Causal Attitude Networks on the Substrate\\\large What Moved, What Did Not, and What the Mean Field Costs}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-09-02.1}\\[2pt]2 September 2026 \textbullet\ document revision 2}
+\date{\textbf{Draft \textemdash\ draft-2026-09-02.1}\\[2pt]2 September 2026 \textbullet\ document revision 3}
 
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r2}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r3}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r2}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r3}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-09-02.1 r2} (2 September 2026).
+\textbf{DRAFT --- draft-2026-09-02.1 r3} (2 September 2026).
 Circulated for comment, not as a finished result. \textbf{This revision reports the programme's record
 to 14 August 2026}; its first revision reported the same record as it stood on the morning of
 13 August, and the record moved past all three of that revision's findings within two days. Every
@@ -41,10 +41,12 @@ as falsifiability commitments are the intended points of attack.}}
 
 \begin{abstract}
 The Causal Attitude Network \citep{dalege2016} models an attitude as an Ising-family network of
-interacting evaluative components. It was reimplemented on this substrate \emph{twice}: first as a
+interacting evaluative components. \emph{The headline is that the model was moved from a hosted solver
+to native graph rules, and that the audit of that move corrected two of this paper's own earlier
+findings.} It was reimplemented on this substrate \emph{twice}: first as a
 hosted mean-field self-consistency solver running beside the graph, then --- one day later --- as
 graph rules over graph data, in the existing vocabulary and with no new primitive in the compiled
-runtime. Five findings are reported and two of them correct this paper's own earlier revision. The
+runtime. Five findings carry that, and two of them correct this paper's own earlier revision. The
 \emph{alignment} claim, that the dynamics had no term surface, has failed: they have one, and the
 remaining boundary is consumer-side and about scope. The two-cycle oscillation reported as a
 property of the borrowed mathematics was a property of the update schedule, and vanishes on every one
@@ -86,9 +88,9 @@ host and driven by seed-resident network data. The rules written against it did 
 reason was worth having.
 
 \begin{remark}[The hosted stage, and the null that dated within a day]\label{rem:hosted}
-\emph{(Record of 13 August 2026.)} Fifteen rules written against the network were inert, and the
-obvious diagnosis --- missing or malformed match clauses --- was not the reason. There was no term
-surface for the dynamics at all: the relaxation existed only across a host-language boundary, so a
+\emph{(Record of 13 August 2026.)} There was no term surface for the dynamics at all, so the fifteen
+rules written against the network were inert --- and the
+obvious diagnosis, missing or malformed match clauses, was not the reason. The relaxation existed only across a host-language boundary, so a
 rule could not express it, could not be matched against it, and could not mint against it. The rules
 were not broken; there was nothing for them to be written in terms of. Exactly one of the fifteen
 described the \emph{recognition} half rather than the update half, and that one was wired with real

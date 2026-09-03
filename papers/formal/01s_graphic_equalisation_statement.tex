@@ -3,7 +3,7 @@
 % Source of truth: 01_law_of_graphic_equalisation_theory_referenced.tex
 % Statement-only content: 01s.spec
 % Regenerate, from the repository root:
-% python3 tools/build_statement.py papers/formal/01s.spec
+% python3 tools/build_statement.py 01s.spec
 % ==========================================================
 \documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
@@ -37,10 +37,10 @@
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1 / statement / from long r280}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1 / statement / from long r284}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1 / statement / from long r280}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1 / statement / from long r284}}\renewcommand{\headrulewidth}{0pt}}
 
 \title{The Law of Graphic Equalisation\\\large Statement}
 \author{Matthew Parslow\\Independent Researcher}
@@ -262,7 +262,7 @@ For a frame $\mathcal F$, a dimension is in exactly one of four states:
 \end{definition}
 
 What a frame's gates admit, and what it can reach from where it stands, are two quantities and not
-one; a disclosure that moves a gate changes the first, and that is where an information hazard is
+one; a disclosure that moves a gate changes what the gates admit, and that is where an information hazard is
 located here rather than treated as a class of its own.
 
 \begin{definition}[Capability and accessibility]\label{def:capability}
@@ -322,21 +322,20 @@ container only as the region of it that it is, so the distribution of what is fr
 what is directly writeable is a characterisation of a common configuration rather than a necessity.
 
 \begin{proposition}[Cost characteristically reduces to the write]\label{prop:economics}
-In the substrate as characterised here, the boundary relation itself is free, and the standing structure persisting is free \emph{to the frame}; the operation that costs is a delta that writes over that structure, and $r$ is what writes. Whether persistence is free \emph{simpliciter} is set by the rules of the superframes, which may sustain a frame without charge or require a write to keep it standing, and the substrate does not decide between them. \emph{Free} here means information-preserving rather than absent: evaluating a rule is itself a write, and is unpaid because it destroys nothing (Remark~7.16 of the long paper (\emph{Where the check goes, and why the free case is the empty one})). To that extent
+In the substrate as characterised here, the boundary relation itself is free, and the standing structure persisting is free \emph{to the frame}; the operation that costs is a delta that writes over that structure, and $r$ is what writes. Whether persistence is free \emph{simpliciter} is set by the rules of the superframes, which may sustain a frame without charge or require a write to keep it standing, and the substrate does not decide between them. \emph{Free} here means information-preserving rather than absent: evaluating a rule is itself a write, and is unpaid because it destroys nothing (Remark~7.17 of the long paper (\emph{Where the check goes, and why the free case is the empty one})). To that extent
 \[
 \boxed{\text{cost is paid by rules.}}
 \]
-This is a characterisation of the substrate as specified, not a necessity of graphhood, and the writeability status it describes is not required to be uniform (Remark~\ref{rem:writeability}).
 \end{proposition}
 \begin{proposition}[Self-change is direct and gated; a graph is a subset of its container]\label{prop:no-direct-self-alter}
-A graph changes itself and its subgraphs directly. Self-change is real, but it is rule-governed, with its own cost and limits (an instance of the non-uniform writeability of Remark~\ref{rem:writeability}); a substrate's plasticity is exactly the rules for how its rules may change. What a graph does \emph{not} do is change its container directly: the container applies deformations to it --- being observed \emph{is} being so deformed --- and gates its changes through its own change grammar (Proposition~\ref{prop:residual-inadmissible}). But a situated graph is a \emph{subset} of its container, not a thing set against it, so a self-change is already a change in the container, in the region that is the graph, propagating outward through whatever couples it to the rest. ``Change only yourself'' is therefore not isolation but the mechanism of outward effect: a graph changes its container by changing the part of it that it is.
+A graph changes itself and its subgraphs directly. Self-change is real, but it is rule-governed, with its own cost and limits (an instance of the non-uniform writeability of Remark~\ref{rem:writeability}); a substrate's plasticity is exactly the rules for how its rules may change. What a graph does \emph{not} do is change its container directly: the container applies deformations to it --- being observed \emph{is} being so deformed --- and gates its changes through its own change grammar (Proposition~\ref{prop:residual-inadmissible}). But a situated graph is a \emph{subset} of its container, not a thing set against it, so a self-change is already a change in the container, in the region that is the graph, propagating outward through whatever couples it to the rest.
 \end{proposition}
 \begin{remark}[Writeability status is contingent, not uniform]\label{rem:writeability}
 The write-economics stated here --- reads free, cost carried by writes, and no direct alteration of the container (Proposition~\ref{prop:no-direct-self-alter}) --- should be held at the strength the evidence supports, and the two halves of that need
 separating. The \emph{structural} claim --- that a graph affects its container as a subset of it and not
 by some other route --- is a strict restriction and is committed to as one
 (Section~19 of the long paper (\emph{Falsifiability commitments})). What is a pattern rather than a universal is the \emph{distribution}
-below: which writes are free, which are costly, and how much is direct. What is freely writeable, what carries a cost, and what a graph can write directly rather than only across a boundary, need not be uniform; different structures may have different writeability profiles. The strict forms above characterise a common and efficient configuration (Remark~\ref{rem:nothing-compulsory}) rather than a necessity of graphhood, and asserting a single strict write-economics everywhere would be the same over-specification the theory warns against for a scalar knob put where a shape belongs. These are accordingly carried as falsifiability commitments, open to counterexample, and a structure with a different writeability profile refines the characterisation rather than breaking the substrate.
+below: which writes are free, which are costly, and how much is direct. What is freely writeable, what carries a cost, and what a graph can write directly rather than only across a boundary, need not be uniform; different structures may have different writeability profiles. The strict forms above characterise a common and efficient configuration (Remark~\ref{rem:nothing-compulsory}) rather than a necessity of graphhood, and asserting a single strict write-economics everywhere would be the same over-specification Remark~\ref{rem:nothing-compulsory} warns against, a fixed value put where the account has only a setting. These are accordingly carried as falsifiability commitments, open to counterexample, and a structure with a different writeability profile refines the characterisation rather than breaking the substrate.
 \end{remark}
 \begin{definition}[Well-formedness]\label{def:well-formed}
 A graph is \emph{well-formed} to the degree that it pays for nothing that does no work for it. Four costs bear on that and they behave differently, so the notion is graded along each rather than binary.
@@ -357,19 +356,9 @@ structural fact about a map while cost is a fact about what supplies a primitive
 be run together.
 \end{proposition}
 \begin{proposition}[Primitives leak, and complete provenance is still unrecoverable]\label{prop:leak}
-Leaking is ordinary rather than exceptional. A primitive's timing discloses the structure beneath it,
-which is why measuring how long a read takes recovers what a cache holds (Osvik et~al., 2006; Kocher et~al., 2019); an arithmetic that overflows at a particular magnitude discloses a word
-size; a rounding discloses a representation; and a performance cliff at a particular size discloses a
-page. Most abstractions leak, and this one is not special.
-
-How a leak reaches a frame at all is worth stating, since what falls outside an aperture is
-\emph{absent} (Definition~\ref{def:aperture}) and an absent thing cannot disclose anything. It does
-not arrive by perception. What arrives is an ordinary in-frame observable on a dimension the frame
-already instantiates --- a duration in its own units, a value at a boundary --- and what the frame
-does with it is \emph{infer}. The cache is not perceived; the timings are, and the cache is concluded
-from them.
-
-What does not follow is that provenance can be recovered entire. Every act of recovery is itself
+A primitive discloses the structure beneath it: leaking is ordinary rather than exceptional
+(Remark~14.2 of the long paper (\emph{Exposure is excluded; leakage is produced})). What does not follow is that provenance can be recovered entire.
+Every act of recovery is itself
 performed by primitives, so a graph inferring what lies beneath one operator does so using others
 whose own provenance is not thereby in view, and there is no position from which the whole supply is
 inspected at once. The result is the standing shape: \emph{partial always, complete never} --- leaks
@@ -481,17 +470,13 @@ Only that rules run is compulsory for anything to \emph{occur} --- structure alo
 A graph is data --- nodes, relations, and rules --- and the operations its rules bottom out in are supplied to it rather than contained in it. The same graph may therefore be run against different supplies of the same operator set, and nothing supplying an operator need be the substrate the graph describes or is ``in.'' Where the work is done is a fact about that supply and not about the graph.
 \end{proposition}
 \begin{proposition}[A well-formed runner does not expose itself, and no level is self-transparent]\label{prop:runner-opaque}
-The asynchronous, locally synchronous structure a frame observes (Remark~11.3 of the long paper (\emph{Globally asynchronous, locally synchronous})) is the graph's \emph{internal} view and does not fix its runner's actual mode. A hidden central runner may execute a graph serially, one change at a time, while the graph --- lacking any access to the runner's clock --- appears asynchronous and concurrent to itself. More generally, where a frame has no boundary to the substrate that runs it, its runner lies beyond the frame's epistemic boundary in exactly the sense of Section~1 of the long paper (\emph{Scope and epistemic status}).
-
-Calling the runner unseeable rather than unseen runs two claims together. That a runner is hidden is \emph{contingent}. Nothing forbids a runner from exposing its own state to what it runs, and computational reflection does exactly that, as this paper acknowledges when placing itself against that literature (Section~18 of the long paper (\emph{Positioning and prior art})); a tower in which each level is available to the one above is a built artefact, not a thought experiment. A runner that does not expose itself is the \emph{well-formed} case, and for the reasons well-formedness always turns on: exposed runner state is structure maintained for work the frame does not do, and each exposure needs a runner of its own to run the reading of it.
-
-What does not depend on the cost model is weaker and survives reflection: \emph{no level is self-transparent}. Reading is an operation whose product lands one level up (Remark~7.16 of the long paper (\emph{Where the check goes, and why the free case is the empty one})), so a level cannot hold the reading of itself while being the level that is running. Reflection makes the levels explicit and pays for each; it does not terminate in a level transparent to itself. A frame may therefore be given sight of what runs it, and cannot be given sight of its own running. Since the rules are graph and a frame can read and rewrite them (Definition~\ref{def:frame}), while its own running is not graph it holds, the asymmetry is exact: a frame is transparent to itself in precisely one respect and opaque in precisely the other. \emph{It can know what it is and cannot observe its being it.} Self-modification is available; self-observation at the level of the modifying is not.
+The asynchronous, locally synchronous structure a frame observes (Remark~11.3 of the long paper (\emph{Globally asynchronous, locally synchronous})) is the graph's \emph{internal} view and does not fix its runner's actual mode. Where a frame has no boundary to the substrate that runs it, its runner lies beyond the frame's epistemic boundary (Section~1 of the long paper (\emph{Scope and epistemic status})); a hidden runner may execute the graph serially while the graph appears asynchronous to itself (Remark~11.3 of the long paper (\emph{Globally asynchronous, locally synchronous})). And no level is self-transparent: reading is an operation whose product lands one level up (Remark~7.17 of the long paper (\emph{Where the check goes, and why the free case is the empty one})), so a level cannot hold the reading of itself while being the level that is running --- a frame may be given sight of what runs it and cannot be given sight of its own running.
 \end{proposition}
 \begin{proposition}[A primitive is another graph's running, exposed]\label{prop:runner-recursion}
-Nothing supplying a primitive is a substance apart from graph data. An operator is the observable running of some other graph, which has primitives of its own, supplied in the same way. A graph's ``primitives'' are therefore the observable running of other graphs, exposed as an operator set, with no primitive runner at the base. A single chain --- code over machine code over microcode over silicon over electromagnetism over quantum physics --- is one path through that provision, and a common one, but not its shape: a process takes arithmetic from its processor, file operations from a kernel that relays them to a device, and remote calls from a machine that is not beneath it in any sense. Fan-out and relay are ordinary, and the tower is the degenerate case in which provision happens to be a chain. The regress bottoms not at a floor but at the epistemic frontier of Section~1 of the long paper (\emph{Scope and epistemic status}): below the lowest measured level is the unclaimed pre-relational substrate.
+Nothing supplying a primitive is a substance apart from graph data. An operator is the observable running of some other graph, which has primitives of its own, supplied in the same way. A graph's ``primitives'' are therefore the observable running of other graphs, exposed as an operator set, with no primitive runner at the base. The regress bottoms not at a floor but at the epistemic frontier of Section~1 of the long paper (\emph{Scope and epistemic status}): below the lowest measured level is the unclaimed pre-relational substrate.
 \end{proposition}
 
-The account forbids very little, and what it does forbid is one thing recurring rather than a list.
+Stepping back: the account forbids very little, and what it does forbid is one thing recurring rather than a list.
 
 \begin{proposition}[The single prohibition]\label{prop:prohibition}
 The account forbids one thing: \emph{a frame cannot get outside itself}. Concretely, and confined to
@@ -583,26 +568,9 @@ whether or not a change preserves what it followed.
 \item \textsc{[shape]}~\textbf{The relativity of grounding is a consequence, and can fail as one.} Fails if a view can be informative without standing in relation to what it views, or if relation is not what carries information here. A consequence has content and can fail, which a posit or a costless guard could not (Remark~2.2 of the long paper (\emph{The axiom in bits})). The second disjunct is \emph{Is}'s own identification of distinction with relation, so this is where the account is thinnest rather than where it is safest, and it is marked \textsc{[shape]} because what fails with it is the range of everything derived through it.
 \end{enumerate}
 
-\medskip\noindent\emph{Not carried in this statement:} A held program is one write; Partial-order sufficiency; Globally-async/locally-sync; Externalising lengthens the interval before a crossing is legible; No free lunch; Description length is constitutive, not merely a method.
+\medskip\noindent\emph{Not carried in this statement:} A held program is one write; Coupling is a setting, not a kind; Two gates, and absence is not residual; Partial-order sufficiency; Globally-async/locally-sync; Time is inferred, not primitive; The unit of inferred time is a cycle requiring closure; A cycle count is one-way; phase is signed; Externalising lengthens the interval before a crossing is legible; No free lunch; Description length is constitutive, not merely a method.
 
 
-
-\noindent\small\emph{The works named above, listed from the long paper so the two cannot disagree.}
-
-\begin{thebibliography}{99}
-\itemsep=2pt
-
-\bibitem[Kocher et~al.(2019)Kocher, Horn, Fogh, Genkin, Gruss, Haas, Hamburg, Lipp, Mangard, Prescher, Schwarz, and Yarom]{kocher2019}
-Paul Kocher, Jann Horn, Anders Fogh, Daniel Genkin, Daniel Gruss, Werner Haas, Mike Hamburg, Moritz Lipp, Stefan Mangard, Thomas Prescher, Michael Schwarz, and Yuval Yarom.
-\newblock Spectre attacks: Exploiting speculative execution.
-\newblock In \emph{2019 IEEE Symposium on Security and Privacy}, pages 1--19, 2019.
-
-\bibitem[Osvik et~al.(2006)Osvik, Shamir, and Tromer]{osvik2006}
-Dag Arne Osvik, Adi Shamir, and Eran Tromer.
-\newblock Cache attacks and countermeasures: The case of AES.
-\newblock In \emph{Topics in Cryptology --- CT-RSA 2006}, pages 1--20. Springer, 2006.
-
-\end{thebibliography}
 \end{document}
 
 

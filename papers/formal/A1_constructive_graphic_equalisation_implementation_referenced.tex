@@ -14,21 +14,21 @@
 \title{A Constructive Realisation of Graphic Equalisation\\
 \large Deterministic Proposal Closure, Boundary Interaction, and Reference Execution Semantics}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-09-02.1}\\[2pt]2 September 2026 \textbullet\ document revision 6}
+\date{\textbf{Draft \textemdash\ draft-2026-09-02.1}\\[2pt]2 September 2026 \textbullet\ document revision 7}
 
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r6}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r7}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r6}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r7}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-09-02.1 r6} (2 September 2026).
+\textbf{DRAFT --- draft-2026-09-02.1 r7} (2 September 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -48,7 +48,7 @@ No claim is made that nature literally executes these algorithms. The claim is t
 \section{Separation from the theory}\label{sec:separation}
 
 \paragraph{Reading for the claim.}
-As in the foundational paper, the components used here are individually established and cited as such; the claim is their arrangement, which is not reachable by evaluating those components separately, since they are stipulated to be known. The composition's own falsifiability commitment is stated in the foundational paper and is inherited here.
+What this construction buys is one executable semantics that forced the theory's ambiguities to resolve into explicit causal choices. As with the companion theory, the components used here are individually established and cited as such; the claim is their arrangement, which is not reachable by evaluating those components separately, since they are stipulated to be known. The composition inherits the extensional theory's own falsifiability commitment rather than restating it here.
 
 The theory defines
 \[
@@ -146,7 +146,7 @@ and define
 \{f:f\text{ is a completed positive proposal fact in }D\}.
 \]
 
-Here $\varnothing$ is an ordinary value of the instantiated set-valued closure dimension: it means ``the current proposal family contains no members.'' It is not the NULL/non-existence state discussed in the theory papers.
+Here $\varnothing$ is an ordinary value of the instantiated set-valued closure dimension: it means ``the current proposal family contains no members.'' It is not the theory's NULL/non-existence state.
 
 The symbolic matching view is
 \[
@@ -369,7 +369,7 @@ B_{W,e}^{\mathrm{external}}.
 A graph-world recursively uses deterministic resolution. More generally, the reference implementation assumes that a causally complete antecedent configuration determines the realised successor, in accordance with the Graph Law.
 
 \begin{remark}[The antecedent base is present structure]\label{rem:base-is-present}
-``Antecedent'' here names the immutable base a round reads, not a retained temporal history. Consistently with the Graph Law's history principle, prior rounds influence a closure only where their consequences survive in the base being read; the executor holds no stack of earlier graph states and requires none. Reproducibility is therefore stated over causally sufficient \emph{present} structure --- identical bases yield identical realised successors --- and not over an agreement of histories.
+``Antecedent'' here names the immutable base a round reads, not a retained temporal history. Consistently with how the Graph Law treats history, prior rounds influence a closure only where their consequences survive in the base being read; the executor holds no stack of earlier graph states and requires none. Reproducibility is therefore stated over causally sufficient \emph{present} structure --- identical bases yield identical realised successors --- and not over an agreement of histories.
 \end{remark}
 
 An implementation may nevertheless attach a stochastic \emph{observation model} to an incompletely represented external frame. Such a model expresses uncertainty over unresolved determining dimensions:
