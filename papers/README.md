@@ -6,6 +6,14 @@ do not disappear when the book is written: each book chapter carries a pointer
 of the form *the formal statement is Paper N §M*, and the chapter drafts by
 subtraction from them.
 
+## Writing standard
+
+[`WRITING_STANDARD.md`](WRITING_STANDARD.md) is the shared communication
+standard for the formal papers, book, outreach, and editorial prose. It makes
+coherence and reader-pathing explicit while preserving the distinct formal and
+narrative registers; `../book/BOOK_VOICE.md` supplies the book-specific
+contract.
+
 ## The shape of the set
 
 **Two premises, and what they force.** Paper 00 claims one thing — *to be is to
