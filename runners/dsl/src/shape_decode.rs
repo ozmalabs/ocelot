@@ -3186,6 +3186,477 @@ pub(crate) fn eval_gen_infer(
     finish(result, field, ctx.interner, None)
 }
 
+/// Greatest common divisor of two non-negative integers (Euclid). `gcd(0,0)
+/// == 0`. Used ONLY to reduce an induced coordinate-extent ratio to lowest
+/// terms — the ratio is a RELATION (a reduced integer pair), never a stored
+/// coordinate, so the frame/continuum invariant is untouched.
+fn gcd_i64(mut a: i64, mut b: i64) -> i64 {
+    a = a.abs();
+    b = b.abs();
+    while b != 0 {
+        let t = b;
+        b = a % b;
+        a = t;
+    }
+    a
+}
+
+/// `eval_ratio_infer` — POPULATION RATIO-INVARIANCE INDUCTION, the cross-frame
+/// population-level sibling of `GenInfer`. Where `GenInfer` induces ONE integer
+/// generator from ONE orbit (base + transformed goal), this induces, from a
+/// POPULATION of frames related by a PER-FRAME multiplicative rescaling, the
+/// INVARIANT RATIO SET: the cross-coordinate ratios that stay fixed as each
+/// frame's own scale varies.
+///
+/// THE SHAPE (why it FITS the frame/continuum invariant rather than fighting
+/// it). A subject / speaker / writer / carrier frame differs from another by a
+/// MULTIPLICATIVE factor `s_f` (impedance / gain / pitch / size). A RATIO
+/// between two coordinate extents WITHIN one frame CANCELS that common `s_f`:
+/// `(s_f·a) : (s_f·b) == a : b`. So the invariant is a RATIO — a RELATION held
+/// in `Hom(frame, invariant-frame)`, applied on read, integer-observable
+/// (a reduced integer pair `p:q`) — NOT a continuous coordinate stored
+/// in-frame. In-frame stays integer (every extent is read through `coord_ints`,
+/// which refuses `Float`); the ratio is the MAP, minted as a
+/// `DimensionGenerator`/`LatentDimension` param, never written back into a
+/// coordinate slot. This is the exact posture the substrate already privileges
+/// for `scale2` ("a ratio cancels a common scale, coherent in any base").
+///
+/// THE METHOD (READ-then-VERIFY-across-all, the population analogue of
+/// `infer_translate_offset`). For each frame, and each coord slot `j`, compute
+/// the ORIGIN-NORMALIZED EXTENT `e_j(f) = max_j(f) - min_j(f)` (the same
+/// data-derived magnitude `GenInfer`'s bound uses at 3044–3053). Slot 0 is the
+/// REFERENCE axis. From the FIRST usable frame READ the reduced integer ratio
+/// `r_j = reduce(e_j, e_0)` for every non-reference slot `j`; then VERIFY that
+/// SAME reduced ratio holds in EVERY frame by cross-multiplication
+/// (`e_j · r_j.den == e_0 · r_j.num`, all integer — no division, no float).
+/// A frame whose extents are NOT a common-scale multiple of the reference
+/// ratio set FALSIFIES the invariant (the MDL floor: the population is not
+/// purely multiplicative, reported as `explained=false`, the honest null).
+///
+/// THE MINT. On success the ratio set is reported as `ratios` (a flat Tuple of
+/// `[slot, num, den]` triples). When the whole set is a common power-of-two
+/// (each `num`/`den` a power of 2) the seed rule mints a `scale2`-family
+/// `latent:scale2` generator directly (`scale_pow2_once` already handles it);
+/// otherwise the diagonal integer ratio mints a `kind:"linear"` diagonal
+/// `matrix` that `apply_linear_once` already reads — so this rung needs ZERO
+/// new dispatch arm in `apply_generator_once`, exactly like the linear inducer.
+/// `latent_name` (`"latent:ratio"`) is the body the seed prefixes to mint the
+/// `LatentDimension`.
+///
+/// Output Dict: `explained` / `coord_dims` / `ncoord` / `ref_dim` / `ratios`
+/// (flat `[slot,num,den]` triples) / `is_pow2` (whole set power-of-two ⇒
+/// scale2-family) / `matrix` (diagonal integer map minted when not pow2, else
+/// empty) / `latent_name` / `n_frames` / `checked`; `field` selects one key
+/// exactly like `GenInfer`/`DimInfer`. Integer lattice only (a `Float`
+/// coordinate is CROSS-FRAME and makes the whole population inapplicable — the
+/// invariant, inherited for free through `coord_ints`).
+///
+/// `resolution` is the OBSERVATION RESOLUTION tolerance (an integer, default 0
+/// = EXACT). Per CLAUDE.md a continuous parameter (here the ratio) is pinned
+/// ONLY to observational resolution — "never encode precision the steps cannot
+/// support (MDL)". With `resolution == 0` the cross-frame ratio must hold by
+/// EXACT integer cross-multiplication (the clean-mechanism case, H-R1). With
+/// `resolution == q` (the grid step the frame's coordinates were quantized to)
+/// the per-frame residual `|e_j·den − e_ref·num|` is allowed up to a
+/// DATA-SCALED integer bound `q·den·(1 + e_ref/…)` — kept fully in `i128`
+/// integer arithmetic, NO float — so a ratio recovered from a REAL, quantized
+/// observation (H-R3 audio) is accepted iff it holds to within the resolution
+/// the observation itself supports, and rejected otherwise (the honest floor
+/// is preserved: a genuinely different ratio still exceeds the bound).
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn eval_ratio_infer(
+    arena: &TermArena,
+    population_idx: TermIdx,
+    codebook_type: Sym,
+    resolution: i64,
+    field: Sym,
+    env: &mut Env,
+    ctx: &mut EvalCtx,
+) -> Value {
+    let mut extra: FxHashMap<String, Sym> = FxHashMap::default();
+    let mut next_id: u32 = u32::MAX;
+    let parts = load_parts(ctx, codebook_type, &mut extra, &mut next_id);
+
+    // Coord slots from the FIRST part that declares dim_types — all parts in a
+    // codebook share the frame (identical to GenInfer/TimeInfer).
+    let coord_dims: Vec<i64> = parts
+        .iter()
+        .find_map(|p| p.dim_types.as_ref())
+        .map(|dts| {
+            dts.iter()
+                .enumerate()
+                .filter(|(_, t)| t.starts_with("coord:"))
+                .map(|(i, _)| i as i64)
+                .collect()
+        })
+        .unwrap_or_default();
+
+    // Read the POPULATION: an outer collection of frames, each an inner
+    // collection of relation-tuples (the exact reader `eval_time_infer` uses).
+    let pop_val = evaluate(arena, population_idx, env, ctx);
+    let frames: Vec<Vec<Value>> = match &pop_val {
+        Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_) => pop_val
+            .iter()
+            .map(|f| match f {
+                Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_) => {
+                    f.iter().cloned().collect()
+                }
+                _ => Vec::new(),
+            })
+            .collect(),
+        _ => Vec::new(),
+    };
+
+    let coord_idxs: Vec<usize> = coord_dims
+        .iter()
+        .filter_map(|&d| usize::try_from(d).ok())
+        .collect();
+
+    let mut checked: i64 = 0;
+
+    // A reduced integer ratio p:q (p == num, q == den), q > 0 by construction.
+    #[derive(Clone, Copy)]
+    struct Ratio {
+        num: i64,
+        den: i64,
+    }
+
+    let unexplained = |checked: i64, ctx: &mut EvalCtx| -> Value {
+        finish(
+            Value::Dict(Arc::from(vec![
+                (surf("explained"), Value::Bool(false)),
+                (surf("coord_dims"), Value::Tuple(Arc::new(SmallVec::new()))),
+                (surf("ncoord"), Value::Int(0)),
+                (surf("ref_dim"), Value::None),
+                (surf("ratios"), Value::Tuple(Arc::new(SmallVec::new()))),
+                (surf("is_pow2"), Value::Bool(false)),
+                (surf("matrix"), Value::Tuple(Arc::new(SmallVec::new()))),
+                (surf("latent_name"), Value::None),
+                (surf("n_frames"), Value::Int(0)),
+                (surf("checked"), Value::Int(checked)),
+            ])),
+            field,
+            ctx.interner,
+            None,
+        )
+    };
+
+    // Need at least TWO frames (a population), at least TWO coord slots (a
+    // cross-coordinate ratio needs a reference + a target), and no empty frame.
+    if frames.len() < 2 || coord_idxs.len() < 2 || frames.iter().any(|f| f.is_empty()) {
+        return unexplained(0, ctx);
+    }
+
+    // Per-frame origin-normalized extent for a coord slot — the data-derived
+    // magnitude (max - min), read through coord_ints so a Float coordinate
+    // makes the frame (and thus the whole population) inapplicable. This is the
+    // integer/frame invariant, inherited for free.
+    let extent = |frame: &[Value], idx: usize| -> Option<i64> {
+        let vs = coord_ints(frame, idx)?;
+        let mn = *vs.iter().min()?;
+        let mx = *vs.iter().max()?;
+        Some(mx - mn)
+    };
+
+    // Extents per frame, per coord slot. Bail (null) on any Float coordinate.
+    let mut ext: Vec<Vec<i64>> = Vec::with_capacity(frames.len());
+    for f in &frames {
+        let mut row = Vec::with_capacity(coord_idxs.len());
+        for &idx in &coord_idxs {
+            match extent(f, idx) {
+                Some(e) => row.push(e),
+                None => return unexplained(checked, ctx),
+            }
+        }
+        ext.push(row);
+    }
+
+    // Choose the REFERENCE axis: the FIRST slot whose extent is non-zero in
+    // EVERY frame (a degenerate zero-extent reference cannot carry a ratio).
+    let ref_pos: Option<usize> = (0..coord_idxs.len()).find(|&j| ext.iter().all(|r| r[j] != 0));
+    let Some(ref_pos) = ref_pos else {
+        return unexplained(checked, ctx);
+    };
+    let ref_dim = coord_dims[ref_pos];
+
+    // READ the reduced ratio r_j = e_j : e_ref for every non-reference slot,
+    // then VERIFY it across ALL frames by cross-multiplication (integer only —
+    // the ratio is a relation, applied not stored). Read the ratio from the
+    // frame with the LARGEST reference extent (the best-resolved observation —
+    // smallest RELATIVE quantization error), so the induced pair is the most
+    // faithful reduction; then verify it across the whole population. A slot
+    // whose ratio is not constant across the population (beyond the observation
+    // resolution) FALSIFIES the invariant (the honest MDL floor: not purely
+    // multiplicative).
+    let best_frame = (0..ext.len())
+        .max_by_key(|&i| ext[i][ref_pos])
+        .unwrap_or(0);
+    let fbest = &ext[best_frame];
+    let mut ratios: Vec<(i64, Ratio)> = Vec::new(); // (slot dim, ratio)
+    for j in 0..coord_idxs.len() {
+        if j == ref_pos {
+            continue;
+        }
+        let num0 = fbest[j];
+        let den0 = fbest[ref_pos];
+        let g = gcd_i64(num0, den0).max(1);
+        let r = Ratio {
+            num: num0 / g,
+            den: den0 / g,
+        };
+        // VERIFY across every frame: e_j * r.den == e_ref * r.num (EXACT when
+        // resolution == 0). With a non-zero observation resolution `q`, allow a
+        // DATA-SCALED integer residual: each quantized extent carries up to ±q
+        // of grid error, so the cross-product residual is bounded by
+        // q·(num + den) — kept in i128, NO float. A genuinely different ratio
+        // still blows past this bound (the honest floor survives), while a
+        // ratio true to within the resolution the observation supports passes.
+        let tol: i128 = (resolution.max(0) as i128) * (r.num as i128 + r.den as i128);
+        for row in &ext {
+            checked += 1;
+            let residual =
+                row[j] as i128 * r.den as i128 - row[ref_pos] as i128 * r.num as i128;
+            if residual.abs() > tol {
+                return unexplained(checked, ctx);
+            }
+        }
+        ratios.push((coord_dims[j], r));
+    }
+
+    // POWER-OF-TWO test: is every ratio's num AND den a power of two? If so the
+    // whole set is a scale2-family map (mint latent:scale2 directly). A value v
+    // is a power of two iff v > 0 && (v & (v-1)) == 0.
+    let is_pow2 = |v: i64| v > 0 && (v & (v - 1)) == 0;
+    let all_pow2 = !ratios.is_empty() && ratios.iter().all(|(_, r)| is_pow2(r.num) && is_pow2(r.den));
+
+    // Build the diagonal integer MATRIX minted when the set is NOT a clean
+    // power-of-two (a kind:"linear" diagonal that apply_linear_once already
+    // reads — ZERO new dispatch arm). The reference axis carries 1:1 (diagonal
+    // entry 1); each ratio slot carries its num on the diagonal (integer map
+    // v -> num * v; the denominator lives in the ratio relation, not the
+    // matrix, since apply_linear_once is integer-only — the matrix expresses
+    // the EXPANSION direction, the ratio pair is the full intensional relation).
+    // n == coord_dims.len(); row-major.
+    let n = coord_dims.len();
+    let mut matrix: Vec<i64> = vec![0; n * n];
+    for i in 0..n {
+        matrix[i * n + i] = 1;
+    }
+    if !all_pow2 {
+        for (slot, r) in &ratios {
+            // position of this slot within coord_dims (guaranteed present — we
+            // built `ratios` from coord_dims); its diagonal entry carries the
+            // expansion numerator (integer map v -> num·v).
+            if let Some(pos) = coord_dims.iter().position(|&d| d == *slot) {
+                matrix[pos * n + pos] = r.num.max(1);
+            }
+        }
+    }
+
+    let ratios_out: SmallVec<[Value; 4]> = ratios
+        .iter()
+        .flat_map(|(slot, r)| [Value::Int(*slot), Value::Int(r.num), Value::Int(r.den)])
+        .collect();
+    let coord_dims_out: SmallVec<[Value; 4]> = coord_dims.iter().map(|d| Value::Int(*d)).collect();
+    let matrix_out: SmallVec<[Value; 4]> = if all_pow2 {
+        SmallVec::new()
+    } else {
+        matrix.iter().map(|m| Value::Int(*m)).collect()
+    };
+    let latent_name = if all_pow2 { "latent:scale2" } else { "latent:ratio" };
+
+    let result = Value::Dict(Arc::from(vec![
+        (surf("explained"), Value::Bool(true)),
+        (surf("coord_dims"), Value::Tuple(Arc::new(coord_dims_out))),
+        (surf("ncoord"), Value::Int(n as i64)),
+        (surf("ref_dim"), Value::Int(ref_dim)),
+        (surf("ratios"), Value::Tuple(Arc::new(ratios_out))),
+        (surf("is_pow2"), Value::Bool(all_pow2)),
+        (surf("matrix"), Value::Tuple(Arc::new(matrix_out))),
+        (surf("latent_name"), surf(latent_name)),
+        (surf("n_frames"), Value::Int(frames.len() as i64)),
+        (surf("checked"), Value::Int(checked)),
+    ]));
+    finish(result, field, ctx.interner, None)
+}
+
+/// `LogQuantum` — the integer-observable LOG-QUANTUM EMITTER
+/// (`drafts/log_quantum/LOG_QUANTUM_PREREG.md`). It is the substrate's own
+/// `log_scaled_proprioception` lever (`seeds/log_graph_law.json`) made a
+/// primitive: read a CONTINUOUS log-domain quantity `x` (log-odds, log-weight,
+/// log-prior — or a raw linear value to be logged) and emit the INTEGER
+/// log-coordinate `q = round(log_a(x) / Δ)` — the general form of what
+/// `scale_pow2_once` does for the fixed base-2 spatial case (there the
+/// additive `k` in log₂ IS the quantum; here the base `a` and step `Δ` are
+/// arbitrary, held intensionally).
+///
+/// WHY IT FITS THE INVARIANT BY CONSTRUCTION (the H-L1 crux). The emitted `q`
+/// is an `i64` written back through `set_coord` (kind-preserving), so it lands
+/// in-frame as a `Value::Int` that `coord_ints` accepts — the frame stays on
+/// the integer lattice. The base `a` and resolution `Δ` are NOT coordinates:
+/// they ride as INTENSIONAL PARAMS on the Term (rationals `a = base_num/base_den`,
+/// `Δ = delta_num/delta_den`), the exact posture `matrix`/`offset` use on a
+/// `DimensionGenerator` — a relation held in `Hom(frame, invariant-frame)`,
+/// APPLIED ON READ, never stored in a coordinate slot. The one place a float
+/// exists is the transient cross-frame render `ln(x)/(ln(a)·Δ)` computed HERE,
+/// in the map, and immediately rounded to an integer — precisely CLAUDE.md's
+/// "continuity is intensional; the observable is the stepped integer rendering;
+/// pinned only to observational resolution (MDL)". A `Δ` is the identifiability
+/// guard: never encode precision the source cannot support.
+///
+/// WHY A DIFFERENCE IS A LOG-RATIO (the H-L2/H-L3 unlock). Two quanta of
+/// quantities related by a multiplicative factor `f` differ by the CONSTANT
+/// integer `round(log_a(f)/Δ)`: `q_i − q_j = round(log_a(x_i/x_j)/Δ)`. So a
+/// population of frames differing by a per-frame multiplicative scale becomes,
+/// after emission, a population of INTEGER-coordinate frames differing by a
+/// per-frame ADDITIVE log-offset — exactly the shape `RatioInduce`/`scale2`
+/// consume. The emitter's output feeds the ratio-induction ladder directly, no
+/// new dispatch arm.
+///
+/// SHAPE. `population` evaluates to an outer collection of frames, each an
+/// inner collection of `[pred, coord, …, val]` relation tuples (the same
+/// Value-tuple shape `RatioInduce`/`GenInfer` consume). For every relation the
+/// slot `value_slot` holds the continuous quantity `x` (read via `as_f64`, which
+/// accepts `Int`/`Float`/`Rational` — the rational→float step there is itself
+/// the named cross-frame boundary). Each such slot is REPLACED by its integer
+/// log-quantum; every other slot is untouched. When `raw` is true, `x` is a raw
+/// LINEAR value first mapped through the log (`log_a(x)`); when false, `x` is
+/// ALREADY a log-domain quantity and the emitter only requantizes it onto the
+/// integer log axis (`q = round(x/Δ)`) — the `frame.py` `_log_weights` case,
+/// where `math.log` has already been applied. A non-positive `x` under `raw`
+/// (log undefined) floors to `ln(1e-9)` exactly as `frame.py::_log_weights`
+/// does, so the emitter matches the reasoning site it targets.
+///
+/// Output: the population with the `value_slot` column quantized to `Int`,
+/// returned as a Tuple of Tuples (frames of relation tuples), ready to hand to
+/// `RatioInduce`. `field` is accepted for wiring symmetry; when set it selects
+/// from a small diagnostic Dict (`quantized` population + `n_frames`/`n_rels`/
+/// `value_slot`) instead. Base `e` is selected by `base_num == 0` (a natural-log
+/// sentinel); otherwise `a = base_num/base_den` with `base_num > 1`. A `Δ <= 0`,
+/// an out-of-range `value_slot`, or a `base` that is not a valid log base makes
+/// the op inapplicable and returns the population UNCHANGED (a graceful skip,
+/// never a float written in-frame).
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn eval_log_quantum(
+    arena: &TermArena,
+    population_idx: TermIdx,
+    value_slot: i64,
+    base_num: i64,
+    base_den: i64,
+    delta_num: i64,
+    delta_den: i64,
+    raw: bool,
+    field: Sym,
+    env: &mut Env,
+    ctx: &mut EvalCtx,
+) -> Value {
+    let pop_val = evaluate(arena, population_idx, env, ctx);
+
+    // Resolve the intensional base and Δ (in Hom, applied on read). base_num==0
+    // is the natural-log sentinel (ln); otherwise a = base_num/base_den must be
+    // a genuine log base ( > 1 as a real; base_den > 0 ). Δ = delta_num/delta_den
+    // must be strictly positive. Any violation ⇒ the op is inapplicable.
+    let delta = if delta_den == 0 {
+        0.0
+    } else {
+        delta_num as f64 / delta_den as f64
+    };
+    // ln(a): the denominator of the log-axis step. For base e this is 1.0.
+    let ln_a: f64 = if base_num == 0 {
+        1.0
+    } else if base_den > 0 && base_num > 0 {
+        let a = base_num as f64 / base_den as f64;
+        if a > 1.0 {
+            a.ln()
+        } else {
+            f64::NAN
+        }
+    } else {
+        f64::NAN
+    };
+    let usable = delta > 0.0 && ln_a.is_finite() && ln_a != 0.0 && value_slot >= 0;
+
+    // The intensional log-render, applied on read: q = round(log_a(x)/Δ) when
+    // raw (x is linear), or round(x/Δ) when x is already log-domain. A single
+    // transient float, immediately rounded to i64 — the observable is the
+    // stepped integer. Non-positive x under raw floors to ln(1e-9), matching
+    // frame.py::_log_weights so the emitter equals the reasoning site.
+    let quantum = |x: f64| -> i64 {
+        let logx = if raw {
+            if x > 0.0 {
+                x.ln() / ln_a
+            } else {
+                (1e-9f64).ln() / ln_a
+            }
+        } else {
+            // x is already a log-domain quantity in NATURAL units (math.log);
+            // rebase to log_a by dividing by ln(a) (identity for base e).
+            x / ln_a
+        };
+        (logx / delta).round() as i64
+    };
+
+    let slot = usize::try_from(value_slot).unwrap_or(usize::MAX);
+
+    // Quantize one relation's value_slot to Int, leaving every other slot
+    // byte-identical (kind-preserving via set_coord). A relation too short to
+    // hold the slot, or not a Tuple/List, is passed through untouched.
+    let quantize_rel = |rel: &Value| -> Value {
+        if !usable {
+            return rel.clone();
+        }
+        let (Value::Tuple(t) | Value::List(t)) = rel else {
+            return rel.clone();
+        };
+        match t.get(slot) {
+            Some(v) => {
+                let q = quantum(v.as_f64());
+                set_coord(rel, slot, q)
+            }
+            None => rel.clone(),
+        }
+    };
+
+    // Walk the outer population → inner frames → relations. Non-collection
+    // frames pass through as-is (mirrors eval_ratio_infer's tolerant reader).
+    let mut n_frames: i64 = 0;
+    let mut n_rels: i64 = 0;
+    let frames_out: SmallVec<[Value; 4]> = match &pop_val {
+        Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_) => pop_val
+            .iter()
+            .map(|frame| match frame {
+                Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_) => {
+                    n_frames += 1;
+                    let rels: SmallVec<[Value; 4]> = frame
+                        .iter()
+                        .map(|rel| {
+                            n_rels += 1;
+                            quantize_rel(rel)
+                        })
+                        .collect();
+                    frame.reseq(rels)
+                }
+                other => other.clone(),
+            })
+            .collect(),
+        _ => SmallVec::new(),
+    };
+
+    let quantized = Value::Tuple(Arc::new(frames_out));
+
+    if field == Sym::default() {
+        return quantized;
+    }
+    let result = Value::Dict(Arc::from(vec![
+        (surf("quantized"), quantized),
+        (surf("n_frames"), Value::Int(n_frames)),
+        (surf("n_rels"), Value::Int(n_rels)),
+        (surf("value_slot"), Value::Int(value_slot)),
+        (surf("usable"), Value::Bool(usable)),
+    ]));
+    finish(result, field, ctx.interner, None)
+}
+
 /// Infer a PURE-TRANSLATION offset carrying `f0 -> f1`, or `None` if `f1` is
 /// not a rigid uniform translate of `f0`. Both frames are sorted by
 /// `cmp_value` (a uniform coordinate shift preserves that order — it adds the

@@ -2906,6 +2906,78 @@ fn describe(node: &TermNode) -> (&'static str, Vec<FieldValue<'_>>) {
                 },
             ],
         ),
+        TermNode::RatioInduce {
+            population,
+            codebook_type,
+            resolution,
+            field,
+        } => (
+            "RatioInduce",
+            vec![
+                Child {
+                    name: "population",
+                    child: *population,
+                },
+                ScalarSym {
+                    name: "codebook_type",
+                    value: *codebook_type,
+                },
+                ScalarInt {
+                    name: "resolution",
+                    value: *resolution,
+                },
+                ScalarSym {
+                    name: "field",
+                    value: *field,
+                },
+            ],
+        ),
+        TermNode::LogQuantum {
+            population,
+            value_slot,
+            base_num,
+            base_den,
+            delta_num,
+            delta_den,
+            raw,
+            field,
+        } => (
+            "LogQuantum",
+            vec![
+                Child {
+                    name: "population",
+                    child: *population,
+                },
+                ScalarInt {
+                    name: "value_slot",
+                    value: *value_slot,
+                },
+                ScalarInt {
+                    name: "base_num",
+                    value: *base_num,
+                },
+                ScalarInt {
+                    name: "base_den",
+                    value: *base_den,
+                },
+                ScalarInt {
+                    name: "delta_num",
+                    value: *delta_num,
+                },
+                ScalarInt {
+                    name: "delta_den",
+                    value: *delta_den,
+                },
+                ScalarBool {
+                    name: "raw",
+                    value: *raw,
+                },
+                ScalarSym {
+                    name: "field",
+                    value: *field,
+                },
+            ],
+        ),
         TermNode::TimeInfer {
             sequence,
             codebook_type,
@@ -4838,6 +4910,22 @@ fn reconstruct(
             codebook_type: get_sym("codebook_type")?,
             exclude: take_opt_child!("exclude"),
             max_dims: get_int("max_dims")?,
+            field: get_sym("field")?,
+        },
+        "RatioInduce" => TermNode::RatioInduce {
+            population: take_child!("population"),
+            codebook_type: get_sym("codebook_type")?,
+            resolution: get_int("resolution")?,
+            field: get_sym("field")?,
+        },
+        "LogQuantum" => TermNode::LogQuantum {
+            population: take_child!("population"),
+            value_slot: get_int("value_slot")?,
+            base_num: get_int("base_num")?,
+            base_den: get_int("base_den")?,
+            delta_num: get_int("delta_num")?,
+            delta_den: get_int("delta_den")?,
+            raw: get_bool("raw"),
             field: get_sym("field")?,
         },
         "TimeInfer" => TermNode::TimeInfer {

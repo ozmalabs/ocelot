@@ -343,6 +343,8 @@ fn variant_name(node: &TermNode) -> &'static str {
         TermNode::NetForward { .. } => "NetForward",
         TermNode::DimInfer { .. } => "DimInfer",
         TermNode::GenInfer { .. } => "GenInfer",
+        TermNode::RatioInduce { .. } => "RatioInduce",
+        TermNode::LogQuantum { .. } => "LogQuantum",
         TermNode::TimeInfer { .. } => "TimeInfer",
         TermNode::DepthInfer { .. } => "DepthInfer",
         TermNode::BlinkBridge { .. } => "BlinkBridge",
@@ -1228,6 +1230,36 @@ fn write_fields(node: &TermNode, arena: &TermArena, interner: &Interner, m: &mut
             m.insert("codebook_type".into(), sym_str(*codebook_type, interner));
             m.insert("exclude".into(), opt_child(*exclude, arena, interner));
             m.insert("max_dims".into(), J::Number((*max_dims).into()));
+            m.insert("field".into(), sym_str(*field, interner));
+        }
+        TermNode::RatioInduce {
+            population,
+            codebook_type,
+            resolution,
+            field,
+        } => {
+            m.insert("population".into(), child(*population, arena, interner));
+            m.insert("codebook_type".into(), sym_str(*codebook_type, interner));
+            m.insert("resolution".into(), J::Number((*resolution).into()));
+            m.insert("field".into(), sym_str(*field, interner));
+        }
+        TermNode::LogQuantum {
+            population,
+            value_slot,
+            base_num,
+            base_den,
+            delta_num,
+            delta_den,
+            raw,
+            field,
+        } => {
+            m.insert("population".into(), child(*population, arena, interner));
+            m.insert("value_slot".into(), J::Number((*value_slot).into()));
+            m.insert("base_num".into(), J::Number((*base_num).into()));
+            m.insert("base_den".into(), J::Number((*base_den).into()));
+            m.insert("delta_num".into(), J::Number((*delta_num).into()));
+            m.insert("delta_den".into(), J::Number((*delta_den).into()));
+            m.insert("raw".into(), J::Bool(*raw));
             m.insert("field".into(), sym_str(*field, interner));
         }
         TermNode::TimeInfer {
@@ -2636,6 +2668,26 @@ fn read_term(
             ),
             exclude: opt_child_of("exclude", obj, arena, interner)?,
             max_dims: obj.get("max_dims").and_then(|v| v.as_i64()).unwrap_or(2),
+            field: get_optional_sym("field", interner),
+        },
+        "RatioInduce" => TermNode::RatioInduce {
+            population: child_of("population", obj, arena, interner, variant)?,
+            codebook_type: interner.intern(
+                obj.get("codebook_type")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("ShapeSignature"),
+            ),
+            resolution: obj.get("resolution").and_then(|v| v.as_i64()).unwrap_or(0),
+            field: get_optional_sym("field", interner),
+        },
+        "LogQuantum" => TermNode::LogQuantum {
+            population: child_of("population", obj, arena, interner, variant)?,
+            value_slot: obj.get("value_slot").and_then(|v| v.as_i64()).unwrap_or(0),
+            base_num: obj.get("base_num").and_then(|v| v.as_i64()).unwrap_or(2),
+            base_den: obj.get("base_den").and_then(|v| v.as_i64()).unwrap_or(1),
+            delta_num: obj.get("delta_num").and_then(|v| v.as_i64()).unwrap_or(1),
+            delta_den: obj.get("delta_den").and_then(|v| v.as_i64()).unwrap_or(1),
+            raw: obj.get("raw").and_then(|v| v.as_bool()).unwrap_or(false),
             field: get_optional_sym("field", interner),
         },
         "TimeInfer" => TermNode::TimeInfer {

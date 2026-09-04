@@ -1888,6 +1888,51 @@ pub enum TermNode {
         field: Sym,
     },
 
+    /// `RatioInduce` — POPULATION RATIO-INVARIANCE INDUCTION, the cross-frame,
+    /// population-level sibling of `GenInfer`. Where `GenInfer` induces ONE
+    /// integer generator from ONE orbit, `RatioInduce` induces, from a
+    /// POPULATION of frames related by a PER-FRAME multiplicative rescaling,
+    /// the INVARIANT RATIO SET — the cross-coordinate ratios that stay fixed as
+    /// each frame's own scale varies (the cross-frame sibling of the audio
+    /// stack's within-signal ratio cancellation, on the `scale2`/base-as-
+    /// dimension ladder). `population` evaluates to a collection of frames,
+    /// each a collection of `[pred, coord, coord, …, val]` relation tuples (the
+    /// same Value-tuple shape `GenInfer`/`DimInfer` consume). For each frame it
+    /// reads the origin-normalized extent of each coord slot through
+    /// `coord_ints` (integer lattice ONLY — a `Float` coordinate is CROSS-FRAME
+    /// and makes the population inapplicable, the frame/continuum invariant
+    /// inherited for free), READS the reduced integer cross-coordinate ratio
+    /// set from the first frame, and VERIFIES it across every frame by integer
+    /// cross-multiplication (the population analogue of
+    /// `infer_translate_offset`'s read-then-verify). The induced object is a
+    /// RATIO — a RELATION held in `Hom`, applied on read, minted as a
+    /// `DimensionGenerator`/`LatentDimension` param (`scale2`-family when the
+    /// set is power-of-two, else a diagonal `kind:"linear"` matrix
+    /// `apply_linear_once` already reads — ZERO new dispatch arm), NEVER a
+    /// continuous coordinate stored in-frame. A population that is NOT purely
+    /// multiplicative FALSIFIES the invariant (the honest MDL floor,
+    /// `explained=false`). See `shape_decode::eval_ratio_infer`. Output Dict:
+    /// `explained` / `coord_dims` / `ncoord` / `ref_dim` / `ratios` (flat
+    /// `[slot,num,den]` triples) / `is_pow2` / `matrix` / `latent_name`
+    /// (`latent:ratio` / `latent:scale2`) / `n_frames` / `checked`; `field`
+    /// selects one key exactly like `GenInfer`.
+    ///
+    /// `resolution` is the OBSERVATION-RESOLUTION tolerance (integer, default 0
+    /// = EXACT). Per CLAUDE.md a ratio is pinned only to observational
+    /// resolution ("never encode precision the steps cannot support (MDL)"):
+    /// `0` demands an exact integer cross-frame ratio (the clean synthetic
+    /// mechanism); a non-zero `q` (the grid step the coordinates were quantized
+    /// to) admits a DATA-SCALED integer residual so a ratio recovered from a
+    /// REAL, quantized observation is accepted iff it holds to within the
+    /// resolution the observation supports — kept fully in integer arithmetic,
+    /// NO float, the invariant intact.
+    RatioInduce {
+        population: TermIdx,
+        codebook_type: Sym,
+        resolution: i64,
+        field: Sym,
+    },
+
     /// `TimeInfer` — the TEMPORAL sibling of `GenInfer`, one level up: does a
     /// SEQUENCE of frames (in tick order) form an ORBIT under ONE transition
     /// generator `G` carrying `frame(t) -> frame(t+1)` for EVERY consecutive
@@ -3151,6 +3196,63 @@ pub enum TermNode {
         field: Sym,
         snapshot_field: Sym,
     },
+
+    /// `LogQuantum` — the integer-observable LOG-QUANTUM EMITTER
+    /// (`drafts/log_quantum/LOG_QUANTUM_PREREG.md`), the substrate's own
+    /// `log_scaled_proprioception` lever (`seeds/log_graph_law.json`,
+    /// "a log sensor on a log world reads linearly") made a primitive. It reads
+    /// a CONTINUOUS log-domain quantity `x` (log-odds, log-weight, log-prior, or
+    /// a raw linear value to be logged) and emits the INTEGER log-coordinate
+    /// `q = round(log_a(x) / Δ)` — the general form of `scale_pow2_once`'s
+    /// fixed base-2 case (where the additive `k` in log₂ IS the quantum), now
+    /// with arbitrary base `a` and step `Δ`.
+    ///
+    /// WELL-FORMED BY CONSTRUCTION (the H-L1 crux). `q` is written back through
+    /// `set_coord` as a `Value::Int`, so it lands on the integer lattice that
+    /// `coord_ints` accepts; the frame stays integer. The base `a` and
+    /// resolution `Δ` are NOT coordinates — they ride as INTENSIONAL PARAMS on
+    /// this Term (rationals `a = base_num/base_den`, `Δ = delta_num/delta_den`,
+    /// exactly the posture `DimensionGenerator`'s `matrix`/`offset` use), a
+    /// relation held in `Hom(frame, invariant-frame)`, APPLIED ON READ, never
+    /// stored in a coordinate slot. The only float is the transient cross-frame
+    /// render `ln(x)/(ln(a)·Δ)` computed in the map and immediately rounded —
+    /// CLAUDE.md's "continuity is intensional; the observable is the stepped
+    /// integer rendering; pinned only to observational resolution (MDL)".
+    ///
+    /// A DIFFERENCE IS A LOG-RATIO. Quantities related by a multiplicative
+    /// factor `f` emit quanta differing by the constant integer
+    /// `round(log_a(f)/Δ)`, so a population differing by a per-frame
+    /// multiplicative scale becomes, after emission, integer frames differing by
+    /// a per-frame additive log-offset — the exact shape `RatioInduce`/`scale2`
+    /// consume, feeding the ratio-induction ladder with ZERO new dispatch arm.
+    ///
+    /// `population` evaluates to an outer collection of frames, each an inner
+    /// collection of `[pred, coord, …, val]` relation tuples. For every relation
+    /// the slot `value_slot` (read via `as_f64` — `Int`/`Float`/`Rational`, the
+    /// rational→float step there being the named cross-frame boundary) is
+    /// REPLACED by its integer log-quantum; every other slot is untouched. When
+    /// `raw` is true, `x` is a raw LINEAR value mapped through the log; when
+    /// false, `x` is ALREADY a natural-log-domain quantity and the emitter only
+    /// rebases + requantizes it onto the integer log axis (the `frame.py`
+    /// `_log_weights` case). A non-positive `x` under `raw` floors to `ln(1e-9)`
+    /// exactly as `frame.py::_log_weights` does. `base_num == 0` selects base e
+    /// (natural-log sentinel); otherwise `a = base_num/base_den` with `a > 1`.
+    /// A `Δ <= 0`, an out-of-range `value_slot`, or an invalid base makes the op
+    /// inapplicable and returns the population UNCHANGED (a graceful skip, never
+    /// a float written in-frame). Output is the population with the `value_slot`
+    /// column quantized to `Int`; `field` (accepted for wiring symmetry) instead
+    /// selects from a diagnostic Dict (`quantized`/`n_frames`/`n_rels`/
+    /// `value_slot`/`usable`). See `shape_decode::eval_log_quantum`.
+    LogQuantum {
+        population: TermIdx,
+        value_slot: i64,
+        base_num: i64,
+        base_den: i64,
+        delta_num: i64,
+        delta_den: i64,
+        raw: bool,
+        field: Sym,
+    },
 }
 
 /// Arena for a Term tree. Childless to outside callers — construction
@@ -3852,6 +3954,25 @@ fn copy_subtree(src: &TermArena, dst: &mut TermArena, idx: TermIdx) -> TermIdx {
             field,
             snapshot_field,
         },
+        TermNode::LogQuantum {
+            population,
+            value_slot,
+            base_num,
+            base_den,
+            delta_num,
+            delta_den,
+            raw,
+            field,
+        } => TermNode::LogQuantum {
+            population: copy_subtree(src, dst, population),
+            value_slot,
+            base_num,
+            base_den,
+            delta_num,
+            delta_den,
+            raw,
+            field,
+        },
         TermNode::TransformDecode {
             goal,
             codebook_type,
@@ -3895,6 +4016,17 @@ fn copy_subtree(src: &TermArena, dst: &mut TermArena, idx: TermIdx) -> TermIdx {
             codebook_type,
             exclude: exclude.map(|e| copy_subtree(src, dst, e)),
             max_dims,
+            field,
+        },
+        TermNode::RatioInduce {
+            population,
+            codebook_type,
+            resolution,
+            field,
+        } => TermNode::RatioInduce {
+            population: copy_subtree(src, dst, population),
+            codebook_type,
+            resolution,
             field,
         },
         TermNode::DepthInfer {
@@ -9824,6 +9956,42 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
             }
             report
         }
+        TermNode::RatioInduce {
+            population,
+            codebook_type,
+            resolution,
+            field,
+        } => crate::shape_decode::eval_ratio_infer(
+            arena,
+            *population,
+            *codebook_type,
+            *resolution,
+            *field,
+            env,
+            ctx,
+        ),
+        TermNode::LogQuantum {
+            population,
+            value_slot,
+            base_num,
+            base_den,
+            delta_num,
+            delta_den,
+            raw,
+            field,
+        } => crate::shape_decode::eval_log_quantum(
+            arena,
+            *population,
+            *value_slot,
+            *base_num,
+            *base_den,
+            *delta_num,
+            *delta_den,
+            *raw,
+            *field,
+            env,
+            ctx,
+        ),
         TermNode::TimeInfer {
             sequence,
             codebook_type,
@@ -13829,6 +13997,12 @@ pub(crate) fn children(node: &TermNode) -> SmallVec<[TermIdx; 8]> {
             if let Some(e) = exclude {
                 out.push(*e);
             }
+        }
+        TermNode::RatioInduce { population, .. } => {
+            out.push(*population);
+        }
+        TermNode::LogQuantum { population, .. } => {
+            out.push(*population);
         }
         TermNode::TimeInfer { sequence, .. } => {
             out.push(*sequence);
