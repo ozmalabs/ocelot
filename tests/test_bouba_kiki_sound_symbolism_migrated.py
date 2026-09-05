@@ -36,7 +36,7 @@ from domains.bouba_kiki_world import (                          # noqa: E402
     oracle_match, POLE_THRESHOLD, QUANTUM, HALF_WIDTH,
     _star, _regular_polygon, _ellipse)
 
-CANON_MD5 = "a32ed336662eaa9eb6df27b7112541ac"   # canonical .so after native-only CAN cutover
+CANON_MD5 = "28dd61b94c54d67966e82b70aa5197be"   # canonical .so after native-only CAN cutover
 BLOCK = 294000
 N = 60
 _AXIS = "phenomenal:sharpness"

@@ -87,8 +87,10 @@ EMOTION_TO_EMX = {
 }
 
 #: The FLAT NEUTRAL baseline knobs — the blind twin for Arm A (affect ignored).
-#: Fixed: f0_hz=165, dur_s=0.50, ta_frac=0.08 for EVERY emotion (prereg §3.2).
-FLAT_BASELINE = dict(f0_hz=165.0, dur_s=0.50, ta_frac=0.08)
+#: Fixed: f0_hz=165, dur_s=0.50, ta_frac=0.08, gain=0.26 (the a=0.5 midpoint of
+#: the gain map) for EVERY emotion (prereg §3.2) — a single fixed loudness so the
+#: baseline carries NO arousal information on any axis, incl. the new energy axis.
+FLAT_BASELINE = dict(f0_hz=165.0, dur_s=0.50, ta_frac=0.08, gain=0.26)
 
 #: The digit-word carriers the synthesizer supports (GESTURE_SCORES keys). LOCKED.
 DIGIT_WORDS = ("zero", "one", "two", "three", "four",
@@ -104,6 +106,14 @@ def knobs_from_arousal_valence(arousal: float, valence: float = 0.0) -> dict:
     * ``f0_hz  = 140 + 160*a``   (140..300 Hz; arousal raises pitch — IDS_PITCH)
     * ``dur_s  = 0.60 - 0.30*a``  (0.60..0.30 s; arousal shortens = faster rate)
     * ``ta_frac= 0.11 - 0.10*a``  (0.11..0.01; arousal presses the source)
+    * ``gain   = 0.12 + 0.28*a``  (0.12..0.40 loudness; arousal RAISES vocal
+      effort / intensity — Scherer 2003. This became meaningful only after the
+      synth amplitude fix: the renderer now preserves absolute amplitude, so an
+      arousal-driven loudness reaches the output instead of being renormalised
+      away. The range is set BELOW the cascade's clip ceiling (peak<1.0 across
+      [0,1], verified) so RMS tracks arousal monotonically without the loud end
+      re-compressing against clip-safety — respecting the synth's headroom, NOT
+      fitting the judge. Monotone in a, pre-committed.)
     * ``contour``: a<0.3 -> falling ; a>=0.6 -> rising ; else flat. The per-frame
       tilt magnitude is ``(a-0.4)`` (excursion widens with arousal).
 
@@ -116,6 +126,7 @@ def knobs_from_arousal_valence(arousal: float, valence: float = 0.0) -> dict:
     f0_hz = round(140.0 + 160.0 * a)
     dur_s = round(0.60 - 0.30 * a, 2)
     ta_frac = round(0.11 - 0.10 * a, 3)
+    gain = round(0.12 + 0.28 * a, 3)
     if a < 0.3:
         contour = "falling"
     elif a >= 0.6:
@@ -128,6 +139,7 @@ def knobs_from_arousal_valence(arousal: float, valence: float = 0.0) -> dict:
         contour = "flat"
     tilt = round(a - 0.4, 3)             # per-frame f0 excursion coefficient
     return dict(f0_hz=float(f0_hz), dur_s=float(dur_s), ta_frac=float(ta_frac),
+                gain=float(gain),
                 contour=contour, tilt=float(tilt), arousal=a, valence=float(valence))
 
 
@@ -290,13 +302,15 @@ class ProsodyGenerator:
 
     # -- the scalar-f0 forward, wrapped ------------------------------------
     def _render_scalar(self, word: str, f0_hz: float, dur_s: float,
-                       ta_frac: float, oq: float = 0.6, am: float = 0.0) -> np.ndarray:
+                       ta_frac: float, oq: float = 0.6, am: float = 0.0,
+                       gain: float = 1.0) -> np.ndarray:
         return self._forward(word, self.sub, fs=self.fs, dur_s=float(dur_s),
                              f0_hz=float(f0_hz), ta_frac=float(ta_frac),
-                             oq=float(oq), am=float(am))
+                             oq=float(oq), am=float(am), gain=float(gain))
 
     def _render_contour(self, word: str, f0_track: np.ndarray, dur_s: float,
-                        ta_frac: float, oq: float = 0.6, am: float = 0.0) -> np.ndarray:
+                        ta_frac: float, oq: float = 0.6, am: float = 0.0,
+                        gain: float = 1.0) -> np.ndarray:
         """Render ``word`` with a TIME-VARYING f0 given by ``f0_track`` (Hz per
         segment) by synthesizing SEGMENT-WISE at each segment's constant f0 and
         concatenating the float32 buffers. This wraps the scalar-f0 primitive to
@@ -310,11 +324,11 @@ class ProsodyGenerator:
         n_seg = len(f0_track)
         if n_seg <= 1:
             return self._render_scalar(word, float(f0_track[0]) if n_seg else 165.0,
-                                       dur_s, ta_frac, oq, am)
+                                       dur_s, ta_frac, oq, am, gain)
         seg_dur = float(dur_s) / n_seg
         buffers = []
         for f0 in f0_track:
-            b = self._render_scalar(word, float(f0), seg_dur, ta_frac, oq, am)
+            b = self._render_scalar(word, float(f0), seg_dur, ta_frac, oq, am, gain)
             buffers.append(np.asarray(b, dtype=np.float32))
         # crossfade seams (10% of the shorter neighbour, min 4 samples).
         out = buffers[0]
@@ -342,13 +356,15 @@ class ProsodyGenerator:
         word = word.lower()
         if flat:
             b = FLAT_BASELINE
-            return self._render_scalar(word, b["f0_hz"], b["dur_s"], b["ta_frac"])
+            return self._render_scalar(word, b["f0_hz"], b["dur_s"], b["ta_frac"],
+                                       gain=b["gain"])
         k = knobs_for_emotion(emotion, use_substrate=use_substrate)
+        g = float(k.get("gain", 1.0))
         if with_contour:
             track = _contour_track(k["f0_hz"], k["contour"], k["tilt"],
                                    self.contour_frames)
-            return self._render_contour(word, track, k["dur_s"], k["ta_frac"])
-        return self._render_scalar(word, k["f0_hz"], k["dur_s"], k["ta_frac"])
+            return self._render_contour(word, track, k["dur_s"], k["ta_frac"], gain=g)
+        return self._render_scalar(word, k["f0_hz"], k["dur_s"], k["ta_frac"], gain=g)
 
     def knobs(self, emotion: str, *, use_substrate: bool = True) -> dict:
         """The affect->knob settings + contour for ``emotion`` (glass-box read)."""

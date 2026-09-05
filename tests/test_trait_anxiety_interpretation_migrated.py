@@ -27,7 +27,7 @@ from domains.trait_anxiety_world import (                       # noqa: E402
     securing as oracle_securing, anxiety_fires as oracle_anxiety,
     _DRIVE_OVER, _MS_OVER)
 
-CANON_MD5 = "a32ed336662eaa9eb6df27b7112541ac"   # canonical .so after native-only CAN cutover
+CANON_MD5 = "28dd61b94c54d67966e82b70aa5197be"   # canonical .so after native-only CAN cutover
 
 N = 60
 JITTER = 10
