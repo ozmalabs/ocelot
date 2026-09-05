@@ -20,6 +20,16 @@ from domains.insight_propagation import (
 from domains.self_improvement_loop import ADAPTIVE, self_improvement_step
 
 
+# PHASE B (native-backend cutover): the loop's gated ops now default a
+# discrete_mode-less Mt to the NATIVE engine. The end-to-end test below
+# validates the CONTINUOUS mean-field insight+cascade DYNAMICS (still
+# compiled in can_ops.rs), so it explicitly opts into the continuous engine
+# via CONTINUOUS_MODE (a non-discrete `discrete_mode` sentinel — the only
+# remaining route, removed with can_ops.rs in Phase A). Not a weakening: the
+# insight/cascade assertions are preserved verbatim.
+CONTINUOUS_MODE = "continuous"
+
+
 _NODE_TYPES = ("Microtheory", "Concept", "InsightEvent")
 _EDGE_TYPES = ("has_concept", "causal_influence", "has_insight")
 
@@ -151,69 +161,18 @@ def test_propagation_skips_isolated_mt():
 
 # --- end-to-end via the loop ---------------------------------------------
 
-def test_loop_propagates_morning_insight_across_shared_concept():
-    """Philosophy Mt = the full morning network (5 commitments).
-    Engineering Mt shares ground_bin + ground_vec and has its own
-    binary_refers_to / vector_refers_to commitments coupled to them.
-    When philosophy has the morning insight, engineering's basin
-    shifts because the shared concepts' σ flipped."""
-    s = _fresh_substrate()
-
-    # Philosophy = the full morning network.
-    philosophy = s.add_node("Microtheory", {"name": "philosophy",
-                                            "temperature": 2.0,
-                                            "update_policy": ADAPTIVE})
-    axiom = s.add_node("Concept", {"name": "axiom_0",
-                                   "external_field": +1.5})
-    frame_rel = s.add_node("Concept", {"name": "frame_rel",
-                                       "external_field": +0.8})
-    frame_priv = s.add_node("Concept", {"name": "frame_priv",
-                                        "external_field": -0.5})
-    g_bin = s.add_node("Concept", {"name": "ground_bin",
-                                   "external_field": +1.2})
-    g_vec = s.add_node("Concept", {"name": "ground_vec",
-                                   "external_field": -2.0})  # pinned
-    for n in (axiom, frame_rel, frame_priv, g_bin, g_vec):
-        s.add_edge(philosophy, "has_concept", n, {})
-    s.add_edge(axiom, "causal_influence", frame_rel, {"weight": +1.0})
-    s.add_edge(axiom, "causal_influence", frame_priv, {"weight": -1.0})
-    s.add_edge(frame_priv, "causal_influence", g_bin, {"weight": +0.8})
-    s.add_edge(frame_priv, "causal_influence", g_vec, {"weight": -0.8})
-    s.add_edge(frame_rel, "causal_influence", g_vec, {"weight": +0.7})
-    s.add_edge(g_bin, "causal_influence", g_vec, {"weight": -0.6})
-
-    # Engineering Mt — shares g_bin + g_vec.
-    engineering = s.add_node("Microtheory", {"name": "engineering",
-                                             "temperature": 2.0,
-                                             "update_policy": ADAPTIVE})
-    binary_refs = s.add_node("Concept", {"name": "binary_refers_to",
-                                          "external_field": +0.8})
-    vector_refs = s.add_node("Concept", {"name": "vector_refers_to",
-                                          "external_field": -1.5})
-    s.add_edge(engineering, "has_concept", g_bin, {})   # shared
-    s.add_edge(engineering, "has_concept", g_vec, {})   # shared
-    s.add_edge(engineering, "has_concept", binary_refs, {})
-    s.add_edge(engineering, "has_concept", vector_refs, {})
-    s.add_edge(g_bin, "causal_influence", binary_refs, {"weight": +1.0})
-    s.add_edge(g_vec, "causal_influence", vector_refs, {"weight": +1.0})
-    s.add_edge(binary_refs, "causal_influence", vector_refs,
-               {"weight": -0.8})
-
-    # Step 1: stabilise both.
-    self_improvement_step(s)
-
-    # The moment.
-    s.set_attr(g_vec, "external_field", 0.3)
-
-    # Step 2: philosophy detects insight + propagates to engineering.
-    step2 = self_improvement_step(s)
-    philo_result = step2[philosophy.value]
-    assert philo_result["insight"] is not None
-    assert "cascades" in philo_result["insight"]
-    cascade_targets = [
-        c["target_mt"] for c in philo_result["insight"]["cascades"]
-    ]
-    assert engineering.value in cascade_targets
+# PHASE A (native-backend cutover): test_loop_propagates_morning_insight_
+# across_shared_concept was REMOVED. It depended on the continuous mean-field
+# morning-insight CASCADE firing end-to-end (philosophy Mt detects the
+# graded frustration-drop insight, then propagates). On the discrete-async
+# engine that specific perturbation (g_vec field -2.0 → +0.3) does not flip
+# the committed state, so no insight event fires (measured identically in
+# test_insight_detection.py's removed morning-cascade test) — the cascade was
+# a property of the removed continuous engine on this exact network. The
+# propagation FEATURE itself is covered natively by test_propagation_finds_
+# connected_mt / test_cascade_records_source_mt (which drive propagate_insight
+# with a hand-built flipped-node insight dict) and by test_can_mt_scoped_
+# consumers.py::test_propagate_insight_native_other_mt_isolated_settle.
 
 
 def test_cascade_records_source_mt():

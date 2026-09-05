@@ -84,20 +84,6 @@ def _build_draw(s, seed, coarse, discrete_mode="3state"):
     return mt, concepts
 
 
-def _continuous_oscillates(inner, mt):
-    """Reuses the EXISTING mt_mean_field_marginal PyO3 surface, damping=1.0
-    -- reproduces the OLD pre-fix synchronous update exactly (per
-    CAN_SYNCHRONOUS_UPDATE_FIX_RESULTS.md Sec1's own cross-check), pure
-    read, no graph mutation."""
-    s400 = inner.mt_mean_field_marginal(mt, 400, 1e-6, 1.0)
-    s401 = inner.mt_mean_field_marginal(mt, 401, 1e-6, 1.0)
-    s402 = inner.mt_mean_field_marginal(mt, 402, 1e-6, 1.0)
-    keys = list(s400.keys())
-    gap_opp = sum((s400[k] - s401[k]) ** 2 for k in keys) ** 0.5
-    gap_same = sum((s400[k] - s402[k]) ** 2 for k in keys) ** 0.5
-    return (gap_opp > 0.1 and gap_same < 0.01), gap_opp, gap_same
-
-
 def _discrete_async_converges(inner, max_steps=3000):
     steps = inner.run_rules(max_steps)
     return steps < max_steps, steps
@@ -122,30 +108,34 @@ N_DRAWS = 20
 
 @pytest.mark.parametrize("discrete_mode", ["2state", "3state"])
 def test_discrete_async_never_oscillates_vs_continuous_sync(discrete_mode):
+    """PHASE A (native-backend cutover): the continuous-sync comparison half
+    was removed with the Ising engine (`mt_mean_field_marginal` no longer
+    exists). What this test PROVES — the registered Lyapunov prediction that
+    the discrete-async mechanism ALWAYS reaches a fixpoint — is a claim about
+    the surviving native engine and is preserved verbatim. The removed half
+    (that continuous-sync oscillates) was a property of the deleted engine
+    and is no longer asserted here; see the removal note on
+    `test_continuous_sync_oscillates_on_at_least_one_real_draw`."""
     rows = []
     for coarse in (True, False):
-        cont_osc = 0
         disc_nonconv = 0
         frustrations = []
         for seed in range(N_DRAWS):
             s = _loaded_substrate()
             inner = s._inner
             mt, concepts = _build_draw(s, 1000 + seed, coarse, discrete_mode)
-            osc, gap_opp, gap_same = _continuous_oscillates(inner, mt)
-            if osc:
-                cont_osc += 1
             converged, steps = _discrete_async_converges(inner)
             if not converged:
                 disc_nonconv += 1
             frustrations.append(_frustration(inner, mt, concepts))
         label = "coarse" if coarse else "fine"
         mean_fr = sum(frustrations) / len(frustrations)
-        rows.append((label, cont_osc, disc_nonconv, mean_fr))
-        print(f"[{discrete_mode}] {label:8s} continuous_sync_osc={cont_osc}/{N_DRAWS} "
+        rows.append((label, disc_nonconv, mean_fr))
+        print(f"[{discrete_mode}] {label:8s} "
               f"discrete_async_nonconv={disc_nonconv}/{N_DRAWS} mean_frustration={mean_fr:.3f}")
 
     # Registered prediction 2: discrete-async NEVER fails to reach a fixpoint.
-    for label, cont_osc, disc_nonconv, mean_fr in rows:
+    for label, disc_nonconv, mean_fr in rows:
         assert disc_nonconv == 0, (
             f"discrete-async ({discrete_mode}) failed to converge on "
             f"{disc_nonconv}/{N_DRAWS} {label} draws -- breaks the registered "
@@ -153,20 +143,14 @@ def test_discrete_async_never_oscillates_vs_continuous_sync(discrete_mode):
         )
 
 
-def test_continuous_sync_oscillates_on_at_least_one_real_draw():
-    """Registered prediction 1: replicates the already-measured pathology on
-    THIS rung's own real-engine draws (not merely cited from the PoC or the
-    prior rung's own numbers)."""
-    any_osc = False
-    for coarse in (True, False):
-        for seed in range(N_DRAWS):
-            s = _loaded_substrate()
-            inner = s._inner
-            mt, _ = _build_draw(s, 2000 + seed, coarse)
-            osc, _, _ = _continuous_oscillates(inner, mt)
-            if osc:
-                any_osc = True
-    assert any_osc, "expected the continuous-sync pathology to reproduce on at least one real draw"
+# PHASE A (native-backend cutover): test_continuous_sync_oscillates_on_at_
+# least_one_real_draw was REMOVED. It asserted ONLY a property of the deleted
+# continuous Ising engine (that a fully-synchronous mean-field update
+# oscillates on some real draw) via mt_mean_field_marginal, which no longer
+# exists. It tested the removed engine itself, not any surviving feature — the
+# discrete-async convergence guarantee it was contrasted against is still
+# asserted by test_discrete_async_never_oscillates_vs_continuous_sync above.
+# No native behaviour is left uncovered by this removal.
 
 
 def test_three_state_vs_two_state_frustration_bonus_comparison():
@@ -644,9 +628,6 @@ def test_bigville_schema_symmetric_fix_makes_all_couplings_visible_to_native_rul
     concepts = built["concepts"]
     inner.set_attr(mt, "discrete_mode", "3state")
     inner.set_attr(mt, "can_tick", 0)
-
-    # can_ops.rs's OWN symmetric coupling read, for the SAME graph, same mt.
-    marginal = inner.mt_mean_field_marginal(mt, 400, 1e-6, 1.0)
 
     # Manually compute the NATIVE rule's local field for one Concept (the
     # SAME arithmetic can_native_update_3state's `where`/effects use)

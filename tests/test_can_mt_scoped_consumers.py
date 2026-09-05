@@ -101,17 +101,32 @@ def test_consolidate_insight_native_frozen_never_mints():
     )
 
 
-def test_consolidate_insight_continuous_branch_byte_unchanged():
-    """No discrete_mode -> the OLD mt_hebbian_update_J path, unmodified."""
+def test_consolidate_insight_continuous_branch_reachable_only_by_explicit_optout():
+    """PHASE B (fork-encoding test migrated): the CAN backend is now
+    native-only by DEFAULT — an Mt with no `discrete_mode` is treated as
+    native '3state' (self_improvement_loop._is_native), so the OLD assertion
+    `not _is_native(mt-with-no-discrete_mode)` no longer holds. The
+    continuous mt_hebbian_update_J branch is now reachable ONLY by an Mt that
+    EXPLICITLY opts out with a non-discrete `discrete_mode` value (e.g.
+    'static'). That branch is dead in production (no live caller sets such a
+    value on an Mt that reaches a gated op) and Phase A removes it entirely;
+    this test just pins that the explicit-opt-out escape hatch still routes
+    there until then."""
     inner = _loaded_substrate()
-    mt = inner.add_node("Microtheory", {"temperature": 1.0, "update_policy": "adaptive"})
+    # No discrete_mode → now NATIVE by default (the Phase B cutover).
+    mt_default = inner.add_node("Microtheory", {"temperature": 1.0, "update_policy": "adaptive"})
+    assert _is_native(inner, mt_default), (
+        "Phase B: an Mt with no discrete_mode must default to the native path")
+    # Explicit non-discrete opt-out → the (dead-by-default) continuous branch.
+    mt = inner.add_node("Microtheory", {"temperature": 1.0, "update_policy": "adaptive",
+                                        "discrete_mode": "static"})
     a = inner.add_node("Concept", {"name": "a", "state": 1.0, "external_field": 1.0, "identity_field": 0.0})
     b = inner.add_node("Concept", {"name": "b", "state": 1.0, "external_field": 1.0, "identity_field": 0.0})
     inner.add_edge(mt, "has_concept", a, {})
     inner.add_edge(mt, "has_concept", b, {})
     assert not _is_native(inner, mt)
     edges = consolidate_insight(inner, mt, eta=0.5)
-    print(f"consolidate_insight (continuous): edges_updated={edges}")
+    print(f"consolidate_insight (continuous, explicit opt-out): edges_updated={edges}")
     assert isinstance(edges, int)
 
 
@@ -143,15 +158,21 @@ def test_relax_maybe_hebbian_maybe_decay_j_native_dont_crash_and_are_isolated():
 
 def test_self_improvement_step_mixed_native_and_continuous_no_crash_no_leak():
     """The real end-to-end entry point, on a graph with ONE native adaptive
-    Mt and ONE continuous adaptive Mt sharing no concepts. Demonstrates the
-    whole gated dual path composes without crashing and without cross-Mt
-    interference, on the real engine."""
+    Mt and ONE explicit-opt-out continuous adaptive Mt sharing no concepts.
+    Demonstrates the whole gated dual path composes without crashing and
+    without cross-Mt interference, on the real engine.
+
+    PHASE B: `mt_cont` now sets `discrete_mode='static'` explicitly — under
+    the native-only default an Mt with no discrete_mode is native, so the
+    continuous branch is reachable only via this explicit opt-out (the same
+    dead-by-default escape hatch Phase A removes)."""
     inner = _loaded_substrate()
     mt_native, na, nb = _isolated_pair(inner, policy="adaptive", discrete_mode="3state")
     inner.set_attr(na, "external_field", 1.0)
     inner.set_attr(nb, "external_field", -1.0)
 
-    mt_cont = inner.add_node("Microtheory", {"temperature": 1.0, "update_policy": "adaptive"})
+    mt_cont = inner.add_node("Microtheory", {"temperature": 1.0, "update_policy": "adaptive",
+                                             "discrete_mode": "static"})
     ca = inner.add_node("Concept", {"name": "ca", "state": 0.0, "external_field": 0.3, "identity_field": 0.0})
     cb = inner.add_node("Concept", {"name": "cb", "state": 0.0, "external_field": -0.3, "identity_field": 0.0})
     inner.add_edge(mt_cont, "has_concept", ca, {})

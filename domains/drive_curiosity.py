@@ -70,67 +70,32 @@ def probe_via_what_if(
     evidence to this concept. Returns info gain metrics. No actual
     mutation — the substrate examines its own landscape.
 
-    Gated by Mt.discrete_mode (CAN_FINAL_MIGRATION_PREREG.md §3.1): a
-    Mt running the native discrete-async CAN mechanism ("2state"/"3state")
-    is probed via domains/can_counterfactual.py's own non-mutating,
-    zero-run_rules() Term-tree predictor (predicted_info_gain) — an exact
-    formula twin of can_native_update_3state/_2state, never the continuous
-    mean-field. An Mt with no discrete_mode attr keeps the ORIGINAL
-    continuous mt_mean_field_marginal/mt_mean_field_with_h_override path,
-    byte-for-byte — this is a GATED dual-path migration, not an
-    unconditional replace, because an un-upgraded Mt has no
-    state/temperature vocabulary the native formula expects, and forcing
-    it onto the native path would silently change its behaviour."""
+    PHASE A (native-backend cutover): native-only. Prediction runs via
+    domains/can_counterfactual.py's own non-mutating, zero-run_rules()
+    Term-tree predictor (predicted_info_gain) — the exact formula twin of
+    can_native_update_3state/_2state. The continuous mean-field path
+    (mt_mean_field_marginal/mt_mean_field_with_h_override) is removed. An
+    Mt with no explicit discrete_mode defaults to '3state'."""
     current_h = float(substrate.node(concept)["attrs"].get(
         "external_field", 0.0))
     new_h = current_h + h_delta
 
     discrete_mode = substrate.node(mt)["attrs"].get("discrete_mode")
-    if discrete_mode in ("2state", "3state"):
-        from domains.can_counterfactual import predicted_info_gain
-        result = predicted_info_gain(substrate, mt, concept, new_h,
-                                     mode=discrete_mode)
-        concept_id = (concept.value if hasattr(concept, "value")
-                      else int(concept))
-        current_sigma = float(substrate.node(concept)["attrs"].get(
-            "state", 0.0))
-        return {
-            "concept_id": concept_id,
-            "h_delta": h_delta,
-            "current_sigma": current_sigma,
-            "info_gain_total_change": float(result["info_gain_total_change"]),
-            "info_gain_max_node_change": float(
-                result["info_gain_max_node_change"]),
-            "predicted_flipped_count": int(result["predicted_flipped_count"]),
-        }
-
-    current_marginal = substrate.mt_mean_field_marginal(mt)
-    predicted_marginal = substrate.mt_mean_field_with_h_override(
-        mt, concept, new_h)
-
-    # Info gain: total σ change across all nodes (not just the probed one).
-    total_change = 0.0
-    max_node_change = 0.0
-    flipped_count = 0
-    for nid, predicted_sig in predicted_marginal.items():
-        current_sig = float(current_marginal.get(nid, 0.0))
-        change = abs(predicted_sig - current_sig)
-        total_change += change
-        if change > max_node_change:
-            max_node_change = change
-        if change > 0.5:
-            flipped_count += 1
-
+    mode = discrete_mode if discrete_mode in ("2state", "3state") else "3state"
+    from domains.can_counterfactual import predicted_info_gain
+    result = predicted_info_gain(substrate, mt, concept, new_h, mode=mode)
+    concept_id = (concept.value if hasattr(concept, "value")
+                  else int(concept))
+    current_sigma = float(substrate.node(concept)["attrs"].get(
+        "state", 0.0))
     return {
-        "concept_id": concept.value if hasattr(concept, "value")
-                      else int(concept),
+        "concept_id": concept_id,
         "h_delta": h_delta,
-        "current_sigma": float(current_marginal.get(
-            concept.value if hasattr(concept, "value") else int(concept),
-            0.0)),
-        "info_gain_total_change": float(total_change),
-        "info_gain_max_node_change": float(max_node_change),
-        "predicted_flipped_count": int(flipped_count),
+        "current_sigma": current_sigma,
+        "info_gain_total_change": float(result["info_gain_total_change"]),
+        "info_gain_max_node_change": float(
+            result["info_gain_max_node_change"]),
+        "predicted_flipped_count": int(result["predicted_flipped_count"]),
     }
 
 

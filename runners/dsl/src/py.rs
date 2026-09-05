@@ -2389,46 +2389,10 @@ impl PySubstrate {
     // expressed as Rust ops on the typed graph. Each Concept node carries
     // attrs `state` (σ) + `external_field` (h); each Microtheory carries
     // `temperature` (β); `causal_influence` edges between Concepts carry
-    // `weight` attr (J). See can_ops.rs for the full mean-field, energy,
-    // distance, basin-audit derivations.
-
-    /// Compute the mean-field marginal ⟨σ⟩ under Mt's Hamiltonian.
-    ///
-    /// Returns a Python dict: {node_id_int: float}. Default β = 1.0
-    /// (read from mt's `temperature` attr). Default J = 1.0 (read from
-    /// each causal_influence edge's `weight` attr). Default h = 0.0
-    /// (read from each Concept's `external_field` attr).
-    ///
-    /// `damping` (λ) blends each sweep's freshly-computed σ with the prior
-    /// value: `(1-λ)·old + λ·new`. Default 0.5 — the fix for the
-    /// persistent period-2 limit cycle a fully synchronous (λ=1.0) update
-    /// is prone to on frustrated/loopy networks (see
-    /// CAN_SYNCHRONOUS_UPDATE_FIX_RESULTS.md). Pass `damping=1.0` to
-    /// recover the old undamped update rule exactly.
-    #[pyo3(signature = (mt, max_iter=200, tol=1e-4, damping=0.5))]
-    fn mt_mean_field_marginal(
-        &self,
-        mt: PyRef<'_, PyNodeID>,
-        max_iter: usize,
-        tol: f32,
-        damping: f32,
-    ) -> std::collections::HashMap<u32, f32> {
-        let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
-        let inner = &mut *__substrate_guard;
-        let keys = match build_can_keys(inner) {
-            Some(k) => k,
-            None => return std::collections::HashMap::new(),
-        };
-        let result = crate::can_ops::mt_mean_field_marginal(
-            &inner.graph,
-            mt.to_node(),
-            &keys,
-            max_iter,
-            tol,
-            damping,
-        );
-        result.into_iter().map(|(n, v)| (n.0, v)).collect()
-    }
+    // `weight` attr (J). See can_ops.rs for the surviving energy,
+    // frustration, distance, target derivations. PHASE A (native-backend
+    // cutover): the continuous mean-field / Ising mutation ops were
+    // removed; the discrete-native graph rules are the sole dynamics.
 
     /// Energy H(σ) = -Σ J σσ - Σ h σ under Mt's Hamiltonian.
     /// `state` is a dict {node_id_int: float}; missing nodes default to 0.
@@ -2466,11 +2430,17 @@ impl PySubstrate {
             .collect()
     }
 
-    /// Distance from current marginal to Mt's target. Returns a dict:
+    /// Distance from current committed state to Mt's target. Returns a
+    /// dict:
     ///   "magnitude": float (L2),
     ///   "per_node": list of (node_id, deviation),
     ///   "max_dev_node": Optional[node_id],
     ///   "max_dev_value": Optional[float].
+    ///
+    /// PHASE A (native-backend cutover): reads each Concept's committed
+    /// discrete `state` attr directly (the discrete-async mechanism's own
+    /// equilibrium) rather than running a continuous mean-field
+    /// relaxation. Pure read; representation-agnostic geometry.
     fn mt_distance_to_target<'py>(
         &self,
         py: Python<'py>,
@@ -2489,14 +2459,15 @@ impl PySubstrate {
                 return Ok(result);
             }
         };
-        let current = crate::can_ops::mt_mean_field_marginal(
-            &inner.graph,
-            mt.to_node(),
-            &keys,
-            200,
-            1e-4,
-            crate::can_ops::DEFAULT_DAMPING,
-        );
+        // Current = committed `state` per owned Concept (native fixed
+        // point); no relaxation.
+        let concepts =
+            crate::can_ops::mt_concepts(&inner.graph, mt.to_node(), keys.has_concept_edge);
+        let mut current: rustc_hash::FxHashMap<crate::graph::NodeID, f32> =
+            rustc_hash::FxHashMap::default();
+        for &c in &concepts {
+            current.insert(c, crate::can_ops::node_state(&inner.graph, c, &keys));
+        }
         let target = crate::can_ops::mt_target(&inner.graph, mt.to_node(), &keys);
         let disp = crate::can_ops::distance_to_target(&current, &target);
 
@@ -2516,108 +2487,6 @@ impl PySubstrate {
         Ok(result)
     }
 
-    /// Mean-field marginal with one Concept's external_field overridden,
-    /// WITHOUT modifying the graph. Returns the marginal that would
-    /// result from setting node_id's h to override_h and relaxing.
-    /// Used by predictive insight-seeking.
-    #[pyo3(signature = (mt, override_node, override_h, max_iter=200, tol=1e-4, damping=0.5))]
-    fn mt_mean_field_with_h_override(
-        &self,
-        mt: PyRef<'_, PyNodeID>,
-        override_node: PyRef<'_, PyNodeID>,
-        override_h: f32,
-        max_iter: usize,
-        tol: f32,
-        damping: f32,
-    ) -> std::collections::HashMap<u32, f32> {
-        let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
-        let inner = &mut *__substrate_guard;
-        let keys = match build_can_keys(inner) {
-            Some(k) => k,
-            None => return std::collections::HashMap::new(),
-        };
-        let result = crate::can_ops::mt_mean_field_with_h_override(
-            &inner.graph,
-            mt.to_node(),
-            &keys,
-            override_node.to_node(),
-            override_h,
-            max_iter,
-            tol,
-            damping,
-        );
-        result.into_iter().map(|(n, v)| (n.0, v)).collect()
-    }
-
-    /// Cross-Mt conflicting nodes — shared Concepts where mt_a and
-    /// mt_b's marginals have opposite signs with both magnitudes >
-    /// magnitude_threshold. Returns list of dicts
-    /// {node_id, sigma_a, sigma_b}.
-    #[pyo3(signature = (mt_a, mt_b, magnitude_threshold=0.5))]
-    fn mt_conflicting_nodes(
-        &self,
-        mt_a: PyRef<'_, PyNodeID>,
-        mt_b: PyRef<'_, PyNodeID>,
-        magnitude_threshold: f32,
-    ) -> Vec<std::collections::HashMap<String, f32>> {
-        let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
-        let inner = &mut *__substrate_guard;
-        let keys = match build_can_keys(inner) {
-            Some(k) => k,
-            None => return Vec::new(),
-        };
-        let conflicts = crate::can_ops::mt_conflicting_nodes(
-            &inner.graph,
-            mt_a.to_node(),
-            mt_b.to_node(),
-            &keys,
-            magnitude_threshold,
-        );
-        conflicts
-            .into_iter()
-            .map(|(nid, sa, sb)| {
-                let mut d = std::collections::HashMap::new();
-                d.insert("node_id".to_string(), nid.0 as f32);
-                d.insert("sigma_a".to_string(), sa);
-                d.insert("sigma_b".to_string(), sb);
-                d
-            })
-            .collect()
-    }
-
-    /// Cross-Mt cosine similarity on shared Concepts' marginals.
-    /// Returns dict {similarity: float, shared_count: int}. Each Mt's
-    /// marginal is independently recomputed (their own Hamiltonians)
-    /// so the similarity reflects 'given same evidence, would these
-    /// two Mts agree on the nodes they share?' — the substrate's own
-    /// definition of redundancy from self_improvement_dynamics.
-    fn mt_pairwise_similarity<'py>(
-        &self,
-        py: Python<'py>,
-        mt_a: PyRef<'_, PyNodeID>,
-        mt_b: PyRef<'_, PyNodeID>,
-    ) -> PyResult<Bound<'py, PyDict>> {
-        let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
-        let inner = &mut *__substrate_guard;
-        let result = PyDict::new_bound(py);
-        let keys = match build_can_keys(inner) {
-            Some(k) => k,
-            None => {
-                result.set_item("similarity", 0.0_f32)?;
-                result.set_item("shared_count", 0_usize)?;
-                return Ok(result);
-            }
-        };
-        let (similarity, shared_count) = crate::can_ops::mt_pairwise_similarity(
-            &inner.graph,
-            mt_a.to_node(),
-            mt_b.to_node(),
-            &keys,
-        );
-        result.set_item("similarity", similarity)?;
-        result.set_item("shared_count", shared_count)?;
-        Ok(result)
-    }
 
     /// Frustration index given an arbitrary state map. Used by
     /// predictive insight-seeking to predict ΔF on a what-if marginal.
@@ -2641,104 +2510,6 @@ impl PySubstrate {
         crate::can_ops::mt_frustration_given_state(&inner.graph, mt.to_node(), &keys, &state_map)
     }
 
-    /// Per-Concept frustration contribution under current state. Caller
-    /// must have relaxed the network first (so state attrs reflect
-    /// equilibrium). High value → node is involved in many unsatisfied
-    /// constraints; good candidate for perturbation.
-    fn node_local_frustration(&self, mt: PyRef<'_, PyNodeID>, concept: PyRef<'_, PyNodeID>) -> f32 {
-        let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
-        let inner = &mut *__substrate_guard;
-        let keys = match build_can_keys(inner) {
-            Some(k) => k,
-            None => return 0.0,
-        };
-        crate::can_ops::node_local_frustration(&inner.graph, mt.to_node(), &keys, concept.to_node())
-    }
-
-    /// Hebbian J update — strengthens couplings between co-active concepts.
-    /// Pure mechanism — policy enforcement (frozen vs adaptive Mts) is the
-    /// orchestrator's responsibility. Returns the number of edges updated.
-    #[pyo3(signature = (mt, eta=0.01))]
-    fn mt_hebbian_update_J(&mut self, mt: PyRef<'_, PyNodeID>, eta: f32) -> usize {
-        let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
-        let inner = &mut *__substrate_guard;
-        let keys = match build_can_keys(inner) {
-            Some(k) => k,
-            None => return 0,
-        };
-        crate::can_ops::hebbian_update_J(&mut inner.graph, mt.to_node(), &keys, eta)
-    }
-
-    /// Identity dynamics — h_id ← h_id + α·σ - β·h_id for every
-    /// Concept in Mt. Sustained σ in one direction grows identity
-    /// toward that direction; flipping σ averages to zero → identity
-    /// decays. Returns Concepts updated.
-    #[pyo3(signature = (mt, alpha=0.01, beta=0.001))]
-    fn mt_update_identity_dynamics(
-        &mut self,
-        mt: PyRef<'_, PyNodeID>,
-        alpha: f32,
-        beta: f32,
-    ) -> usize {
-        let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
-        let inner = &mut *__substrate_guard;
-        let keys = match build_can_keys(inner) {
-            Some(k) => k,
-            None => return 0,
-        };
-        crate::can_ops::update_identity_dynamics(&mut inner.graph, mt.to_node(), &keys, alpha, beta)
-    }
-
-    /// Single-Concept identity nudge for insight consolidation:
-    /// identity_field ← identity_field + α · target_sigma.
-    #[pyo3(signature = (concept, target_sigma, alpha=0.05))]
-    fn concept_nudge_identity(
-        &mut self,
-        concept: PyRef<'_, PyNodeID>,
-        target_sigma: f32,
-        alpha: f32,
-    ) {
-        let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
-        let inner = &mut *__substrate_guard;
-        let keys = match build_can_keys(inner) {
-            Some(k) => k,
-            None => return,
-        };
-        crate::can_ops::nudge_identity(
-            &mut inner.graph,
-            concept.to_node(),
-            &keys,
-            target_sigma,
-            alpha,
-        );
-    }
-
-    /// Anti-Hebbian decay — J_ij ← (1 - rate) J_ij across the Mt's
-    /// causal_influence edges. Returns the number of edges decayed.
-    #[pyo3(signature = (mt, decay_rate=0.001))]
-    fn mt_decay_J(&mut self, mt: PyRef<'_, PyNodeID>, decay_rate: f32) -> usize {
-        let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
-        let inner = &mut *__substrate_guard;
-        let keys = match build_can_keys(inner) {
-            Some(k) => k,
-            None => return 0,
-        };
-        crate::can_ops::decay_J(&mut inner.graph, mt.to_node(), &keys, decay_rate)
-    }
-
-    /// External-field decay — h_i ← (1 - rate) h_i for every Concept in
-    /// Mt with non-zero h. Returns the number of fields decayed.
-    #[pyo3(signature = (mt, decay_rate=0.0001))]
-    fn mt_decay_h(&mut self, mt: PyRef<'_, PyNodeID>, decay_rate: f32) -> usize {
-        let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
-        let inner = &mut *__substrate_guard;
-        let keys = match build_can_keys(inner) {
-            Some(k) => k,
-            None => return 0,
-        };
-        crate::can_ops::decay_h(&mut inner.graph, mt.to_node(), &keys, decay_rate)
-    }
-
     /// Apply an evidence delta to a single Concept's external field.
     /// h_i ← h_i + alpha · evidence.
     #[pyo3(signature = (concept, evidence, alpha=1.0))]
@@ -2756,69 +2527,6 @@ impl PySubstrate {
             evidence,
             alpha,
         );
-    }
-
-    /// Relax the network: compute mean-field marginal and write it back
-    /// to each Concept's state attr. After this, σ on the graph IS the
-    /// equilibrium under Mt's Hamiltonian. Returns the number of
-    /// Concepts updated.
-    #[pyo3(signature = (mt, max_iter=200, tol=1e-4, damping=0.5))]
-    fn mt_relax_to_marginal(
-        &mut self,
-        mt: PyRef<'_, PyNodeID>,
-        max_iter: usize,
-        tol: f32,
-        damping: f32,
-    ) -> usize {
-        let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
-        let inner = &mut *__substrate_guard;
-        let keys = match build_can_keys(inner) {
-            Some(k) => k,
-            None => return 0,
-        };
-        crate::can_ops::relax_to_marginal(
-            &mut inner.graph,
-            mt.to_node(),
-            &keys,
-            max_iter,
-            tol,
-            damping,
-        )
-    }
-
-    /// Basin topology audit: returns a dict with concept_count,
-    /// coupling_count, energy, coverage, frustration, and the
-    /// mean-field marginal.
-    fn mt_audit_basin<'py>(
-        &self,
-        py: Python<'py>,
-        mt: PyRef<'_, PyNodeID>,
-    ) -> PyResult<Bound<'py, PyDict>> {
-        let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
-        let inner = &mut *__substrate_guard;
-        let result = PyDict::new_bound(py);
-        let keys = match build_can_keys(inner) {
-            Some(k) => k,
-            None => {
-                result.set_item("concept_count", 0_usize)?;
-                result.set_item("coupling_count", 0_usize)?;
-                result.set_item("energy", 0.0_f32)?;
-                result.set_item("coverage", 0_usize)?;
-                result.set_item("frustration", 0.0_f32)?;
-                result.set_item("marginal", std::collections::HashMap::<u32, f32>::new())?;
-                return Ok(result);
-            }
-        };
-        let report = crate::can_ops::audit_basin(&inner.graph, mt.to_node(), &keys);
-        result.set_item("concept_count", report.concept_count)?;
-        result.set_item("coupling_count", report.coupling_count)?;
-        result.set_item("energy", report.energy)?;
-        result.set_item("coverage", report.coverage)?;
-        result.set_item("frustration", report.frustration)?;
-        let marginal: std::collections::HashMap<u32, f32> =
-            report.marginal.into_iter().map(|(n, v)| (n.0, v)).collect();
-        result.set_item("marginal", marginal)?;
-        Ok(result)
     }
 
     // --- Term evaluation -----------------------------------------------

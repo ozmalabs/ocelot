@@ -77,27 +77,11 @@ def _build_discrete_mt(s, mode="3state", temperature=2.0):
     return mt, concepts
 
 
-def _build_continuous_mt(s, temperature=2.0):
-    """The pre-existing continuous-mode network shape
-    (test_drive_curiosity.py / test_insight_seeking.py's own convention —
-    NO discrete_mode attr), used to prove the gated migration leaves this
-    branch byte-for-byte unchanged."""
-    mt = s.add_node("Microtheory", {"temperature": temperature})
-    specs = [
-        ("hub", 0.05, 0.3),   # ambivalent
-        ("n1", 0.9, 0.1),
-        ("n2", -0.85, -0.2),
-    ]
-    concepts = {}
-    for name, state, h in specs:
-        c = s.add_node("Concept", {"name": name, "state": state, "external_field": h})
-        concepts[name] = c
-        s.add_edge(mt, "has_concept", c, {})
-    s.add_edge(concepts["hub"], "causal_influence", concepts["n1"], {"weight": 0.6})
-    s.add_edge(concepts["n1"], "causal_influence", concepts["hub"], {"weight": 0.6})
-    s.add_edge(concepts["hub"], "causal_influence", concepts["n2"], {"weight": -0.5})
-    s.add_edge(concepts["n2"], "causal_influence", concepts["hub"], {"weight": -0.5})
-    return mt, concepts
+# PHASE A (native-backend cutover): _build_continuous_mt was REMOVED. It
+# built a no-discrete_mode Mt used ONLY by the three continuous-branch
+# byte-identity tests that were deleted below (the continuous engine they
+# pinned no longer exists). All surviving tests build native discrete Mts
+# via _build_discrete_mt.
 
 
 def _snapshot(s, nodes):
@@ -142,47 +126,13 @@ def test_probe_via_what_if_native_branch_never_mutates_graph():
     assert after == before, "native probe_via_what_if must not mutate the graph"
 
 
-def test_probe_via_what_if_continuous_branch_is_byte_identical_to_pre_migration():
-    """A Mt with NO discrete_mode attr must reach the ORIGINAL
-    mt_mean_field_marginal/mt_mean_field_with_h_override path, unchanged
-    — the real before/after: compute the two continuous calls directly by
-    hand (the pre-migration formula) and confirm the migrated function's
-    output matches to the last float."""
-    s = _fresh_substrate()
-    mt, concepts = _build_continuous_mt(s)
-    hub = concepts["hub"]
-    h_delta = 0.4
-
-    current_h = float(s.node(hub)["attrs"]["external_field"])
-    new_h = current_h + h_delta
-    current_marginal = s.mt_mean_field_marginal(mt)
-    predicted_marginal = s.mt_mean_field_with_h_override(mt, hub, new_h)
-    total_change = 0.0
-    max_node_change = 0.0
-    flipped_count = 0
-    for nid, predicted_sig in predicted_marginal.items():
-        current_sig = float(current_marginal.get(nid, 0.0))
-        change = abs(predicted_sig - current_sig)
-        total_change += change
-        if change > max_node_change:
-            max_node_change = change
-        if change > 0.5:
-            flipped_count += 1
-    expected = {
-        "concept_id": hub.value,
-        "h_delta": h_delta,
-        "current_sigma": float(current_marginal.get(hub.value, 0.0)),
-        "info_gain_total_change": float(total_change),
-        "info_gain_max_node_change": float(max_node_change),
-        "predicted_flipped_count": int(flipped_count),
-    }
-
-    result = probe_via_what_if(s, mt, hub, h_delta=h_delta)
-    assert result == expected, (
-        "continuous-mode probe_via_what_if must be byte-identical to the "
-        f"pre-migration formula: got {result}, expected {expected}"
-    )
-    print(f"continuous probe_via_what_if (pre-migration-equivalent): {result}")
+# PHASE A (native-backend cutover): test_probe_via_what_if_continuous_branch_
+# is_byte_identical_to_pre_migration was REMOVED. It pinned the removed
+# continuous branch (mt_mean_field_marginal/mt_mean_field_with_h_override)
+# byte-for-byte on a no-discrete_mode Mt. That branch no longer exists;
+# probe_via_what_if is native-only. The native path is already covered by
+# test_probe_via_what_if_native_branch_matches_can_counterfactual_directly
+# above. No surviving behaviour is left uncovered.
 
 
 def test_run_curiosity_still_works_end_to_end_on_a_native_mt():
@@ -237,31 +187,12 @@ def test_predict_perturbation_impact_native_branch_never_mutates_graph():
     assert after == before, "native predict_perturbation_impact must not mutate the graph"
 
 
-def test_predict_perturbation_impact_continuous_branch_byte_identical_to_pre_migration():
-    s = _fresh_substrate()
-    mt, concepts = _build_continuous_mt(s)
-    hub = concepts["hub"]
-    new_h = 1.2
-
-    current_marginal = s.mt_mean_field_marginal(mt)
-    current_audit = s.mt_audit_basin(mt)
-    predicted_marginal = s.mt_mean_field_with_h_override(mt, hub, new_h)
-    predicted_energy_uncorrected = s.mt_energy(mt, predicted_marginal)
-    old_h = float(s.node(hub)["attrs"].get("external_field", 0.0))
-    sigma_at_concept = float(predicted_marginal.get(hub.value, 0.0))
-    energy_correction = sigma_at_concept * (old_h - new_h)
-    expected_energy = predicted_energy_uncorrected + energy_correction
-    expected_delta_E = expected_energy - current_audit["energy"]
-    expected_frustration = s.mt_frustration_given_state(mt, predicted_marginal)
-    expected_delta_F = expected_frustration - current_audit["frustration"]
-
-    result = predict_perturbation_impact(s, mt, hub, new_h)
-    assert result["predicted_energy"] == pytest.approx(expected_energy)
-    assert result["predicted_delta_E"] == pytest.approx(expected_delta_E)
-    assert result["predicted_frustration"] == pytest.approx(expected_frustration)
-    assert result["predicted_delta_F"] == pytest.approx(expected_delta_F)
-    print(f"continuous predict_perturbation_impact (pre-migration-equivalent): "
-          f"delta_E={result['predicted_delta_E']:.4f} delta_F={result['predicted_delta_F']:.4f}")
+# PHASE A (native-backend cutover): test_predict_perturbation_impact_
+# continuous_branch_byte_identical_to_pre_migration was REMOVED. It pinned
+# the removed continuous branch (mt_mean_field_marginal /
+# mt_mean_field_with_h_override / mt_audit_basin + the hand-written
+# field-correction hack) byte-for-byte. The native path is covered by
+# test_predict_perturbation_impact_native_branch_needs_no_correction_hack.
 
 
 # ---------------------------------------------------------------------
@@ -269,10 +200,11 @@ def test_predict_perturbation_impact_continuous_branch_byte_identical_to_pre_mig
 # ---------------------------------------------------------------------
 
 def test_seek_insights_skips_continuous_relax_on_a_native_mt():
-    """A discrete_mode Mt's `state` must NOT be touched by
-    mt_relax_to_marginal — deliberately built off-equilibrium (n2 has a
-    strongly opposing field vs. its coupling) so a continuous relax WOULD
-    change it if the guard were missing."""
+    """A discrete_mode Mt's `state` must NOT be touched by seek_insights.
+    PHASE A (native-backend cutover): seek_insights is native-only and no
+    longer relaxes state at all (the continuous mt_relax_to_marginal
+    fallback was removed); this pins that a native Mt's committed state
+    survives a seek_insights call untouched."""
     s = _fresh_substrate()
     mt, concepts = _build_discrete_mt(s, mode="3state")
     before_states = {name: float(s.node(c)["attrs"]["state"])
@@ -283,29 +215,18 @@ def test_seek_insights_skips_continuous_relax_on_a_native_mt():
     after_states = {name: float(s.node(c)["attrs"]["state"])
                     for name, c in concepts.items()}
     assert after_states == before_states, (
-        "seek_insights must NOT relax a discrete_mode Mt's state via the "
-        f"continuous mechanism: before={before_states} after={after_states}"
+        "seek_insights must NOT relax a discrete_mode Mt's state: "
+        f"before={before_states} after={after_states}"
     )
     print(f"native seek_insights: state preserved exactly, {after_states}")
 
 
-def test_seek_insights_still_relaxes_a_continuous_mt():
-    """The pre-existing behaviour for a continuous Mt must be unchanged:
-    mt_relax_to_marginal DOES run, so state moves toward equilibrium."""
-    s = _fresh_substrate()
-    mt, concepts = _build_continuous_mt(s)
-    hub = concepts["hub"]
-    before = float(s.node(hub)["attrs"]["state"])
-
-    seek_insights(s, mt, top_k_hot=3)
-
-    after = float(s.node(hub)["attrs"]["state"])
-    assert after != before, (
-        "continuous-mode seek_insights must still relax state toward "
-        f"equilibrium -- before={before} after={after} (no change means "
-        "the relax call was lost)"
-    )
-    print(f"continuous seek_insights: state moved {before:.4f} -> {after:.4f} (relax fired)")
+# PHASE A (native-backend cutover): test_seek_insights_still_relaxes_a_
+# continuous_mt was REMOVED. It asserted the removed continuous relax path
+# (mt_relax_to_marginal) still fires for a no-discrete_mode Mt. seek_insights
+# is now native-only and deliberately does NOT relax state — the inverse
+# behaviour, already asserted by test_seek_insights_skips_continuous_relax_
+# on_a_native_mt above.
 
 
 # ---------------------------------------------------------------------

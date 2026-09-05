@@ -8,12 +8,24 @@ Behaviour:
     consecutive steps → fire RedundancyEvent linking the pair.
   · Distinct or unrelated Mts → no event.
   · Insufficient shared concepts → suppressed even if similar.
-"""
+
+PHASE A (native-backend cutover): redundancy detection now reads each
+Mt's COMMITTED discrete `state` (via can_native_orchestration.
+native_pairwise_similarity) instead of running two continuous mean-field
+relaxations off `external_field`. The removed Ising engine used to derive
+a marginal σ from `external_field`+couplings on the fly; the native
+discrete-async mechanism instead settles `state` directly (and for a
+seedless test substrate `state` is simply whatever was committed). So
+these tests now set `state` on the shared concepts to the committed
+discrete marginal the detector consumes — the SAME redundancy feature,
+re-pointed at the native path. The direct-Rust-op tests below are
+re-pointed at native_pairwise_similarity for the same reason."""
 from __future__ import annotations
 
 import pytest
 from substrate_rs import _native
 
+from domains.can_native_orchestration import native_pairwise_similarity
 from domains.redundancy_detection import (
     REDUNDANCY_MIN_SHARED,
     REDUNDANCY_SIMILARITY_THRESHOLD,
@@ -49,58 +61,59 @@ def _fresh_substrate():
     return s
 
 
-# --- mt_pairwise_similarity Rust op direct -------------------------------
+# --- native_pairwise_similarity direct (was mt_pairwise_similarity) ------
 
 def test_pairwise_similarity_identical_marginals():
-    """Two Mts sharing all concepts with the same couplings should
-    converge to identical marginals → similarity ≈ 1.0."""
+    """Two Mts sharing all concepts at the SAME committed σ → similarity
+    ≈ 1.0. (Was: two Mts that relax to identical marginals; the removed
+    Ising engine derived σ from external_field. Now σ is committed
+    directly, the discrete-async mechanism's own equilibrium.)"""
     s = _fresh_substrate()
-    a = s.add_node("Concept", {"external_field": +1.0})
-    b = s.add_node("Concept", {"external_field": +1.0})
-    c = s.add_node("Concept", {"external_field": -1.0})
+    a = s.add_node("Concept", {"external_field": +1.0, "state": +1.0})
+    b = s.add_node("Concept", {"external_field": +1.0, "state": +1.0})
+    c = s.add_node("Concept", {"external_field": -1.0, "state": -1.0})
     mt_a = s.add_node("Microtheory", {"temperature": 2.0})
     mt_b = s.add_node("Microtheory", {"temperature": 2.0})
     for n in (a, b, c):
         s.add_edge(mt_a, "has_concept", n, {})
         s.add_edge(mt_b, "has_concept", n, {})
-    # Same couplings on both Mts.
+    # Same couplings on both Mts (kept for parity; native similarity
+    # reads committed state, not couplings).
     s.add_edge(a, "causal_influence", b, {"weight": 1.0})
     s.add_edge(b, "causal_influence", c, {"weight": -0.5})
-    result = s.mt_pairwise_similarity(mt_a, mt_b)
+    result = native_pairwise_similarity(s, mt_a, mt_b)
     assert result["shared_count"] == 3
     assert result["similarity"] > 0.99
 
 
 def test_pairwise_similarity_opposite_marginals():
-    """Two Mts driving the same nodes to OPPOSITE σ should have
-    similarity → -1.0."""
+    """Two Mts sharing nodes at the SAME committed σ → similarity high
+    (both Mts see the same committed state)."""
     s = _fresh_substrate()
-    a = s.add_node("Concept", {})
-    b = s.add_node("Concept", {})
+    a = s.add_node("Concept", {"state": +1.0})
+    b = s.add_node("Concept", {"state": +1.0})
     mt_a = s.add_node("Microtheory", {"temperature": 2.0})
     mt_b = s.add_node("Microtheory", {"temperature": 2.0})
     s.add_edge(mt_a, "has_concept", a, {})
     s.add_edge(mt_a, "has_concept", b, {})
     s.add_edge(mt_b, "has_concept", a, {})
     s.add_edge(mt_b, "has_concept", b, {})
-    # mt_a's only constraint: drive a + b positive (no couplings, just
-    # marginal will reflect h via state attrs).
     s.set_attr(a, "external_field", +1.0)
     s.set_attr(b, "external_field", +1.0)
-    sim_pos = s.mt_pairwise_similarity(mt_a, mt_b)
-    # Both Mts have same view (same h) — similarity high.
+    sim_pos = native_pairwise_similarity(s, mt_a, mt_b)
+    # Both Mts see the same committed state — similarity high.
     assert sim_pos["similarity"] > 0.9
 
 
 def test_pairwise_similarity_no_shared_concepts():
     s = _fresh_substrate()
-    a = s.add_node("Concept", {"external_field": +1.0})
-    b = s.add_node("Concept", {"external_field": +1.0})
+    a = s.add_node("Concept", {"external_field": +1.0, "state": +1.0})
+    b = s.add_node("Concept", {"external_field": +1.0, "state": +1.0})
     mt_a = s.add_node("Microtheory", {"temperature": 2.0})
     mt_b = s.add_node("Microtheory", {"temperature": 2.0})
     s.add_edge(mt_a, "has_concept", a, {})
     s.add_edge(mt_b, "has_concept", b, {})
-    result = s.mt_pairwise_similarity(mt_a, mt_b)
+    result = native_pairwise_similarity(s, mt_a, mt_b)
     assert result["shared_count"] == 0
     assert result["similarity"] == 0.0
 
@@ -108,8 +121,11 @@ def test_pairwise_similarity_no_shared_concepts():
 # --- Detection logic ----------------------------------------------------
 
 def _build_twin_mts(s, n_concepts: int = 4):
-    """Two Mts that share n_concepts concepts with identical
-    structure. They should be flagged redundant after streak."""
+    """Two Mts that share n_concepts concepts with identical structure.
+    They should be flagged redundant after streak. (Native path: the
+    detector compares each Mt's INDEPENDENT would-be σ — derived from
+    `external_field`+couplings+temperature via the discrete-async
+    mechanism, the same inputs the removed Ising relaxation used.)"""
     concepts = []
     for i in range(n_concepts):
         c = s.add_node("Concept", {"external_field": +1.0 if i % 2 == 0 else -0.5})

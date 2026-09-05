@@ -258,8 +258,10 @@ def test_singleton_real_shapes_stay_residual_not_forced_or_minted(agent):
     assert a_bridge["key"] not in ("ps_has_statement=yes", "ps_has_targets_mt=yes")
     assert "has_direction=can_to_deduction" in a_bridge["key"]
 
-    # a real, ALREADY-DECIDED DirectionalCorrespondence via find_analogies
-    # (unmodified) -- the SAME construction
+    # a real, ALREADY-DECIDED DirectionalCorrespondence via _legacy_find_analogies
+    # (the retained Python faculty; the SEARCH is now graph
+    # seeds/analogy_search.json, but this correspondence-persistence path is
+    # unchanged) -- the SAME construction
     # test_solve_analogical_promote_resolves_via_qd_bind_resolver uses.
     src = sub.add_node("Microtheory", {"name": "ps_rung3_src"})
     tgt = sub.add_node("Microtheory", {"name": "ps_rung3_tgt"})
@@ -270,7 +272,7 @@ def test_singleton_real_shapes_stay_residual_not_forced_or_minted(agent):
     sparse = sub.add_node("Concept", {"name": "ps_rung3_sparse", "category": "c",
                                        "definition": "this gate is part of a stage in the machine"})
     sub.add_edge(tgt, "has_concept", sparse)
-    at_mod.find_analogies(sub, "ps_rung3_src", ["ps_rung3_tgt"], order_n=2)
+    at_mod._legacy_find_analogies(sub, "ps_rung3_src", ["ps_rung3_tgt"], order_n=2)
     corr = None
     for c in sub.nodes("DirectionalCorrespondence"):
         pair = set(sub.neighbours(c, "about_a")) | set(sub.neighbours(c, "about_b"))

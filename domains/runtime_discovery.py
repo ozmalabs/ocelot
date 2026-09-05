@@ -426,6 +426,10 @@ def stash_pair_quantities(substrate, min_shared: int = 1) -> int:
         opposite signs with substantial magnitudes)
 
     Returns count of pairs stashed."""
+    from domains.can_native_orchestration import (
+        native_conflicting_nodes,
+        native_pairwise_similarity,
+    )
     mts = list(substrate.nodes("Microtheory"))
     stashed = 0
     for i, mt_a in enumerate(mts):
@@ -444,13 +448,13 @@ def stash_pair_quantities(substrate, min_shared: int = 1) -> int:
                 lower, higher_id = mt_a, b_id
             else:
                 lower, higher_id = mt_b, a_id
-            sim_result = substrate.mt_pairwise_similarity(mt_a, mt_b)
+            sim_result = native_pairwise_similarity(substrate, mt_a, mt_b)
             similarity = float(sim_result["similarity"])
             substrate.set_attr(lower,
                                f"pair_similarity_for_{higher_id}",
                                similarity)
             # Stash conflict count for the same pair.
-            conflicts = substrate.mt_conflicting_nodes(mt_a, mt_b, 0.5)
+            conflicts = native_conflicting_nodes(substrate, mt_a, mt_b, 0.5)
             substrate.set_attr(lower,
                                f"pair_conflict_count_for_{higher_id}",
                                len(conflicts))

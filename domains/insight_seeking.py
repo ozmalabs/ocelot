@@ -49,8 +49,9 @@ def find_hot_nodes(
     """
     concepts = substrate.neighbours(mt, "has_concept")
     rows: list[dict[str, Any]] = []
+    from domains.can_native_orchestration import native_node_local_frustration
     for c in concepts:
-        local_f = substrate.node_local_frustration(mt, c)
+        local_f = native_node_local_frustration(substrate, mt, c)
         if local_f <= min_frustration:
             continue
         attrs = substrate.node(c)["attrs"]
@@ -77,96 +78,37 @@ def predict_perturbation_impact(
     Returns a dict with the predicted marginal + predicted frustration
     + per-node deviation from current state. The graph is NOT modified.
 
-    Gated by Mt.discrete_mode (CAN_FINAL_MIGRATION_PREREG.md §3.3): a
-    native ("2state"/"3state") Mt is predicted via
-    domains/can_counterfactual.py's predict_ripple — a genuine
-    SIMPLIFICATION over the continuous path below, not just a mechanism
-    swap, because predict_ripple's own predicted state already reflects
-    the override consistently at every node (including the probed node),
-    so mt_energy/mt_frustration_given_state (already representation-
-    agnostic, closed-form, non-iterative) can be called on it directly
-    with no field-correction hack. An Mt with no discrete_mode keeps the
-    ORIGINAL continuous path unchanged.
+    PHASE A (native-backend cutover): native-only. The prediction runs via
+    domains/can_counterfactual.py's predict_ripple (the discrete-async
+    non-mutating twin) — the continuous mean-field path
+    (mt_mean_field_marginal/mt_mean_field_with_h_override) is removed. An
+    Mt with no explicit discrete_mode defaults to '3state'. mt_energy /
+    mt_frustration_given_state are representation-agnostic, closed-form
+    scorers over predict_ripple's own predicted state (no field-correction
+    hack needed), and are KEPT.
     """
     discrete_mode = substrate.node(mt)["attrs"].get("discrete_mode")
-    if discrete_mode in ("2state", "3state"):
-        from domains.can_counterfactual import predict_ripple
+    mode = discrete_mode if discrete_mode in ("2state", "3state") else "3state"
+    from domains.can_counterfactual import predict_ripple
 
-        old_h = float(substrate.node(concept)["attrs"].get(
-            "external_field", 0.0))
-        current_marginal = {
-            c.value: float(substrate.node(c)["attrs"].get("state", 0.0))
-            for c in substrate.neighbours(mt, "has_concept")
-        }
-        current_energy = substrate.mt_energy(mt, current_marginal)
-        current_frustration = substrate.mt_frustration_given_state(
-            mt, current_marginal)
-
-        ripple = predict_ripple(substrate, mt, concept, new_h,
-                                mode=discrete_mode)
-        predicted_marginal = ripple["predicted_state"]
-        predicted_energy = substrate.mt_energy(mt, predicted_marginal)
-        delta_E_estimate = predicted_energy - current_energy
-        predicted_frustration = substrate.mt_frustration_given_state(
-            mt, predicted_marginal)
-        delta_F_estimate = predicted_frustration - current_frustration
-
-        flipped: list[dict[str, Any]] = []
-        for nid, predicted_sig in predicted_marginal.items():
-            current_sig = float(current_marginal.get(nid, 0.0))
-            if abs(predicted_sig - current_sig) > 0.5:
-                flipped.append({
-                    "node": int(nid),
-                    "before": current_sig,
-                    "after": float(predicted_sig),
-                    "delta": float(predicted_sig - current_sig),
-                })
-
-        return {
-            "concept_id": concept.value,
-            "new_h": new_h,
-            "current_h": old_h,
-            "predicted_marginal": predicted_marginal,
-            "predicted_energy": predicted_energy,
-            "predicted_delta_E": delta_E_estimate,
-            "predicted_frustration": predicted_frustration,
-            "predicted_delta_F": delta_F_estimate,
-            "flipped_nodes": flipped,
-        }
-
-    # Read current state for comparison.
-    current_marginal = substrate.mt_mean_field_marginal(mt)
-    current_audit = substrate.mt_audit_basin(mt)
-
-    # Predicted marginal under the hypothetical h.
-    predicted_marginal = substrate.mt_mean_field_with_h_override(
-        mt, concept, new_h)
-
-    # Predicted energy via mt_energy on the predicted marginal, plus a
-    # correction for the field term: mt_energy reads h from the graph
-    # attrs, so the field contribution at `concept` is computed with
-    # the OLD external_field. We applied the override to the marginal
-    # but not to the energy formula's field term. Correct by adding
-    # the field delta:
-    #   E_old_h_term = -old_h * σ
-    #   E_new_h_term = -new_h * σ
-    #   correction = E_new - E_old = (old_h - new_h) * σ
-    # (identity_field unchanged on both sides of the equation.)
-    predicted_energy_uncorrected = substrate.mt_energy(mt, predicted_marginal)
     old_h = float(substrate.node(concept)["attrs"].get(
         "external_field", 0.0))
-    sigma_at_concept = float(predicted_marginal.get(concept.value, 0.0))
-    energy_correction = sigma_at_concept * (old_h - new_h)
-    predicted_energy = predicted_energy_uncorrected + energy_correction
-    delta_E_estimate = predicted_energy - current_audit["energy"]
+    current_marginal = {
+        c.value: float(substrate.node(c)["attrs"].get("state", 0.0))
+        for c in substrate.neighbours(mt, "has_concept")
+    }
+    current_energy = substrate.mt_energy(mt, current_marginal)
+    current_frustration = substrate.mt_frustration_given_state(
+        mt, current_marginal)
 
-    # Predicted frustration — what the insight detector actually uses.
-    # Frustration depends only on couplings + σ; no h-correction needed.
+    ripple = predict_ripple(substrate, mt, concept, new_h, mode=mode)
+    predicted_marginal = ripple["predicted_state"]
+    predicted_energy = substrate.mt_energy(mt, predicted_marginal)
+    delta_E_estimate = predicted_energy - current_energy
     predicted_frustration = substrate.mt_frustration_given_state(
         mt, predicted_marginal)
-    delta_F_estimate = predicted_frustration - current_audit["frustration"]
+    delta_F_estimate = predicted_frustration - current_frustration
 
-    # Per-node flip detection.
     flipped: list[dict[str, Any]] = []
     for nid, predicted_sig in predicted_marginal.items():
         current_sig = float(current_marginal.get(nid, 0.0))
@@ -210,18 +152,13 @@ def seek_insights(
     Empty list if the network is not substantially frustrated (no
     hot nodes above threshold).
     """
-    # Ensure state attrs reflect equilibrium — but ONLY via the continuous
-    # mechanism. A discrete_mode Mt's `state` is kept current by whatever
-    # externally drives run_rules() (CAN_FINAL_MIGRATION_PREREG.md §1); an
-    # unconditional mt_relax_to_marginal call would CONTAMINATE it with
-    # the continuous tanh relaxation. node_local_frustration (used by
-    # find_hot_nodes below) and predict_perturbation_impact's own native
-    # branch both already assume `state` reflects the correct mechanism's
-    # own equilibrium — this guard is what keeps that assumption honest.
-    discrete_mode = substrate.node(mt)["attrs"].get("discrete_mode")
-    if discrete_mode not in ("2state", "3state"):
-        substrate.mt_relax_to_marginal(mt)
-
+    # PHASE A (native-backend cutover): no relax call. A discrete_mode Mt's
+    # `state` is already the committed fixed point (kept current by
+    # whatever externally drives run_rules() — CAN_FINAL_MIGRATION_PREREG.md
+    # §1); find_hot_nodes (native_node_local_frustration) and
+    # predict_perturbation_impact both read that committed state directly.
+    # The old continuous `mt_relax_to_marginal` fallback (which would have
+    # CONTAMINATED `state` with tanh relaxation) is removed with the engine.
     hot = find_hot_nodes(substrate, mt, top_k=top_k_hot)
     if not hot:
         return []

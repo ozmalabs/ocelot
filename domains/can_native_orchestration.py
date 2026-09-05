@@ -50,6 +50,8 @@ from typing import Any
 
 from substrate_rs import Term, Var, Lit, Attr
 
+from domains.can_counterfactual import ATANH_HALF
+
 # How many scoped-fixpoint steps one orchestration call is allowed. Mirrors
 # the existing native convergence tests' own cap
 # (test_can_native_reimplementation.py uses 3000 for an N=8 complete graph);
@@ -97,6 +99,236 @@ def native_audit_basin(substrate, mt) -> dict[str, Any]:
         "coverage": coverage,
         "frustration": frustration,
     }
+
+
+def native_would_be_state(substrate, mt) -> dict[int, float]:
+    """Each Mt's INDEPENDENT would-be σ map — the native analog of the
+    removed `mt_mean_field_marginal(mt)` restricted to this Mt's own
+    Hamiltonian.
+
+    WHY NOT committed `state`: `state` is a SINGLE per-Concept attr shared
+    across every Mt that owns the concept (`can_native_update_3state`/
+    `_2state` write one `c.state`, scoped to an Mt only via `temperature`/
+    `discrete_mode` guards — confirmed by direct read of
+    `seeds/can_native_reimplementation.json`). So two Mts sharing a Concept
+    read the IDENTICAL committed value, and a cross-Mt "do they disagree on
+    the shared node?" question is structurally unanswerable from committed
+    state alone. The REMOVED continuous ops
+    (`mt_conflicting_nodes`/`mt_pairwise_similarity`) never got their per-Mt
+    divergence from stored per-Mt state either — they got it by
+    INDEPENDENTLY RELAXING each Mt's OWN RESTRICTED coupling network + own
+    temperature (`can_ops.rs::mt_mean_field_marginal` built couplings via
+    `build_couplings(g, &concepts, keys)` over ONLY that Mt's members, then
+    `mt_conflicting_nodes` compared the two independent marginals). The
+    divergence lived in the COMPUTATION, not the graph.
+
+    This reconstructs that per-Mt autonomous commitment natively and
+    WITHOUT mutation: a bounded, in-memory, Gauss-Seidel sweep of the SAME
+    discrete-async threshold `can_native_update_3state`/`_2state` apply
+    (local field = external_field + identity_field + Σ w·σ_neighbour,
+    3-state scaled by `temperature` and thresholded at ±atanh(0.5), 2-state
+    unscaled at 0), but with the coupling sum RESTRICTED to the Mt's own
+    members — exactly the `build_couplings`-over-`mt_concepts` restriction
+    the removed op used. Crucially this is NOT `predict_ripple`: that
+    predictor sums over ALL of a node's causal_influence edges (the native
+    mechanism is global-coupling by design), which would let a shared
+    node's coupling to ANOTHER Mt's private member bleed the other Mt's
+    committed state into this Mt's would-be — precisely the cross-Mt
+    contamination the old per-Mt `build_couplings` restriction excluded.
+    Weights are read via the `can_native_bp.edge_weight` Term idiom every
+    native CAN reader uses; nothing is written to any node/edge. Empty map
+    for an Mt with no concepts."""
+    from domains.can_native_bp import edge_weight
+
+    concepts = list(substrate.neighbours(mt, "has_concept"))
+    if not concepts:
+        return {}
+    member_ids = {(c.value if hasattr(c, "value") else int(c)): c
+                  for c in concepts}
+    mode = substrate.node(mt)["attrs"].get("discrete_mode")
+    if mode not in ("2state", "3state"):
+        mode = "3state"
+    temperature = float(substrate.node(mt)["attrs"].get("temperature", 1.0))
+
+    # Per-member fixed inputs + the coupling table RESTRICTED to co-members
+    # (both edge directions collapsed to one undirected coupling per pair,
+    # matching the removed build_couplings symmetric read).
+    fields: dict[int, float] = {}
+    couplings: dict[int, list[tuple[int, float]]] = {}
+    for cid, c in member_ids.items():
+        attrs = substrate.node(c)["attrs"]
+        fields[cid] = (float(attrs.get("external_field", 0.0))
+                       + float(attrs.get("identity_field", 0.0)))
+        neigh: list[tuple[int, float]] = []
+        seen: set[int] = set()
+        out_ids = {(n.value if hasattr(n, "value") else int(n))
+                   for n in substrate.neighbours(c, "causal_influence")}
+        for oid, other in member_ids.items():
+            if oid == cid or oid in seen:
+                continue
+            forward = oid in out_ids
+            backward = cid in {
+                (n.value if hasattr(n, "value") else int(n))
+                for n in substrate.neighbours(other, "causal_influence")
+            }
+            if not (forward or backward):
+                continue
+            seen.add(oid)
+            w = (edge_weight(substrate, c, other) if forward
+                 else edge_weight(substrate, other, c))
+            neigh.append((oid, w))
+        couplings[cid] = neigh
+
+    def _threshold(local: float) -> float:
+        if mode == "2state":
+            return 1.0 if local >= 0.0 else -1.0
+        scaled = local * temperature
+        if scaled > ATANH_HALF:
+            return 1.0
+        if scaled < -ATANH_HALF:
+            return -1.0
+        return 0.0
+
+    # Seed from committed state, then relax over the RESTRICTED subnetwork.
+    sigma: dict[int, float] = {
+        cid: float(substrate.node(c)["attrs"].get("state", 0.0))
+        for cid, c in member_ids.items()
+    }
+    for _ in range(len(member_ids) + 12):
+        changed = False
+        for cid in member_ids:
+            local = fields[cid]
+            for (oid, w) in couplings[cid]:
+                local += w * sigma[oid]
+            nv = _threshold(local)
+            if sigma[cid] != nv:
+                changed = True
+            sigma[cid] = nv
+        if not changed:
+            break
+    return sigma
+
+
+def native_pairwise_similarity(substrate, mt_a, mt_b) -> dict[str, Any]:
+    """Native analog of `substrate.mt_pairwise_similarity(mt_a, mt_b)` —
+    same `{"similarity": float, "shared_count": int}` shape. Each Mt's σ
+    vector is its INDEPENDENT would-be equilibrium under its own
+    Hamiltonian (`native_would_be_state`, a non-mutating per-Mt,
+    Mt-restricted-coupling discrete-async relaxation), NOT the shared
+    committed `state` — see `native_would_be_state`'s docstring for why
+    committed state is degenerate for a cross-Mt comparison.
+
+    Cosine similarity over the σ vectors restricted to the concepts the two
+    Mts SHARE — byte-for-byte the same quantity `can_ops.rs::
+    mt_pairwise_similarity` returns (dot / (‖a‖·‖b‖) over shared ids), only
+    fed each Mt's discrete-async would-be marginal instead of a continuous
+    mean-field one. similarity ∈ [-1, +1]; 0.0 if no shared concepts or
+    either norm is degenerate — matching the Rust op's own guard."""
+    sa = native_would_be_state(substrate, mt_a)
+    sb = native_would_be_state(substrate, mt_b)
+    dot = 0.0
+    norm_a_sq = 0.0
+    norm_b_sq = 0.0
+    shared_count = 0
+    for cid, va in sa.items():
+        if cid in sb:
+            vb = sb[cid]
+            dot += va * vb
+            norm_a_sq += va * va
+            norm_b_sq += vb * vb
+            shared_count += 1
+    if shared_count == 0 or norm_a_sq < 1e-10 or norm_b_sq < 1e-10:
+        return {"similarity": 0.0, "shared_count": shared_count}
+    similarity = dot / ((norm_a_sq ** 0.5) * (norm_b_sq ** 0.5))
+    return {"similarity": similarity, "shared_count": shared_count}
+
+
+def native_conflicting_nodes(
+    substrate, mt_a, mt_b, magnitude_threshold: float = 0.5,
+) -> list[dict[str, float]]:
+    """Native analog of `substrate.mt_conflicting_nodes(mt_a, mt_b, thr)`
+    — same list-of-`{"node_id", "sigma_a", "sigma_b"}` shape. Each Mt's σ
+    is its INDEPENDENT would-be equilibrium under its own Hamiltonian
+    (`native_would_be_state`), NOT the shared committed `state` — the only
+    way a shared Concept can carry OPPOSITE σ for the two Mts (committed
+    `state` is single-valued per node, so reading it would make every
+    shared node agree by construction; see `native_would_be_state`).
+
+    A conflicted node is a SHARED Concept where mt_a's would-be σ and
+    mt_b's would-be σ have opposite signs AND both magnitudes exceed
+    `magnitude_threshold` — the exact predicate `can_ops.rs::
+    mt_conflicting_nodes` uses (`sigma_a*sigma_b < 0 and |sigma_a| > thr
+    and |sigma_b| > thr`), now over discrete-async would-be marginals."""
+    sa = native_would_be_state(substrate, mt_a)
+    sb = native_would_be_state(substrate, mt_b)
+    conflicts: list[dict[str, float]] = []
+    for cid, va in sa.items():
+        if cid not in sb:
+            continue
+        vb = sb[cid]
+        if va * vb < 0.0 and abs(va) > magnitude_threshold \
+                and abs(vb) > magnitude_threshold:
+            conflicts.append({
+                "node_id": float(cid),
+                "sigma_a": float(va),
+                "sigma_b": float(vb),
+            })
+    return conflicts
+
+
+def native_node_local_frustration(substrate, mt, concept) -> float:
+    """Native analog of `substrate.node_local_frustration(mt, concept)` —
+    the per-Concept sum of (actual - ideal) coupling contributions under
+    the concept's own committed discrete `state`, computed by reading
+    `state`/`weight` off the graph directly. `can_ops.rs::
+    node_local_frustration` already read committed `state` with NO
+    relaxation inside it (it assumed the caller had relaxed first) — so
+    this is a faithful re-expression of the SAME formula against the
+    discrete mechanism's own equilibrium.
+
+    For each causal_influence coupling (i, j) with weight w:
+        contribution = (-w·σ_i·σ_j) - (-|w|)
+    i.e. how far this coupling sits from its most-satisfied value -|w|.
+    Each undirected coupling among the Mt's concepts is counted once
+    (walk both directions, dedup by neighbour) — matching the Rust op's
+    own `seen`-set both-direction walk. Weights are read via the same
+    `can_native_bp.edge_weight` Term idiom every other native CAN reader
+    uses; `state` via the direct attr read `native_marginal_from_state`
+    established."""
+    from domains.can_native_bp import edge_weight
+
+    concept_id = concept.value if hasattr(concept, "value") else int(concept)
+    concepts = list(substrate.neighbours(mt, "has_concept"))
+    by_id = {(c.value if hasattr(c, "value") else int(c)): c for c in concepts}
+    if concept_id not in by_id:
+        return 0.0
+    si = float(substrate.node(concept)["attrs"].get("state", 0.0))
+    # Out-neighbours (concept -> other) and in-neighbours (other -> concept)
+    # restricted to the Mt's own concepts.
+    out_ids = {(n.value if hasattr(n, "value") else int(n))
+               for n in substrate.neighbours(concept, "causal_influence")}
+    local = 0.0
+    seen: set[int] = set()
+    for oid, other in by_id.items():
+        if oid == concept_id or oid in seen:
+            continue
+        # Is there a coupling in either direction between concept and other?
+        forward = oid in out_ids
+        backward = concept_id in {
+            (n.value if hasattr(n, "value") else int(n))
+            for n in substrate.neighbours(other, "causal_influence")
+        }
+        if not (forward or backward):
+            continue
+        seen.add(oid)
+        sj = float(substrate.node(other)["attrs"].get("state", 0.0))
+        # Read the actual edge weight from whichever direction exists.
+        if forward:
+            w = edge_weight(substrate, concept, other)
+        else:
+            w = edge_weight(substrate, other, concept)
+        local += (-w * si * sj) - (-abs(w))
+    return local
 
 
 def native_distance_to_target(substrate, mt) -> dict[str, Any]:
@@ -266,8 +498,12 @@ __all__ = [
     "DEFAULT_SCOPED_MAX_STEPS",
     "DEFAULT_MULTI_START_K",
     "native_marginal_from_state",
+    "native_would_be_state",
     "native_audit_basin",
     "native_distance_to_target",
+    "native_pairwise_similarity",
+    "native_conflicting_nodes",
+    "native_node_local_frustration",
     "scoped_settle",
     "install_multi_start_productions",
     "multi_start_settle_and_pick_best",

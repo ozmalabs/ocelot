@@ -14,11 +14,23 @@ Tests verify both directions:
 """
 from __future__ import annotations
 
+import json
+
 import pytest
 from substrate_rs import _native
+from substrate.seed_loader import engine_rules_only
 
+from domains.can_native_orchestration import (
+    native_marginal_from_state,
+    scoped_settle,
+)
 from domains.insight_seeking import seek_insights
 from domains.self_improvement_loop import ADAPTIVE, self_improvement_step
+
+_CAN_SEED_PATHS = (
+    "seeds/can_native_reimplementation.json",
+    "seeds/can_decay_identity.json",
+)
 
 
 _NODE_TYPES = ("Microtheory", "Concept", "InsightEvent")
@@ -41,55 +53,74 @@ def _fresh_substrate():
     return s
 
 
+def _native_substrate():
+    s = _fresh_substrate()
+    for path in _CAN_SEED_PATHS:
+        s.load_seed_manifest(engine_rules_only(json.load(open(path))))
+    return s
+
+
 # --- Identity field shapes the equilibrium --------------------------------
+# PHASE A (native-backend cutover): identity_field is part of the SURVIVING
+# native local field (can_native_update_3state/_2state read
+# external_field + identity_field + Σ w·σ). These tests are re-pointed from
+# the removed continuous mt_mean_field_marginal to the native discrete
+# settle; graded tanh magnitudes become discrete signs (±1/0).
 
 def test_identity_field_pulls_sigma_when_external_is_zero():
-    """A node with no external evidence but +identity_field commits
-    to +σ."""
-    s = _fresh_substrate()
-    mt = s.add_node("Microtheory", {"temperature": 2.0})
-    n = s.add_node("Concept", {"external_field": 0.0,
-                                "identity_field": 1.0})
+    """A node with no external evidence but +identity_field commits to +σ."""
+    s = _native_substrate()
+    mt = s.add_node("Microtheory", {"temperature": 2.0,
+                                    "discrete_mode": "3state", "can_tick": 0})
+    n = s.add_node("Concept", {"external_field": 0.0, "state": 0.0,
+                               "identity_field": 1.0})
     s.add_edge(mt, "has_concept", n, {})
-    marg = s.mt_mean_field_marginal(mt)
-    # σ = tanh(β·h_eff) = tanh(2·1) ≈ 0.964
-    assert marg[n.value] > 0.9
+    scoped_settle(s, mt)
+    marg = native_marginal_from_state(s, mt)
+    # h_eff = external + identity = +1 → settles +1.
+    assert marg[n.value] > 0
 
 
 def test_identity_field_resists_weak_external_perturbation():
     """Identity +2; external -0.5. h_eff = +1.5. σ still positive."""
-    s = _fresh_substrate()
-    mt = s.add_node("Microtheory", {"temperature": 2.0})
-    n = s.add_node("Concept", {"external_field": -0.5,
-                                "identity_field": 2.0})
+    s = _native_substrate()
+    mt = s.add_node("Microtheory", {"temperature": 2.0,
+                                    "discrete_mode": "3state", "can_tick": 0})
+    n = s.add_node("Concept", {"external_field": -0.5, "state": 0.0,
+                               "identity_field": 2.0})
     s.add_edge(mt, "has_concept", n, {})
-    marg = s.mt_mean_field_marginal(mt)
-    assert marg[n.value] > 0.8  # holds identity
+    scoped_settle(s, mt)
+    marg = native_marginal_from_state(s, mt)
+    assert marg[n.value] > 0  # holds identity
 
 
 def test_strong_enough_external_overcomes_identity():
     """Identity +2; external -3.5. h_eff = -1.5. σ goes negative.
     Nothing is frozen — strong evidence flips identity."""
-    s = _fresh_substrate()
-    mt = s.add_node("Microtheory", {"temperature": 2.0})
-    n = s.add_node("Concept", {"external_field": -3.5,
-                                "identity_field": 2.0})
+    s = _native_substrate()
+    mt = s.add_node("Microtheory", {"temperature": 2.0,
+                                    "discrete_mode": "3state", "can_tick": 0})
+    n = s.add_node("Concept", {"external_field": -3.5, "state": 0.0,
+                               "identity_field": 2.0})
     s.add_edge(mt, "has_concept", n, {})
-    marg = s.mt_mean_field_marginal(mt)
-    assert marg[n.value] < -0.8
+    scoped_settle(s, mt)
+    marg = native_marginal_from_state(s, mt)
+    assert marg[n.value] < 0
 
 
 def test_zero_identity_is_backwards_compatible():
-    """Default identity_field=0 → behavior identical to pre-identity
-    code."""
-    s = _fresh_substrate()
-    mt = s.add_node("Microtheory", {"temperature": 2.0})
-    n = s.add_node("Concept", {"external_field": 0.5})
-    # identity_field defaults to 0.
+    """Default identity_field=0 → committed state driven by external
+    field alone (native default)."""
+    s = _native_substrate()
+    mt = s.add_node("Microtheory", {"temperature": 2.0,
+                                    "discrete_mode": "3state", "can_tick": 0})
+    n = s.add_node("Concept", {"external_field": 0.5, "state": 0.0,
+                               "identity_field": 0.0})
     s.add_edge(mt, "has_concept", n, {})
-    marg = s.mt_mean_field_marginal(mt)
-    # σ = tanh(2 * 0.5) ≈ 0.762
-    assert abs(marg[n.value] - 0.762) < 0.01
+    scoped_settle(s, mt)
+    marg = native_marginal_from_state(s, mt)
+    # local = 0.5·temp 2.0 = 1.0 > atanh(0.5) → +1 (was tanh(1.0)≈0.762).
+    assert marg[n.value] > 0
 
 
 # --- Energy reflects identity cost ----------------------------------------
@@ -222,41 +253,16 @@ def test_identity_field_makes_violating_basin_more_frustrated():
 
 # --- Decay doesn't erode identity -----------------------------------------
 
-def test_decay_h_does_not_decay_identity_field():
-    """h_decay should reduce external_field over time, but
-    identity_field persists — that's the whole point of identity."""
-    s = _fresh_substrate()
-    mt = s.add_node("Microtheory", {"name": "m", "temperature": 1.5,
-                                    "update_policy": ADAPTIVE})
-    n = s.add_node("Concept", {"external_field": 1.0,
-                                "identity_field": 1.5})
-    s.add_edge(mt, "has_concept", n, {})
-
-    # Apply heavy decay manually.
-    s.mt_decay_h(mt, decay_rate=0.5)
-    attrs = s.node(n)["attrs"]
-    # external_field halved, identity_field unchanged.
-    assert abs(attrs["external_field"] - 0.5) < 1e-5
-    assert abs(attrs["identity_field"] - 1.5) < 1e-5
-
-
-def test_loop_decay_h_alone_does_not_touch_identity_when_dynamics_off():
-    """With identity dynamics turned off (alpha=0, beta=0), only
-    decay_h runs. identity_field should stay exactly where it was."""
-    s = _fresh_substrate()
-    mt = s.add_node("Microtheory", {"name": "m", "temperature": 1.5,
-                                    "update_policy": ADAPTIVE})
-    n = s.add_node("Concept", {"external_field": 0.5,
-                                "identity_field": 2.0})
-    s.add_edge(mt, "has_concept", n, {})
-
-    for _ in range(50):
-        self_improvement_step(s, h_decay=0.1,
-                              identity_alpha=0.0,
-                              identity_beta=0.0)
-    # identity_field unchanged.
-    assert abs(s.node(n)["attrs"]["identity_field"] - 2.0) < 1e-5
-    # external_field decayed significantly.
-    assert s.node(n)["attrs"]["external_field"] < 0.05
-    # σ STILL committed to + because identity_field carries it.
-    assert s.node(mt)["attrs"][f"previous_sigma_{n.value}"] > 0.8
+# PHASE A (native-backend cutover): test_decay_h_does_not_decay_identity_
+# field and test_loop_decay_h_alone_does_not_touch_identity_when_dynamics_off
+# were REMOVED. Both asserted a continuous-ONLY contract: that the h-decay
+# op, called in ISOLATION, leaves identity_field untouched. In the native
+# engine there is no isolated decay op — maybe_decay_h routes through the
+# shared scoped fixpoint (relax()'s docstring documents this: one scoped
+# settle advances every gated-open rule, including can_native_identity_
+# field_feedback, which legitimately writes identity_field). The surviving
+# feature — that the native external-field decay RULE
+# (can_native_external_field_decay) writes external_field ONLY, never
+# identity_field — is tested at the rule level (in isolation via
+# discrete_mode='static') by tests/test_can_decay_identity.py and
+# tests/test_can_identity_feedback.py. No native behaviour is left uncovered.
