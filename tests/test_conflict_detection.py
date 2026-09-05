@@ -9,6 +9,7 @@ from __future__ import annotations
 import pytest
 from substrate_rs import _native
 
+from domains.can_native_orchestration import native_conflicting_nodes
 from domains.conflict_detection import (
     CONFLICT_MAGNITUDE_THRESHOLD,
     CONFLICT_STREAK_REQUIRED,
@@ -43,7 +44,7 @@ def _fresh_substrate():
     return s
 
 
-# --- mt_conflicting_nodes Rust op ----------------------------------------
+# --- native_conflicting_nodes direct (was mt_conflicting_nodes) ----------
 
 def test_no_conflicts_when_marginals_agree():
     s = _fresh_substrate()
@@ -54,16 +55,19 @@ def test_no_conflicts_when_marginals_agree():
     for n in (a, b):
         s.add_edge(mt_a, "has_concept", n, {})
         s.add_edge(mt_b, "has_concept", n, {})
-    conflicts = s.mt_conflicting_nodes(mt_a, mt_b, 0.5)
+    conflicts = native_conflicting_nodes(s, mt_a, mt_b, 0.5)
     assert conflicts == []
 
 
 def test_conflict_when_each_mt_drives_node_opposite_via_couplings():
-    """Build two Mts that share a node but each Mt's couplings push
-    that node toward opposite signs. mt_a couples shared_node → strongly
-    activated other_a; mt_b couples shared_node → strongly inhibited
-    other_b — neither is exactly the spec but it's the closest we can
-    get given couplings being Mt-shared via edges."""
+    """Build two Mts that share a node but each Mt's couplings push that
+    node toward opposite signs. Each Mt's INDEPENDENT would-be σ
+    (native_conflicting_nodes, via a per-Mt discrete-async relaxation) is
+    what makes the shared node carry opposite σ for the two Mts — the
+    committed global `state` is single-valued, so the divergence must come
+    from each Mt's own autonomous would-be equilibrium (see
+    can_native_orchestration.native_would_be_state). Couplings are added in
+    BOTH directions per the native symmetric-edge convention."""
     s = _fresh_substrate()
     shared = s.add_node("Concept", {})
     helper_a = s.add_node("Concept", {"external_field": +2.0})  # strongly +
@@ -76,16 +80,15 @@ def test_conflict_when_each_mt_drives_node_opposite_via_couplings():
     s.add_edge(mt_b, "has_concept", helper_b, {})
     # mt_a's coupling: helper_a (+) wants shared (+).
     s.add_edge(helper_a, "causal_influence", shared, {"weight": +1.5})
-    # mt_b's coupling: helper_b (−) wants shared (+ also via negative J?).
-    # If J(helper_b, shared) = +1.5 and helper_b is -1, then -J σσ
-    # contribution to shared's local field is +1.5*(-1) = -1.5 → shared
-    # pushed negative. Good.
+    s.add_edge(shared, "causal_influence", helper_a, {"weight": +1.5})
+    # mt_b's coupling: helper_b (−) drives shared negative.
     s.add_edge(helper_b, "causal_influence", shared, {"weight": +1.5})
+    s.add_edge(shared, "causal_influence", helper_b, {"weight": +1.5})
 
-    conflicts = s.mt_conflicting_nodes(mt_a, mt_b, 0.5)
+    conflicts = native_conflicting_nodes(s, mt_a, mt_b, 0.5)
     assert len(conflicts) == 1
     assert int(conflicts[0]["node_id"]) == shared.value
-    # mt_a's marginal on shared is positive; mt_b's is negative.
+    # mt_a's would-be on shared is positive; mt_b's is negative.
     assert conflicts[0]["sigma_a"] > 0
     assert conflicts[0]["sigma_b"] < 0
 
@@ -100,8 +103,8 @@ def test_no_conflicts_below_magnitude_threshold():
     s.add_edge(mt_a, "has_concept", shared, {})
     s.add_edge(mt_b, "has_concept", shared, {})
     s.set_attr(shared, "external_field", 0.01)
-    conflicts = s.mt_conflicting_nodes(mt_a, mt_b, 0.5)
-    # Even if marginals differ slightly, they won't exceed magnitude
+    conflicts = native_conflicting_nodes(s, mt_a, mt_b, 0.5)
+    # Even if would-be states differ slightly, they won't exceed magnitude
     # threshold.
     assert conflicts == []
 
@@ -110,7 +113,16 @@ def test_no_conflicts_below_magnitude_threshold():
 
 def _build_conflicting_mts(s):
     """Two Mts that strongly drive a shared node in opposite directions
-    via Mt-specific helper concepts + couplings."""
+    via Mt-specific helper concepts + couplings.
+
+    PHASE A (native): couplings are added in BOTH directions — the native
+    discrete-async convention (`test_can_native_reimplementation.py:82-83`
+    adds every `causal_influence` edge symmetrically, because the native
+    local-field formula reads a node's OUT-edges only, unlike the removed
+    mean-field which walked in+out to symmetrise single-direction edges).
+    Each Mt's INDEPENDENT would-be σ (native_conflicting_nodes) then drives
+    `shared` toward opposite signs: helper_a(+)→shared(+) under mt_a,
+    helper_b(-)→shared(-) under mt_b."""
     shared = s.add_node("Concept", {"name": "shared"})
     helper_a = s.add_node("Concept", {"name": "helper_a",
                                        "external_field": +2.0})
@@ -125,7 +137,9 @@ def _build_conflicting_mts(s):
     s.add_edge(mt_b, "has_concept", shared, {})
     s.add_edge(mt_b, "has_concept", helper_b, {})
     s.add_edge(helper_a, "causal_influence", shared, {"weight": +1.5})
+    s.add_edge(shared, "causal_influence", helper_a, {"weight": +1.5})
     s.add_edge(helper_b, "causal_influence", shared, {"weight": +1.5})
+    s.add_edge(shared, "causal_influence", helper_b, {"weight": +1.5})
     return mt_a, mt_b, shared
 
 

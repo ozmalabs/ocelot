@@ -66,8 +66,9 @@ def detect_conflicts_for_pair(
         mt_a, mt_b = mt_b, mt_a
         mt_a_id, mt_b_id = mt_b_id, mt_a_id
 
-    conflicts_now = substrate.mt_conflicting_nodes(
-        mt_a, mt_b, magnitude_threshold)
+    from domains.can_native_orchestration import native_conflicting_nodes
+    conflicts_now = native_conflicting_nodes(
+        substrate, mt_a, mt_b, magnitude_threshold)
     conflicted_ids = {int(c["node_id"]): c for c in conflicts_now}
 
     mt_a_attrs = substrate.node(mt_a)["attrs"]

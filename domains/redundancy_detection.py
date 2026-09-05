@@ -71,7 +71,8 @@ def detect_redundancy_for_pair(
         mt_a, mt_b = mt_b, mt_a
         mt_a_id, mt_b_id = mt_b_id, mt_a_id
 
-    sim_result = substrate.mt_pairwise_similarity(mt_a, mt_b)
+    from domains.can_native_orchestration import native_pairwise_similarity
+    sim_result = native_pairwise_similarity(substrate, mt_a, mt_b)
     similarity = float(sim_result["similarity"])
     shared_count = int(sim_result["shared_count"])
 

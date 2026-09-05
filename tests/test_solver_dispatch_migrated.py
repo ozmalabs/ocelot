@@ -367,7 +367,7 @@ def test_solve_analogical_promote_resolves_via_qd_bind_resolver(agent):
                      "the machine, a store of state")
     sparse = _concept(sub, tgt, "sd_rung1_sparse",
                        "this gate is part of a stage in the machine")
-    at.find_analogies(sub, "sd_rung1_src", ["sd_rung1_tgt"], order_n=2)
+    at._legacy_find_analogies(sub, "sd_rung1_src", ["sd_rung1_tgt"], order_n=2)
     corr = None
     for c in sub.nodes("DirectionalCorrespondence"):
         pair = set(sub.neighbours(c, "about_a")) | set(sub.neighbours(c, "about_b"))

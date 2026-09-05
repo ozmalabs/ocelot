@@ -14,6 +14,12 @@ Two absolute-scalar intrusions were made RELATIVE:
      when its edge-type diversity is a positive outlier in the graph's own
      distribution (> mean + k*std) — so the same count is flagged in a sparse
      graph and not in a dense one.
+
+NOTE (analogy-search migration): the analogy-ranking gates here pin the
+RETIRED pure-Python faculty, now `at._legacy_find_analogies` (retained,
+unchanged). The public `at.find_analogies` is now the first-class graph search
+(`seeds/analogy_search.json`) per `SHAPE_AUDIT.md` §2.4, gated in
+`tests/test_analogy_search_migrated.py`.
 """
 from __future__ import annotations
 
@@ -112,7 +118,7 @@ def test_no_fixed_cross_order_multipliers_in_source():
 
 def test_analogy_stores_position_and_feature_count_not_score():
     s = _build_concept_graph()
-    results = at.find_analogies(s, "src", ["tgt"], order_n=1)
+    results = at._legacy_find_analogies(s, "src", ["tgt"], order_n=1)
     a = _pair(results, "reservoir", "warehouse")
     # relative fields present; absolute score field gone.
     assert set(("order_n", "feature_count", "features_total")) <= set(a)
@@ -129,7 +135,7 @@ def test_higher_order_match_outranks_lower_order_even_with_fewer_features():
     lower order — even when the lower-order pair shares MORE features. Position
     on the abstraction axis is primary; feature count is only the tiebreaker."""
     s = _build_concept_graph()
-    results = at.find_analogies(s, "src", ["tgt"], order_n=1)
+    results = at._legacy_find_analogies(s, "src", ["tgt"], order_n=1)
 
     high = _pair(results, "reservoir", "warehouse")          # order 1
     low_many = _pair(results, "alpha beta core", "alpha beta unit")  # order 0, 2 feats
@@ -149,7 +155,7 @@ def test_higher_order_match_outranks_lower_order_even_with_fewer_features():
 
 def test_same_order_ranks_by_feature_count():
     s = _build_concept_graph()
-    results = at.find_analogies(s, "src", ["tgt"], order_n=0)  # dial = names only
+    results = at._legacy_find_analogies(s, "src", ["tgt"], order_n=0)  # dial = names only
     low_many = _pair(results, "alpha beta core", "alpha beta unit")
     low_few = _pair(results, "alpha delta", "alpha zeta")
     assert low_many["order_n"] == low_few["order_n"] == 0

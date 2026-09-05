@@ -14,6 +14,14 @@ verdict at all five orders. These gates pin the four things that changed:
 
 Plus a source audit: the structural judgement is made by Rust Terms, not by a
 Python function's own opinion.
+
+NOTE (analogy-search migration): these gates pin the RETIRED pure-Python
+faculty, now `at._legacy_find_analogies` — the shape-math internals
+(`_pair_witness`, anchored vocabulary, MAC/FAC withholding) it tests are
+retained and unchanged. The public `at.find_analogies` is now the first-class
+graph search (`seeds/analogy_search.json`, `domains/analogy_search.py`) per
+`SHAPE_AUDIT.md` §2.4; its behaviour is gated separately in
+`tests/test_analogy_search_migrated.py`.
 """
 from __future__ import annotations
 
@@ -132,7 +140,7 @@ def test_a_spurious_substring_hit_is_no_longer_an_analogy():
     src, tgt = _mt(s, "src"), _mt(s, "tgt")
     _concept(s, src, "satisfaction_fold", "a fold over satisfaction", "one")
     _concept(s, tgt, "operation_primitive", "a primitive operation", "two")
-    assert at.find_analogies(s, "src", ["tgt"], order_n=4) == []
+    assert at._legacy_find_analogies(s, "src", ["tgt"], order_n=4) == []
 
 
 def test_surface_orders_survive_when_the_abstract_claim_is_withheld():
@@ -147,7 +155,7 @@ def test_surface_orders_survive_when_the_abstract_claim_is_withheld():
     src, tgt = _mt(s, "src"), _mt(s, "tgt")
     _concept(s, src, "alpha gate", "a thing", "one")
     _concept(s, tgt, "alpha widget", "this will gate the flow", "two")
-    res = at.find_analogies(s, "src", ["tgt"], order_n=4)
+    res = at._legacy_find_analogies(s, "src", ["tgt"], order_n=4)
     r = _pair(res, "alpha gate", "alpha widget")
     assert r is not None
     assert r["order_n"] <= 1, r["rationale"]
@@ -169,7 +177,7 @@ def test_evidence_in_the_name_slot_outranks_the_same_evidence_in_prose():
     _concept(s, tgt, "gate_stage", "a stage of the machine")
     _concept(s, src, "widget_one", "this thing will gate the flow")
     _concept(s, tgt, "widget_two", "this other thing will gate the flow")
-    res = at.find_analogies(s, "src", ["tgt"], order_n=2)
+    res = at._legacy_find_analogies(s, "src", ["tgt"], order_n=2)
     named = _pair(res, "gate_unit", "gate_stage")
     prose = _pair(res, "widget_one", "widget_two")
     assert named is not None and prose is not None
@@ -184,7 +192,7 @@ def test_structural_evidence_is_recorded_not_asserted():
     src, tgt = _mt(s, "src"), _mt(s, "tgt")
     _concept(s, src, "gate_unit", "a component")
     _concept(s, tgt, "gate_stage", "a stage")
-    r = _pair(at.find_analogies(s, "src", ["tgt"], order_n=2),
+    r = _pair(at._legacy_find_analogies(s, "src", ["tgt"], order_n=2),
               "gate_unit", "gate_stage")
     assert r["struct_shared"] >= 1
     assert "structurally aligned" in r["rationale"]
@@ -202,7 +210,7 @@ def test_pairs_realising_the_same_transform_corroborate_each_other():
     _concept(s, src, "store_a", "it stores the value")
     _concept(s, src, "store_b", "it stores the value")
     _concept(s, tgt, "cache_a", "it caches the value and predicts the next")
-    res = at.find_analogies(s, "src", ["tgt"], order_n=4)
+    res = at._legacy_find_analogies(s, "src", ["tgt"], order_n=4)
     a = _pair(res, "store_a", "cache_a")
     b = _pair(res, "store_b", "cache_a")
     assert a is not None and b is not None
@@ -232,7 +240,7 @@ def test_implements_edge_requires_computed_structure_not_an_ordinal():
     src, tgt = _mt(s, "src"), _mt(s, "tgt")
     a = _concept(s, src, "gate_unit", "a component")
     b = _concept(s, tgt, "gate_stage", "a stage")
-    r = _pair(at.find_analogies(s, "src", ["tgt"], order_n=2),
+    r = _pair(at._legacy_find_analogies(s, "src", ["tgt"], order_n=2),
               "gate_unit", "gate_stage")
     assert at.emit_analogy_as_graph(s, r) is not None
     assert s.has_edge(a, "implements", b)
@@ -259,7 +267,7 @@ def test_public_contract_is_unchanged():
     src, tgt = _mt(s, "src"), _mt(s, "tgt")
     _concept(s, src, "gate_unit", "a component")
     _concept(s, tgt, "gate_stage", "a stage")
-    r = at.find_analogies(s, "src", ["tgt"], order_n=2)[0]
+    r = at._legacy_find_analogies(s, "src", ["tgt"], order_n=2)[0]
     for k in ("source_concept", "target_concept", "source_mt", "target_mt",
               "source_node", "target_node", "order_n", "feature_count",
               "features_total", "rationale"):

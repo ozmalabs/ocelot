@@ -53,8 +53,9 @@ _prior = _import_prior_helpers()
 _fresh_substrate = _prior._fresh_substrate
 _build_complete_network = _prior._build_complete_network
 _basin_sweep = _prior._basin_sweep
-_relax_with_fields = _prior._relax_with_fields
-_oscillates = _prior._oscillates
+# PHASE A: _relax_with_fields / _oscillates are no longer imported — they
+# drove the removed continuous engine and their only consumer here
+# (test_sharpening_b) was deleted.
 
 
 # ---------------------------------------------------------------------------
@@ -308,36 +309,14 @@ def test_sharpening_a_structured_vs_unstructured():
 # Sharpening (b) -- oscillation/abandonment AT the tested N values, correlated
 # against the SAME seeds' basin-sweep numbers (PREREG SS3(b)).
 # ---------------------------------------------------------------------------
-def _experiment_oscillation(ns=(4, 16, 32), seeds=(1, 2, 3, 4, 5), beta=2.0):
-    rows = []
-    for n in ns:
-        for seed in seeds:
-            pairs, true_j = _draw_true_j(n, seed)
-            field_rng = random.Random(seed * 53 + n * 777)
-            fields = {i: field_rng.uniform(-1.0, 1.0) for i in range(n)}
-            for label, V in (("coarse", 3), ("fine", 7)):
-                rounded = {p: _round_to_vocab_v(v, V) for p, v in true_j.items()}
-                osc, gap = _oscillates(n, beta, rounded, fields)
-                rows.append({"N": n, "seed": seed, "coarseness": label,
-                             "oscillates": osc, "gap": round(gap, 4)})
-    return rows
-
-
-def test_sharpening_b_oscillation_at_tested_n():
-    """Does the cohere-vs-fail-to-cohere binary (persistent 2-cycle,
-    CAN_BELIEF_QUANTIZATION_RESULTS.md SS3.1) correlate with basin-count
-    degradation at the SAME N/seed/condition cells Experiment A measured, or
-    is it a separate phenomenon?"""
-    rows = _experiment_oscillation()
-    print("\n=== SHARPENING (b): oscillation at tested N (same seeds as Experiment A) ===")
-    print(json.dumps(rows, indent=2))
-    by_nc = {}
-    for r in rows:
-        key = (r["N"], r["coarseness"])
-        by_nc.setdefault(key, []).append(r["oscillates"])
-    print("\n%-4s %-8s %-14s" % ("N", "coarse?", "osc_rate"))
-    for key in sorted(by_nc):
-        rate = sum(by_nc[key]) / len(by_nc[key])
-        print("%-4d %-8s %-14.2f" % (key[0], key[1], rate))
-    assert len(rows) == 3 * 5 * 2
-    assert any(r["oscillates"] for r in rows) or True  # reported honestly either way
+# PHASE A (native-backend cutover): _experiment_oscillation and
+# test_sharpening_b_oscillation_at_tested_n were REMOVED. They correlated the
+# continuous mean-field synchronous-update oscillation probe (_oscillates,
+# built on the removed mt_mean_field_marginal + its `damping` knob) with
+# basin degradation. The discrete-async native engine has no synchronous
+# 2-cycle and no damping parameter, so there is no discrete analog — these
+# tested the removed engine itself, not a surviving feature. The other four
+# experiments (A/B/C/sharpening-a) survive: they use _basin_sweep, which is
+# re-pointed to the native discrete multi-start in test_can_belief_
+# quantization.py.
+# ---------------------------------------------------------------------------

@@ -61,22 +61,42 @@ def mt_allows(substrate, mt, axis: str) -> bool:
 # ----------------------------------------------------------------------
 
 def _is_native(substrate, mt) -> bool:
-    """Gate condition reused by every gated operation below — the SAME
-    `discrete_mode` check `insight_seeking.py::seek_insights` already uses
-    (CAN_FINAL_MIGRATION_RESULTS.md Sec2.2)."""
-    return substrate.node(mt)["attrs"].get("discrete_mode") in ("2state", "3state")
+    """Gate condition reused by every gated operation below.
+
+    PHASE B (native-backend cutover): the CAN backend is now native-only.
+    `discrete_mode` DEFAULTS to '3state' — the same default the whole
+    system already installs (solver_dispatch.py::grow_can_network_from_text
+    ~line 394-398 sets `discrete_mode='3state'` when absent;
+    can_self_worth_bridge.find_or_build_resident_can seeds every new
+    resident Mt '3state'; every CAN test/demo defaults '3state'). So an Mt
+    with NO `discrete_mode` attr is treated as native '3state' and the
+    continuous (Ising mean-field / can_ops.rs) branch is UNREACHABLE for it.
+
+    An Mt is routed to the continuous branch ONLY if `discrete_mode` is
+    EXPLICITLY set to a non-discrete value (e.g. 'static', used by the
+    engine-level rule-isolation tests). No live production caller ever sets
+    such a value on an Mt that then reaches a gated op, so in practice the
+    continuous branches below are dead. Phase A removes them (and can_ops.rs)
+    outright; until then this default keeps them merely unreachable.
+
+    Previously (pre-Phase-B) this was `... in ("2state", "3state")`, i.e.
+    absent `discrete_mode` fell through to the continuous branch — that fork
+    is what Phase B closes."""
+    mode = substrate.node(mt)["attrs"].get("discrete_mode")
+    # Absent → native default '3state'. Explicit discrete modes → native.
+    # Only an explicit NON-discrete value ('static', 'continuous', ...)
+    # routes to the (now-dead) continuous branch.
+    return mode in ("2state", "3state") or mode is None
 
 
 def _audit_basin(substrate, mt) -> dict[str, Any]:
-    """Gated basin audit — native branch reads `state` directly (pure,
-    no relax call) via `can_native_orchestration.native_audit_basin`;
-    continuous branch is the unmodified `substrate.mt_audit_basin` call.
-    See `relax`'s own docstring for why this composes correctly with the
-    "one shared fixpoint" native architecture."""
-    if _is_native(substrate, mt):
-        from domains.can_native_orchestration import native_audit_basin
-        return native_audit_basin(substrate, mt)
-    return substrate.mt_audit_basin(mt)
+    """Basin audit — reads `state` directly (pure, no relax call) via
+    `can_native_orchestration.native_audit_basin`. PHASE A: native-only;
+    the continuous `substrate.mt_audit_basin` engine is removed. See
+    `relax`'s docstring for why this composes with the "one shared
+    fixpoint" native architecture."""
+    from domains.can_native_orchestration import native_audit_basin
+    return native_audit_basin(substrate, mt)
 
 
 def maybe_hebbian(substrate, mt, eta: float = 0.01) -> int:
@@ -94,20 +114,12 @@ def maybe_hebbian(substrate, mt, eta: float = 0.01) -> int:
     RESULTS.md, confirmed by direct read) — this function does not
     duplicate that gate for the native path; `eta` has no native analog
     (mint/reweight are threshold/counter-based, not eta-scaled) and is
-    silently unused there, a genuine simplification, not an oversight."""
-    if _is_native(substrate, mt):
-        from domains.can_native_orchestration import scoped_settle
-        return scoped_settle(substrate, mt)
-    if mt_allows(substrate, mt, "allow_Hebbian_J"):
-        return substrate.mt_hebbian_update_J(mt, eta)
-    # Plasticity override path — frozen Mt being temporarily allowed
-    # to learn because evidence has been sustained against its target.
-    # Per the user's principle 'frozen permanently? never'.
-    override = float(substrate.node(mt)["attrs"].get(
-        "plasticity_override", 0.0))
-    if override > 0:
-        return substrate.mt_hebbian_update_J(mt, override)
-    return 0
+    silently unused there, a genuine simplification, not an oversight.
+
+    PHASE A (native-backend cutover): native-only — the continuous
+    Hebbian engine (can_ops.rs::hebbian_update_J) is removed."""
+    from domains.can_native_orchestration import scoped_settle
+    return scoped_settle(substrate, mt)
 
 
 def maybe_decay_J(substrate, mt, decay_rate: float = 0.001) -> int:
@@ -124,13 +136,12 @@ def maybe_decay_J(substrate, mt, decay_rate: float = 0.001) -> int:
     re-targeted quantity, not claimed equivalent. `decay_rate` has no
     native analog (the native decay is a fixed 1-quantum linear
     decrement, CAN_DECAY_IDENTITY_RESULTS.md Sec1) and is silently unused
-    on this branch."""
-    if _is_native(substrate, mt):
-        from domains.can_native_orchestration import scoped_settle
-        return scoped_settle(substrate, mt)
-    if not mt_allows(substrate, mt, "allow_Hebbian_J"):
-        return 0
-    return substrate.mt_decay_J(mt, decay_rate)
+    on this branch.
+
+    PHASE A (native-backend cutover): native-only — the continuous
+    can_ops.rs::decay_J engine is removed."""
+    from domains.can_native_orchestration import scoped_settle
+    return scoped_settle(substrate, mt)
 
 
 def maybe_decay_h(substrate, mt, decay_rate: float = 0.0001) -> int:
@@ -152,15 +163,11 @@ def maybe_decay_h(substrate, mt, decay_rate: float = 0.0001) -> int:
     module, including `can_counterfactual.py`, ever writes `external_field`
     — decay is the only writer this attr ever gets). `decay_rate` has no
     native analog (fixed 1-quantum decrement, same precedent as `maybe_
-    decay_J`) and is silently unused on this branch. Continuous path
-    (`mt_allows` check + `substrate.mt_decay_h`) is unconditional and
-    byte-unchanged."""
-    if _is_native(substrate, mt):
-        from domains.can_native_orchestration import scoped_settle
-        return scoped_settle(substrate, mt)
-    if not mt_allows(substrate, mt, "allow_h_drift"):
-        return 0
-    return substrate.mt_decay_h(mt, decay_rate)
+    decay_J`) and is silently unused on this branch. PHASE A
+    (native-backend cutover): native-only — the continuous
+    can_ops.rs::decay_h engine is removed."""
+    from domains.can_native_orchestration import scoped_settle
+    return scoped_settle(substrate, mt)
 
 
 def relax(substrate, mt) -> int:
@@ -180,13 +187,13 @@ def relax(substrate, mt) -> int:
     tick can ALSO advance Hebbian mint/reweight and evidence decay in the
     same call — the later `maybe_hebbian`/`maybe_decay_J` calls this
     module makes are then idempotent no-ops (0 steps) for the same
-    `can_tick` unless something changes between calls. This is a real
-    architectural difference from the continuous path (four separate
-    formula calls) and is reported, not smoothed over."""
-    if _is_native(substrate, mt):
-        from domains.can_native_orchestration import scoped_settle
-        return scoped_settle(substrate, mt)
-    return substrate.mt_relax_to_marginal(mt)
+    `can_tick` unless something changes between calls.
+
+    PHASE A (native-backend cutover): native-only — the continuous
+    mean-field relax (can_ops.rs::relax_to_marginal / mt_mean_field_marginal)
+    is removed."""
+    from domains.can_native_orchestration import scoped_settle
+    return scoped_settle(substrate, mt)
 
 
 # ----------------------------------------------------------------------
@@ -250,18 +257,13 @@ def _stash_post_state(substrate, mt, post_audit) -> None:
     substrate.set_attr(mt, "previous_previous_frustration", f_prev)
     substrate.set_attr(mt, "previous_frustration", f_current)
     # Distance-to-target magnitude — drives frozen_should_adapt detection.
-    # Native branch (CAN_MT_SCOPED_RULES_RESULTS.md): reads `state`
-    # directly instead of relaxing (mt_distance_to_target's continuous
-    # path calls mt_mean_field_marginal internally) — the small,
-    # representation-agnostic composition CAN_FINAL_MIGRATION_RESULTS.md
-    # Sec0 named as buildable and did not build, now safe because
-    # `native_distance_to_target` never calls run_rules() at all (it is a
-    # pure read of already-settled state).
-    if _is_native(substrate, mt):
-        from domains.can_native_orchestration import native_distance_to_target
-        distance = native_distance_to_target(substrate, mt)
-    else:
-        distance = substrate.mt_distance_to_target(mt)
+    # PHASE A (native-backend cutover): native-only — reads `state`
+    # directly via `native_distance_to_target` (the continuous
+    # mt_distance_to_target, which called mt_mean_field_marginal
+    # internally, is removed). `native_distance_to_target` never calls
+    # run_rules() — it is a pure read of already-settled state.
+    from domains.can_native_orchestration import native_distance_to_target
+    distance = native_distance_to_target(substrate, mt)
     substrate.set_attr(mt, "distance_to_target_magnitude",
                        float(distance["magnitude"]))
     # Coverage — drives sparse_Mt detection.
@@ -306,15 +308,11 @@ def maybe_update_identity(
     (`CAN_IDENTITY_FEEDBACK_RESULTS.md` §3: 0 non-convergent draws either
     mode). `alpha`/`beta` have no native analog (fixed 1-quantum step, same
     precedent as every other native decay rule in this seed) and are
-    silently unused on this branch. Continuous path (`mt_allows` check +
-    `substrate.mt_update_identity_dynamics`) is unconditional and
-    byte-unchanged."""
-    if _is_native(substrate, mt):
-        from domains.can_native_orchestration import scoped_settle
-        return scoped_settle(substrate, mt)
-    if not mt_allows(substrate, mt, "allow_h_drift"):
-        return 0
-    return substrate.mt_update_identity_dynamics(mt, alpha, beta)
+    silently unused on this branch. PHASE A (native-backend cutover):
+    native-only — the continuous can_ops.rs::update_identity_dynamics
+    engine is removed."""
+    from domains.can_native_orchestration import scoped_settle
+    return scoped_settle(substrate, mt)
 
 
 def nudge_identity_on_flipped(
@@ -367,44 +365,34 @@ def nudge_identity_on_flipped(
         return 0
     flipped_by_id = {int(f["node"]): float(f["after"])
                      for f in insight["flipped_nodes"]}
-    if _is_native(substrate, mt):
-        from domains.can_native_orchestration import scoped_settle
-        recurrence = int(insight.get("recurrence_count", 1))
-        new_epoch = int(
-            substrate.node(mt)["attrs"].get("insight_nudge_seq", 0)
-        ) + 1
-        substrate.set_attr(mt, "insight_nudge_seq", new_epoch)
-        targets = {}
-        for c in substrate.neighbours(mt, "has_concept"):
-            cid = c.value if hasattr(c, "value") else int(c)
-            if cid in flipped_by_id:
-                substrate.set_attr(
-                    c, "pending_identity_nudge_target_sigma",
-                    flipped_by_id[cid])
-                substrate.set_attr(
-                    c, "pending_identity_nudge_recurrence", recurrence)
-                substrate.set_attr(
-                    c, "pending_identity_nudge_epoch", new_epoch)
-                targets[cid] = c
-        scoped_settle(substrate, mt)
-        nudged = 0
-        for cid, c in targets.items():
-            applied = substrate.node(c)["attrs"].get(
-                "identity_nudge_applied_epoch")
-            if applied is not None and int(applied) == new_epoch:
-                nudged += 1
-        return nudged
-    import math
+    # PHASE A (native-backend cutover): native-only — the continuous
+    # identity nudge (can_ops.rs::nudge_identity, unbounded
+    # base_alpha*(1+ln(recurrence)) growth) is removed. `base_alpha` has
+    # no native analog (fixed binary step in the rule) and is unused.
+    from domains.can_native_orchestration import scoped_settle
     recurrence = int(insight.get("recurrence_count", 1))
-    # log scaling so recurrence doesn't blow up — α grows but bounded.
-    alpha_eff = base_alpha * (1.0 + math.log(max(1, recurrence)))
-    nudged = 0
-    # Look up the actual node handles by id.
+    new_epoch = int(
+        substrate.node(mt)["attrs"].get("insight_nudge_seq", 0)
+    ) + 1
+    substrate.set_attr(mt, "insight_nudge_seq", new_epoch)
+    targets = {}
     for c in substrate.neighbours(mt, "has_concept"):
         cid = c.value if hasattr(c, "value") else int(c)
         if cid in flipped_by_id:
-            substrate.concept_nudge_identity(
-                c, flipped_by_id[cid], alpha_eff)
+            substrate.set_attr(
+                c, "pending_identity_nudge_target_sigma",
+                flipped_by_id[cid])
+            substrate.set_attr(
+                c, "pending_identity_nudge_recurrence", recurrence)
+            substrate.set_attr(
+                c, "pending_identity_nudge_epoch", new_epoch)
+            targets[cid] = c
+    scoped_settle(substrate, mt)
+    nudged = 0
+    for cid, c in targets.items():
+        applied = substrate.node(c)["attrs"].get(
+            "identity_nudge_applied_epoch")
+        if applied is not None and int(applied) == new_epoch:
             nudged += 1
     return nudged
 

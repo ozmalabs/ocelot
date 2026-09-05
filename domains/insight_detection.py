@@ -173,13 +173,13 @@ def consolidate_insight(substrate, mt, eta: float = INSIGHT_CONSOLIDATION_ETA) -
     is the scoped fixpoint's own progressing-step count, a genuine
     simplification reported honestly rather than eta-scaled."""
     # Local import to avoid circular dependency at module load.
-    from domains.self_improvement_loop import _is_native, mt_allows
-    if _is_native(substrate, mt):
-        from domains.can_native_orchestration import scoped_settle
-        return scoped_settle(substrate, mt)
-    if not mt_allows(substrate, mt, "allow_Hebbian_J"):
-        return 0
-    return substrate.mt_hebbian_update_J(mt, eta)
+    # PHASE A (native-backend cutover): the continuous Ising engine is
+    # removed. consolidate_insight is now native-only — it always settles
+    # via the scoped native fixpoint (can_native_hebbian_mint/_reweight
+    # carry their own policy + plasticity_override gate in their
+    # where-clause). `eta` has no native analog and is silently unused.
+    from domains.can_native_orchestration import scoped_settle
+    return scoped_settle(substrate, mt)
 
 
 def stash_previous_state(substrate, mt, post_audit) -> None:

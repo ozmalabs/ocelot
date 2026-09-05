@@ -827,7 +827,7 @@ def _covered_shapes(substrate, vec: list) -> set:
     return out
 
 
-def find_analogies(substrate, source_mt_name: str,
+def _legacy_find_analogies(substrate, source_mt_name: str,
                     target_mt_names: list[str], order_n: int = 2,
                     min_score: int = 1) -> list[dict]:
     """The core thinking primitive. For each concept in source Mt,
@@ -1177,7 +1177,7 @@ RANK_KEY = (lambda a: (-a["order_n"], -a.get("corroboration", 0),
                        -a["feature_count"], -a["features_total"]))
 
 
-def think_harder(substrate, source_mt_name: str,
+def _legacy_think_harder(substrate, source_mt_name: str,
                   target_mt_names: list[str], start_n: int = 1,
                   max_n: int = 4, want_at_least: int = 5
                   ) -> dict:
@@ -1238,4 +1238,45 @@ def think_harder(substrate, source_mt_name: str,
 __all__ = [
     "find_analogies", "emit_analogy_as_graph", "think_harder",
     "metashape_realisation_counts", "shape_hits", "RANK_KEY",
+    "_legacy_find_analogies", "_legacy_think_harder",
 ]
+
+
+# ---------------------------------------------------------------------------
+# FIRST-CLASS GRAPH DELEGATION (SHAPE_AUDIT.md §2.4 closed).
+#
+# The analogy SEARCH is now a graph loop over `seeds/analogy_search.json`, run
+# by `domains/analogy_search.py` (the ingest shim + read-back), one grain over
+# from `meta_shape_growth` / `problem_shape_growth`. The public entry points
+# delegate there; `_legacy_*` above is the retired pure-Python search, kept so
+# the shape-math internals (`_pair_witness`, `_concept_reading`, the
+# correspondence persistence) remain importable and tested. The import is lazy
+# because `analogy_search` imports THIS module for its vocabulary helpers
+# (`_concept_reading`) — this module imports nothing back at module load.
+# ---------------------------------------------------------------------------
+def find_analogies(substrate, source_mt_name, target_mt_names,
+                   order_n=None, min_score=None, *, overlay: bool = False):
+    """Delegates to the first-class graph search (`analogy_search`). Signature
+    preserved for source-compatibility; `order_n` is no longer a string-token
+    dial (the search now matches on qualia-space structure). `order_n` and
+    `min_score` are None-sentinel so the agent's cognitive PERSONALITY VECTOR
+    can supply them (abstraction -> analogy order floor, skepticism -> min_score
+    acceptance floor) when the caller does not; an EXPLICIT value always wins.
+    See analogy_search.find_analogies for the mappings + precedence. `overlay=
+    True` matches on the PERTURBED shape — how the agent feels right now."""
+    from domains import analogy_search
+    return analogy_search.find_analogies(
+        substrate, source_mt_name, target_mt_names,
+        order_n=order_n, min_score=min_score, overlay=overlay)
+
+
+def think_harder(substrate, source_mt_name, target_mt_names,
+                 start_n=None, max_n: int = 4, want_at_least: int = 5):
+    """Delegates to the first-class graph search (`analogy_search`). `start_n`
+    is None-sentinel so the agent's `abstraction` trait can supply the starting
+    order floor ("reach for higher-order matches first") when the caller does
+    not; an explicit `start_n` wins."""
+    from domains import analogy_search
+    return analogy_search.think_harder(
+        substrate, source_mt_name, target_mt_names,
+        start_n=start_n, max_n=max_n, want_at_least=want_at_least)

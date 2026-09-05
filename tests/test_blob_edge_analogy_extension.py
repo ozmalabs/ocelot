@@ -9,6 +9,15 @@ Extends the SAME `seeds/blob_edge_correspondence.json` recognize/mint rules
 the predecessor rung wired at `reflective_faculty.py::_run_math_bridge`, to
 `_pair_witness`'s real operands here: two `Concept` graph nodes. The Gamma
 extension (`seeds/blob_edge_concept_correspondence.json`) is additive-only.
+
+NOTE (analogy-search migration): the SEARCH `find_analogies` used to run in
+Python is now the first-class graph seed `seeds/analogy_search.json`
+(`domains/analogy_search.py`), per `SHAPE_AUDIT.md` §2.4. This file exercises
+the RETAINED `_legacy_find_analogies`, which is the unchanged pure-Python
+`_compute_analogy`/`_pair_witness` faculty that still drives the
+correspondence-persistence machinery under test here — so the call sites below
+use `at._legacy_find_analogies`, not the public (now graph-delegating)
+`at.find_analogies`.
 """
 from __future__ import annotations
 
@@ -82,7 +91,7 @@ def test_mint_fires_once_for_a_novel_pair_via_find_analogies(agent):
     src, tgt = _mt(sub, "aext_src_1"), _mt(sub, "aext_tgt_1")
     _concept(sub, src, "aext_gate_unit", "aext a component of the machine")
     _concept(sub, tgt, "aext_gate_stage", "aext a stage of the machine")
-    res = at.find_analogies(sub, "aext_src_1", ["aext_tgt_1"], order_n=2)
+    res = at._legacy_find_analogies(sub, "aext_src_1", ["aext_tgt_1"], order_n=2)
     r = _pair(res, "aext_gate_unit", "aext_gate_stage")
     assert r is not None
     assert r["struct_shared"] >= 1, "the pair must be structurally aligned for a Correspondence to be worth writing"
@@ -114,13 +123,13 @@ def test_recognize_fires_with_zero_blob_edge_growth_on_a_repeat_pattern(agent):
     _concept(sub, tgt, "aext_gate_stage", "aext a stage of the machine")
     _concept(sub, src, "aext_widget_one", "aext this thing will gate the flow")
     _concept(sub, tgt, "aext_widget_two", "aext this other thing will gate the flow")
-    at.find_analogies(sub, "aext_src_2", ["aext_tgt_2"], order_n=2)
+    at._legacy_find_analogies(sub, "aext_src_2", ["aext_tgt_2"], order_n=2)
     n_blob_after_first_call = len(sub.nodes("BlobEdge"))
     n_corr_after_first_call = len(sub.nodes("Correspondence"))
     assert n_blob_after_first_call >= 1
 
     # Same source/target Mts, same pairs -> the SAME transform_key(s) recur.
-    at.find_analogies(sub, "aext_src_2", ["aext_tgt_2"], order_n=2)
+    at._legacy_find_analogies(sub, "aext_src_2", ["aext_tgt_2"], order_n=2)
     assert len(sub.nodes("BlobEdge")) == n_blob_after_first_call, \
         "a repeated correspondence pattern must RECOGNIZE, not re-mint"
     assert len(sub.nodes("Correspondence")) > n_corr_after_first_call, \
@@ -141,7 +150,7 @@ def test_real_corpus_batch_has_no_duplicate_blob_edges(agent):
     sub = agent.s
     assert sub.nodes("Correspondence") == []
     assert sub.nodes("BlobEdge") == []
-    res = at.find_analogies(sub, "mathematics", ["mathematics"], order_n=4)
+    res = at._legacy_find_analogies(sub, "mathematics", ["mathematics"], order_n=4)
     assert len(res) > 0
     blobs = sub.nodes("BlobEdge")
     keys = [sub.node(b)["attrs"].get("transform_key") for b in blobs]
@@ -157,10 +166,10 @@ def test_real_corpus_batch_has_no_duplicate_blob_edges(agent):
 
 def test_repeat_call_recognizes_and_decision_is_byte_identical(agent):
     sub = agent.s
-    res1 = at.find_analogies(sub, "mathematics", ["mathematics"], order_n=4)
+    res1 = at._legacy_find_analogies(sub, "mathematics", ["mathematics"], order_n=4)
     n_corr_1 = len(sub.nodes("Correspondence"))
     n_blob_1 = len(sub.nodes("BlobEdge"))
-    res2 = at.find_analogies(sub, "mathematics", ["mathematics"], order_n=4)
+    res2 = at._legacy_find_analogies(sub, "mathematics", ["mathematics"], order_n=4)
     n_corr_2 = len(sub.nodes("Correspondence"))
     n_blob_2 = len(sub.nodes("BlobEdge"))
     assert n_corr_2 == 2 * n_corr_1

@@ -9,6 +9,13 @@ promotion into a real `knowledge_logical` schema.
 
 PREREG: `docs/research/engine_substrate/DIRECTIONAL_CORRESPONDENCE_PREREG.md`.
 RESULTS: `docs/research/engine_substrate/DIRECTIONAL_CORRESPONDENCE_RESULTS.md`.
+
+NOTE (analogy-search migration): the analogy SEARCH is now the first-class
+graph seed `seeds/analogy_search.json` (`domains/analogy_search.py`), per
+`SHAPE_AUDIT.md` §2.4. This file exercises the RETAINED
+`_legacy_find_analogies` — the unchanged Python faculty that drives the
+`DirectionalCorrespondence` persistence under test — so call sites use
+`at._legacy_find_analogies`, not the public graph-delegating `at.find_analogies`.
 """
 from __future__ import annotations
 
@@ -104,7 +111,7 @@ def test_asymmetric_pair_resolves_direction_from_richness_not_search_order(agent
                     "the machine, a store of state")
     sparse = _concept(sub, tgt, "dc_sparse_unit",
                       "this gate is part of a stage in the machine")
-    res = at.find_analogies(sub, "dc_src_asym", ["dc_tgt_asym"], order_n=2)
+    res = at._legacy_find_analogies(sub, "dc_src_asym", ["dc_tgt_asym"], order_n=2)
     r = [x for x in res if x["source_concept"] == "dc_rich_unit"]
     assert r and r[0]["struct_shared"] >= 1
 
@@ -157,7 +164,7 @@ def test_tied_richness_resolves_symmetric_not_a_forced_direction(agent):
     samedef = "this gate will schedule the flow through the buffer"
     ca = _concept(sub, src, "dc_tie_alpha", samedef)
     cb = _concept(sub, tgt, "dc_tie_beta", samedef)
-    res = at.find_analogies(sub, "dc_src_tie", ["dc_tgt_tie"], order_n=2)
+    res = at._legacy_find_analogies(sub, "dc_src_tie", ["dc_tgt_tie"], order_n=2)
     assert any(x["source_concept"] == "dc_tie_alpha" for x in res)
 
     corr = _find_directional_corr(sub, ca, cb)
@@ -206,7 +213,7 @@ def test_promotion_mints_elaborative_analogical_schema_distinguishable_from_taug
                     "the machine, a store of state")
     sparse = _concept(sub, tgt, "dc_promo_sparse",
                       "this gate is part of a stage in the machine")
-    at.find_analogies(sub, "dc_src_promo", ["dc_tgt_promo"], order_n=2)
+    at._legacy_find_analogies(sub, "dc_src_promo", ["dc_tgt_promo"], order_n=2)
     corr = _find_directional_corr(sub, rich, sparse)
     direction = at.directional_hypothesis_for(sub, corr)
     assert direction["direction"] == "a_source"
@@ -251,7 +258,7 @@ def test_live_end_to_end_promoted_hypothesis_fires_only_at_deep_coherence(agent)
                     "the machine, a store of state")
     sparse = _concept(sub, tgt, "dc_e2e_sparse",
                       "this gate is part of a stage in the machine")
-    at.find_analogies(sub, "dc_src_e2e", ["dc_tgt_e2e"], order_n=2)
+    at._legacy_find_analogies(sub, "dc_src_e2e", ["dc_tgt_e2e"], order_n=2)
     corr = _find_directional_corr(sub, rich, sparse)
     direction = at.directional_hypothesis_for(sub, corr)
     assert direction["direction"] == "a_source"
