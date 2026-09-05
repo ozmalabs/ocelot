@@ -248,36 +248,44 @@ def _check_coord(coord, schema: dict, dims: dict, reserved: set,
                  "mechanism, not qualia content (coord %r)" % (pred, coord))
         return
 
-    # value_in_domain — the value shape is fixed by the family.
-    if fam == "dynamical":
+    # value_in_domain — the value shape is fixed by the axis's SOURCE, not the
+    # family prefix alone: a FIELD-sourced axis (the CAN dynamical axes AND a
+    # field-sourced phenomenal axis, e.g. phenomenal:sharpness) carries an
+    # integer step; every other axis carries a token/slot-string. Keyed off the
+    # declared QualiaDimension source so a field-sourced phenomenal axis is held
+    # to the int-step domain the schema declares for it, not wrongly to the
+    # open-family token default.
+    _src = str(dims.get(dim, {}).get("source") or "")
+    _is_field_axis = (fam == "dynamical") or _src.startswith("field:")
+    if _is_field_axis:
         # pred is "field"; value is an integer step k in [-hw, hw]\{0}.
         if pred != "field":
             rep.fail("value_in_domain",
-                     "dynamical coordinate %r has predicate %r, expected 'field'"
-                     % (coord, pred))
+                     "field-sourced coordinate %r has predicate %r, expected "
+                     "'field'" % (coord, pred))
             return
         if isinstance(val, bool) or not isinstance(val, int):
             rep.fail("value_in_domain",
-                     "dynamical value %r is not an integer step (coord %r)"
+                     "field value %r is not an integer step (coord %r)"
                      % (val, coord))
             return
         a = dims.get(dim, {})
         hw = int(a.get("half_width") or 0)
         if hw and not (-hw <= val <= hw):
             rep.fail("value_in_domain",
-                     "dynamical step %d out of the axis range [-%d, %d] "
+                     "field step %d out of the axis range [-%d, %d] "
                      "(coord %r)" % (val, hw, hw, coord))
             return
         if val == 0:
             rep.fail("value_in_domain",
-                     "dynamical step 0 must be OMITTED (the shared default), not "
+                     "field step 0 must be OMITTED (the shared default), not "
                      "carried as a coordinate (coord %r)" % (coord,))
             return
     else:
         # every other family carries a token/slot-string value.
         if not isinstance(val, str):
             rep.fail("value_in_domain",
-                     "non-dynamical coordinate value %r is not a string token "
+                     "non-field coordinate value %r is not a string token "
                      "(coord %r)" % (val, coord))
             return
 
