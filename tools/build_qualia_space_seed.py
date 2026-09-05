@@ -275,6 +275,58 @@ _PHENOMENAL = [
                "BOOTSTRAP only: the phenomenal family exists so minted axes "
                "have a home, but its members are grown from residual, never "
                "hand-enumerated (contrast the closed lexical backbone)."),
+    # --- MINTED felt axis: SHARPNESS (the bouba/kiki crossmodal axis) --------
+    # The FIRST grown phenomenal axis that is READ off a field attr rather than
+    # a keyword. It is a felt scalar `sharpness` DERIVED INDEPENDENTLY on each
+    # side of a crossmodal pairing — a phonetic FORM's sharpness comes from
+    # articulatory phonetics (scripts/articulatory_gamma.py's 5-dim feature set:
+    # voiceless/constriction/1-lip_rounding/frontness/height), a visual SHAPE's
+    # from curvature geometry (domains/ink_dynamics._turning_angles: peak/mean
+    # |turning|, curvature CONCENTRATION). NEITHER extractor was built for the
+    # other; the ONLY new thing is this shared axis they both project onto. A
+    # match at a pole is therefore EMERGENT, not hand-wired: reverse the shape's
+    # points or the word's phonemes and the derived scalar — and thus the
+    # coordinate — flips (the built-in falsifier).
+    #
+    # SOURCE = `field:sharpness` (NOT a keyword, NOT a raw `attr:`). It is read
+    # exactly as the CAN dynamical axes are: analogy_search._dynamical_relations
+    # collects EVERY QualiaDimension whose source starts `field:` (regardless of
+    # family — VERIFIED live), quantises the concept's `sharpness` attr through
+    # the CAN tests' own _round_to_vocab lattice, and emits
+    # (phenomenal:sharpness, "field", k). Because the read is field-sourced, the
+    # `sharpness` attr is auto-excluded from the attr:* catch-all (it is a
+    # dynamical-axis SOURCE), so it never leaks in twice.
+    #
+    # QUANTUM = 1.0, HALF_WIDTH = 1 — a clean BIPOLAR SIGN axis {−1, 0, +1}:
+    # round(sharpness/1.0) clamped to ±1. The derived per-side scalars are first
+    # z-scored/quantised to the battery midpoint OFF-graph (the extractor's own
+    # arithmetic), then written as −1 (round pole) / 0 (mid — honest, e.g.
+    # takete) / +1 (sharp pole). half_width=1 is chosen (over up-to-4) because
+    # the bouba/kiki effect the human literature reports is a POLE assignment,
+    # not a graded magnitude ranking — a form/shape either lands round, sharp,
+    # or (honestly) mid. A wider half_width would invite an unfalsifiable graded
+    # magnitude claim on a two-pole phenomenon; the sign axis mirrors the
+    # human forced-choice cleanly. The GRADEDNESS lives in the battery (multiple
+    # forms mapping to −1/0/+1), not in the axis width.
+    _dim("phenomenal:sharpness", "phenomenal", "field:sharpness",
+         quantum=1.0, half_width=1,
+         gloss="SHARPNESS — a felt crossmodal scalar: how SPIKY/PEAKED (+) vs "
+               "ROUND/SMOOTH (−) a concept feels, on ONE axis shared across "
+               "sensory registers. The bouba/kiki (Köhler 1929; Ramachandran & "
+               "Hubbard 2001) axis: a phonetic FORM and a visual SHAPE that "
+               "sound-symbolically match land at the SAME pole here. The "
+               "coordinate is DERIVED INDEPENDENTLY on each side by pre-existing, "
+               "independently-motivated extractors — articulatory phonetics for a "
+               "word (voiceless/constriction/spread/front/high → sharp), curvature "
+               "geometry for a shape (curvature CONCENTRATION: a star peaks, a "
+               "circle is uniform → round) — and quantised through the SAME "
+               "_round_to_vocab lattice as the CAN dynamical axes. field:sharpness "
+               "(read like a dynamical field, so a concept WITHOUT the derived "
+               "`sharpness` attr gets NO coordinate — default==today), quantum=1.0/"
+               "half_width=1 = a clean bipolar {−1,0,+1} sign axis. The MATCH is "
+               "EMERGENT (two independent derivations, one shared axis), not "
+               "hand-wired: reverse the phonemes or the shape's points and the "
+               "coordinate FLIPS. GROWN, not backbone (family phenomenal, OPEN)."),
 ]
 
 NODES = _LEXICAL + _DYNAMICAL + _PHENOMENAL
@@ -408,21 +460,34 @@ _SCHEMA_FAMILIES = {
     },
     "phenomenal": {
         "closed": False,
-        "predicates": ["keyword"],
-        "value_kind": "token",
+        "predicates": ["keyword", "field"],
+        "value_kind": "token_or_int_step",
         "gloss": "Felt axes beyond the raw CAN coordinates. GROWN from residual "
                  "(the sd_mint_quantum discipline), never hand-enumerated — so "
-                 "OPEN by design. Only a bootstrap phenomenal:modality is seeded.",
+                 "OPEN by design. A bootstrap phenomenal:modality (keyword-"
+                 "sourced, token value) is seeded; a minted axis may instead be "
+                 "FIELD-sourced (e.g. phenomenal:sharpness, source field:"
+                 "sharpness), read like a dynamical field axis (pred 'field', "
+                 "value an integer step in [-half_width, half_width]\\{0} through "
+                 "the same _round_to_vocab lattice). So a phenomenal coordinate "
+                 "is a token (keyword axis) OR an int step (field axis); the "
+                 "value_in_domain check keys off the axis's declared source, not "
+                 "the family prefix alone.",
     },
 }
 
 # The attrs a Concept carries that are NOT `attr:` content: they are read as the
-# dynamical axes (the three raw CAN fields + every mirrored trait field), so they
-# must never also surface as an attr:* coordinate. Derived from the field: axes'
-# own `source` — a single source of truth, not a hand-kept list.
+# dynamical/felt field axes (the three raw CAN fields, every mirrored trait
+# field, and any phenomenal field axis like `sharpness`), so they must never
+# also surface as an attr:* coordinate. Derived from EVERY `field:` axis's own
+# `source` (dynamical AND phenomenal) — a single source of truth, not a
+# hand-kept list, so minting a new field-sourced axis reserves its attr
+# automatically (mirrors analogy_search's own `_field_source_attrs`, which reads
+# the live field_axes regardless of family).
 _RESERVED_FIELD_ATTRS = sorted({
     d["attrs"]["source"].split(":", 1)[1]
-    for d in _DYNAMICAL
+    for d in (_DYNAMICAL + _PHENOMENAL)
+    if str(d["attrs"].get("source", "")).startswith("field:")
 } | {"state", "external_field", "identity_field"})
 
 # The INVARIANTS a built space must hold. Each is (id, checkable-claim, gloss).
@@ -441,9 +506,11 @@ _SCHEMA_INVARIANTS = [
      "prefix."),
     ("value_in_domain",
      "every coordinate's value lies in its family's declared value domain",
-     "A dynamical value is an integer step in [-half_width, half_width]\\{0}; a "
-     "lexical/vocab/attr/relational value is a token/slot-string. An out-of-range "
-     "dynamical k or a non-integer field value is rejected."),
+     "A FIELD-sourced axis's value (any family — the CAN dynamical axes AND a "
+     "field-sourced phenomenal axis like sharpness) is an integer step in "
+     "[-half_width, half_width]\\{0}; a lexical/vocab/attr/relational value and a "
+     "keyword-sourced phenomenal value is a token/slot-string. An out-of-range "
+     "step or a non-integer field value is rejected."),
     ("dynamical_is_produced_not_hand_set",
      "no raw CAN field attr (state/external_field/identity_field/<trait>_field) "
      "appears as an attr:* coordinate",
