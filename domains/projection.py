@@ -279,7 +279,7 @@ def build_speech_forward(AG):
 
     def forward(word, sub, fs=8000, dur_s=0.4, f0_hz=120.0, vtl_scale=1.0,
                 oq=0.6, am=0.0, ta_frac=0.01, formant_offset=None, bw=None,
-                axs_correct=False):
+                axs_correct=False, gain=1.0):
         score = GESTURE_SCORES.get(word.lower())
         n_out = max(int(dur_s * fs), 1)
         if score is None:
@@ -305,7 +305,12 @@ def build_speech_forward(AG):
         formants_flat = [float(v) for row in scaled for v in row]
         bw_flat = [float(bw_use[i % len(bw_use)]) for _ in range(T) for i in range(3)]
         # amplitude envelope: full during voiced/fricative, dip in pure silence.
-        amp = [1.0] * T
+        # `gain` (default 1.0 == today) is the OVERALL loudness scale — an
+        # expressive knob (e.g. arousal-driven vocal effort). It is now meaningful
+        # because the Rust renderer preserves absolute amplitude (clip-safety only,
+        # no unconditional peak-normalise); at gain=1.0 every existing caller is
+        # unchanged.
+        amp = [float(gain)] * T
         voiced = [float(v) for v in voi]
         rust = _rust(sub)
         audio_bytes = rust.synthesize_formant_track(

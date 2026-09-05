@@ -1171,10 +1171,24 @@ pub fn synthesize_formant_track(
             out[output_samples - 1 - i] *= r;
         }
     }
-    // Peak-normalise to [-0.9, 0.9].
+    // CLIP-SAFETY ONLY (was: unconditional peak-normalise to [-0.9, 0.9]).
+    //
+    // The old code rescaled EVERY buffer to peak 0.9, which discarded the
+    // per-frame `amp[]` loudness contour applied above at `out[n] = s * a`.
+    // That erased absolute amplitude: a quiet utterance and a loud one came out
+    // at the same level, so the energy/arousal dimension was destroyed at the
+    // synthesis stage. Recognition never noticed (formant/frequency structure is
+    // amplitude-invariant), but affect-appropriate prosody lives precisely in
+    // the loudness contour, so the qualia/prosody work surfaced this as a design
+    // limitation. Normalisation is a CONSUMER/ANALYSIS choice (a recogniser may
+    // normalise its own front-end); the synthesiser must not throw the
+    // information away. We now PRESERVE the caller's absolute amplitude and only
+    // scale DOWN to prevent hard clipping when the summed cascade exceeds unity
+    // — never UP — so `amp[]` (e.g. an arousal-driven loudness envelope) survives
+    // to the output and relative loudness is comparable ACROSS calls.
     let peak = out.iter().fold(0.0f32, |a, &b| a.max(b.abs()));
-    if peak > 0.0 {
-        let scale = 0.9 / peak;
+    if peak > 1.0 {
+        let scale = 1.0 / peak;
         for v in &mut out {
             *v *= scale;
         }

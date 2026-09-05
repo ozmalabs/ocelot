@@ -9,8 +9,11 @@ pre-registration (`docs/research/psychology_affect/PROSODY_RAVDESS_PREREG.md`):
   (a) ARM A — each synthesized emotion's re-analyzed f0_mean tracks its arousal
       class (HIGH synths high, LOW synths low), monotone in the prereg arousal
       ordering, HIGH-mean f0 > LOW-mean f0, and CI-separated from the flat
-      baseline; energy is HONESTLY asserted saturated (synth peak-normalizes) —
-      a real synthesizer limit, pinned, not papered over.
+      baseline; ENERGY now tracks arousal (rank-correlated with the prereg
+      arousal ordering, HIGH-arousal energy CI-separated from LOW, and
+      CI-separated from the flat baseline) after the synthesizer amplitude-
+      preservation fix (clip-safety replaced the unconditional peak-normalize
+      that had discarded absolute amplitude).
   (b) ARM B — the lift number is reproduced with the SIGN pinned, the blind twin
       is the byte-identical control, computed on HELD-OUT actors; the reliable-
       axis point-biserial sign is correct. Null is a valid pinned result.
@@ -41,7 +44,7 @@ from domains.prosody_generation import (                        # noqa: E402
     substrate_affect_coord, EMOTION_VA, EMOTION_TO_EMX, FLAT_BASELINE,
     DIGIT_WORDS)
 
-CANON_MD5 = "a32ed336662eaa9eb6df27b7112541ac"
+CANON_MD5 = "28dd61b94c54d67966e82b70aa5197be"
 RAVDESS_DIR = os.path.join(ROOT, "data", "ravdess")
 RESULTS_DIR = os.path.join(ROOT, "results", "prosody_ravdess")
 GEN_JSON = os.path.join(RESULTS_DIR, "generation.json")
@@ -143,17 +146,34 @@ def test_armA_ci_separated_from_flat(gen_result):
     assert gen_result["verdict_ci_separated"] is True
 
 
-def test_armA_energy_saturated_honest(gen_result):
-    """HONEST pinned limit: the synth peak-normalizes so re-analyzed ENERGY is
-    saturated (spread tiny relative to the RAVDESS energy range ~0.022) and
-    cannot discriminate — energy landing is NOT claimed. A real synthesizer
-    limit, pinned explicitly."""
-    # every emotion's synth energy sits well above the RAVDESS HIGH threshold
-    # (0.010) because of normalization — i.e. energy carries no arousal signal.
-    assert all(v > 0.05 for v in gen_result["energy_values"].values()), \
-        gen_result["energy_values"]
-    # the spread across emotions is small vs the between-emotion f0 movement.
-    assert gen_result["energy_spread"] < 0.06, gen_result["energy_spread"]
+def test_armA_energy_tracks_arousal(gen_result):
+    """Post the synthesizer amplitude-preservation fix (clip-safety replaced the
+    unconditional peak-normalize that discarded absolute amplitude), re-analyzed
+    ENERGY now tracks arousal. Scored on ORDERING, not absolute band membership,
+    because the synth energy scale (~0.09-0.36) differs from the RAVDESS wav scale
+    (~0.002-0.021): (1) synth energy is rank-correlated with the pre-registered
+    arousal ordering, (2) HIGH-arousal mean energy > LOW-arousal mean energy and
+    CI-separated, (3) a majority of emotions are CI-separated from the flat
+    baseline. This was the pinned Arm-A limit; it now WORKS."""
+    # (1) rank (Spearman) correlation of synth energy vs the arousal ordering.
+    assert gen_result["energy_arousal_rank_rho"] >= 0.7, \
+        gen_result["energy_arousal_rank_rho"]
+    assert gen_result["verdict_energy_tracks_arousal"] is True
+    # (2) HIGH-arousal energy clearly above LOW, CI-separated.
+    assert gen_result["high_mean_energy"] > gen_result["low_mean_energy"]
+    assert gen_result["verdict_energy_high_above_low"] is True
+    assert gen_result["high_low_energy_ci_separated"] is True
+    # low-arousal emotions (calm, neutral) are the quietest; angry the loudest.
+    en = gen_result["energy_values"]
+    assert en["calm"] < en["angry"], en
+    assert en["neutral"] < en["angry"], en
+    assert en["calm"] < en["happy"] and en["neutral"] < en["fearful"], en
+    # (3) affect-driven energy CI-separated from the flat baseline for a majority.
+    assert gen_result["n_energy_ci_separated_from_flat"] >= 4, \
+        gen_result["n_energy_ci_separated_from_flat"]
+    assert gen_result["verdict_energy_ci_separated_from_flat"] is True
+    # the energy spread is now large (was 0.029 when saturated) — real movement.
+    assert gen_result["energy_spread"] > 0.10, gen_result["energy_spread"]
 
 
 # ============================================================ (b) ARM B

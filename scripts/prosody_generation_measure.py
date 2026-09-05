@@ -20,10 +20,20 @@ Scored (per prereg §3):
   * CI-separation of affect-driven f0_mean from the FLAT baseline (bootstrap over
     digit words).
 
-HONEST: the synthesizer PEAK-NORMALIZES every buffer, so re-analyzed ENERGY is
-saturated (~constant) and cannot discriminate — this is reported straight, and the
-landing is scored on f0_mean (the axis the synth CAN move) with energy reported as
-the saturated diagnostic. This is a synthesizer limit, not a mapping error.
+HONEST — ENERGY (post synth amplitude-preservation fix): the synthesizer
+previously peak-normalized every buffer, discarding absolute amplitude, so
+re-analyzed energy was saturated (~0.30, spread 0.029) and could not discriminate.
+The Rust renderer now applies CLIP-SAFETY ONLY (scales down only if peak>1.0),
+preserving absolute amplitude, and the affect->knob map now carries an
+arousal->loudness gain (0.12+0.28*a). Re-analyzed energy now tracks arousal
+MONOTONICALLY. Because the synth energy scale (~0.09-0.36) differs from the
+RAVDESS wav energy scale (~0.002-0.021) — different absolute scales — the energy
+axis is scored on the ORDERING (rank correlation vs the arousal ordering) +
+CI-separation of high-vs-low arousal energy + CI-separation from the flat
+baseline, NOT absolute band membership. HONEST RESIDUAL: the gain range tops out
+at 0.40 because the LF+formant cascade's intrinsic peak already exceeds 1.0, so
+clip-safety re-compresses above ~0.45; a fuller fix would lower the cascade's own
+source/formant level for more headroom (a deeper synth change, out of scope).
 
 MECHANICAL MEASURE-ADAPTER. No agent decision, no Rust, no Term, no shaping. The
 generator SETS knobs + calls the forward synthesizer; this script READS the judge
@@ -131,15 +141,40 @@ def _bootstrap_ci(vals, reps=BOOT_REPS, seed=RNG_SEED):
     return float(vals.mean()), float(np.percentile(means, 2.5)), float(np.percentile(means, 97.5))
 
 
+def _spearman(xs, ys):
+    """Spearman rank correlation of two equal-length sequences (numpy only). Ties
+    broken by average rank. Returns rho in [-1, 1]."""
+    def _rank(a):
+        a = np.asarray(a, dtype=np.float64)
+        order = np.argsort(a, kind="mergesort")
+        ranks = np.empty(len(a), dtype=np.float64)
+        ranks[order] = np.arange(1, len(a) + 1, dtype=np.float64)
+        # average ties
+        _, inv, counts = np.unique(a, return_inverse=True, return_counts=True)
+        sums = np.zeros(len(counts))
+        np.add.at(sums, inv, ranks)
+        avg = sums / counts
+        return avg[inv]
+    rx, ry = _rank(xs), _rank(ys)
+    rx = rx - rx.mean()
+    ry = ry - ry.mean()
+    denom = np.sqrt((rx ** 2).sum() * (ry ** 2).sum())
+    if denom == 0:
+        return 0.0
+    return float((rx * ry).sum() / denom)
+
+
 def run():
     gen = ProsodyGenerator(fs=FS)
 
-    # flat-baseline f0 per digit (the blind twin — affect ignored).
-    flat_f0 = []
+    # flat-baseline f0 + energy per digit (the blind twin — affect ignored).
+    flat_f0, flat_en = [], []
     for w in DIGITS:
         _e, f, _c = _measure(gen.synthesize(w, "neutral", flat=True))
         flat_f0.append(f)
+        flat_en.append(_e)
     flat_f0_mean, flat_lo, flat_hi = _bootstrap_ci(flat_f0)
+    flat_en_mean, flat_en_lo, flat_en_hi = _bootstrap_ci(flat_en)
 
     rows = []
     hit_arousal = 0          # landed in own arousal class region (HIGH/LOW), f0 axis
@@ -154,7 +189,7 @@ def run():
             per_digit_en.append(e)
             contours.append(c)
         f0_m, f0_lo, f0_hi = _bootstrap_ci(per_digit_f0)
-        en_m = float(np.mean(per_digit_en))
+        en_m, en_lo, en_hi = _bootstrap_ci(per_digit_en)
         reg = _f0_region_class(f0_m, en_m)
         nearest, ndist = _nearest_region(f0_m, en_m)
         # scored landing: HIGH emotions must land f0_high; LOW must land f0_low.
@@ -176,6 +211,8 @@ def run():
         nearest_own += int(near_own)
         # CI-separation of this emotion's affect-driven f0 from the flat baseline.
         ci_sep = (f0_lo > flat_hi) or (f0_hi < flat_lo)
+        # CI-separation of this emotion's affect-driven ENERGY from the flat baseline.
+        en_ci_sep = (en_lo > flat_en_hi) or (en_hi < flat_en_lo)
         # contour: most common bucket produced.
         cbucket = max(set(contours), key=contours.count)
         rows.append(dict(
@@ -185,6 +222,8 @@ def run():
             affect_valence=k["valence"],
             produced_f0_mean=round(f0_m, 2), produced_f0_ci=[round(f0_lo, 2), round(f0_hi, 2)],
             produced_energy=round(en_m, 5),
+            produced_energy_ci=[round(en_lo, 5), round(en_hi, 5)],
+            energy_ci_separated_from_flat=bool(en_ci_sep),
             produced_contour=cbucket,
             region_target_f0=REGION_CENTRE[emo][0],
             region_target_energy=REGION_CENTRE[emo][1],
@@ -210,6 +249,26 @@ def run():
     low_f0 = np.mean([f0_by_emo[e] for e in LOW_EMO])
 
     n_ci_sep = sum(1 for r in rows if r["ci_separated_from_flat"])
+
+    # ===== ENERGY AXIS (post amplitude-preservation fix) =====================
+    en_by_emo = {r["emotion"]: r["produced_energy"] for r in rows}
+    # rank correlation of synth energy vs the pre-registered arousal ordering
+    # (calm<neutral<sad<disgust<surprised<happy<fearful<angry). The ordering index
+    # IS the arousal rank; correlating synth energy against it tests whether louder
+    # renders track higher arousal.
+    arousal_rank = list(range(len(order)))
+    energy_ordered = [en_by_emo[e] for e in order]
+    energy_arousal_rho = round(_spearman(energy_ordered, arousal_rank), 4)
+    # HIGH vs LOW arousal energy separation + CI-separation (bootstrap over the
+    # per-emotion energy means within each class).
+    high_en_vals = [en_by_emo[e] for e in HIGH_EMO]
+    low_en_vals = [en_by_emo[e] for e in LOW_EMO]
+    high_en_m, high_en_lo, high_en_hi = _bootstrap_ci(high_en_vals)
+    low_en_m, low_en_lo, low_en_hi = _bootstrap_ci(low_en_vals)
+    high_low_en_ci_sep = bool(high_en_lo > low_en_hi)
+    n_en_ci_sep = sum(1 for r in rows if r["energy_ci_separated_from_flat"])
+    en_spread = round(max(en_by_emo.values()) - min(en_by_emo.values()), 5)
+
     result = dict(
         block=295000,
         arm="A_generation",
@@ -226,20 +285,39 @@ def run():
         low_mean_f0=round(float(low_f0), 2),
         high_low_f0_gap=round(float(high_f0 - low_f0), 2),
         n_ci_separated_from_flat=n_ci_sep,
-        # HONEST energy note
-        energy_saturated_note=(
-            "Synth peak-normalizes every buffer; re-analyzed energy is saturated "
-            "(~0.30 across all emotions) and cannot discriminate — landing scored "
-            "on f0_mean, the axis the synth can move. This is a synthesizer limit, "
-            "not a mapping error."),
-        energy_values={r["emotion"]: r["produced_energy"] for r in rows},
-        energy_spread=round(
-            max(r["produced_energy"] for r in rows)
-            - min(r["produced_energy"] for r in rows), 5),
+        # ENERGY AXIS (post synth amplitude-preservation fix)
+        energy_note=(
+            "Synth renderer now applies clip-safety only (preserves absolute "
+            "amplitude); the affect->knob map carries an arousal->loudness gain "
+            "(0.12+0.28*a). Re-analyzed energy now tracks arousal monotonically. "
+            "The synth energy scale (~0.09-0.36) differs from the RAVDESS wav "
+            "energy scale (~0.002-0.021) — different absolute scales — so the "
+            "energy axis is scored on ORDERING (rank correlation vs the arousal "
+            "ordering) + high-vs-low CI-separation + CI-separation from the flat "
+            "baseline, NOT absolute band membership. RESIDUAL: gain tops at 0.40 "
+            "because the LF+formant cascade's intrinsic peak exceeds 1.0, so "
+            "clip-safety re-compresses above ~0.45; a fuller fix would lower the "
+            "cascade source/formant level for more headroom (out of scope)."),
+        energy_values=en_by_emo,
+        energy_spread=en_spread,
+        flat_baseline_energy=round(flat_en_mean, 5),
+        flat_baseline_energy_ci=[round(flat_en_lo, 5), round(flat_en_hi, 5)],
+        energy_arousal_rank_rho=energy_arousal_rho,
+        high_mean_energy=round(float(high_en_m), 5),
+        high_energy_ci=[round(high_en_lo, 5), round(high_en_hi, 5)],
+        low_mean_energy=round(float(low_en_m), 5),
+        low_energy_ci=[round(low_en_lo, 5), round(low_en_hi, 5)],
+        high_low_energy_ci_separated=high_low_en_ci_sep,
+        n_energy_ci_separated_from_flat=n_en_ci_sep,
         # verdicts
         verdict_arousal_monotone=bool(mono_frac >= 0.75),
         verdict_high_above_low=bool(high_f0 > low_f0),
         verdict_ci_separated=bool(n_ci_sep >= 4),
+        # energy-axis verdicts
+        verdict_energy_tracks_arousal=bool(energy_arousal_rho >= 0.7),
+        verdict_energy_high_above_low=bool(high_en_m > low_en_m),
+        verdict_energy_high_low_ci_separated=high_low_en_ci_sep,
+        verdict_energy_ci_separated_from_flat=bool(n_en_ci_sep >= 4),
     )
 
     out_dir = os.path.join(_ROOT, "results", "prosody_ravdess")
@@ -267,7 +345,14 @@ def main():
     print(f"  f0 monotone frac: {result['f0_monotone_frac']}  "
           f"HIGH f0={result['high_mean_f0']} LOW f0={result['low_mean_f0']} "
           f"gap={result['high_low_f0_gap']}")
-    print(f"  energy spread (saturated): {result['energy_spread']}")
+    print(f"  ENERGY axis: spread={result['energy_spread']} "
+          f"arousal-rank rho={result['energy_arousal_rank_rho']}")
+    print(f"    HIGH energy={result['high_mean_energy']} CI={result['high_energy_ci']} "
+          f"LOW energy={result['low_mean_energy']} CI={result['low_energy_ci']} "
+          f"high>low CI-sep={result['high_low_energy_ci_separated']}")
+    print(f"    flat baseline energy={result['flat_baseline_energy']} "
+          f"CI={result['flat_baseline_energy_ci']}  "
+          f"n energy CI-sep from flat={result['n_energy_ci_separated_from_flat']}/8")
 
 
 if __name__ == "__main__":
