@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.join(ROOT, "runners", "dsl", "python"))
 from domains.marshmallow_world import (        # noqa: E402
     MarshmallowWorld, predicted_wait_time)
 
-CANON_MD5 = "e75bc65021b6be0740abeee63662e21b"   # canonical .so on base ecdcd8dbad
+CANON_MD5 = "a32ed336662eaa9eb6df27b7112541ac"   # canonical .so after native-only CAN cutover (Ising engine removed)
 
 
 def test_wait_take_is_a_graph_rule_matching_the_formula():
