@@ -322,6 +322,179 @@ for et, dim in sorted(_EDGE_ROLE.items()):
     NODES.append({"type": "DimensionEdgeRole",
                   "attrs": {"edge_type": et, "dimension": dim, "seeded": 1.0}})
 
+# --- THE SCHEMA DESCRIPTOR — the space's EDGES and SHAPE, made checkable. --- #
+# A single `QualiaSchema` node carrying (as JSON strings, since node attrs are
+# scalars) the declared value-DOMAIN of each coordinate FAMILY and the INVARIANTS
+# every built space must hold. This is what `domains/qualia_schema.validate_
+# qualia_space` reads off the graph to check a built space conforms — the schema
+# lives as graph DATA next to the QualiaDimension/DimensionEdgeRole codebook it
+# describes, not as prose (the same choice the edge-role map already made).
+#
+# A coordinate is a `(dimension, predicate, value)` 3-tuple. The dimension's
+# FAMILY (its prefix before ':') fixes the shape of predicate+value:
+#
+#   lexical:formal      pred ∈ {is_a, category}; value = a lowercase TYPE / category token
+#   lexical:<role>      pred = the outgoing EDGE TYPE; value = the target's node TYPE
+#                       (structure-mapping — the filler is abstracted to its type)
+#   relational:<edge>   an UNTYPED edge axis (edge type carried no seeded role):
+#                       pred = edge type; value = target node TYPE. A mint candidate.
+#   dynamical:<axis>    pred = "field"; value = an INTEGER step k in [-half_width,
+#                       +half_width], k ≠ 0 (a 0 coordinate is the shared default,
+#                       omitted). The axis's quantum/half_width are on its
+#                       QualiaDimension node.
+#   vocab:<kind>        pred = a shape-vocabulary keyword; value = a slot string
+#                       ("a|b" or "·"). kind ∈ {role, principle, shape}.
+#   attr:<key>          pred = the attr key; value = its stringified value. The
+#                       catch-all for plain content (name/definition/…), MINUS the
+#                       reserved field attrs (below) and CAN bookkeeping.
+#
+# The families are CLOSED for the structured axes (lexical/dynamical/vocab) and
+# OPEN for attr:/relational: (the honestly-untyped residue) and phenomenal:
+# (grown by minting). "Closed" means a coordinate on that family must name a
+# declared dimension; "open" means any dimension of that prefix is admissible.
+_SCHEMA_FAMILIES = {
+    # family-prefix -> {closed, predicates, value_kind, gloss}
+    "lexical": {
+        "closed": True,
+        "predicates": ["is_a", "category", "<edge_type>"],
+        "value_kind": "token",   # a lowercase type / category / target-type token
+        "gloss": "Pustejovsky qualia roles — the typed structure of what a "
+                 "concept IS. formal via type+category; constitutive/telic/"
+                 "agentive via edges typed by the DimensionEdgeRole map. Value "
+                 "is a lowercase token (a type or category name); for a role "
+                 "axis it is the TARGET'S TYPE (structure-mapping, filler "
+                 "abstracted).",
+    },
+    "dynamical": {
+        "closed": True,
+        "predicates": ["field"],
+        "value_kind": "int_step",   # integer k in [-half_width, half_width], k != 0
+        "gloss": "CAN field coordinates — the proto-phenomenal 'what it is "
+                 "like', read off state/external_field/identity_field (and the "
+                 "mirrored trait fields), quantised to an integer step. "
+                 "Crystallised axes stand in the signature; overlay axes appear "
+                 "only in the live reading.",
+    },
+    "vocab": {
+        "closed": True,
+        "kinds": ["role", "principle", "shape"],
+        "predicates": ["<keyword>"],
+        "value_kind": "slot_string",   # "a|b" joined sorted slots, or "·"
+        "gloss": "Shape-vocabulary keyword hits — the bootstrap that keeps the "
+                 "edge-poor booted corpus matchable. Weaker evidence than a "
+                 "typed edge, honestly labelled on its own vocab:<kind> axis. "
+                 "The KIND (role|principle|shape) is the closed set; the "
+                 "keyword predicate is open (any shape-vocabulary term). A "
+                 "vocab:<kind> axis is NOT a QualiaDimension codebook node — it "
+                 "is produced by keyword matching against seeds/shape_"
+                 "vocabulary.json, so it is validated by KIND, not by codebook "
+                 "membership.",
+    },
+    "relational": {
+        "closed": False,
+        "predicates": ["<edge_type>"],
+        "value_kind": "token",
+        "gloss": "An outgoing edge whose type carries NO seeded lexical role — "
+                 "still matched, honestly untyped. A candidate for minting into a "
+                 "real qualia role. OPEN: any relational:<edge> is admissible.",
+    },
+    "attr": {
+        "closed": False,
+        "predicates": ["<attr_key>"],
+        "value_kind": "token",
+        "gloss": "The catch-all for plain content attributes (name/definition/…) "
+                 "minus the reserved dynamical field attrs and the CAN mechanism "
+                 "bookkeeping. OPEN: any attr:<key> is admissible.",
+    },
+    "phenomenal": {
+        "closed": False,
+        "predicates": ["keyword"],
+        "value_kind": "token",
+        "gloss": "Felt axes beyond the raw CAN coordinates. GROWN from residual "
+                 "(the sd_mint_quantum discipline), never hand-enumerated — so "
+                 "OPEN by design. Only a bootstrap phenomenal:modality is seeded.",
+    },
+}
+
+# The attrs a Concept carries that are NOT `attr:` content: they are read as the
+# dynamical axes (the three raw CAN fields + every mirrored trait field), so they
+# must never also surface as an attr:* coordinate. Derived from the field: axes'
+# own `source` — a single source of truth, not a hand-kept list.
+_RESERVED_FIELD_ATTRS = sorted({
+    d["attrs"]["source"].split(":", 1)[1]
+    for d in _DYNAMICAL
+} | {"state", "external_field", "identity_field"})
+
+# The INVARIANTS a built space must hold. Each is (id, checkable-claim, gloss).
+# `qualia_schema.validate_qualia_space` turns these into executable checks; they
+# are stated here as the schema's own record of what "well-formed" means.
+_SCHEMA_INVARIANTS = [
+    ("coord_arity",
+     "every coordinate is a (dimension, predicate, value) 3-tuple",
+     "The signature is a frozenset of 3-tuples; nothing is a bare pair or a "
+     "longer tuple. The dimension tag is what makes the space a schema."),
+    ("dimension_declared",
+     "every coordinate's dimension is either a declared QualiaDimension or an "
+     "open-family axis (attr:/relational:/phenomenal:)",
+     "A closed-family coordinate (lexical/dynamical/vocab) must name a dimension "
+     "in the codebook; an open-family coordinate may name any axis of its "
+     "prefix."),
+    ("value_in_domain",
+     "every coordinate's value lies in its family's declared value domain",
+     "A dynamical value is an integer step in [-half_width, half_width]\\{0}; a "
+     "lexical/vocab/attr/relational value is a token/slot-string. An out-of-range "
+     "dynamical k or a non-integer field value is rejected."),
+    ("dynamical_is_produced_not_hand_set",
+     "no raw CAN field attr (state/external_field/identity_field/<trait>_field) "
+     "appears as an attr:* coordinate",
+     "The felt content has ONE home — the quantised dynamical axes. A raw field "
+     "leaking in as attr:* would be a non-discriminative duplicate; its absence "
+     "is the schema enforcing 'valence/commitment are produced, not hand-set'."),
+    ("no_can_bookkeeping",
+     "no CAN mechanism counter (identity/evidence ledger, *_tick/*_epoch gate) "
+     "appears as an attr:* coordinate",
+     "The native rules write per-Concept bookkeeping; it is mechanism, not "
+     "qualia content, and is excluded at the signature source."),
+    ("overlay_superset_of_crystallised",
+     "the overlay signature is a superset of the crystallised one; the axes it "
+     "adds are exactly the overlay dynamical axes",
+     "h_eff = external + identity read as coordinates: the standing term is in "
+     "the crystallised signature, the live term is the overlay. Their GAP is the "
+     "unsettled point ('I'm not sure how I feel')."),
+    ("dark_when_unrelaxed",
+     "a concept with no dynamical field activity carries only non-dynamical "
+     "(lexical/vocab/attr) coordinates",
+     "A never-relaxed concept is dark on the dynamical axes rather than "
+     "trivially matching every other concept at valence 0 — the zero coordinate "
+     "is omitted, so absence is meaningful."),
+    ("commitment_iff_identity",
+     "dynamical:commitment is present in the crystallised signature iff "
+     "identity_field rounds to a nonzero step",
+     "Commitment is crystallised experience: it appears only once the identity "
+     "field has settled away from zero, never before."),
+]
+
+_SCHEMA_NODE = {
+    "type": "QualiaSchema",
+    "attrs": {
+        "name": "qualia_space_schema",
+        "version": "1.0.0",
+        "coord_arity": 3,
+        "families": json.dumps(_SCHEMA_FAMILIES, sort_keys=True),
+        "reserved_field_attrs": json.dumps(_RESERVED_FIELD_ATTRS),
+        "invariants": json.dumps(_SCHEMA_INVARIANTS),
+        "gloss": (
+            "THE SCHEMA OF QUALIA SPACE, made checkable. Declares the value "
+            "DOMAIN of each coordinate family and the INVARIANTS a built space "
+            "must hold. A coordinate is (dimension, predicate, value); its "
+            "family (prefix before ':') fixes predicate+value shape. Read by "
+            "domains/qualia_schema.validate_qualia_space to check a built space "
+            "conforms; the QualiaDimension nodes carry the per-axis quantum/"
+            "half_width/overlay this descriptor references."),
+    },
+}
+NODES.append(_SCHEMA_NODE)
+
 # Assign sequential local_ids (the seed loader requires one per node).
 for i, n in enumerate(NODES, start=1):
     n["local_id"] = i
@@ -346,7 +519,10 @@ MANIFEST = {
         "and phenomenal are ONE space, not two: the substrate already stores "
         "emotion/regard/self-worth as Concepts in the same CAN field as any "
         "reasoned-about concept. A DimensionEdgeRole map wires edge types to "
-        "their lexical role. Emitted by tools/build_qualia_space_seed.py. "
+        "their lexical role. A QualiaSchema descriptor node declares the value "
+        "domain of each coordinate family + the invariants a built space must "
+        "hold (checked by domains/qualia_schema.validate_qualia_space). Emitted "
+        "by tools/build_qualia_space_seed.py. "
         "Read by domains/analogy_search.concept_signature (dimension-tagged "
         "coordinates); matched per-dimension by seeds/analogy_search.json."),
     "microtheory": {
@@ -372,4 +548,4 @@ if __name__ == "__main__":
     print(f"wrote {OUT} "
           f"({len(NODES)} nodes: {len(_LEXICAL)} lexical + {len(_DYNAMICAL)} "
           f"dynamical + {len(_PHENOMENAL)} phenomenal + "
-          f"{len(_EDGE_ROLE)} edge-role)")
+          f"{len(_EDGE_ROLE)} edge-role + 1 schema descriptor)")
