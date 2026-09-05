@@ -879,21 +879,177 @@ def exploration_trait_evidence(agent, *, ms=None) -> dict:
             "securing": securing}
 
 
+# --------------------------------------------------------------------------- #
+# SKEPTICISM <- PREDICTION ERROR (the accepted-then-falsified driver).
+#
+# THE HONEST GAP THIS CLOSES.  exploration_trait_evidence regulates skepticism
+# from STANDING UNCERTAINTY (the exploration_urge, a proxy for "how sure am I
+# right now"). That is the DISPOSITION-to-explore read, not a learning signal:
+# it never notices when the agent ACCEPTED something and was later WRONG. The
+# real MicroPsi certainty signal is the OTHER half of the exploration need —
+# "Confirmation of uncertain expectations increases certainty and reduces the
+# urge; violations or missing predictions increase it" (MICROPSI_STUDY §Cognitive
+# needs). A FALSIFIED acceptance is exactly a violated expectation about
+# something the agent had already committed to; it should crystallise skepticism
+# UP. A sustained run of CONFIRMED acceptances is certainty earned; it should
+# relax skepticism DOWN.
+#
+# THE EXISTING DISCONFIRMATION SIGNAL WE WIRE TO (no invention).  The substrate
+# ALREADY records an accepted-then-falsified event: grounded_representation.
+# ground_concept(sense_aware=True) reads a NEW definition against what the agent
+# already HOLDS for a term, and when the new genus is DISJOINT from the held
+# built_from parts it flags the concept `genus_surprise=1` + `needs_reevaluation=1`
+# (grounded_representation.py) — "a held grounding was contradicted; do not
+# silently overwrite, flag for re-evaluation". That is a genuine PREDICTION
+# ERROR on a previously-accepted commitment: the agent grounded the term one way,
+# a later reading falsified the genus it committed to. Symmetrically, a grounding
+# the agent holds that was NEVER surprised (`structurally_grounded=1` and no
+# `genus_surprise`) is a CONFIRMED acceptance — an expectation that held.
+#
+# We READ those flags as a MAGNITUDE + SIGN and hand relax_trait a signed sigma.
+# The DECISION (how far skepticism moves) is the CAN relaxation integrating the
+# evidence; Python only counts the surprised vs confirmed groundings and hands a
+# sign. This is the SAME sigma/ledger channel exploration_trait_evidence feeds —
+# the two skepticism reads SUM into skepticism's single batched relaxation, they
+# do not fight (see personality_homeostasis_step).
+#
+# NEUTRAL => 0 (default == today).  A graph with NO grounded acceptances (no
+# structurally_grounded concepts) and NO surprises injects 0 evidence — a fresh
+# agent that has accepted nothing does not drift. Only an OBSERVED disconfirmation
+# (or an observed run of confirmations) moves the trait.
+# --------------------------------------------------------------------------- #
+#: A grounding is a CONFIRMED acceptance when the agent structurally grounded it
+#: (`structurally_grounded`) OR gave it a built_from genus, and it was NOT later
+#: flagged `genus_surprise`. A grounding flagged `genus_surprise` is the
+#: FALSIFIED acceptance (the held genus was contradicted by a later reading).
+_GENUS_SURPRISE_ATTR = "genus_surprise"
+_STRUCTURALLY_GROUNDED_ATTR = "structurally_grounded"
+
+
+def _count_grounding_outcomes(sub) -> "tuple[int, int]":
+    """(confirmed, falsified): scan the graph for the agent's grounded
+    acceptances and split them into CONFIRMED (a held structural grounding that
+    was never surprised) and FALSIFIED (a held grounding flagged `genus_surprise`
+    — the accepted-then-later-contradicted event grounded_representation records).
+    A pure mechanical scan of graph state — NO decision, NO affect. A Concept is
+    counted as an acceptance only if it is actually GROUNDED (structurally_grounded
+    or genus_surprise set), so an ungrounded corpus contributes nothing (neutral).
+
+    This is the DISCONFIRMATION read the skepticism prediction-error driver
+    integrates: falsified acceptances are the violated-expectation signal
+    (skepticism UP), confirmed acceptances the earned-certainty signal (DOWN)."""
+    confirmed = 0
+    falsified = 0
+    try:
+        for cid in sub.nodes("Concept"):
+            try:
+                a = sub.node(cid)["attrs"]
+            except Exception:
+                continue
+            surprised = bool(a.get(_GENUS_SURPRISE_ATTR))
+            grounded = bool(a.get(_STRUCTURALLY_GROUNDED_ATTR))
+            if surprised:
+                falsified += 1          # accepted, then genus contradicted
+            elif grounded:
+                confirmed += 1          # accepted, held, never contradicted
+    except Exception:
+        return (0, 0)
+    return (confirmed, falsified)
+
+
+def skepticism_prediction_error_evidence(agent, *, sub=None) -> dict:
+    """SKEPTICISM <- PREDICTION ERROR: the accepted-then-falsified driver.
+
+    Reads the substrate's OWN disconfirmation record — the `genus_surprise`
+    flag grounded_representation.ground_concept writes when a HELD grounding's
+    genus is contradicted by a later reading (a violated expectation about
+    something previously accepted) — and the CONFIRMED acceptances (held
+    structural groundings never surprised), and returns a SIGNED skepticism
+    sigma:
+
+      any FALSIFIED acceptance present            => +1  (burned once: skepticism UP)
+      only CONFIRMED acceptances (none falsified)  => -1  (earned trust: skepticism DOWN)
+      no acceptances at all (nothing grounded)     =>  0  (NEUTRAL — no drift)
+
+    THE SIGN, NOT THE DISTANCE.  Like every other trait driver in this module,
+    Python reads the numbers and hands a SIGN (+1/-1/0); HOW FAR skepticism moves
+    is the CAN identity-feedback rule integrating the sign over ticks (one ±1
+    quantum per tick, gated on the evidence-ledger log-odds flip). A single big
+    disconfirmation therefore moves skepticism by a BOUNDED amount (one quantum
+    per relaxation tick, capped at the ±4 ceiling) — the discrete event cannot
+    jump the slow trait; the ledger integrates it. `magnitude` (the falsified /
+    confirmed counts and their ratio) is returned for transparency and for a
+    caller that wants to spend more `ticks` on a stronger error, but it does NOT
+    scale the per-tick step — the trait stays a slow, hysteretic servo.
+
+    FALSIFICATION DOMINATES.  If ANY held grounding is currently flagged
+    `genus_surprise`, the sign is +1 regardless of how many confirmations
+    coexist: an unresolved contradiction is the live violated expectation the
+    agent must answer (become more demanding), the MicroPsi 'violations increase
+    the certainty urge' rule. Confirmations relax skepticism only once there are
+    NO outstanding falsifications — earned trust is the ABSENCE of live
+    disconfirmation, not an average against it.
+
+    NEUTRAL => 0 (default == today).  A graph with nothing grounded (a fresh
+    agent, or one that has accepted nothing) reads (0,0) => 0 evidence => the
+    trait does not drift.
+
+    Pure reads + the documented classification; NO trait is moved here. Returns
+    {sigma, confirmed, falsified, error_ratio}."""
+    if sub is None:
+        sub = disp._sub(agent)
+    if sub is None:
+        return {"sigma": 0.0, "confirmed": 0, "falsified": 0,
+                "error_ratio": 0.0}
+    confirmed, falsified = _count_grounding_outcomes(sub)
+
+    sigma = 0.0
+    if falsified > 0:
+        sigma = 1.0                      # a live violated expectation => skeptical
+    elif confirmed > 0:
+        sigma = -1.0                     # only confirmations => earned trust, relax
+    total = confirmed + falsified
+    error_ratio = (falsified / total) if total else 0.0
+    return {"sigma": sigma, "confirmed": confirmed, "falsified": falsified,
+            "error_ratio": error_ratio}
+
+
 def drive_trait_evidence(agent, *, ms=None) -> dict:
     """The whole DRIVE-REGULATED row of the trait->drive table at once: the
     signed evidence for every DRIVE-regulated trait, read from its governing
     drive/modulator. openness is NOT here — it is regulated by graph hygiene, not
     a drive (see the module gloss / disposition.disposition_homeostasis_step).
 
+    SKEPTICISM has TWO governing reads that SUM (see personality_homeostasis_step
+    and skepticism_prediction_error_evidence): the STANDING-UNCERTAINTY read
+    (exploration_trait_evidence — "how sure am I right now") and the
+    PREDICTION-ERROR read (skepticism_prediction_error_evidence — "was something
+    I accepted later proved wrong"). This function reports the standing-uncertainty
+    read as skepticism's `readings.exploration` component (the prediction-error
+    read is folded in at personality_homeostasis_step, where the graph scan
+    belongs); `readings.prediction_error` carries the disconfirmation read so the
+    combined sign is transparent to the demo/tests.
+
     Returns {abstraction, skepticism, readings} — the per-trait sigma and the raw
-    drive/modulator numbers observed (for transparency / the demo)."""
+    drive/modulator numbers observed (for transparency / the demo). `skepticism`
+    here is the SUM-clamped sign of both reads."""
     _native, ms, _a = _ms_reading(agent, ms)
     comp = competence_trait_evidence(agent, ms=ms)
     expl = exploration_trait_evidence(agent, ms=ms)
+    pred = skepticism_prediction_error_evidence(agent)
+    # SUM the two skepticism reads (standing uncertainty + prediction error) into
+    # one sign — they do NOT fight, they combine into skepticism's single
+    # relaxation. A +1 falsification and a -1 confirmed-certainty cancel to 0
+    # (no net demand this step); two agreeing reads reinforce to a single +1/-1
+    # (the relaxation still moves at most one quantum/tick — the sum sets the
+    # SIGN, the CAN rule sets the distance).
+    skep_sum = float(expl["sigma"]) + float(pred["sigma"])
+    skepticism = 0.0 if skep_sum == 0.0 else (1.0 if skep_sum > 0 else -1.0)
     return {
         "abstraction": comp["sigma"],
-        "skepticism": expl["sigma"],
-        "readings": {"competence": comp, "exploration": expl},
+        "skepticism": skepticism,
+        "readings": {"competence": comp, "exploration": expl,
+                     "prediction_error": pred},
     }
 
 
@@ -1026,6 +1182,24 @@ def personality_homeostasis_step(agent, *, mint_result: Optional[dict] = None,
       · ABSTRACTION + SKEPTICISM are DRIVE-regulated: their evidence signs come
         from competence_trait_evidence / exploration_trait_evidence.
 
+    SKEPTICISM HAS TWO READS THAT SUM (the prediction-error driver).  skepticism
+    is now regulated by BOTH:
+      · the STANDING-UNCERTAINTY read (exploration_trait_evidence): the live
+        exploration_urge, MicroPsi's heuristic for "how uncertain am I right now"
+        — high urge => +1 (demand certainty), confirmed low urge => -1.
+      · the PREDICTION-ERROR read (skepticism_prediction_error_evidence): the
+        accepted-then-falsified signal — a HELD grounding the agent committed to
+        that a later reading CONTRADICTED (grounded_representation's
+        `genus_surprise` flag). A live falsification => +1 (burned once, become
+        more demanding); only confirmed acceptances => -1 (earned trust, relax).
+    drive_trait_evidence SUMS the two into skepticism's single sign: they do NOT
+    fight — they are the two halves of the MicroPsi certainty need (the standing
+    urge to explore + the learned violation/confirmation of expectations). A +1
+    falsification and a -1 confirmed-certainty cancel to 0 (no net demand this
+    step); two agreeing reads reinforce to one +1/-1. The SUM sets the SIGN; the
+    CAN relaxation still moves skepticism at most one quantum/tick toward it, so
+    a single big disconfirmation is bounded — it cannot jump the slow trait.
+
     All three signs are then fed to ONE batched relaxation on the shared
     disposition Mt. This MUST be a single batch, not two separate homeostasis
     passes: each pass advances the shared can_tick and a Concept with sigma 0
@@ -1043,7 +1217,9 @@ def personality_homeostasis_step(agent, *, mint_result: Optional[dict] = None,
 
     NEUTRAL => NO DRIFT.  A balanced graph (|net| < deadband) => 0 openness
     evidence; a neutral drive (competence 0, exploration_urge 0) => 0 abstraction
-    and skepticism evidence. A fresh agent does not drift its personality.
+    and 0 standing-uncertainty skepticism; and a graph with NOTHING grounded
+    (no accepted groundings, no falsifications) => 0 prediction-error skepticism.
+    A fresh agent does not drift its personality.
 
     NO RUNAWAY.  Every trait moves at most `ticks` quanta per call, capped at
     +/-4; the drives/graph are the FAST layer, the trait the SLOW one — the same
@@ -1065,15 +1241,24 @@ def personality_homeostasis_step(agent, *, mint_result: Optional[dict] = None,
     if abs(net) >= float(deadband):
         openness_ev = 1.0 if net > 0 else -1.0
 
-    # ABSTRACTION + SKEPTICISM evidence — the drive-regulated row.
+    # ABSTRACTION + SKEPTICISM evidence — the drive-regulated row. SKEPTICISM
+    # additionally reads the PREDICTION-ERROR signal (accepted-then-falsified),
+    # which is a GRAPH fact (grounded_representation's genus_surprise flag), not a
+    # drive read — so it is honored even on a graph with no modulator state. When
+    # a modulator state exists, drive_trait_evidence sums both skepticism reads;
+    # when it does not, we still read the prediction-error alone.
     _native, ms, _a = _ms_reading(agent, ms)
     if run_modulator and ms is not None:
         try:
             disp._native(disp._sub(agent)).run_rules()
         except Exception:
             pass
-    drive_ev = drive_trait_evidence(agent, ms=ms) if ms is not None else \
-        {"abstraction": 0.0, "skepticism": 0.0, "readings": {}}
+    if ms is not None:
+        drive_ev = drive_trait_evidence(agent, ms=ms)
+    else:
+        pred = skepticism_prediction_error_evidence(agent)
+        drive_ev = {"abstraction": 0.0, "skepticism": float(pred["sigma"]),
+                    "readings": {"prediction_error": pred}}
 
     evidence = {
         "openness": openness_ev,
@@ -1112,6 +1297,7 @@ __all__ = [
     "modulator_trait_evidence", "crystallise_traits_from_modulator",
     # the trait -> drive homeostatic regulation table (tasks 3+4)
     "competence_trait_evidence", "exploration_trait_evidence",
+    "skepticism_prediction_error_evidence",
     "drive_trait_evidence", "drive_homeostasis_step",
     "personality_homeostasis_step",
 ]

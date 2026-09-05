@@ -363,9 +363,11 @@ def concept_signature(substrate, concept_node, edge_types=None,
       * `vocab:{role,principle,   ← shape-vocabulary keyword hits (bootstrap)
          shape}`
       * `attr:<key>`              ← remaining plain attributes (name/definition…)
-                                    MINUS native CAN mechanism bookkeeping
-                                    (identity/evidence ledgers + tick/epoch
-                                    gates), which are excluded as
+                                    MINUS the dynamical field SOURCES (the raw
+                                    CAN fields + mirrored trait fields, read as
+                                    dynamical axes) and native CAN mechanism
+                                    bookkeeping (identity/evidence ledgers +
+                                    tick/epoch gates), both excluded as
                                     non-discriminative noise (see
                                     `_is_can_bookkeeping_attr`).
 
@@ -388,6 +390,17 @@ def concept_signature(substrate, concept_node, edge_types=None,
     except Exception:
         return frozenset()
     schema = _qualia_schema(substrate)
+    # The attrs that are SOURCES for a dynamical field axis — the three raw CAN
+    # fields AND every MIRRORED trait field (disposition_field/_external,
+    # abstraction_field/_external, …). They are read as the quantised dynamical
+    # axes, so they must NOT ALSO surface as raw attr:* coordinates (that would
+    # be a non-discriminative duplicate of the felt content — the same leak the
+    # cross-family gate forbids for state/external_field/identity_field). Read
+    # off the field: axes' own `source`, so a trait added to the codebook is
+    # excluded automatically (no hand-kept list). Falls back to the three raw
+    # fields when the qualia seed is absent.
+    _field_source_attrs = {a for (_d, a, _q, _hw, _o) in schema["field_axes"]}
+    _field_source_attrs |= {"state", "external_field", "identity_field"}
 
     rels: list = [("lexical:formal", "is_a", typ)]
     for k, v in (attrs or {}).items():
@@ -396,8 +409,10 @@ def concept_signature(substrate, concept_node, edge_types=None,
         kl = str(k).lower()
         if kl == "category":
             rels.append(("lexical:formal", "category", str(v).lower()))
-        elif kl in ("state", "external_field", "identity_field"):
-            continue  # handled as dynamical axes (quantised), not raw attrs
+        elif kl in _field_source_attrs:
+            continue  # a dynamical field axis SOURCE (raw CAN field or mirrored
+                      # trait field) — read as a quantised dynamical axis, never
+                      # a raw attr:* duplicate
         elif _is_can_bookkeeping_attr(kl):
             continue  # native CAN mechanism counter (ledger/tick/epoch), not
                       # content — would leak as non-discriminative attr:* noise
