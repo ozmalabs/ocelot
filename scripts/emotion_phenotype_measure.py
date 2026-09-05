@@ -649,7 +649,7 @@ def default_off():
         if hasattr(eye.substrate, "nodes_of_type") else 0
     eye.stop()
     return dict(canonical_so_md5=md5,
-                canonical_untouched=(md5 == "793ce09ed498a749abb79aeaea44b92e"),
+                canonical_untouched=(md5 == "a32ed336662eaa9eb6df27b7112541ac"),
                 no_emotion_nodes_by_default=(n_hub == 0),
                 adds_no_seed=not os.path.exists(
                     os.path.join(ROOT, "seeds", "emotion_phenotype.json")))

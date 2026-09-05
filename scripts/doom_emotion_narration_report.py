@@ -30,7 +30,7 @@ from domains.engine_provenance import engine_preamble  # noqa: E402
 engine_preamble(strict=False)
 
 OUTDIR = os.path.join(ROOT, "results", "doom_emotion_narration")
-CANON_MD5 = "793ce09ed498a749abb79aeaea44b92e"
+CANON_MD5 = "a32ed336662eaa9eb6df27b7112541ac"  # native-only CAN cutover (Ising engine removed)
 
 # emotion code -> name (the 207000 read-off codes; the 208000 palette subset)
 CODE = {1: "surprise", 5: "frustration", 7: "joy", 8: "sadness",
