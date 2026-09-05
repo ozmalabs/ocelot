@@ -81,15 +81,18 @@ def build_drives():
     rules = []
 
     # drive_decay -- the drive IS a decaying held quantity: reuse the 196000
-    # scale2 atom c_d <- Ashr(c_d, IDiv(now - last_tend, half_life)). Inert when
-    # now == last_tend (Ashr by 0). Kept explicit so a drive left untended
-    # decays toward v_0 by exactly the staleness_decay machinery.
+    # scale2 atom c_d <- Ashr(c_d, IDiv(now - last_tend, half_life)). Runs at most
+    # ONCE per epoch (where-guard now_epoch > last_tend); inert when now == last_tend
+    # (Ashr by 0). Kept explicit so a drive left untended decays toward v_0 by
+    # exactly the staleness_decay machinery, then stamps last_tend = now_epoch.
     rules.append(rule(
-        "drive_decay", 0, DRIVE_MATCH, drive_guard(),
+        "drive_decay", 0, DRIVE_MATCH,
+        drive_guard(Gt(A("d", "now_epoch"), A("d", "last_tend"))),
         [["set_attr", "d", "c_d", T(
             Ashr(A("d", "c_d"),
                  IDiv(Minus(A("d", "now_epoch"), A("d", "last_tend")),
-                      Maxx(L(1), A("d", "half_life")))))]]))
+                      Maxx(L(1), A("d", "half_life")))))],
+         ["set_attr", "d", "last_tend", T(A("d", "now_epoch"))]]))
 
     # drive_urge = |v_d - c_d|
     rules.append(rule(
@@ -215,15 +218,22 @@ BLEND = {"bliss": 21, "angst": 22, "grief": 23}
 def build_modulators():
     rules = []
 
-    # ---- competence: running measure of need-satisfaction success. Idempotent
-    # WITHIN a tick: competence = competence_base + leading.learning_progress
-    # (competence_base is the standing accumulator; the adapter carries
-    # competence -> competence_base between ticks, so ACROSS ticks it is the
-    # general-competence heuristic -- a running sum of learning-progress).
+    # ---- competence: running measure of need-satisfaction success. Runs at most
+    # ONCE per graph epoch (where-guard epoch > competence_epoch), so re-ticking a
+    # settled state does not double-count learning-progress. On the FIRST epoch
+    # (competence_epoch < 0) it integrates from competence_base (the standing
+    # accumulator the adapter carries across ticks); on later epochs it integrates
+    # from the current competence -- the general-competence heuristic, a running
+    # sum of learning-progress. Then it stamps competence_epoch = epoch.
     rules.append(rule(
-        "mod_competence", 1, LEAD_MATCH, mod_guard(),
+        "mod_competence", 1, LEAD_MATCH,
+        mod_guard(Gt(A("ms", "epoch"), A("ms", "competence_epoch"))),
         [["set_attr", "ms", "competence", T(
-            Plus(A("ms", "competence_base"), A("d", "learning_progress")))]]))
+            Plus(Ite(Lt(A("ms", "competence_epoch"), L(0)),
+                     A("ms", "competence_base"),
+                     A("ms", "competence")),
+                 A("d", "learning_progress")))],
+         ["set_attr", "ms", "competence_epoch", T(A("ms", "epoch"))]]))
 
     # ---- valence = Sum(pleasure) - Sum(displeasure) - Sum(urge), over active drives
     rules.append(rule(
@@ -250,34 +260,82 @@ def build_modulators():
              Ite(Gte(arousal_expr, A("ms", "band_hi")), L(2),
                  Ite(Gte(arousal_expr, A("ms", "band_mid")), L(1), L(0))))]]))
 
-    # ---- resolution = base + IDiv(urgency(leading), res_urg_div) - IDiv(arousal, res_ar_div)
+    # ---- resolution = (base + abstraction_bias) + IDiv(urgency(leading), res_urg_div)
+    #                   - IDiv(arousal, res_ar_div)
     # inverse of arousal (high arousal -> low resolution), up by leading urgency.
+    #
+    # TRAIT SET-POINT BIAS (abstraction -> resolution baseline): abstraction_bias
+    # is a CONSTANT ADDITIVE OFFSET folded into the res_base position -- it shifts
+    # the resolution EQUILIBRIUM (the set-point the drives regulate around), it is
+    # NOT a multiplier and NOT inside the urgency/arousal terms. A crystallised
+    # cognitive-style trait (written onto the ModulatorState by the trait<->MicroPsi
+    # bridge in a later task) raises/lowers the baseline: high abstraction => higher
+    # resolution baseline => reaches for more abstract/broad processing. Because the
+    # +urgency/-arousal terms are UNCHANGED, the drive dynamics still regulate AROUND
+    # the shifted baseline exactly as before -- the offset cannot fight regulation or
+    # oscillate. Missing attr reads Value::None => additive identity 0 (Plus), so with
+    # no bridge/no disposition the formula is ALGEBRAICALLY IDENTICAL to today.
     rules.append(rule(
         "mod_resolution", 5, LEAD_MATCH, mod_guard(),
         [["set_attr", "ms", "resolution", T(
-            Minus(Plus(A("ms", "res_base"),
+            Minus(Plus(A("ms", "res_base"), A("ms", "abstraction_bias"),
                        IDiv(A("d", "urgency"), A("ms", "res_urg_div"))),
                   IDiv(A("ms", "arousal"), A("ms", "res_ar_div"))))]]))
 
     # ---- selection threshold = strength(leading)*urgency(leading)/SCALE
-    #      - sel_k*(1 - competence): a bonus to the current motive; DOWN by low
-    #      competence (low competence -> more flexible/searching).
+    #      - sel_k*(competence_full - competence) - openness_bias: a bonus to the
+    #      current motive; DOWN by low competence (low competence -> more
+    #      flexible/searching).
+    #
+    # TRAIT SET-POINT BIAS (openness -> selection-threshold baseline): openness_bias
+    # is a CONSTANT ADDITIVE OFFSET SUBTRACTED from the threshold -- it shifts the
+    # commit/mint EQUILIBRIUM, not a multiplier and not inside the urgency/competence
+    # terms. High openness => LOWER selection threshold => commits/mints more readily.
+    # The weight*urgency and competence terms are UNCHANGED, so the drives still
+    # regulate the threshold AROUND the shifted baseline. Missing attr => 0 (Minus's
+    # subtrahend contributes the additive identity), so no-bridge is byte-identical.
     rules.append(rule(
         "mod_sel_threshold", 5, LEAD_MATCH, mod_guard(),
         [["set_attr", "ms", "sel_threshold", T(
-            Minus(IDiv(Times(A("d", "weight"), A("d", "urgency")), A("ms", "sel_div")),
-                  Times(A("ms", "sel_k"),
-                        Minus(A("ms", "competence_full"), A("ms", "competence")))))]]))
+            Minus(Minus(IDiv(Times(A("d", "weight"), A("d", "urgency")), A("ms", "sel_div")),
+                        Times(A("ms", "sel_k"),
+                              Minus(A("ms", "competence_full"), A("ms", "competence")))),
+                  A("ms", "openness_bias")))]]))
 
     # ---- securing rate = uncertainty + (competence_full - competence)
-    #      - sec_k*importance(leading): outward vigilance, UP by uncertainty &
-    #      low competence, DOWN by a high-importance leading motive.
+    #      - sec_k*importance(leading) + skepticism_bias: outward vigilance, UP by
+    #      uncertainty & low competence, DOWN by a high-importance leading motive.
+    #
+    # TRAIT SET-POINT BIAS (skepticism -> securing baseline): skepticism_bias is a
+    # CONSTANT ADDITIVE OFFSET ADDED to securing -- it shifts the vigilance
+    # EQUILIBRIUM, not a multiplier and not inside the uncertainty/competence terms.
+    # High skepticism => MORE outward vigilance/demand (a higher securing baseline).
+    # The uncertainty, competence and importance terms are UNCHANGED, so the drives
+    # still regulate securing AROUND the shifted baseline. Missing attr => 0 (Plus's
+    # additive identity), so no-bridge is byte-identical.
     rules.append(rule(
         "mod_securing", 6, LEAD_MATCH, mod_guard(),
         [["set_attr", "ms", "securing", T(
-            Minus(Plus(A("d", "exploration_urge"),
-                       Minus(A("ms", "competence_full"), A("ms", "competence"))),
-                  Times(A("ms", "sec_k"), A("d", "weight"))))]]))
+            Plus(Minus(Plus(A("d", "exploration_urge"),
+                            Minus(A("ms", "competence_full"), A("ms", "competence"))),
+                       Times(A("ms", "sec_k"), A("d", "weight"))),
+                 A("ms", "skepticism_bias")))]]))
+
+    # ---- emx_epoch_reset -- at each NEW graph epoch (epoch > emotion_epoch) clear
+    # the per-tick read-off cells (all hit_*, emotion, action_tendency, n_fired,
+    # n_blend) and stamp emotion_epoch = epoch, re-opening the read-off lifecycle
+    # inside the graph so the region predicates classify the fresh stable state.
+    # Order 9: after the modulator updates, before the region predicates (order 10).
+    rules.append(rule(
+        "emx_epoch_reset", 9, LEAD_MATCH,
+        mod_guard(Gt(A("ms", "epoch"), A("ms", "emotion_epoch"))),
+        [["set_attr", "ms", "hit_" + nm, 0.0] for nm in
+         list(TEND) + list(BLEND)]
+        + [["set_attr", "ms", "emotion", 0.0],
+           ["set_attr", "ms", "action_tendency", 0.0],
+           ["set_attr", "ms", "n_fired", 0.0],
+           ["set_attr", "ms", "n_blend", 0.0],
+           ["set_attr", "ms", "emotion_epoch", T(A("ms", "epoch"))]]))
 
     # ========================= REGION PREDICATES (replace the 11 authored appraisals)
     # Each reads the MODULATOR VECTOR + the leading drive's object/directedness.
@@ -435,8 +493,10 @@ def main():
     mods = build_modulators()
     with open(os.path.join(SEEDS, "drives.json"), "w") as fh:
         json.dump(drives, fh, indent=1)
+        fh.write("\n")
     with open(os.path.join(SEEDS, "modulators.json"), "w") as fh:
         json.dump(mods, fh, indent=1)
+        fh.write("\n")
     print("wrote seeds/drives.json (%d rules) and seeds/modulators.json (%d rules)"
           % (len(drives["rules"]), len(mods["rules"])))
 

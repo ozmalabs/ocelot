@@ -594,6 +594,123 @@ def migrate_communication_slice(substrate, *, index: Optional[dict] = None
 
 
 # ---------------------------------------------------------------------------
+# A.5  CATEGORY -> genls edge — the AUTHOR-SUPPLIED taxonomy, made structural.
+# ---------------------------------------------------------------------------
+
+# The FAITHFUL taxonomy-enrichment pass. Domain concepts (philosophy /
+# mathematics / computer_architecture / embedded_iot_realtime) carry an
+# author-supplied `category` ATTRIBUTE ('epistemology', 'pipeline_mechanism',
+# 'cache_mechanism', ...) — a domain-correct classification the seed author
+# WROTE. But it sits only as a plain attr string: analogy_search reads it as a
+# `(lexical:formal, category, <value>)` coordinate, yet there is no EDGE, so the
+# concept is edge-poor (SHAPE_AUDIT: ~114/10775 concepts have any outgoing edge)
+# and concepts in the same category are not WIRED to a shared hub the analogy /
+# grounding graph can traverse.
+#
+# `ground_categories` turns that held attr into STRUCTURE: for each Concept with
+# a `category`, it mints (once) a category-HUB Concept and wires the concept
+# `genls`-> hub (is-a, the FORMAL qualia role — DimensionEdgeRole maps
+# genls -> lexical:formal). This is DERIVED mechanically from what the concept
+# already carries (its own `category` attr the author asserted); NOTHING is
+# invented and NO meaning is decided here — the author already named the class.
+#
+# WHY category and not a WordNet head-noun genus: the domain concept NAMES are
+# compound terms ('instruction_set_architecture', 'mathematical_induction',
+# 'prime_numbers') whose head noun's dominant WordNet sense mis-genuses badly
+# ('architecture'->building, 'induction'->ceremony, 'numbers'->book). Wiring
+# those would inject FALSE is-a edges. The author's `category` is the faithful,
+# domain-correct classification already in the graph — so the honest taxonomy
+# enrichment reads THAT, not a guessed lexical genus.
+
+def _category_hub_name(category: str) -> str:
+    """The hub Concept name for a category value — 'category:<value>', a
+    namespaced name so a category hub never collides with a domain concept of
+    the same surface (a concept 'pipeline' vs the category 'pipeline_mechanism'
+    hub). A surface->name convention, not a meaning decision."""
+    return "category:%s" % str(category).strip().lower()
+
+
+def ground_categories(substrate, mt_name: Optional[str] = None, *,
+                      index: Optional[dict] = None) -> dict:
+    """Wire each Concept's author-supplied `category` ATTRIBUTE into a `genls`
+    edge to a category-HUB Concept (is-a — the FORMAL qualia role). The faithful
+    taxonomy-enrichment pass: it reads a classification the seed AUTHOR already
+    asserted (graph DATA) and makes it a first-class EDGE, so an edge-poor
+    concept gains a real outgoing `lexical:formal` coordinate and same-category
+    concepts share a traversable hub.
+
+    `mt_name` (optional) restricts the pass to the concepts of ONE Microtheory
+    (the domain Mt the caller is enriching); None => every Concept with a
+    `category`. Idempotent: a `genls` edge already present is not re-added, and a
+    hub Concept is minted once (looked up by name).
+
+    The `genls` edge is admissible only once open_grounding_productions has opened
+    the Concept-genls-Concept production (genls is in GROUNDING_EDGE_TYPES); the
+    caller opens it (or this pass opens it defensively). No meaning decision — the
+    author named the class; this only structuralises it.
+
+    Returns {edges_added, hubs, concepts_wired, mt}."""
+    if index is None:
+        index = _concept_by_name(substrate)
+    # defensively ensure the genls production is open (idempotent).
+    try:
+        open_grounding_productions(substrate)
+    except Exception:
+        pass
+
+    # the concept set: one Mt's concepts, or all.
+    concept_ids: list = []
+    if mt_name is not None:
+        mt = _find_microtheory(substrate, mt_name)
+        if mt is None:
+            return {"edges_added": 0, "hubs": 0, "concepts_wired": 0,
+                    "mt": mt_name}
+        try:
+            concept_ids = list(substrate.neighbours(mt, "has_concept"))
+        except Exception:
+            concept_ids = []
+    else:
+        try:
+            concept_ids = list(substrate.nodes("Concept"))
+        except Exception:
+            concept_ids = []
+
+    edges_added = 0
+    concepts_wired = 0
+    hubs: dict[str, Any] = {}
+    for cid in concept_ids:
+        try:
+            a = substrate.node(cid)["attrs"]
+        except Exception:
+            continue
+        category = a.get("category")
+        if not isinstance(category, str) or not category.strip():
+            continue
+        # a concept must not be its own category hub (a `category:` hub node
+        # carries no `category` attr, so this only guards a pathological seed).
+        hub_name = _category_hub_name(category)
+        if a.get("name") == hub_name:
+            continue
+        hub = hubs.get(hub_name) or index.get(hub_name)
+        if hub is None:
+            hub = substrate.add_node("Concept", {
+                "name": hub_name, "origin": "grounded_representation",
+                "kind": "category_hub", "category_value": category.strip().lower()})
+            index[hub_name] = hub
+        hubs[hub_name] = hub
+        # idempotent genls wiring (is-a -> lexical:formal).
+        try:
+            if hub not in set(substrate.neighbours(cid, "genls")):
+                substrate.add_edge(cid, "genls", hub, {})
+                edges_added += 1
+                concepts_wired += 1
+        except Exception:
+            continue
+    return {"edges_added": edges_added, "hubs": len(hubs),
+            "concepts_wired": concepts_wired, "mt": mt_name}
+
+
+# ---------------------------------------------------------------------------
 # B.  PHYSICAL — the SAME structure is the locality / lazy cone-load.
 # ---------------------------------------------------------------------------
 
@@ -743,5 +860,6 @@ __all__ = [
     "is_primitive",
     "grounding_reaches_primitives",
     "migrate_communication_slice",
+    "ground_categories",
     "GroundedConceptStore",
 ]

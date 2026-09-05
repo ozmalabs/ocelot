@@ -360,21 +360,58 @@ def ensure_peer_comparison_seed(inner) -> None:
 
 
 def ensure_can_seed(inner) -> None:
-    """Idempotently load seeds/can_native_reimplementation.json and install
-    worlds/bigville_can_beliefs.py's Gamma productions -- the two pieces a
-    caller needs on the substrate BEFORE calling relax_resident_self_worth.
-    Guarded by rule_count() so a caller that already loaded the seed (or is
-    composing multiple bridges on one substrate) does not reload it."""
-    import json
-    from substrate.seed_loader import engine_rules_only
+    """Idempotently load seeds/can_native_reimplementation.json AND
+    seeds/can_decay_identity.json, and install worlds/bigville_can_beliefs.py's
+    Gamma productions -- the pieces a caller needs on the substrate BEFORE
+    calling relax_resident_self_worth or driving the native
+    self_improvement_loop path. Guarded by sentinel nodes so a caller that
+    already loaded a seed (or is composing multiple bridges on one substrate)
+    does not reload it.
 
-    if inner.nodes("CanSelfWorthBridgeSeedLoaded"):
-        bcb.install_productions(inner)
-        return
-    d = json.load(open("seeds/can_native_reimplementation.json"))
-    inner.load_seed_manifest(engine_rules_only(d))
+    PHASE B (native-backend cutover): can_decay_identity.json is now loaded
+    here too, not only by domains/analogy_search.crystallize. It carries the
+    rules the NATIVE branches of self_improvement_loop.maybe_decay_J /
+    maybe_decay_h / maybe_update_identity / nudge_identity_on_flipped settle
+    via scoped_settle (can_native_evidence_decay, can_native_external_field_
+    decay, can_native_identity_field_feedback, can_native_identity_nudge_on_
+    flip). With the continuous branch now unreachable (see
+    self_improvement_loop._is_native), those native branches are the ONLY
+    path that does decay/identity work, so the rules they depend on must be
+    present wherever the continuous ops (mt_decay_h/_decay_J/update_identity
+    _dynamics) used to be relied on. can_decay_identity depends_on
+    can_native_reimplementation, so the base seed is loaded first.
+    """
+    import json
+    from substrate.seed_loader import engine_rules_only, manifest_for
+
+    if not inner.nodes("CanSelfWorthBridgeSeedLoaded"):
+        d = json.load(open("seeds/can_native_reimplementation.json"))
+        inner.load_seed_manifest(engine_rules_only(d))
+        inner.add_node("CanSelfWorthBridgeSeedLoaded", {})
+    # Native decay/identity rules — the native replacement for the (now
+    # dead) continuous decay/identity ops. Guarded by the same "Seed"
+    # sentinel domains/analogy_search.crystallize already uses so the two
+    # loaders compose idempotently on one substrate.
+    if not _has_can_seed_sentinel(inner, "can_decay_identity"):
+        inner.load_seed_manifest(
+            engine_rules_only(manifest_for("can_decay_identity")))
+        inner.add_node("Seed", {"id": "can_decay_identity", "version": "1.3.0"})
     bcb.install_productions(inner)
-    inner.add_node("CanSelfWorthBridgeSeedLoaded", {})
+
+
+def _has_can_seed_sentinel(inner, seed_id: str) -> bool:
+    """Mirror of domains/analogy_search._has_seed_sentinel — checks for a
+    `Seed{id: ...}` node so can_decay_identity is not double-loaded when
+    both this bridge and crystallize run on one substrate (double-loading
+    would double the rule count and double-fire every decay effect, the
+    same hazard ensure_can_native_engine_loaded's guard prevents)."""
+    try:
+        for n in inner.nodes("Seed"):
+            if inner.node(n)["attrs"].get("id") == seed_id:
+                return True
+    except Exception:
+        pass
+    return False
 
 
 __all__ = ["relax_resident_self_worth", "find_or_build_resident_can",

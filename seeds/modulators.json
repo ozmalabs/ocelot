@@ -62,7 +62,7 @@
       },
       "b": {
        "type": "Lit",
-      "value": 1.0
+       "value": 1.0
       }
      },
      {
@@ -95,7 +95,7 @@
       "__term__": {
        "type": "Plus",
        "items": [
-       {
+        {
          "type": "IfThenElse",
          "cond": {
           "type": "Lt",
@@ -738,6 +738,14 @@
           "key": "res_base"
          },
          {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "ms"
+          },
+          "key": "abstraction_bias"
+         },
+         {
           "type": "IDiv",
           "a": {
            "type": "Attr",
@@ -828,68 +836,79 @@
       "__term__": {
        "type": "Minus",
        "a": {
-        "type": "IDiv",
+        "type": "Minus",
         "a": {
+         "type": "IDiv",
+         "a": {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "d"
+            },
+            "key": "weight"
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "d"
+            },
+            "key": "urgency"
+           }
+          ]
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "ms"
+          },
+          "key": "sel_div"
+         }
+        },
+        "b": {
          "type": "Times",
          "items": [
           {
            "type": "Attr",
            "node": {
             "type": "Var",
-            "name": "d"
+            "name": "ms"
            },
-           "key": "weight"
+           "key": "sel_k"
           },
           {
-           "type": "Attr",
-           "node": {
-            "type": "Var",
-            "name": "d"
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "ms"
+            },
+            "key": "competence_full"
            },
-           "key": "urgency"
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "ms"
+            },
+            "key": "competence"
+           }
           }
          ]
-        },
-        "b": {
-         "type": "Attr",
-         "node": {
-          "type": "Var",
-          "name": "ms"
-         },
-         "key": "sel_div"
         }
        },
        "b": {
-        "type": "Times",
-        "items": [
-         {
-          "type": "Attr",
-          "node": {
-           "type": "Var",
-           "name": "ms"
-          },
-          "key": "sel_k"
-         },
-         {
-          "type": "Minus",
-          "a": {
-           "type": "Attr",
-           "node": {
-            "type": "Var",
-            "name": "ms"
-           },
-           "key": "competence_full"
-          },
-          "b": {
-           "type": "Attr",
-           "node": {
-            "type": "Var",
-            "name": "ms"
-           },
-           "key": "competence"
-          }
-         }
-        ]
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "ms"
+        },
+        "key": "openness_bias"
        }
       }
      }
@@ -940,60 +959,73 @@
      "securing",
      {
       "__term__": {
-       "type": "Minus",
-       "a": {
-        "type": "Plus",
-        "items": [
-         {
-          "type": "Attr",
-          "node": {
-           "type": "Var",
-           "name": "d"
-          },
-          "key": "exploration_urge"
-         },
-         {
-          "type": "Minus",
-          "a": {
-           "type": "Attr",
-           "node": {
-            "type": "Var",
-            "name": "ms"
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Minus",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "d"
+            },
+            "key": "exploration_urge"
            },
-           "key": "competence_full"
-          },
-          "b": {
-           "type": "Attr",
-           "node": {
-            "type": "Var",
-            "name": "ms"
-           },
-           "key": "competence"
-          }
-         }
-        ]
-       },
-       "b": {
-        "type": "Times",
-        "items": [
-         {
-          "type": "Attr",
-          "node": {
-           "type": "Var",
-           "name": "ms"
-          },
-          "key": "sec_k"
+           {
+            "type": "Minus",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "ms"
+             },
+             "key": "competence_full"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "ms"
+             },
+             "key": "competence"
+            }
+           }
+          ]
          },
-         {
-          "type": "Attr",
-          "node": {
-           "type": "Var",
-           "name": "d"
-          },
-          "key": "weight"
+         "b": {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "ms"
+            },
+            "key": "sec_k"
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "d"
+            },
+            "key": "weight"
+           }
+          ]
          }
-        ]
-       }
+        },
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ms"
+         },
+         "key": "skepticism_bias"
+        }
+       ]
       }
      }
     ]
@@ -1005,43 +1037,165 @@
    "order": 9,
    "latency_class": "hard_realtime",
    "match": [
-    ["ms", "has_active_drive", "d"],
-    ["ms", "leading_drive", "d"]
+    [
+     "ms",
+     "has_active_drive",
+     "d"
+    ],
+    [
+     "ms",
+     "leading_drive",
+     "d"
+    ]
    ],
    "where": {
     "type": "And",
     "items": [
      {
       "type": "Eq",
-      "a": {"type": "Attr", "node": {"type": "Var", "name": "ms"}, "key": "enabled"},
-      "b": {"type": "Lit", "value": 1.0}
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ms"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
      },
      {
       "type": "Gt",
-      "a": {"type": "Attr", "node": {"type": "Var", "name": "ms"}, "key": "epoch"},
-      "b": {"type": "Attr", "node": {"type": "Var", "name": "ms"}, "key": "emotion_epoch"}
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ms"
+       },
+       "key": "epoch"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ms"
+       },
+       "key": "emotion_epoch"
+      }
      }
     ]
    },
    "effects": [
-    ["set_attr", "ms", "hit_surprise", 0.0],
-    ["set_attr", "ms", "hit_fear", 0.0],
-    ["set_attr", "ms", "hit_anxiety", 0.0],
-    ["set_attr", "ms", "hit_anger", 0.0],
-    ["set_attr", "ms", "hit_frustration", 0.0],
-    ["set_attr", "ms", "hit_disgust", 0.0],
-    ["set_attr", "ms", "hit_joy", 0.0],
-    ["set_attr", "ms", "hit_sadness", 0.0],
-    ["set_attr", "ms", "hit_curiosity", 0.0],
-    ["set_attr", "ms", "hit_boredom", 0.0],
-    ["set_attr", "ms", "hit_fulfilment", 0.0],
-    ["set_attr", "ms", "hit_bliss", 0.0],
-    ["set_attr", "ms", "hit_angst", 0.0],
-    ["set_attr", "ms", "hit_grief", 0.0],
-    ["set_attr", "ms", "emotion", 0.0],
-    ["set_attr", "ms", "action_tendency", 0.0],
-    ["set_attr", "ms", "n_fired", 0.0],
-    ["set_attr", "ms", "n_blend", 0.0],
+    [
+     "set_attr",
+     "ms",
+     "hit_surprise",
+     0.0
+    ],
+    [
+     "set_attr",
+     "ms",
+     "hit_fear",
+     0.0
+    ],
+    [
+     "set_attr",
+     "ms",
+     "hit_anxiety",
+     0.0
+    ],
+    [
+     "set_attr",
+     "ms",
+     "hit_anger",
+     0.0
+    ],
+    [
+     "set_attr",
+     "ms",
+     "hit_frustration",
+     0.0
+    ],
+    [
+     "set_attr",
+     "ms",
+     "hit_disgust",
+     0.0
+    ],
+    [
+     "set_attr",
+     "ms",
+     "hit_joy",
+     0.0
+    ],
+    [
+     "set_attr",
+     "ms",
+     "hit_sadness",
+     0.0
+    ],
+    [
+     "set_attr",
+     "ms",
+     "hit_curiosity",
+     0.0
+    ],
+    [
+     "set_attr",
+     "ms",
+     "hit_boredom",
+     0.0
+    ],
+    [
+     "set_attr",
+     "ms",
+     "hit_fulfilment",
+     0.0
+    ],
+    [
+     "set_attr",
+     "ms",
+     "hit_bliss",
+     0.0
+    ],
+    [
+     "set_attr",
+     "ms",
+     "hit_angst",
+     0.0
+    ],
+    [
+     "set_attr",
+     "ms",
+     "hit_grief",
+     0.0
+    ],
+    [
+     "set_attr",
+     "ms",
+     "emotion",
+     0.0
+    ],
+    [
+     "set_attr",
+     "ms",
+     "action_tendency",
+     0.0
+    ],
+    [
+     "set_attr",
+     "ms",
+     "n_fired",
+     0.0
+    ],
+    [
+     "set_attr",
+     "ms",
+     "n_blend",
+     0.0
+    ],
     [
      "set_attr",
      "ms",
@@ -1049,7 +1203,10 @@
      {
       "__term__": {
        "type": "Attr",
-       "node": {"type": "Var", "name": "ms"},
+       "node": {
+        "type": "Var",
+        "name": "ms"
+       },
        "key": "epoch"
       }
      }

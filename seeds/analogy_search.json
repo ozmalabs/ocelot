@@ -1,0 +1,1267 @@
+{
+ "id": "analogy_search",
+ "version": "1.0.0",
+ "depends_on": [
+  "shape_vocabulary"
+ ],
+ "description": "THE ANALOGY SEARCH AS A FIRST-CLASS GRAPH SEED \u2014 SHAPE_AUDIT.md \u00a72.4. domains/analogical_thinking.py::find_analogies was 'never moved into the graph': a Python triple-nested loop over concept pairs scoring a set overlap of string tokens at five fixed orders, 'not one of which consults a concept's edges'. This seed makes the search a run_rules fixpoint one grain over from seeds/meta_shape_growth.json / problem_shape_growth.json, with ZERO new Rust (every decision is an existing generic Term, the same choice problem_shape_growth made): ap_decode runs the UNCHANGED ShapeDecode Term over a per-field-scoped ConceptShape codebook (the cross-field scan, in Rust, over ARBITRARY concept structure \u2014 relational edges when present, attrs + vocabulary axes otherwise); ap_match derives shared structure via FixedCount(AntiUnify(...)); ap_systematic fires the parallelogram as a Count(Filter(Eq(transform_key))) recurrence verdict; ap_emit writes an Analogy node + implements edge ONLY when aligned or corroborated. Emitted by tools/build_analogy_search_seed.py. Ingest: domains/analogy_search.observe.",
+ "microtheory": {
+  "name": "analogy_search",
+  "description": "the analogy search decodes each source concept against other fields' concept shapes and grows analogies on aligned or corroborated structure; tick-driven, no Python loop"
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "analogy_search:observed_probe",
+   "src": {
+    "type": "Agent",
+    "var": "ag"
+   },
+   "edge_type": "observed_probe",
+   "tgt": {
+    "type": "AnalogyProbe",
+    "var": "obs"
+   }
+  },
+  {
+   "provenance": "analogy_search:emitted_analogy",
+   "src": {
+    "type": "AnalogyProbe",
+    "var": "obs"
+   },
+   "edge_type": "emitted_analogy",
+   "tgt": {
+    "type": "Analogy",
+    "var": "an"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "ap_decode",
+   "comment": "RUNG 1, THE CROSS-FIELD SCAN: a pending AnalogyProbe finds its best structural PARTNER among the target field(s) \u2014 Argmax over the scoped ConceptShape parts of FixedCount(AntiUnify(source.sig, part.sig)), the DERIVED shared-structure specificity. This is the scan that used to be a Python triple-nested loop (SHAPE_AUDIT.md \u00a72.4), now a graph verdict over WHATEVER structure the concept signature carries \u2014 relational edges when the concept has them, attrs + vocabulary axes otherwise. 'Arbitrary shapes across fields', not a five-order string-token dial. covered_by is the best partner's field::name; best_count is its shared-structure count (the positive-evidence guard). The candidate set is scoped by In(part.name, obs.scope) to the target field(s) minus the probe's own part \u2014 cross-field and no-self by construction.",
+   "match_type": "AnalogyProbe",
+   "match": [
+    [
+     "ag",
+     "observed_probe",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "obs"
+     },
+     "key": "status"
+    },
+    "b": {
+     "type": "Lit",
+     "value": "pending"
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "covered_by",
+     {
+      "__term__": {
+       "type": "Attr",
+       "key": "name",
+       "node": {
+        "type": "Argmax",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "ConceptShape"
+         },
+         "var_name": "mt",
+         "predicate": {
+          "type": "In",
+          "member": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "mt"
+           },
+           "key": "name"
+          },
+          "container": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "obs"
+           },
+           "key": "scope"
+          }
+         }
+        },
+        "var_name": "mt",
+        "value": {
+         "type": "FixedCount",
+         "pattern": {
+          "type": "AntiUnify",
+          "values": {
+           "type": "SetT",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "obs"
+             },
+             "key": "signature"
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "mt"
+             },
+             "key": "signature"
+            }
+           ]
+          }
+         },
+         "wild": "\u00b7?\u00b7"
+        },
+        "default": null
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "best_count",
+     {
+      "__term__": {
+       "type": "FixedCount",
+       "pattern": {
+        "type": "AntiUnify",
+        "values": {
+         "type": "SetT",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "obs"
+           },
+           "key": "signature"
+          },
+          {
+           "type": "Attr",
+           "key": "signature",
+           "node": {
+            "type": "Argmax",
+            "source": {
+             "type": "Filter",
+             "source": {
+              "type": "NodesOfType",
+              "node_type": "ConceptShape"
+             },
+             "var_name": "mt",
+             "predicate": {
+              "type": "In",
+              "member": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "mt"
+               },
+               "key": "name"
+              },
+              "container": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "obs"
+               },
+               "key": "scope"
+              }
+             }
+            },
+            "var_name": "mt",
+            "value": {
+             "type": "FixedCount",
+             "pattern": {
+              "type": "AntiUnify",
+              "values": {
+               "type": "SetT",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "obs"
+                 },
+                 "key": "signature"
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "mt"
+                 },
+                 "key": "signature"
+                }
+               ]
+              }
+             },
+             "wild": "\u00b7?\u00b7"
+            },
+            "default": null
+           }
+          }
+         ]
+        }
+       },
+       "wild": "\u00b7?\u00b7"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "decoded_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ag"
+       },
+       "key": "analogy_codebook_epoch"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "status",
+     "decoded"
+    ]
+   ]
+  },
+  {
+   "name": "ap_no_match",
+   "comment": "THE HONEST NON-ANSWER: a decoded probe whose best partner shares NO structural axis (best_count == 0 / no partner). No shared shape \u21d2 no analogy. Terminal, distinct from a real match so the non-answer is inspectable in the graph.",
+   "match_type": "AnalogyProbe",
+   "match": [
+    [
+     "ag",
+     "observed_probe",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "decoded"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Gt",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "best_count"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 0
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "status",
+     "no_match"
+    ]
+   ]
+  },
+  {
+   "name": "ap_match",
+   "comment": "MAC SURVIVOR \u2192 the shared structure, DERIVED. A decoded probe that covered >=1 relation of some target concept records: struct_shared = FixedCount(AntiUnify(probe.sig, matched.sig)) \u2014 the same specificity metric sd_recognize/ps_recognize use, computed by Rust, never an asserted ordinal \u2014 and transform_key = ToJsonString(AntiUnify(probe.sig, matched.sig)), the canonical shared-shape key derived IN-RULE from the decode's own result (the shim never guesses a target it does not yet know). transform_key is the systematicity bucket ap_systematic groups on. Both read the matched target (name == covered_by) via one Argmax that binds `mt`.",
+   "match_type": "AnalogyProbe",
+   "match": [
+    [
+     "ag",
+     "observed_probe",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "decoded"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "best_count"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "struct_shared",
+     {
+      "__term__": {
+       "type": "FixedCount",
+       "pattern": {
+        "type": "AntiUnify",
+        "values": {
+         "type": "SetT",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "obs"
+           },
+           "key": "signature"
+          },
+          {
+           "type": "Attr",
+           "key": "signature",
+           "node": {
+            "type": "Argmax",
+            "source": {
+             "type": "Filter",
+             "source": {
+              "type": "NodesOfType",
+              "node_type": "ConceptShape"
+             },
+             "var_name": "m2",
+             "predicate": {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "m2"
+               },
+               "key": "name"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "obs"
+               },
+               "key": "covered_by"
+              }
+             }
+            },
+            "var_name": "m2",
+            "value": {
+             "type": "Lit",
+             "value": 1
+            },
+            "default": null
+           }
+          }
+         ]
+        }
+       },
+       "wild": "\u00b7?\u00b7"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "transform_key",
+     {
+      "__term__": {
+       "type": "ToJsonString",
+       "value": {
+        "type": "AntiUnify",
+        "values": {
+         "type": "SetT",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "obs"
+           },
+           "key": "signature"
+          },
+          {
+           "type": "Attr",
+           "key": "signature",
+           "node": {
+            "type": "Argmax",
+            "source": {
+             "type": "Filter",
+             "source": {
+              "type": "NodesOfType",
+              "node_type": "ConceptShape"
+             },
+             "var_name": "m2",
+             "predicate": {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "m2"
+               },
+               "key": "name"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "obs"
+               },
+               "key": "covered_by"
+              }
+             }
+            },
+            "var_name": "m2",
+            "value": {
+             "type": "Lit",
+             "value": 1
+            },
+            "default": null
+           }
+          }
+         ]
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "status",
+     "matched"
+    ]
+   ]
+  },
+  {
+   "name": "ap_systematic",
+   "comment": "SYSTEMATICITY / THE PARALLELOGRAM, as a graph verdict. Two matched probes that realise the SAME transform_key differ from one another in exactly the same places by exactly the same amounts: they are the two corner-pairs of one parallelogram and each corroborates the other \u2014 Gentner's systematicity COMPUTED, not asserted, and the only quantity here no per-pair scorer can produce. This is the Count(Filter(... Eq(transform_key))) recurrence idiom ps_mint uses one grain over. corroboration is stamped on the probe so ap_emit and the shim can read the basis for the verdict.",
+   "match_type": "AnalogyProbe",
+   "match": [
+    [
+     "ag",
+     "observed_probe",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "matched"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "AnalogyProbe"
+        },
+        "var_name": "y",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Var",
+             "name": "y"
+            },
+            "b": {
+             "type": "Var",
+             "name": "obs"
+            }
+           }
+          },
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "obs"
+             },
+             "key": "transform_key"
+            },
+            "b": {
+             "type": "Lit",
+             "value": ""
+            }
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "y"
+            },
+            "key": "transform_key"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "obs"
+            },
+            "key": "transform_key"
+           }
+          },
+          {
+           "type": "Or",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "y"
+              },
+              "key": "status"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "matched"
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "y"
+              },
+              "key": "status"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "aligned"
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "y"
+              },
+              "key": "status"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "emitted"
+             }
+            }
+           ]
+          }
+         ]
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "corroboration",
+     {
+      "__term__": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "AnalogyProbe"
+        },
+        "var_name": "y",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Var",
+             "name": "y"
+            },
+            "b": {
+             "type": "Var",
+             "name": "obs"
+            }
+           }
+          },
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "obs"
+             },
+             "key": "transform_key"
+            },
+            "b": {
+             "type": "Lit",
+             "value": ""
+            }
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "y"
+            },
+            "key": "transform_key"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "obs"
+            },
+            "key": "transform_key"
+           }
+          },
+          {
+           "type": "Or",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "y"
+              },
+              "key": "status"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "matched"
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "y"
+              },
+              "key": "status"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "aligned"
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "y"
+              },
+              "key": "status"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "emitted"
+             }
+            }
+           ]
+          }
+         ]
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "status",
+     "aligned"
+    ]
+   ]
+  },
+  {
+   "name": "ap_align_struct",
+   "comment": "ALIGNED BY STRUCTURE ALONE: a matched probe whose anti-unify template fixes >=1 real axis (struct_shared > 0) is a genuine structural correspondence even without a second corroborating pair \u2014 the ALIGNED half of RULES_AS_SHAPE_DESIGN_SPIKE.md \u00a74.2's filter. corroboration stays 0 (honestly: none was found), and the probe advances to `aligned` so ap_emit treats it identically to a corroborated one. A matched probe that is NEITHER aligned NOR corroborated stays `matched` and is NEVER emitted \u2014 surface coincidence reported as nothing, which is the point.",
+   "match_type": "AnalogyProbe",
+   "match": [
+    [
+     "ag",
+     "observed_probe",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "matched"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "struct_shared"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Gt",
+       "a": {
+        "type": "Count",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "AnalogyProbe"
+         },
+         "var_name": "y",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Not",
+            "arg": {
+             "type": "Eq",
+             "a": {
+              "type": "Var",
+              "name": "y"
+             },
+             "b": {
+              "type": "Var",
+              "name": "obs"
+             }
+            }
+           },
+           {
+            "type": "Not",
+            "arg": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "obs"
+              },
+              "key": "transform_key"
+             },
+             "b": {
+              "type": "Lit",
+              "value": ""
+             }
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "y"
+             },
+             "key": "transform_key"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "obs"
+             },
+             "key": "transform_key"
+            }
+           },
+           {
+            "type": "Or",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "y"
+               },
+               "key": "status"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "matched"
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "y"
+               },
+               "key": "status"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "aligned"
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "y"
+               },
+               "key": "status"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "emitted"
+              }
+             }
+            ]
+           }
+          ]
+         }
+        }
+       },
+       "b": {
+        "type": "Lit",
+        "value": 0
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "corroboration",
+     0
+    ],
+    [
+     "set_attr",
+     "obs",
+     "status",
+     "aligned"
+    ]
+   ]
+  },
+  {
+   "name": "ap_emit",
+   "comment": "THE VERDICT. An aligned probe (structurally aligned OR corroborated by the parallelogram) becomes an Analogy node carrying the source and matched target concepts, the DERIVED struct_shared and corroboration, and an `implements` edge asserting the structural correspondence \u2014 written ONLY here, ONLY when structure was actually computed and positive (contrast SHAPE_AUDIT.md \u00a72.4's hand-set `order_n >= 2` ordinal). Mint-once guarded by the already-emitted edge.",
+   "match_type": "AnalogyProbe",
+   "match": [
+    [
+     "ag",
+     "observed_probe",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "aligned"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "edge_type": "emitted_analogy"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "an",
+     "Analogy",
+     {
+      "source_concept": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "source_concept"
+       }
+      },
+      "target_concept": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "covered_by"
+       }
+      },
+      "source_mt": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "source_field"
+       }
+      },
+      "target_mt": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "target_field"
+       }
+      },
+      "struct_shared": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "struct_shared"
+       }
+      },
+      "corroboration": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "corroboration"
+       }
+      },
+      "covered_count": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "best_count"
+       }
+      },
+      "transform_key": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "transform_key"
+       }
+      },
+      "source": "analogy_search"
+     }
+    ],
+    [
+     "add_edge",
+     "obs",
+     "emitted_analogy",
+     "an"
+    ],
+    [
+     "set_attr",
+     "obs",
+     "status",
+     "emitted"
+    ]
+   ]
+  },
+  {
+   "name": "ap_redecode",
+   "comment": "CODEBOOK GROWTH CLOSES THE LOOP: a caller that adds fields or concepts to the ConceptShape codebook and bumps analogy_codebook_epoch re-arms any probe last decoded under an older epoch back to pending, so ap_decode re-runs it against the GROWN codebook \u2014 decode \u2192 match \u2192 systematicity \u2192 emit, driven by the run_rules fixpoint with no Python iteration anywhere. Mirrors sd_redecode / msg_redecode / ps_redecode exactly.",
+   "match_type": "AnalogyProbe",
+   "match": [
+    [
+     "ag",
+     "observed_probe",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "decoded"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "matched"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "aligned"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "emitted"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "no_match"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "decoded_epoch"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ag"
+       },
+       "key": "analogy_codebook_epoch"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "status",
+     "pending"
+    ],
+    [
+     "set_attr",
+     "obs",
+     "decoded_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ag"
+       },
+       "key": "analogy_codebook_epoch"
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

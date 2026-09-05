@@ -35,6 +35,9 @@ _MODULATOR_DEFAULTS = {
     "drive_switch_threshold": 5.0, "band_hi": 600.0, "band_mid": 150.0,
     "res_base": 500.0, "res_urg_div": 4.0, "res_ar_div": 1.0,
     "resolution_lo": 200.0, "resolution_hi": 450.0,
+    # trait set-point bias offsets: default 0 => bias-free (byte-identical to
+    # pre-bias). The trait<->MicroPsi bridge writes nonzero values on opt-in.
+    "abstraction_bias": 0.0, "openness_bias": 0.0, "skepticism_bias": 0.0,
     "sel_div": 1.0, "sel_k": 1.0, "sel_threshold_hi": 200.0,
     "sec_k": 1.0, "securing_hi": 50.0, "uncertainty_hi": 100.0,
     "residual_thresh": 7.0, "w_supergraph": 1.0,
