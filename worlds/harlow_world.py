@@ -70,7 +70,10 @@ MS_DEFAULTS = dict(
     valence=0.0, valence_raw=0.0, arousal=0.0, arousal_band=0.0,
     band_hi=800.0, band_mid=400.0, resolution=0.0, res_base=50.0,
     res_urg_div=1.0, res_ar_div=1.0, sel_threshold=0.0, sel_div=1.0,
-    sel_k=1.0, securing=0.0, sec_k=1.0, drive_switch_threshold=5.0)
+    sel_k=1.0, securing=0.0, sec_k=1.0, drive_switch_threshold=5.0,
+    # trait set-point bias offsets: default 0 => bias-free (byte-identical to
+    # pre-bias). The trait<->MicroPsi bridge writes nonzero values on opt-in.
+    abstraction_bias=0.0, openness_bias=0.0, skepticism_bias=0.0)
 
 
 def _drive_attrs(name, kind, c_d, weight, threat=0.0):

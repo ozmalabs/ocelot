@@ -1,0 +1,512 @@
+{
+ "id": "qualia_space",
+ "version": "1.0.0",
+ "depends_on": [
+  "shape_vocabulary"
+ ],
+ "description": "THE SCHEMA OF QUALIA SPACE \u2014 one typed-dimensional space over Concepts. A QualiaDimension codebook of typed AXES a concept's meaning is organised along, in three families: lexical (Pustejovsky FORMAL/CONSTITUTIVE/TELIC/AGENTIVE \u2014 what a concept IS, seeded, the backbone already half-present in frame_harvest/metonymy_patterns); dynamical (the CAN field coordinates valence/commitment/pull/activation read off state/external_field/identity_field \u2014 the proto-phenomenal 'what it is like', crystallised axes IN the signature + live axes read as an OVERLAY, per h_eff=external+identity in can_ops.rs); and phenomenal (felt axes beyond the raw fields, only a bootstrap modality seeded \u2014 the rest MINTED from residual like the sd-loop's CapabilityAxis, so the space is grown not pre-cut). Lexical and phenomenal are ONE space, not two: the substrate already stores emotion/regard/self-worth as Concepts in the same CAN field as any reasoned-about concept. A DimensionEdgeRole map wires edge types to their lexical role. Emitted by tools/build_qualia_space_seed.py. Read by domains/analogy_search.concept_signature (dimension-tagged coordinates); matched per-dimension by seeds/analogy_search.json.",
+ "microtheory": {
+  "name": "qualia_space",
+  "description": "the typed dimensional space a concept's shape lives in; lexical + dynamical + (grown) phenomenal axes, one space"
+ },
+ "nodes": [
+  {
+   "type": "QualiaDimension",
+   "attrs": {
+    "name": "lexical:formal",
+    "family": "lexical",
+    "source": "attr:category",
+    "seeded": 1.0,
+    "gloss": "FORMAL \u2014 what KIND of thing it is (its taxonomic type / is_a / category). Distinguishes it within a larger domain."
+   },
+   "local_id": 1
+  },
+  {
+   "type": "QualiaDimension",
+   "attrs": {
+    "name": "lexical:constitutive",
+    "family": "lexical",
+    "source": "edge:has_part,part_of,made_of,constitutes,contains,member_of",
+    "seeded": 1.0,
+    "gloss": "CONSTITUTIVE \u2014 what it is MADE OF / its parts / material / the whole it belongs to (whole\u2022part, container\u2022content)."
+   },
+   "local_id": 2
+  },
+  {
+   "type": "QualiaDimension",
+   "attrs": {
+    "name": "lexical:telic",
+    "family": "lexical",
+    "source": "edge:used_for,enables,serves,regulates,gates,controls,produces,for",
+    "seeded": 1.0,
+    "gloss": "TELIC \u2014 what it is FOR: its function, purpose, the role it plays (artifact\u2022function)."
+   },
+   "local_id": 3
+  },
+  {
+   "type": "QualiaDimension",
+   "attrs": {
+    "name": "lexical:agentive",
+    "family": "lexical",
+    "source": "edge:causes,caused_by,creates,created_by,mints,derived_from,excites,inhibits,activates,suppresses",
+    "seeded": 1.0,
+    "gloss": "AGENTIVE \u2014 how it COMES ABOUT: its origin, what brings it into being or drives it (creator\u2022creation, cause\u2022effect)."
+   },
+   "local_id": 4
+  },
+  {
+   "type": "QualiaDimension",
+   "attrs": {
+    "name": "dynamical:valence",
+    "family": "dynamical",
+    "source": "field:state",
+    "seeded": 1.0,
+    "gloss": "VALENCE \u2014 sign of the concept's committed state (\u2212/0/+). The coarsest felt axis: is this, standingly, a negative, neutral, or positive thing to the agent. Crystallised.",
+    "quantum": 1.0,
+    "half_width": 1.0
+   },
+   "local_id": 5
+  },
+  {
+   "type": "QualiaDimension",
+   "attrs": {
+    "name": "dynamical:commitment",
+    "family": "dynamical",
+    "source": "field:identity_field",
+    "seeded": 1.0,
+    "gloss": "COMMITMENT \u2014 the identity_field: the long-standing structural commitment that resists perturbation and survives decay (can_ops.rs). The CRYSTALLISED axis \u2014 how settled the agent's feeling about this has become. Experience turned to character.",
+    "quantum": 0.25,
+    "half_width": 4.0
+   },
+   "local_id": 6
+  },
+  {
+   "type": "QualiaDimension",
+   "attrs": {
+    "name": "dynamical:pull",
+    "family": "dynamical",
+    "source": "field:external_field",
+    "seeded": 1.0,
+    "gloss": "PULL \u2014 the external_field: the LIVE, time-varying evidence pulling on the concept right now, which decays (can_ops.rs). OVERLAY only \u2014 how the agent feels about this AT THIS MOMENT, before it settles. The gap between pull and commitment is 'I'm not sure how I feel about this.'",
+    "overlay": 1.0,
+    "quantum": 0.25,
+    "half_width": 4.0
+   },
+   "local_id": 7
+  },
+  {
+   "type": "QualiaDimension",
+   "attrs": {
+    "name": "dynamical:activation",
+    "family": "dynamical",
+    "source": "field:state",
+    "seeded": 1.0,
+    "gloss": "ACTIVATION \u2014 the current state magnitude, live. How active / engaged the concept is in the agent's present processing. OVERLAY only.",
+    "overlay": 1.0,
+    "quantum": 0.25,
+    "half_width": 4.0
+   },
+   "local_id": 8
+  },
+  {
+   "type": "QualiaDimension",
+   "attrs": {
+    "name": "dynamical:disposition",
+    "family": "dynamical",
+    "source": "field:disposition_field",
+    "seeded": 1.0,
+    "gloss": "DISPOSITION \u2014 the agent's COGNITIVE DISPOSITION as a felt, CAN-relaxable trait: its standing willingness to mint referents / form associations, conservative (\u2212) \u2194 permissive (+). A REAL dynamical qualia axis on the AGENT (domains/disposition.py), the structural TWIN of self-worth (can_self_worth_bridge.py): a felt scalar on a resident CAN Concept, SEEDED with a starting temperament but PRODUCED/moved by the SAME can_native_identity_field_feedback dynamics as any other crystallised feeling. `disposition_field` is the crystallised STANDING trait \u2014 a mechanical mirror of the `identity_field` the native rule steps toward the sign of sustained disposition evidence (never hand-written mid-drive; the mirror copies what the relaxation produced).\nGRANULARITY (honest, measured \u2014 scripts/qualia_disposition_demo.py): UNLIKE dynamical:commitment (which SATURATES to {\u22124,0,+4} because quantum=0.25 clamps identity_field's very first \u00b11 step to \u00b14), disposition has quantum=1.0 = the field's OWN integer step size. can_native_identity_field_feedback moves identity_field by exactly \u00b11 per strictly-later tick (verified: sustained +\u03c3 gives identity_field 1,2,3,4,5,\u2026), so quantum=1.0/half_width=4 renders identity_field=1\u2192k=1, 2\u21922, 3\u21923, 4\u21924 and only CLAMPS at \u22655. That is a GENUINELY GRADED 9-level axis (\u22124\u2026+4): the seeded starting temperaments (e.g. \u22122 conservative, 0 neutral, +2 open) read as distinct coordinates, and sustained evidence walks the level up/down one step at a time. The underlying field DOES take those graded integer values under the dynamics \u2014 the spread is real, not a quantiser illusion. (A wider magnitude would still be bounded by the \u00b11-per-tick step the rule uses for Lyapunov stability; the levels are the field's own, honestly reported.)",
+    "quantum": 1.0,
+    "half_width": 4.0
+   },
+   "local_id": 9
+  },
+  {
+   "type": "QualiaDimension",
+   "attrs": {
+    "name": "dynamical:disposition_pull",
+    "family": "dynamical",
+    "source": "field:disposition_external",
+    "seeded": 1.0,
+    "gloss": "DISPOSITION_PULL \u2014 the LIVE, momentary openness pulling on the agent's disposition right now (the external_field of the disposition Concept, mirrored to `disposition_external`), before it settles into the standing trait. OVERLAY only \u2014 mirrors the valence(crystallised)/pull(overlay) split: the GAP between disposition_pull and disposition is 'I am being pulled toward opening up right now but my standing temperament has not moved.' quantum=1.0/half_width=4 as for the crystallised axis, so a live pull and a standing trait at the same level read as the same coordinate.",
+    "overlay": 1.0,
+    "quantum": 1.0,
+    "half_width": 4.0
+   },
+   "local_id": 10
+  },
+  {
+   "type": "QualiaDimension",
+   "attrs": {
+    "name": "dynamical:abstraction",
+    "family": "dynamical",
+    "source": "field:abstraction_field",
+    "seeded": 1.0,
+    "gloss": "ABSTRACTION \u2014 the agent's standing pull toward high-order, structural mappings: concrete/surface (\u2212) \u2194 abstract/deep (+). A component of the cognitive-style VECTOR (domains/disposition.TRAIT_REGISTRY), its OWN CAN Concept in the agent_disposition Mt, PRODUCED/moved by the same can_native_identity_field_feedback dynamics as openness but INDEPENDENT of it (a separate Concept, its own field). Seeded NEUTRAL (0.0) and INERT in layer 1 (no consumer); layer 2 wires it to analogy order_n. quantum=1.0/half_width=4 \u2014 the graded 9-level scheme.",
+    "quantum": 1.0,
+    "half_width": 4.0
+   },
+   "local_id": 11
+  },
+  {
+   "type": "QualiaDimension",
+   "attrs": {
+    "name": "dynamical:abstraction_pull",
+    "family": "dynamical",
+    "source": "field:abstraction_external",
+    "seeded": 1.0,
+    "gloss": "ABSTRACTION_PULL \u2014 the LIVE, momentary pull on this trait right now (the external_field of the trait Concept, mirrored to `abstraction_external`), before it settles into the standing trait. OVERLAY only \u2014 the gap between the live pull and the standing trait is 'I'm being pulled but my temperament has not moved.' quantum=1.0/half_width=4 as for the crystallised axis.",
+    "overlay": 1.0,
+    "quantum": 1.0,
+    "half_width": 4.0
+   },
+   "local_id": 12
+  },
+  {
+   "type": "QualiaDimension",
+   "attrs": {
+    "name": "dynamical:skepticism",
+    "family": "dynamical",
+    "source": "field:skepticism_field",
+    "seeded": 1.0,
+    "gloss": "SKEPTICISM \u2014 the agent's standing demand for evidence before accepting a correspondence: credulous (\u2212) \u2194 skeptical (+). A component of the cognitive-style VECTOR, its OWN CAN Concept in the agent_disposition Mt, PRODUCED/moved by the same identity-feedback dynamics but INDEPENDENT of openness and abstraction. Seeded NEUTRAL (0.0) and INERT in layer 1 (no consumer); layer 2 wires it to analogy min_score/recurrence. quantum=1.0/half_width=4 \u2014 the graded 9-level scheme.",
+    "quantum": 1.0,
+    "half_width": 4.0
+   },
+   "local_id": 13
+  },
+  {
+   "type": "QualiaDimension",
+   "attrs": {
+    "name": "dynamical:skepticism_pull",
+    "family": "dynamical",
+    "source": "field:skepticism_external",
+    "seeded": 1.0,
+    "gloss": "SKEPTICISM_PULL \u2014 the LIVE, momentary pull on this trait right now (the external_field of the trait Concept, mirrored to `skepticism_external`), before it settles into the standing trait. OVERLAY only \u2014 the gap between the live pull and the standing trait is 'I'm being pulled but my temperament has not moved.' quantum=1.0/half_width=4 as for the crystallised axis.",
+    "overlay": 1.0,
+    "quantum": 1.0,
+    "half_width": 4.0
+   },
+   "local_id": 14
+  },
+  {
+   "type": "QualiaDimension",
+   "attrs": {
+    "name": "phenomenal:modality",
+    "family": "phenomenal",
+    "source": "keyword",
+    "seeded": 1.0,
+    "gloss": "MODALITY \u2014 the sensory/affective register a felt concept belongs to (visual, somatic, emotional, cognitive...). BOOTSTRAP only: the phenomenal family exists so minted axes have a home, but its members are grown from residual, never hand-enumerated (contrast the closed lexical backbone)."
+   },
+   "local_id": 15
+  },
+  {
+   "type": "DimensionEdgeRole",
+   "attrs": {
+    "edge_type": "activates",
+    "dimension": "lexical:agentive",
+    "seeded": 1.0
+   },
+   "local_id": 16
+  },
+  {
+   "type": "DimensionEdgeRole",
+   "attrs": {
+    "edge_type": "built_from",
+    "dimension": "lexical:formal",
+    "seeded": 1.0
+   },
+   "local_id": 17
+  },
+  {
+   "type": "DimensionEdgeRole",
+   "attrs": {
+    "edge_type": "causal_influence",
+    "dimension": "lexical:agentive",
+    "seeded": 1.0
+   },
+   "local_id": 18
+  },
+  {
+   "type": "DimensionEdgeRole",
+   "attrs": {
+    "edge_type": "caused_by",
+    "dimension": "lexical:agentive",
+    "seeded": 1.0
+   },
+   "local_id": 19
+  },
+  {
+   "type": "DimensionEdgeRole",
+   "attrs": {
+    "edge_type": "causes",
+    "dimension": "lexical:agentive",
+    "seeded": 1.0
+   },
+   "local_id": 20
+  },
+  {
+   "type": "DimensionEdgeRole",
+   "attrs": {
+    "edge_type": "composed_of",
+    "dimension": "lexical:constitutive",
+    "seeded": 1.0
+   },
+   "local_id": 21
+  },
+  {
+   "type": "DimensionEdgeRole",
+   "attrs": {
+    "edge_type": "constitutes",
+    "dimension": "lexical:constitutive",
+    "seeded": 1.0
+   },
+   "local_id": 22
+  },
+  {
+   "type": "DimensionEdgeRole",
+   "attrs": {
+    "edge_type": "contains",
+    "dimension": "lexical:constitutive",
+    "seeded": 1.0
+   },
+   "local_id": 23
+  },
+  {
+   "type": "DimensionEdgeRole",
+   "attrs": {
+    "edge_type": "controls",
+    "dimension": "lexical:telic",
+    "seeded": 1.0
+   },
+   "local_id": 24
+  },
+  {
+   "type": "DimensionEdgeRole",
+   "attrs": {
+    "edge_type": "created_by",
+    "dimension": "lexical:agentive",
+    "seeded": 1.0
+   },
+   "local_id": 25
+  },
+  {
+   "type": "DimensionEdgeRole",
+   "attrs": {
+    "edge_type": "creates",
+    "dimension": "lexical:agentive",
+    "seeded": 1.0
+   },
+   "local_id": 26
+  },
+  {
+   "type": "DimensionEdgeRole",
+   "attrs": {
+    "edge_type": "depends_on",
+    "dimension": "lexical:agentive",
+    "seeded": 1.0
+   },
+   "local_id": 27
+  },
+  {
+   "type": "DimensionEdgeRole",
+   "attrs": {
+    "edge_type": "derived_from",
+    "dimension": "lexical:agentive",
+    "seeded": 1.0
+   },
+   "local_id": 28
+  },
+  {
+   "type": "DimensionEdgeRole",
+   "attrs": {
+    "edge_type": "enables",
+    "dimension": "lexical:telic",
+    "seeded": 1.0
+   },
+   "local_id": 29
+  },
+  {
+   "type": "DimensionEdgeRole",
+   "attrs": {
+    "edge_type": "excites",
+    "dimension": "lexical:agentive",
+    "seeded": 1.0
+   },
+   "local_id": 30
+  },
+  {
+   "type": "DimensionEdgeRole",
+   "attrs": {
+    "edge_type": "exhibits",
+    "dimension": "lexical:telic",
+    "seeded": 1.0
+   },
+   "local_id": 31
+  },
+  {
+   "type": "DimensionEdgeRole",
+   "attrs": {
+    "edge_type": "gates",
+    "dimension": "lexical:telic",
+    "seeded": 1.0
+   },
+   "local_id": 32
+  },
+  {
+   "type": "DimensionEdgeRole",
+   "attrs": {
+    "edge_type": "genls",
+    "dimension": "lexical:formal",
+    "seeded": 1.0
+   },
+   "local_id": 33
+  },
+  {
+   "type": "DimensionEdgeRole",
+   "attrs": {
+    "edge_type": "grounds",
+    "dimension": "lexical:telic",
+    "seeded": 1.0
+   },
+   "local_id": 34
+  },
+  {
+   "type": "DimensionEdgeRole",
+   "attrs": {
+    "edge_type": "has_part",
+    "dimension": "lexical:constitutive",
+    "seeded": 1.0
+   },
+   "local_id": 35
+  },
+  {
+   "type": "DimensionEdgeRole",
+   "attrs": {
+    "edge_type": "inhibits",
+    "dimension": "lexical:agentive",
+    "seeded": 1.0
+   },
+   "local_id": 36
+  },
+  {
+   "type": "DimensionEdgeRole",
+   "attrs": {
+    "edge_type": "instance_of",
+    "dimension": "lexical:formal",
+    "seeded": 1.0
+   },
+   "local_id": 37
+  },
+  {
+   "type": "DimensionEdgeRole",
+   "attrs": {
+    "edge_type": "is_a",
+    "dimension": "lexical:formal",
+    "seeded": 1.0
+   },
+   "local_id": 38
+  },
+  {
+   "type": "DimensionEdgeRole",
+   "attrs": {
+    "edge_type": "isa",
+    "dimension": "lexical:formal",
+    "seeded": 1.0
+   },
+   "local_id": 39
+  },
+  {
+   "type": "DimensionEdgeRole",
+   "attrs": {
+    "edge_type": "kind_of",
+    "dimension": "lexical:formal",
+    "seeded": 1.0
+   },
+   "local_id": 40
+  },
+  {
+   "type": "DimensionEdgeRole",
+   "attrs": {
+    "edge_type": "made_of",
+    "dimension": "lexical:constitutive",
+    "seeded": 1.0
+   },
+   "local_id": 41
+  },
+  {
+   "type": "DimensionEdgeRole",
+   "attrs": {
+    "edge_type": "member_of",
+    "dimension": "lexical:constitutive",
+    "seeded": 1.0
+   },
+   "local_id": 42
+  },
+  {
+   "type": "DimensionEdgeRole",
+   "attrs": {
+    "edge_type": "part_of",
+    "dimension": "lexical:constitutive",
+    "seeded": 1.0
+   },
+   "local_id": 43
+  },
+  {
+   "type": "DimensionEdgeRole",
+   "attrs": {
+    "edge_type": "produces",
+    "dimension": "lexical:telic",
+    "seeded": 1.0
+   },
+   "local_id": 44
+  },
+  {
+   "type": "DimensionEdgeRole",
+   "attrs": {
+    "edge_type": "regulates",
+    "dimension": "lexical:telic",
+    "seeded": 1.0
+   },
+   "local_id": 45
+  },
+  {
+   "type": "DimensionEdgeRole",
+   "attrs": {
+    "edge_type": "serves",
+    "dimension": "lexical:telic",
+    "seeded": 1.0
+   },
+   "local_id": 46
+  },
+  {
+   "type": "DimensionEdgeRole",
+   "attrs": {
+    "edge_type": "subtype_of",
+    "dimension": "lexical:formal",
+    "seeded": 1.0
+   },
+   "local_id": 47
+  },
+  {
+   "type": "DimensionEdgeRole",
+   "attrs": {
+    "edge_type": "suppresses",
+    "dimension": "lexical:agentive",
+    "seeded": 1.0
+   },
+   "local_id": 48
+  },
+  {
+   "type": "DimensionEdgeRole",
+   "attrs": {
+    "edge_type": "used_for",
+    "dimension": "lexical:telic",
+    "seeded": 1.0
+   },
+   "local_id": 49
+  }
+ ],
+ "edges": [],
+ "productions": []
+}
