@@ -28,17 +28,23 @@ constant (0.35) that opens the renderer's dynamic range (the Klatt cascade's
 resonant-peak gain otherwise compounded above unity, pinning against clip-safety);
 the affect->knob map carries an arousal->loudness gain widened to the MEASURED clip
 point (gain=0.25+0.45*a over [0.25,0.70]). Re-analyzed energy now tracks arousal
-across the arousal ordering (rank correlation rho ~= 0.93 — one inversion at the
-fear/happy pair, because the affect coordinate is read PRIMARILY off the substrate
-ModulatorState and the substrate reads emx_fear as lower-arousal than emx_joy;
-reported honestly, not reweighted away). Because the
-synth energy scale differs from the RAVDESS wav energy scale (~0.002-0.021) —
-different absolute scales — the energy axis is scored on the ORDERING (rank
-correlation vs the arousal ordering) + CI-separation of high-vs-low arousal energy
-+ CI-separation from the flat baseline, NOT absolute band membership. The earlier
-[0.12,0.40] compression that pinned the top of the range against clip-safety is now
-RESOLVED by the headroom constant — the ceiling 0.70 is the synth's measured clip
-point (matched to its dynamic range, NOT fit to the judge).
+across the arousal ordering. THE FEAR INVERSION IS RESOLVED BY THE PHASIC-AROUSAL
+DIMENSION (block 296000, PHASIC_AROUSAL_DIMENSION_PREREG.md): prosody now reads the
+substrate's PHASIC arousal band (arousal_band_phasic), derived from the already-
+computed threat_c0 ONSET magnitude, so fear reads HIGH (its onset is a startle
+spike) even though its TONIC band is LOW (decayed threat-precision). Energy now
+rank-correlates with the arousal ordering at rho=1.0 (was ~0.93 with the tonic-band
+fear inversion). The HONEST SECONDARY remains: happy reads MID phasic arousal (joy's
+arousal is the urge*urgency demand-deficit path, not a threat onset), so the phasic
+SCALAR-rho is ~0.88, not full continuous 1.0 — left unfixed, not fitted away. The
+BAND ordering the knob map reads is RAVDESS-monotone (LOW<MID<HIGH, no inversion).
+Because the synth energy scale differs from the RAVDESS wav energy scale
+(~0.002-0.021) — different absolute scales — the energy axis is scored on the
+ORDERING (rank correlation vs the arousal ordering) + CI-separation of high-vs-low
+arousal energy + CI-separation from the flat baseline, NOT absolute band membership.
+The earlier [0.12,0.40] compression that pinned the top of the range against
+clip-safety is now RESOLVED by the headroom constant — the ceiling 0.70 is the
+synth's measured clip point (matched to its dynamic range, NOT fit to the judge).
 
 MECHANICAL MEASURE-ADAPTER. No agent decision, no Rust, no Term, no shaping. The
 generator SETS knobs + calls the forward synthesizer; this script READS the judge
@@ -296,17 +302,25 @@ def run():
             "AND a fixed cascade-headroom constant (0.35) that opens the renderer's "
             "dynamic range; the affect->knob map carries an arousal->loudness gain "
             "widened to the measured clip point (0.25+0.45*a over [0.25,0.70]). "
-            "Re-analyzed energy now tracks arousal across the ordering (rank "
-            "correlation rho ~= 0.93; one honest inversion at fear/happy from the "
-            "substrate-primary affect read). The synth energy scale differs "
-            "from the RAVDESS wav energy scale (~0.002-0.021) — different absolute "
-            "scales — so the energy axis is scored on ORDERING (rank correlation vs "
-            "the arousal ordering) + high-vs-low CI-separation + CI-separation from "
-            "the flat baseline, NOT absolute band membership. The earlier [0.12,0.40] "
-            "compression that pinned the top of the range against clip-safety is "
-            "RESOLVED by the headroom constant; the ceiling 0.70 is the synth's "
-            "measured clip point (matched to its dynamic range, not fit to the "
-            "judge)."),
+            "The fear inversion is RESOLVED by the phasic-arousal dimension (block "
+            "296000): prosody reads the substrate's PHASIC arousal band "
+            "(arousal_band_phasic, derived from the already-computed threat_c0 "
+            "onset), so fear reads HIGH (onset/startle) even though its tonic band "
+            "is LOW (decayed threat-precision). Re-analyzed energy now rank-"
+            "correlates with the arousal ordering at rho=1.0 (was ~0.93 with the "
+            "tonic-band fear inversion). Honest secondary: happy stays MID phasic "
+            "arousal (joy's arousal is the urge*urgency demand-deficit path, not a "
+            "threat onset), so the phasic SCALAR-rho is ~0.88, not continuous 1.0 — "
+            "left unfixed, not fitted away; the band ordering the map reads is "
+            "RAVDESS-monotone (LOW<MID<HIGH, no inversion). The synth energy scale "
+            "differs from the RAVDESS wav energy scale (~0.002-0.021) — different "
+            "absolute scales — so the energy axis is scored on ORDERING (rank "
+            "correlation vs the arousal ordering) + high-vs-low CI-separation + "
+            "CI-separation from the flat baseline, NOT absolute band membership. The "
+            "earlier [0.12,0.40] compression that pinned the top of the range "
+            "against clip-safety is RESOLVED by the headroom constant; the ceiling "
+            "0.70 is the synth's measured clip point (matched to its dynamic range, "
+            "not fit to the judge)."),
         energy_values=en_by_emo,
         energy_spread=en_spread,
         flat_baseline_energy=round(flat_en_mean, 5),

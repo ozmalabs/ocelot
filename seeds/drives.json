@@ -774,6 +774,106 @@
    ]
   },
   {
+   "name": "drive_arousal_contrib_phasic",
+   "area": "retina",
+   "order": 3,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "ms",
+     "has_active_drive",
+     "d"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ms"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "d",
+     "arousal_contrib_phasic",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "d"
+         },
+         "key": "threat"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       "then": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "d"
+        },
+        "key": "threat_c0"
+       },
+       "other": {
+        "type": "IDiv",
+        "a": {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "d"
+           },
+           "key": "urge"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "d"
+           },
+           "key": "urgency"
+          }
+         ]
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "d"
+         },
+         "key": "scale"
+        }
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
    "name": "drive_affiliation_legitimacy",
    "area": "retina",
    "order": 0,

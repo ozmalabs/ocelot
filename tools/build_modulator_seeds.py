@@ -143,6 +143,27 @@ def build_drives():
                 A("d", "threat_precision"),
                 IDiv(Times(A("d", "urge"), A("d", "urgency")), A("d", SCALE))))]]))
 
+    # drive_arousal_contrib_phasic (block 296000) -- the PHASIC (onset/startle/
+    # action-readiness) sibling of drive_arousal_contrib. IDENTICAL to the tonic
+    # rule EXCEPT the threat branch reads threat_c0 (the UN-decayed ONSET magnitude,
+    # the head of the same freshness Ashr drive_threat_precision decays) instead of
+    # the decayed threat_precision. So a threat drive contributes its ONSET (fear =
+    # high, because a threat onset IS a startle spike -- 1024 for the canonical
+    # fear), while its TONIC contribution is the decayed precision (fear = low).
+    # This is the phasic-vs-tonic arousal dimension the tonic path had collapsed
+    # (PHASIC_AROUSAL_DIMENSION_PREREG.md). For any NON-threat drive it is
+    # ALGEBRAICALLY IDENTICAL to the tonic contrib (same urge*urgency//SCALE branch)
+    # -- the two axes differ ONLY on threat drives, and there only onset-vs-decayed.
+    # NO new constant: threat_c0 pre-dates RAVDESS and means "onset". Order 3, right
+    # after its tonic counterpart, so the tonic ordering is undisturbed; it writes
+    # only the NEW attr arousal_contrib_phasic that nothing existing reads.
+    rules.append(rule(
+        "drive_arousal_contrib_phasic", 3, DRIVE_MATCH, drive_guard(),
+        [["set_attr", "d", "arousal_contrib_phasic", T(
+            Ite(Eq(A("d", "threat"), L(1)),
+                A("d", "threat_c0"),
+                IDiv(Times(A("d", "urge"), A("d", "urgency")), A("d", SCALE))))]]))
+
     # affiliation -- legitimacy signal ingest as a rule: praise (legitimacy=+1)
     # moves c_d toward v_d by gain*social_weight; reproach (legitimacy=-1) moves
     # it away by loss*social_weight. Affiliation is the virtual social currency.
@@ -259,6 +280,31 @@ def build_modulators():
          ["set_attr", "ms", "arousal_band", T(
              Ite(Gte(arousal_expr, A("ms", "band_hi")), L(2),
                  Ite(Gte(arousal_expr, A("ms", "band_mid")), L(1), L(0))))]]))
+
+    # ---- mod_arousal_phasic (block 296000) -- the PHASIC arousal axis + its band.
+    # IDENTICAL to mod_arousal EXCEPT it sums arousal_contrib_phasic (the onset
+    # sibling) instead of arousal_contrib. The un-appraised orienting spike (the
+    # residual branch) is UNCHANGED -- surprise's phasic == its tonic residual, as
+    # it should be. The band uses the SAME band_hi/band_mid cuts, so fear's onset
+    # (threat_c0=1024 >= band_hi=600) lands the PHASIC band HIGH while its decayed
+    # precision (128 < band_mid=150) keeps the TONIC band LOW -- the dimension the
+    # collapsed scalar had hidden (PHASIC_AROUSAL_DIMENSION_PREREG.md §5). PURELY
+    # ADDITIVE: leaves arousal/arousal_band (tonic) exactly as-is and writes only
+    # the NEW attrs arousal_phasic/arousal_band_phasic, which nothing existing reads
+    # (emotion classification keeps reading the tonic arousal_band; only the prosody
+    # world adapter reads the phasic band). Order 4, right after its tonic
+    # counterpart, so the region predicates (order >= 9) see byte-identical tonic
+    # values => default == today. NO new constant.
+    arousal_phasic_expr = Ite(Eq(A("d", "appraised"), L(0)),
+                              A("d", "residual"),
+                              Sum(Neigh("ms", "has_active_drive"), "dd",
+                                  A("dd", "arousal_contrib_phasic")))
+    rules.append(rule(
+        "mod_arousal_phasic", 4, LEAD_MATCH, mod_guard(),
+        [["set_attr", "ms", "arousal_phasic", T(arousal_phasic_expr)],
+         ["set_attr", "ms", "arousal_band_phasic", T(
+             Ite(Gte(arousal_phasic_expr, A("ms", "band_hi")), L(2),
+                 Ite(Gte(arousal_phasic_expr, A("ms", "band_mid")), L(1), L(0))))]]))
 
     # ---- resolution = (base + abstraction_bias) + IDiv(urgency(leading), res_urg_div)
     #                   - IDiv(arousal, res_ar_div)

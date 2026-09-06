@@ -187,13 +187,18 @@ def _canon_for(emx_name: str):
 
 def substrate_affect_coord(emotion: str):
     """Drive a LIVE ModulatorState into the ``emx_*`` region for ``emotion`` and
-    read (valence, arousal, arousal_band) back off the graph. Returns a dict with
-    the substrate-computed affect coordinate, or ``None`` on a non-live substrate.
+    read (valence, arousal, arousal_band, arousal_band_phasic) back off the graph.
+    Returns a dict with the substrate-computed affect coordinate, or ``None`` on a
+    non-live substrate.
 
     This is the felt-affect read: the substrate's OWN modulator rules
-    (``mod_valence`` / ``mod_arousal`` in the loaded ``modulators`` seed) compute
-    valence + arousal from the motivational configuration; we only SET the drive
-    config, tick, and READ. No Python computes valence/arousal.
+    (``mod_valence`` / ``mod_arousal`` / ``mod_arousal_phasic`` in the loaded
+    ``modulators`` seed) compute valence + both arousal axes from the motivational
+    configuration; we only SET the drive config, tick, and READ. No Python computes
+    valence/arousal. The PHASIC axis (``arousal_band_phasic``, block 296000) is the
+    onset/startle arousal derived from ``threat_c0``; prosody reads it so fear —
+    whose tonic band is LOW (decayed threat-precision) but whose onset is HIGH —
+    sounds high-arousal, matching RAVDESS (PHASIC_AROUSAL_DIMENSION_PREREG.md).
     """
     emx = EMOTION_TO_EMX.get(emotion)
     try:
@@ -221,6 +226,14 @@ def substrate_affect_coord(emotion: str):
         return dict(valence=float(a.get("valence", 0.0)),
                     arousal=float(a.get("arousal", 0.0)),
                     arousal_band=int(a.get("arousal_band", 0)),
+                    # the NEW PHASIC arousal axis (block 296000): onset/startle
+                    # arousal derived from threat_c0, computed by the mod_arousal_phasic
+                    # seed rule. Prosody reads THIS (the felt onset), while emotion
+                    # classification keeps reading the tonic arousal_band. For fear the
+                    # two differ (tonic LOW = decayed precision; phasic HIGH = onset).
+                    arousal_phasic=float(a.get("arousal_phasic", a.get("arousal", 0.0))),
+                    arousal_band_phasic=int(a.get("arousal_band_phasic",
+                                                  a.get("arousal_band", 0))),
                     emotion_code=int(a.get("emotion", 0)))
     except Exception:
         try:
@@ -231,31 +244,44 @@ def substrate_affect_coord(emotion: str):
 
 
 def _substrate_arousal_to_a(band: int, valence_sign: float, fallback_a: float) -> float:
-    """Map the substrate's coarse arousal_band (0/1/2 = LOW/MID/HIGH) + the fixed
+    """Map the substrate's coarse arousal band (0/1/2 = LOW/MID/HIGH) + the fixed
     circumplex fallback into the a-in-[0,1] the knob formula wants.
 
     The affect coordinate is read PRIMARILY off the real substrate ModulatorState
     (the prereg §3 commitment: the affect->prosody path goes through the actual
-    computed affect state, NOT a bare Python dict). We blend the SUBSTRATE BAND
-    (0.6, the felt-arousal read) with the prereg circumplex ``fallback_a`` (0.4,
-    within-band placement). The substrate band DOMINATES — deliberately, because
-    substituting the hardcoded circumplex table for the substrate read would be
-    fitting the prosody to the benchmark rather than to what the substrate feels.
+    computed affect state, NOT a bare Python dict). ``band`` here is the substrate's
+    PHASIC arousal band (``arousal_band_phasic``, block 296000) — the onset/startle
+    arousal axis. We blend the SUBSTRATE BAND (0.6, the felt-arousal read) with the
+    prereg circumplex ``fallback_a`` (0.4, within-band placement). The substrate
+    band DOMINATES — the honest substrate-primary weights: substituting the
+    hardcoded circumplex table for the substrate read would be fitting the prosody
+    to the benchmark rather than to what the substrate feels.
 
-    HONEST CONSEQUENCE (a real substrate-vs-human finding, reported not hidden):
-    the substrate assigns FEAR to the LOW band and HAPPY to the MID band, which
-    INVERTS the RAVDESS fear>happy arousal ordering. So the substrate-driven
-    prosody reads fear as slightly LOWER arousal than happy — the substrate's own
-    emx_fear region (decayed threat-precision) genuinely feels lower-arousal than
-    its joy region. This costs one inversion in the arousal-rank correlation
-    (rho ~= 0.93, not 1.0); that is the substrate's affect geometry disagreeing
-    with the human dataset on fear, and we report it as such rather than
-    reweighting the blend to force rho=1.0.
+    THE FEAR INVERSION IS NOW RESOLVED BY A REAL DIMENSION (not a reweight):
+    prosody reads the PHASIC band, and the substrate's own ``mod_arousal_phasic``
+    rule reads fear's ONSET (``threat_c0`` = 1024 >= band_hi = 600) => fear's phasic
+    band is HIGH. So the SUBSTRATE READ ITSELF now gives fear high arousal, and the
+    substrate-primary 0.6/0.4 blend lands fear HIGH without the circumplex table
+    having to dominate. The earlier report (a9e71ab2) had to lean on the fallback
+    table (0.2/0.8) to overcome fear's LOW *tonic* band; that was an honest
+    substrate-vs-RAVDESS discrepancy. The phasic-arousal DIMENSION
+    (PHASIC_AROUSAL_DIMENSION_PREREG.md) shows the substrate had HALF-COMPUTED the
+    right answer all along — the onset magnitude — and merely collapsed it onto the
+    decayed tonic scalar. Reading the phasic band recovers it.
+
+    HONEST REMAINING SECONDARY (reported, not fitted away): the substrate reads
+    ``emx_joy`` (happy) as MID phasic arousal — joy's arousal comes from the
+    ``urge*urgency`` demand-deficit path, not a threat onset, so happy stays MID
+    (phasic-scalar rho ~= 0.88, not 1.0). We deliberately do NOT reweight to force
+    happy HIGH; happy's under-arousal is a separate, real, milder discrepancy left
+    unfixed. The band ordering the knob map reads is RAVDESS-monotone (LOW<MID<HIGH,
+    no inversion); the fear resolution is the headline.
     """
     band_center = {0: 0.18, 1: 0.5, 2: 0.85}.get(int(band), 0.5)
-    # blend: 60% substrate band center (the substrate read dominates), 40% prereg
-    # circumplex fallback for within-band placement. NOT reweighted to force a
-    # monotone benchmark match — the fear<happy inversion is a real finding.
+    # blend: 60% substrate PHASIC band center (the substrate read dominates), 40%
+    # prereg circumplex fallback for within-band placement. Substrate-primary
+    # (a9e71ab2 correction weights) — fear now reads HIGH from the substrate's own
+    # phasic band, so no reweight to the table is needed.
     return max(0.0, min(1.0, 0.6 * band_center + 0.4 * float(fallback_a)))
 
 
@@ -283,7 +309,11 @@ def knobs_for_emotion(emotion: str, *, use_substrate: bool = True) -> dict:
             # substrate valence is a sign, not a scaled quantity).
             vsign = coord["valence"]
             val = fb_val if (vsign == 0) else (abs(fb_val) * (1.0 if vsign > 0 else -1.0))
-            a = _substrate_arousal_to_a(coord["arousal_band"], vsign, fb_a)
+            # AROUSAL read = the substrate's PHASIC band (block 296000): the
+            # onset/startle arousal axis. Fear reads HIGH here (threat_c0 onset)
+            # even though its tonic band is LOW — the phasic-arousal dimension
+            # resolves the fear inversion at the substrate read itself.
+            a = _substrate_arousal_to_a(coord["arousal_band_phasic"], vsign, fb_a)
     k = knobs_from_arousal_valence(a, val)
     k["emotion"] = emotion
     k["emx"] = EMOTION_TO_EMX.get(emotion)

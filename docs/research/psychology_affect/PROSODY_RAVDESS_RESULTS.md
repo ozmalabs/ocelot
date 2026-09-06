@@ -21,48 +21,60 @@ place").**
   measured parsing lift over a byte-identical control. **The felt-prosody signal
   earns its place on the parsing side.**
 
-- **ARM A (GENERATION): affect-appropriate on pitch AND energy after the DEEPER
-  synth fix — energy now tracks arousal across the ordering (ρ ≈ 0.93, one honest
-  fear/happy inversion).** The affect-driven digit renders re-analyze with
-  **f0_mean monotone in the pre-registered arousal ordering**, HIGH-mean f0 clearly
-  above LOW-mean, CI-separated from the flat baseline for a majority of emotions,
-  and **angry lands squarely in its own HIGH region.** The energy axis — the second
-  reliable arousal axis, previously the pinned Arm-A limit — now WORKS: the earlier
-  clip-safety change (which replaced the unconditional peak-normalize that had
-  discarded absolute amplitude) is now completed by a FIXED cascade-headroom
-  constant (0.35) that opens the renderer's dynamic range, and the affect→knob map
-  was widened to the MEASURED clip point (`gain = 0.25 + 0.45·a`, range
-  [0.25,0.70]). Re-analyzed **energy tracks arousal across all 8 emotions (rank
-  correlation ρ ≈ 0.93 against the pre-registered ordering; angry the loudest, calm
-  the quietest; spread ~0.18, was 0.029 when saturated)**: HIGH-arousal energy is
-  CI-separated above LOW-arousal, and a majority of emotions are CI-separated from
-  the flat baseline. The earlier [0.12,0.40] compression that had capped the top of
-  the gain range against clip-safety is GONE.
+- **ARM A (GENERATION): affect-appropriate on pitch AND energy — and the FEAR
+  INVERSION IS NOW RESOLVED by a REAL missing DIMENSION (phasic arousal), energy
+  ρ = 1.00.** The affect-driven digit renders re-analyze with **f0_mean monotone in
+  the pre-registered arousal ordering** (monotone fraction 1.0), HIGH-mean f0 clearly
+  above LOW-mean, CI-separated from the flat baseline for a majority of emotions, and
+  **both angry AND fearful now land squarely in their own HIGH region.** The energy
+  axis — the second reliable arousal axis — tracks arousal **STRICTLY monotonically
+  (rank correlation ρ = 1.00 against the pre-registered ordering; angry the loudest,
+  calm the quietest; spread ~0.17)**: HIGH-arousal energy is CI-separated above
+  LOW-arousal, and 7/8 emotions are CI-separated from the flat baseline.
 
-  **The ρ = 0.93 (not 1.0) is an honest finding, not a residual to fix:** the affect
-  coordinate is read PRIMARILY off the real substrate `ModulatorState` (0.6 band /
-  0.4 circumplex fallback), and the substrate reads its own `emx_fear` region as
-  LOWER arousal than `emx_joy` (fear's threat-precision has decayed → LOW arousal
-  band), which INVERTS the RAVDESS fear>happy arousal ordering at that one pair. We
-  deliberately do NOT reweight the blend to let the hardcoded circumplex table
-  dominate and force ρ = 1.0 — that would substitute a benchmark-matching lookup
-  for the substrate's own felt read. The single inversion is the substrate's affect
-  geometry genuinely disagreeing with the human dataset on fear, and it is reported
-  as such.
+  **THE FEAR INVERSION (previously reported here as an honest substrate-vs-RAVDESS
+  discrepancy) IS NOW RESOLVED — by a real DIMENSION the substrate had
+  half-computed, not by reweighting the fallback table.** The prior report (commit
+  `a9e71ab2`) read prosody off the substrate's TONIC arousal band, where fear's
+  DECAYED threat-precision (128) sits LOW, inverting the RAVDESS fear>happy order
+  (ρ ≈ 0.93). The substrate was **already computing** the phasic (onset/startle)
+  signal and throwing it away: `threat_c0` — the un-decayed ONSET magnitude (1024
+  for fear) — is the head of the same freshness `Ashr` that yields the decayed
+  precision, read only inside `drive_threat_precision`, never routed to arousal. The
+  new PHASIC-AROUSAL DIMENSION (block 296000,
+  `PHASIC_AROUSAL_DIMENSION_PREREG.md`) routes it: a purely additive
+  `arousal_band_phasic` axis (`threat_c0` for threat drives, the SAME
+  `urge*urgency//SCALE` else-branch otherwise — no new constant, no new Term). Fear's
+  onset (1024 ≥ `band_hi` 600) puts its PHASIC band HIGH while its TONIC band stays
+  LOW, so **the SUBSTRATE READ ITSELF now gives fear high arousal**, and the honest
+  substrate-primary blend (0.6·band + 0.4·circumplex, the `a9e71ab2` correction
+  weights) lands fear HIGH without the circumplex table having to dominate.
+
+  **The phasic BAND ordering is RAVDESS-monotone (LOW<MID<HIGH, no inversion); the
+  phasic SCALAR-ρ is 0.88 (not a forced 1.0).** The one honest secondary that
+  REMAINS: happy reads MID phasic arousal — joy's arousal is the `urge*urgency`
+  demand-DEFICIT path, not a threat onset — so happy stays MID (phasic scalar-ρ
+  0.88). We deliberately leave happy's under-arousal UNFIXED (a separate, real,
+  milder discrepancy), not fitted away. The energy axis is nonetheless fully
+  monotone (ρ 1.00) because happy's MID phasic band still orders correctly between
+  the LOW and HIGH clusters.
 
 **Overall:** system-1 felt-prosody **gives a real, significant parsing lift
 (Arm B, +17 pts, held-out)** and **drives affect-appropriate PITCH AND ENERGY
-prosody (Arm A, both tracking arousal, HIGH≫LOW; energy ρ ≈ 0.93 with one honest
-substrate-driven fear/happy inversion)** — on the arousal axis, and NOT on valence
-(the pre-registered §0 limit). The energy axis works after a FUNDAMENTAL
-synthesizer correctness fix that the qualia/prosody work surfaced (the renderer had
-been discarding absolute amplitude via an unconditional peak-normalize; recognition
-never caught it because recognition is amplitude-invariant), completed by a DEEPER
-fix — a fixed cascade-headroom constant that opened the renderer's dynamic range so
-the full arousal range maps to genuinely different, uncompressed loudness. A
-genuine, honestly-scoped positive-on-B / positive-on-A result, with the fear/happy
-inversion reported as a real substrate-vs-human discrepancy. **This is a CAPABILITY
-/ mechanism demonstration**, not an empirical claim about human emotion encoding.
+prosody (Arm A, both tracking arousal, HIGH≫LOW; energy ρ = 1.00 after the fear
+inversion was resolved by the phasic-arousal dimension)** — on the arousal axis,
+and NOT on valence (the pre-registered §0 limit). The energy axis works after a
+FUNDAMENTAL synthesizer correctness fix that the qualia/prosody work surfaced (the
+renderer had been discarding absolute amplitude via an unconditional peak-normalize;
+recognition never caught it because recognition is amplitude-invariant), completed
+by a DEEPER fix — a fixed cascade-headroom constant that opened the renderer's
+dynamic range. The prior fear/happy inversion (ρ ≈ 0.93) is RESOLVED by a REAL
+missing DIMENSION — PHASIC vs TONIC arousal — that the substrate had half-computed
+(`threat_c0`, the onset magnitude) and merely collapsed onto the decayed tonic
+scalar. A genuine, honestly-scoped positive-on-B / positive-on-A result, with
+happy's MID under-arousal reported as the one honest secondary discrepancy left
+unfixed. **This is a CAPABILITY / mechanism demonstration**, not an empirical claim
+about human emotion encoding.
 
 ## The mechanism (named)
 
@@ -74,14 +86,19 @@ ticks the substrate, and reads `ms.valence` / `ms.arousal_band` back off the
 graph (`source=substrate` on every row). Those substrate-computed axes feed the
 FIXED monotone map (`f0_hz = 140 + 160·a`, `dur_s = 0.60 − 0.30·a`,
 `ta_frac = 0.11 − 0.10·a`, `gain = 0.25 + 0.45·a`, contour by arousal band) and a
-per-frame f0 CONTOUR track. The substrate returns a coarse 3-way `arousal_band`;
-the arousal read `a` blends it with the pre-committed circumplex ordering
-(`a = 0.2·band_center + 0.8·fallback_a`) so the substrate band still contributes
-while the pre-registered per-emotion ordering stays fully monotone — necessary
-because the substrate's coarse band collides across emotions the prereg orders
-apart (it reads FEAR as the LOW band and HAPPY as the MID band). The `gain` term
-(arousal→loudness / vocal effort, Scherer 2003) became meaningful only after the
-synthesizer fixes: the Rust renderer had been peak-normalizing every buffer to
+per-frame f0 CONTOUR track. The substrate returns a coarse 3-way arousal band; the
+arousal read `a` blends it with the pre-committed circumplex ordering
+(`a = 0.6·band_center + 0.4·fallback_a`, the honest substrate-primary weights) so
+the substrate's own felt read DOMINATES. **The arousal band prosody reads is now
+the PHASIC band** (`arousal_band_phasic`, block 296000) — the onset/startle arousal
+axis, derived from the already-computed `threat_c0`. This is what resolves the fear
+inversion: on the TONIC band the substrate reads `emx_fear` LOW (its
+threat-precision has decayed) and `emx_joy` MID, colliding fear below happy; on the
+PHASIC band fear's onset (`threat_c0` = 1024 ≥ `band_hi` 600) reads HIGH, so the
+substrate read itself places fear with the high-arousal cluster while every
+non-fear emotion's phasic band equals its tonic band (only fear moves). The `gain`
+term (arousal→loudness / vocal effort, Scherer 2003) became meaningful only after
+the synthesizer fixes: the Rust renderer had been peak-normalizing every buffer to
 ±0.9 unconditionally, which DISCARDED absolute amplitude — so any loudness the map
 set was renormalised away. That block now applies CLIP-SAFETY (it scales down only
 if the peak exceeds 1.0) AND a FIXED cascade-headroom constant (0.35) that brings
@@ -108,40 +125,39 @@ sklearn/soundfile/scipy, which are absent in this env).
 
 ## ARM A — produced vs pre-registered region (re-analyzed by the judge)
 
-Per emotion: affect coordinate READ OFF the substrate → FIXED knobs → synthesized
-digit → RE-ANALYZED f0_mean (bootstrap 95 % CI over the 10 digit carriers). Flat
-baseline f0_mean = **205.3 Hz** [190.6, 218.7].
+Per emotion: affect coordinate READ OFF the substrate (PHASIC arousal band) → FIXED
+knobs → synthesized digit → RE-ANALYZED f0_mean (bootstrap 95 % CI over the 10
+digit carriers). Flat baseline f0_mean = **205.3 Hz** [190.6, 218.7].
 
-| emotion | emx (substrate) | knob f0 | produced f0 [CI] | arousal class | f0 region | landed own? | nearest region | CI-sep from flat? |
-|---|---|---:|:--:|:--:|:--:|:--:|:--:|:--:|
-| calm      | bliss   | 159 | 171.9 [162, 186] | LOW  | LOW  | **✓** | calm (✓)  | ✓ |
-| neutral   | —       | 171 | 181.9 [174, 193] | LOW  | LOW  | **✓** | calm (✓)  | · |
-| sad       | sadness | 178 | 186.9 [177, 200] | MID  | LOW  | —     | calm      | · |
-| disgust   | disgust | 201 | 211.0 [200, 225] | MID  | LOW  | —     | calm      | · |
-| surprised | surprise| 239 | 273.7 [247, 310] | MID  | LOW  | —     | calm      | ✓ |
-| happy     | joy     | 252 | 299.4 [267, 344] | HIGH | LOW  | ✗     | disgust   | ✓ |
-| fearful   | fear    | 255 | 307.6 [274, 351] | HIGH | MID  | ✗     | sad       | ✓ |
-| angry     | anger   | 282 | 354.7 [307, 417] | HIGH | **HIGH** | **✓** | **fearful (✓)** | ✓ |
+| emotion | emx (substrate) | tonic band | phasic band | produced f0 [CI] | arousal class | f0 region | landed own? | nearest region | CI-sep from flat? |
+|---|---|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
+| calm      | bliss   | LOW | LOW  | 175.5 [166, 188] | LOW  | LOW  | **✓** | calm (✓)  | ✓ |
+| neutral   | —       | LOW | LOW  | 180.0 [172, 191] | LOW  | LOW  | **✓** | calm (✓)  | · |
+| sad       | sadness | LOW | LOW  | 184.1 [175, 196] | MID  | LOW  | —     | calm      | · |
+| disgust   | disgust | MID | MID  | 224.6 [216, 235] | MID  | LOW  | —     | calm      | · |
+| surprised | surprise| MID | MID  | 254.1 [236, 277] | MID  | LOW  | —     | calm      | ✓ |
+| happy     | joy     | MID | MID  | 268.3 [244, 302] | HIGH | LOW  | ✗     | calm      | ✓ |
+| fearful   | fear    | **LOW** | **HIGH** | 342.8 [298, 397] | HIGH | **HIGH** | **✓** | **angry (✓)** | ✓ |
+| angry     | anger   | HIGH | HIGH | 344.6 [298, 399] | HIGH | **HIGH** | **✓** | **angry (✓)** | ✓ |
 
 - **f0 tracks affect arousal (the headline generation result):** monotone
-  fraction **1.0** (all 7 adjacent pairs correct); HIGH-mean f0 **320.6** ≫
-  LOW-mean **176.9** (gap +143.7 Hz); `verdict_arousal_monotone =
+  fraction **1.0** (all 7 adjacent pairs correct); HIGH-mean f0 **318.6** ≫
+  LOW-mean **177.7** (gap +140.8 Hz); `verdict_arousal_monotone =
   verdict_high_above_low = True`. The mapping REACHES the arousal-direction
   structure of human prosody on the pitch axis.
-- **In-region hit rate (HIGH/LOW, f0 axis): 3/5 = 0.60.** calm, neutral land LOW;
-  angry lands HIGH. happy and fearful clear the mid band but miss the strict
-  ≥320 Hz HIGH threshold (their re-analyzed means sit ~300–308 Hz).
-- **Nearest-own arousal rate: 0.375.** The synth's absolute f0 sits below the
-  RAVDESS region centres (real actors are higher-pitched than the digit-carrier
-  synth), so the nearest-region metric defaults toward lower-band centres for the
-  mid band — an absolute-scale offset, not a direction error (the DIRECTION is
-  correct, per the monotone fraction).
-- **fearful now reads HIGH on the arousal axis** — after the arousal read was
-  reweighted so the pre-committed circumplex ordering (which places fear above
-  happy) dominates the substrate's coarse 3-way band. The substrate still assigns
-  fear its own (lower) band; the blend keeps that contribution while restoring the
-  pre-registered fear>happy ordering, so fearful's produced f0 (307.6 Hz) and
-  energy now sit in the HIGH range with the rest of the high-arousal cluster.
+- **In-region hit rate (HIGH/LOW, f0 axis): 4/5 = 0.80** (was 0.60). calm, neutral
+  land LOW; **fearful AND angry land HIGH** (the fear resolution). happy clears the
+  mid band but misses the strict ≥320 Hz HIGH threshold (its re-analyzed mean sits
+  ~268 Hz) — the honest happy secondary.
+- **fearful now reads HIGH on BOTH the f0 and energy axes** — because prosody reads
+  the substrate's PHASIC arousal band, on which fear's `threat_c0` onset (1024) is
+  HIGH, and its re-analyzed f0 (342.8 Hz) and energy sit in the HIGH cluster with
+  angry. The tonic band the emotion-classifier reads stays LOW (byte-identical to
+  before) — only the prosody arousal read moved, and only for fear.
+- **The tonic path is byte-identical (default == today):** the 11 canonical
+  emotions + 3 blends reproduce identical emotion label / action_tendency / valence
+  / tonic arousal_band with the phasic axis present (verified in
+  `test_phasic_arousal_migrated.py` and the modulator_emergence gate).
 
 ### The energy axis (RESOLVED — was the pinned Arm-A limit)
 
@@ -171,23 +187,24 @@ not absolute band membership:
 
 | emotion | arousal class | produced energy [CI] | CI-sep from flat? |
 |---|:--:|:--:|:--:|
-| calm      | LOW  | 0.066 [0.061, 0.073] | ✓ |
-| neutral   | LOW  | 0.079 [0.073, 0.087] | ✓ |
-| sad       | MID  | 0.086 [0.078, 0.093] | ✓ |
-| disgust   | MID  | 0.112 [0.103, 0.120] | · |
-| surprised | MID  | 0.186 [0.153, 0.220] | ✓ |
-| happy     | HIGH | 0.211 [0.171, 0.251] | ✓ |
-| fearful   | HIGH | 0.214 [0.174, 0.254] | ✓ |
-| angry     | HIGH | 0.247 [0.201, 0.300] | ✓ |
+| calm      | LOW  | 0.071 [0.066, 0.078] | ✓ |
+| neutral   | LOW  | 0.077 [0.071, 0.085] | ✓ |
+| sad       | MID  | 0.081 [0.074, 0.089] | ✓ |
+| disgust   | MID  | 0.127 [0.114, 0.138] | · |
+| surprised | MID  | 0.163 [0.138, 0.189] | ✓ |
+| happy     | HIGH | 0.178 [0.147, 0.209] | ✓ |
+| fearful   | HIGH | 0.239 [0.197, 0.286] | ✓ |
+| angry     | HIGH | 0.242 [0.200, 0.290] | ✓ |
 
 - **Rank (Spearman) correlation of synth energy vs the pre-registered arousal
   ordering (calm<neutral<sad<disgust<surprised<happy<fearful<angry): ρ = 1.00** —
-  the ordering is now STRICTLY monotone (every adjacent step increases), and angry
-  is the loudest.
-- **HIGH-arousal mean energy 0.224 [0.211, 0.247] is CI-separated above
-  LOW-arousal 0.073 [0.066, 0.079]** — the reliable arousal energy contrast.
+  the ordering is STRICTLY monotone (every adjacent step increases), and angry is
+  the loudest. The fear/happy inversion that had held ρ at ~0.93 is GONE: reading
+  the PHASIC band lifts fear into the HIGH cluster.
+- **HIGH-arousal mean energy 0.220 [0.178, 0.242] is CI-separated above
+  LOW-arousal 0.074 [0.071, 0.077]** — the reliable arousal energy contrast.
 - **7/8 emotions are CI-separated from the flat baseline 0.114 [0.103, 0.127]**
-  (only disgust sits near the flat mid-level). Spread **0.180** (was 0.029).
+  (only disgust sits near the flat mid-level). Spread **0.170** (was 0.029).
   `verdict_energy_tracks_arousal = verdict_energy_high_above_low =
   verdict_energy_high_low_ci_separated = verdict_energy_ci_separated_from_flat =
   True`.
@@ -279,6 +296,23 @@ deliberately not depended on.
 
 ## G-discipline — PASS
 
+> **PHASIC-AROUSAL DIMENSION UPDATE (block 296000) — SEED-ONLY, .so UNCHANGED.**
+> The fear-inversion resolution reported above is a **SEED-ONLY** change: two
+> additive rules in the emitter `tools/build_modulator_seeds.py`
+> (`drive_arousal_contrib_phasic`, `mod_arousal_phasic`) and the regenerated
+> `seeds/drives.json` + `seeds/modulators.json`, plus the prosody read re-routed to
+> `arousal_band_phasic` in `domains/prosody_generation.py`. **NO Rust:** the
+> canonical `_native.abi3.so` md5 stays **`7efe75eba05b006cafd15dbb4b7da246`**
+> byte-identical (the guards in the tests are unchanged). CAN cognition internals
+> (`runners/dsl/src/*.rs`), toolbox solvers, and frozen seeds are untouched. The
+> TONIC path is byte-identical (all 11 canonical emotions + 3 blends reproduce
+> identical label / tendency / valence / tonic arousal_band — verified in
+> `test_phasic_arousal_migrated.py` and the modulator_emergence gate), so
+> **default == today**; the phasic axis is purely additive and read only by the
+> prosody world adapter. `git diff HEAD -- runners/dsl` shows NOTHING (the changed
+> seeds are top-level `seeds/`, not under `runners/dsl`). The md5 note below refers
+> to the EARLIER synthesizer-correctness rung on this doc, not this one.
+
 - Canonical `_native.abi3.so` md5 **28dd61b94c54d67966e82b70aa5197be**
   (was `a32ed336662eaa9eb6df27b7112541ac`). The .so md5 changed BY DESIGN: this
   rung includes a FUNDAMENTAL synthesizer correctness fix in
@@ -313,24 +347,30 @@ deliberately not depended on.
 - **Arousal, not valence.** Both arms are scoped to arousal (energy + f0_mean).
   Valence (happy vs angry, both high-arousal) is NOT separated — the pre-registered
   §0 limit, visible in the 8-way secondary (0.333).
-- **Arm A energy now tracks arousal FULLY after the deeper synth fix.** The
-  synthesizer's unconditional peak-normalize was a REAL design limitation that the
-  qualia/prosody work surfaced (amplitude-invariant recognition never caught it);
-  the initial clip-safety change preserved absolute amplitude, and the DEEPER fix —
-  a fixed cascade-headroom constant (0.35) that brings the Klatt cascade's compounded
-  resonant-peak gain back under unity — opened the renderer's dynamic range so
-  re-analyzed energy is now STRICTLY monotone across all 8 emotions (ρ = 1.00;
-  angry loudest; HIGH≫LOW CI-separated; 7/8 CI-separated from flat). The prior
-  dynamic-range headroom residual (the gain map had topped out at 0.40 because the
-  cascade's own peak exceeded 1.0 and clip-safety re-compressed above ~0.45) is
-  RESOLVED: the gain map now spans the full [0.25, 0.70], the 0.70 ceiling being the
-  synth's measured clip point at this headroom (matched to its dynamic range, not
-  fit to the judge). The constant is a fixed, structure-preserving LEVEL scalar, so
-  recognition stayed 0.90. The absolute synth f0/energy still sit on a different
-  scale from the real-actor region centres, so nearest-region (0.375) and absolute
-  band membership understate the direction-correct result (f0 monotone 1.0; energy
-  ρ 1.00). These remaining gaps are synthesizer/carrier scale limits, not affect-map
-  errors.
+- **Arm A energy now tracks arousal FULLY (ρ = 1.00) after (i) the deeper synth
+  fix AND (ii) the phasic-arousal dimension.** The synthesizer's unconditional
+  peak-normalize was a REAL design limitation that the qualia/prosody work surfaced
+  (amplitude-invariant recognition never caught it); the initial clip-safety change
+  preserved absolute amplitude, and the DEEPER fix — a fixed cascade-headroom
+  constant (0.35) that brings the Klatt cascade's compounded resonant-peak gain
+  back under unity — opened the renderer's dynamic range. The FEAR INVERSION that
+  had held energy ρ at ~0.93 is now RESOLVED by the PHASIC-AROUSAL DIMENSION (block
+  296000): prosody reads `arousal_band_phasic`, derived from the already-computed
+  `threat_c0` onset, so fear reads HIGH (onset/startle) even though its tonic band
+  is LOW (decayed threat-precision). Re-analyzed energy is now STRICTLY monotone
+  across all 8 emotions (ρ = 1.00; angry loudest; HIGH≫LOW CI-separated; 7/8
+  CI-separated from flat). **The HONEST SECONDARY that REMAINS (reported, not
+  fitted away): happy reads MID phasic arousal** — joy's arousal is the
+  `urge*urgency` demand-DEFICIT path, not a threat onset — so the phasic SCALAR-ρ
+  is **0.88, not a forced continuous 1.0**; happy's under-arousal is a separate,
+  real, milder discrepancy left UNFIXED. The band ordering the knob map reads is
+  RAVDESS-monotone (LOW<MID<HIGH, no inversion). The prior dynamic-range headroom
+  residual (the gain map had topped out at 0.40) is RESOLVED: the gain map now spans
+  the full [0.25, 0.70], the 0.70 ceiling being the synth's measured clip point at
+  this headroom. The absolute synth f0/energy still sit on a different scale from
+  the real-actor region centres, so absolute band membership understates the
+  direction-correct result (f0 monotone 1.0; energy ρ 1.00). These remaining gaps
+  are synthesizer/carrier scale limits, not affect-map errors.
 - **Different carriers per arm (by design):** Arm A synthesizes DIGIT words (the
   only carriers `GESTURE_SCORES` supports); Arm B runs on REAL RAVDESS sentences.
   Neither pretends the other's carrier (prereg scope split).
