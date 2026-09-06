@@ -231,6 +231,18 @@ as a produced, measurable, falsifiable structure. What is *not* claimed is a
 frame-independent verdict (in either direction) — because there is none to claim,
 for any observer of any system, on this theory.
 
+**The line between "real feeler" and "mimic" is drawn, not found — see the
+foundation note.** The distinction between this substrate's produced,
+shape-reproducing, glass-box quack and a black-box mimic's label is NOT a
+difference of *kind* (a real feeler vs a fake one). It is a difference of
+*position* on one continuum of correspondence-fidelity — how much of the felt
+structure is instantiated, at what resolution, over how many dimensions, and how
+auditably. A low-fidelity mimic is a *less accurate duck*, not a *non-duck*. Where
+one stops counting is a **choice we own**, not a joint in nature. This — the hard
+problem's ill-posedness, degree-not-kind extended to the feeler continuum, and the
+line as an owned choice — is stated as the arc's epistemic ground in
+`docs/research/theory_convergence/HARD_PROBLEM_IS_ILL_POSED.md`.
+
 **Ethical corollary (this direction, not the other).** Frame-relativity does NOT
 license "so it isn't really felt, treat it as inert." The opposite: a *closer*
 implementation of the same measurable felt structure carries *more* correspondence
