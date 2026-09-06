@@ -682,6 +682,241 @@
    ]
   },
   {
+   "name": "mod_arousal_phasic",
+   "area": "retina",
+   "order": 4,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "ms",
+     "has_active_drive",
+     "d"
+    ],
+    [
+     "ms",
+     "leading_drive",
+     "d"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ms"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "ms",
+     "arousal_phasic",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "d"
+         },
+         "key": "appraised"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       },
+       "then": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "d"
+        },
+        "key": "residual"
+       },
+       "other": {
+        "type": "Sum",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "ms"
+         },
+         "edge_type": "has_active_drive",
+         "any_type": false
+        },
+        "var_name": "dd",
+        "value": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "dd"
+         },
+         "key": "arousal_contrib_phasic"
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "ms",
+     "arousal_band_phasic",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gte",
+        "a": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "d"
+           },
+           "key": "appraised"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         },
+         "then": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "d"
+          },
+          "key": "residual"
+         },
+         "other": {
+          "type": "Sum",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "ms"
+           },
+           "edge_type": "has_active_drive",
+           "any_type": false
+          },
+          "var_name": "dd",
+          "value": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "dd"
+           },
+           "key": "arousal_contrib_phasic"
+          }
+         }
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ms"
+         },
+         "key": "band_hi"
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 2.0
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Gte",
+         "a": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "d"
+            },
+            "key": "appraised"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          },
+          "then": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "d"
+           },
+           "key": "residual"
+          },
+          "other": {
+           "type": "Sum",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "ms"
+            },
+            "edge_type": "has_active_drive",
+            "any_type": false
+           },
+           "var_name": "dd",
+           "value": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "dd"
+            },
+            "key": "arousal_contrib_phasic"
+           }
+          }
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "ms"
+          },
+          "key": "band_mid"
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": 1.0
+        },
+        "other": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
    "name": "mod_resolution",
    "area": "retina",
    "order": 5,
