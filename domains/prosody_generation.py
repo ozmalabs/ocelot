@@ -234,24 +234,29 @@ def _substrate_arousal_to_a(band: int, valence_sign: float, fallback_a: float) -
     """Map the substrate's coarse arousal_band (0/1/2 = LOW/MID/HIGH) + the fixed
     circumplex fallback into the a-in-[0,1] the knob formula wants.
 
-    The substrate arousal is an unbounded integer with a 3-way band; we blend the
-    SUBSTRATE BAND (the felt-arousal read) with the prereg circumplex ``fallback_a``
-    (the pre-committed per-emotion ordering). The blend keeps the substrate band
-    contributing to the arousal read while letting the pre-committed circumplex
-    ORDERING dominate — necessary because the substrate assigns a coarse 3-way band
-    that can COLLIDE across emotions the prereg orders apart (e.g. it reads FEAR as
-    the LOW band and HAPPY as the MID band, inverting the prereg fear>happy arousal
-    order). Weighting the circumplex fallback at 0.8 keeps the full pre-registered
-    arousal ordering monotone (fear above happy) while the band still shifts the
-    within-ordering placement. The blend weight is a FIXED, pre-committed constant
-    (NOT fit to the judge); the ordering it preserves is the prereg §3 circumplex
-    ordering, not the RAVDESS regions.
+    The affect coordinate is read PRIMARILY off the real substrate ModulatorState
+    (the prereg §3 commitment: the affect->prosody path goes through the actual
+    computed affect state, NOT a bare Python dict). We blend the SUBSTRATE BAND
+    (0.6, the felt-arousal read) with the prereg circumplex ``fallback_a`` (0.4,
+    within-band placement). The substrate band DOMINATES — deliberately, because
+    substituting the hardcoded circumplex table for the substrate read would be
+    fitting the prosody to the benchmark rather than to what the substrate feels.
+
+    HONEST CONSEQUENCE (a real substrate-vs-human finding, reported not hidden):
+    the substrate assigns FEAR to the LOW band and HAPPY to the MID band, which
+    INVERTS the RAVDESS fear>happy arousal ordering. So the substrate-driven
+    prosody reads fear as slightly LOWER arousal than happy — the substrate's own
+    emx_fear region (decayed threat-precision) genuinely feels lower-arousal than
+    its joy region. This costs one inversion in the arousal-rank correlation
+    (rho ~= 0.93, not 1.0); that is the substrate's affect geometry disagreeing
+    with the human dataset on fear, and we report it as such rather than
+    reweighting the blend to force rho=1.0.
     """
     band_center = {0: 0.18, 1: 0.5, 2: 0.85}.get(int(band), 0.5)
-    # blend: 20% substrate band center, 80% prereg circumplex fallback — the
-    # circumplex ordering dominates so the pre-committed arousal order stays
-    # fully monotone even when the substrate's coarse band collides across it.
-    return max(0.0, min(1.0, 0.2 * band_center + 0.8 * float(fallback_a)))
+    # blend: 60% substrate band center (the substrate read dominates), 40% prereg
+    # circumplex fallback for within-band placement. NOT reweighted to force a
+    # monotone benchmark match — the fear<happy inversion is a real finding.
+    return max(0.0, min(1.0, 0.6 * band_center + 0.4 * float(fallback_a)))
 
 
 def knobs_for_emotion(emotion: str, *, use_substrate: bool = True) -> dict:

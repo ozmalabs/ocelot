@@ -22,38 +22,47 @@ place").**
   earns its place on the parsing side.**
 
 - **ARM A (GENERATION): affect-appropriate on pitch AND energy after the DEEPER
-  synth fix — energy now FULLY MONOTONE across all 8 emotions.** The affect-driven
-  digit renders re-analyze with **f0_mean monotone in the pre-registered arousal
-  ordering (7/7 adjacent pairs correct, 1.0)**, HIGH-mean f0 **320.6 Hz** clearly
-  above LOW-mean **176.9 Hz** (gap **+143.7 Hz**), CI-separated from the flat
-  baseline for 5/8 emotions, and **angry lands squarely in its own HIGH region and
-  is nearest a HIGH-arousal region centre.** The energy axis — the second reliable
-  arousal axis, previously the pinned Arm-A limit — now WORKS FULLY: the earlier
+  synth fix — energy now tracks arousal across the ordering (ρ ≈ 0.93, one honest
+  fear/happy inversion).** The affect-driven digit renders re-analyze with
+  **f0_mean monotone in the pre-registered arousal ordering**, HIGH-mean f0 clearly
+  above LOW-mean, CI-separated from the flat baseline for a majority of emotions,
+  and **angry lands squarely in its own HIGH region.** The energy axis — the second
+  reliable arousal axis, previously the pinned Arm-A limit — now WORKS: the earlier
   clip-safety change (which replaced the unconditional peak-normalize that had
   discarded absolute amplitude) is now completed by a FIXED cascade-headroom
   constant (0.35) that opens the renderer's dynamic range, and the affect→knob map
   was widened to the MEASURED clip point (`gain = 0.25 + 0.45·a`, range
-  [0.25,0.70]). Re-analyzed **energy is now STRICTLY monotone across all 8 emotions
-  (rank correlation ρ = 1.00 against the pre-registered arousal ordering; angry the
-  loudest)**: HIGH-arousal energy **0.224 [0.211, 0.247]** is CI-separated above
-  LOW-arousal **0.073 [0.066, 0.079]**, and 7/8 emotions are CI-separated from the
-  flat baseline **0.114 [0.103, 0.127]** (spread **0.180**, was 0.029 when
-  saturated). The earlier [0.12,0.40] compression that had capped the top of the
-  gain range against clip-safety is GONE. So affect-driven prosody is genuine and
-  affect-appropriate on BOTH pitch AND energy, across the full arousal range.
+  [0.25,0.70]). Re-analyzed **energy tracks arousal across all 8 emotions (rank
+  correlation ρ ≈ 0.93 against the pre-registered ordering; angry the loudest, calm
+  the quietest; spread ~0.18, was 0.029 when saturated)**: HIGH-arousal energy is
+  CI-separated above LOW-arousal, and a majority of emotions are CI-separated from
+  the flat baseline. The earlier [0.12,0.40] compression that had capped the top of
+  the gain range against clip-safety is GONE.
+
+  **The ρ = 0.93 (not 1.0) is an honest finding, not a residual to fix:** the affect
+  coordinate is read PRIMARILY off the real substrate `ModulatorState` (0.6 band /
+  0.4 circumplex fallback), and the substrate reads its own `emx_fear` region as
+  LOWER arousal than `emx_joy` (fear's threat-precision has decayed → LOW arousal
+  band), which INVERTS the RAVDESS fear>happy arousal ordering at that one pair. We
+  deliberately do NOT reweight the blend to let the hardcoded circumplex table
+  dominate and force ρ = 1.0 — that would substitute a benchmark-matching lookup
+  for the substrate's own felt read. The single inversion is the substrate's affect
+  geometry genuinely disagreeing with the human dataset on fear, and it is reported
+  as such.
 
 **Overall:** system-1 felt-prosody **gives a real, significant parsing lift
 (Arm B, +17 pts, held-out)** and **drives affect-appropriate PITCH AND ENERGY
-prosody (Arm A, both FULLY monotone in arousal, HIGH≫LOW)** — on the arousal axis,
-and NOT on valence (the pre-registered §0 limit). The energy axis works after a
-FUNDAMENTAL synthesizer correctness fix that the qualia/prosody work surfaced (the
-renderer had been discarding absolute amplitude via an unconditional
-peak-normalize; recognition never caught it because recognition is
-amplitude-invariant), completed by a DEEPER fix — a fixed cascade-headroom constant
-that opened the renderer's dynamic range so the full arousal range maps to
-genuinely different, uncompressed loudness. A genuine, honestly-scoped
-positive-on-B / positive-on-A result. **This is a CAPABILITY / mechanism
-demonstration**, not an empirical claim about human emotion encoding.
+prosody (Arm A, both tracking arousal, HIGH≫LOW; energy ρ ≈ 0.93 with one honest
+substrate-driven fear/happy inversion)** — on the arousal axis, and NOT on valence
+(the pre-registered §0 limit). The energy axis works after a FUNDAMENTAL
+synthesizer correctness fix that the qualia/prosody work surfaced (the renderer had
+been discarding absolute amplitude via an unconditional peak-normalize; recognition
+never caught it because recognition is amplitude-invariant), completed by a DEEPER
+fix — a fixed cascade-headroom constant that opened the renderer's dynamic range so
+the full arousal range maps to genuinely different, uncompressed loudness. A
+genuine, honestly-scoped positive-on-B / positive-on-A result, with the fear/happy
+inversion reported as a real substrate-vs-human discrepancy. **This is a CAPABILITY
+/ mechanism demonstration**, not an empirical claim about human emotion encoding.
 
 ## The mechanism (named)
 
