@@ -1177,6 +1177,24 @@ RANK_KEY = (lambda a: (-a["order_n"], -a.get("corroboration", 0),
                        -a["feature_count"], -a["features_total"]))
 
 
+#: FELT-AWARE ranking variant (FEEL-THEN-REASON stage 2). Identical to
+#: `RANK_KEY` in EVERY tier EXCEPT it inserts a `-felt_shared` tier immediately
+#: AHEAD OF `feature_count` — so, among matches that tie on the deeper tiers
+#: (order / corroboration / name_shared / struct_shared), a pair that is
+#: analogous on a FELT dimension (`dynamical:` / `phenomenal:`) outranks one that
+#: is analogous only on surface structure. `felt_shared` is a COUNT of shared
+#: felt dimensions, read from the analogy's own `felt_shared` key (derived from
+#: `_dimensions_in_transform`, NOT a tuned score). This is used ONLY when
+#: `find_analogies(..., felt_bias=True)`; the default path uses `RANK_KEY`
+#: EXACTLY, so ranking is byte-identical to today when felt_bias is off. It does
+#: NOT touch the `min_score` gate (`_discriminative_struct`'s flat count) — only
+#: the ORDER among already-accepted matches.
+RANK_KEY_FELT = (lambda a: (-a["order_n"], -a.get("corroboration", 0),
+                            -a.get("name_shared", 0), -a.get("struct_shared", 0),
+                            -a.get("felt_shared", 0),
+                            -a["feature_count"], -a["features_total"]))
+
+
 def _legacy_think_harder(substrate, source_mt_name: str,
                   target_mt_names: list[str], start_n: int = 1,
                   max_n: int = 4, want_at_least: int = 5
@@ -1237,7 +1255,7 @@ def _legacy_think_harder(substrate, source_mt_name: str,
 
 __all__ = [
     "find_analogies", "emit_analogy_as_graph", "think_harder",
-    "metashape_realisation_counts", "shape_hits", "RANK_KEY",
+    "metashape_realisation_counts", "shape_hits", "RANK_KEY", "RANK_KEY_FELT",
     "_legacy_find_analogies", "_legacy_think_harder",
 ]
 
@@ -1255,7 +1273,8 @@ __all__ = [
 # (`_concept_reading`) — this module imports nothing back at module load.
 # ---------------------------------------------------------------------------
 def find_analogies(substrate, source_mt_name, target_mt_names,
-                   order_n=None, min_score=None, *, overlay: bool = False):
+                   order_n=None, min_score=None, *, overlay: bool = False,
+                   felt_shortlist_k=None, felt_bias: bool = False):
     """Delegates to the first-class graph search (`analogy_search`). Signature
     preserved for source-compatibility; `order_n` is no longer a string-token
     dial (the search now matches on qualia-space structure). `order_n` and
@@ -1263,11 +1282,15 @@ def find_analogies(substrate, source_mt_name, target_mt_names,
     can supply them (abstraction -> analogy order floor, skepticism -> min_score
     acceptance floor) when the caller does not; an EXPLICIT value always wins.
     See analogy_search.find_analogies for the mappings + precedence. `overlay=
-    True` matches on the PERTURBED shape — how the agent feels right now."""
+    True` matches on the PERTURBED shape — how the agent feels right now.
+
+    FEEL-THEN-REASON knobs `felt_shortlist_k` (stage-1 pruning) and `felt_bias`
+    (stage-2 ranking) are forwarded; both default OFF ⇒ byte-identical."""
     from domains import analogy_search
     return analogy_search.find_analogies(
         substrate, source_mt_name, target_mt_names,
-        order_n=order_n, min_score=min_score, overlay=overlay)
+        order_n=order_n, min_score=min_score, overlay=overlay,
+        felt_shortlist_k=felt_shortlist_k, felt_bias=felt_bias)
 
 
 def think_harder(substrate, source_mt_name, target_mt_names,

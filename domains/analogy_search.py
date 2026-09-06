@@ -53,6 +53,34 @@ EPOCH_ATTR = "analogy_codebook_epoch"
 #: `ap_decode` comment on the empty-scope hazard).
 _SEP = "::"
 
+# --------------------------------------------------------------------------- #
+# FEEL-THEN-REASON instrumentation (opt-in, module-level; see PREREG block
+# 299000). Makes the two-stage speedup COUNTABLE, not asserted:
+#   * antiunify_firings — Σ over probes of len(probe_scope): the ap_decode
+#     candidate count, i.e. the number of AntiUnify firings the fixpoint does
+#     (~N·M at k=None, ~N·k after felt-shortlist pruning).
+#   * edge_enumerations — the number of FULL concept_signature builds (each one
+#     edge-enumerates via _outgoing_relations); felt-shortlist pruning lets us
+#     SKIP building the full signature for pruned target parts.
+# Reset per find_analogies call. Reading these has ZERO effect on the decision
+# path — it is pure bookkeeping, so default behaviour is byte-identical whether
+# or not a caller reads the counter.
+# --------------------------------------------------------------------------- #
+_FTR_COUNTERS: dict = {"antiunify_firings": 0, "edge_enumerations": 0}
+
+
+def _ftr_reset() -> None:
+    _FTR_COUNTERS["antiunify_firings"] = 0
+    _FTR_COUNTERS["edge_enumerations"] = 0
+
+
+def last_firing_counts() -> dict:
+    """The FEEL-THEN-REASON instrumentation from the most recent
+    `find_analogies` call: `{"antiunify_firings": Σ|probe_scope|,
+    "edge_enumerations": # full concept_signature builds}`. A pure read of the
+    module counter; does not perturb the decision path."""
+    return dict(_FTR_COUNTERS)
+
 #: Structural / bookkeeping edges that are NOT part of a concept's relational
 #: SHAPE and must be excluded from its signature: the Mt membership edge, the
 #: analogy machinery's own edges, and the shape-vocabulary wiring. Everything
@@ -597,7 +625,8 @@ def _ensure_seed(agent) -> None:
 
 
 def observe(agent, source_mt_name: str, target_mt_names: list,
-            *, run: bool = True, edge_types=None, overlay: bool = False) -> dict:
+            *, run: bool = True, edge_types=None, overlay: bool = False,
+            felt_shortlist_k: Optional[int] = None) -> dict:
     """Write the analogy-search inputs and let the rules decide.
 
     For each TARGET field, every concept becomes a `ConceptShape` codebook part
@@ -605,6 +634,18 @@ def observe(agent, source_mt_name: str, target_mt_names: list,
     written, scoped (`scope` attr → `codebook_scope`) to exactly the target
     fields' part names, so a source only ever decodes against OTHER fields.
     Then `run_rules()` ticks the decode→match→systematicity→emit fixpoint.
+
+    FEEL-THEN-REASON stage 1 (`felt_shortlist_k`, opt-in; PREREG block 299000):
+    when set to an int `k`, each probe's `scope` is PRUNED to the `k` target
+    parts whose CHEAP FELT sub-signature (`_dynamical_relations`, a node-attr
+    read + quantise, NO edge walk) is NEAREST the source concept's felt
+    sub-signature. Felt-distance = size of the symmetric difference of the two
+    felt frozensets (number of non-shared felt coordinates); ties broken
+    deterministically by part name. `ap_decode`'s `In(part.name, obs.scope)`
+    then prunes the Argmax to ~N·k firings instead of ~N·M, and the full
+    (edge-enumerating) signature is built ONLY for the parts that survive
+    pruning. `felt_shortlist_k=None` (default) => scope stays the FULL set =>
+    byte-identical to today. No seed / rule change.
 
     Returns `{"probes": [...], "codebook": [...], "source_nodes": {...},
     "target_nodes": {...}}` — the node bookkeeping `find_analogies` needs to
@@ -632,23 +673,58 @@ def observe(agent, source_mt_name: str, target_mt_names: list,
             sub.set_attr(ag, EPOCH_ATTR, 0)
 
         # ---- the target-field codebook -----------------------------------
-        scope_names: list = []
+        # Collect the target parts' bookkeeping first (name, concept node,
+        # field). When felt-shortlist pruning is OFF (felt_shortlist_k None) we
+        # build every part's FULL (edge-enumerating) signature immediately, as
+        # today — byte-identical. When pruning is ON we DEFER the full-signature
+        # build until we know which parts survive at least one probe's felt
+        # shortlist, so the expensive edge walk is skipped for pruned targets.
+        target_parts: list = []  # (pname, concept_node, field)
         for field, mt in targets:
             for c in _concepts(sub, mt):
                 cname = _node_name(sub, c) or ("c%s" % c)
                 pname = _part_name(field, cname)
-                cid = sub.add_node(CODEBOOK_TYPE, {
-                    "name": pname,
-                    "signature": concept_signature(sub, c, edge_types,
-                                                    overlay=overlay),
-                    "field": field,
-                })
-                out["codebook"].append(cid)
+                target_parts.append((pname, c, field))
                 out["target_nodes"][pname] = c
-                scope_names.append(pname)
 
+        scope_names = [p for (p, _c, _f) in target_parts]
         if not scope_names:
             return out  # never write an empty scope (unrestricted-decode hazard)
+
+        felt_on = isinstance(felt_shortlist_k, int) and felt_shortlist_k >= 0
+        schema = _qualia_schema(sub) if felt_on else None
+        # felt sub-signatures for the target parts (CHEAP: node-attr read +
+        # quantise, NO edge walk). Only computed when pruning is on.
+        target_felt: dict = {}
+        if felt_on:
+            for pname, c, _field in target_parts:
+                target_felt[pname] = frozenset(
+                    _dynamical_relations(sub, c, schema, overlay))
+
+        # In the felt-OFF path, write every codebook part now (full signature).
+        # In the felt-ON path, defer: collect the set of parts that survive some
+        # probe's shortlist, then write only those.
+        part_nodes: dict = {}  # pname -> codebook node id (written lazily)
+
+        def _write_part(pname):
+            if pname in part_nodes:
+                return part_nodes[pname]
+            c = out["target_nodes"][pname]
+            field = pname.split(_SEP, 1)[0]
+            _FTR_COUNTERS["edge_enumerations"] += 1  # a FULL signature build
+            cid = sub.add_node(CODEBOOK_TYPE, {
+                "name": pname,
+                "signature": concept_signature(sub, c, edge_types,
+                                                overlay=overlay),
+                "field": field,
+            })
+            out["codebook"].append(cid)
+            part_nodes[pname] = cid
+            return cid
+
+        if not felt_on:
+            for pname, _c, _field in target_parts:
+                _write_part(pname)
 
         # ---- one probe per source concept --------------------------------
         # When a target field == the source field (self-analogy, as
@@ -667,6 +743,27 @@ def observe(agent, source_mt_name: str, target_mt_names: list,
                 # Only its own field's only concept was in scope — nothing to
                 # compare against. Skip (never write an empty scope).
                 continue
+            # FEEL-THEN-REASON stage 1: prune the scope to the k NEAREST-felt
+            # target parts. Felt-distance = |symmetric difference| of the two
+            # felt frozensets (count of non-shared felt coordinates); ties
+            # broken deterministically by part name. Cheap: one node-attr read
+            # per axis, NO edge walk. The full (edge-enumerating) signature is
+            # then built ONLY for the surviving parts.
+            if felt_on:
+                src_felt = frozenset(
+                    _dynamical_relations(sub, c, schema, overlay))
+                ranked = sorted(
+                    probe_scope,
+                    key=lambda p: (len(src_felt ^ target_felt.get(p, frozenset())), p))
+                probe_scope = ranked[:felt_shortlist_k]
+                if not probe_scope:
+                    continue
+                for p in probe_scope:
+                    _write_part(p)  # build full sig only for survivors
+            # INSTRUMENTATION: len(probe_scope) is exactly this probe's
+            # ap_decode candidate count = its AntiUnify firing count.
+            _FTR_COUNTERS["antiunify_firings"] += len(probe_scope)
+            _FTR_COUNTERS["edge_enumerations"] += 1  # the probe's own full sig
             pid = sub.add_node(PROBE_TYPE, {
                 "signature": concept_signature(sub, c, edge_types,
                                                overlay=overlay),
@@ -905,7 +1002,9 @@ def _order_from_transform(transform_key: str) -> int:
 def find_analogies(substrate, source_mt_name: str,
                    target_mt_names: list, order_n: Optional[int] = None,
                    min_score: Optional[int] = None, edge_types=None,
-                   *, overlay: bool = False) -> list:
+                   *, overlay: bool = False,
+                   felt_shortlist_k: Optional[int] = None,
+                   felt_bias: bool = False) -> list:
     """The analogy search, now a thin wrapper over the graph loop.
 
     Seeds probes over `seeds/analogy_search.json`, ticks the fixpoint, and
@@ -937,6 +1036,21 @@ def find_analogies(substrate, source_mt_name: str,
     resolves to 2 (the minimum order ever emitted — filters nothing) and
     min_score to 1 (today's default). The trait reads are NON-MINTING.
 
+    FEEL-THEN-REASON knobs (both opt-in, default OFF ⇒ byte-identical; PREREG
+    block 299000):
+      · `felt_shortlist_k` (stage 1, speed) — when an int, each probe's decode
+        scope is pruned to the `k` NEAREST-felt target parts (cheap felt
+        sub-signature, no edge walk), cutting AntiUnify firings from ~N·M to
+        ~N·k and skipping the full edge-enumerating signature build for pruned
+        parts. None ⇒ full scope ⇒ today.
+      · `felt_bias` (stage 2, power) — when True, ranks with `RANK_KEY_FELT`
+        (a `-felt_shared` tier ahead of feature_count) so a felt (dynamical:/
+        phenomenal:) correspondence outranks a merely surface one among matches
+        tied on the deeper tiers. False ⇒ `at.RANK_KEY` exactly ⇒ today. Does
+        NOT change the min_score gate.
+    `analogy_search.last_firing_counts()` reads the per-call instrumentation
+    (Σ|probe_scope| firings + # full signature builds).
+
     Returns a list of `{source_concept, target_concept, source_mt, target_mt,
     struct_shared, corroboration, feature_count, features_total, order_n,
     rationale, source_node, target_node}`, ranked by `RANK_KEY`.
@@ -945,6 +1059,7 @@ def find_analogies(substrate, source_mt_name: str,
     if sub is None or not hasattr(sub, "add_node"):
         return []
 
+    _ftr_reset()  # FEEL-THEN-REASON instrumentation, reset per call
     # ---- resolve the personality-vector knobs (explicit caller arg wins) ----
     # min_score: explicit pin > skepticism-derived default > today's default (1).
     if min_score is None:
@@ -963,7 +1078,8 @@ def find_analogies(substrate, source_mt_name: str,
         eff_min_order = _DEFAULT_MIN_ORDER  # explicit legacy order_n => no floor
 
     book = observe(substrate, source_mt_name, target_mt_names, run=True,
-                   edge_types=edge_types, overlay=overlay)
+                   edge_types=edge_types, overlay=overlay,
+                   felt_shortlist_k=felt_shortlist_k)
 
     results = []
     for _pid, an in _emitted_analogies(sub, book):
@@ -1021,6 +1137,13 @@ def find_analogies(substrate, source_mt_name: str,
             # shape, a shared AGENTIVE (causal) shape, a shared DYNAMICAL felt
             # valence, or several at once; the caller can see the basis.
             "aligned_dimensions": sorted(_dimensions_in_transform(tkey)),
+            # FEEL-THEN-REASON stage 2: how many shared dims are FELT
+            # (dynamical:/phenomenal:). Read from the SAME dimension tags
+            # _dimensions_in_transform preserves — a count, not a tuned score.
+            # Populated always (cheap); used in ranking ONLY when felt_bias.
+            "felt_shared": sum(
+                1 for d in _dimensions_in_transform(tkey)
+                if d.startswith("dynamical:") or d.startswith("phenomenal:")),
             "source_node": src_node,
             "target_node": tgt_node,
             "rationale": (
@@ -1030,7 +1153,12 @@ def find_analogies(substrate, source_mt_name: str,
                    "; corroborated by %d pair(s) realising the same transform"
                    % corr if corr else "")),
         })
-    results.sort(key=at.RANK_KEY)
+    # RANKING: default path uses at.RANK_KEY EXACTLY (byte-identical to today).
+    # FEEL-THEN-REASON stage 2 (felt_bias=True) uses the felt-aware variant,
+    # which inserts a -felt_shared tier AHEAD of feature_count — surfacing a
+    # felt correspondence above a merely surface-structural one among matches
+    # that tie on the deeper tiers. The min_score gate above is UNCHANGED.
+    results.sort(key=(at.RANK_KEY_FELT if felt_bias else at.RANK_KEY))
     return results
 
 
@@ -1160,5 +1288,5 @@ def _has_seed_sentinel(sub, seed_id: str) -> bool:
 __all__ = [
     "PROBE_TYPE", "CODEBOOK_TYPE", "OBSERVED_EDGE", "EMITTED_EDGE",
     "EPOCH_ATTR", "concept_signature", "observe",
-    "find_analogies", "think_harder", "crystallize",
+    "find_analogies", "think_harder", "crystallize", "last_firing_counts",
 ]
