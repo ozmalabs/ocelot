@@ -1274,7 +1274,8 @@ __all__ = [
 # ---------------------------------------------------------------------------
 def find_analogies(substrate, source_mt_name, target_mt_names,
                    order_n=None, min_score=None, *, overlay: bool = False,
-                   felt_shortlist_k=None, felt_bias: bool = False):
+                   felt_shortlist_k=None, felt_bias: bool = False,
+                   felt_rescue: bool = False):
     """Delegates to the first-class graph search (`analogy_search`). Signature
     preserved for source-compatibility; `order_n` is no longer a string-token
     dial (the search now matches on qualia-space structure). `order_n` and
@@ -1285,12 +1286,17 @@ def find_analogies(substrate, source_mt_name, target_mt_names,
     True` matches on the PERTURBED shape — how the agent feels right now.
 
     FEEL-THEN-REASON knobs `felt_shortlist_k` (stage-1 pruning) and `felt_bias`
-    (stage-2 ranking) are forwarded; both default OFF ⇒ byte-identical."""
+    (stage-2 ranking) are forwarded; both default OFF ⇒ byte-identical. The
+    STRONG-ARM knob `felt_rescue` (PREREG block 300000) is also forwarded: when
+    True it ADMITS a below-`min_score` structural candidate IFF its shared felt
+    shape is rare-by-chance (changing the accepted set); default OFF ⇒
+    byte-identical."""
     from domains import analogy_search
     return analogy_search.find_analogies(
         substrate, source_mt_name, target_mt_names,
         order_n=order_n, min_score=min_score, overlay=overlay,
-        felt_shortlist_k=felt_shortlist_k, felt_bias=felt_bias)
+        felt_shortlist_k=felt_shortlist_k, felt_bias=felt_bias,
+        felt_rescue=felt_rescue)
 
 
 def think_harder(substrate, source_mt_name, target_mt_names,
