@@ -109,6 +109,50 @@ def _round_to_vocab(x, quantum: float, half_width: int):
     return k if k != 0 else None
 
 
+def _observer_aperture(substrate, observer) -> dict:
+    """Read an Observer node's APERTURE over the QUALIA field, REUSING the
+    `observer_aperture` primitive's OWN state on that node (seeds/
+    observer_aperture.json): the `resolves` attr (EXISTENCE — which dimensions
+    it distinguishes at all) and the `grain` attr (RESOLUTION rho — the Q_rho
+    quotient per dimension). This is the Seldon aperture decomposed (rem:
+    aperture): existence + grain, read off the SAME node — NOT a parallel
+    per-agent quantum holder.
+
+    Returns `{'resolves': set|None, 'grain': {dim -> quantum}}`:
+      * `resolves` -> a set of dimension NAMES the observer resolves, or None
+        (absent/None attr) meaning ALL dimensions resolved (gate off).
+      * `grain` -> a {dimension_name -> quantum} map (absent attr => {}),
+        each a per-observer step size overriding the global QualiaDimension
+        quantum on that axis.
+
+    `observer=None` => {'resolves': None, 'grain': {}} — the default==today
+    reading: gate off, global quantum everywhere. Mechanical read, no decision.
+
+    KEY CONVENTION: both `resolves` and `grain` are keyed by the qualia
+    DIMENSION NAME as it appears on the QualiaDimension node — the full
+    `family:name` string, e.g. 'phenomenal:sharpness', 'dynamical:valence'. The
+    existence gate matches an axis's dimension name against `resolves`, so an
+    observer that means to gate/regrain a qualia axis must name it that way (a
+    positional SHAPE `dim_type` like 'pred' would silently never match)."""
+    if observer is None:
+        return {"resolves": None, "grain": {}}
+    sub = _sub(substrate)
+    try:
+        attrs = sub.node(observer)["attrs"]
+    except Exception:
+        return {"resolves": None, "grain": {}}
+    raw_resolves = attrs.get("resolves")
+    resolves = None if raw_resolves is None else {str(d) for d in raw_resolves}
+    raw_grain = attrs.get("grain") or {}
+    grain: dict = {}
+    try:
+        for dim, q in dict(raw_grain).items():
+            grain[str(dim)] = float(q)
+    except Exception:
+        grain = {}
+    return {"resolves": resolves, "grain": grain}
+
+
 #: Default concept-relational edge types to read when the substrate does not
 #: expose full edge enumeration (`out_edges`) — the native `_native.Substrate`
 #: handle has only `neighbours(node, edge_type)`. Union of the edges that occur
@@ -224,7 +268,8 @@ def _outgoing_relations(substrate, concept_node, schema, edge_types=None) -> lis
     return out
 
 
-def _dynamical_relations(substrate, concept_node, schema, overlay: bool) -> list:
+def _dynamical_relations(substrate, concept_node, schema, overlay: bool,
+                         observer=None) -> list:
     """The concept's CAN-field coordinates as `(dimension, "field", k)`
     3-tuples — the proto-phenomenal "what it is like" axes.
 
@@ -239,6 +284,17 @@ def _dynamical_relations(substrate, concept_node, schema, overlay: bool) -> list
     This is `h_eff = external + identity` (can_ops.rs) read as coordinates: the
     crystallised term is in the standing signature, the live term is the
     overlay, and their gap is 'I'm not sure how I feel'.
+
+    PER-OBSERVER APERTURE (Seldon rem:aperture, decomposed) — the qualia
+    generalisation of `observer_aperture`:
+      * EXISTENCE: if `observer` resolves a limited dimension set and this
+        axis's DIMENSION NAME is not in it, the axis is NULL for this observer
+        (dark) — the dimensionality / aphantasia arm — and contributes NO tuple.
+      * GRAIN (rho): the quantum used to quantise this axis is the observer's
+        per-dimension `grain` for it, falling back to the axis's own GLOBAL
+        `quantum` (default==today) when the observer does not re-grain it.
+    `observer=None` => resolves None (gate off) + grain {} (global quantum) =>
+    every existing caller byte-identical.
     """
     sub = _sub(substrate)
     try:
@@ -247,14 +303,24 @@ def _dynamical_relations(substrate, concept_node, schema, overlay: bool) -> list
         return []
     if not schema.get("field_axes"):
         return []
+    ap = _observer_aperture(sub, observer)
+    ap_resolves = ap["resolves"]
+    ap_grain = ap["grain"]
     out: list = []
     for dim, attr_name, quantum, half_width, is_overlay in schema["field_axes"]:
         if is_overlay and not overlay:
             continue
+        # EXISTENCE GATE: an axis whose DIMENSION NAME the observer does not
+        # resolve is dark (NULL for this observer), not coarse — the
+        # dimensionality arm. resolves None => gate off (all resolved).
+        if ap_resolves is not None and dim not in ap_resolves:
+            continue
         raw = attrs.get(attr_name)
         if raw is None:
             continue
-        k = _round_to_vocab(raw, quantum, half_width)
+        # GRAIN (rho): the observer's per-dimension quantum, else the global one.
+        q = ap_grain.get(dim, quantum)
+        k = _round_to_vocab(raw, q, half_width)
         if k is None:
             continue
         out.append((dim, "field", k))
@@ -346,7 +412,7 @@ def _is_can_bookkeeping_attr(kl: str) -> bool:
 
 
 def concept_signature(substrate, concept_node, edge_types=None,
-                      *, overlay: bool = False) -> frozenset:
+                      *, overlay: bool = False, observer=None) -> frozenset:
     """A Concept → its COORDINATES in qualia space: a frozenset of
     `(dimension, predicate, value)` 3-tuples.
 
@@ -381,6 +447,13 @@ def concept_signature(substrate, concept_node, edge_types=None,
     shape). `overlay=True` = the standing signature PLUS the live field reading
     (perturbed shape — how the agent feels about it right now). Both are one
     space; see `_dynamical_relations`.
+
+    `observer=None` (default) = the GLOBAL aperture: every dynamical axis
+    resolved, quantised at its global `quantum` (byte-identical to today). Pass
+    an Observer node to consult its per-observer APERTURE (Seldon rem:aperture)
+    over the dynamical axes: EXISTENCE (its `resolves` — a dimension it does not
+    resolve stays dark) + GRAIN (its per-dimension `grain` quantum). See
+    `_observer_aperture` / `_dynamical_relations`.
     """
     sub = _sub(substrate)
     try:
@@ -419,7 +492,8 @@ def concept_signature(substrate, concept_node, edge_types=None,
         else:
             rels.append(("attr:%s" % kl, kl, str(v).lower()))
     rels.extend(_outgoing_relations(substrate, concept_node, schema, edge_types))
-    rels.extend(_dynamical_relations(substrate, concept_node, schema, overlay))
+    rels.extend(_dynamical_relations(substrate, concept_node, schema, overlay,
+                                     observer=observer))
     rels.extend(_vocabulary_relations(substrate, concept_node))
     return frozenset(rels)
 

@@ -1,6 +1,6 @@
 # psychology_affect — index
 
-39 documents.
+41 documents.
 
 ## Documents
 
@@ -33,6 +33,8 @@
 | [`PSI_TEMPORAL_AFFECT.md`](PSI_TEMPORAL_AFFECT.md) | PSI temporal and affect contract |
 | [`PSYCHOSIS_DEMO_PREREG.md`](PSYCHOSIS_DEMO_PREREG.md) | Psychosis as a grounding failure mode — PREREGISTRATION |
 | [`PSYCHOSIS_DEMO_RESULTS.md`](PSYCHOSIS_DEMO_RESULTS.md) | Psychosis as a grounding failure mode — RESULTS |
+| [`QUALIA_DIMENSION_COMPENSATION_PREREG.md`](QUALIA_DIMENSION_COMPENSATION_PREREG.md) | QUALIA DIMENSION COMPENSATION — aperture mostly covers a missing felt axis, but leaves an aperture-invariant residual deficit on orthogonal discriminations — PRE-REGISTRATION (block 298000) |
+| [`QUALIA_DIMENSION_COMPENSATION_RESULTS.md`](QUALIA_DIMENSION_COMPENSATION_RESULTS.md) | QUALIA DIMENSION COMPENSATION — RESULTS (block 298000): CONFIRMED — finer grain recovers reconstructable discriminations; orthogonal residual deficit is aperture-invariant (the aphantasia shape) |
 | [`SEIZURE_DATA_DIVE.md`](SEIZURE_DATA_DIVE.md) | SEIZURE DATA DIVE — real-data reach of the glass-box model's predictions |
 | [`SEIZURE_ENGINE_PREREG.md`](SEIZURE_ENGINE_PREREG.md) | SEIZURE IN THE REAL ENGINE — pre-registration |
 | [`SEIZURE_ENGINE_RESULTS.md`](SEIZURE_ENGINE_RESULTS.md) | SEIZURE IN THE REAL ENGINE — results |

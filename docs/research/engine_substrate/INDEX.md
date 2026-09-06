@@ -1,6 +1,6 @@
 # engine_substrate — index
 
-77 documents.
+78 documents.
 
 ## Documents
 
@@ -52,6 +52,7 @@ must be represented as explicit transitions.
 | [`METACOGNITIVE_LEARNING_RESULTS.md`](METACOGNITIVE_LEARNING_RESULTS.md) | Metacognitive self-directed learning |
 | [`PREDICATE_RETRACTION_PREREG.md`](PREDICATE_RETRACTION_PREREG.md) | PREDICATE RETRACTION — pre-registration (ladder rung B) |
 | [`PREDICATE_RETRACTION_RESULTS.md`](PREDICATE_RETRACTION_RESULTS.md) | PREDICATE RETRACTION — RESULTS (block 194000, ladder rung B) |
+| [`QUALIA_APERTURE_GENERALISATION_PREREG.md`](QUALIA_APERTURE_GENERALISATION_PREREG.md) | Generalising the APERTURE primitive over the QUALIA field — pre-registration (block 297000): concept_signature consults a per-observer aperture (existence + grain) by reusing the observer_aperture `resolves`/`grain` state, default==today byte-identical. |
 | [`READER_PARSER_MIGRATION.md`](READER_PARSER_MIGRATION.md) | Reading-parser graph-native migration (plan) |
 | [`REFLEX_NET_DESIGN.md`](REFLEX_NET_DESIGN.md) | The primal layer — reflex nets as self-editable graph data |
 | [`SELF_DIRECTED_LEARNING_PLAN_RESULTS.md`](SELF_DIRECTED_LEARNING_PLAN_RESULTS.md) | Self-directed learning-plan result |
