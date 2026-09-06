@@ -28,7 +28,10 @@ constant (0.35) that opens the renderer's dynamic range (the Klatt cascade's
 resonant-peak gain otherwise compounded above unity, pinning against clip-safety);
 the affect->knob map carries an arousal->loudness gain widened to the MEASURED clip
 point (gain=0.25+0.45*a over [0.25,0.70]). Re-analyzed energy now tracks arousal
-FULLY MONOTONICALLY across all 8 emotions (rank correlation rho == 1.0). Because the
+across the arousal ordering (rank correlation rho ~= 0.93 — one inversion at the
+fear/happy pair, because the affect coordinate is read PRIMARILY off the substrate
+ModulatorState and the substrate reads emx_fear as lower-arousal than emx_joy;
+reported honestly, not reweighted away). Because the
 synth energy scale differs from the RAVDESS wav energy scale (~0.002-0.021) —
 different absolute scales — the energy axis is scored on the ORDERING (rank
 correlation vs the arousal ordering) + CI-separation of high-vs-low arousal energy
@@ -293,8 +296,9 @@ def run():
             "AND a fixed cascade-headroom constant (0.35) that opens the renderer's "
             "dynamic range; the affect->knob map carries an arousal->loudness gain "
             "widened to the measured clip point (0.25+0.45*a over [0.25,0.70]). "
-            "Re-analyzed energy now tracks arousal FULLY MONOTONICALLY across all 8 "
-            "emotions (rank correlation rho == 1.0). The synth energy scale differs "
+            "Re-analyzed energy now tracks arousal across the ordering (rank "
+            "correlation rho ~= 0.93; one honest inversion at fear/happy from the "
+            "substrate-primary affect read). The synth energy scale differs "
             "from the RAVDESS wav energy scale (~0.002-0.021) — different absolute "
             "scales — so the energy axis is scored on ORDERING (rank correlation vs "
             "the arousal ordering) + high-vs-low CI-separation + CI-separation from "
