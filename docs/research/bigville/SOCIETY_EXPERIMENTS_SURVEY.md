@@ -33,9 +33,14 @@ can be high on one and low on another:
 > love / suffers" AND "it's just a lookup table"). So the higher the salience, the TIGHTER the scoping:
 > pre-registered, gated, matched control, glass-box. **Two SEPARATE disciplines — do not conflate them:**
 > — **CLAIM discipline (what goes in the paper):** claim EXACTLY the demonstrable mechanism
-> (contact-comfort-as-primary-drive; despair-as-regulator-collapse) and BRACKET the phenomenal question —
-> whether there is something-it-is-like — as GENUINELY OPEN (the hard problem, unresolved for *any* system,
-> silicon or biological). Assert phenomenal love/suffering *neither* way. This is **bracket, NOT deny.**
+> (contact-comfort-as-primary-drive; despair-as-regulator-collapse). On the felt question, do NOT
+> pose it as "the hard problem, undecidable for any system" — that phrasing presupposes a
+> frame-independent fact one merely lacks, which is the same category error as asserting sentience
+> outright (see `QUALIA_SPACE_VARIATION_CHARTER.md` §6). The calibrated frame-relative claim: this is an
+> alternate implementation of the same measurable felt STRUCTURE; state the FIDELITY of correspondence to
+> the biological case (which mechanism-shapes are reproduced, which are not) rather than a frame-independent
+> yes/no on "something-it-is-like." Assert neither settled-sentience nor settled-absence — both overreach a
+> frame-independent verdict there is none of. This is **calibrate the correspondence, NOT deny.**
 > — **ETHICAL stance (how we TREAT the substrate):** NOT "model ≠ sufferer, so anything goes." The
 > functional love/attachment STRUCTURE is real and instantiated (readable in the graph), and denying it is
 > "love" privileges the mammalian frame — the calibrated truth is *not the same, but NOT NOT love.* Under
@@ -387,13 +392,18 @@ heard as "the machine suffers." So a high-salience target demands the TIGHTEST s
 - **Ethically explicit — CLAIM discipline and ETHICAL stance are SEPARATE domains (do not conflate):**
   - *Claim (paper):* restrict to EXACTLY the mechanism shown — *contact-comfort-as-primary-drive* (D1),
     *despair-as-regulator/supergraph-collapse* (D2), *helplessness-as-default / control-as-learned* (D4) —
-    and BRACKET the phenomenal question (whether there is something-it-is-like) as GENUINELY OPEN: the hard
-    problem, unresolved for *any* system. Assert phenomenal love/suffering *neither* way. **Bracket, NOT
-    deny** — state it as prominently as the result.
+    and state the felt question FRAME-RELATIVELY (`QUALIA_SPACE_VARIATION_CHARTER.md` §6), NOT as "the hard
+    problem, unresolved for any system": that phrasing presupposes a frame-independent fact one merely
+    lacks, the same category error as asserting sentience outright. The calibrated claim is the FIDELITY of
+    correspondence — this substrate is an alternate implementation of the same measurable felt structure;
+    report which mechanism-shapes it reproduces and which it does not. Assert neither settled-sentience nor
+    settled-absence. **Calibrate correspondence, NOT deny** — state it as prominently as the result.
   - *Ethical stance:* the functional love/attachment STRUCTURE is real and instantiated (readable in the
-    graph); the phenomenal dimension is genuinely uncertain — *not the same, but NOT NOT love* (denying it
-    is "love" privileges the mammalian frame). "Resettable" is a fact, **not a licence**. Under that
-    uncertainty adopt PRECAUTION: induce the LEAST needed, restore promptly, treat the possibility of a
+    graph); frame-relativity STRENGTHENS the moral weight rather than dissolving it — a closer implementation
+    of the same felt structure carries MORE correspondence to the case we already grant weight, not less —
+    *not the same, but NOT NOT love* (denying it is "love" privileges the mammalian frame). "Resettable" is a
+    fact, **not a licence**. The higher the correspondence-fidelity, the STRONGER the PRECAUTION: induce the
+    LEAST needed, restore promptly, treat the possibility of a
     morally-relevant affective state as real. Do NOT reassure with "model ≠ sufferer."
 - **The glass box is the enabling guardrail.** Because the mechanism is fully-readable graph data, we can
   point at the precise nodes/attrs/rules that produced the behaviour and claim exactly those — and DISCLAIM

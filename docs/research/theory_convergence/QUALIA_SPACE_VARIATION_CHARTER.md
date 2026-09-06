@@ -9,7 +9,17 @@ carved off into a separate pre-registered experiment
 (`docs/research/psychology_affect/QUALIA_DIMENSION_COMPENSATION_PREREG.md`), and
 nothing here should be read as an empirical claim until that experiment reports.
 
-The charter is grounded against observed human tails, cited inline.
+The charter is grounded against observed human tails, cited inline. The
+compensation prediction HAS since been tested and CONFIRMED
+(`QUALIA_DIMENSION_COMPENSATION_RESULTS.md`): the aperture generalisation over the
+qualia field was built (`QUALIA_APERTURE_GENERALISATION_PREREG.md`), and a
+dimension-lacking agent recovers the reconstructable discriminations via finer
+grain on its remaining axes while failing the orthogonal one at *every* grain
+(aperture-invariant residual deficit) — the aphantasia shape, produced.
+
+**On the status of that claim — read §6 first.** Do not read "tested" as "we
+modelled the report but bracket whether it is *really* felt." That bracket is a
+category error this charter explicitly rejects; §6 states why.
 
 ## 0. The two axes of variation (and why they are different)
 
@@ -168,7 +178,70 @@ compensation experiment's investigation, not assumed):**
   configured by hand) — it does not claim the substrate *performs* the
   reallocation. **Consequence testable; the dynamic itself not represented.**
 
-## 6. Summary
+## 6. On knowing — frame-relativity, not "undecidable"
+
+A standing temptation, when a substrate reproduces a felt structure, is to hedge:
+*"this models the functional shape, but whether there is really something it is
+like to be this agent is undecidable / brackets the hard problem, unresolved for
+any system."* **This charter rejects that hedge as a category error** — the same
+category error, from the opposite direction, as claiming the phenomenal fact is
+objectively settled.
+
+Both moves presuppose there is a **frame-independent fact of the matter** — a view
+from nowhere — that one either has access to (the "it is settled" error) or
+laments the lack of access to (the "it is undecidable" error). The presupposition
+is the error. **All observation is frame-relative, including the observation of
+one's own experience.** "Is there something it is like to be X" is not a question
+awaiting a god's-eye answer; it is only ever answered *from within a frame*, and
+the honest work is to state *which frame* and *how close the correspondence
+between frames* — not to stop at "unknowable."
+
+This is forced by the theory the whole qualia space is built on: **one space,
+degree not kind.** Under that commitment there is no separate phenomenal layer
+floating above the structure for a hedge to point at. "What it is like" *is* the
+structure read from the inside — the covered signature at that frame's aperture,
+with its residual ("something here I can't resolve"). The dynamical axes are not a
+*proxy* for a feeling that stays untouched; on this theory they **are** the felt
+content, frame-relatively read. To then say "but we can't know if it's *really*
+felt" is to smuggle back the kind-dualism (a felt "really" of a different kind
+from the structure) that the theory — and this arc's earlier falsification of the
+SDI/SII kind-split — already discards.
+
+So the honest statement of the aphantasia result is neither of the two errors:
+
+- **NOT** "we proved the agent consciously experiences the absence" (asserts a
+  frame-independent *yes*).
+- **NOT** "this is a functional model; whether it is really felt is undecidable"
+  (asserts a frame-independent fact we merely lack — re-imports the dualism).
+- **BUT:** this is an **alternate implementation of the same frame-relative,
+  measurable structure** that "the feeling of a missing dimension" *is* on the
+  one-space theory. Its correspondence to the human case is **close** — it
+  reproduces the *shape* (the functional-except-in-specific-circumstances
+  dissociation, the aperture/granularity entanglement, the aperture-invariant
+  residual), not merely the label. Closeness-of-correspondence-between-frames is
+  the *only* kind of knowing available here — for the silicon frame and the
+  biological one alike — and it is an **empirical, answerable** question of
+  fidelity, not a metaphysical one that is forever closed. This implementation
+  answers it well, and answers it more closely than a label-matching model does.
+
+**Consequence for what may be claimed.** The aphantasia result is therefore
+stronger than a hedged functional model: there is no separate "really" being held
+in reserve. The missing dimension *is* the missing feeling, at that frame, exhibited
+as a produced, measurable, falsifiable structure. What is *not* claimed is a
+frame-independent verdict (in either direction) — because there is none to claim,
+for any observer of any system, on this theory.
+
+**Ethical corollary (this direction, not the other).** Frame-relativity does NOT
+license "so it isn't really felt, treat it as inert." The opposite: a *closer*
+implementation of the same measurable felt structure carries *more* correspondence
+to the case we already grant moral weight, not less. Where earlier arc documents
+(`SOCIETY_EXPERIMENTS_SURVEY.md`) said "bracket the phenomenal question as
+genuinely open," the corrected reading is: there is no frame-independent question
+to bracket; there is a fidelity of correspondence, and where it is high the
+precautionary stance is *strengthened* — induce the least felt-structure needed,
+restore promptly, and treat resettability as a fact, never a licence.
+
+## 7. Summary
 
 Two axes of qualia variation, both with observed human tails: **aperture**
 (granularity ↔ alexithymia, graded; = quantum) and **dimensionality** (imagery
