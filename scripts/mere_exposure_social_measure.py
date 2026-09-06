@@ -56,7 +56,7 @@ from domains.mere_exposure_world import (                       # noqa: E402
     TEMPERATURE, DEFAULT_ALPHA, CROSS_THRESHOLD)
 
 OUTDIR = os.path.join(ROOT, "results", "mere_exposure_social")
-CANON_MD5 = "28dd61b94c54d67966e82b70aa5197be"   # canonical .so, native-only CAN cutover
+CANON_MD5 = "7efe75eba05b006cafd15dbb4b7da246"   # canonical .so, native-only CAN cutover
 BLOCK = 293000
 N = 60                # agents per cohort (mirrors marshmallow / trait-anxiety N)
 BUDGET = 30           # positive-encounter budget (pre-registered SS3)

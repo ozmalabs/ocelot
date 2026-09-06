@@ -1159,7 +1159,20 @@ pub fn synthesize_formant_track(
         for r in resonators.iter_mut() {
             s = r.step(s);
         }
-        out[n] = s * a;
+        // CASCADE HEADROOM (deeper amplitude fix): each KlattResonator has DC
+        // gain 1 but its RESONANT-peak gain is Q (>1), and three cascaded sections
+        // compound, so the raw cascade output peaks ABOVE unity (measured
+        // per-unit-amp peak 1.37..2.64 across formant configs; worst case a high
+        // front vowel with a strong F2/F3). Left unscaled, an amp/gain of 1.0
+        // already exceeds 1.0 and clip-safety re-compresses it — which is why the
+        // loudness knob had no usable range at the top. A FIXED headroom constant
+        // (0.35, structure-preserving: a constant scalar changes only the LEVEL,
+        // never the spectrum, so recognition is unaffected) brings the worst-case
+        // peak to ~0.92 at amp=1.0 and typical configs to ~0.5, so the caller's
+        // amp[] (an arousal-driven loudness) has full [quiet..loud] swing UNDER
+        // the clip ceiling instead of pinning against it.
+        const CASCADE_HEADROOM: f32 = 0.35;
+        out[n] = s * a * CASCADE_HEADROOM;
     }
 
     // Attack / release ramp.

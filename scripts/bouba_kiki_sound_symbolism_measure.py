@@ -61,7 +61,7 @@ from domains.bouba_kiki_world import (                          # noqa: E402
 from domains.bouba_kiki_world import _star, _regular_polygon, _ellipse  # noqa: E402
 
 OUTDIR = os.path.join(ROOT, "results", "bouba_kiki_sound_symbolism")
-CANON_MD5 = "28dd61b94c54d67966e82b70aa5197be"   # canonical .so, native-only CAN cutover
+CANON_MD5 = "7efe75eba05b006cafd15dbb4b7da246"   # canonical .so, native-only CAN cutover
 BLOCK = 294000
 N = 60                # jitter replicates per cohort (mirrors the sibling rungs)
 _RNG = np.random.default_rng(BLOCK)

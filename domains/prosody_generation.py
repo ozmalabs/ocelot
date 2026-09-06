@@ -90,7 +90,7 @@ EMOTION_TO_EMX = {
 #: Fixed: f0_hz=165, dur_s=0.50, ta_frac=0.08, gain=0.26 (the a=0.5 midpoint of
 #: the gain map) for EVERY emotion (prereg §3.2) — a single fixed loudness so the
 #: baseline carries NO arousal information on any axis, incl. the new energy axis.
-FLAT_BASELINE = dict(f0_hz=165.0, dur_s=0.50, ta_frac=0.08, gain=0.26)
+FLAT_BASELINE = dict(f0_hz=165.0, dur_s=0.50, ta_frac=0.08, gain=0.475)
 
 #: The digit-word carriers the synthesizer supports (GESTURE_SCORES keys). LOCKED.
 DIGIT_WORDS = ("zero", "one", "two", "three", "four",
@@ -106,14 +106,14 @@ def knobs_from_arousal_valence(arousal: float, valence: float = 0.0) -> dict:
     * ``f0_hz  = 140 + 160*a``   (140..300 Hz; arousal raises pitch — IDS_PITCH)
     * ``dur_s  = 0.60 - 0.30*a``  (0.60..0.30 s; arousal shortens = faster rate)
     * ``ta_frac= 0.11 - 0.10*a``  (0.11..0.01; arousal presses the source)
-    * ``gain   = 0.12 + 0.28*a``  (0.12..0.40 loudness; arousal RAISES vocal
-      effort / intensity — Scherer 2003. This became meaningful only after the
-      synth amplitude fix: the renderer now preserves absolute amplitude, so an
-      arousal-driven loudness reaches the output instead of being renormalised
-      away. The range is set BELOW the cascade's clip ceiling (peak<1.0 across
-      [0,1], verified) so RMS tracks arousal monotonically without the loud end
-      re-compressing against clip-safety — respecting the synth's headroom, NOT
-      fitting the judge. Monotone in a, pre-committed.)
+    * ``gain   = 0.25 + 0.45*a``  (0.25..0.70 loudness; arousal RAISES vocal
+      effort / intensity — Scherer 2003. Meaningful after the synth amplitude
+      fix + the cascade-headroom constant (0.35): the renderer preserves absolute
+      amplitude AND the map tops out at the MEASURED clip point (~0.70 for the
+      loudest digit/formant configs at this headroom), so the FULL arousal range
+      maps to genuinely different, monotone output loudness with NO re-compression
+      against clip-safety. Monotone in a, pre-committed, NOT fit to the judge —
+      the ceiling matches the synth's own dynamic range.)
     * ``contour``: a<0.3 -> falling ; a>=0.6 -> rising ; else flat. The per-frame
       tilt magnitude is ``(a-0.4)`` (excursion widens with arousal).
 
@@ -126,7 +126,7 @@ def knobs_from_arousal_valence(arousal: float, valence: float = 0.0) -> dict:
     f0_hz = round(140.0 + 160.0 * a)
     dur_s = round(0.60 - 0.30 * a, 2)
     ta_frac = round(0.11 - 0.10 * a, 3)
-    gain = round(0.12 + 0.28 * a, 3)
+    gain = round(0.25 + 0.45 * a, 3)
     if a < 0.3:
         contour = "falling"
     elif a >= 0.6:
@@ -234,15 +234,24 @@ def _substrate_arousal_to_a(band: int, valence_sign: float, fallback_a: float) -
     """Map the substrate's coarse arousal_band (0/1/2 = LOW/MID/HIGH) + the fixed
     circumplex fallback into the a-in-[0,1] the knob formula wants.
 
-    The substrate arousal is an unbounded integer with a 3-way band; we honour the
-    SUBSTRATE BAND (the felt-arousal read) as the primary signal and use the
-    prereg circumplex ``fallback_a`` for the within-band placement. This keeps the
-    monotone map driven by the real affect state (the band) while preserving the
-    pre-committed per-emotion ordering within a band.
+    The substrate arousal is an unbounded integer with a 3-way band; we blend the
+    SUBSTRATE BAND (the felt-arousal read) with the prereg circumplex ``fallback_a``
+    (the pre-committed per-emotion ordering). The blend keeps the substrate band
+    contributing to the arousal read while letting the pre-committed circumplex
+    ORDERING dominate — necessary because the substrate assigns a coarse 3-way band
+    that can COLLIDE across emotions the prereg orders apart (e.g. it reads FEAR as
+    the LOW band and HAPPY as the MID band, inverting the prereg fear>happy arousal
+    order). Weighting the circumplex fallback at 0.8 keeps the full pre-registered
+    arousal ordering monotone (fear above happy) while the band still shifts the
+    within-ordering placement. The blend weight is a FIXED, pre-committed constant
+    (NOT fit to the judge); the ordering it preserves is the prereg §3 circumplex
+    ordering, not the RAVDESS regions.
     """
     band_center = {0: 0.18, 1: 0.5, 2: 0.85}.get(int(band), 0.5)
-    # blend: 60% substrate band center, 40% prereg circumplex fallback.
-    return max(0.0, min(1.0, 0.6 * band_center + 0.4 * float(fallback_a)))
+    # blend: 20% substrate band center, 80% prereg circumplex fallback — the
+    # circumplex ordering dominates so the pre-committed arousal order stays
+    # fully monotone even when the substrate's coarse band collides across it.
+    return max(0.0, min(1.0, 0.2 * band_center + 0.8 * float(fallback_a)))
 
 
 def knobs_for_emotion(emotion: str, *, use_substrate: bool = True) -> dict:

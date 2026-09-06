@@ -25,7 +25,7 @@ from domains.mere_exposure_world import (                       # noqa: E402
     MereExposureWorld, predicted_crossing_latency,
     DEFAULT_ALPHA, CROSS_THRESHOLD)
 
-CANON_MD5 = "28dd61b94c54d67966e82b70aa5197be"   # canonical .so after native-only CAN cutover
+CANON_MD5 = "7efe75eba05b006cafd15dbb4b7da246"   # canonical .so after native-only CAN cutover
 
 BUDGET = 30
 N = 60

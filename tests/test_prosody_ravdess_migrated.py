@@ -9,11 +9,14 @@ pre-registration (`docs/research/psychology_affect/PROSODY_RAVDESS_PREREG.md`):
   (a) ARM A — each synthesized emotion's re-analyzed f0_mean tracks its arousal
       class (HIGH synths high, LOW synths low), monotone in the prereg arousal
       ordering, HIGH-mean f0 > LOW-mean f0, and CI-separated from the flat
-      baseline; ENERGY now tracks arousal (rank-correlated with the prereg
-      arousal ordering, HIGH-arousal energy CI-separated from LOW, and
-      CI-separated from the flat baseline) after the synthesizer amplitude-
-      preservation fix (clip-safety replaced the unconditional peak-normalize
-      that had discarded absolute amplitude).
+      baseline; ENERGY now tracks arousal FULLY MONOTONICALLY (strictly increasing
+      across the prereg arousal ordering, rank correlation rho == 1.0, angry the
+      loudest, HIGH-arousal energy CI-separated from LOW, and CI-separated from the
+      flat baseline) after the DEEPER synthesizer fix — the fixed cascade-headroom
+      constant (0.35) opened the renderer's dynamic range on top of the earlier
+      clip-safety change, and the gain map widened to the measured clip point
+      (0.25+0.45*a over [0.25,0.70]), resolving the prior [0.12,0.40] compression
+      that had pinned the top of the range against clip-safety.
   (b) ARM B — the lift number is reproduced with the SIGN pinned, the blind twin
       is the byte-identical control, computed on HELD-OUT actors; the reliable-
       axis point-biserial sign is correct. Null is a valid pinned result.
@@ -44,7 +47,7 @@ from domains.prosody_generation import (                        # noqa: E402
     substrate_affect_coord, EMOTION_VA, EMOTION_TO_EMX, FLAT_BASELINE,
     DIGIT_WORDS)
 
-CANON_MD5 = "28dd61b94c54d67966e82b70aa5197be"
+CANON_MD5 = "7efe75eba05b006cafd15dbb4b7da246"
 RAVDESS_DIR = os.path.join(ROOT, "data", "ravdess")
 RESULTS_DIR = os.path.join(ROOT, "results", "prosody_ravdess")
 GEN_JSON = os.path.join(RESULTS_DIR, "generation.json")
@@ -147,28 +150,43 @@ def test_armA_ci_separated_from_flat(gen_result):
 
 
 def test_armA_energy_tracks_arousal(gen_result):
-    """Post the synthesizer amplitude-preservation fix (clip-safety replaced the
-    unconditional peak-normalize that discarded absolute amplitude), re-analyzed
-    ENERGY now tracks arousal. Scored on ORDERING, not absolute band membership,
-    because the synth energy scale (~0.09-0.36) differs from the RAVDESS wav scale
-    (~0.002-0.021): (1) synth energy is rank-correlated with the pre-registered
-    arousal ordering, (2) HIGH-arousal mean energy > LOW-arousal mean energy and
-    CI-separated, (3) a majority of emotions are CI-separated from the flat
-    baseline. This was the pinned Arm-A limit; it now WORKS."""
-    # (1) rank (Spearman) correlation of synth energy vs the arousal ordering.
-    assert gen_result["energy_arousal_rank_rho"] >= 0.7, \
+    """After the DEEPER synthesizer fix (the fixed CASCADE-HEADROOM constant 0.35
+    that opened the renderer's dynamic range on top of the earlier clip-safety
+    change, plus the gain map widened to the MEASURED clip point, gain=0.25+0.45*a
+    over [0.25,0.70]), re-analyzed ENERGY is now FULLY MONOTONE in the pre-registered
+    arousal ordering — the earlier [0.12,0.40] compression that pinned the top of
+    the range against clip-safety is gone. Scored on ORDERING, not absolute band
+    membership, because the synth energy scale differs from the RAVDESS wav scale:
+    (1) synth energy is STRICTLY increasing across the prereg arousal ordering with
+    rank correlation rho == 1.0 (tightened from the prior >=0.7 limit), (2) angry is
+    the loudest and the low-arousal emotions the quietest, (3) HIGH-arousal mean
+    energy > LOW-arousal mean energy and CI-separated, (4) a majority of emotions
+    are CI-separated from the flat baseline. This was the pinned Arm-A limit; the
+    deeper fix RESOLVES it."""
+    order = ["calm", "neutral", "sad", "disgust", "surprised",
+             "happy", "fearful", "angry"]
+    en = gen_result["energy_values"]
+    # (1) FULL monotonicity: energy strictly increases across the arousal ordering.
+    ordered = [en[e] for e in order]
+    assert ordered == sorted(ordered), ordered
+    assert all(ordered[i + 1] > ordered[i] for i in range(len(ordered) - 1)), \
+        f"energy not STRICTLY monotone in arousal ordering: {ordered}"
+    # rank (Spearman) correlation of synth energy vs the arousal ordering — now the
+    # full-monotone rho == 1.0 (tightened from >=0.7).
+    assert gen_result["energy_arousal_rank_rho"] >= 0.9, \
+        gen_result["energy_arousal_rank_rho"]
+    assert gen_result["energy_arousal_rank_rho"] == 1.0, \
         gen_result["energy_arousal_rank_rho"]
     assert gen_result["verdict_energy_tracks_arousal"] is True
-    # (2) HIGH-arousal energy clearly above LOW, CI-separated.
+    # (2) angry is the loudest; calm/neutral the quietest.
+    assert en["angry"] == max(en.values()), en
+    assert en["calm"] == min(en.values()), en
+    assert en["calm"] < en["happy"] and en["neutral"] < en["fearful"], en
+    # (3) HIGH-arousal energy clearly above LOW, CI-separated.
     assert gen_result["high_mean_energy"] > gen_result["low_mean_energy"]
     assert gen_result["verdict_energy_high_above_low"] is True
     assert gen_result["high_low_energy_ci_separated"] is True
-    # low-arousal emotions (calm, neutral) are the quietest; angry the loudest.
-    en = gen_result["energy_values"]
-    assert en["calm"] < en["angry"], en
-    assert en["neutral"] < en["angry"], en
-    assert en["calm"] < en["happy"] and en["neutral"] < en["fearful"], en
-    # (3) affect-driven energy CI-separated from the flat baseline for a majority.
+    # (4) affect-driven energy CI-separated from the flat baseline for a majority.
     assert gen_result["n_energy_ci_separated_from_flat"] >= 4, \
         gen_result["n_energy_ci_separated_from_flat"]
     assert gen_result["verdict_energy_ci_separated_from_flat"] is True

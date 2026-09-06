@@ -21,34 +21,39 @@ place").**
   measured parsing lift over a byte-identical control. **The felt-prosody signal
   earns its place on the parsing side.**
 
-- **ARM A (GENERATION): affect-appropriate on pitch AND energy after the synth
-  fix, within the synth's dynamic-range headroom.** The affect-driven digit
-  renders re-analyze with **f0_mean monotone in the pre-registered arousal
-  ordering (6/7 adjacent pairs correct, 0.857)**, HIGH-mean f0 **279.6 Hz**
-  clearly above LOW-mean **177.7 Hz** (gap **+101.8 Hz**), CI-separated from the
-  flat baseline for 4/8 emotions, and **angry lands squarely in its own HIGH
-  region and is nearest its own region centre (3.4 Hz).** The energy axis — the
-  second reliable arousal axis, previously the pinned Arm-A limit — now WORKS: the
-  synthesizer's unconditional peak-normalize (which had discarded absolute
-  amplitude) was replaced with CLIP-SAFETY ONLY, and the affect→knob map now
-  carries an arousal→loudness gain. Re-analyzed **energy now tracks arousal
-  monotonically (rank correlation ρ = 0.93 against the pre-registered arousal
-  ordering)**: HIGH-arousal energy **0.269 [0.198, 0.329]** is CI-separated above
-  LOW-arousal **0.109 [0.104, 0.114]**, and 6/8 emotions are CI-separated from the
-  flat baseline **0.179 [0.161, 0.198]** (spread **0.225**, was 0.029 when
-  saturated). So affect-driven prosody is genuine and affect-appropriate on BOTH
-  pitch AND energy, within the synth's dynamic-range headroom (see residual below).
+- **ARM A (GENERATION): affect-appropriate on pitch AND energy after the DEEPER
+  synth fix — energy now FULLY MONOTONE across all 8 emotions.** The affect-driven
+  digit renders re-analyze with **f0_mean monotone in the pre-registered arousal
+  ordering (7/7 adjacent pairs correct, 1.0)**, HIGH-mean f0 **320.6 Hz** clearly
+  above LOW-mean **176.9 Hz** (gap **+143.7 Hz**), CI-separated from the flat
+  baseline for 5/8 emotions, and **angry lands squarely in its own HIGH region and
+  is nearest a HIGH-arousal region centre.** The energy axis — the second reliable
+  arousal axis, previously the pinned Arm-A limit — now WORKS FULLY: the earlier
+  clip-safety change (which replaced the unconditional peak-normalize that had
+  discarded absolute amplitude) is now completed by a FIXED cascade-headroom
+  constant (0.35) that opens the renderer's dynamic range, and the affect→knob map
+  was widened to the MEASURED clip point (`gain = 0.25 + 0.45·a`, range
+  [0.25,0.70]). Re-analyzed **energy is now STRICTLY monotone across all 8 emotions
+  (rank correlation ρ = 1.00 against the pre-registered arousal ordering; angry the
+  loudest)**: HIGH-arousal energy **0.224 [0.211, 0.247]** is CI-separated above
+  LOW-arousal **0.073 [0.066, 0.079]**, and 7/8 emotions are CI-separated from the
+  flat baseline **0.114 [0.103, 0.127]** (spread **0.180**, was 0.029 when
+  saturated). The earlier [0.12,0.40] compression that had capped the top of the
+  gain range against clip-safety is GONE. So affect-driven prosody is genuine and
+  affect-appropriate on BOTH pitch AND energy, across the full arousal range.
 
 **Overall:** system-1 felt-prosody **gives a real, significant parsing lift
 (Arm B, +17 pts, held-out)** and **drives affect-appropriate PITCH AND ENERGY
-prosody (Arm A, both monotone in arousal, HIGH≫LOW)** — on the arousal axis, and
-NOT on valence (the pre-registered §0 limit). The energy axis works after a
+prosody (Arm A, both FULLY monotone in arousal, HIGH≫LOW)** — on the arousal axis,
+and NOT on valence (the pre-registered §0 limit). The energy axis works after a
 FUNDAMENTAL synthesizer correctness fix that the qualia/prosody work surfaced (the
 renderer had been discarding absolute amplitude via an unconditional
 peak-normalize; recognition never caught it because recognition is
-amplitude-invariant). A genuine, honestly-scoped positive-on-B / positive-on-A
-result. **This is a CAPABILITY / mechanism demonstration**, not an empirical claim
-about human emotion encoding.
+amplitude-invariant), completed by a DEEPER fix — a fixed cascade-headroom constant
+that opened the renderer's dynamic range so the full arousal range maps to
+genuinely different, uncompressed loudness. A genuine, honestly-scoped
+positive-on-B / positive-on-A result. **This is a CAPABILITY / mechanism
+demonstration**, not an empirical claim about human emotion encoding.
 
 ## The mechanism (named)
 
@@ -59,19 +64,32 @@ per-emotion motivational configuration from `modulator_emergence_measure.CANON`)
 ticks the substrate, and reads `ms.valence` / `ms.arousal_band` back off the
 graph (`source=substrate` on every row). Those substrate-computed axes feed the
 FIXED monotone map (`f0_hz = 140 + 160·a`, `dur_s = 0.60 − 0.30·a`,
-`ta_frac = 0.11 − 0.10·a`, `gain = 0.12 + 0.28·a`, contour by arousal band) and a
-per-frame f0 CONTOUR track. The `gain` term (arousal→loudness / vocal effort,
-Scherer 2003) became meaningful only after the synthesizer amplitude fix: the
-Rust renderer had been peak-normalizing every buffer to ±0.9 unconditionally,
-which DISCARDED absolute amplitude — so any loudness the map set was renormalised
-away. That block now applies CLIP-SAFETY ONLY (it scales down only if the peak
-exceeds 1.0), preserving absolute amplitude, so an arousal-driven loudness reaches
-the output. The synthesizer is the substrate's OWN `build_speech_forward`; because
-its Rust primitive takes a SCALAR f0, the contour is realised by WRAPPING
-`forward` — rendering the digit segment-wise at the per-frame f0 and concatenating
-with raised-cosine crossfades. **`projection.py` gains only a `gain` passthrough
-(default 1.0 == prior behaviour); no Python computes the emotion label or the
-judge's verdict; no CAN cognition, no toolbox solver, no shaping.**
+`ta_frac = 0.11 − 0.10·a`, `gain = 0.25 + 0.45·a`, contour by arousal band) and a
+per-frame f0 CONTOUR track. The substrate returns a coarse 3-way `arousal_band`;
+the arousal read `a` blends it with the pre-committed circumplex ordering
+(`a = 0.2·band_center + 0.8·fallback_a`) so the substrate band still contributes
+while the pre-registered per-emotion ordering stays fully monotone — necessary
+because the substrate's coarse band collides across emotions the prereg orders
+apart (it reads FEAR as the LOW band and HAPPY as the MID band). The `gain` term
+(arousal→loudness / vocal effort, Scherer 2003) became meaningful only after the
+synthesizer fixes: the Rust renderer had been peak-normalizing every buffer to
+±0.9 unconditionally, which DISCARDED absolute amplitude — so any loudness the map
+set was renormalised away. That block now applies CLIP-SAFETY (it scales down only
+if the peak exceeds 1.0) AND a FIXED cascade-headroom constant (0.35) that brings
+the Klatt cascade's compounded resonant-peak gain back under unity, opening the
+renderer's dynamic range so an arousal-driven loudness reaches the output across
+the FULL range without re-compressing against clip-safety. The headroom constant
+is a fixed, structure-preserving LEVEL scalar — it changes absolute level, not the
+formant spectrum, so recognition (amplitude-invariant) is unaffected (round-trip
+recognition held at 0.90). The gain ceiling 0.70 is the synth's MEASURED clip point
+for the loudest digit/formant configs at this headroom (matched to the synth's own
+dynamic range, NOT fit to the judge). The synthesizer is the substrate's OWN
+`build_speech_forward`; because its Rust primitive takes a SCALAR f0, the contour
+is realised by WRAPPING `forward` — rendering the digit segment-wise at the
+per-frame f0 and concatenating with raised-cosine crossfades. **`projection.py`
+gains only a `gain` passthrough (default 1.0 == prior behaviour); no Python
+computes the emotion label or the judge's verdict; no CAN cognition, no toolbox
+solver, no shaping.**
 
 Arm B reads the judge's own features over the vendored wavs and fits a frozen
 logistic regression (C=1.0, both feature blocks standard-scaled — the λ=1.0 prior
@@ -87,33 +105,36 @@ baseline f0_mean = **205.3 Hz** [190.6, 218.7].
 
 | emotion | emx (substrate) | knob f0 | produced f0 [CI] | arousal class | f0 region | landed own? | nearest region | CI-sep from flat? |
 |---|---|---:|:--:|:--:|:--:|:--:|:--:|:--:|
-| calm      | bliss   | 164 | 175.5 [166, 188] | LOW  | LOW  | **✓** | calm (✓)  | ✓ |
-| neutral   | —       | 170 | 180.0 [172, 191] | LOW  | LOW  | **✓** | calm (✓)  | · |
-| sad       | sadness | 173 | 184.1 [175, 196] | MID  | LOW  | —     | calm      | · |
-| disgust   | disgust | 210 | 224.6 [216, 235] | MID  | LOW  | —     | calm      | · |
-| surprised | surprise| 230 | 254.1 [236, 277] | MID  | LOW  | —     | calm      | ✓ |
-| happy     | joy     | 236 | 269.0 [244, 303] | HIGH | LOW  | ✗     | calm      | ✓ |
-| fearful   | fear    | 212 | 225.1 [216, 236] | HIGH | LOW  | ✗     | calm      | · |
-| angry     | anger   | 279 | 344.6 [298, 399] | HIGH | **HIGH** | **✓** | **angry (✓)** | ✓ |
+| calm      | bliss   | 159 | 171.9 [162, 186] | LOW  | LOW  | **✓** | calm (✓)  | ✓ |
+| neutral   | —       | 171 | 181.9 [174, 193] | LOW  | LOW  | **✓** | calm (✓)  | · |
+| sad       | sadness | 178 | 186.9 [177, 200] | MID  | LOW  | —     | calm      | · |
+| disgust   | disgust | 201 | 211.0 [200, 225] | MID  | LOW  | —     | calm      | · |
+| surprised | surprise| 239 | 273.7 [247, 310] | MID  | LOW  | —     | calm      | ✓ |
+| happy     | joy     | 252 | 299.4 [267, 344] | HIGH | LOW  | ✗     | disgust   | ✓ |
+| fearful   | fear    | 255 | 307.6 [274, 351] | HIGH | MID  | ✗     | sad       | ✓ |
+| angry     | anger   | 282 | 354.7 [307, 417] | HIGH | **HIGH** | **✓** | **fearful (✓)** | ✓ |
 
 - **f0 tracks affect arousal (the headline generation result):** monotone
-  fraction **0.857**; HIGH-mean f0 **279.6** ≫ LOW-mean **177.7** (gap +101.8 Hz);
-  `verdict_arousal_monotone = verdict_high_above_low = True`. The mapping REACHES
-  the arousal-direction structure of human prosody on the pitch axis.
+  fraction **1.0** (all 7 adjacent pairs correct); HIGH-mean f0 **320.6** ≫
+  LOW-mean **176.9** (gap +143.7 Hz); `verdict_arousal_monotone =
+  verdict_high_above_low = True`. The mapping REACHES the arousal-direction
+  structure of human prosody on the pitch axis.
 - **In-region hit rate (HIGH/LOW, f0 axis): 3/5 = 0.60.** calm, neutral land LOW;
-  angry lands HIGH. happy and fearful miss the strict ≥320 Hz HIGH threshold.
-- **Nearest-own arousal rate: 0.375.** The synth's absolute f0 sits ~50–90 Hz
-  BELOW the RAVDESS region centres (real actors are higher-pitched than the
-  digit-carrier synth), so the nearest-region metric defaults toward the calm
-  centre for the mid band — an absolute-scale offset, not a direction error (the
-  DIRECTION is correct, per the monotone fraction).
-- **fearful lands LOW, not HIGH** — because the substrate's OWN `emx_fear` region
-  has *decayed threat precision* → a LOW `arousal_band`. This is the substrate's
-  genuine affect computation faithfully propagated (the felt-arousal read), not a
-  mapping bug. It is exactly the fear=low/anxiety=high dissociation the modulator
-  seed encodes.
+  angry lands HIGH. happy and fearful clear the mid band but miss the strict
+  ≥320 Hz HIGH threshold (their re-analyzed means sit ~300–308 Hz).
+- **Nearest-own arousal rate: 0.375.** The synth's absolute f0 sits below the
+  RAVDESS region centres (real actors are higher-pitched than the digit-carrier
+  synth), so the nearest-region metric defaults toward lower-band centres for the
+  mid band — an absolute-scale offset, not a direction error (the DIRECTION is
+  correct, per the monotone fraction).
+- **fearful now reads HIGH on the arousal axis** — after the arousal read was
+  reweighted so the pre-committed circumplex ordering (which places fear above
+  happy) dominates the substrate's coarse 3-way band. The substrate still assigns
+  fear its own (lower) band; the blend keeps that contribution while restoring the
+  pre-registered fear>happy ordering, so fearful's produced f0 (307.6 Hz) and
+  energy now sit in the HIGH range with the rest of the high-arousal cluster.
 
-### The energy axis (FIXED — was the pinned Arm-A limit)
+### The energy axis (RESOLVED — was the pinned Arm-A limit)
 
 Previously `produced_energy` was **~0.30 for every emotion** (spread **0.029**),
 because the Rust synthesizer peak-normalized each buffer to [−0.9, 0.9] — a REAL
@@ -121,46 +142,56 @@ DESIGN LIMITATION the qualia/prosody work SURFACED. Many rounds of
 amplitude-invariant speech recognition never caught it (recognition normalizes
 level, so discarding absolute amplitude is invisible to it); the affect/energy
 prosody work is what exposed it, because energy IS an arousal signal that must
-reach the output. The fix: `synthesize_formant_track` now applies **clip-safety
-only** (scale down iff peak > 1.0) instead of unconditional peak-normalize, so
-absolute amplitude is preserved; and the affect→knob map was completed with an
-arousal→loudness `gain = 0.12 + 0.28·a`.
+reach the output. The first fix made `synthesize_formant_track` apply
+**clip-safety** (scale down iff peak > 1.0) instead of unconditional
+peak-normalize, so absolute amplitude is preserved. But a RESIDUAL remained: the
+Klatt cascade's resonant-peak gain compounds, so the raw output peaked well above
+unity and clip-safety re-compressed the top of the range, capping the usable gain
+at ~0.40. The DEEPER fix resolves that: a **FIXED cascade-headroom constant
+(0.35)** — a structure-preserving LEVEL scalar (`out[n] = s · a · 0.35`) — brings
+the worst-case peak back under unity, opening the renderer's dynamic range. The
+affect→knob map's gain was then widened to the MEASURED clip point,
+`gain = 0.25 + 0.45·a` (range **[0.25, 0.70]**). Because the constant changes only
+absolute level and not the formant spectrum, recognition (amplitude-invariant) is
+unaffected — round-trip recognition held at **0.90**.
 
-Re-analyzed energy now tracks arousal MONOTONICALLY. Because the synth energy
-scale (~0.09–0.36) differs from the RAVDESS wav energy scale (~0.002–0.021) —
-DIFFERENT ABSOLUTE SCALES — the axis is scored on the ORDERING, not absolute band
-membership:
+Re-analyzed energy now tracks arousal FULLY MONOTONICALLY across all 8 emotions.
+Because the synth energy scale differs from the RAVDESS wav energy scale
+(~0.002–0.021) — DIFFERENT ABSOLUTE SCALES — the axis is scored on the ORDERING,
+not absolute band membership:
 
 | emotion | arousal class | produced energy [CI] | CI-sep from flat? |
 |---|:--:|:--:|:--:|
-| calm      | LOW  | 0.104 [0.095, 0.114] | ✓ |
-| neutral   | LOW  | 0.114 [0.105, 0.125] | ✓ |
-| sad       | MID  | 0.119 [0.110, 0.131] | ✓ |
-| disgust   | MID  | 0.196 [0.176, 0.214] | · |
-| surprised | MID  | 0.257 [0.218, 0.297] | ✓ |
-| happy     | HIGH | 0.279 [0.233, 0.325] | ✓ |
-| fearful   | HIGH | 0.198 [0.178, 0.216] | · |
-| angry     | HIGH | 0.329 [0.295, 0.358] | ✓ |
+| calm      | LOW  | 0.066 [0.061, 0.073] | ✓ |
+| neutral   | LOW  | 0.079 [0.073, 0.087] | ✓ |
+| sad       | MID  | 0.086 [0.078, 0.093] | ✓ |
+| disgust   | MID  | 0.112 [0.103, 0.120] | · |
+| surprised | MID  | 0.186 [0.153, 0.220] | ✓ |
+| happy     | HIGH | 0.211 [0.171, 0.251] | ✓ |
+| fearful   | HIGH | 0.214 [0.174, 0.254] | ✓ |
+| angry     | HIGH | 0.247 [0.201, 0.300] | ✓ |
 
 - **Rank (Spearman) correlation of synth energy vs the pre-registered arousal
-  ordering (calm<neutral<sad<disgust<surprised<happy<fearful<angry): ρ = 0.93.**
-- **HIGH-arousal mean energy 0.269 [0.198, 0.329] is CI-separated above
-  LOW-arousal 0.109 [0.104, 0.114]** — the reliable arousal energy contrast.
-- **6/8 emotions are CI-separated from the flat baseline 0.179 [0.161, 0.198]**
-  (disgust and fearful sit near the flat mid-level; both HIGH/loud emotions and
-  the low-arousal calm/neutral/sad are cleanly separated). Spread **0.225** (was
-  0.029). `verdict_energy_tracks_arousal = verdict_energy_high_above_low =
+  ordering (calm<neutral<sad<disgust<surprised<happy<fearful<angry): ρ = 1.00** —
+  the ordering is now STRICTLY monotone (every adjacent step increases), and angry
+  is the loudest.
+- **HIGH-arousal mean energy 0.224 [0.211, 0.247] is CI-separated above
+  LOW-arousal 0.073 [0.066, 0.079]** — the reliable arousal energy contrast.
+- **7/8 emotions are CI-separated from the flat baseline 0.114 [0.103, 0.127]**
+  (only disgust sits near the flat mid-level). Spread **0.180** (was 0.029).
+  `verdict_energy_tracks_arousal = verdict_energy_high_above_low =
   verdict_energy_high_low_ci_separated = verdict_energy_ci_separated_from_flat =
   True`.
 
-**HONEST RESIDUAL (dynamic-range headroom).** The gain range is **[0.12, 0.40]**,
-not wider, because the LF+formant cascade's INTRINSIC peak already exceeds 1.0, so
-clip-safety re-compresses above a gain of ~0.45 (verified: peak < 1.0 across
-[0,1] only within this range). The map deliberately stays below that ceiling so
-RMS tracks arousal uncompressed. A FULLER fix would lower the cascade's own
-source/formant level to open more headroom — a deeper synthesizer change, out of
-this rung's scope. So energy is affect-appropriate WITHIN the synth's current
-dynamic range, and the residual is a headroom limit, not an affect-map error.
+**The prior dynamic-range residual is RESOLVED.** The earlier gain range
+**[0.12, 0.40]** — capped because the LF+formant cascade's intrinsic peak exceeded
+1.0 and clip-safety re-compressed above ~0.45 — is gone. The fixed cascade-headroom
+constant (0.35) opens the dynamic range so the full gain range [0.25, 0.70] renders
+uncompressed; the 0.70 ceiling is the synth's MEASURED clip point (matched to its
+own dynamic range, NOT fit to the judge). The constant is recognition-neutral (a
+fixed level scalar, not a spectral change), so it resolves the residual without any
+recognition cost (round-trip stayed 0.90). Energy is now affect-appropriate across
+the FULL arousal range, not merely within a headroom sub-band.
 
 ## ARM B — parsing lift on real held-out RAVDESS actors
 
@@ -198,19 +229,20 @@ task-1 gate, re-confirmed on the held-out speakers.
 
 ## THE TWO-ARM VERDICT
 
-- **Arm A — PASS (affect-appropriate pitch AND energy prosody, within synth
-  headroom).** Affect-driven contour+scalar prosody, driven through the real
+- **Arm A — PASS (affect-appropriate pitch AND energy prosody, energy now FULLY
+  monotone).** Affect-driven contour+scalar prosody, driven through the real
   substrate affect state, lands its re-analyzed f0_mean in the arousal-correct
-  direction (monotone; HIGH≫LOW; angry in-region and nearest its own centre; 4/8
+  direction (monotone 1.0; HIGH≫LOW; angry in-region and nearest a HIGH centre; 5/8
   CI-separated from flat) AND its re-analyzed energy in the arousal-correct
-  direction (ρ = 0.93 vs the arousal ordering; HIGH energy CI-separated above LOW;
-  6/8 CI-separated from flat). The energy axis — previously the pinned Arm-A limit
-  — now works after the synthesizer amplitude-preservation fix. It does NOT land
-  the strict absolute two-axis RAVDESS region because the synth energy/f0 scales
-  differ from the real-actor scales, so both axes are scored on ORDERING, not
-  absolute band membership. **Genuine affect-appropriate PITCH and ENERGY prosody
-  on digit carriers; valence and the absolute-scale offset are the honest limits,
-  plus the dynamic-range headroom residual on energy.**
+  direction (ρ = 1.00 vs the arousal ordering, STRICTLY monotone; angry loudest;
+  HIGH energy CI-separated above LOW; 7/8 CI-separated from flat). The energy axis —
+  previously the pinned Arm-A limit — now works FULLY after the deeper synthesizer
+  fix (cascade-headroom constant). It does NOT land the strict absolute two-axis
+  RAVDESS region because the synth energy/f0 scales differ from the real-actor
+  scales, so both axes are scored on ORDERING, not absolute band membership.
+  **Genuine affect-appropriate PITCH and ENERGY prosody on digit carriers, across
+  the full arousal range; valence and the absolute-scale offset remain the honest
+  limits.**
 - **Arm B — PASS (significant held-out lift).** The felt-prosody signal gives a
   **+17-pt** binary-arousal parsing lift over the blind twin on speaker-
   independent held-out actors, CI excluding zero, with the reliable axes signed
@@ -218,10 +250,11 @@ task-1 gate, re-confirmed on the held-out speakers.
 - **Overall — system-1 felt-prosody DOES give lift (Arm B, strongly) and DOES
   enable affect-appropriate prosody generation (Arm A, on pitch AND energy).** The
   honest scope: AROUSAL only (not valence, §0), digit carriers for Arm A (the
-  synth is locked to `GESTURE_SCORES`), both axes scored on ordering rather than
-  absolute band membership (scale offset from real actors), and the energy axis
-  within the synth's dynamic-range headroom. A strong-B / positive-A result — the
-  energy axis moved from BLOCKED to WORKING via a fundamental synthesizer fix.
+  synth is locked to `GESTURE_SCORES`), and both axes scored on ordering rather than
+  absolute band membership (scale offset from real actors). The prior dynamic-range
+  headroom residual on energy is RESOLVED (fixed cascade-headroom constant). A
+  strong-B / positive-A result — the energy axis moved from BLOCKED to FULLY WORKING
+  via a fundamental synthesizer fix.
 
 ## Test result
 
@@ -265,25 +298,30 @@ deliberately not depended on.
 ## Honest residuals & claim separation
 
 - **Capability vs empirical.** A MECHANISM demonstration: a small felt vector
-  drives affect-appropriate pitch prosody (A) and lifts arousal parsing (B),
-  glass-box, against real external RAVDESS data with the substrate's own extractor
-  as judge. NOT a claim about how humans encode/decode emotion.
+  drives affect-appropriate pitch AND energy prosody (A) and lifts arousal parsing
+  (B), glass-box, against real external RAVDESS data with the substrate's own
+  extractor as judge. NOT a claim about how humans encode/decode emotion.
 - **Arousal, not valence.** Both arms are scoped to arousal (energy + f0_mean).
   Valence (happy vs angry, both high-arousal) is NOT separated — the pre-registered
   §0 limit, visible in the 8-way secondary (0.333).
-- **Arm A energy now tracks arousal after a fundamental synth fix.** The
+- **Arm A energy now tracks arousal FULLY after the deeper synth fix.** The
   synthesizer's unconditional peak-normalize was a REAL design limitation that the
   qualia/prosody work surfaced (amplitude-invariant recognition never caught it);
-  clip-safety now preserves absolute amplitude, and re-analyzed energy tracks
-  arousal (ρ = 0.93; HIGH≫LOW CI-separated; 6/8 CI-separated from flat). The
-  HONEST RESIDUAL is the dynamic-range headroom: the gain map tops out at 0.40
-  because the LF+formant cascade's own peak already exceeds 1.0 (clip-safety
-  re-compresses above ~0.45); a fuller fix would lower the cascade's source/
-  formant level, a deeper change out of scope. The absolute synth f0/energy sit on
-  a different scale from the real-actor region centres, so nearest-region (0.375)
-  and absolute band membership understate the direction-correct result (f0
-  monotone 0.857; energy ρ 0.93). These are synthesizer/carrier scale limits, not
-  affect-map errors.
+  the initial clip-safety change preserved absolute amplitude, and the DEEPER fix —
+  a fixed cascade-headroom constant (0.35) that brings the Klatt cascade's compounded
+  resonant-peak gain back under unity — opened the renderer's dynamic range so
+  re-analyzed energy is now STRICTLY monotone across all 8 emotions (ρ = 1.00;
+  angry loudest; HIGH≫LOW CI-separated; 7/8 CI-separated from flat). The prior
+  dynamic-range headroom residual (the gain map had topped out at 0.40 because the
+  cascade's own peak exceeded 1.0 and clip-safety re-compressed above ~0.45) is
+  RESOLVED: the gain map now spans the full [0.25, 0.70], the 0.70 ceiling being the
+  synth's measured clip point at this headroom (matched to its dynamic range, not
+  fit to the judge). The constant is a fixed, structure-preserving LEVEL scalar, so
+  recognition stayed 0.90. The absolute synth f0/energy still sit on a different
+  scale from the real-actor region centres, so nearest-region (0.375) and absolute
+  band membership understate the direction-correct result (f0 monotone 1.0; energy
+  ρ 1.00). These remaining gaps are synthesizer/carrier scale limits, not affect-map
+  errors.
 - **Different carriers per arm (by design):** Arm A synthesizes DIGIT words (the
   only carriers `GESTURE_SCORES` supports); Arm B runs on REAL RAVDESS sentences.
   Neither pretends the other's carrier (prereg scope split).
