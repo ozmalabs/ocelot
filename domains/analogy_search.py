@@ -854,6 +854,73 @@ def _dimensions_in_transform(transform_key: str) -> set:
 
 
 # --------------------------------------------------------------------------- #
+# FELT-RESCUE — the STRONG ARM of feel-then-reason (PREREG block 300000).
+#
+# WHAT THIS IS
+# ------------
+# Stages 1/2 (block 299000) were WEAK arms: felt_shortlist_k only SHORTLISTED
+# the decode scope (a speed prune) and felt_bias only RE-RANKED already-accepted
+# matches (a permutation). Neither changed WHICH analogies pass the `min_score`
+# gate. This is the STRONG arm: a SELECTIVE second chance that ADMITS a
+# below-`min_score` structural candidate — CHANGING THE ACCEPTED SET — IFF its
+# shared felt shape is RARE-BY-CHANCE.
+#
+# THE GROUNDED RARITY (Task 1, on the real relaxed corpus — MEASURED, not
+# assumed): the by-chance rate at which two concepts SHARE a felt coordinate is
+#   · dynamical:valence SIGN      = 0.488  (coin flip — WEAK, floods junk)
+#   · phenomenal:sharpness POLE   = 0.012  (~40x rarer — populatedness x agreement)
+#   · felt_shared >= 2            = 0.009  (rare — a coincidence of two)
+# commitment is DARK in practice (identity_field stays 0.0 => k=None), so it
+# contributes no shared coordinate; we do NOT lean on its nominal levels.
+#
+# THE PREDICATE (keys on the measured rarity, NOT a tuned constant): a shared
+# felt shape RESCUES iff it carries a RARE felt coord — any shared felt axis
+# OTHER than dynamical:valence — OR two-or-more shared felt axes. A LONE shared
+# valence sign (the coin flip) NEVER rescues. Because AntiUnify over two
+# signature frozensets is a WHOLE-TUPLE intersection, a felt tuple survives into
+# `tkey` only when both concepts carry the identical (dim,"field",k) coordinate
+# (same axis AND same pole), so the shared felt AXES + poles are read straight
+# from `tkey` — no node re-read needed.
+# --------------------------------------------------------------------------- #
+#: The felt family prefixes — the proto-phenomenal (dynamical CAN + phenomenal
+#: crossmodal) axes, as `concept_signature` tags them.
+_FELT_PREFIXES = ("dynamical:", "phenomenal:")
+#: The one felt axis whose shared coordinate is a COIN FLIP by chance (0.488) —
+#: a lone shared valence NEVER rescues (it would flood the accepted set).
+_VALENCE_DIM = "dynamical:valence"
+
+
+def _shared_felt_axes(transform_key: str) -> set:
+    """The set of FELT dimensions (dynamical:/phenomenal:) the shared shape
+    spans — the felt subset of `_dimensions_in_transform`. Read from the SAME
+    dimension tags the `felt_shared` result field uses; a felt tuple is present
+    in `tkey` only when both concepts carry the identical (dim,'field',k)
+    coordinate (same pole), so this is the set of felt axes the pair SHARES."""
+    return {d for d in _dimensions_in_transform(transform_key)
+            if d.startswith(_FELT_PREFIXES)}
+
+
+def _felt_rescue_ok(transform_key: str) -> bool:
+    """The GROUNDED felt-coherence predicate: is the pair's shared felt shape
+    RARE-by-chance enough to rescue a below-`min_score` structural candidate?
+
+    RESCUE iff the shared felt shape carries a RARE felt coord — any shared felt
+    axis OTHER than `dynamical:valence` (a shared sharpness pole, a shared
+    populated commitment/trait step, …) — OR `felt_shared >= 2` (two-or-more
+    shared felt axes). A LONE shared valence sign (by-chance 0.488, a coin flip)
+    NEVER rescues; nothing felt shared never rescues. Keys on the MEASURED
+    rarity (valence 0.488 vs sharpness-pole 0.012 vs felt>=2 0.009), not a tuned
+    threshold — see PREREG block 300000."""
+    felt_axes = _shared_felt_axes(transform_key)
+    if not felt_axes:
+        return False  # nothing felt shared — never rescue
+    rare_felt = {a for a in felt_axes if a != _VALENCE_DIM}
+    # a RARE felt coord (any non-valence shared felt axis), OR two-or-more shared
+    # felt axes. Equivalent: a lone shared valence is the ONLY felt shape rejected.
+    return bool(rare_felt) or len(felt_axes) >= 2
+
+
+# --------------------------------------------------------------------------- #
 # PERSONALITY-VECTOR CONSUMERS (layer 2) — abstraction -> analogy order floor,
 # skepticism -> analogy acceptance floor.
 #
@@ -1004,7 +1071,8 @@ def find_analogies(substrate, source_mt_name: str,
                    min_score: Optional[int] = None, edge_types=None,
                    *, overlay: bool = False,
                    felt_shortlist_k: Optional[int] = None,
-                   felt_bias: bool = False) -> list:
+                   felt_bias: bool = False,
+                   felt_rescue: bool = False) -> list:
     """The analogy search, now a thin wrapper over the graph loop.
 
     Seeds probes over `seeds/analogy_search.json`, ticks the fixpoint, and
@@ -1048,6 +1116,17 @@ def find_analogies(substrate, source_mt_name: str,
         phenomenal:) correspondence outranks a merely surface one among matches
         tied on the deeper tiers. False ⇒ `at.RANK_KEY` exactly ⇒ today. Does
         NOT change the min_score gate.
+      · `felt_rescue` (STRONG ARM, power; PREREG block 300000) — when True, a
+        candidate whose DISCRIMINATIVE structural count sits BELOW `eff_min_score`
+        is given a SECOND CHANCE: it is ADMITTED (tagged `felt_rescued=True`) IFF
+        its shared felt shape is RARE-by-chance per `_felt_rescue_ok` (a shared
+        non-valence felt coord — e.g. a `phenomenal:sharpness` pole — OR
+        `felt_shared >= 2`; a lone shared `dynamical:valence` sign never
+        rescues). This CHANGES THE ACCEPTED SET (recovers below-min_score
+        structural misses), unlike stages 1/2. `_discriminative_struct` (today's
+        gate) is UNCHANGED — the rescue is a second-chance branch. False
+        (default) ⇒ the branch is never taken ⇒ byte-identical `continue` ⇒
+        today. Non-rescued results carry `felt_rescued=False`.
     `analogy_search.last_firing_counts()` reads the per-call instrumentation
     (Σ|probe_scope| firings + # full signature builds).
 
@@ -1095,8 +1174,18 @@ def find_analogies(substrate, source_mt_name: str,
         # The floor is `eff_min_score` — skepticism raises it (a skeptical
         # temperament demands more shared structure).
         disc = _discriminative_struct(tkey)
+        felt_rescued = False
         if disc < eff_min_score:
-            continue
+            # STRONG ARM (felt_rescue): a below-`min_score` structural candidate
+            # gets a SECOND CHANCE — ADMITTED iff its shared felt shape is
+            # RARE-by-chance (a non-valence shared felt coord, e.g. a sharpness
+            # pole, OR felt_shared >= 2; a lone shared valence never rescues).
+            # This CHANGES THE ACCEPTED SET. Off (default) => plain `continue` =>
+            # byte-identical to today. `_discriminative_struct` is untouched.
+            if felt_rescue and _felt_rescue_ok(tkey):
+                felt_rescued = True
+            else:
+                continue
         # The ABSTRACTION ORDER FLOOR — a skeptic of the SURFACE. An abstract
         # temperament reaches for higher-order matches first by dropping the
         # pure-surface (order-2) ones; neutral/concrete keeps them (floor 2,
@@ -1144,6 +1233,11 @@ def find_analogies(substrate, source_mt_name: str,
             "felt_shared": sum(
                 1 for d in _dimensions_in_transform(tkey)
                 if d.startswith("dynamical:") or d.startswith("phenomenal:")),
+            # STRONG ARM: True iff this analogy was ADMITTED by felt_rescue —
+            # its structural count sat below min_score but its shared felt shape
+            # was rare-by-chance. False for every match that passed the ordinary
+            # min_score gate (so default-off => every result carries False).
+            "felt_rescued": felt_rescued,
             "source_node": src_node,
             "target_node": tgt_node,
             "rationale": (
