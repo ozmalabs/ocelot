@@ -48,7 +48,7 @@ from domains.trait_anxiety_world import (                       # noqa: E402
     skepticism_bias as oracle_bias, _DRIVE_OVER, _MS_OVER)
 
 OUTDIR = os.path.join(ROOT, "results", "trait_anxiety_interpretation")
-CANON_MD5 = "28dd61b94c54d67966e82b70aa5197be"   # canonical .so, native-only CAN cutover
+CANON_MD5 = "7efe75eba05b006cafd15dbb4b7da246"   # canonical .so, native-only CAN cutover
 BLOCK = 292000
 N = 60                # agents per cohort (mirrors marshmallow N)
 JITTER = 10           # exploration_urge jitter half-width for the CI cohort
