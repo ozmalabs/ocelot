@@ -613,14 +613,16 @@ INDEX_TMPL = """<!DOCTYPE html>
   .intro p.muted {{ color:var(--muted); font-size:15px; }}
   .intro strong {{ color:var(--text); }}
 
-  .starthere {{ margin:28px 0 8px; padding:22px 26px; border-radius:16px;
+  .starthere {{ margin:28px 0 8px; padding:24px 28px; border-radius:16px;
     background:rgba(74,224,164,0.05); border:1px solid var(--border); }}
   .starthere h2 {{ font-size:15px; font-weight:700; letter-spacing:0.01em; margin-bottom:12px; color:var(--text); }}
-  .starthere ol {{ margin:0 0 4px 20px; }}
-  .starthere li {{ color:var(--muted); font-size:14.5px; margin-bottom:6px; }}
-  .starthere li a {{ color:var(--emerald); text-decoration:none; font-weight:600; }}
-  .starthere li a:hover {{ text-decoration:underline; }}
-  .starthere .note {{ color:var(--muted); font-size:13.5px; margin-top:10px; opacity:0.85; }}
+  .starthere .lead {{ color:var(--text); font-size:15px; font-weight:600; margin-bottom:14px; }}
+  .starthere .path {{ color:var(--muted); font-size:14.5px; line-height:1.6; margin-bottom:14px; max-width:760px; }}
+  .starthere .path strong {{ color:var(--emerald); font-weight:700; }}
+  .starthere .path em {{ color:var(--text); font-style:italic; }}
+  .starthere a {{ color:var(--emerald); text-decoration:none; font-weight:600; }}
+  .starthere a:hover {{ text-decoration:underline; }}
+  .starthere .note {{ color:var(--muted); font-size:13.5px; margin-top:4px; opacity:0.85; }}
 
   .family {{ margin-top:44px; }}
   .family > .fam-head {{ border-bottom:1px solid var(--border); padding-bottom:10px; margin-bottom:18px; }}
@@ -688,12 +690,22 @@ INDEX_TMPL = """<!DOCTYPE html>
 
   <div class="starthere">
     <h2>Where to start</h2>
-    <ol>
-      <li><a href="00_is/00_is.html">Is</a> \u2014 the one claim, with no machinery: what it commits to and what it does not.</li>
-      <li><a href="01a_graphic_equalisation_physics_grounding/01a_graphic_equalisation_physics_grounding.html">Physics Grounding</a> \u2014 light speed, relativity, and the Born rule as results rather than postulates.</li>
-      <li><a href="01_law_of_graphic_equalisation_theory_referenced/01_law_of_graphic_equalisation_theory_referenced.html">The Law \u2014 Theory</a> \u2014 the monograph the groundings draw on. Read it fourth, not first.</li>
-    </ol>
-    <p class="note">Came for a specific result? Every paper states its own dependencies; go straight to it. The full set is below, grouped by thread.</p>
+    <p class="lead">There are two ways in, depending on what you want.</p>
+    <p class="path"><strong>For the narrative.</strong> The short papers build the momentum that
+    carries you into the main theory. <a href="00_is/00_is.html">Is</a> settles the one premise \u2014
+    that relation is the core \u2014 and the
+    <a href="01a_graphic_equalisation_physics_grounding/01a_graphic_equalisation_physics_grounding.html">Physics
+    Grounding</a> shows the premise doing real work: light speed, relativity, and the Born rule as
+    results rather than postulates. Read those and
+    <a href="01_law_of_graphic_equalisation_theory_referenced/01_law_of_graphic_equalisation_theory_referenced.html">The
+    Law \u2014 Theory</a> arrives as the thing they were drawing on.</p>
+    <p class="path"><strong>Straight to the argument.</strong> If you already grant that relation is
+    the core \u2014 the single claim <em>Is</em> makes \u2014 you do not need <em>Is</em> or the groundings
+    first. Go directly to
+    <a href="01_law_of_graphic_equalisation_theory_referenced/01_law_of_graphic_equalisation_theory_referenced.html">The
+    Law \u2014 Theory</a>; it states its own dependencies, and the groundings are there when you want
+    to see the claim tested against a specific field.</p>
+    <p class="note">Came for one specific result? Every paper states its own dependencies; go straight to it. The full set is below, grouped by thread.</p>
   </div>
 
 {families}
