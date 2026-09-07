@@ -228,7 +228,7 @@ PAPER_CSS = """
 :root {
   --paper: #faf9f7; --ink: #1c1b19; --ink-soft: #444038; --rule: #e2ddd3;
   --accent: #1f7a54; --accent-soft: #eaf5ef; --link: #1f7a54;
-  --measure: 42rem;
+  --measure: 52rem;
 }
 html { -webkit-text-size-adjust: 100%; }
 body {
@@ -262,7 +262,9 @@ body { padding-bottom: 80px; }
 .sheet-open { }
 
 /* Typography */
-p { margin: 0 0 1.1em; text-align: justify; hyphens: auto; }
+p, p.indent, p.noindent { margin: 0 0 1.1em; text-align: justify; text-justify: inter-word; hyphens: auto; }
+/* The abstract and bibliography read better ragged-right */
+.abstract p, .thebibliography p, .abstract p.indent, .abstract p.noindent { text-align: left; hyphens: manual; }
 .titleHead {
   font-size: 2em; line-height: 1.15; font-weight: 700; text-align: center;
   margin: 1.4em auto 0.2em; padding-top: 8px; letter-spacing: -0.01em;
