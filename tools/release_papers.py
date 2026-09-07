@@ -441,50 +441,174 @@ INDEX_TMPL = """<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Ozma Labs \u2014 Papers</title>
+<meta name="description" content="Formal preprints from Ozma Labs: one claim about relation, and the account that follows from it. Circulated for comment." />
+<link rel="icon" href="/logo-square.svg" type="image/svg+xml" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <style>
-  :root {{ --bg:#050505; --text:#f0fdf6; --muted:#8aaa97; --emerald:#4ae0a4;
-           --border:rgba(74,224,164,0.14); --surface:rgba(20,20,20,0.92); }}
+  :root {{ --bg:#050505; --surface:rgba(20,20,20,0.92); --surface-hover:rgba(26,26,26,0.95);
+           --text:#f0fdf6; --muted:#8aaa97; --emerald:#4ae0a4; --emerald-bright:#6ef5bc;
+           --border:rgba(74,224,164,0.12); --border-hover:rgba(74,224,164,0.30); }}
   * {{ box-sizing:border-box; margin:0; padding:0; }}
-  body {{ font-family:'Inter',system-ui,sans-serif; background:var(--bg);
-          color:var(--text); line-height:1.6; }}
-  .wrap {{ max-width:820px; margin:0 auto; padding:64px 24px 96px; }}
-  h1 {{ font-size:clamp(30px,5vw,46px); font-weight:800; letter-spacing:-0.03em;
-        margin-bottom:12px; }}
+  html {{ -webkit-font-smoothing:antialiased; }}
+  body {{ font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--bg);
+          color:var(--text); line-height:1.65; }}
+  body::before {{ content:""; position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:
+      radial-gradient(ellipse 70% 55% at 65% 0%, rgba(74,224,164,0.10), transparent),
+      radial-gradient(ellipse 45% 35% at 90% 70%, rgba(91,154,255,0.06), transparent); }}
+  .wrap {{ position:relative; z-index:1; max-width:820px; margin:0 auto; padding:0 24px; }}
+  nav {{ display:flex; align-items:center; justify-content:space-between; padding:24px 0; }}
+  nav .logo {{ font-size:20px; font-weight:800; letter-spacing:-0.03em; color:var(--text); text-decoration:none; }}
+  nav .logo span {{ color:var(--emerald); }}
+  nav .nav-links {{ display:flex; gap:20px; align-items:center; }}
+  nav a.nav-link {{ color:var(--muted); text-decoration:none; font-size:14px; font-weight:500; transition:color .2s; }}
+  nav a.nav-link:hover {{ color:var(--text); }}
+
+  header.page {{ padding:48px 0 8px; }}
+  .kicker {{ font-size:12px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+             color:var(--emerald); margin-bottom:12px; }}
+  h1 {{ font-size:clamp(32px,6vw,52px); font-weight:800; letter-spacing:-0.035em; line-height:1.05; margin-bottom:20px; }}
   h1 span {{ color:var(--emerald); }}
-  .lede {{ color:var(--muted); font-size:16px; max-width:620px; margin-bottom:14px; }}
-  .draft {{ color:var(--muted); font-size:13px; opacity:0.7; margin-bottom:40px; }}
-  .paper {{ background:var(--surface); border:1px solid var(--border);
-            border-radius:16px; padding:24px 26px; margin-bottom:14px;
-            transition:border-color .2s, transform .2s; }}
-  .paper:hover {{ border-color:var(--emerald); transform:translateY(-2px); }}
+  .intro p {{ color:#cfe6da; font-size:17px; max-width:660px; margin-bottom:16px; }}
+  .intro p.muted {{ color:var(--muted); font-size:15px; }}
+  .intro strong {{ color:var(--text); }}
+
+  .starthere {{ margin:28px 0 8px; padding:22px 26px; border-radius:16px;
+    background:rgba(74,224,164,0.05); border:1px solid var(--border); }}
+  .starthere h2 {{ font-size:15px; font-weight:700; letter-spacing:0.01em; margin-bottom:12px; color:var(--text); }}
+  .starthere ol {{ margin:0 0 4px 20px; }}
+  .starthere li {{ color:var(--muted); font-size:14.5px; margin-bottom:6px; }}
+  .starthere li a {{ color:var(--emerald); text-decoration:none; font-weight:600; }}
+  .starthere li a:hover {{ text-decoration:underline; }}
+  .starthere .note {{ color:var(--muted); font-size:13.5px; margin-top:10px; opacity:0.85; }}
+
+  .family {{ margin-top:44px; }}
+  .family > .fam-head {{ border-bottom:1px solid var(--border); padding-bottom:10px; margin-bottom:16px; }}
+  .family h2 {{ font-size:22px; font-weight:800; letter-spacing:-0.02em; }}
+  .family .fam-desc {{ color:var(--muted); font-size:14px; margin-top:4px; }}
+
+  .paper {{ background:var(--surface); border:1px solid var(--border); border-radius:14px;
+            padding:20px 22px; margin-bottom:12px; transition:border-color .2s, background .2s, transform .2s; }}
+  .paper:hover {{ border-color:var(--border-hover); background:var(--surface-hover); transform:translateY(-2px); }}
+  .paper.primary {{ border-color:rgba(74,224,164,0.22); }}
   .paper a.title {{ text-decoration:none; color:inherit; }}
-  .paper h2 {{ font-size:18px; font-weight:700; letter-spacing:-0.02em; margin-bottom:4px; }}
+  .paper h3 {{ font-size:17px; font-weight:700; letter-spacing:-0.01em; margin-bottom:3px; }}
   .paper .sub {{ color:var(--emerald); font-size:13px; font-weight:600; margin-bottom:10px; }}
   .paper .abs {{ color:var(--muted); font-size:14px; }}
-  .paper .meta {{ margin-top:12px; font-size:12px; color:var(--muted); opacity:0.7;
-                  display:flex; gap:14px; }}
-  .paper .meta a {{ color:var(--emerald); text-decoration:none; }}
-  footer {{ margin-top:48px; padding-top:24px; border-top:1px solid var(--border);
-            font-size:13px; color:var(--muted); opacity:0.6; }}
-</style></head><body><div class="wrap">
-<h1>ozma<span>labs</span> \u2014 papers</h1>
-<p class="lede">Preprints from the Ozma Labs research programme. Circulated for
-comment, not as finished results \u2014 cite the draft string when referring to one.</p>
-<p class="draft">Draft {draft}</p>
-{cards}
-<footer>&copy; 2026 Ozma Labs \u2014 papers released {draft}. Every document here is
-cleared for release; this list is exhaustive.</footer>
-</div></body></html>
+  .paper .meta {{ margin-top:12px; font-size:12.5px; color:var(--muted);
+                  display:flex; gap:16px; align-items:center; flex-wrap:wrap; }}
+  .paper .meta .tag {{ opacity:0.7; }}
+  .paper .meta a {{ color:var(--emerald); text-decoration:none; font-weight:600; }}
+  .paper .meta a:hover {{ text-decoration:underline; }}
+
+  footer {{ margin-top:56px; padding:28px 0 80px; border-top:1px solid var(--border);
+            font-size:13px; color:var(--muted); opacity:0.7; }}
+  footer a {{ color:var(--emerald); text-decoration:none; }}
+  @media (max-width:640px) {{ nav .nav-links {{ gap:14px; }} }}
+</style></head><body>
+<div class="wrap">
+  <nav>
+    <a href="/" class="logo">ozma<span>labs</span></a>
+    <div class="nav-links">
+      <a href="/papers/" class="nav-link">Papers</a>
+      <a href="/blog/" class="nav-link">Blog</a>
+      <a href="/product/" class="nav-link">Ozma</a>
+      <a href="https://github.com/ozmalabs" class="nav-link">GitHub</a>
+    </div>
+  </nav>
+
+  <header class="page">
+    <div class="kicker">Research \u00b7 formal papers</div>
+    <h1>One claim about relation, <span>and what follows from it.</span></h1>
+  </header>
+
+  <section class="intro">
+    <p>These papers start from a single claim \u2014 <strong>to be is to stand in relation and to
+    cohere in it</strong>, with no time, cause, rule, or observer added \u2014 and work out what
+    that forces. From it the set recovers the invariance of light speed, a reading of relativity,
+    the Born rule, and accounts of frames, minds, and reachable futures. The claim is the
+    arrangement, not the parts: the components are established science, cited as such.</p>
+    <p class="muted">They are drafts, circulated for comment rather than as finished results.
+    Each paper states what it claims, what earns it, and what would falsify it \u2014 the
+    falsifiability sections are the intended points of attack. Definitions and numbering may
+    change between drafts, so cite the draft string ({draft}) when referring to one.</p>
+  </section>
+
+  <div class="starthere">
+    <h2>Where to start</h2>
+    <ol>
+      <li><a href="00_is/00_is.html">Is</a> \u2014 the one claim, with no machinery: what it commits to and what it does not.</li>
+      <li><a href="01a_graphic_equalisation_physics_grounding/01a_graphic_equalisation_physics_grounding.html">Physics Grounding</a> \u2014 light speed, relativity, and the Born rule as results rather than postulates.</li>
+      <li><a href="01_law_of_graphic_equalisation_theory_referenced/01_law_of_graphic_equalisation_theory_referenced.html">The Law \u2014 Theory</a> \u2014 the monograph the groundings draw on. Read it fourth, not first.</li>
+    </ol>
+    <p class="note">Came for a specific result? Every paper states its own dependencies; go straight to it. The full set is below, grouped by thread.</p>
+  </div>
+
+{families}
+
+  <footer>
+    Released {draft}. Every document listed here is cleared for release; this list is exhaustive.
+    Source and build: <a href="https://github.com/ozmalabs">github.com/ozmalabs</a>.
+  </footer>
+</div>
+</body></html>
 """
 
-CARD_TMPL = """<div class="paper">
-  <a class="title" href="{slug}/{name}.html"><h2>{title}</h2></a>
-  {sub}
-  <p class="abs">{abstract}</p>
-  <div class="meta"><span>{pages}</span><span>{rev}</span>
-    <a href="{slug}/{name}.html">Read HTML</a>
-    <a href="{slug}/{pdf}">PDF</a></div>
-</div>"""
+CARD_TMPL = """    <div class="paper{primary}">
+      <a class="title" href="{slug}/{name}.html"><h3>{title}</h3></a>
+      {sub}
+      <p class="abs">{abstract}</p>
+      <div class="meta"><span class="tag">{pages}</span><span class="tag">{rev}</span>
+        <a href="{slug}/{name}.html">Read online</a>
+        <a href="{slug}/{pdf}">PDF</a></div>
+    </div>"""
+
+FAMILY_TMPL = """  <section class="family">
+    <div class="fam-head"><h2>{title}</h2><div class="fam-desc">{desc}</div></div>
+{cards}
+  </section>"""
+
+# The set groups into threads by the number before any letter suffix: the base
+# claim, the Law and its groundings, Seldon Manifolds, the two further laws, and
+# the companions. Descriptions are one line each, in the register of the writing
+# standard: what the thread does, not a pitch for it. Order here is the display
+# order; unlisted prefixes fall through to "Further work".
+PAPER_FAMILIES = [
+    ("00", "The claim",
+     "One sentence, argued with no machinery: what it commits to, and what it does not."),
+    ("01", "The Law of Graphic Equalisation",
+     "The recursive dynamics that follow from the claim, and their groundings in physics, "
+     "cosmology, mind, communication, and consciousness."),
+    ("02", "Seldon Manifolds",
+     "The geometry of reachable futures, with its psychological and social applications."),
+    ("03", "The Law of Narrative Momentum",
+     "History as first-class, and persistence conditioned on cost."),
+    ("04", "Narrativium",
+     "What carries a story forward, treated as a quantity."),
+    ("05", "Frames, Relation, and the Empty Limit",
+     "Two questions the Law raises and should not answer, deflated."),
+    ("06", "Assessing an Account of This Kind",
+     "What a universal framework can risk, what it earns instead, and what the record shows."),
+    ("07", "Causal Attitude Networks",
+     "An established attitude model rebuilt as native graph rules."),
+    ("08", "Certified Answers as an Audit",
+     "A system that answers only when it can certify the answer, and otherwise misses honestly."),
+    ("09", "Adaptability",
+     "What adaptation costs, and how it is implemented."),
+    ("10", "Applied Graphic Equalisation",
+     "The account applied to one frame: the geopolitical and civilisational."),
+]
+_FAMILY_ORDER = [p for p, _, _ in PAPER_FAMILIES]
+_FAMILY_META = {p: (t, d) for p, t, d in PAPER_FAMILIES}
+
+
+def family_of(name):
+    """The thread a paper belongs to: the leading digits of its stem, so 01,
+    01a..01f and 01s all share family '01'. Non-numeric stems (A1) get their own."""
+    m = re.match(r"(\d+)", name)
+    return m.group(1) if m else name.split("_")[0]
 
 
 def write_website(webdir, root, plan, drafts, dry_run):
@@ -502,7 +626,11 @@ def write_website(webdir, root, plan, drafts, dry_run):
         rendered = build_html([n for n, _, _ in plan], root, work)
 
         os.makedirs(webdir, exist_ok=True)
-        manifest, cards = [], []
+        manifest = []
+        cards_by_family = {}
+        # Papers that lead the "where to start" path get a highlighted card.
+        primary = {"00_is", "01a_graphic_equalisation_physics_grounding",
+                   "01_law_of_graphic_equalisation_theory_referenced"}
         for name, pdf_dest, rev in plan:
             slug = name
             pdir = os.path.join(webdir, slug)
@@ -516,24 +644,45 @@ def write_website(webdir, root, plan, drafts, dry_run):
             src = open(os.path.join(root, PAPERS, name + ".tex"), encoding="utf-8").read()
             title, subtitle, abstract = paper_meta(src)
             pages = pdf_pages(os.path.join(pdir, pdf_dest))
+            fam = family_of(name)
             manifest.append({
                 "name": name, "slug": slug, "title": title, "subtitle": subtitle,
-                "abstract": abstract, "draft": draft, "revision": rev,
+                "abstract": abstract, "draft": draft, "revision": rev, "family": fam,
                 "pages": pages, "html": name + ".html", "pdf": pdf_dest,
             })
-            cards.append(CARD_TMPL.format(
+            cards_by_family.setdefault(fam, []).append(CARD_TMPL.format(
                 slug=slug, name=name, pdf=pdf_dest,
+                primary=(" primary" if name in primary else ""),
                 title=html.escape(title),
                 sub=('<div class="sub">%s</div>' % html.escape(subtitle)) if subtitle else "",
                 abstract=html.escape(abstract),
                 pages=("%d pages" % pages) if pages else "",
                 rev=html.escape(rev)))
 
+        # Emit families in the declared order, then any unlisted ones (e.g. A1)
+        # under a catch-all so nothing is dropped.
+        seen = set()
+        family_blocks = []
+        for fam in _FAMILY_ORDER:
+            if fam in cards_by_family:
+                title, desc = _FAMILY_META[fam]
+                family_blocks.append(FAMILY_TMPL.format(
+                    title=html.escape(title), desc=html.escape(desc),
+                    cards="\n".join(cards_by_family[fam])))
+                seen.add(fam)
+        leftover = [f for f in cards_by_family if f not in seen]
+        if leftover:
+            cards = []
+            for fam in sorted(leftover):
+                cards.extend(cards_by_family[fam])
+            family_blocks.append(FAMILY_TMPL.format(
+                title="Further work", desc="", cards="\n".join(cards)))
+
         json.dump({"draft": draft, "papers": manifest},
                   io.open(os.path.join(webdir, "papers.json"), "w", encoding="utf-8"),
                   indent=2, ensure_ascii=False)
         io.open(os.path.join(webdir, "index.html"), "w", encoding="utf-8").write(
-            INDEX_TMPL.format(draft=html.escape(draft), cards="\n".join(cards)))
+            INDEX_TMPL.format(draft=html.escape(draft), families="\n".join(family_blocks)))
 
     print("\nwebsite rendered (%s) to %s:" % (draft, webdir))
     for name, _, _ in plan:
