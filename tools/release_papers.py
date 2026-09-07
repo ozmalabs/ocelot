@@ -328,9 +328,13 @@ img { max-width: 100%; }
 p img, td img, li img { vertical-align: middle; }
 
 /* Figures */
-.figure, figure { text-align: center; margin: 1.6em auto; }
-.figure img, figure img { max-width: 100%; height: auto; }
-.caption, figcaption { font-family: 'Inter', system-ui, sans-serif; font-size: 0.82em; color: var(--ink-soft); }
+/* Figures. tex4ht wraps the figure image in a <p class="noindent">, which the
+   body-paragraph rule would justify (left-aligning a lone image); force figure
+   content and its paragraphs back to centred, above that rule's specificity. */
+.figure, figure { text-align: center; margin-top: 1.6em; margin-bottom: 1.6em; }
+.figure p, figure p, .figure p.indent, .figure p.noindent { text-align: center; }
+.figure img, figure img { max-width: 100%; height: auto; display: inline-block; }
+.caption, figcaption, .figure .caption { font-family: 'Inter', system-ui, sans-serif; font-size: 0.82em; color: var(--ink-soft); text-align: center; }
 
 /* Lists */
 ul, ol { margin: 0 auto 1.1em; }
