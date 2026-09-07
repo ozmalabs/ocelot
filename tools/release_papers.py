@@ -237,10 +237,16 @@ body {
   font-size: 18px; line-height: 1.7;
   -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
 }
-/* Reading column */
-body > * { max-width: var(--measure); margin-left: auto; margin-right: auto; }
-.paper-topbar, .paper-topbar > * { max-width: none; }
-.paper-topbar {
+/* Reading column: centre every top-level block on one measure. tex4ht emits a
+   flat sequence of top-level blocks, so each is centred with an auto left/right
+   margin and shares the same padding, so nothing (paragraphs, the draft box,
+   headings) escapes or mis-aligns. */
+body > * {
+  max-width: var(--measure);
+  margin-left: auto; margin-right: auto;
+  padding-left: 24px; padding-right: 24px;
+}
+.paper-topbar { max-width: none; padding: 0;
   background: #fff; border-bottom: 1px solid var(--rule);
   font-family: 'Inter', system-ui, sans-serif;
 }
@@ -253,28 +259,22 @@ body > * { max-width: var(--measure); margin-left: auto; margin-right: auto; }
 .paper-topbar .brand { color: var(--ink); font-weight: 800; letter-spacing: -0.02em; }
 .paper-topbar .brand span { color: var(--accent); }
 
-/* The document sits on a white sheet */
-.maketitle, .titleHead, .abstract, p, .newtheorem, .thebibliography,
-h1, h2, h3, h4, .likesectionHead, .center, .fbox, .tabular, blockquote, ul, ol, .math-display {
-  padding-left: 32px; padding-right: 32px;
-}
 body { padding-bottom: 80px; }
-.sheet-open { }
 
-/* Typography. NB: set only vertical margins here -- the horizontal margin:auto
-   that centres each block in the reading column comes from `body > *`, and a
-   `margin` shorthand would wipe it out (that bug left body paragraphs hard
-   against the left edge instead of centred). */
+/* Typography. Horizontal centring/padding comes from `body > *`; paragraphs set
+   only vertical rhythm and alignment here (a `margin` shorthand would wipe out
+   the auto centring). */
 p, p.indent, p.noindent {
-  margin-top: 0; margin-bottom: 1.1em; margin-left: auto; margin-right: auto;
-  max-width: var(--measure);
+  margin: 0 0 1.1em;
   text-align: justify; text-justify: inter-word; hyphens: auto;
 }
 /* The abstract and bibliography read better ragged-right */
-.abstract p, .thebibliography p, .abstract p.indent, .abstract p.noindent { text-align: left; hyphens: manual; }
+.abstract p, .thebibliography p, .abstract p.indent, .abstract p.noindent {
+  text-align: left; hyphens: manual;
+}
 .titleHead {
   font-size: 2em; line-height: 1.15; font-weight: 700; text-align: center;
-  margin: 1.4em auto 0.2em; padding-top: 8px; letter-spacing: -0.01em;
+  margin: 0.6em 0 0.2em; padding-top: 8px; letter-spacing: -0.01em;
 }
 h2.titleHead br + * { font-size: 0.6em; }
 .author, .date { text-align: center; font-family: 'Inter', system-ui, sans-serif; }
@@ -283,36 +283,46 @@ h2.titleHead br + * { font-size: 0.6em; }
 
 .sectionHead, h3, .likesectionHead {
   font-family: 'Inter', system-ui, sans-serif; font-weight: 700;
-  font-size: 1.3em; line-height: 1.25; margin: 1.8em auto 0.6em;
+  font-size: 1.3em; line-height: 1.25; margin: 1.8em 0 0.6em;
   color: var(--ink); letter-spacing: -0.01em;
 }
+
+/* Abstract and DRAFT notice. Both are nested inside a tex4ht .center wrapper,
+   which `body > *` already centres on the measure, so they fill their container
+   (margin 0) rather than trying to re-centre on a narrower max-width -- that
+   mismatch is what left the draft box off-centre. */
 .abstracttitle { font-family: 'Inter', system-ui, sans-serif; font-weight: 700; text-align: center; }
 .abstract {
   font-size: 0.96em; color: var(--ink-soft); background: var(--accent-soft);
   border: 1px solid var(--rule); border-radius: 10px;
-  padding: 18px 28px; margin: 1.4em auto 2em; max-width: calc(var(--measure) - 1rem);
+  padding: 20px 28px; margin: 1.4em 0 2em; text-align: left;
 }
 .abstract p { text-align: left; }
-
-/* The DRAFT notice box */
-.fbox {
+.fbox, div.fbox {
+  display: block; width: auto;
   font-family: 'Inter', system-ui, sans-serif; font-size: 0.8em; line-height: 1.55;
   color: var(--ink-soft); background: #fdf6e3; border: 1px solid #e6dcc0;
-  border-radius: 10px; padding: 14px 20px; margin: 0 auto 1.8em;
-  max-width: calc(var(--measure) - 1rem);
+  border-radius: 10px; padding: 14px 20px; margin: 0 0 1.8em; text-align: left;
 }
+/* tex4ht wraps the notice/abstract in div.center (text-align:center,
+   margin:1em) and its own thin border/table display; neutralise those so our
+   card centres on the reading column and inter-word spaces are not eaten by the
+   table box (that was the "companionto" fusion). Match tex4ht's specificity. */
+div.center { text-align: left; margin-left: auto; margin-right: auto; }
+div.center div.fbox { text-align: left; border: 1px solid #e6dcc0; }
 
 /* Theorem-like environments */
 .newtheorem {
   background: #fff; border-left: 3px solid var(--accent);
-  padding: 2px 24px 2px 22px; margin: 1.2em auto;
+  padding: 2px 24px 2px 22px; margin: 1.2em 0;
 }
 
 /* Links */
 a { color: var(--link); text-decoration-thickness: 0.06em; text-underline-offset: 2px; }
+a.xref-ext { font-weight: 600; white-space: nowrap; }
 
 /* Math: display centred with horizontal scroll on overflow; inline baseline-aligned */
-.math-display { text-align: center; margin: 1.3em auto; overflow-x: auto; }
+.math-display { text-align: center; margin: 1.3em 0; overflow-x: auto; }
 .math-display img, .math-display svg { max-width: 100%; height: auto; }
 img { max-width: 100%; }
 p img, td img, li img { vertical-align: middle; }
@@ -336,13 +346,100 @@ li { margin-bottom: 0.3em; }
 
 @media (max-width: 640px) {
   body { font-size: 17px; }
-  .maketitle, .titleHead, .abstract, p, .newtheorem, .thebibliography,
-  h1, h2, h3, h4, .center, .fbox, blockquote, ul, ol, .math-display {
-    padding-left: 20px; padding-right: 20px;
-  }
-  .paper-topbar-inner { padding: 12px 20px; }
+  body > * { padding-left: 18px; padding-right: 18px; }
+  .paper-topbar { padding: 0; }
+  .paper-topbar-inner { padding: 12px 18px; }
 }
 """
+
+def _strip_tex_comments(s):
+    return "\n".join(re.sub(r"(?<!\\)%.*", "", line) for line in s.split("\n"))
+
+
+def build_label_map(root):
+    """{stem: {label: number}} from every paper's pdflatex .aux. These are the
+    authoritative resolved reference numbers -- the same ones the PDF prints."""
+    formal = os.path.join(root, PAPERS)
+    labels = {}
+    for f in os.listdir(formal):
+        if not f.endswith(".aux"):
+            continue
+        stem = f[:-4]
+        m = {}
+        aux = open(os.path.join(formal, f), encoding="utf-8", errors="replace").read()
+        for mo in re.finditer(r"\\newlabel\{([^}]*)\}\{\{([^}]*)\}", aux):
+            m[mo.group(1)] = mo.group(2)
+        labels[stem] = m
+    return labels
+
+
+def resolve_xrefs(htmltext, name, root, labels, slug_for):
+    """Replace tex4ht's unresolved `??` cross-references with the real numbers,
+    linked to the target paper.
+
+    tex4ht cannot resolve \\externaldocument (xr-hyper) references -- they render
+    as `??` -- and the xr-hyper/tex4ht combination crashes if fed the referenced
+    documents' .aux. But those references are exactly the ones the PDF resolves,
+    and the pdflatex .aux files hold the numbers. The `??` in the HTML occur in
+    the same order as the external \\ref commands in the source, and their counts
+    match, so we can substitute in order. Local refs tex4ht already resolved are
+    untouched (they are not `??`)."""
+    src = _strip_tex_comments(
+        open(os.path.join(root, PAPERS, name + ".tex"), encoding="utf-8").read())
+    prefix_to_stem = {mo.group(1): mo.group(2) for mo in
+                      re.finditer(r"\\externaldocument\[([^\]]*)\]\{([^}]*)\}", src)}
+    if not prefix_to_stem:
+        return htmltext
+
+    ordered = re.findall(r"\\(?:ref|autoref|cref|Cref|eqref|pageref)\{([^}]*)\}", src)
+    external = [r for r in ordered
+                if any(r.startswith(p) for p in prefix_to_stem)]
+
+    resolved = []
+    for r in external:
+        for pfx, stem in prefix_to_stem.items():
+            if r.startswith(pfx):
+                num = labels.get(stem, {}).get(r[len(pfx):])
+                resolved.append((num, stem))
+                break
+        else:
+            resolved.append((None, None))
+
+    qq = list(re.finditer(r"(<span\b[^>]*>)\s*\?\?\s*(</span>)", htmltext))
+    if len(qq) != len(resolved):
+        # Order/count no longer line up (source changed shape); leave the page
+        # rather than risk substituting the wrong numbers. Surfaces as remaining
+        # `??`, which is visible and honest, not a silent wrong reference.
+        return htmltext
+
+    out, last = [], 0
+    for m, (num, stem) in zip(qq, resolved):
+        out.append(htmltext[last:m.start()])
+        if num is None:
+            out.append(m.group(0))  # keep ?? if unresolved
+        else:
+            target = slug_for.get(stem)
+            body = html.escape(num)
+            if target:
+                out.append('%s<a class="xref-ext" href="../%s/%s.html">%s</a>%s'
+                            % (m.group(1), target, target, body, m.group(2)))
+            else:
+                out.append("%s%s%s" % (m.group(1), body, m.group(2)))
+        last = m.end()
+    out.append(htmltext[last:])
+    return "".join(out)
+
+
+def fix_span_spacing(htmltext):
+    """tex4ht sometimes emits `word</span><span ...>word` with only a newline
+    between the spans, and where the source had a line break inside a run the
+    two words render fused ("activerevision"). Insert a space when a span closes
+    on a word character and the next span opens on one, with only whitespace
+    between. Conservative: only touches the </span>\\s*<span ...> boundary."""
+    return re.sub(
+        r"(?<=[A-Za-z0-9,;:])(</span>)\s*\n\s*(<span\b)",
+        r"\1 \2", htmltext)
+
 
 PAPER_TOPBAR = (
     '<div class="paper-topbar"><div class="paper-topbar-inner">'
@@ -398,6 +495,10 @@ def build_html(names, root, workdir):
             shutil.copytree(figures_src, figures_dst)
 
     produced = {}
+    # Authoritative resolved reference numbers, and a stem->slug map (slug==name
+    # here) so cross-references can link to the target paper's page.
+    labels = build_label_map(root)
+    slug_for = {n: n for n in names}
     for name in names:
         subdir = os.path.join(workdir, name)
         os.makedirs(subdir, exist_ok=True)
@@ -427,7 +528,10 @@ def build_html(names, root, workdir):
         # tex4ht's own CSS only maps TeX font classes; it sets nothing for the
         # page itself, so the browser default (full-width, pure black on white)
         # is unreadable. Give every paper a readable reading column and a
-        # back-link to the index.
+        # back-link to the index. Also resolve the cross-paper `??` references
+        # from the pdflatex .aux, and repair fused words at span boundaries.
+        htmltext = resolve_xrefs(htmltext, name, root, labels, slug_for)
+        htmltext = fix_span_spacing(htmltext)
         htmltext = style_page(htmltext, name)
         open(page, "w", encoding="utf-8").write(htmltext)
 
