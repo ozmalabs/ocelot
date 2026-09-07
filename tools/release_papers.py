@@ -261,8 +261,15 @@ h1, h2, h3, h4, .likesectionHead, .center, .fbox, .tabular, blockquote, ul, ol, 
 body { padding-bottom: 80px; }
 .sheet-open { }
 
-/* Typography */
-p, p.indent, p.noindent { margin: 0 0 1.1em; text-align: justify; text-justify: inter-word; hyphens: auto; }
+/* Typography. NB: set only vertical margins here -- the horizontal margin:auto
+   that centres each block in the reading column comes from `body > *`, and a
+   `margin` shorthand would wipe it out (that bug left body paragraphs hard
+   against the left edge instead of centred). */
+p, p.indent, p.noindent {
+  margin-top: 0; margin-bottom: 1.1em; margin-left: auto; margin-right: auto;
+  max-width: var(--measure);
+  text-align: justify; text-justify: inter-word; hyphens: auto;
+}
 /* The abstract and bibliography read better ragged-right */
 .abstract p, .thebibliography p, .abstract p.indent, .abstract p.noindent { text-align: left; hyphens: manual; }
 .titleHead {
