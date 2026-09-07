@@ -265,7 +265,7 @@ body { padding-bottom: 80px; }
    only vertical rhythm and alignment here (a `margin` shorthand would wipe out
    the auto centring). */
 p, p.indent, p.noindent {
-  margin: 0 0 1.1em;
+  margin-top: 0; margin-bottom: 1.1em;
   text-align: justify; text-justify: inter-word; hyphens: auto;
 }
 /* The abstract and bibliography read better ragged-right */
@@ -274,7 +274,7 @@ p, p.indent, p.noindent {
 }
 .titleHead {
   font-size: 2em; line-height: 1.15; font-weight: 700; text-align: center;
-  margin: 0.6em 0 0.2em; padding-top: 8px; letter-spacing: -0.01em;
+  margin-top: 0.6em; margin-bottom: 0.2em; padding-top: 8px; letter-spacing: -0.01em;
 }
 h2.titleHead br + * { font-size: 0.6em; }
 .author, .date { text-align: center; font-family: 'Inter', system-ui, sans-serif; }
@@ -283,7 +283,7 @@ h2.titleHead br + * { font-size: 0.6em; }
 
 .sectionHead, h3, .likesectionHead {
   font-family: 'Inter', system-ui, sans-serif; font-weight: 700;
-  font-size: 1.3em; line-height: 1.25; margin: 1.8em 0 0.6em;
+  font-size: 1.3em; line-height: 1.25; margin-top: 1.8em; margin-bottom: 0.6em;
   color: var(--ink); letter-spacing: -0.01em;
 }
 
@@ -295,14 +295,14 @@ h2.titleHead br + * { font-size: 0.6em; }
 .abstract {
   font-size: 0.96em; color: var(--ink-soft); background: var(--accent-soft);
   border: 1px solid var(--rule); border-radius: 10px;
-  padding: 20px 28px; margin: 1.4em 0 2em; text-align: left;
+  padding: 20px 28px; margin-top: 1.4em; margin-bottom: 2em; text-align: left;
 }
 .abstract p { text-align: left; }
 .fbox, div.fbox {
   display: block; width: auto;
   font-family: 'Inter', system-ui, sans-serif; font-size: 0.8em; line-height: 1.55;
   color: var(--ink-soft); background: #fdf6e3; border: 1px solid #e6dcc0;
-  border-radius: 10px; padding: 14px 20px; margin: 0 0 1.8em; text-align: left;
+  border-radius: 10px; padding: 14px 20px; margin-top: 0; margin-bottom: 1.8em; text-align: left;
 }
 /* tex4ht wraps the notice/abstract in div.center (text-align:center,
    margin:1em) and its own thin border/table display; neutralise those so our
@@ -314,7 +314,7 @@ div.center div.fbox { text-align: left; border: 1px solid #e6dcc0; }
 /* Theorem-like environments */
 .newtheorem {
   background: #fff; border-left: 3px solid var(--accent);
-  padding: 2px 24px 2px 22px; margin: 1.2em 0;
+  padding: 2px 24px 2px 22px; margin-top: 1.2em; margin-bottom: 1.2em;
 }
 
 /* Links */
@@ -322,7 +322,7 @@ a { color: var(--link); text-decoration-thickness: 0.06em; text-underline-offset
 a.xref-ext { font-weight: 600; white-space: nowrap; }
 
 /* Math: display centred with horizontal scroll on overflow; inline baseline-aligned */
-.math-display { text-align: center; margin: 1.3em 0; overflow-x: auto; }
+.math-display { text-align: center; margin-top: 1.3em; margin-bottom: 1.3em; overflow-x: auto; }
 .math-display img, .math-display svg { max-width: 100%; height: auto; }
 img { max-width: 100%; }
 p img, td img, li img { vertical-align: middle; }
