@@ -729,7 +729,7 @@ INDEX_TMPL = """<!DOCTYPE html>
     <div class="nav-links">
       <a href="/papers/" class="nav-link">Papers</a>
       <a href="/blog/" class="nav-link">Blog</a>
-      <a href="/product/" class="nav-link">Ozma</a>
+      <a href="/software/" class="nav-link">Software</a>
       <a href="https://github.com/ozmalabs" class="nav-link">GitHub</a>
     </div>
   </nav>
