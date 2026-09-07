@@ -164,6 +164,9 @@ ABSTRACT_RE = re.compile(r"\\begin\{abstract\}(.*?)\\end\{abstract\}", re.S)
 # LaTeX escapes that survive into a title or abstract, smallest useful set.
 _TEX_SUBS = [
     (r"\\texorpdfstring\{(.*?)\}\{(.*?)\}", r"\2"),
+    # Inline math: keep the inner token(s), drop the $ delimiters. Titles here
+    # only carry trivial math like $c$; this is not a math renderer.
+    (r"\$([^$]*)\$", r"\1"),
     # Citations are noise in a plain-text abstract: drop the whole command,
     # including any optional [..] argument and multi-key {a,b} argument. Must
     # run before the generic \cmd{...} rule, which would otherwise keep the key.
@@ -207,6 +210,24 @@ def paper_meta(src):
     m = ABSTRACT_RE.search(src)
     abstract = detex(m.group(1)) if m else ""
     return title, subtitle, abstract
+
+
+def short_desc(abstract, limit=170):
+    """A compact card description from the abstract: the first sentence (or two,
+    if the first is very short), trimmed to ~limit chars on a word boundary.
+    The full abstract is 800-1800 chars and unusable as a card blurb."""
+    if not abstract:
+        return ""
+    # Take sentences until we have something substantial, then cap.
+    text = abstract.strip()
+    parts = re.split(r"(?<=[.!?])\s+", text)
+    out = parts[0] if parts else text
+    if len(out) < 60 and len(parts) > 1:
+        out = (out + " " + parts[1]).strip()
+    if len(out) <= limit:
+        return out
+    cut = out[:limit].rsplit(" ", 1)[0].rstrip(",;:—- ")
+    return cut + "\u2026"
 
 
 def pdf_pages(path):
@@ -575,7 +596,7 @@ INDEX_TMPL = """<!DOCTYPE html>
     background:
       radial-gradient(ellipse 70% 55% at 65% 0%, rgba(74,224,164,0.10), transparent),
       radial-gradient(ellipse 45% 35% at 90% 70%, rgba(91,154,255,0.06), transparent); }}
-  .wrap {{ position:relative; z-index:1; max-width:820px; margin:0 auto; padding:0 24px; }}
+  .wrap {{ position:relative; z-index:1; max-width:1080px; margin:0 auto; padding:0 32px; }}
   nav {{ display:flex; align-items:center; justify-content:space-between; padding:24px 0; }}
   nav .logo {{ font-size:20px; font-weight:800; letter-spacing:-0.03em; color:var(--text); text-decoration:none; }}
   nav .logo span {{ color:var(--emerald); }}
@@ -602,28 +623,40 @@ INDEX_TMPL = """<!DOCTYPE html>
   .starthere .note {{ color:var(--muted); font-size:13.5px; margin-top:10px; opacity:0.85; }}
 
   .family {{ margin-top:44px; }}
-  .family > .fam-head {{ border-bottom:1px solid var(--border); padding-bottom:10px; margin-bottom:16px; }}
+  .family > .fam-head {{ border-bottom:1px solid var(--border); padding-bottom:10px; margin-bottom:18px; }}
   .family h2 {{ font-size:22px; font-weight:800; letter-spacing:-0.02em; }}
-  .family .fam-desc {{ color:var(--muted); font-size:14px; margin-top:4px; }}
+  .family .fam-desc {{ color:var(--muted); font-size:14px; margin-top:4px; max-width:720px; }}
+  .cards {{ display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:14px; }}
 
-  .paper {{ background:var(--surface); border:1px solid var(--border); border-radius:14px;
-            padding:20px 22px; margin-bottom:12px; transition:border-color .2s, background .2s, transform .2s; }}
+  .paper {{ display:flex; flex-direction:column; background:var(--surface);
+            border:1px solid var(--border); border-radius:14px; padding:20px 22px;
+            transition:border-color .2s, background .2s, transform .2s; }}
   .paper:hover {{ border-color:var(--border-hover); background:var(--surface-hover); transform:translateY(-2px); }}
-  .paper.primary {{ border-color:rgba(74,224,164,0.22); }}
+  .paper.primary {{ border-color:rgba(74,224,164,0.28); background:rgba(74,224,164,0.04); }}
+  .paper .start-badge {{ display:inline-block; align-self:flex-start; font-size:10.5px; font-weight:700;
+            letter-spacing:0.06em; text-transform:uppercase; color:#050505; background:var(--emerald);
+            border-radius:999px; padding:3px 9px; margin-bottom:10px; }}
   .paper a.title {{ text-decoration:none; color:inherit; }}
-  .paper h3 {{ font-size:17px; font-weight:700; letter-spacing:-0.01em; margin-bottom:3px; }}
-  .paper .sub {{ color:var(--emerald); font-size:13px; font-weight:600; margin-bottom:10px; }}
-  .paper .abs {{ color:var(--muted); font-size:14px; }}
-  .paper .meta {{ margin-top:12px; font-size:12.5px; color:var(--muted);
-                  display:flex; gap:16px; align-items:center; flex-wrap:wrap; }}
+  .paper h3 {{ font-size:16.5px; font-weight:700; letter-spacing:-0.01em; line-height:1.3; margin-bottom:4px; }}
+  .paper a.title:hover h3 {{ color:var(--emerald-bright); }}
+  .paper .sub {{ color:var(--emerald); font-size:12.5px; font-weight:600; margin-bottom:10px; line-height:1.35; }}
+  .paper .abs {{ color:var(--muted); font-size:13.5px; line-height:1.55; margin-bottom:14px; flex:1; }}
+  .paper .meta {{ font-size:12px; color:var(--muted);
+                  display:flex; gap:14px; align-items:center; flex-wrap:wrap;
+                  padding-top:12px; border-top:1px solid var(--border); }}
   .paper .meta .tag {{ opacity:0.7; }}
+  .paper .meta .spacer {{ flex:1; }}
   .paper .meta a {{ color:var(--emerald); text-decoration:none; font-weight:600; }}
   .paper .meta a:hover {{ text-decoration:underline; }}
 
   footer {{ margin-top:56px; padding:28px 0 80px; border-top:1px solid var(--border);
             font-size:13px; color:var(--muted); opacity:0.7; }}
   footer a {{ color:var(--emerald); text-decoration:none; }}
-  @media (max-width:640px) {{ nav .nav-links {{ gap:14px; }} }}
+  @media (max-width:720px) {{
+    .wrap {{ padding:0 20px; }}
+    .cards {{ grid-template-columns:1fr; }}
+    nav .nav-links {{ gap:14px; }}
+  }}
 </style></head><body>
 <div class="wrap">
   <nav>
@@ -674,17 +707,20 @@ INDEX_TMPL = """<!DOCTYPE html>
 """
 
 CARD_TMPL = """    <div class="paper{primary}">
-      <a class="title" href="{slug}/{name}.html"><h3>{title}</h3></a>
+      {badge}<a class="title" href="{slug}/{name}.html"><h3>{title}</h3></a>
       {sub}
       <p class="abs">{abstract}</p>
       <div class="meta"><span class="tag">{pages}</span><span class="tag">{rev}</span>
-        <a href="{slug}/{name}.html">Read online</a>
+        <span class="spacer"></span>
+        <a href="{slug}/{name}.html">Read</a>
         <a href="{slug}/{pdf}">PDF</a></div>
     </div>"""
 
 FAMILY_TMPL = """  <section class="family">
     <div class="fam-head"><h2>{title}</h2><div class="fam-desc">{desc}</div></div>
+    <div class="cards">
 {cards}
+    </div>
   </section>"""
 
 # The set groups into threads by the number before any letter suffix: the base
@@ -770,9 +806,11 @@ def write_website(webdir, root, plan, drafts, dry_run):
             cards_by_family.setdefault(fam, []).append(CARD_TMPL.format(
                 slug=slug, name=name, pdf=pdf_dest,
                 primary=(" primary" if name in primary else ""),
+                badge=('<span class="start-badge">Start here</span>'
+                       if name in primary else ""),
                 title=html.escape(title),
                 sub=('<div class="sub">%s</div>' % html.escape(subtitle)) if subtitle else "",
-                abstract=html.escape(abstract),
+                abstract=html.escape(short_desc(abstract)),
                 pages=("%d pages" % pages) if pages else "",
                 rev=html.escape(rev)))
 
