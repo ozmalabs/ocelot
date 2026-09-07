@@ -217,6 +217,147 @@ def pdf_pages(path):
         return None
 
 
+# A readable "paper" theme layered on top of tex4ht's font-class CSS. tex4ht
+# styles glyphs but not the page, so this supplies the reading column, measure,
+# typography, and the styling for the structural classes tex4ht emits
+# (.maketitle, .titleHead, .sectionHead, .newtheorem, .abstract, .fbox for the
+# DRAFT notice, .thebibliography, math images). Light on purpose: the math is
+# rendered as black vector SVG, which reads correctly on a paper-white ground
+# and would need inverting on a dark one (breaking coloured figures).
+PAPER_CSS = """
+:root {
+  --paper: #faf9f7; --ink: #1c1b19; --ink-soft: #444038; --rule: #e2ddd3;
+  --accent: #1f7a54; --accent-soft: #eaf5ef; --link: #1f7a54;
+  --measure: 42rem;
+}
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: #efece6; color: var(--ink);
+  font-family: Georgia, 'Iowan Old Style', 'Palatino Linotype', 'Times New Roman', serif;
+  font-size: 18px; line-height: 1.7;
+  -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+}
+/* Reading column */
+body > * { max-width: var(--measure); margin-left: auto; margin-right: auto; }
+.paper-topbar, .paper-topbar > * { max-width: none; }
+.paper-topbar {
+  background: #fff; border-bottom: 1px solid var(--rule);
+  font-family: 'Inter', system-ui, sans-serif;
+}
+.paper-topbar-inner {
+  max-width: var(--measure); margin: 0 auto; padding: 14px 32px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+.paper-topbar a { color: var(--accent); text-decoration: none; font-size: 14px; font-weight: 600; }
+.paper-topbar a:hover { text-decoration: underline; }
+.paper-topbar .brand { color: var(--ink); font-weight: 800; letter-spacing: -0.02em; }
+.paper-topbar .brand span { color: var(--accent); }
+
+/* The document sits on a white sheet */
+.maketitle, .titleHead, .abstract, p, .newtheorem, .thebibliography,
+h1, h2, h3, h4, .likesectionHead, .center, .fbox, .tabular, blockquote, ul, ol, .math-display {
+  padding-left: 32px; padding-right: 32px;
+}
+body { padding-bottom: 80px; }
+.sheet-open { }
+
+/* Typography */
+p { margin: 0 0 1.1em; text-align: justify; hyphens: auto; }
+.titleHead {
+  font-size: 2em; line-height: 1.15; font-weight: 700; text-align: center;
+  margin: 1.4em auto 0.2em; padding-top: 8px; letter-spacing: -0.01em;
+}
+h2.titleHead br + * { font-size: 0.6em; }
+.author, .date { text-align: center; font-family: 'Inter', system-ui, sans-serif; }
+.author { font-size: 0.9em; color: var(--ink-soft); margin-top: 0.6em; }
+.date { font-size: 0.8em; color: var(--ink-soft); margin-top: 0.4em; }
+
+.sectionHead, h3, .likesectionHead {
+  font-family: 'Inter', system-ui, sans-serif; font-weight: 700;
+  font-size: 1.3em; line-height: 1.25; margin: 1.8em auto 0.6em;
+  color: var(--ink); letter-spacing: -0.01em;
+}
+.abstracttitle { font-family: 'Inter', system-ui, sans-serif; font-weight: 700; text-align: center; }
+.abstract {
+  font-size: 0.96em; color: var(--ink-soft); background: var(--accent-soft);
+  border: 1px solid var(--rule); border-radius: 10px;
+  padding: 18px 28px; margin: 1.4em auto 2em; max-width: calc(var(--measure) - 1rem);
+}
+.abstract p { text-align: left; }
+
+/* The DRAFT notice box */
+.fbox {
+  font-family: 'Inter', system-ui, sans-serif; font-size: 0.8em; line-height: 1.55;
+  color: var(--ink-soft); background: #fdf6e3; border: 1px solid #e6dcc0;
+  border-radius: 10px; padding: 14px 20px; margin: 0 auto 1.8em;
+  max-width: calc(var(--measure) - 1rem);
+}
+
+/* Theorem-like environments */
+.newtheorem {
+  background: #fff; border-left: 3px solid var(--accent);
+  padding: 2px 24px 2px 22px; margin: 1.2em auto;
+}
+
+/* Links */
+a { color: var(--link); text-decoration-thickness: 0.06em; text-underline-offset: 2px; }
+
+/* Math: display centred with horizontal scroll on overflow; inline baseline-aligned */
+.math-display { text-align: center; margin: 1.3em auto; overflow-x: auto; }
+.math-display img, .math-display svg { max-width: 100%; height: auto; }
+img { max-width: 100%; }
+p img, td img, li img { vertical-align: middle; }
+
+/* Figures */
+.figure, figure { text-align: center; margin: 1.6em auto; }
+.figure img, figure img { max-width: 100%; height: auto; }
+.caption, figcaption { font-family: 'Inter', system-ui, sans-serif; font-size: 0.82em; color: var(--ink-soft); }
+
+/* Lists */
+ul, ol { margin: 0 auto 1.1em; }
+li { margin-bottom: 0.3em; }
+
+/* Bibliography */
+.thebibliography { font-size: 0.86em; color: var(--ink-soft); margin-top: 2.4em; border-top: 1px solid var(--rule); padding-top: 1.4em; }
+.thebibliography p { text-align: left; }
+
+/* Tables */
+.tabular, table { border-collapse: collapse; margin: 1.4em auto; font-size: 0.9em; max-width: 100%; }
+.tabular td, .tabular th, table td, table th { border: 1px solid var(--rule); padding: 6px 12px; }
+
+@media (max-width: 640px) {
+  body { font-size: 17px; }
+  .maketitle, .titleHead, .abstract, p, .newtheorem, .thebibliography,
+  h1, h2, h3, h4, .center, .fbox, blockquote, ul, ol, .math-display {
+    padding-left: 20px; padding-right: 20px;
+  }
+  .paper-topbar-inner { padding: 12px 20px; }
+}
+"""
+
+PAPER_TOPBAR = (
+    '<div class="paper-topbar"><div class="paper-topbar-inner">'
+    '<a class="brand" href="/">ozma<span>labs</span></a>'
+    '<a href="/papers/">\u2190 All papers</a>'
+    '</div></div>\n'
+)
+
+
+def style_page(htmltext, name):
+    """Layer the readable paper theme onto a tex4ht page: link paper.css after
+    the paper's own generated CSS (so it overrides), and drop a back-link topbar
+    in at the top of the body."""
+    link = '<link rel="stylesheet" type="text/css" href="paper.css" />'
+    # Place ours AFTER the tex4ht stylesheet link so cascade order favours it.
+    if re.search(r'<link[^>]+\.css"[^>]*/?>', htmltext):
+        htmltext = re.sub(r'(<link[^>]+\.css"[^>]*/?>)', r'\1\n' + link, htmltext, count=1)
+    else:
+        htmltext = htmltext.replace("</head>", link + "\n</head>", 1)
+    # Topbar immediately after <body ...>
+    htmltext = re.sub(r'(<body\b[^>]*>)', r'\1\n' + PAPER_TOPBAR, htmltext, count=1)
+    return htmltext
+
+
 def build_html(names, root, workdir):
     """Render each cleared paper to HTML with htlatex, each in its OWN isolated
     subdirectory of workdir. Every cleared source is copied into each subdir so
@@ -255,18 +396,40 @@ def build_html(names, root, workdir):
             shutil.copy2(os.path.join(src_formal, f), os.path.join(subdir, f))
 
         r = subprocess.run(
-            ["htlatex", name + ".tex", "xhtml,charset=utf-8", " -cunihtf -utf8"],
+            ["htlatex", name + ".tex", "xhtml,svg,charset=utf-8", " -cunihtf -utf8"],
             cwd=subdir, capture_output=True, text=True)
         page = os.path.join(subdir, name + ".html")
         if not os.path.exists(page):
             tail = "\n".join(r.stdout.splitlines()[-12:])
             fail("htlatex produced no HTML for %s. tail:\n%s" % (name, tail))
-        assets = [name + ".html"]
+
+        # tex4ht's default config renders display math as PNG via dvipng, which
+        # is not installed here -- so the math images silently never appear. The
+        # `svg` option above renders math (and figures) as SVG via dvisvgm, which
+        # is present, and gives crisp vector math besides. Guard against a
+        # regression: if the page references an image that was not produced, the
+        # math renderer failed and the page would ship broken.
+        htmltext = open(page, encoding="utf-8", errors="replace").read()
+        for ref in set(re.findall(r'src="([^"]+\.(?:svg|png))"', htmltext)):
+            if not os.path.exists(os.path.join(subdir, ref)):
+                fail("%s references %s which was not generated (math renderer "
+                     "failed -- is dvisvgm installed?)" % (name, ref))
+
+        # tex4ht's own CSS only maps TeX font classes; it sets nothing for the
+        # page itself, so the browser default (full-width, pure black on white)
+        # is unreadable. Give every paper a readable reading column and a
+        # back-link to the index.
+        htmltext = style_page(htmltext, name)
+        open(page, "w", encoding="utf-8").write(htmltext)
+
+        # Write the shared readable theme next to the page and ship it.
+        open(os.path.join(subdir, "paper.css"), "w", encoding="utf-8").write(PAPER_CSS)
+
+        assets = [name + ".html", "paper.css"]
         if os.path.exists(os.path.join(subdir, name + ".css")):
             assets.append(name + ".css")
-        # Figures: tex4ht names them <stem><n>x.svg / .png and references them
-        # from the html. Ship whatever the page actually points at.
-        htmltext = open(page, encoding="utf-8", errors="replace").read()
+        # Figures/math: tex4ht names them <stem><n>x.svg and references them from
+        # the html. Ship whatever the page actually points at.
         for ref in set(re.findall(r'src="([^"]+\.(?:svg|png))"', htmltext)):
             if os.path.exists(os.path.join(subdir, ref)) and ref not in assets:
                 assets.append(ref)
