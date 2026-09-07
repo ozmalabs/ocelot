@@ -22,28 +22,45 @@ So this is a gate rather than a copy script, and it fails closed:
      exists is intended; setting out what is in it is not.
   5. The output directory must be outside the repository.
 
+Website output (--website DIR) is the same gate with a second product. It
+carries the identical text the PDF does -- it is generated from the same .tex --
+so every clearance above applies to it unchanged and runs BEFORE a single HTML
+file is written. On top of the versioned PDF it emits, per cleared paper, a
+rendered HTML page (via htlatex, with all cleared sources present so the
+cross-document references resolve), a papers.json manifest, and an index.html.
+The website directory obeys the same outside-the-repository rule as --out.
+
 Usage:
-    python3 tools/release_papers.py [--out DIR] [--dry-run]
+    python3 tools/release_papers.py [--out DIR] [--website DIR] [--dry-run]
 """
-import argparse, io, os, re, shutil, subprocess, sys
+import argparse, html, io, json, os, re, shutil, subprocess, sys, tempfile
+
+from build_paper_metadata import INCLUDE, load_manifest, render, revision_for
 
 CLEARED = ["00_is",
            "01_law_of_graphic_equalisation_theory_referenced",
            "01a_graphic_equalisation_physics_grounding",
            "01b_graphic_equalisation_mind_and_self_grounding",
            "01c_graphic_equalisation_cosmology_grounding",
+           "01d_graphic_equalisation_born_recovery",
+           "01e_graphic_equalisation_communication_grounding",
+           "01f_graphic_equalisation_qualia_and_consciousness_grounding",
            "01s_graphic_equalisation_statement",
            "02_seldon_manifolds_theory_referenced",
            "02a_seldon_manifolds_psychological_grounding",
+           "02b_seldon_manifolds_social_and_psychological_application",
            "03_law_of_narrative_momentum_theory_referenced",
            "04_narrativium_theory_referenced",
            "05_frames_relation_and_the_empty_limit",
-           "06_assessing_an_account_of_this_kind"]
-# This is the whole series and A1 is the only exclusion, which makes an inverted
-# rule tempting: release everything except A1. It stays an ALLOWLIST because the
-# two fail in opposite directions. A document added to this repository tomorrow
-# is, under an allowlist, not released until somebody clears it; under a
-# denylist it is released until somebody remembers to stop it.
+           "06_assessing_an_account_of_this_kind",
+           "07_causal_attitude_networks_on_the_substrate",
+           "08_certified_answers_as_an_audit",
+           "10_applied_graphic_equalisation"]
+# This is a deliberately fail-closed allowlist. The excluded adaptation theory
+# and implementation papers (09 and 09a), together with the constructive
+# realisation (A1), relate to autonomous-control capability or executable
+# realisation and are not released. Any future document remains unreleased until
+# explicitly added here; a denylist would fail in the opposite direction.
 
 # Phrases that set out the excluded document's contents rather than naming it.
 FORBIDDEN = ["proposal closure", "execution semantics", "reference execution"]
@@ -136,9 +153,237 @@ def pdftext(path):
                           text=True, check=True).stdout
 
 
+# ── Website output ──────────────────────────────────────────────────────────
+# A second product, gated identically to the PDF release: it is generated from
+# the same .tex the clearance checks read, so it carries the same text and the
+# same gate covers it. Nothing here runs until every check in main() has passed.
+
+TITLE_RE = re.compile(r"\\title\{(.*?)\}\s*(?:\n|%|\\author)", re.S)
+ABSTRACT_RE = re.compile(r"\\begin\{abstract\}(.*?)\\end\{abstract\}", re.S)
+
+# LaTeX escapes that survive into a title or abstract, smallest useful set.
+_TEX_SUBS = [
+    (r"\\texorpdfstring\{(.*?)\}\{(.*?)\}", r"\2"),
+    # Citations are noise in a plain-text abstract: drop the whole command,
+    # including any optional [..] argument and multi-key {a,b} argument. Must
+    # run before the generic \cmd{...} rule, which would otherwise keep the key.
+    (r"\\(?:citep|citet|citeauthor|citeyear|cite|autocite|parencite)\s*(?:\[[^\]]*\])*\s*\{[^}]*\}", ""),
+    (r"\\emph\{(.*?)\}", r"\1"),
+    (r"\\textbf\{(.*?)\}", r"\1"),
+    (r"\\textit\{(.*?)\}", r"\1"),
+    (r"\\text\{(.*?)\}", r"\1"),
+    (r"\\[a-zA-Z]+\{(.*?)\}", r"\1"),
+    (r"---", "\u2014"), (r"--", "\u2013"),
+    (r"``", "\u201c"), (r"''", "\u201d"), (r"~", " "),
+    (r"\\textemdash", "\u2014"), (r"\\textbullet", "\u2022"),
+    (r"\\,", " "), (r"\\ ", " "), (r"\\[a-zA-Z]+", ""),
+    (r"\{", ""), (r"\}", ""), (r"\\%", "%"),
+]
+
+
+def detex(s):
+    """Reduce a title/abstract fragment to plain text. Not a LaTeX parser --
+    just the escapes that actually occur in these documents' front matter."""
+    s = s.strip()
+    for pat, rep in _TEX_SUBS:
+        s = re.sub(pat, rep, s)
+    s = re.sub(r"\s+", " ", s)
+    # Stripping an inline citation can leave a space before punctuation
+    # ("helplessness , with") or a doubled space; tidy both.
+    s = re.sub(r"\s+([.,;:!?])", r"\1", s)
+    return s.strip()
+
+
+def paper_meta(src):
+    """(title, subtitle, abstract) from a paper's LaTeX source. Titles here are
+    `Main\\\\large Subtitle`; the split is on that boundary."""
+    m = TITLE_RE.search(src)
+    title, subtitle = "", ""
+    if m:
+        raw = m.group(1)
+        parts = re.split(r"\\\\\s*\\large\s*", raw, maxsplit=1)
+        title = detex(parts[0])
+        subtitle = detex(parts[1]) if len(parts) > 1 else ""
+    m = ABSTRACT_RE.search(src)
+    abstract = detex(m.group(1)) if m else ""
+    return title, subtitle, abstract
+
+
+def pdf_pages(path):
+    try:
+        info = subprocess.run(["pdfinfo", path], capture_output=True, text=True).stdout
+        return int(re.search(r"Pages:\s+(\d+)", info).group(1))
+    except Exception:
+        return None
+
+
+def build_html(names, root, workdir):
+    """Render each cleared paper to HTML with htlatex, each in its OWN isolated
+    subdirectory of workdir. Every cleared source is copied into each subdir so
+    the \\externaldocument cross-references resolve.
+
+    Isolation per paper is not optional. htlatex rewrites the .aux files it
+    touches into a tex4ht-specific form; a later paper that \\externaldocument's
+    an earlier one then reads that rewritten .aux with pdflatex's xr-hyper and
+    dies at \\begin{document} (\\sys:sp ... Emergency stop). Sharing one working
+    directory makes the build order-dependent and it fails for exactly the
+    papers that cite others. A fresh directory per paper gives each run clean
+    pdflatex-style .aux files to resolve against.
+
+    Returns {name: (subdir, [asset files])} -- the files that make up each page
+    (html, css, and any figure svg/png). Raises on any paper that fails to
+    produce HTML: a partial website is a stale-build failure of exactly the kind
+    this gate refuses for PDFs."""
+    src_formal = os.path.join(root, PAPERS)
+    sources = [f for f in os.listdir(src_formal)
+               if f.endswith((".tex", ".spec", ".bib", ".sty"))]
+
+    # Some papers \input figures by the relative path ../figures/<fig>-body. The
+    # per-paper subdir is workdir/<name>/, so that resolves to workdir/figures/.
+    # Mirror the figures tree there once for every paper to find.
+    figures_src = os.path.join(root, "papers", "figures")
+    if os.path.isdir(figures_src):
+        figures_dst = os.path.join(workdir, "figures")
+        if not os.path.isdir(figures_dst):
+            shutil.copytree(figures_src, figures_dst)
+
+    produced = {}
+    for name in names:
+        subdir = os.path.join(workdir, name)
+        os.makedirs(subdir, exist_ok=True)
+        for f in sources:
+            shutil.copy2(os.path.join(src_formal, f), os.path.join(subdir, f))
+
+        r = subprocess.run(
+            ["htlatex", name + ".tex", "xhtml,charset=utf-8", " -cunihtf -utf8"],
+            cwd=subdir, capture_output=True, text=True)
+        page = os.path.join(subdir, name + ".html")
+        if not os.path.exists(page):
+            tail = "\n".join(r.stdout.splitlines()[-12:])
+            fail("htlatex produced no HTML for %s. tail:\n%s" % (name, tail))
+        assets = [name + ".html"]
+        if os.path.exists(os.path.join(subdir, name + ".css")):
+            assets.append(name + ".css")
+        # Figures: tex4ht names them <stem><n>x.svg / .png and references them
+        # from the html. Ship whatever the page actually points at.
+        htmltext = open(page, encoding="utf-8", errors="replace").read()
+        for ref in set(re.findall(r'src="([^"]+\.(?:svg|png))"', htmltext)):
+            if os.path.exists(os.path.join(subdir, ref)) and ref not in assets:
+                assets.append(ref)
+        produced[name] = (subdir, assets)
+    return produced
+
+
+INDEX_TMPL = """<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ozma Labs \u2014 Papers</title>
+<style>
+  :root {{ --bg:#050505; --text:#f0fdf6; --muted:#8aaa97; --emerald:#4ae0a4;
+           --border:rgba(74,224,164,0.14); --surface:rgba(20,20,20,0.92); }}
+  * {{ box-sizing:border-box; margin:0; padding:0; }}
+  body {{ font-family:'Inter',system-ui,sans-serif; background:var(--bg);
+          color:var(--text); line-height:1.6; }}
+  .wrap {{ max-width:820px; margin:0 auto; padding:64px 24px 96px; }}
+  h1 {{ font-size:clamp(30px,5vw,46px); font-weight:800; letter-spacing:-0.03em;
+        margin-bottom:12px; }}
+  h1 span {{ color:var(--emerald); }}
+  .lede {{ color:var(--muted); font-size:16px; max-width:620px; margin-bottom:14px; }}
+  .draft {{ color:var(--muted); font-size:13px; opacity:0.7; margin-bottom:40px; }}
+  .paper {{ background:var(--surface); border:1px solid var(--border);
+            border-radius:16px; padding:24px 26px; margin-bottom:14px;
+            transition:border-color .2s, transform .2s; }}
+  .paper:hover {{ border-color:var(--emerald); transform:translateY(-2px); }}
+  .paper a.title {{ text-decoration:none; color:inherit; }}
+  .paper h2 {{ font-size:18px; font-weight:700; letter-spacing:-0.02em; margin-bottom:4px; }}
+  .paper .sub {{ color:var(--emerald); font-size:13px; font-weight:600; margin-bottom:10px; }}
+  .paper .abs {{ color:var(--muted); font-size:14px; }}
+  .paper .meta {{ margin-top:12px; font-size:12px; color:var(--muted); opacity:0.7;
+                  display:flex; gap:14px; }}
+  .paper .meta a {{ color:var(--emerald); text-decoration:none; }}
+  footer {{ margin-top:48px; padding-top:24px; border-top:1px solid var(--border);
+            font-size:13px; color:var(--muted); opacity:0.6; }}
+</style></head><body><div class="wrap">
+<h1>ozma<span>labs</span> \u2014 papers</h1>
+<p class="lede">Preprints from the Ozma Labs research programme. Circulated for
+comment, not as finished results \u2014 cite the draft string when referring to one.</p>
+<p class="draft">Draft {draft}</p>
+{cards}
+<footer>&copy; 2026 Ozma Labs \u2014 papers released {draft}. Every document here is
+cleared for release; this list is exhaustive.</footer>
+</div></body></html>
+"""
+
+CARD_TMPL = """<div class="paper">
+  <a class="title" href="{slug}/{name}.html"><h2>{title}</h2></a>
+  {sub}
+  <p class="abs">{abstract}</p>
+  <div class="meta"><span>{pages}</span><span>{rev}</span>
+    <a href="{slug}/{name}.html">Read HTML</a>
+    <a href="{slug}/{pdf}">PDF</a></div>
+</div>"""
+
+
+def write_website(webdir, root, plan, drafts, dry_run):
+    """Emit the website bundle: per-paper folder (html + assets + versioned pdf),
+    a papers.json manifest, and an index.html. Called only after every gate in
+    main() has passed."""
+    draft = list(drafts.values())[0]
+    if dry_run:
+        print("dry run -- would render %d papers to website %s" % (len(plan), webdir))
+        for name, _, _ in plan:
+            print("  " + name)
+        return
+
+    with tempfile.TemporaryDirectory(prefix="ocelot-web-") as work:
+        rendered = build_html([n for n, _, _ in plan], root, work)
+
+        os.makedirs(webdir, exist_ok=True)
+        manifest, cards = [], []
+        for name, pdf_dest, rev in plan:
+            slug = name
+            pdir = os.path.join(webdir, slug)
+            os.makedirs(pdir, exist_ok=True)
+            subdir, assets = rendered[name]
+            for asset in assets:
+                shutil.copy2(os.path.join(subdir, asset), os.path.join(pdir, asset))
+            shutil.copy2(os.path.join(root, PAPERS, name + ".pdf"),
+                         os.path.join(pdir, pdf_dest))
+
+            src = open(os.path.join(root, PAPERS, name + ".tex"), encoding="utf-8").read()
+            title, subtitle, abstract = paper_meta(src)
+            pages = pdf_pages(os.path.join(pdir, pdf_dest))
+            manifest.append({
+                "name": name, "slug": slug, "title": title, "subtitle": subtitle,
+                "abstract": abstract, "draft": draft, "revision": rev,
+                "pages": pages, "html": name + ".html", "pdf": pdf_dest,
+            })
+            cards.append(CARD_TMPL.format(
+                slug=slug, name=name, pdf=pdf_dest,
+                title=html.escape(title),
+                sub=('<div class="sub">%s</div>' % html.escape(subtitle)) if subtitle else "",
+                abstract=html.escape(abstract),
+                pages=("%d pages" % pages) if pages else "",
+                rev=html.escape(rev)))
+
+        json.dump({"draft": draft, "papers": manifest},
+                  io.open(os.path.join(webdir, "papers.json"), "w", encoding="utf-8"),
+                  indent=2, ensure_ascii=False)
+        io.open(os.path.join(webdir, "index.html"), "w", encoding="utf-8").write(
+            INDEX_TMPL.format(draft=html.escape(draft), cards="\n".join(cards)))
+
+    print("\nwebsite rendered (%s) to %s:" % (draft, webdir))
+    for name, _, _ in plan:
+        print("  %s/  (html + pdf)" % name)
+    print("  papers.json, index.html")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default=os.path.expanduser("~/ocelot-release"))
+    ap.add_argument("--website", default=None,
+                    help="also render the cleared papers as a website (html + "
+                         "pdf + manifest) into this directory, outside the repo")
     ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args()
 
@@ -146,8 +391,23 @@ def main():
     out = os.path.abspath(a.out)
     if out == root or out.startswith(root + os.sep):
         fail("output directory %s is inside the repository" % out)
+    webdir = None
+    if a.website:
+        webdir = os.path.abspath(a.website)
+        if webdir == root or webdir.startswith(root + os.sep):
+            fail("website directory %s is inside the repository" % webdir)
+
+    try:
+        metadata = load_manifest()
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        fail("paper metadata is invalid: %s" % exc)
+    if not INCLUDE.exists() or INCLUDE.read_text(encoding="utf-8") != render(metadata):
+        fail("paper_metadata.tex is missing or stale; regenerate before releasing")
+    if not set(CLEARED) <= set(metadata["papers"]):
+        fail("CLEARED contains paper(s) missing from paper_metadata.json")
 
     drafts, plan = {}, []
+    draft = metadata["draft"]
     for name in CLEARED:
         tex = os.path.join(root, PAPERS, name + ".tex")
         pdf = os.path.join(root, PAPERS, name + ".pdf")
@@ -156,43 +416,29 @@ def main():
                 fail("%s is missing" % os.path.relpath(p, root))
 
         src = open(tex, encoding="utf-8").read()
-        m_d = DRAFT_RE.search(src)
-        if not m_d:
-            fail("%s carries no draft string" % name)
-        draft = m_d.group(0)
+        if r"\input{paper_metadata.tex}" not in src:
+            fail("%s does not use generated paper metadata" % name)
+        if DRAFT_RE.search(src) or REV_TEX_RE.search(src):
+            fail("%s retains handwritten release metadata" % name)
         drafts[name] = draft
         text = pdftext(pdf)
+        entry = metadata["papers"][name]
 
-        if name in GENERATED_FROM:
-            # A generated document tracks its source. Check it was generated from
-            # the CURRENT source, which is the way this one goes stale.
-            parent = GENERATED_FROM[name]
-            psrc = open(os.path.join(root, PAPERS, parent + ".tex"), encoding="utf-8").read()
-            m_par = REV_TEX_RE.search(psrc)
-            if not m_par:
-                fail("%s carries no revision, so %s cannot be checked against it" % (parent, name))
-            m_s, m_p = GEN_RE.search(src), GEN_RE.search(text)
-            if not (m_s and m_p):
-                fail("%s does not record the source revision it was generated from" % name)
-            if m_p.group(1) != m_s.group(1):
-                fail("%s.pdf is STALE against its own source (pdf from r%s, tex from r%s)"
-                     % (name, m_p.group(1), m_s.group(1)))
-            if m_s.group(1) != m_par.group(1):
-                fail("%s was generated from %s r%s, which is now r%s. Regenerate before releasing."
-                     % (name, parent, m_s.group(1), m_par.group(1)))
-            rev = "from-r" + m_s.group(1)
+        if "generated_from" in entry:
+            parent = entry["generated_from"]
+            parent_rev = str(revision_for(metadata, parent))
+            expected_stamp = "%s / statement / from long r%s" % (draft, parent_rev)
+            if expected_stamp not in text:
+                fail("%s.pdf is STALE or was not generated from %s r%s" %
+                     (name, parent, parent_rev))
+            rev = "from-r" + parent_rev
         else:
-            m_r = REV_TEX_RE.search(src)
-            if not m_r:
-                fail("%s carries no revision" % name)
-            rev = m_r.group(1)
-            m_p = REV_PDF_RE.search(text)
-            if not m_p:
-                fail("%s.pdf carries no footer revision" % name)
-            if m_p.group(1) != rev:
-                fail("%s.pdf is STALE: source is r%s, built PDF is r%s. Rebuild before releasing."
-                     % (name, rev, m_p.group(1)))
-            rev = "r" + rev
+            revision = str(revision_for(metadata, name))
+            expected_stamp = "%s r%s" % (draft, revision)
+            if expected_stamp not in text:
+                fail("%s.pdf is STALE: expected generated footer %s" %
+                     (name, expected_stamp))
+            rev = "r" + revision
 
         low = text.lower()
         for phrase in FORBIDDEN:
@@ -200,7 +446,7 @@ def main():
                 fail("%s.pdf contains %r, which sets out the excluded document's contents"
                      % (name, phrase))
 
-        plan.append((pdf, "%s_%s_%s.pdf" % (name, draft, rev)))
+        plan.append((name, pdf, "%s_%s_%s.pdf" % (name, draft, rev), rev))
 
     if len(set(drafts.values())) != 1:
         fail("cleared set spans several drafts: %s" % sorted(set(drafts.values())))
@@ -209,7 +455,7 @@ def main():
     # directory accumulates superseded revisions and someone sending "the papers"
     # can send a mixed set. That is the failure this gate exists to prevent,
     # reintroduced by the naming. Supersedes are moved aside, not deleted.
-    keep = {d for _, d in plan}
+    keep = {dest for _, _, dest, _ in plan}
     stale = []
     if os.path.isdir(out):
         for f in sorted(os.listdir(out)):
@@ -229,7 +475,7 @@ def main():
             os.makedirs(sup, exist_ok=True)
             for f in stale:
                 shutil.move(os.path.join(out, f), os.path.join(sup, f))
-        for pdf, dest in plan:
+        for name_, pdf, dest, rev_ in plan:
             shutil.copy2(pdf, os.path.join(out, dest))
         # Ships with the papers because a covering note sent separately gets
         # separated from them. Written as an index rather than a pitch: a
@@ -237,7 +483,7 @@ def main():
         # at them reads as apology. Naming where each claim is argued works
         # whoever the reader is, and does not lean on the author's standing.
         pages = {}
-        for pdf, dest in plan:
+        for name_, pdf, dest, rev_ in plan:
             try:
                 info = subprocess.run(["pdfinfo", os.path.join(out, dest)],
                                       capture_output=True, text=True).stdout
@@ -259,7 +505,7 @@ def main():
                     "p0": pp[0], "p1": pp[1], "p2": pp[2], "p3": pp[3]})
 
     print("cleared and released (%s):" % list(drafts.values())[0])
-    for _, dest in plan:
+    for _, _, dest, _ in plan:
         print("  " + dest)
     if stale:
         print("\nmoved to superseded/ (%d):" % len(stale))
@@ -267,6 +513,12 @@ def main():
             print("  " + f)
     print("\nNOT released: every other document in this repository, and the "
           "repository itself.")
+
+    if webdir:
+        # Same gate, second product. The plan carried here has already passed
+        # every clearance above; write_website only renders and copies.
+        web_plan = [(name, dest, rev) for name, _, dest, rev in plan]
+        write_website(webdir, root, web_plan, drafts, a.dry_run)
 
 
 if __name__ == "__main__":
