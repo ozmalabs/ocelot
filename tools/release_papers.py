@@ -306,7 +306,18 @@ h2.titleHead br + * { font-size: 0.6em; }
   font-family: 'Inter', system-ui, sans-serif; font-weight: 700;
   font-size: 1.3em; line-height: 1.25; margin-top: 1.8em; margin-bottom: 0.6em;
   color: var(--ink); letter-spacing: -0.01em;
+  scroll-margin-top: 72px;
 }
+/* Section anchor: a faint '#' that appears on hover, giving the reader the
+   section's link. The heading carries a readable id (e.g. #falsifiability). */
+.headlink {
+  margin-left: 0.4em; color: var(--accent); text-decoration: none;
+  font-weight: 400; opacity: 0; transition: opacity 0.15s;
+}
+.sectionHead:hover .headlink, .subsectionHead:hover .headlink,
+.subsubsectionHead:hover .headlink, .paragraphHead:hover .headlink,
+.headlink:focus { opacity: 0.6; }
+.headlink:hover { opacity: 1; text-decoration: underline; }
 
 /* Abstract and DRAFT notice. Both are nested inside a tex4ht .center wrapper,
    which `body > *` already centres on the measure, so they fill their container
@@ -466,6 +477,57 @@ def fix_span_spacing(htmltext):
         r"\1 \2", htmltext)
 
 
+def slugify(text):
+    """A stable, readable URL fragment from heading text. Lowercase, spaces to
+    hyphens, drop anything else. 'Objectivity as a direction' -> objectivity-as-
+    a-direction."""
+    text = re.sub(r"<[^>]+>", "", text)          # strip any tags
+    text = re.sub(r"&[a-zA-Z]+;|&#\d+;", " ", text)  # entities to space
+    # tex4ht emits typographic ligatures; normalise so 'Falsifiability' does not
+    # slug to 'falsi-ability'.
+    for lig, plain in (("\ufb01", "fi"), ("\ufb02", "fl"), ("\ufb00", "ff"),
+                       ("\ufb03", "ffi"), ("\ufb04", "ffl"), ("\ufb05", "st")):
+        text = text.replace(lig, plain)
+    text = text.replace("\u2014", " ").replace("\u2013", " ")
+    text = text.lower()
+    text = re.sub(r"[^a-z0-9]+", "-", text).strip("-")
+    return text
+
+
+def add_heading_anchors(htmltext):
+    """Give every section heading a stable, human-readable id so sections can be
+    linked (paper.html#objectivity-as-a-direction).
+
+    tex4ht already emits an opaque anchor (id="x1-30003") inside each heading for
+    its own cross-references; those are kept. This adds a readable id ON the
+    heading element itself, derived from its visible title text, with numeric
+    suffixes for collisions. Also makes the heading a hover-to-get-link target."""
+    heading_re = re.compile(
+        r'(<(h[1-6])\s+class="(?:section|subsection|subsubsection|paragraph)Head"[^>]*>)(.*?)(</\2>)',
+        re.S)
+    seen = {}
+
+    def repl(m):
+        open_tag, tag, inner, close_tag = m.group(1), m.group(2), m.group(3), m.group(4)
+        if " id=" in open_tag:            # already has one, leave it
+            return m.group(0)
+        # visible text = inner minus the titlemark number span and any tags
+        text = re.sub(r'<span class="titlemark">.*?</span>', "", inner, flags=re.S)
+        slug = slugify(text)
+        if not slug:
+            return m.group(0)
+        n = seen.get(slug, 0)
+        seen[slug] = n + 1
+        if n:
+            slug = "%s-%d" % (slug, n + 1)
+        new_open = open_tag[:-1] + ' id="%s">' % slug
+        # A small anchor link on hover, so a reader can grab the section URL.
+        link = '<a class="headlink" href="#%s" aria-label="Link to this section">#</a>' % slug
+        return new_open + inner + link + close_tag
+
+    return heading_re.sub(repl, htmltext)
+
+
 PAPER_TOPBAR = (
     '<div class="paper-topbar"><div class="paper-topbar-inner">'
     '<a class="brand" href="/">ozma<span>labs</span></a>'
@@ -557,6 +619,7 @@ def build_html(names, root, workdir):
         # from the pdflatex .aux, and repair fused words at span boundaries.
         htmltext = resolve_xrefs(htmltext, name, root, labels, slug_for)
         htmltext = fix_span_spacing(htmltext)
+        htmltext = add_heading_anchors(htmltext)
         htmltext = style_page(htmltext, name)
         open(page, "w", encoding="utf-8").write(htmltext)
 
