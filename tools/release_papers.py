@@ -701,6 +701,25 @@ INDEX_TMPL = """<!DOCTYPE html>
   .paper .start-badge {{ display:inline-block; align-self:flex-start; font-size:10.5px; font-weight:700;
             letter-spacing:0.06em; text-transform:uppercase; color:#050505; background:var(--emerald);
             border-radius:999px; padding:3px 9px; margin-bottom:10px; }}
+  .paper .kind-row {{ display:flex; gap:7px; flex-wrap:wrap; margin-bottom:10px; }}
+  .paper .kind {{ display:inline-block; font-size:10.5px; font-weight:700; letter-spacing:0.06em;
+            text-transform:uppercase; border-radius:999px; padding:3px 9px; }}
+  .paper .kind.theory {{ color:var(--emerald-bright); background:rgba(74,224,164,0.10);
+            border:1px solid rgba(74,224,164,0.30); }}
+  .paper .kind.grounding {{ color:#a9c4ff; background:rgba(91,154,255,0.10);
+            border:1px solid rgba(91,154,255,0.28); }}
+  .paper .kind.condensed {{ color:var(--muted); background:rgba(120,120,130,0.08);
+            border:1px solid rgba(255,255,255,0.10); }}
+  .paper .kind.meta {{ color:#e6c78a; background:rgba(230,199,138,0.09);
+            border:1px solid rgba(230,199,138,0.26); }}
+  .paper .kind.implementation {{ color:#d59ae0; background:rgba(213,154,224,0.09);
+            border:1px solid rgba(213,154,224,0.26); }}
+  .paper .kind.application {{ color:#f0a878; background:rgba(240,168,120,0.09);
+            border:1px solid rgba(240,168,120,0.26); }}
+  .paper .note {{ color:var(--muted); font-size:12.5px; line-height:1.5; margin:-4px 0 12px;
+            font-style:italic; }}
+  .paper .note a {{ color:var(--emerald); text-decoration:none; font-weight:600; font-style:normal; }}
+  .paper .note a:hover {{ text-decoration:underline; }}
   .paper a.title {{ text-decoration:none; color:inherit; }}
   .paper h3 {{ font-size:16.5px; font-weight:700; letter-spacing:-0.01em; line-height:1.3; margin-bottom:4px; }}
   .paper a.title:hover h3 {{ color:var(--emerald-bright); }}
@@ -784,7 +803,7 @@ INDEX_TMPL = """<!DOCTYPE html>
 CARD_TMPL = """    <div class="paper{primary}">
       {badge}<a class="title" href="{slug}/{name}.html"><h3>{title}</h3></a>
       {sub}
-      <p class="abs">{abstract}</p>
+      {kindrow}{note}<p class="abs">{abstract}</p>
       <div class="meta"><span class="tag">{pages}</span><span class="tag">{rev}</span>
         <span class="spacer"></span>
         <a href="{slug}/{name}.html">Read</a>
@@ -807,8 +826,9 @@ PAPER_FAMILIES = [
     ("00", "The claim",
      "One sentence, argued with no machinery: what it commits to, and what it does not."),
     ("01", "The Law of Graphic Equalisation",
-     "The recursive dynamics that follow from the claim, and their groundings in physics, "
-     "cosmology, mind, communication, and consciousness."),
+     "The recursive dynamics that follow from the claim. One Theory paper states the law; "
+     "the Grounding papers test it against physics, cosmology, mind, communication, and "
+     "consciousness. The Statement is a condensed restatement of the Theory."),
     ("02", "Seldon Manifolds",
      "The geometry of reachable futures, with its psychological and social applications."),
     ("03", "The Law of Narrative Momentum",
@@ -826,7 +846,8 @@ PAPER_FAMILIES = [
     ("09", "Adaptability",
      "What adaptation costs, and how it is implemented."),
     ("10", "Applied Graphic Equalisation",
-     "The account applied to one frame: the geopolitical and civilisational."),
+     "The account applied to one frame to make a separate point, rather than bridged to a "
+     "field: the geopolitical and civilisational future."),
 ]
 _FAMILY_ORDER = [p for p, _, _ in PAPER_FAMILIES]
 _FAMILY_META = {p: (t, d) for p, t, d in PAPER_FAMILIES}
@@ -837,6 +858,45 @@ def family_of(name):
     01a..01f and 01s all share family '01'. Non-numeric stems (A1) get their own."""
     m = re.match(r"(\d+)", name)
     return m.group(1) if m else name.split("_")[0]
+
+
+def kind_of(name):
+    """Classify a paper as 'theory', 'grounding', 'condensed', 'meta',
+    'implementation', or None, from its stem. This drives the labels that tell a
+    reader, at a glance, what role a card plays in its thread. Most kinds follow
+    the filename convention; the papers that don't carry an explicit override."""
+    if name in KIND_OVERRIDE:
+        return KIND_OVERRIDE[name]
+    if name in GENERATED_FROM:
+        return "condensed"
+    if "grounding" in name or "recovery" in name:
+        return "grounding"
+    if "application" in name or "applied" in name:
+        return "application"
+    if "theory_referenced" in name:
+        return "theory"
+    return None
+
+
+# Papers whose kind is not derivable from the filename convention. The base
+# claim and the metaphysical companion are theory; the assessment is meta
+# (about the account rather than part of it); the substrate rebuilds are
+# implementation.
+KIND_OVERRIDE = {
+    "00_is": "theory",
+    "05_frames_relation_and_the_empty_limit": "theory",
+    "06_assessing_an_account_of_this_kind": "meta",
+    "07_causal_attitude_networks_on_the_substrate": "implementation",
+    "08_certified_answers_as_an_audit": "implementation",
+    # Filename contains "application" but this is a bridge to a field (four
+    # classical experiments put to the substrate), so it is a grounding.
+    "02b_seldon_manifolds_social_and_psychological_application": "grounding",
+}
+
+# Human-readable label for each kind badge.
+KIND_LABEL = {"theory": "Theory", "grounding": "Grounding", "condensed": "Condensed",
+              "meta": "Meta", "implementation": "Implementation",
+              "application": "Application"}
 
 
 def write_website(webdir, root, plan, drafts, dry_run):
@@ -873,9 +933,26 @@ def write_website(webdir, root, plan, drafts, dry_run):
             title, subtitle, abstract = paper_meta(src)
             pages = pdf_pages(os.path.join(pdir, pdf_dest))
             fam = family_of(name)
+            kind = kind_of(name)
+            # A label pill (Theory / Grounding / Condensed) so a reader can tell
+            # at a glance what role a paper plays in its thread.
+            kindrow = ('<div class="kind-row"><span class="kind %s">%s</span></div>\n      '
+                       % (kind, KIND_LABEL[kind])) if kind else ""
+            # The statement is a cut-down version of a theory paper, not a
+            # separate result. Say so, and link the paper it condenses.
+            note = ""
+            if name in GENERATED_FROM:
+                src_stem = GENERATED_FROM[name]
+                src_title = paper_meta(open(os.path.join(root, PAPERS, src_stem + ".tex"),
+                                            encoding="utf-8").read())[0]
+                note = ('<p class="note">A condensed restatement of '
+                        '<a href="%s/%s.html">%s</a> \u2014 the same paper cut down to its '
+                        'claims, not a separate result.</p>\n      '
+                        % (src_stem, src_stem, html.escape(src_title)))
             manifest.append({
                 "name": name, "slug": slug, "title": title, "subtitle": subtitle,
                 "abstract": abstract, "draft": draft, "revision": rev, "family": fam,
+                "kind": kind,
                 "pages": pages, "html": name + ".html", "pdf": pdf_dest,
             })
             cards_by_family.setdefault(fam, []).append(CARD_TMPL.format(
@@ -884,6 +961,7 @@ def write_website(webdir, root, plan, drafts, dry_run):
                 badge=('<span class="start-badge">Start here</span>'
                        if name in primary else ""),
                 title=html.escape(title),
+                kindrow=kindrow, note=note,
                 sub=('<div class="sub">%s</div>' % html.escape(subtitle)) if subtitle else "",
                 abstract=html.escape(short_desc(abstract)),
                 pages=("%d pages" % pages) if pages else "",
