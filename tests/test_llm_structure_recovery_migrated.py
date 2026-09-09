@@ -150,6 +150,46 @@ def test_exact_topk_beats_shape_retrieve_at_same_frac():
     assert et >= sr   # oracle selection is at least as good as gate-key
 
 
+# ---- order-2 multi-query shape (block 312000) --------------------------
+
+@_need_model
+def test_order2_shape_none_bit_exact():
+    npm = lsr.NumpyQwen3(MODEL)
+    ids = [464, 6722, 315, 9822, 374]
+    full = npm.forward_logits(ids)
+    off = npm.forward_logits(ids, sparse=lsr.SparseConfig(order2_shape=None))
+    assert np.max(np.abs(full - off)) == 0.0
+
+
+@_need_model
+def test_fit_order2_shape_returns_per_layer_sets():
+    npm = lsr.NumpyQwen3(MODEL)
+    corpus = [[464, 6722, 315, 9822, 374], [32, 5562, 374, 264, 3169, 315]]
+    shape = lsr.fit_order2_shape(npm, corpus, frac=0.5)
+    assert set(shape) == set(range(npm.n_layers))
+    for L, sel in shape.items():
+        # ~half the FFN neurons kept, and they are valid indices
+        assert 0 < len(sel) <= npm._t("model.layers.%d.mlp.gate_proj.weight" % L).shape[0]
+
+
+@_need_model
+def test_order2_at_least_order1_aggressive_heldout():
+    """In the aggressive regime (frac 0.5), the corpus-fitted order-2 keep-set
+    selects at least as well as the single-query order-1 gate-key on held-out
+    prompts — the true shape is more visible over multiple queries."""
+    npm = lsr.NumpyQwen3(MODEL)
+    train = [[464, 6722, 315, 9822, 374], [791, 14329, 315, 4106, 374],
+             [32, 5562, 374, 264, 3169, 315], [791, 7160, 38268, 304, 279]]
+    heldout = [[464, 6722, 315, 9603, 374], [32, 8415, 374, 264, 3169, 315]]
+    full = [int(npm.forward_logits(p).argmax()) for p in heldout]
+    shape = lsr.fit_order2_shape(npm, train, frac=0.5)
+    o2 = sum(int(npm.forward_logits(p, sparse=lsr.SparseConfig(order2_shape=shape)).argmax()) == f
+             for p, f in zip(heldout, full))
+    o1 = sum(int(npm.forward_logits(p, sparse=lsr.SparseConfig(ffn_retrieve_frac=0.5)).argmax()) == f
+             for p, f in zip(heldout, full))
+    assert o2 >= o1
+
+
 # ---- reference agreement (skip without torch) --------------------------
 
 @_need_ref
