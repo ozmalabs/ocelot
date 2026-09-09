@@ -443,6 +443,94 @@ def build_graph(model: "NumpyQwen3", token_ids):
 
 
 # ---------------------------------------------------------------------------
+# LEARNED ROUTER seed — the named fix after block 314: every HAND-derived key
+# (gate, joint gate+up) is a better-but-imperfect ranker missing the silu
+# nonlinearity + sign. Instead LEARN a cheap per-layer linear map
+#   input (post-attn-norm) -> predicted FFN activation magnitude
+# fit by ridge regression on the TRAIN corpus, and use its top-k as the seed.
+# One matmul (input_dim x ff), same cost class as a single projection — a
+# genuinely cheap seed, tested on HELD-OUT queries.
+# ---------------------------------------------------------------------------
+
+def _ffn_io(model: "NumpyQwen3", token_ids):
+    """Per layer, the last-token (post-attention-norm INPUT xg, activation
+    |silu(gate)*up|) — the router's (features, target) for this query."""
+    m = model
+    T = len(token_ids)
+    E = m._t("model.embed_tokens.weight")
+    h = E[np.asarray(token_ids)].astype(np.float32)
+    cos, sin = m._rope(T)
+    nh, nkv, hd = m.n_heads, m.n_kv, m.head_dim
+    rep = nh // nkv
+    causal = np.triu(np.full((T, T), -1e30, dtype=np.float32), k=1)
+    ios = []
+    for L in range(m.n_layers):
+        p = "model.layers.%d." % L
+        x = m.rmsnorm(h, m._t(p + "input_layernorm.weight"), m.eps)
+        q = (x @ m._t(p + "self_attn.q_proj.weight").T).reshape(T, nh, hd)
+        k = (x @ m._t(p + "self_attn.k_proj.weight").T).reshape(T, nkv, hd)
+        v = (x @ m._t(p + "self_attn.v_proj.weight").T).reshape(T, nkv, hd)
+        q = m.rmsnorm(q, m._t(p + "self_attn.q_norm.weight"), m.eps)
+        k = m.rmsnorm(k, m._t(p + "self_attn.k_norm.weight"), m.eps)
+        q = m._apply_rope(q, cos, sin)
+        k = m._apply_rope(k, cos, sin)
+        k = np.repeat(k, rep, axis=1)
+        v = np.repeat(v, rep, axis=1)
+        att = np.empty((T, nh, hd), dtype=np.float32)
+        scale = 1.0 / np.sqrt(hd)
+        for hi in range(nh):
+            a = m.softmax((q[:, hi] @ k[:, hi].T) * scale + causal, axis=-1)
+            att[:, hi] = a @ v[:, hi]
+        h_att = h + (att.reshape(T, nh * hd) @ m._t(p + "self_attn.o_proj.weight").T)
+        xg = m.rmsnorm(h_att, m._t(p + "post_attention_layernorm.weight"), m.eps)
+        g = xg @ m._t(p + "mlp.gate_proj.weight").T
+        u = xg @ m._t(p + "mlp.up_proj.weight").T
+        act = np.abs(m.silu(g) * u)
+        ios.append((xg[-1].copy(), act[-1].copy()))
+        h = h_att + ((m.silu(g) * u) @ m._t(p + "mlp.down_proj.weight").T)
+    return ios
+
+
+class LearnedRouter:
+    """Per-layer ridge-regression map W[L]: input_dim -> ff predicting FFN
+    activation magnitude. seed(L, xg) -> top-k neuron scores. Fit on a corpus;
+    the map is a cheap single matmul at inference."""
+
+    def __init__(self, W):
+        self.W = W                      # {L: (ff, input_dim)}
+
+    def score(self, L, xg_last):
+        return xg_last @ self.W[L].T    # predicted activation magnitude [ff]
+
+
+def fit_router(model: "NumpyQwen3", corpus_token_ids, *, ridge=1.0):
+    """Fit the per-layer router by ridge regression on (input -> activation
+    magnitude) collected over the corpus. Returns a LearnedRouter."""
+    m = model
+    feats = None
+    tgts = None
+    for ids in corpus_token_ids:
+        ios = _ffn_io(m, ids)
+        if feats is None:
+            feats = [[] for _ in ios]
+            tgts = [[] for _ in ios]
+        for L, (xg, act) in enumerate(ios):
+            feats[L].append(xg)
+            tgts[L].append(act)
+    W = {}
+    for L in range(len(feats)):
+        X = np.stack(feats[L])           # [N, d]
+        Y = np.stack(tgts[L])            # [N, ff]
+        d = X.shape[1]
+        # ridge: W = (X^T X + ridge I)^-1 X^T Y  -> stored as (ff, d)
+        A = X.T @ X + ridge * np.eye(d, dtype=np.float32)
+        B = X.T @ Y
+        Wl = np.linalg.solve(A, B).T.astype(np.float32)   # [ff, d]
+        W[L] = Wl
+    return LearnedRouter(W)
+
+
+# ---------------------------------------------------------------------------
 # ORDER-2 (multi-query) shape — the FFN memory dictionary's structure is only
 # visible over MANY queries, not one. Accumulate per-neuron activation
 # statistics over a query CORPUS, then select a query-INDEPENDENT keep-set:
@@ -583,17 +671,18 @@ def fit_coactivation_graph(model: "NumpyQwen3", corpus_token_ids, *,
 
 def coactivation_retrieve(model: "NumpyQwen3", graph: CoactivationGraph,
                           token_ids, *, seed_frac=0.15, target_frac=0.5,
-                          seed_mode="gate", expand=True):
+                          seed_mode="gate", expand=True, router=None):
     """Query-CONDITIONAL retrieval via the coactivation graph. For each layer:
     take a cheap SEED, then (optionally) EXPAND along the graph — add each seed
     neuron's most-frequent co-firing partners — until `target_frac` of neurons
     are selected. Returns {layer -> selected neuron indices}.
 
     `seed_mode`:
-      'gate'  — seed by |gate·x| (order-1 gate-key; block 311, weak).
-      'joint' — seed by |gate·x|·|up·x| (the JOINT gate+up key, block 311's
-                named fix: true relevance is silu(gate·x)·(up·x), so both
-                projections rank the seed). Still two matmuls, same cost class.
+      'gate'   — seed by |gate·x| (order-1 gate-key; block 311, weak).
+      'joint'  — seed by |gate·x|·|up·x| (joint gate+up key; block 314).
+      'router' — seed by a LEARNED per-layer router's predicted activation
+                 (block 315; `router` must be a fitted LearnedRouter). One
+                 matmul, same cost class, learned on a corpus.
     `expand` — whether to graph-expand the seed (False = seed-only baseline)."""
     m = model
     T = len(token_ids)
@@ -629,6 +718,8 @@ def coactivation_retrieve(model: "NumpyQwen3", graph: CoactivationGraph,
         if seed_mode == "joint":
             ux = xg[-1] @ up_W.T
             score = np.abs(gx) * np.abs(ux)          # joint gate+up key
+        elif seed_mode == "router":
+            score = router.score(L, xg[-1])          # learned router prediction
         else:
             score = np.abs(gx)                        # gate-key only
         ff = gate_W.shape[0]

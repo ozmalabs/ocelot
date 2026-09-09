@@ -259,6 +259,47 @@ def test_joint_seed_at_least_gate_seed_heldout():
     assert ag("joint") >= ag("gate")
 
 
+# ---- learned router seed (block 315000) --------------------------------
+
+@_need_model
+def test_fit_router_shape():
+    npm = lsr.NumpyQwen3(MODEL)
+    corpus = [[464, 6722, 315, 9822, 374], [791, 14329, 315, 4106, 374],
+              [32, 5562, 374, 264, 3169, 315]]
+    R = lsr.fit_router(npm, corpus, ridge=1.0)
+    assert set(R.W) == set(range(npm.n_layers))
+    for L in range(npm.n_layers):
+        ff = npm._t("model.layers.%d.mlp.gate_proj.weight" % L).shape[0]
+        assert R.W[L].shape == (ff, npm.d)
+
+
+@_need_model
+def test_router_score_shape():
+    import numpy as np
+    npm = lsr.NumpyQwen3(MODEL)
+    corpus = [[464, 6722, 315, 9822, 374], [791, 14329, 315, 4106, 374]]
+    R = lsr.fit_router(npm, corpus, ridge=1.0)
+    xg = np.zeros(npm.d, dtype=np.float32)
+    s = R.score(0, xg)
+    ff = npm._t("model.layers.0.mlp.gate_proj.weight").shape[0]
+    assert s.shape == (ff,)
+
+
+@_need_model
+def test_router_seed_returns_valid_sets():
+    npm = lsr.NumpyQwen3(MODEL)
+    corpus = [[464, 6722, 315, 9822, 374], [791, 14329, 315, 4106, 374]]
+    G = lsr.fit_coactivation_graph(npm, corpus, per_query_frac=0.1, pool_frac=0.5)
+    R = lsr.fit_router(npm, corpus, ridge=1.0)
+    shp = lsr.coactivation_retrieve(npm, G, [464, 6722, 315, 9603, 374],
+                                    seed_frac=0.2, target_frac=0.5,
+                                    seed_mode="router", expand=True, router=R)
+    assert set(shp) == set(range(npm.n_layers))
+    for L in range(npm.n_layers):
+        ff = npm._t("model.layers.%d.mlp.gate_proj.weight" % L).shape[0]
+        assert 0 < len(shp[L]) <= ff
+
+
 # ---- reference agreement (skip without torch) --------------------------
 
 @_need_ref
