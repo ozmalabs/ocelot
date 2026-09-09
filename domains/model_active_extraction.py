@@ -74,12 +74,45 @@ def resolve_gguf_blob(model_tag: str):
 
 
 # ---------------------------------------------------------------------------
+# Sharded local HF safetensors reader — newer models (Qwen3, ...) ship a
+# model.safetensors.index.json weight_map across several shard files.
+# ---------------------------------------------------------------------------
+
+def _shard_map(model_dir: str):
+    """tensor_name -> shard file path, from model.safetensors.index.json, or a
+    single-file map when the dir has one model.safetensors."""
+    idx = os.path.join(model_dir, "model.safetensors.index.json")
+    if os.path.isfile(idx):
+        with open(idx) as f:
+            wm = json.load(f)["weight_map"]
+        return {k: os.path.join(model_dir, v) for k, v in wm.items()}
+    single = os.path.join(model_dir, "model.safetensors")
+    if os.path.isfile(single):
+        return {n: single for n in mr.tensor_names(single)}
+    raise FileNotFoundError("no safetensors index or single file in %s" % model_dir)
+
+
+def read_local_tensor(model_dir: str, name: str) -> np.ndarray:
+    """Read a named tensor from a (possibly sharded) local HF safetensors dir."""
+    return mr.read_tensor(_shard_map(model_dir)[name], name)
+
+
+def _first_present(shardmap, candidates):
+    for c in candidates:
+        if c in shardmap:
+            return c
+    return None
+
+
+# ---------------------------------------------------------------------------
 # (A) STATIC — embedding geometry + FFN concept neurons.
 # ---------------------------------------------------------------------------
 
 @dataclass
 class LoadedModel:
-    """Static handle to a generative LM's readable weights (no inference)."""
+    """Static handle to a generative LM's readable weights (no inference).
+    `kind` is 'gguf' (ollama tag) or 'hf' (local sharded safetensors dir);
+    `src` is the blob path (gguf) or model dir (hf)."""
     blob: str
     vec_fn: object
     vocab: dict
@@ -87,11 +120,20 @@ class LoadedModel:
     shape: tuple
     marker: str
     work_ids: list           # the working-vocab token ids (frequency window)
+    kind: str = "gguf"
+    src: str = ""
+    _ffn_prefix: str = "model.layers"
     _M: np.ndarray = field(default=None, repr=False)   # unit embeddings of work_ids
+    _Mout: np.ndarray = field(default=None, repr=False)  # unit UNEMBED rows (untied lm_head), else None
     _pos: dict = field(default=None, repr=False)
 
 
 def load_model(model_tag: str = "gemma3:4b", work_vocab: int = 40000) -> LoadedModel:
+    """Load a model's static weights. `model_tag` is either an ollama tag
+    (e.g. 'gemma3:4b' -> GGUF) or a local HF dir path (e.g.
+    '/applications/data/model_graph_work/Qwen3-1.7B' -> sharded safetensors)."""
+    if os.path.isdir(model_tag):
+        return _load_hf(model_tag, work_vocab)
     blob = resolve_gguf_blob(model_tag)
     if blob is None:
         raise FileNotFoundError("no GGUF blob for %r" % model_tag)
@@ -103,7 +145,61 @@ def load_model(model_tag: str = "gemma3:4b", work_vocab: int = 40000) -> LoadedM
     M = M / (np.linalg.norm(M, axis=1, keepdims=True) + 1e-9)
     pos = {t: j for j, t in enumerate(work)}
     return LoadedModel(blob=blob, vec_fn=vec_fn, vocab=vocab, inv=inv,
-                       shape=shape, marker=marker, work_ids=work, _M=M, _pos=pos)
+                       shape=shape, marker=marker, work_ids=work,
+                       kind="gguf", src=blob, _M=M, _pos=pos)
+
+
+def _load_hf(model_dir: str, work_vocab: int) -> LoadedModel:
+    smap = _shard_map(model_dir)
+    emb_name = _first_present(smap, ("model.embed_tokens.weight",
+                                     "model.language_model.embed_tokens.weight",
+                                     "transformer.wte.weight"))
+    if emb_name is None:
+        emb_name = next(n for n in smap if "embed" in n.lower()
+                        and "vision" not in n.lower() and "visual" not in n.lower())
+    W = mr.read_tensor(smap[emb_name], emb_name)      # (vocab, dim)
+    vocab = mr.read_vocab(model_dir)
+    inv = {i: t for t, i in vocab.items()}
+    marker = mr.ModelTensors.marker(vocab)
+    shape = W.shape
+    work = list(range(min(work_vocab, shape[0])))
+    M = W[work].astype(np.float32)
+    M = M / (np.linalg.norm(M, axis=1, keepdims=True) + 1e-9)
+    pos = {t: j for j, t in enumerate(work)}
+
+    def vec_fn(i):
+        return W[i]
+
+    # detect the FFN down_proj naming prefix for this model (varies: bare, or
+    # 'model.language_model.' for multimodal-wrapped LMs).
+    ffn_prefix = _detect_ffn_prefix(smap)
+
+    lm = LoadedModel(blob=model_dir, vec_fn=vec_fn, vocab=vocab, inv=inv,
+                     shape=shape, marker=marker, work_ids=work,
+                     kind="hf", src=model_dir, _M=M, _pos=pos)
+    lm._ffn_prefix = ffn_prefix
+    # UNTIED output embedding: an FFN neuron writes into the residual read by
+    # lm_head, so the "tokens it promotes" projection must use lm_head, not the
+    # input embedding. Detect + load the unembed rows for the working vocab.
+    head_name = _first_present(smap, ("lm_head.weight",
+                                      "model.language_model.lm_head.weight"))
+    if head_name is not None:
+        H = mr.read_tensor(smap[head_name], head_name)   # (vocab, dim)
+        if H.shape[0] >= max(work) + 1 and H.shape[1] == shape[1]:
+            Hm = H[work].astype(np.float32)
+            lm._Mout = Hm / (np.linalg.norm(Hm, axis=1, keepdims=True) + 1e-9)
+    return lm
+
+
+def _detect_ffn_prefix(smap) -> str:
+    """Return the layer-tensor prefix such that
+    '<prefix>.<L>.mlp.down_proj.weight' exists (bare 'model.layers' or the
+    multimodal 'model.language_model.layers')."""
+    for prefix in ("model.language_model.layers", "model.layers"):
+        if any(k.startswith(prefix + ".") and "mlp.down_proj.weight" in k
+               for k in smap):
+            return prefix
+    return "model.layers"
 
 
 def distill_embedding_graph(lm: LoadedModel, *, k: int = 16, quant: float = 0.05):
@@ -116,13 +212,22 @@ def distill_embedding_graph(lm: LoadedModel, *, k: int = 16, quant: float = 0.05
                       k=k, quant=quant)
 
 
+def _read_ffn_down(lm: LoadedModel, layer: int) -> np.ndarray:
+    """Read layer `layer`'s FFN down-projection (value-neuron bank), routing by
+    source format."""
+    if lm.kind == "gguf":
+        return mr.read_gguf_tensor(lm.blob, "blk.%d.ffn_down.weight" % layer)
+    name = "%s.%d.mlp.down_proj.weight" % (getattr(lm, "_ffn_prefix",
+                                                    "model.layers"), layer)
+    return read_local_tensor(lm.src, name)
+
+
 def ffn_concepts(lm: LoadedModel, seed_words, *, layer: int = 20, top: int = 8):
     """Find the FFN value neuron in `layer` most aligned with the concept
     direction (mean embedding of `seed_words`), and return the tokens it
     PROMOTES — a typed concept read straight from the weights. Returns
     (neuron_index, alignment, [promoted_tokens])."""
-    name = "blk.%d.ffn_down.weight" % layer
-    D = mr.read_gguf_tensor(lm.blob, name)
+    D = _read_ffn_down(lm, layer)
     d_model = lm.shape[1]
     Dn = D if D.shape[1] == d_model else D.T           # rows = neurons, len d_model
     Dnu = Dn / (np.linalg.norm(Dn, axis=1, keepdims=True) + 1e-9)
@@ -130,9 +235,160 @@ def ffn_concepts(lm: LoadedModel, seed_words, *, layer: int = 20, top: int = 8):
     align = Dnu @ sv
     best = int(np.argmax(align))
     nb = Dn[best] / (np.linalg.norm(Dn[best]) + 1e-9)
-    promoted_pos = np.argsort(-(lm._M @ nb))[:top]
+    # project through the OUTPUT embedding (lm_head) when untied, else the
+    # input embedding (tied) — a neuron promotes tokens in the UNEMBED space.
+    Mproj = lm._Mout if getattr(lm, "_Mout", None) is not None else lm._M
+    promoted_pos = np.argsort(-(Mproj @ nb))[:top]
     promoted = [lm.inv[lm.work_ids[int(j)]] for j in promoted_pos]
     return best, float(align[best]), promoted
+
+
+def ffn_concepts_best_layer(lm: LoadedModel, seed_words, *, layers=None,
+                            top: int = 8):
+    """Search a set of layers for the FFN neuron MOST aligned with the concept,
+    returning (layer, neuron_index, alignment, promoted). Different
+    architectures localise concept-neurons at different depths (measured: gemma3
+    mid-stack, Qwen3 late-stack), so a fair concept read searches rather than
+    assuming a fixed layer. `layers` defaults to a spread across the stack."""
+    n_layers = _n_layers(lm)
+    if layers is None:
+        layers = sorted(set(int(f * (n_layers - 1)) for f in
+                            (0.15, 0.3, 0.45, 0.6, 0.75, 0.9)))
+    best = (None, None, -1.0, [])
+    for L in layers:
+        try:
+            idx, align, promoted = ffn_concepts(lm, seed_words, layer=L, top=top)
+        except Exception:
+            continue
+        if align > best[2]:
+            best = (L, idx, align, promoted)
+    return best
+
+
+def _n_layers(lm: LoadedModel) -> int:
+    if lm.kind == "gguf":
+        try:
+            mt = mr.ModelTensors("ollama:" + _tag_from_blob(lm.blob))
+            return mt.n_layers
+        except Exception:
+            return 34            # gemma3:4b default
+    # HF: count from config.json
+    try:
+        cfg = json.load(open(os.path.join(lm.src, "config.json")))
+        tc = cfg.get("text_config", cfg)
+        return int(tc["num_hidden_layers"])
+    except Exception:
+        return 28
+
+
+def _tag_from_blob(blob):
+    # best-effort; only used for gguf layer count
+    return "gemma3:4b"
+
+
+# ---------------------------------------------------------------------------
+# GRAPH-LIKENESS metrics — model-agnostic, over the embedding + FFN.
+# A "graph-like" representation has: sharp, on-concept FFN neurons; crisp
+# RECIPROCAL kNN neighbourhoods (mutual nearest neighbours = clean edges); and
+# a geometry that SURVIVES sparsification/quantisation (distils to a graph
+# without collapsing). Every metric is computed identically across models.
+# ---------------------------------------------------------------------------
+
+def ffn_concept_score(lm: LoadedModel, concept_seed_sets, *, top: int = 10):
+    """Mean best-layer FFN concept ALIGNMENT + PURITY across a set of concepts.
+    alignment = cosine of the most-aligned neuron to the concept direction;
+    purity = fraction of the neuron's top promoted tokens whose embedding is
+    itself on-concept (cosine to the seed direction > 0.15). Higher = the model
+    packs concepts into cleaner single directions = more graph-like.
+    Returns {'alignment': float, 'purity': float, 'per': {...}}."""
+    aligns, purities, per = [], [], {}
+    for name, seeds in concept_seed_sets.items():
+        try:
+            L, idx, align, promoted = ffn_concepts_best_layer(lm, seeds, top=top)
+        except Exception:
+            continue
+        sv = _concept_direction(lm, seeds)
+        onc = 0
+        for t in promoted:
+            tid = lm.vocab.get(t)
+            if tid is None:
+                continue
+            v = lm.vec_fn(tid)
+            if float(v @ sv / (np.linalg.norm(v) + 1e-9)) > 0.15:
+                onc += 1
+        purity = onc / max(len(promoted), 1)
+        aligns.append(align)
+        purities.append(purity)
+        per[name] = {"layer": L, "align": round(align, 3),
+                     "purity": round(purity, 3)}
+    return {"alignment": float(np.mean(aligns)) if aligns else 0.0,
+            "purity": float(np.mean(purities)) if purities else 0.0,
+            "per": per}
+
+
+def knn_reciprocity(lm: LoadedModel, *, sample: int = 3000, k: int = 8,
+                    rng=None):
+    """Fraction of directed kNN edges that are RECIPROCAL (mutual nearest
+    neighbours) over a random sample of the working vocab. A graph-like space
+    has crisp, mutual neighbourhoods (i in kNN(j) iff j in kNN(i)); a diffuse
+    space has asymmetric hub-dominated neighbourhoods. Higher = more graph-like.
+    """
+    import random as _random
+    rng = rng or _random.Random(0)
+    n = len(lm.work_ids)
+    idx = rng.sample(range(n), min(sample, n))
+    S = lm._M[idx]                       # unit rows
+    sims = S @ S.T
+    np.fill_diagonal(sims, -2.0)
+    knn = np.argsort(-sims, axis=1)[:, :k]     # positions within the sample
+    knn_sets = [set(row.tolist()) for row in knn]
+    recip = tot = 0
+    for i in range(len(idx)):
+        for j in knn[i]:
+            tot += 1
+            if i in knn_sets[j]:
+                recip += 1
+    return recip / max(tot, 1)
+
+
+def distill_survival(lm: LoadedModel, *, probes=None, k: int = 8, bits=(8, 4, 3)):
+    """kNN recall@k retained after VECTOR QUANTISATION at each bit depth vs the
+    full-precision neighbours (block-304000 distillation-survival, per model).
+    A more graph-like geometry survives compression better. Returns
+    {bits: recall}."""
+    if probes is None:
+        probes = list(range(0, min(len(lm.work_ids), 2000), 200))  # ~10 probes
+    M = lm._M
+    lo, hi = float(M.min()), float(M.max())
+    # full-precision gold neighbours (positions)
+    gold = {}
+    for p in probes:
+        sims = M @ M[p]
+        sims[p] = -2.0
+        gold[p] = set(np.argsort(-sims)[:k].tolist())
+    out = {}
+    for b in bits:
+        step = (hi - lo) / (2 ** b - 1)
+        Mq = lo + np.round((M - lo) / step) * step
+        Mq = Mq / (np.linalg.norm(Mq, axis=1, keepdims=True) + 1e-9)
+        rr = []
+        for p in probes:
+            sims = Mq @ Mq[p]
+            sims[p] = -2.0
+            got = set(np.argsort(-sims)[:k].tolist())
+            rr.append(len(gold[p] & got) / max(len(gold[p]), 1))
+        out[b] = float(np.mean(rr))
+    return out
+
+
+def graphlike_report(lm: LoadedModel, concept_seed_sets, *, rng=None) -> dict:
+    """Full graph-likeness battery for one model."""
+    ffn = ffn_concept_score(lm, concept_seed_sets)
+    recip = knn_reciprocity(lm, rng=rng)
+    surv = distill_survival(lm)
+    return {"ffn_alignment": ffn["alignment"], "ffn_purity": ffn["purity"],
+            "knn_reciprocity": recip, "distill_survival": surv,
+            "ffn_per": ffn["per"]}
 
 
 def _concept_direction(lm: LoadedModel, seed_words):
