@@ -133,5 +133,111 @@ def main():
             "per_relation": per_relation}
 
 
+def run_model(model_dir, device="cpu", dtype="float32"):
+    """Run the battery on one model; return a per-model report dict with
+    resolution depths (absolute + as fraction of the stack), delta-growth
+    ratio, and per-relation resolution depths."""
+    tm = ble.load_traced(model_dir, device=device, dtype=dtype)
+    per_relation = {}
+    resolved = 0
+    growth = []
+    rows = []
+    for prompt, answer, rel in BATTERY:
+        tr = ble.forward_trace(tm, prompt)
+        aid = _first_id(tm, answer)
+        ranks = ble.answer_rank_by_layer(tm, tr["hidden"], aid)
+        rd = _resolution_depth(ranks)
+        d = tr["deltas"]
+        growth.append(d[-1] / (d[0] + 1e-9))
+        if rd is not None:
+            resolved += 1
+            per_relation.setdefault(rel, []).append(rd)
+        rows.append((prompt, answer.strip(), rd, ranks[-1]))
+    n = len(BATTERY)
+    all_depths = [d for ds in per_relation.values() for d in ds]
+    rel_mean_frac = {rel: (sum(ds) / len(ds)) / tm.n_layers
+                     for rel, ds in per_relation.items()}
+    return {
+        "model": model_dir.split("/")[-1],
+        "n_layers": tm.n_layers,
+        "resolved": resolved, "n": n,
+        "delta_growth_median": sorted(growth)[len(growth) // 2],
+        "resolution_frac_mean": (sum(all_depths) / len(all_depths) / tm.n_layers)
+        if all_depths else None,
+        "resolution_frac_band": (min(all_depths) / tm.n_layers,
+                                 max(all_depths) / tm.n_layers) if all_depths else None,
+        "rel_mean_frac": rel_mean_frac,
+        "rows": rows,
+    }
+
+
+def size_sweep(device="cpu"):
+    """Run the between-layer battery across the Qwen3 size sweep on CPU and test
+    whether the between-layer FUNCTION is a stable FRACTIONAL structure across
+    scale (resolution band as a fraction of depth, and the relation ordering)."""
+    import os
+    base = "/applications/data/model_graph_work"
+    models = [os.path.join(base, m) for m in
+              ("Qwen3-0.6B", "Qwen3-1.7B", "Qwen3-4B")]
+    models = [m for m in models if os.path.isdir(m)]
+    if not ble.have_torch() or not models:
+        print("torch/models absent — run with the venv python; see docstring.")
+        return
+    print("=" * 74)
+    print("BETWEEN-LAYER SIZE SWEEP (CPU) — is the function stable across scale?")
+    print("=" * 74)
+    reports = []
+    for m in models:
+        print("\n[%s] running on %s ..." % (m.split("/")[-1], device))
+        import time
+        t0 = time.time()
+        rep = run_model(m, device=device)
+        rep["_secs"] = time.time() - t0
+        reports.append(rep)
+        print("  %d layers, resolved %d/%d, %.0fs" %
+              (rep["n_layers"], rep["resolved"], rep["n"], rep["_secs"]))
+
+    print("\n%-14s %-8s %-10s %-16s %-14s" %
+          ("model", "layers", "resolved", "res_frac(band)", "delta_growth"))
+    for r in reports:
+        band = r["resolution_frac_band"]
+        bs = "%.2f-%.2f" % band if band else "n/a"
+        rf = "%.2f" % r["resolution_frac_mean"] if r["resolution_frac_mean"] else "n/a"
+        print("  %-12s %-8d %-10s %-16s %-14.1f" %
+              (r["model"], r["n_layers"], "%d/%d" % (r["resolved"], r["n"]),
+               "%s (m%s)" % (bs, rf), r["delta_growth_median"]))
+
+    # relation ordering by fractional resolution depth — stable across sizes?
+    print("\n  per-relation resolution FRACTION (of stack):")
+    rels = sorted({rel for r in reports for rel in r["rel_mean_frac"]})
+    print("  %-14s %s" % ("relation", "  ".join("%8s" % r["model"] for r in reports)))
+    orderings = []
+    for rel in rels:
+        vals = [r["rel_mean_frac"].get(rel) for r in reports]
+        print("  %-14s %s" % (rel, "  ".join(
+            ("%8.2f" % v) if v is not None else "%8s" % "-" for v in vals)))
+    for r in reports:
+        present = [(rel, r["rel_mean_frac"][rel]) for rel in rels
+                   if rel in r["rel_mean_frac"]]
+        orderings.append([rel for rel, _ in sorted(present, key=lambda kv: kv[1])])
+
+    print("\n  relation ordering (earliest->latest resolving) per model:")
+    for r, o in zip(reports, orderings):
+        print("    %-12s %s" % (r["model"], " < ".join(o)))
+    # stable = the fractional band is similar (all mid-late) and orderings agree
+    bands_midlate = all(r["resolution_frac_mean"] and r["resolution_frac_mean"] > 0.5
+                        for r in reports if r["resolution_frac_mean"])
+    print("\n" + "=" * 74)
+    print("VERDICT: fractional resolution band mid-late across ALL sizes: %s" %
+          bands_midlate)
+    print("  (within Qwen3 family; CPU; logit-lens is a qualitative probe)")
+    print("=" * 74)
+    return {"reports": reports, "bands_midlate": bands_midlate}
+
+
 if __name__ == "__main__":
-    main()
+    import sys as _sys
+    if "--sweep" in _sys.argv:
+        size_sweep()
+    else:
+        main()
