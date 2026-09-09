@@ -36,6 +36,32 @@ def _cfg(model_dir):
     return c.get("text_config", c)
 
 
+class SparseConfig:
+    """Sparsification knobs applied to the recovered forward pass. All default
+    to OFF (=> bit-exact full forward). Each actually SKIPS arithmetic, so the
+    FLOP counter reflects a real reduction.
+
+      ffn_keep_frac  — keep only the top fraction of FFN hidden neurons per
+                       token (by |silu(gate)*up|); the rest contribute 0 to
+                       down_proj (columns skipped). 1.0 = full.
+      skip_layers    — set of layer indices whose attention+MLP blocks are
+                       skipped entirely (residual passes through). The measure
+                       picks these by smallest residual delta.
+      heads_keep     — number of attention heads to keep per layer (prune the
+                       rest); None = all.
+    """
+
+    def __init__(self, ffn_keep_frac=1.0, skip_layers=None, heads_keep=None):
+        self.ffn_keep_frac = float(ffn_keep_frac)
+        self.skip_layers = set(skip_layers or ())
+        self.heads_keep = heads_keep
+
+    @property
+    def off(self):
+        return (self.ffn_keep_frac >= 1.0 and not self.skip_layers
+                and self.heads_keep is None)
+
+
 class NumpyQwen3:
     """Pure-numpy Qwen3 forward pass reconstructed from the safetensors weights.
     No torch anywhere in this class. float32 throughout."""
@@ -103,66 +129,132 @@ class NumpyQwen3:
         return out
 
     # ---- the forward pass (the recovered graph, evaluated) ------------
-    def forward_logits(self, token_ids):
-        """token_ids: list[int]; returns logits for the LAST position [vocab]."""
+    def forward_logits(self, token_ids, sparse=None, flop_counter=None):
+        """token_ids: list[int]; returns logits for the LAST position [vocab].
+        `sparse` (SparseConfig|None) applies sparsification that really skips
+        arithmetic; `flop_counter` (dict|None) accumulates matmul FLOPs under
+        key 'flops'."""
+        sp = sparse if sparse is not None else SparseConfig()
+        fc = flop_counter
+
+        def _mm(a, W, out_cols=None):
+            # a @ W.T ; count 2*rows*in*out FLOPs (optionally restricted cols)
+            if fc is not None:
+                rows = a.shape[0]
+                cols = out_cols if out_cols is not None else W.shape[0]
+                fc["flops"] = fc.get("flops", 0) + 2 * rows * a.shape[1] * cols
+            return a @ W.T
+
         T = len(token_ids)
         E = self._t("model.embed_tokens.weight")           # [vocab, d]
         h = E[np.asarray(token_ids)].astype(np.float32)     # [T, d]
         cos, sin = self._rope(T)
         nh, nkv, hd = self.n_heads, self.n_kv, self.head_dim
         rep = nh // nkv
+        heads_keep = sp.heads_keep if sp.heads_keep is not None else nh
         causal = np.triu(np.full((T, T), -1e30, dtype=np.float32), k=1)
         for L in range(self.n_layers):
+            if L in sp.skip_layers:
+                continue                                    # skip whole block
             p = "model.layers.%d." % L
             # --- attention block ---
             x = self.rmsnorm(h, self._t(p + "input_layernorm.weight"), self.eps)
-            q = x @ self._t(p + "self_attn.q_proj.weight").T    # [T, nh*hd]
-            k = x @ self._t(p + "self_attn.k_proj.weight").T    # [T, nkv*hd]
-            v = x @ self._t(p + "self_attn.v_proj.weight").T
+            q = _mm(x, self._t(p + "self_attn.q_proj.weight"))
+            k = _mm(x, self._t(p + "self_attn.k_proj.weight"))
+            v = _mm(x, self._t(p + "self_attn.v_proj.weight"))
             q = q.reshape(T, nh, hd)
             k = k.reshape(T, nkv, hd)
             v = v.reshape(T, nkv, hd)
-            # Qwen3 QK-norm: RMSNorm per head over head_dim
             qn = self._t(p + "self_attn.q_norm.weight")
             kn = self._t(p + "self_attn.k_norm.weight")
             q = self.rmsnorm(q, qn, self.eps)
             k = self.rmsnorm(k, kn, self.eps)
             q = self._apply_rope(q, cos, sin)
             k = self._apply_rope(k, cos, sin)
-            # GQA: repeat kv heads
             k = np.repeat(k, rep, axis=1)                       # [T, nh, hd]
             v = np.repeat(v, rep, axis=1)
-            # attention per head
-            out = np.empty((T, nh, hd), dtype=np.float32)
+            out = np.zeros((T, nh, hd), dtype=np.float32)
             scale = 1.0 / np.sqrt(hd)
-            for hi in range(nh):
-                sc = (q[:, hi] @ k[:, hi].T) * scale + causal    # [T, T]
+            for hi in range(heads_keep):                        # prune heads
+                sc = (q[:, hi] @ k[:, hi].T) * scale + causal
                 a = self.softmax(sc, axis=-1)
                 out[:, hi] = a @ v[:, hi]
             out = out.reshape(T, nh * hd)
-            attn = out @ self._t(p + "self_attn.o_proj.weight").T
+            attn = _mm(out, self._t(p + "self_attn.o_proj.weight"))
             h = h + attn
-            # --- MLP block ---
+            # --- MLP block (SwiGLU) with top-k neuron gating ---
             x = self.rmsnorm(h, self._t(p + "post_attention_layernorm.weight"),
                              self.eps)
-            g = x @ self._t(p + "mlp.gate_proj.weight").T
-            u = x @ self._t(p + "mlp.up_proj.weight").T
-            mlp = (self.silu(g) * u) @ self._t(p + "mlp.down_proj.weight").T
+            g = _mm(x, self._t(p + "mlp.gate_proj.weight"))
+            u = _mm(x, self._t(p + "mlp.up_proj.weight"))
+            hmid = self.silu(g) * u                             # [T, ff]
+            down = self._t(p + "mlp.down_proj.weight")          # [d, ff]
+            if sp.ffn_keep_frac < 1.0:
+                ff = hmid.shape[1]
+                keep = max(1, int(round(ff * sp.ffn_keep_frac)))
+                # per-token keep the top-|activation| neurons, zero the rest
+                idx = np.argpartition(-np.abs(hmid), keep - 1, axis=1)[:, :keep]
+                mask = np.zeros_like(hmid)
+                np.put_along_axis(mask, idx, 1.0, axis=1)
+                hmid = hmid * mask
+                if fc is not None:
+                    # only the kept neurons' down-proj columns are multiplied
+                    fc["flops"] = fc.get("flops", 0) + 2 * T * keep * down.shape[0]
+                mlp = hmid @ down.T
+            else:
+                mlp = _mm(hmid, down)
             h = h + mlp
         h = self.rmsnorm(h, self._t("model.norm.weight"), self.eps)
-        # unembed (lm_head, tied to embed for Qwen3-0.6B but the tensor exists)
         head_name = "lm_head.weight" if "lm_head.weight" in mr.tensor_names(self._st) \
             else "model.embed_tokens.weight"
         W = self._t(head_name)
-        logits = h[-1] @ W.T                                    # [vocab]
+        logits = _mm(h[-1:], W)[0]                             # [vocab]
         return logits
 
-    def next_token(self, token_ids):
-        return int(np.argmax(self.forward_logits(token_ids)))
+    def next_token(self, token_ids, sparse=None):
+        return int(np.argmax(self.forward_logits(token_ids, sparse=sparse)))
 
-    def top_k(self, token_ids, k=5):
-        lg = self.forward_logits(token_ids)
+    def top_k(self, token_ids, k=5, sparse=None):
+        lg = self.forward_logits(token_ids, sparse=sparse)
         return np.argsort(-lg)[:k].tolist()
+
+    def layer_deltas(self, token_ids):
+        """||residual delta|| per layer at the last token — used to choose the
+        smallest-contribution layers to skip (the block-307 finding: early
+        layers do little)."""
+        T = len(token_ids)
+        E = self._t("model.embed_tokens.weight")
+        h = E[np.asarray(token_ids)].astype(np.float32)
+        cos, sin = self._rope(T)
+        nh, nkv, hd = self.n_heads, self.n_kv, self.head_dim
+        rep = nh // nkv
+        causal = np.triu(np.full((T, T), -1e30, dtype=np.float32), k=1)
+        deltas = []
+        for L in range(self.n_layers):
+            p = "model.layers.%d." % L
+            h0 = h[-1].copy()
+            x = self.rmsnorm(h, self._t(p + "input_layernorm.weight"), self.eps)
+            q = (x @ self._t(p + "self_attn.q_proj.weight").T).reshape(T, nh, hd)
+            k = (x @ self._t(p + "self_attn.k_proj.weight").T).reshape(T, nkv, hd)
+            v = (x @ self._t(p + "self_attn.v_proj.weight").T).reshape(T, nkv, hd)
+            q = self.rmsnorm(q, self._t(p + "self_attn.q_norm.weight"), self.eps)
+            k = self.rmsnorm(k, self._t(p + "self_attn.k_norm.weight"), self.eps)
+            q = self._apply_rope(q, cos, sin)
+            k = self._apply_rope(k, cos, sin)
+            k = np.repeat(k, rep, axis=1)
+            v = np.repeat(v, rep, axis=1)
+            out = np.empty((T, nh, hd), dtype=np.float32)
+            scale = 1.0 / np.sqrt(hd)
+            for hi in range(nh):
+                a = self.softmax((q[:, hi] @ k[:, hi].T) * scale + causal, axis=-1)
+                out[:, hi] = a @ v[:, hi]
+            h = h + (out.reshape(T, nh * hd) @ self._t(p + "self_attn.o_proj.weight").T)
+            x = self.rmsnorm(h, self._t(p + "post_attention_layernorm.weight"), self.eps)
+            g = x @ self._t(p + "mlp.gate_proj.weight").T
+            u = x @ self._t(p + "mlp.up_proj.weight").T
+            h = h + ((self.silu(g) * u) @ self._t(p + "mlp.down_proj.weight").T)
+            deltas.append(float(np.linalg.norm(h[-1] - h0)))
+        return deltas
 
 
 # ---------------------------------------------------------------------------
