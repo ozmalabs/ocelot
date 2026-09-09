@@ -61,14 +61,27 @@ adds knowledge with an append; the LLM repays a gradient bill.
 
 ## The honest ceiling (as prominent as the win)
 
+> **CORRECTION (block 303000, `INTERPOLATION_IS_GRAIN_RESULTS.md`).** The first
+> bullet below overstated the ceiling as a KIND boundary. Measured follow-up
+> DISPROVES that: graded interpolation — including MULTI-HOP, reaching nodes
+> with no direct edge — IS available on the same substrate via the CONTINUOUS
+> pre-threshold field read (a Python read over the same graph; 1→4 support →
+> 0.071→0.268 monotone). What looked like a ceiling (the discrete 3-state
+> commit saturating) is a MODE/PARAMETER choice, not a different machine. The
+> honest residual ceiling is NARROWER: interpolation QUALITY is bounded by
+> graph DENSITY + coupling reach (sparse/noisy graph → mush), a degree of
+> graph richness, not a kind difference. Read the bullet below with that
+> correction.
+
 - **Coverage ≠ capability parity.** Distilling 10¹⁰ facts buys MORE of the
   operations the substrate MODELS — compositional reasoning over EXPLICIT
   structure (coherence, analogy, CAN relaxation, knows-that/knows-what
-  aperture). It does NOT buy the LLM's generative interpolation: fluent novel
-  text, robustness to unseen phrasings, filling gaps the graph does not
-  contain. The substrate reasons over structure it HAS; the LLM generates
-  plausible structure it does not. This is a degree-not-kind boundary the
-  designer CHOOSES where to draw — the arc's own principle — not a free lunch.
+  aperture). ~~It does NOT buy the LLM's generative interpolation~~ (SEE
+  CORRECTION ABOVE — graded interpolation IS available via the continuous
+  read; the bound is graph density/reach, not kind). The substrate reasons
+  over structure it HAS; whether it can generate plausible structure it does
+  NOT directly store is a degree of coupling reach + grain, not a kind
+  boundary — the arc's own degree-not-kind principle, now measured.
 - **X is dominated by curation, not the measured machine time.** The 138k
   facts/sec bounds only the cheap machine cost.
 - **The 8.5-OoM gap is per-STEP on modelled operations**, NOT
