@@ -52,6 +52,16 @@ def _synthetic_lm(clustered=True, seed=0):
                            src="", _M=M, _pos={t: j for j, t in enumerate(work)})
 
 
+def test_structure_probes_detect_concentration():
+    """A low-rank clustered geometry (few directions carry variance) must have
+    a LOWER pr_over_d than a full-rank random one — the structure probe detects
+    representational concentration, independent of any codec."""
+    clustered = mae.structure_probes(_synthetic_lm(True), sample=80)
+    scrambled = mae.structure_probes(_synthetic_lm(False), sample=80)
+    assert clustered["pr_over_d"] < scrambled["pr_over_d"], (clustered, scrambled)
+    assert 0.0 < clustered["erank_over_d"] <= 1.0
+
+
 def test_knn_reciprocity_higher_for_clustered():
     clustered = mae.knn_reciprocity(_synthetic_lm(True), sample=80, k=7)
     scrambled = mae.knn_reciprocity(_synthetic_lm(False), sample=80, k=7)

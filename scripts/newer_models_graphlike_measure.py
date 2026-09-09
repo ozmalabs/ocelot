@@ -106,6 +106,11 @@ def main():
     s4 = row("distill_survival@4b", lambda r: r["distill_survival"].get(4, 0))
     s3 = row("distill_survival@3b", lambda r: r["distill_survival"].get(3, 0))
 
+    print("\n  --- ENCODED STRUCTURE (codec-independent; LOWER = more "
+          "concentrated / graph-like) ---")
+    prd = row("pr_over_d", lambda r: r["structure"]["pr_over_d"])
+    erd = row("erank_over_d", lambda r: r["structure"]["erank_over_d"])
+
     # ---- verdict: is each metric monotone with recency? ----------------
     print("\n" + "-" * 74)
     print("MONOTONE-WITH-RECENCY (newer >= older across the ordered models)?")
