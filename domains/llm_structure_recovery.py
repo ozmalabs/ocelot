@@ -581,6 +581,50 @@ def fit_router_nonlinear(model: "NumpyQwen3", corpus_token_ids, *, rank=64,
     return NonlinearRouter(P, Wout, rank)
 
 
+def fit_router_trained(model: "NumpyQwen3", corpus_token_ids, *, rank=64,
+                       epochs=200, lr=1e-2, weight_decay=1e-2, seed=0):
+    """Fit the per-layer nonlinear router by TRAINING the projection P (not
+    random) via backprop — 2-layer MLP x -> P(r x d) -> ReLU -> Wout(ff x r)
+    regressed on the FFN activation magnitude. `weight_decay` regularises (the
+    readout is over-parametrised vs a small corpus, so decay matters). Uses
+    torch (venv) for training ONLY; exports P, Wout to numpy into a
+    NonlinearRouter. torch imported LAZILY."""
+    import torch                                          # lazy — training only
+    m = model
+    feats_x = None
+    tgts = None
+    for ids in corpus_token_ids:
+        ios = _ffn_io(m, ids)
+        if feats_x is None:
+            feats_x = [[] for _ in ios]
+            tgts = [[] for _ in ios]
+        for L, (xg, act) in enumerate(ios):
+            feats_x[L].append(xg)
+            tgts[L].append(act)
+    P, Wout = {}, {}
+    d = m.d
+    torch.manual_seed(seed)
+    for L in range(len(feats_x)):
+        X = torch.tensor(np.stack(feats_x[L]), dtype=torch.float32)   # [N,d]
+        Y = torch.tensor(np.stack(tgts[L]), dtype=torch.float32)      # [N,ff]
+        ff = Y.shape[1]
+        Pl = torch.randn(rank, d) / (d ** 0.5)
+        Wl = torch.zeros(ff, rank)
+        Pl.requires_grad_(True)
+        Wl.requires_grad_(True)
+        opt = torch.optim.Adam([Pl, Wl], lr=lr, weight_decay=weight_decay)
+        for _ in range(epochs):
+            opt.zero_grad()
+            feat = torch.relu(X @ Pl.T)                   # [N,r]
+            pred = feat @ Wl.T                            # [N,ff]
+            loss = torch.mean((pred - Y) ** 2)
+            loss.backward()
+            opt.step()
+        P[L] = Pl.detach().numpy().astype(np.float32)
+        Wout[L] = Wl.detach().numpy().astype(np.float32)
+    return NonlinearRouter(P, Wout, rank)
+
+
 # ---------------------------------------------------------------------------
 # ORDER-2 (multi-query) shape — the FFN memory dictionary's structure is only
 # visible over MANY queries, not one. Accumulate per-neuron activation
