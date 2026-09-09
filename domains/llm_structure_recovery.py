@@ -512,3 +512,139 @@ def fit_order2_shape(model: "NumpyQwen3", corpus_token_ids, frac=0.5):
         keep = max(1, int(round(ff * frac)))
         shape[L] = np.argsort(-a)[:keep]                       # top-frac neurons
     return shape
+
+
+# ---------------------------------------------------------------------------
+# ORDER-3 (conditional) shape — the COACTIVATION GRAPH over the FFN memory
+# dictionary. The order-2 static mask fails because it is query-UNconditional.
+# The coactivation graph is query-CONDITIONAL: over the corpus, record which
+# neurons fire TOGETHER; then for a held-out query, take a cheap SEED (order-1)
+# and EXPAND it along the graph to the seed's frequent co-firing partners.
+# This is the substrate-native form: a graph over memories, navigated by
+# spreading from a seed — the coherence/kNN primitive on the memory dictionary.
+# ---------------------------------------------------------------------------
+
+class CoactivationGraph:
+    """Per-layer coactivation structure fitted over a corpus.
+      top[L]        — for each corpus query, its top-active neuron set (used to
+                      build co-firing); stored as counts, not the raw sets.
+      cofire[L]     — dict neuron -> {partner -> count} (sparse co-firing graph),
+                      restricted to the layer's frequently-active neurons.
+      freq[L]       — per-neuron activation frequency (marginal).
+    """
+
+    def __init__(self, cofire, freq, active_pool):
+        self.cofire = cofire            # {L: {neuron: {partner: count}}}
+        self.freq = freq                # {L: np.array}
+        self.active_pool = active_pool  # {L: np.array of candidate neurons}
+
+
+def fit_coactivation_graph(model: "NumpyQwen3", corpus_token_ids, *,
+                           per_query_frac=0.1, pool_frac=0.5):
+    """Fit the coactivation graph: for each corpus query keep its top
+    `per_query_frac` active neurons per layer; count co-firing among the
+    layer's `pool_frac` most-frequently-active neurons (the candidate pool).
+    Returns a CoactivationGraph."""
+    m = model
+    # first pass: marginal frequency to define the active pool per layer
+    freq = None
+    per_query_sets = []
+    for ids in corpus_token_ids:
+        acts = _ffn_activations(m, ids)
+        sets = []
+        if freq is None:
+            freq = [np.zeros_like(a) for a in acts]
+        for L, a in enumerate(acts):
+            ff = a.shape[0]
+            k = max(1, int(round(ff * per_query_frac)))
+            top = np.argsort(-a)[:k]
+            freq[L][top] += 1.0
+            sets.append(top)
+        per_query_sets.append(sets)
+    pool = {}
+    for L, f in enumerate(freq):
+        ff = f.shape[0]
+        pk = max(1, int(round(ff * pool_frac)))
+        pool[L] = set(np.argsort(-f)[:pk].tolist())
+    # second pass: co-firing counts within the pool
+    cofire = {L: {} for L in range(len(freq))}
+    for sets in per_query_sets:
+        for L, top in enumerate(sets):
+            act = [int(n) for n in top if int(n) in pool[L]]
+            for i in range(len(act)):
+                di = cofire[L].setdefault(act[i], {})
+                for j in range(len(act)):
+                    if i == j:
+                        continue
+                    di[act[j]] = di.get(act[j], 0) + 1
+    return CoactivationGraph(cofire=cofire, freq={L: f for L, f in enumerate(freq)},
+                             active_pool={L: np.array(sorted(pool[L])) for L in pool})
+
+
+def coactivation_retrieve(model: "NumpyQwen3", graph: CoactivationGraph,
+                          token_ids, *, seed_frac=0.15, target_frac=0.5):
+    """Query-CONDITIONAL retrieval via the coactivation graph. For each layer:
+    take a cheap SEED (top `seed_frac` neurons by gate-key on THIS query),
+    then EXPAND along the graph — add each seed neuron's most-frequent
+    co-firing partners — until `target_frac` of neurons are selected. Returns
+    {layer -> selected neuron indices}. Query-conditional (seed) + ensemble
+    (graph expansion)."""
+    m = model
+    T = len(token_ids)
+    E = m._t("model.embed_tokens.weight")
+    h = E[np.asarray(token_ids)].astype(np.float32)
+    cos, sin = m._rope(T)
+    nh, nkv, hd = m.n_heads, m.n_kv, m.head_dim
+    rep = nh // nkv
+    causal = np.triu(np.full((T, T), -1e30, dtype=np.float32), k=1)
+    out_shape = {}
+    for L in range(m.n_layers):
+        p = "model.layers.%d." % L
+        x = m.rmsnorm(h, m._t(p + "input_layernorm.weight"), m.eps)
+        q = (x @ m._t(p + "self_attn.q_proj.weight").T).reshape(T, nh, hd)
+        k = (x @ m._t(p + "self_attn.k_proj.weight").T).reshape(T, nkv, hd)
+        v = (x @ m._t(p + "self_attn.v_proj.weight").T).reshape(T, nkv, hd)
+        q = m.rmsnorm(q, m._t(p + "self_attn.q_norm.weight"), m.eps)
+        k = m.rmsnorm(k, m._t(p + "self_attn.k_norm.weight"), m.eps)
+        q = m._apply_rope(q, cos, sin)
+        k = m._apply_rope(k, cos, sin)
+        k = np.repeat(k, rep, axis=1)
+        v = np.repeat(v, rep, axis=1)
+        att = np.empty((T, nh, hd), dtype=np.float32)
+        scale = 1.0 / np.sqrt(hd)
+        for hi in range(nh):
+            a = m.softmax((q[:, hi] @ k[:, hi].T) * scale + causal, axis=-1)
+            att[:, hi] = a @ v[:, hi]
+        h_att = h + (att.reshape(T, nh * hd) @ m._t(p + "self_attn.o_proj.weight").T)
+        xg = m.rmsnorm(h_att, m._t(p + "post_attention_layernorm.weight"), m.eps)
+        gate_W = m._t(p + "mlp.gate_proj.weight")
+        # cheap SEED by gate-key on this query (last token)
+        gscore = np.abs(xg[-1] @ gate_W.T)
+        ff = gate_W.shape[0]
+        seed_k = max(1, int(round(ff * seed_frac)))
+        target_k = max(seed_k, int(round(ff * target_frac)))
+        seed = list(np.argsort(-gscore)[:seed_k])
+        selected = set(int(s) for s in seed)
+        # EXPAND along the coactivation graph: each seed's top partners
+        cof = graph.cofire.get(L, {})
+        cand = {}
+        for s in selected:
+            for partner, c in cof.get(s, {}).items():
+                if partner not in selected:
+                    cand[partner] = cand.get(partner, 0) + c
+        for partner, _ in sorted(cand.items(), key=lambda kv: -kv[1]):
+            if len(selected) >= target_k:
+                break
+            selected.add(partner)
+        # if graph didn't fill (sparse), top up by gate-key
+        if len(selected) < target_k:
+            for n in np.argsort(-gscore):
+                selected.add(int(n))
+                if len(selected) >= target_k:
+                    break
+        out_shape[L] = np.array(sorted(selected))
+        # advance the true residual so later layers see correct input
+        g = xg @ gate_W.T
+        u = xg @ m._t(p + "mlp.up_proj.weight").T
+        h = h_att + ((m.silu(g) * u) @ m._t(p + "mlp.down_proj.weight").T)
+    return out_shape
