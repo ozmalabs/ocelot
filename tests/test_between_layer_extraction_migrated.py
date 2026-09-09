@@ -79,6 +79,36 @@ def test_logit_lens_resolves_answer_late():
     assert res is not None and res > tm.n_layers // 2
 
 
+# ---- size sweep (CPU multi-model) --------------------------------------
+
+import os as _os
+
+_SWEEP_MODELS = [
+    "/applications/data/model_graph_work/Qwen3-0.6B",
+    "/applications/data/model_graph_work/Qwen3-4B",
+]
+_HAVE_SWEEP = ble.have_torch() and all(_os.path.isdir(m) for m in _SWEEP_MODELS)
+_need_sweep = pytest.mark.skipif(not _HAVE_SWEEP,
+                                 reason="torch / sweep models absent")
+
+
+@_need_sweep
+def test_run_model_cpu_report_shape():
+    """run_model on CPU returns the per-model report with a fractional
+    resolution band in [0,1] and positive delta-growth."""
+    import sys as _s
+    _s.path.insert(0, "scripts")
+    import scripts.between_layer_extraction_measure as m
+    rep = m.run_model(_SWEEP_MODELS[0], device="cpu", dtype="float32")
+    assert rep["n_layers"] > 0
+    assert rep["resolved"] >= 1
+    assert rep["delta_growth_median"] > 1.0        # late layers do more work
+    lo, hi = rep["resolution_frac_band"]
+    assert 0.0 <= lo <= hi <= 1.0
+    # claim 1: the resolution band is mid-late (fraction > 0.5)
+    assert rep["resolution_frac_mean"] > 0.5
+
+
 # ---- default == today ---------------------------------------------------
 
 def test_default_equals_today_so_unchanged():
