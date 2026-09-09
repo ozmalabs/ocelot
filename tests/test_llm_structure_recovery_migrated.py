@@ -78,6 +78,38 @@ def test_forward_path_uses_no_torch():
         assert "torch" not in _s.modules, "forward path pulled in torch"
 
 
+# ---- sparsification (block 310000) -------------------------------------
+
+@_need_model
+def test_sparsity_off_bit_exact():
+    npm = lsr.NumpyQwen3(MODEL)
+    ids = [464, 6722, 315, 9822, 374]
+    full = npm.forward_logits(ids)
+    off = npm.forward_logits(ids, sparse=lsr.SparseConfig())
+    assert np.max(np.abs(full - off)) == 0.0
+    assert lsr.SparseConfig().off is True
+
+
+@_need_model
+def test_ffn_gating_cuts_flops():
+    npm = lsr.NumpyQwen3(MODEL)
+    ids = [464, 6722, 315, 9822, 374]
+    fc_full = {}
+    npm.forward_logits(ids, sparse=lsr.SparseConfig(), flop_counter=fc_full)
+    fc_k = {}
+    npm.forward_logits(ids, sparse=lsr.SparseConfig(ffn_keep_frac=0.25),
+                       flop_counter=fc_k)
+    assert fc_k["flops"] < fc_full["flops"]
+
+
+@_need_model
+def test_layer_deltas_shape():
+    npm = lsr.NumpyQwen3(MODEL)
+    d = npm.layer_deltas([464, 6722, 315, 9822, 374])
+    assert len(d) == npm.n_layers
+    assert all(x >= 0 for x in d)
+
+
 # ---- reference agreement (skip without torch) --------------------------
 
 @_need_ref
