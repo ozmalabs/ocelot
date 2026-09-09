@@ -582,13 +582,19 @@ def fit_coactivation_graph(model: "NumpyQwen3", corpus_token_ids, *,
 
 
 def coactivation_retrieve(model: "NumpyQwen3", graph: CoactivationGraph,
-                          token_ids, *, seed_frac=0.15, target_frac=0.5):
+                          token_ids, *, seed_frac=0.15, target_frac=0.5,
+                          seed_mode="gate", expand=True):
     """Query-CONDITIONAL retrieval via the coactivation graph. For each layer:
-    take a cheap SEED (top `seed_frac` neurons by gate-key on THIS query),
-    then EXPAND along the graph — add each seed neuron's most-frequent
-    co-firing partners — until `target_frac` of neurons are selected. Returns
-    {layer -> selected neuron indices}. Query-conditional (seed) + ensemble
-    (graph expansion)."""
+    take a cheap SEED, then (optionally) EXPAND along the graph — add each seed
+    neuron's most-frequent co-firing partners — until `target_frac` of neurons
+    are selected. Returns {layer -> selected neuron indices}.
+
+    `seed_mode`:
+      'gate'  — seed by |gate·x| (order-1 gate-key; block 311, weak).
+      'joint' — seed by |gate·x|·|up·x| (the JOINT gate+up key, block 311's
+                named fix: true relevance is silu(gate·x)·(up·x), so both
+                projections rank the seed). Still two matmuls, same cost class.
+    `expand` — whether to graph-expand the seed (False = seed-only baseline)."""
     m = model
     T = len(token_ids)
     E = m._t("model.embed_tokens.weight")
@@ -618,33 +624,37 @@ def coactivation_retrieve(model: "NumpyQwen3", graph: CoactivationGraph,
         h_att = h + (att.reshape(T, nh * hd) @ m._t(p + "self_attn.o_proj.weight").T)
         xg = m.rmsnorm(h_att, m._t(p + "post_attention_layernorm.weight"), m.eps)
         gate_W = m._t(p + "mlp.gate_proj.weight")
-        # cheap SEED by gate-key on this query (last token)
-        gscore = np.abs(xg[-1] @ gate_W.T)
+        up_W = m._t(p + "mlp.up_proj.weight")
+        gx = xg[-1] @ gate_W.T
+        if seed_mode == "joint":
+            ux = xg[-1] @ up_W.T
+            score = np.abs(gx) * np.abs(ux)          # joint gate+up key
+        else:
+            score = np.abs(gx)                        # gate-key only
         ff = gate_W.shape[0]
         seed_k = max(1, int(round(ff * seed_frac)))
         target_k = max(seed_k, int(round(ff * target_frac)))
-        seed = list(np.argsort(-gscore)[:seed_k])
+        seed = list(np.argsort(-score)[:seed_k])
         selected = set(int(s) for s in seed)
-        # EXPAND along the coactivation graph: each seed's top partners
-        cof = graph.cofire.get(L, {})
-        cand = {}
-        for s in selected:
-            for partner, c in cof.get(s, {}).items():
-                if partner not in selected:
-                    cand[partner] = cand.get(partner, 0) + c
-        for partner, _ in sorted(cand.items(), key=lambda kv: -kv[1]):
-            if len(selected) >= target_k:
-                break
-            selected.add(partner)
-        # if graph didn't fill (sparse), top up by gate-key
+        if expand:
+            cof = graph.cofire.get(L, {})
+            cand = {}
+            for s in selected:
+                for partner, c in cof.get(s, {}).items():
+                    if partner not in selected:
+                        cand[partner] = cand.get(partner, 0) + c
+            for partner, _ in sorted(cand.items(), key=lambda kv: -kv[1]):
+                if len(selected) >= target_k:
+                    break
+                selected.add(partner)
+        # top up by the seed score if still short
         if len(selected) < target_k:
-            for n in np.argsort(-gscore):
+            for n in np.argsort(-score):
                 selected.add(int(n))
                 if len(selected) >= target_k:
                     break
         out_shape[L] = np.array(sorted(selected))
-        # advance the true residual so later layers see correct input
         g = xg @ gate_W.T
-        u = xg @ m._t(p + "mlp.up_proj.weight").T
+        u = xg @ up_W.T
         h = h_att + ((m.silu(g) * u) @ m._t(p + "mlp.down_proj.weight").T)
     return out_shape

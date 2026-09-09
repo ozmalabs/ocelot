@@ -220,8 +220,43 @@ def test_coactivation_retrieve_returns_valid_sets():
         sel = shp[L]
         assert 0 < len(sel) <= ff
         assert sel.min() >= 0 and sel.max() < ff
-        # roughly the target fraction (>= since it fills toward target_k)
         assert len(sel) >= int(round(ff * 0.2))
+
+
+@_need_model
+def test_joint_seed_returns_valid_sets():
+    npm = lsr.NumpyQwen3(MODEL)
+    corpus = [[464, 6722, 315, 9822, 374], [791, 14329, 315, 4106, 374]]
+    G = lsr.fit_coactivation_graph(npm, corpus, per_query_frac=0.1, pool_frac=0.5)
+    shp = lsr.coactivation_retrieve(npm, G, [464, 6722, 315, 9603, 374],
+                                    seed_frac=0.2, target_frac=0.5,
+                                    seed_mode="joint", expand=True)
+    assert set(shp) == set(range(npm.n_layers))
+    for L in range(npm.n_layers):
+        ff = npm._t("model.layers.%d.mlp.gate_proj.weight" % L).shape[0]
+        assert 0 < len(shp[L]) <= ff
+
+
+@_need_model
+def test_joint_seed_at_least_gate_seed_heldout():
+    """The joint gate+up seed selects at least as well as the gate-key seed on
+    held-out (block 311's named fix, on the retrieval seed)."""
+    npm = lsr.NumpyQwen3(MODEL)
+    train = [[464, 6722, 315, 9822, 374], [791, 14329, 315, 4106, 374],
+             [32, 5562, 374, 264, 3169, 315], [791, 7160, 38268, 304, 279],
+             [88075, 374, 1903, 505]]
+    heldout = [[464, 6722, 315, 9603, 374], [32, 8415, 374, 264, 3169, 315],
+               [791, 14329, 315, 3544, 374]]
+    full = [int(npm.forward_logits(p).argmax()) for p in heldout]
+    G = lsr.fit_coactivation_graph(npm, train, per_query_frac=0.1, pool_frac=0.6)
+
+    def ag(mode):
+        return sum(int(npm.forward_logits(p, sparse=lsr.SparseConfig(
+            order2_shape=lsr.coactivation_retrieve(
+                npm, G, p, seed_frac=0.2, target_frac=0.4, seed_mode=mode,
+                expand=True))).argmax()) == f for p, f in zip(heldout, full))
+
+    assert ag("joint") >= ag("gate")
 
 
 # ---- reference agreement (skip without torch) --------------------------
