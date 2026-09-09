@@ -300,6 +300,52 @@ def test_router_seed_returns_valid_sets():
         assert 0 < len(shp[L]) <= ff
 
 
+# ---- nonlinear router (block 316000) -----------------------------------
+
+@_need_model
+def test_fit_router_nonlinear_shapes():
+    npm = lsr.NumpyQwen3(MODEL)
+    corpus = [[464, 6722, 315, 9822, 374], [791, 14329, 315, 4106, 374],
+              [32, 5562, 374, 264, 3169, 315]]
+    R = lsr.fit_router_nonlinear(npm, corpus, rank=32, ridge=1.0)
+    assert R.r == 32
+    for L in range(npm.n_layers):
+        ff = npm._t("model.layers.%d.mlp.gate_proj.weight" % L).shape[0]
+        assert R.P[L].shape == (32, npm.d)
+        assert R.Wout[L].shape == (ff, 32)
+
+
+@_need_model
+def test_nonlinear_router_score_shape_and_nonlinear():
+    import numpy as np
+    npm = lsr.NumpyQwen3(MODEL)
+    corpus = [[464, 6722, 315, 9822, 374], [791, 14329, 315, 4106, 374]]
+    R = lsr.fit_router_nonlinear(npm, corpus, rank=32, ridge=1.0)
+    ff = npm._t("model.layers.0.mlp.gate_proj.weight").shape[0]
+    s = R.score(0, np.ones(npm.d, dtype=np.float32))
+    assert s.shape == (ff,)
+    # nonlinear: ReLU features are NOT odd, so score(-x) != -score(x)
+    x = np.random.default_rng(0).standard_normal(npm.d).astype(np.float32)
+    s1 = R.score(0, x)
+    sneg = R.score(0, -x)
+    assert not np.allclose(sneg, -s1)
+
+
+@_need_model
+def test_nonlinear_router_drops_into_retrieval():
+    npm = lsr.NumpyQwen3(MODEL)
+    corpus = [[464, 6722, 315, 9822, 374], [791, 14329, 315, 4106, 374]]
+    G = lsr.fit_coactivation_graph(npm, corpus, per_query_frac=0.1, pool_frac=0.5)
+    R = lsr.fit_router_nonlinear(npm, corpus, rank=32, ridge=1.0)
+    shp = lsr.coactivation_retrieve(npm, G, [464, 6722, 315, 9603, 374],
+                                    seed_frac=0.2, target_frac=0.5,
+                                    seed_mode="router", expand=True, router=R)
+    assert set(shp) == set(range(npm.n_layers))
+    for L in range(npm.n_layers):
+        ff = npm._t("model.layers.%d.mlp.gate_proj.weight" % L).shape[0]
+        assert 0 < len(shp[L]) <= ff
+
+
 # ---- reference agreement (skip without torch) --------------------------
 
 @_need_ref

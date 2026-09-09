@@ -530,6 +530,57 @@ def fit_router(model: "NumpyQwen3", corpus_token_ids, *, ridge=1.0):
     return LearnedRouter(W)
 
 
+class NonlinearRouter:
+    """Per-layer NONLINEAR low-rank router — the active-set selector is a
+    MANIFOLD, not a line, so recover it with a nonlinear map. Architecture:
+      x  -> P[L] (d x r)  -> ReLU  -> Wout[L] (r x ff)  -> predicted activation.
+    P is a FIXED random projection (random ReLU features — a kernel/manifold
+    approximation), Wout is fit in CLOSED FORM by ridge (no autograd). Cheap:
+    r << d, so the router matmuls (d·r + r·ff) are far below the FFN's own
+    2·d·ff — it predicts WHICH neurons fire without computing the activation."""
+
+    def __init__(self, P, Wout, r):
+        self.P = P                       # {L: (r, d)} fixed random projections
+        self.Wout = Wout                 # {L: (ff, r)} fitted readouts
+        self.r = r
+
+    def score(self, L, xg_last):
+        feat = np.maximum(0.0, self.P[L] @ xg_last)      # ReLU features [r]
+        return self.Wout[L] @ feat                        # [ff]
+
+
+def fit_router_nonlinear(model: "NumpyQwen3", corpus_token_ids, *, rank=64,
+                         ridge=1.0, seed=0):
+    """Fit the per-layer NONLINEAR low-rank router. Fixed random projection
+    P (r x d) + ReLU features, then closed-form ridge readout Wout (ff x r).
+    `rank` = r (<< d). Returns a NonlinearRouter."""
+    m = model
+    rng = np.random.default_rng(seed)
+    feats_x = None
+    tgts = None
+    for ids in corpus_token_ids:
+        ios = _ffn_io(m, ids)
+        if feats_x is None:
+            feats_x = [[] for _ in ios]
+            tgts = [[] for _ in ios]
+        for L, (xg, act) in enumerate(ios):
+            feats_x[L].append(xg)
+            tgts[L].append(act)
+    P, Wout = {}, {}
+    d = m.d
+    for L in range(len(feats_x)):
+        X = np.stack(feats_x[L])                          # [N, d]
+        Y = np.stack(tgts[L])                             # [N, ff]
+        Pl = rng.standard_normal((rank, d)).astype(np.float32) / np.sqrt(d)
+        F = np.maximum(0.0, X @ Pl.T)                     # [N, r] ReLU features
+        A = F.T @ F + ridge * np.eye(rank, dtype=np.float32)
+        B = F.T @ Y
+        Wl = np.linalg.solve(A, B).T.astype(np.float32)   # [ff, r]
+        P[L] = Pl
+        Wout[L] = Wl
+    return NonlinearRouter(P, Wout, rank)
+
+
 # ---------------------------------------------------------------------------
 # ORDER-2 (multi-query) shape — the FFN memory dictionary's structure is only
 # visible over MANY queries, not one. Accumulate per-neuron activation
