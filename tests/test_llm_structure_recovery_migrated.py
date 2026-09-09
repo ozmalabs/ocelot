@@ -346,6 +346,54 @@ def test_nonlinear_router_drops_into_retrieval():
         assert 0 < len(shp[L]) <= ff
 
 
+# ---- mode-grain router (block 318000, pure numpy) ----------------------
+
+@_need_model
+def test_fit_mode_router_shapes():
+    npm = lsr.NumpyQwen3(MODEL)
+    corpus = [[464, 6722, 315, 9822, 374], [791, 14329, 315, 4106, 374],
+              [32, 5562, 374, 264, 3169, 315], [791, 7160, 38268, 304, 279]]
+    R = lsr.fit_mode_router(npm, corpus, k=8, ridge=1.0)
+    # k is capped by the corpus size (min(N,ff)-1); it must not exceed request
+    assert 1 <= R.k <= 8
+    for L in range(npm.n_layers):
+        ff = npm._t("model.layers.%d.mlp.gate_proj.weight" % L).shape[0]
+        assert R.modes[L].shape == (R.k, ff)     # modes: k x ff
+        assert R.Wc[L].shape == (R.k, npm.d)     # coeff map: k x d
+        assert R.mean[L].shape == (ff,)          # activation mean: ff
+
+
+@_need_model
+def test_mode_router_score_shape_and_reconstructs():
+    import numpy as np
+    npm = lsr.NumpyQwen3(MODEL)
+    corpus = [[464, 6722, 315, 9822, 374], [791, 14329, 315, 4106, 374],
+              [32, 5562, 374, 264, 3169, 315]]
+    R = lsr.fit_mode_router(npm, corpus, k=8, ridge=1.0)
+    ff = npm._t("model.layers.0.mlp.gate_proj.weight").shape[0]
+    s = R.score(0, np.ones(npm.d, dtype=np.float32))
+    assert s.shape == (ff,)                       # reconstructs ff-dim act
+    # score = mean + coeffs·modes: at zero input, coeffs=0 -> score == mean
+    s0 = R.score(0, np.zeros(npm.d, dtype=np.float32))
+    assert np.allclose(s0, R.mean[0])
+
+
+@_need_model
+def test_mode_router_drops_into_retrieval():
+    npm = lsr.NumpyQwen3(MODEL)
+    corpus = [[464, 6722, 315, 9822, 374], [791, 14329, 315, 4106, 374],
+              [32, 5562, 374, 264, 3169, 315]]
+    G = lsr.fit_coactivation_graph(npm, corpus, per_query_frac=0.1, pool_frac=0.5)
+    R = lsr.fit_mode_router(npm, corpus, k=8, ridge=1.0)
+    shp = lsr.coactivation_retrieve(npm, G, [464, 6722, 315, 9603, 374],
+                                    seed_frac=0.2, target_frac=0.5,
+                                    seed_mode="router", expand=True, router=R)
+    assert set(shp) == set(range(npm.n_layers))
+    for L in range(npm.n_layers):
+        ff = npm._t("model.layers.%d.mlp.gate_proj.weight" % L).shape[0]
+        assert 0 < len(shp[L]) <= ff
+
+
 # ---- trained router (block 317000, needs torch) ------------------------
 
 _need_torch = pytest.mark.skipif(not (_have_torch() and _HAVE_MODEL),

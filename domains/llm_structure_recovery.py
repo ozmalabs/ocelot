@@ -549,6 +549,71 @@ class NonlinearRouter:
         return self.Wout[L] @ feat                        # [ff]
 
 
+class ModeRouter:
+    """FEATURE/MODE-grain router — recover the FFN activation in its LOW-RANK
+    MODE space (block-318 diagnostic: the activation has participation ratio
+    ~7-25 over 3072 neurons, so it lives in a few dozen modes). Per layer:
+      modes[L]  (k x ff)  — top-k activation modes (right singular vectors).
+      Wc[L]     (k x d)   — linear map input -> mode COEFFICIENTS (k of them,
+                            not ff).
+      mean[L]   (ff,)     — corpus mean activation.
+    score(x) = mean + (Wc·x)·modes reconstructs the FULL activation from its
+    modes. Predicting k~32 mode coefficients is the RIGHT grain vs 3072
+    neurons (blocks 315-317 predicted the ff-dim activation directly and
+    plateaued because the target only has ~20 modes)."""
+
+    def __init__(self, modes, Wc, mean, k):
+        self.modes = modes           # {L: (k, ff)}
+        self.Wc = Wc                 # {L: (k, d)}
+        self.mean = mean             # {L: (ff,)}
+        self.k = k
+
+    def score(self, L, xg_last):
+        coeffs = self.Wc[L] @ xg_last          # [k] predicted mode coefficients
+        return self.mean[L] + coeffs @ self.modes[L]   # [ff] reconstructed act
+
+
+def fit_mode_router(model: "NumpyQwen3", corpus_token_ids, *, k=32, ridge=1.0):
+    """Fit the MODE-grain router. Per layer: SVD the centred corpus activation
+    matrix [N, ff] -> top-k right singular vectors (modes); ridge-regress input
+    -> mode COEFFICIENTS (k of them, not ff). The router predicts k mode
+    coefficients (the right, low-rank grain per the block-318 diagnostic) and
+    reconstructs the activation as mean + coeffs·modes — instead of predicting
+    the ff-dim neuron activation directly (block 315-317's wrong, high-dim
+    grain). Same numpy `score` interface as the other routers."""
+    m = model
+    d = m.d
+    feats_x = None
+    tgts = None
+    for ids in corpus_token_ids:
+        ios = _ffn_io(m, ids)
+        if feats_x is None:
+            feats_x = [[] for _ in ios]
+            tgts = [[] for _ in ios]
+        for L, (xg, act) in enumerate(ios):
+            feats_x[L].append(xg)
+            tgts[L].append(act)
+    modes, Wc, mean = {}, {}, {}
+    kk = k
+    for L in range(len(feats_x)):
+        X = np.stack(feats_x[L])                          # [N, d]
+        Y = np.stack(tgts[L])                             # [N, ff]
+        mu = Y.mean(0)
+        Yc = Y - mu
+        kk = max(1, min(k, min(Yc.shape) - 1))
+        # right singular vectors of the centred activation = activation modes
+        _, _, Vt = np.linalg.svd(Yc, full_matrices=False)
+        U = Vt[:kk].astype(np.float32)                    # [k, ff] modes
+        C = Yc @ U.T                                      # [N, k] true coeffs
+        # ridge regression: input -> mode coefficients (k, not ff)
+        A = X.T @ X + ridge * np.eye(d, dtype=np.float32)
+        Wcl = np.linalg.solve(A, X.T @ C).T.astype(np.float32)  # [k, d]
+        modes[L] = U
+        Wc[L] = Wcl
+        mean[L] = mu.astype(np.float32)
+    return ModeRouter(modes, Wc, mean, kk)
+
+
 def fit_router_nonlinear(model: "NumpyQwen3", corpus_token_ids, *, rank=64,
                          ridge=1.0, seed=0):
     """Fit the per-layer NONLINEAR low-rank router. Fixed random projection
