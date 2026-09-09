@@ -346,6 +346,32 @@ def test_nonlinear_router_drops_into_retrieval():
         assert 0 < len(shp[L]) <= ff
 
 
+# ---- trained router (block 317000, needs torch) ------------------------
+
+_need_torch = pytest.mark.skipif(not (_have_torch() and _HAVE_MODEL),
+                                 reason="torch/model absent")
+
+
+@_need_torch
+def test_fit_router_trained_shapes_and_retrieval():
+    npm = lsr.NumpyQwen3(MODEL)
+    corpus = [[464, 6722, 315, 9822, 374], [791, 14329, 315, 4106, 374],
+              [32, 5562, 374, 264, 3169, 315]]
+    R = lsr.fit_router_trained(npm, corpus, rank=16, epochs=20, lr=1e-2,
+                               weight_decay=1e-2)
+    assert R.r == 16
+    for L in range(npm.n_layers):
+        ff = npm._t("model.layers.%d.mlp.gate_proj.weight" % L).shape[0]
+        assert R.P[L].shape == (16, npm.d)
+        assert R.Wout[L].shape == (ff, 16)
+    # drops into retrieval (same NonlinearRouter interface)
+    G = lsr.fit_coactivation_graph(npm, corpus, per_query_frac=0.1, pool_frac=0.5)
+    shp = lsr.coactivation_retrieve(npm, G, [464, 6722, 315, 9603, 374],
+                                    seed_frac=0.2, target_frac=0.5,
+                                    seed_mode="router", expand=True, router=R)
+    assert set(shp) == set(range(npm.n_layers))
+
+
 # ---- reference agreement (skip without torch) --------------------------
 
 @_need_ref
