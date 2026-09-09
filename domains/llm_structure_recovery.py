@@ -49,17 +49,26 @@ class SparseConfig:
                        picks these by smallest residual delta.
       heads_keep     — number of attention heads to keep per layer (prune the
                        rest); None = all.
+      ffn_retrieve_frac — SHAPE-NATIVE FFN retrieval: select the top fraction
+                       of neurons by QUERY-KEY GEOMETRY (|x·gate_key|), the
+                       kNN/coherence primitive, WITHOUT computing the full
+                       activation; compute only the retrieved key-value pairs.
+                       This is the true-shape substitution: the outcome comes
+                       from WHICH memories the query retrieves (the shape), not
+                       the exact dense arithmetic. 1.0 = full (no retrieval).
     """
 
-    def __init__(self, ffn_keep_frac=1.0, skip_layers=None, heads_keep=None):
+    def __init__(self, ffn_keep_frac=1.0, skip_layers=None, heads_keep=None,
+                 ffn_retrieve_frac=1.0):
         self.ffn_keep_frac = float(ffn_keep_frac)
         self.skip_layers = set(skip_layers or ())
         self.heads_keep = heads_keep
+        self.ffn_retrieve_frac = float(ffn_retrieve_frac)
 
     @property
     def off(self):
         return (self.ffn_keep_frac >= 1.0 and not self.skip_layers
-                and self.heads_keep is None)
+                and self.heads_keep is None and self.ffn_retrieve_frac >= 1.0)
 
 
 class NumpyQwen3:
@@ -185,25 +194,49 @@ class NumpyQwen3:
             # --- MLP block (SwiGLU) with top-k neuron gating ---
             x = self.rmsnorm(h, self._t(p + "post_attention_layernorm.weight"),
                              self.eps)
-            g = _mm(x, self._t(p + "mlp.gate_proj.weight"))
-            u = _mm(x, self._t(p + "mlp.up_proj.weight"))
-            hmid = self.silu(g) * u                             # [T, ff]
+            gate_W = self._t(p + "mlp.gate_proj.weight")        # [ff, d] keys
+            up_W = self._t(p + "mlp.up_proj.weight")            # [ff, d]
             down = self._t(p + "mlp.down_proj.weight")          # [d, ff]
-            if sp.ffn_keep_frac < 1.0:
-                ff = hmid.shape[1]
-                keep = max(1, int(round(ff * sp.ffn_keep_frac)))
-                # per-token keep the top-|activation| neurons, zero the rest
-                idx = np.argpartition(-np.abs(hmid), keep - 1, axis=1)[:, :keep]
-                mask = np.zeros_like(hmid)
-                np.put_along_axis(mask, idx, 1.0, axis=1)
-                hmid = hmid * mask
+            if sp.ffn_retrieve_frac < 1.0:
+                # SHAPE-NATIVE RETRIEVAL: score neurons by query-key geometry
+                # (x . gate_key) — the coherence/kNN primitive — retrieve the
+                # top-k, and compute ONLY those neurons' up + down. The gate
+                # score doubles as the retrieval key AND the gate value (it is
+                # x·gate_key either way), so no extra dense work to select.
+                ff = gate_W.shape[0]
+                keep = max(1, int(round(ff * sp.ffn_retrieve_frac)))
+                gscore = x @ gate_W.T                            # [T, ff] keys
                 if fc is not None:
-                    # only the kept neurons' down-proj columns are multiplied
-                    fc["flops"] = fc.get("flops", 0) + 2 * T * keep * down.shape[0]
-                mlp = hmid @ down.T
+                    fc["flops"] = fc.get("flops", 0) + 2 * T * self.d * ff
+                idx = np.argpartition(-np.abs(gscore), keep - 1, axis=1)[:, :keep]
+                mlp = np.zeros((T, self.d), dtype=np.float32)
+                for t in range(T):
+                    sel = idx[t]                                 # retrieved neurons
+                    gsel = gscore[t, sel]                        # gate values
+                    usel = x[t] @ up_W[sel].T                    # up for retrieved
+                    hsel = self.silu(gsel) * usel                # [keep]
+                    mlp[t] = hsel @ down[:, sel].T               # down for retrieved
+                    if fc is not None:
+                        fc["flops"] = fc.get("flops", 0) + \
+                            2 * self.d * keep + 2 * keep * self.d
+                h = h + mlp
             else:
-                mlp = _mm(hmid, down)
-            h = h + mlp
+                g = _mm(x, gate_W)
+                u = _mm(x, up_W)
+                hmid = self.silu(g) * u                         # [T, ff]
+                if sp.ffn_keep_frac < 1.0:
+                    ff = hmid.shape[1]
+                    keep = max(1, int(round(ff * sp.ffn_keep_frac)))
+                    idx = np.argpartition(-np.abs(hmid), keep - 1, axis=1)[:, :keep]
+                    mask = np.zeros_like(hmid)
+                    np.put_along_axis(mask, idx, 1.0, axis=1)
+                    hmid = hmid * mask
+                    if fc is not None:
+                        fc["flops"] = fc.get("flops", 0) + 2 * T * keep * down.shape[0]
+                    mlp = hmid @ down.T
+                else:
+                    mlp = _mm(hmid, down)
+                h = h + mlp
         h = self.rmsnorm(h, self._t("model.norm.weight"), self.eps)
         head_name = "lm_head.weight" if "lm_head.weight" in mr.tensor_names(self._st) \
             else "model.embed_tokens.weight"

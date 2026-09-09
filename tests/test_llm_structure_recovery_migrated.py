@@ -110,6 +110,46 @@ def test_layer_deltas_shape():
     assert all(x >= 0 for x in d)
 
 
+# ---- shape substitution (block 311000) ---------------------------------
+
+@_need_model
+def test_shape_retrieve_off_bit_exact():
+    npm = lsr.NumpyQwen3(MODEL)
+    ids = [464, 6722, 315, 9822, 374]
+    full = npm.forward_logits(ids)
+    off = npm.forward_logits(ids, sparse=lsr.SparseConfig(ffn_retrieve_frac=1.0))
+    assert np.max(np.abs(full - off)) == 0.0
+
+
+@_need_model
+def test_shape_retrieve_cuts_updown_flops():
+    npm = lsr.NumpyQwen3(MODEL)
+    ids = [464, 6722, 315, 9822, 374]
+    fc_full = {}
+    npm.forward_logits(ids, sparse=lsr.SparseConfig(), flop_counter=fc_full)
+    fc_r = {}
+    npm.forward_logits(ids, sparse=lsr.SparseConfig(ffn_retrieve_frac=0.1),
+                       flop_counter=fc_r)
+    assert fc_r["flops"] < fc_full["flops"]
+
+
+@_need_model
+def test_exact_topk_beats_shape_retrieve_at_same_frac():
+    """The oracle activation-selector preserves the outcome at least as well as
+    the gate-key geometry selector at the same fraction — the measured shape
+    gap (the up-projection carries shape the single key misses)."""
+    npm = lsr.NumpyQwen3(MODEL)
+    prompts = [[464, 6722, 315, 9822, 374], [32, 5562, 374, 264, 3169, 315],
+               [791, 14329, 315, 4106, 374]]
+    full = [int(npm.forward_logits(p).argmax()) for p in prompts]
+    frac = 0.5
+    et = sum(int(npm.forward_logits(p, sparse=lsr.SparseConfig(ffn_keep_frac=frac)).argmax()) == f
+             for p, f in zip(prompts, full))
+    sr = sum(int(npm.forward_logits(p, sparse=lsr.SparseConfig(ffn_retrieve_frac=frac)).argmax()) == f
+             for p, f in zip(prompts, full))
+    assert et >= sr   # oracle selection is at least as good as gate-key
+
+
 # ---- reference agreement (skip without torch) --------------------------
 
 @_need_ref
