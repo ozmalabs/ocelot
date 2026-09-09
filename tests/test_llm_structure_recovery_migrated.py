@@ -190,6 +190,40 @@ def test_order2_at_least_order1_aggressive_heldout():
     assert o2 >= o1
 
 
+# ---- coactivation graph (block 313000) ---------------------------------
+
+@_need_model
+def test_fit_coactivation_graph_structure():
+    npm = lsr.NumpyQwen3(MODEL)
+    corpus = [[464, 6722, 315, 9822, 374], [791, 14329, 315, 4106, 374],
+              [32, 5562, 374, 264, 3169, 315]]
+    G = lsr.fit_coactivation_graph(npm, corpus, per_query_frac=0.1, pool_frac=0.5)
+    # per-layer co-firing dicts, frequency arrays, and candidate pools present
+    assert set(G.cofire) == set(range(npm.n_layers))
+    assert set(G.freq) == set(range(npm.n_layers))
+    for L in range(npm.n_layers):
+        assert isinstance(G.cofire[L], dict)
+        assert len(G.active_pool[L]) >= 1
+
+
+@_need_model
+def test_coactivation_retrieve_returns_valid_sets():
+    npm = lsr.NumpyQwen3(MODEL)
+    corpus = [[464, 6722, 315, 9822, 374], [791, 14329, 315, 4106, 374],
+              [32, 5562, 374, 264, 3169, 315]]
+    G = lsr.fit_coactivation_graph(npm, corpus, per_query_frac=0.1, pool_frac=0.5)
+    shp = lsr.coactivation_retrieve(npm, G, [464, 6722, 315, 9603, 374],
+                                    seed_frac=0.2, target_frac=0.5)
+    assert set(shp) == set(range(npm.n_layers))
+    for L in range(npm.n_layers):
+        ff = npm._t("model.layers.%d.mlp.gate_proj.weight" % L).shape[0]
+        sel = shp[L]
+        assert 0 < len(sel) <= ff
+        assert sel.min() >= 0 and sel.max() < ff
+        # roughly the target fraction (>= since it fills toward target_k)
+        assert len(sel) >= int(round(ff * 0.2))
+
+
 # ---- reference agreement (skip without torch) --------------------------
 
 @_need_ref
