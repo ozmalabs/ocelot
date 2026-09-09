@@ -386,9 +386,45 @@ def graphlike_report(lm: LoadedModel, concept_seed_sets, *, rng=None) -> dict:
     ffn = ffn_concept_score(lm, concept_seed_sets)
     recip = knn_reciprocity(lm, rng=rng)
     surv = distill_survival(lm)
+    struct = structure_probes(lm, rng=rng)
     return {"ffn_alignment": ffn["alignment"], "ffn_purity": ffn["purity"],
             "knn_reciprocity": recip, "distill_survival": surv,
-            "ffn_per": ffn["per"]}
+            "structure": struct, "ffn_per": ffn["per"]}
+
+
+def structure_probes(lm: LoadedModel, *, sample: int = 4000, rng=None) -> dict:
+    """Probe the ACTUAL ENCODED STRUCTURE of the embedding — how the model uses
+    its representational space — INDEPENDENT of any naive codec.
+
+    A graph-like encoding concentrates meaning into FEW reused directions (low
+    intrinsic dimension relative to the available space); a diffuse manifold
+    spreads it across all dimensions. This measures the structure itself, not
+    whether a dumb uniform quantiser survives it (which the outlier-feature
+    tail of large models breaks for reasons that are about the CODEC, not the
+    structure).
+
+    Returns:
+      participation_ratio = (Σλ)² / Σλ²  over the embedding covariance spectrum
+        — the effective number of dimensions actually carrying variance.
+      pr_over_d           = participation_ratio / d  (fraction of space used;
+        LOWER = more concentrated / modular / graph-like).
+      effective_rank      = exp(entropy of the normalised spectrum).
+      erank_over_d        = effective_rank / d.
+    """
+    import numpy as _np
+    r = _np.random.default_rng(0 if rng is None else rng.randint(0, 2**31 - 1))
+    M = lm._M
+    d = M.shape[1]
+    idx = r.choice(M.shape[0], min(sample, M.shape[0]), replace=False)
+    X = M[idx] - M[idx].mean(0)
+    C = _np.cov(X.T)
+    ev = _np.linalg.eigvalsh(C)
+    ev = ev[ev > 1e-12]
+    pr = float((ev.sum() ** 2) / _np.square(ev).sum())
+    p = ev / ev.sum()
+    erank = float(_np.exp(-(p * _np.log(p)).sum()))
+    return {"d": d, "participation_ratio": pr, "pr_over_d": pr / d,
+            "effective_rank": erank, "erank_over_d": erank / d}
 
 
 def _concept_direction(lm: LoadedModel, seed_words):
