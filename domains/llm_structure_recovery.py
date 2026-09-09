@@ -59,16 +59,23 @@ class SparseConfig:
     """
 
     def __init__(self, ffn_keep_frac=1.0, skip_layers=None, heads_keep=None,
-                 ffn_retrieve_frac=1.0):
+                 ffn_retrieve_frac=1.0, order2_shape=None, order2_frac=1.0):
         self.ffn_keep_frac = float(ffn_keep_frac)
         self.skip_layers = set(skip_layers or ())
         self.heads_keep = heads_keep
         self.ffn_retrieve_frac = float(ffn_retrieve_frac)
+        # order2_shape: {layer -> np.array of kept neuron indices} fitted over a
+        # query CORPUS (the multi-query shape); order2_frac just records the
+        # fraction used (for reporting). When set, the MLP keeps exactly these
+        # corpus-selected neurons — query-INDEPENDENT selection.
+        self.order2_shape = order2_shape
+        self.order2_frac = float(order2_frac)
 
     @property
     def off(self):
         return (self.ffn_keep_frac >= 1.0 and not self.skip_layers
-                and self.heads_keep is None and self.ffn_retrieve_frac >= 1.0)
+                and self.heads_keep is None and self.ffn_retrieve_frac >= 1.0
+                and self.order2_shape is None)
 
 
 class NumpyQwen3:
@@ -197,7 +204,23 @@ class NumpyQwen3:
             gate_W = self._t(p + "mlp.gate_proj.weight")        # [ff, d] keys
             up_W = self._t(p + "mlp.up_proj.weight")            # [ff, d]
             down = self._t(p + "mlp.down_proj.weight")          # [d, ff]
-            if sp.ffn_retrieve_frac < 1.0:
+            if sp.order2_shape is not None:
+                # ORDER-2: keep the corpus-fitted neuron set for this layer
+                # (query-INDEPENDENT — the multi-query shape). Compute only
+                # those neurons' gate/up/down.
+                sel = sp.order2_shape.get(L)
+                if sel is None or len(sel) == 0:
+                    mlp = np.zeros((T, self.d), dtype=np.float32)
+                else:
+                    gsel = x @ gate_W[sel].T                     # [T, k]
+                    usel = x @ up_W[sel].T
+                    hsel = self.silu(gsel) * usel
+                    mlp = hsel @ down[:, sel].T
+                    if fc is not None:
+                        k = len(sel)
+                        fc["flops"] = fc.get("flops", 0) + 2 * T * self.d * k * 3
+                h = h + mlp
+            elif sp.ffn_retrieve_frac < 1.0:
                 # SHAPE-NATIVE RETRIEVAL: score neurons by query-key geometry
                 # (x . gate_key) — the coherence/kNN primitive — retrieve the
                 # top-k, and compute ONLY those neurons' up + down. The gate
@@ -417,3 +440,75 @@ def build_graph(model: "NumpyQwen3", token_ids):
     g = DataflowGraph(model)
     out = g.build(token_ids)
     return g, out
+
+
+# ---------------------------------------------------------------------------
+# ORDER-2 (multi-query) shape — the FFN memory dictionary's structure is only
+# visible over MANY queries, not one. Accumulate per-neuron activation
+# statistics over a query CORPUS, then select a query-INDEPENDENT keep-set:
+# the neurons that carry weight across the ensemble = the true shape, vs the
+# order-1 single-query gate-key snapshot.
+# ---------------------------------------------------------------------------
+
+def _ffn_activations(model: "NumpyQwen3", token_ids):
+    """Run the forward and return, per layer, the last-token FFN hidden
+    activation |silu(gate)*up| — the per-neuron contribution for this query."""
+    m = model
+    T = len(token_ids)
+    E = m._t("model.embed_tokens.weight")
+    h = E[np.asarray(token_ids)].astype(np.float32)
+    cos, sin = m._rope(T)
+    nh, nkv, hd = m.n_heads, m.n_kv, m.head_dim
+    rep = nh // nkv
+    causal = np.triu(np.full((T, T), -1e30, dtype=np.float32), k=1)
+    acts = []
+    for L in range(m.n_layers):
+        p = "model.layers.%d." % L
+        x = m.rmsnorm(h, m._t(p + "input_layernorm.weight"), m.eps)
+        q = (x @ m._t(p + "self_attn.q_proj.weight").T).reshape(T, nh, hd)
+        k = (x @ m._t(p + "self_attn.k_proj.weight").T).reshape(T, nkv, hd)
+        v = (x @ m._t(p + "self_attn.v_proj.weight").T).reshape(T, nkv, hd)
+        q = m.rmsnorm(q, m._t(p + "self_attn.q_norm.weight"), m.eps)
+        k = m.rmsnorm(k, m._t(p + "self_attn.k_norm.weight"), m.eps)
+        q = m._apply_rope(q, cos, sin)
+        k = m._apply_rope(k, cos, sin)
+        k = np.repeat(k, rep, axis=1)
+        v = np.repeat(v, rep, axis=1)
+        out = np.empty((T, nh, hd), dtype=np.float32)
+        scale = 1.0 / np.sqrt(hd)
+        for hi in range(nh):
+            a = m.softmax((q[:, hi] @ k[:, hi].T) * scale + causal, axis=-1)
+            out[:, hi] = a @ v[:, hi]
+        h = h + (out.reshape(T, nh * hd) @ m._t(p + "self_attn.o_proj.weight").T)
+        x = m.rmsnorm(h, m._t(p + "post_attention_layernorm.weight"), m.eps)
+        g = x @ m._t(p + "mlp.gate_proj.weight").T
+        u = x @ m._t(p + "mlp.up_proj.weight").T
+        hmid = m.silu(g) * u
+        acts.append(np.abs(hmid[-1]))                          # last token
+        h = h + (hmid @ m._t(p + "mlp.down_proj.weight").T)
+    return acts
+
+
+def fit_order2_shape(model: "NumpyQwen3", corpus_token_ids, frac=0.5):
+    """Accumulate per-neuron mean |activation| over a query CORPUS and return
+    {layer -> kept neuron indices} = the top-`frac` neurons by ENSEMBLE
+    importance. This is the order-2 (multi-query) shape: a query-INDEPENDENT
+    keep-set that reflects which memories carry weight across the distribution,
+    not one query's snapshot."""
+    m = model
+    acc = None
+    n = 0
+    for ids in corpus_token_ids:
+        acts = _ffn_activations(m, ids)
+        if acc is None:
+            acc = [a.copy() for a in acts]
+        else:
+            for L in range(len(acc)):
+                acc[L] += acts[L]
+        n += 1
+    shape = {}
+    for L, a in enumerate(acc):
+        ff = a.shape[0]
+        keep = max(1, int(round(ff * frac)))
+        shape[L] = np.argsort(-a)[:keep]                       # top-frac neurons
+    return shape
