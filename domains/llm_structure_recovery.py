@@ -1,0 +1,294 @@
+"""Recover an LLM's structure into an explicit graph that gives the SAME
+outcomes — turning an LLM into a graph-cognition seed.
+
+The user: *"if we can take Qwen3-0.6B and recover the actual structure to the
+point where the same prompts give the same outcomes, we can prove that the
+structure is recoverable and make an LLM into a graph cognition seed."*
+
+The proof is a FAITHFUL REIMPLEMENTATION of the forward pass as an explicit
+dataflow computation — every operation (embed, RMSNorm, GQA attention with
+QK-norm + RoPE, SwiGLU MLP, residual stream, final norm, unembed) computed
+from the RAW WEIGHTS in pure numpy, NOT by torch. If this graph's next-token
+prediction matches the reference model on held-out prompts, the structure is
+provably recovered — only the WEIGHTS were copied; the COMPUTATION is the
+graph's own.
+
+This is NOT a lookup table (no prompt->output memorisation) and NOT torch (the
+forward path is pure numpy from the safetensors). torch/transformers appear
+ONLY as the reference ORACLE to check against (block 307-308's external venv).
+
+See docs/research/psychology_affect/LLM_STRUCTURE_RECOVERY_PREREG.md.
+"""
+
+from __future__ import annotations
+
+import json
+import os
+
+import numpy as np
+
+from . import model_reader as mr
+
+
+def _cfg(model_dir):
+    with open(os.path.join(model_dir, "config.json")) as f:
+        c = json.load(f)
+    return c.get("text_config", c)
+
+
+class NumpyQwen3:
+    """Pure-numpy Qwen3 forward pass reconstructed from the safetensors weights.
+    No torch anywhere in this class. float32 throughout."""
+
+    def __init__(self, model_dir):
+        self.dir = model_dir
+        c = _cfg(model_dir)
+        self.n_layers = c["num_hidden_layers"]
+        self.n_heads = c["num_attention_heads"]
+        self.n_kv = c["num_key_value_heads"]
+        self.head_dim = c.get("head_dim", c["hidden_size"] // self.n_heads)
+        self.d = c["hidden_size"]
+        self.eps = c.get("rms_norm_eps", 1e-6)
+        self.theta = c.get("rope_theta", 1e6)
+        self._st = os.path.join(model_dir, "model.safetensors")
+        self._cache = {}
+
+    def _t(self, name):
+        if name not in self._cache:
+            self._cache[name] = mr.read_tensor(self._st, name).astype(np.float32)
+        return self._cache[name]
+
+    # ---- primitive ops (the graph's node kinds) -----------------------
+    @staticmethod
+    def rmsnorm(x, w, eps):
+        # x: [T, d]; w: [d]
+        var = np.mean(x * x, axis=-1, keepdims=True)
+        return (x / np.sqrt(var + eps)) * w
+
+    def _rope(self, T):
+        # inv_freq: [head_dim/2]; returns cos,sin [T, head_dim]
+        hd = self.head_dim
+        inv = 1.0 / (self.theta ** (np.arange(0, hd, 2, dtype=np.float64) / hd))
+        pos = np.arange(T, dtype=np.float64)[:, None]
+        ang = pos * inv[None, :]                 # [T, hd/2]
+        emb = np.concatenate([ang, ang], axis=-1)  # [T, hd]
+        return np.cos(emb).astype(np.float32), np.sin(emb).astype(np.float32)
+
+    @staticmethod
+    def _rot_half(x):
+        hd = x.shape[-1]
+        x1, x2 = x[..., : hd // 2], x[..., hd // 2:]
+        return np.concatenate([-x2, x1], axis=-1)
+
+    def _apply_rope(self, x, cos, sin):
+        # x: [T, H, hd]; cos/sin: [T, hd] -> broadcast over heads
+        cos = cos[:, None, :]
+        sin = sin[:, None, :]
+        return x * cos + self._rot_half(x) * sin
+
+    @staticmethod
+    def softmax(z, axis=-1):
+        z = z - np.max(z, axis=axis, keepdims=True)
+        e = np.exp(z)
+        return e / np.sum(e, axis=axis, keepdims=True)
+
+    @staticmethod
+    def silu(x):
+        # numerically stable sigmoid: avoid exp overflow on large-negative x
+        out = np.empty_like(x)
+        pos = x >= 0
+        out[pos] = x[pos] / (1.0 + np.exp(-x[pos]))
+        ex = np.exp(x[~pos])
+        out[~pos] = x[~pos] * ex / (1.0 + ex)
+        return out
+
+    # ---- the forward pass (the recovered graph, evaluated) ------------
+    def forward_logits(self, token_ids):
+        """token_ids: list[int]; returns logits for the LAST position [vocab]."""
+        T = len(token_ids)
+        E = self._t("model.embed_tokens.weight")           # [vocab, d]
+        h = E[np.asarray(token_ids)].astype(np.float32)     # [T, d]
+        cos, sin = self._rope(T)
+        nh, nkv, hd = self.n_heads, self.n_kv, self.head_dim
+        rep = nh // nkv
+        causal = np.triu(np.full((T, T), -1e30, dtype=np.float32), k=1)
+        for L in range(self.n_layers):
+            p = "model.layers.%d." % L
+            # --- attention block ---
+            x = self.rmsnorm(h, self._t(p + "input_layernorm.weight"), self.eps)
+            q = x @ self._t(p + "self_attn.q_proj.weight").T    # [T, nh*hd]
+            k = x @ self._t(p + "self_attn.k_proj.weight").T    # [T, nkv*hd]
+            v = x @ self._t(p + "self_attn.v_proj.weight").T
+            q = q.reshape(T, nh, hd)
+            k = k.reshape(T, nkv, hd)
+            v = v.reshape(T, nkv, hd)
+            # Qwen3 QK-norm: RMSNorm per head over head_dim
+            qn = self._t(p + "self_attn.q_norm.weight")
+            kn = self._t(p + "self_attn.k_norm.weight")
+            q = self.rmsnorm(q, qn, self.eps)
+            k = self.rmsnorm(k, kn, self.eps)
+            q = self._apply_rope(q, cos, sin)
+            k = self._apply_rope(k, cos, sin)
+            # GQA: repeat kv heads
+            k = np.repeat(k, rep, axis=1)                       # [T, nh, hd]
+            v = np.repeat(v, rep, axis=1)
+            # attention per head
+            out = np.empty((T, nh, hd), dtype=np.float32)
+            scale = 1.0 / np.sqrt(hd)
+            for hi in range(nh):
+                sc = (q[:, hi] @ k[:, hi].T) * scale + causal    # [T, T]
+                a = self.softmax(sc, axis=-1)
+                out[:, hi] = a @ v[:, hi]
+            out = out.reshape(T, nh * hd)
+            attn = out @ self._t(p + "self_attn.o_proj.weight").T
+            h = h + attn
+            # --- MLP block ---
+            x = self.rmsnorm(h, self._t(p + "post_attention_layernorm.weight"),
+                             self.eps)
+            g = x @ self._t(p + "mlp.gate_proj.weight").T
+            u = x @ self._t(p + "mlp.up_proj.weight").T
+            mlp = (self.silu(g) * u) @ self._t(p + "mlp.down_proj.weight").T
+            h = h + mlp
+        h = self.rmsnorm(h, self._t("model.norm.weight"), self.eps)
+        # unembed (lm_head, tied to embed for Qwen3-0.6B but the tensor exists)
+        head_name = "lm_head.weight" if "lm_head.weight" in mr.tensor_names(self._st) \
+            else "model.embed_tokens.weight"
+        W = self._t(head_name)
+        logits = h[-1] @ W.T                                    # [vocab]
+        return logits
+
+    def next_token(self, token_ids):
+        return int(np.argmax(self.forward_logits(token_ids)))
+
+    def top_k(self, token_ids, k=5):
+        lg = self.forward_logits(token_ids)
+        return np.argsort(-lg)[:k].tolist()
+
+
+# ---------------------------------------------------------------------------
+# Explicit DATAFLOW GRAPH — the LLM as a graph literally: nodes are typed ops,
+# edges are data dependencies. A tiny interpreter evaluates it (NOT torch).
+# Building the graph records the computation; evaluating it reproduces the
+# forward pass op-for-op. This is the "LLM -> graph" made concrete + glass-box.
+# ---------------------------------------------------------------------------
+
+class GraphNode:
+    __slots__ = ("id", "op", "inputs", "attrs")
+
+    def __init__(self, nid, op, inputs, attrs):
+        self.id = nid
+        self.op = op                 # op kind (embed, rmsnorm, matmul, ...)
+        self.inputs = inputs         # list of parent node ids
+        self.attrs = attrs           # {weight_name / scalar params}
+
+
+class DataflowGraph:
+    """A recorded computation DAG. `nodes` in topological (build) order; each
+    references earlier nodes by id. `evaluate` walks it with a pure-numpy op
+    table — the substrate-side interpreter, no torch."""
+
+    def __init__(self, model: "NumpyQwen3"):
+        self.m = model
+        self.nodes = []
+
+    def _add(self, op, inputs, **attrs):
+        nid = len(self.nodes)
+        self.nodes.append(GraphNode(nid, op, list(inputs), attrs))
+        return nid
+
+    def build(self, token_ids):
+        """Record the forward pass as graph nodes (no numeric work here beyond
+        shapes needed for RoPE); returns the output node id."""
+        m = self.m
+        T = len(token_ids)
+        nh, nkv, hd = m.n_heads, m.n_kv, m.head_dim
+        tok = self._add("tokens", [], ids=list(token_ids))
+        h = self._add("embed", [tok], weight="model.embed_tokens.weight")
+        rope = self._add("rope_tables", [], T=T)
+        for L in range(m.n_layers):
+            p = "model.layers.%d." % L
+            x = self._add("rmsnorm", [h], weight=p + "input_layernorm.weight")
+            q = self._add("matmul_t", [x], weight=p + "self_attn.q_proj.weight")
+            k = self._add("matmul_t", [x], weight=p + "self_attn.k_proj.weight")
+            v = self._add("matmul_t", [x], weight=p + "self_attn.v_proj.weight")
+            attn = self._add("gqa_attention", [q, k, v, rope],
+                             q_norm=p + "self_attn.q_norm.weight",
+                             k_norm=p + "self_attn.k_norm.weight",
+                             nh=nh, nkv=nkv, hd=hd, T=T)
+            o = self._add("matmul_t", [attn], weight=p + "self_attn.o_proj.weight")
+            h = self._add("add", [h, o])
+            x2 = self._add("rmsnorm", [h], weight=p + "post_attention_layernorm.weight")
+            g = self._add("matmul_t", [x2], weight=p + "mlp.gate_proj.weight")
+            u = self._add("matmul_t", [x2], weight=p + "mlp.up_proj.weight")
+            mlp_h = self._add("swiglu", [g, u])
+            mlp = self._add("matmul_t", [mlp_h], weight=p + "mlp.down_proj.weight")
+            h = self._add("add", [h, mlp])
+        hn = self._add("rmsnorm", [h], weight="model.norm.weight")
+        head = "lm_head.weight" if "lm_head.weight" in mr.tensor_names(m._st) \
+            else "model.embed_tokens.weight"
+        out = self._add("unembed_last", [hn], weight=head)
+        return out
+
+    def evaluate(self, out_id=None):
+        """Walk the DAG with the pure-numpy op table. Returns the value at
+        `out_id` (default: last node) — the recovered logits."""
+        m = self.m
+        vals = {}
+        cos_sin = {}
+        for node in self.nodes:
+            op = node.op
+            a = node.attrs
+            ins = [vals[i] for i in node.inputs]
+            if op == "tokens":
+                vals[node.id] = np.asarray(a["ids"])
+            elif op == "embed":
+                E = m._t(a["weight"])
+                vals[node.id] = E[ins[0]].astype(np.float32)
+            elif op == "rope_tables":
+                cos, sin = m._rope(a["T"])
+                cos_sin[node.id] = (cos, sin)
+                vals[node.id] = None
+            elif op == "rmsnorm":
+                vals[node.id] = m.rmsnorm(ins[0], m._t(a["weight"]), m.eps)
+            elif op == "matmul_t":
+                vals[node.id] = ins[0] @ m._t(a["weight"]).T
+            elif op == "add":
+                vals[node.id] = ins[0] + ins[1]
+            elif op == "swiglu":
+                vals[node.id] = m.silu(ins[0]) * ins[1]
+            elif op == "gqa_attention":
+                q, k, v = ins[0], ins[1], ins[2]
+                cos, sin = cos_sin[node.inputs[3]]
+                vals[node.id] = self._gqa(q, k, v, cos, sin, a)
+            elif op == "unembed_last":
+                vals[node.id] = ins[0][-1] @ m._t(a["weight"]).T
+            else:
+                raise ValueError("unknown op %r" % op)
+        return vals[self.nodes[-1].id if out_id is None else out_id]
+
+    def _gqa(self, q, k, v, cos, sin, a):
+        m = self.m
+        T, nh, nkv, hd = a["T"], a["nh"], a["nkv"], a["hd"]
+        rep = nh // nkv
+        q = m.rmsnorm(q.reshape(T, nh, hd), m._t(a["q_norm"]), m.eps)
+        k = m.rmsnorm(k.reshape(T, nkv, hd), m._t(a["k_norm"]), m.eps)
+        v = v.reshape(T, nkv, hd)
+        q = m._apply_rope(q, cos, sin)
+        k = m._apply_rope(k, cos, sin)
+        k = np.repeat(k, rep, axis=1)
+        v = np.repeat(v, rep, axis=1)
+        causal = np.triu(np.full((T, T), -1e30, dtype=np.float32), k=1)
+        out = np.empty((T, nh, hd), dtype=np.float32)
+        scale = 1.0 / np.sqrt(hd)
+        for hi in range(nh):
+            sc = (q[:, hi] @ k[:, hi].T) * scale + causal
+            out[:, hi] = m.softmax(sc, axis=-1) @ v[:, hi]
+        return out.reshape(T, nh * hd)
+
+
+def build_graph(model: "NumpyQwen3", token_ids):
+    """Build + return (DataflowGraph, out_node_id) for a prompt — the LLM
+    recorded as an explicit dataflow graph."""
+    g = DataflowGraph(model)
+    out = g.build(token_ids)
+    return g, out
