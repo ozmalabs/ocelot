@@ -500,6 +500,54 @@
    }
   },
   {
+   "name": "generative_source",
+   "kind": "epistemic",
+   "gloss": "a SOURCE whose genre is a GENERATIVE LANGUAGE MODEL: it PRODUCES fluent text by next-token generation over a training distribution, not by curation or attribution. WHO = a model (a compression of a training corpus / crowd), no single author and no editorial consensus. HOW = generative register — plausible, confident, sometimes wrong; FLUENCY IS NOT EVIDENCE. WHEN = training-cutoff-dated (it does not know past its cutoff). Epistemic weight = SELF-PUBLISHED, calibrated: BELOW an attested reference (encyclopedia); its claims must be CORROBORATED before they assert alone, and it is a WITNESS the reader can outgrow (demotable when the reader's own faculties contradict it). is-a source.",
+   "roles": [
+    "content",
+    "source"
+   ],
+   "built_from": [
+    "source"
+   ],
+   "combination": "isa(generative_source, source)",
+   "reliability": "self_published_calibrated",
+   "conventions": {
+    "_doc": "The CONVENTIONS of the generative-source genre held as graph DATA — how the agent reads an LLM output and what epistemic weight to assign. NOT hardcoded in Python: the read consults this structure.",
+    "fluency_is_not_evidence": true,
+    "corroborate_before_assert": true,
+    "training_cutoff_dated": true,
+    "no_primary_attribution": true,
+    "genre": "generative_source",
+    "epistemic_status": "self_published",
+    "register": "generative"
+   }
+  },
+  {
+   "name": "qwen3",
+   "kind": "epistemic",
+   "gloss": "the QWEN3 family of generative language models (here empero-ai/Qwen3.8-4B-Distill, Qwen3.8 distilled into the Qwen3.5-4B architecture). WHO = a model (Alibaba/Qwen lineage), no single author. HOW = next-token generation; the generative register + generative-source conventions (fluency-is-not-evidence, corroborate-before-assert). WHEN = its training cutoff. Reaped content (is-a / relational facts, concept judgments, process transforms) enters the agent's grounding as a WITNESS at a CALIBRATED self-published band — BELOW an attested reference, corroborate-before-assert, per-tier trust carried on the reaped edges (block 331/332). is-a generative_source.",
+   "roles": [
+    "content",
+    "source"
+   ],
+   "built_from": [
+    "generative_source"
+   ],
+   "combination": "isa(qwen3, generative_source)",
+   "reliability": "self_published_calibrated",
+   "provenance": {
+    "_doc": "The PROVENANCE template the agent attaches to everything it grounds from reaped Qwen3 content — WHO/HOW/WHEN + the source's calibrated epistemic status, read off this held concept (NOT hardcoded in Python). WHERE is filled per-claim (the elicitation prompt / relation); the rest is the held understanding of the source.",
+    "source": "qwen3",
+    "genre": "generative_source",
+    "who": "language_model",
+    "how": "generative",
+    "when": "qwen3.8 training cutoff (distilled into qwen3.5-4b)",
+    "epistemic_status": "self_published",
+    "reliability": "self_published_calibrated"
+   }
+  },
+  {
    "name": "temporal_entity",
    "kind": "epistemic",
    "gloss": "a SOURCE (or any entity) that has a HISTORY: it is not a static genre but an entity whose STATE (its name, owner, conventions, trust) CHANGES over a TIMELINE of dated EVENTS, each event a GROUNDED FACT carrying a WHEN and grounding in its own concepts. The CONTEXT of an artifact FROM such a source is NOT a flat tag but the GROUNDING CONE of the entity TIME-SLICED to the artifact's date — composed over the events with when <= the date. A 2015 artifact and a 2024 artifact from the SAME surface form DERIVE DIFFERENT contexts because a different set of events is in their cone. is-a source. Grounding is time-relative: the WHEN selects the entity's state.",
