@@ -15,23 +15,25 @@
 
 \title{Causal Attitude Networks on the Substrate\\\large What Moved, What Did Not, and What the Mean Field Costs}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-09-02.1}\\[2pt]2 September 2026 \textbullet\ document revision 3}
+\date{\textbf{Draft \textemdash\ \PaperDraft}\\[2pt]\PaperDisplayDate \textbullet\ document revision \PaperRevision}
 
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r3}}
+\fancyfoot[R]{\scriptsize\textsc{\PaperDraft\,r\PaperRevision}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r3}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{\PaperDraft\,r\PaperRevision}}\renewcommand{\headrulewidth}{0pt}}
+\input{paper_metadata.tex}
+
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-09-02.1 r3} (2 September 2026).
+\textbf{DRAFT --- \PaperDraft r\PaperRevision} (\PaperDisplayDate).
 Circulated for comment, not as a finished result. \textbf{This revision reports the programme's record
-to 14 August 2026}; its first revision reported the same record as it stood on the morning of
+to \PaperDisplayDate}; its first revision reported the same record as it stood on the morning of
 13 August, and the record moved past all three of that revision's findings within two days. Every
 remark below therefore carries the date of the rung it reports. Two of the first revision's five
 falsifiability commitments have fired against the record; both are reported as fired. Sections marked
@@ -41,21 +43,26 @@ as falsifiability commitments are the intended points of attack.}}
 
 \begin{abstract}
 The Causal Attitude Network \citep{dalege2016} models an attitude as an Ising-family network of
-interacting evaluative components. \emph{The headline is that the model was moved from a hosted solver
-to native graph rules, and that the audit of that move corrected two of this paper's own earlier
-findings.} It was reimplemented on this substrate \emph{twice}: first as a
-hosted mean-field self-consistency solver running beside the graph, then --- one day later --- as
-graph rules over graph data, in the existing vocabulary and with no new primitive in the compiled
-runtime. Five findings carry that, and two of them correct this paper's own earlier revision. The
-\emph{alignment} claim, that the dynamics had no term surface, has failed: they have one, and the
-remaining boundary is consumer-side and about scope. The two-cycle oscillation reported as a
-property of the borrowed mathematics was a property of the update schedule, and vanishes on every one
-of $126$ re-tested cells under damping. The \emph{performance} question is still not the complexity
-one it appears to be, and the ladder above mean field has now been climbed: approximate propagation
-in both variants, with a two-sided result and a $20$--$200\times$ cost, and exact inference where the
-treewidth permits it. Of two registered predictions, one is confirmed with a large effect and a
-control, and one is \emph{reversed} --- and survives its own solver correction in direction while
-losing it in magnitude. All of this is reported as measured rather than reinterpreted.
+interacting evaluative components. \emph{The current system is a native-default discrete graph-rule
+implementation}: its ordinary transition, learning, evidence-decay, and identity-update paths run as
+scoped rules over the target microtheory. A prior hosted mean-field self-consistency solver is retained
+in this paper as a dated implementation and experimental record, not as the current ordinary backend.
+The migration did not require a new domain-specific term kind, but it did require the compiled runtime
+to expose scoped rule execution; the earlier claim that no compiled-runtime capability changed was
+therefore too strong. The former per-network scope blocker is resolved: native settling now isolates
+the target microtheory, while the deliberately retained unscoped runner remains graph-global.
+
+The native transition commits $-1$, $0$, or $+1$ from a temperature-scaled local field, and is
+asynchronous because each rule commitment is visible to the next match. The two-state energy descent
+argument is structural: it applies only to the binary restriction. Three-state convergence remains an
+empirical question rather than a theorem, and its current native-default deployment is therefore an
+open operational commitment rather than a proved convergence result.
+The historical synchronous mean-field cycle and its damping correction, the registered resolution
+results, and the performance figures below are reported as dated measurements rather than claims about
+the present primary backend. Loopy belief propagation and bounded-treewidth junction-tree inference
+are available as explicit, Python-orchestrated auxiliary tools: neither is an installed graph-rule
+mechanism, automatic dispatch, nor a general convergence or tractability guarantee. All findings are
+reported as measured rather than reinterpreted.
 \end{abstract}
 
 \section{What was moved, what a move would mean, and on what standard}\label{sec:moved}
@@ -74,7 +81,9 @@ over by the rest of the account. It is also the criterion that decides Remark~\r
 the criterion was met after this paper's first revision said it had not been.
 
 \paragraph{The standard, stated once.} Every figure below is a \emph{measurement} reported from this
-programme's own record rather than from a published source. What is offered is a pre-registered
+programme's own record rather than from a published source. It is consequently \emph{parity-on-credit}:
+the figures receive no greater evidential standing than the reader grants the unavailable record.
+What is offered is a pre-registered
 implementation record which is not circulated with these papers, and it is a claim a reader may
 decline to credit on exactly the terms Graphic Equalisation sets for the same case. Each rung of that
 record fixes its own commit, seed and sample before it runs, and reports what was compared, what was
@@ -88,7 +97,7 @@ host and driven by seed-resident network data. The rules written against it did 
 reason was worth having.
 
 \begin{remark}[The hosted stage, and the null that dated within a day]\label{rem:hosted}
-\emph{(Record of 13 August 2026.)} There was no term surface for the dynamics at all, so the fifteen
+\emph{(Record of \PaperDisplayDate.)} There was no term surface for the dynamics at all, so the fifteen
 rules written against the network were inert --- and the
 obvious diagnosis, missing or malformed match clauses, was not the reason. The relaxation existed only across a host-language boundary, so a
 rule could not express it, could not be matched against it, and could not mint against it. The rules
@@ -100,19 +109,19 @@ was the network's data and its results, not its dynamics --- was true for about 
 \end{remark}
 
 \begin{remark}[The dynamics are native, and two engine findings came with them]\label{rem:native}
-\emph{(Record of 13 August 2026.)} The update was then expressed in the existing term vocabulary as
-five rules and four admissibility productions, with \emph{no new primitive added to the compiled
-runtime}: eight tests, three of them live demonstrations with measured numbers. A concept's local field is the sum of its two field attributes and the coupling-weighted
-states of its neighbours; a single rule commits the thresholded value of that field --- three-valued,
-with a neutral band --- whenever it differs from the state held. The update is asynchronous by the
-engine's own execution model rather than by arrangement: one binding is applied and committed per
-pass, and the next match reads the graph as it now stands. Across twenty draws per condition it failed
-to converge on \emph{none}, in either vocabulary and under either state alphabet, where the continuous
-synchronous relaxation oscillated on $12/20$ coarse and $4/20$ fine draws. For the two-valued case the
-absence of a cycle is structural rather than observed --- every committed flip strictly decreases a
-bounded energy --- and for the three-valued case it is an empirical fact on these draws and is
-reported as one. This is the criterion Section~\ref{sec:moved} gives for \emph{moved} rather than
-\emph{hosted}, and it is met.
+\emph{(Record of \PaperDisplayDate.)} The update was expressed in the existing term vocabulary as
+five rules and four admissibility productions, with \emph{no new domain-specific term kind}; the
+subsequent native-default deployment also added a compiled runner capability for scoped rule
+execution. A concept's local field is the sum of its external and identity fields and the
+coupling-weighted states of its outgoing neighbours; a rule commits the thresholded value of that
+field --- three-valued, with a neutral band --- whenever it differs from the held state. A physical
+symmetric coupling must consequently be represented by two directed causal-influence edges: the
+implementation does not infer an undirected coupling. The update is asynchronous by the engine's own
+execution model rather than by arrangement: one progressing binding is committed per pass, and the
+next match reads the graph as it now stands. The two-valued case has the usual bounded-energy descent
+argument for every committed flip; for the three-valued case, the observed absence of cycles on the
+reported draws is evidence, not a general convergence theorem. This meets the criterion
+Section~\ref{sec:moved} gives for \emph{moved} rather than \emph{hosted}.
 
 Two engine-level findings were made and corrected while building, and both belong to the machinery
 rather than to the model. \emph{First}: where sibling rules compete to update the same kind of node,
@@ -126,22 +135,27 @@ Occam violation in a tie-break; it was worked around by scoping the codebook to 
 time, and is reported rather than fixed.
 \end{remark}
 
-\paragraph{What still runs compiled, and the one reason.} Of the six consumers remaining after that
-build, two were migrated and four were not --- and the four share \emph{one} confirmed cause, not the
-three separate ones an earlier audit had named. The rule engine has no per-network scope: firing it on
-behalf of one network advances every other network in the graph, confirmed directly rather than
-argued, by watching an untouched network's state move from $0$ to $1$ across a call made for a
-different one. Every consumer built as a loop over networks in the host therefore cannot fire a native
-rule without corrupting the networks its loop has not yet reached, and deciding when the engine should
-fire relative to such a loop is a question this arc never set out to answer and did not. Sixteen
-compiled functions were audited for removal and none was removed, because each still has at least one
-real consumer --- the migrations are gated rather than unconditional, so both paths stay live. Across
-the arc's full seven consumers: two fully native, one partly, four still compiled.
+\paragraph{Current execution boundary.} The former per-network scope blocker is resolved. Native
+consumers call scoped settling, which limits rule firing to the target microtheory while preserving
+the graph-rule guards for state updates, Hebbian learning, evidence decay, and identity updates. An
+unscoped runner remains available and deliberately graph-global; it advances unrelated microtheories
+and is therefore not used by ordinary per-network lifecycle paths. A microtheory without an explicit
+non-discrete opt-out uses the native three-state path by default; the retained continuous route is an
+explicit, non-production opt-out rather than a coequal ordinary backend.
+
+``Full native'' names the graph-rule transition and plasticity mechanism, not every computation that
+can be composed around it. Counterfactual prediction and multi-start orchestration are bounded
+host-language procedures over the native local-field rule; graph-resident candidates and an argmin
+select the retained multi-start result. Basin recognition classifies a settled state against held
+signatures; it does not enumerate basins. Likewise, a concept shared by two microtheories has one
+committed graph state, not independent per-microtheory states; restricted-network hypothetical state is
+an auxiliary calculation when that distinction is needed. These are explicit boundaries, rather than
+reasons to misdescribe ordinary CAN dynamics as hosted.
 
 \section{The solver: what the oscillation turned out to be}\label{sec:solver}
 
 \begin{remark}[The oscillation was the update schedule, and the record found it]\label{rem:found}
-\emph{(Record of 13 August 2026.)} What was observed is not in doubt and reproduces exactly. On a
+\emph{(Record of \PaperDisplayDate.)} What was observed is not in doubt and reproduces exactly. On a
 fixed eight-node draw with a fixed nonzero field per node and a fixed start, the relaxation returns
 different states at $400$ and $401$ iterations (opposite-parity gap $5.615746$) and the same state at
 $400$ and $402$: a persistent period-2 cycle against a same-parity control. This paper's first
@@ -183,23 +197,23 @@ The natural objection to putting an Ising model anywhere is that its ground-stat
 \emph{with} a field, and the three-dimensional problem either way, is NP-hard. Every network here
 carries a nonzero field, so the hard case is the relevant one.
 
-\emph{And it does not bind, because no exact ground state was being sought.} The hosted solver computes
-a mean-field self-consistency fixed point --- polynomial per iteration, unconditionally, at every
-network size. The actionable question was therefore never whether this scales exactly, but how good
-the approximation is and when it fails to converge. That question now has an answer, and the answer
-sharpens rather than removes the point: exact inference \emph{is} now sought, where the treewidth
-permits it, and refused where it does not.
+\emph{And it does not bind the ordinary CAN transition, because that transition is a discrete,
+local graph-rule relaxation rather than an attempt to find every exact ground state.} The historical
+hosted solver computed a mean-field self-consistency fixed point; its performance and convergence
+results remain below as an experimental record, not as a description of the current default backend.
+Exact inference is an optional tool selected only after a treewidth gate, and refuses rather than
+attempting the exponential case. The practical question is therefore which explicitly selected
+procedure is appropriate for a stated network, objective, and resource bound.
 
-\begin{remark}[The ladder, climbed]\label{rem:hierarchy}
-\emph{(Record of 14 August 2026.)} Mean field is the first and weakest step of a known ladder --- mean
+\begin{remark}[The solver ladder is an auxiliary toolbox]\label{rem:hierarchy}
+\emph{(Record of \PaperDisplayDate.)} Mean field is the first and weakest step of a known ladder --- mean
 field, then Bethe and loopy belief propagation, then Kikuchi and generalized belief propagation
 \citep{yedidia2005} --- and it is weakest \emph{precisely} in the regime of loops, strong local
 correlation and frustration, which is the regime the frustration and basin audits exist to detect.
-This paper's first revision observed that an entire coherent piece of statistical-mechanics vocabulary
-had been borrowed while the better half of the same literature sat one step away unused, with a caveat
-attached: Bethe and loopy propagation are themselves known to lose stable solutions in the same
-frustrated, field-bearing, low-temperature regime. The step was then taken, and the caveat was tested
-rather than repeated.
+The following results concern explicit Python-orchestrated solver tools over a graph snapshot; they do
+not make loopy propagation or clique-tree inference installed native graph rules, automatic dispatch,
+or a general guarantee of convergence or tractability. They are retained as dated experimental records
+of those tools, while the graph-rule CAN transition remains discrete and native.
 
 \emph{Loopy propagation, both variants.} Max-product is the theoretically appropriate one here,
 because everything else in this toolbox is organised around a joint configuration rather than a
@@ -216,14 +230,16 @@ search on the deployed networks, and both cost $20$--$200\times$ its wall-clock 
 caveat held where it was aimed, and was not the whole story: the worse convergence is on the sparse
 networks, where it predicted none.
 
-\emph{Exact inference, where the width permits.} Off that ladder rather than on it, exact minimum-energy
-inference by clique-tree message passing was built for low-treewidth networks. It agrees with literal
-brute-force enumeration on five real networks, float-tight, and cross-checks against the same energy
-function every other consumer uses; it refuses cleanly on the case whose treewidth is $15$, in under
-two milliseconds and without mutating anything, rather than attempting an exponential search; and on a
-real cycle-topology network it finds a strictly lower-energy state ($-5.743$ against $-5.102$) than
-twenty random restarts. That last is the concrete content of what ``exact'' buys: a widened search
-finds the best of the basins its restarts land in, and this does not search basins at all.
+\emph{Exact inference, where the width permits.} Off that ladder rather than on it, an explicit
+Python junction-tree MAP tool provides exact minimum-energy inference for low-treewidth networks. It
+obtains a graph snapshot, refuses before exponential work when the configured treewidth bound is
+exceeded, and may commit the selected exact discrete state when invoked to do so; it is neither an
+automatic fallback nor a graph-rule transition. The recorded comparisons agree with literal brute-force
+enumeration on five real networks, float-tight, and cross-check against the energy function every
+other consumer uses. On a real cycle-topology network the recorded run finds a strictly lower-energy
+state ($-5.743$ against $-5.102$) than twenty random restarts. That last is the concrete content of
+what ``exact'' buys in its admissible range: a widened search finds the best of the basins its restarts
+land in, and this procedure instead solves the bounded-width objective directly.
 
 \emph{Tractability, measured.} The restart search exists because local-minimum risk was measured
 first, and not only on the adversarial case: $14$ of $30$ real deployed networks ($46.7\%$) show
@@ -237,7 +253,7 @@ substantially less independent than their count suggests.
 \section{Results}\label{sec:results}
 
 \begin{remark}[The registered scaling prediction is reversed, and its magnitudes moved]\label{rem:null}
-\emph{(Record of 13 August 2026.)} The primary registered prediction --- that coarse quantization would
+\emph{(Record of \PaperDisplayDate.)} The primary registered prediction --- that coarse quantization would
 yield fewer distinct basins than fine, with the gap widening in network size --- \emph{is not
 confirmed, and the measured direction is closer to reversed}. As first measured, coarse yields
 \emph{more} distinct basins ($6$ against $4$ at $N=4$; $15$ against $4$ at $N=8$), a higher
@@ -276,7 +292,7 @@ the representation's own way of declining to commit, and that is what the frustr
 \end{remark}
 
 \begin{remark}[Resolution separates the basins, with a control that says so]\label{rem:bigville}
-\emph{(Record of 13 August 2026.)} A second registered run, on a population of simulated residents each
+\emph{(Record of \PaperDisplayDate.)} A second registered run, on a population of simulated residents each
 carrying its own network at its own representational resolution, confirmed both of its predictions.
 
 The manipulation check is large: the coarse resident's mean rounding error is about $9.2$ times the
@@ -304,14 +320,15 @@ Two of the five commitments made in this paper's first revision have \emph{fired
 this paper reports from. Both are recorded as fired and replaced below, not quietly removed.
 
 \begin{enumerate}[leftmargin=*]
-\item \textsc{[shape]}~\textbf{The dynamics are native, and the remaining boundary is scope.} Fails if
-the native rules' results diverge from the hosted solver's on the same network, or if the per-network
-scoping cannot be enforced in rule matching. \emph{This replaces a commitment that fired.} The first
-revision committed that the migration was partial in the way it stated --- ``fails if the dynamics can
-be expressed in the existing term vocabulary without new term surface, that is, if the fifteen rules
-were inert for an ordinary reason after all.'' They can, and they were, one day after the stage that
-revision reported (Remark~\ref{rem:native}). The inertness diagnosis of Remark~\ref{rem:hosted} stands;
-the conclusion drawn from it does not.
+\item \textsc{[shape]}~\textbf{Ordinary CAN dynamics are native-default and scoped.} Fails if
+settling a target microtheory advances an unrelated microtheory, if a microtheory without an explicit
+non-discrete opt-out does not take the native three-state path, or if the graph-rule transition diverges
+from its specified local-field threshold under an auditable fixture. The relevant comparison is no
+longer against the historical hosted mean-field solver, because that solver is not the normal supported
+backend. The first revision's partial-migration commitment fired: the dynamics do have a term surface.
+The earlier scope-boundary version of this commitment has also fired, because scoped execution now
+exists; its replacement concerns isolation and default dispatch rather than merely the possibility of
+expressing the rules.
 \item \textsc{[detail]}~\textbf{Resolution drives basin quality.} Fails if the frustration and energy
 separation survives holding resolution fixed, or if the population correlation does not collapse under
 that control.

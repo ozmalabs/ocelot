@@ -7,7 +7,7 @@
 
 \title{The Law of Graphic Equalisation\\\large Statement}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \texorpdfstring{\textemdash}{---}\ draft-2026-09-02.1}\\[2pt]2 September 2026 \texorpdfstring{\textbullet}{\textperiodcentered}\ statement}
+\date{\PaperStatementDateLine}
 
 \begin{document}
 \maketitle

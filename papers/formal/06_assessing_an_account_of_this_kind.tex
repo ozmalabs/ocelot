@@ -15,20 +15,22 @@
 \input{06.counts}
 \title{Assessing an Account of This Kind\\\large What a Universal Framework Can Risk, What It Earns Instead, and What the Record Shows}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \texorpdfstring{\textemdash}{---}\ draft-2026-09-02.1}\\[2pt]2 September 2026 \texorpdfstring{\textbullet}{\textperiodcentered}\ document revision 28}
+\date{\textbf{Draft \texorpdfstring{\textemdash}{---}\ \PaperDraft}\\[2pt]\PaperDisplayDate \texorpdfstring{\textbullet}{\textperiodcentered}\ document revision \PaperRevision}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r28}}
+\fancyfoot[R]{\scriptsize\textsc{\PaperDraft\,r\PaperRevision}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r28}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{\PaperDraft\,r\PaperRevision}}\renewcommand{\headrulewidth}{0pt}}
+\input{paper_metadata.tex}
+
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-09-02.1 r28} (2 September 2026).
+\textbf{DRAFT --- \PaperDraft r\PaperRevision} (\PaperDisplayDate).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. It is a companion to
@@ -151,7 +153,9 @@ stating something a control vocabulary cannot state, resolving a dispute the fie
 locating a defect where the account says defects sit --- assign readers to conditions, and have the
 outputs scored by assessors blind to which condition produced them. The estimate is then a differential
 with an interval, per frame class, because the denominator is a frame's own and pooling across kinds of
-reader estimates something belonging to none of them.
+reader estimates something belonging to none of them. The external discriminating test is therefore
+not assent to the vocabulary but preregistered task performance against a control description, scored
+by assessors who do not know which description produced the answer.
 
 One instrument is ruled out by this account's own prediction, which is worth stating because it is the
 instrument anyone would reach for first. \emph{Self-report is invalid here.} A description that is
@@ -404,7 +408,9 @@ this corpus}. They come from the engineering record --- commit history, per-run 
 audit of capability acquisition --- which is not published alongside these papers, and no circulated
 paper contains them. Until that record is available a reader
 cannot check any figure quoted here, which by this section's own standard makes them assertions rather
-than evidence, and they are marked as such throughout. Where a figure below counts something in that
+than evidence, and they are marked as such throughout. They are \emph{parity-on-credit}: they carry no
+more evidential force than a reader grants the unavailable record from which they were read. Where a
+figure below counts something in that
 record --- files, seeds, manifests, stems, red identifiers --- it is not typed here but read from the
 record itself at build time, at the commit and on the date named in the generated file this paper
 takes them from (\countsCommit, read on \countsReadOn); the failure baseline is a dated measurement
@@ -907,8 +913,15 @@ And that supplies what Section~\ref{sec:risk} said falsification could not.
 
 \begin{proposition}[The discriminator]\label{prop:discriminator}
 What separates a well-formed universal framework from a vacuous one is not that one is more useful or
-cheaper, though both hold. It is whether \emph{attempting} a counterexample has an outcome. A
-framework nothing could fail to fit is a vocabulary and should be assessed as one; a framework
+cheaper, though both hold. It is whether \emph{attempting} a counterexample has an outcome. In canonical
+form, a vocabulary makes every candidate expressible, while a contentful claim $C$ leaves a possible
+counterexample:
+\[
+\text{vocabulary: }\forall x\,\operatorname{Expressible}(x),
+\qquad
+\text{contentful claim: }\exists x\,[\operatorname{Expressible}(x)\land\neg C(x)].
+\]
+A framework nothing could fail to fit is a vocabulary and should be assessed as one; a framework
 something could fail to fit is a theory about what exists, and is answerable in the only direction
 such a theory can be.
 \end{proposition}

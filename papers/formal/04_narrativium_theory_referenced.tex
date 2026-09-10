@@ -26,21 +26,23 @@
 \title{Narrativium --- Theory\\
 \large Frame-Relative Capacity for Consequential Deformation}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \texorpdfstring{\textemdash}{---}\ draft-2026-09-02.1}\\[2pt]2 September 2026 \texorpdfstring{\textbullet}{\textperiodcentered}\ document revision 22}
+\date{\textbf{Draft \texorpdfstring{\textemdash}{---}\ \PaperDraft}\\[2pt]\PaperDisplayDate \texorpdfstring{\textbullet}{\textperiodcentered}\ document revision \PaperRevision}
 
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r22}}
+\fancyfoot[R]{\scriptsize\textsc{\PaperDraft\,r\PaperRevision}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r22}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{\PaperDraft\,r\PaperRevision}}\renewcommand{\headrulewidth}{0pt}}
+\input{paper_metadata.tex}
+
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-09-02.1 r22} (2 September 2026).
+\textbf{DRAFT --- \PaperDraft r\PaperRevision} (\PaperDisplayDate).
 This document is under active revision and is circulated for comment, not as a
 finished result. It is a companion to \emph{The Law of Graphic Equalisation ---
 Theory} (referred to below as Graphic Equalisation) and to \emph{Seldon
@@ -261,7 +263,11 @@ This is stronger than saying that units differ. The common dimension itself may 
 The proposition above forbids a \emph{frame-free} sum. It does not forbid accounting across frames, which is performed constantly and usefully --- by markets, by triage, by cost--benefit analysis, by any decision weighing incommensurable goods. What it requires is that such accounting proceed through an explicitly instantiated conversion, and the theory does not supply one.
 
 \begin{definition}[Conversion relation]\label{def:conversion}
-A conversion $\kappa_{W_1\to W_2}$ is an instantiated relation mapping deformation measured in one frame's dimension onto another's. Where it exists, cross-frame accounting is well defined \emph{relative to $\kappa$}:
+For stated source and target dimensions $D_1$ and $D_2$, a conversion
+$\kappa_{W_1\to W_2}:D_1\supseteq\mathrm{dom}(\kappa)\to D_2$ is an instantiated relation mapping
+specified deformation measurements in $W_1$ onto $W_2$'s comparison dimension. Its domain, codomain,
+grounding, and any state dependence must be stated. Where it exists, cross-frame accounting is well
+defined \emph{relative to $\kappa$}:
 \[
 N_{W_1:G}\;+_{\kappa}\;N_{W_2:G}
 \]
@@ -269,7 +275,7 @@ is a quantity in $W_2$'s dimension, and not a frame-free total.
 \end{definition}
 
 \begin{remark}[Principled and stipulated conversions]\label{rem:kappa-kinds}
-Two cases must be kept apart. Where a grounding establishes that both frames measure the same underlying quantity, $\kappa$ is fixed by that grounding and the conversion is principled --- as thermochemical calories to joules. Where no such grounding exists, $\kappa$ is a \emph{stipulation}: legitimate, usable, and carrying exactly the authority of whoever stipulated it. Interpersonal comparison of utility is the standard instance; the classical result is not that comparison is impossible but that it requires a weighting no theory of preference supplies.
+Two cases must be kept apart. Where a grounding establishes that both frames measure the same underlying quantity, $\kappa$ is fixed by that grounding and the conversion is principled --- as thermochemical calories to joules. Where no such grounding exists, $\kappa$ is a \emph{stipulation}: legitimate, usable, and carrying exactly the authority of whoever stipulated it. Interpersonal comparison of utility is the standard instance; the classical result is not that comparison is impossible but that it requires a weighting no theory of preference supplies. Legitimate alternatives are conversions with the same declared domain, codomain, and grounding claim; changing any of those is a different accounting question, not a variation test.
 \end{remark}
 
 \begin{remark}[A worked principled conversion]\label{rem:emc2}
@@ -285,10 +291,10 @@ A conversion may exist and still not be a scale factor. Mechanics supplies the e
 \end{remark}
 
 \begin{proposition}[Invariance test for cross-frame claims]\label{prop:kappa-invariance}
-A conclusion drawn from cross-frame accounting is admissible only where it is invariant under the legitimate alternatives to $\kappa$. If the conclusion changes when $\kappa$ is replaced by another conversion the grounding equally permits, the conclusion is an artefact of the conversion rather than a fact about the frames.
+A conclusion drawn from cross-frame accounting is admissible only where it is invariant under the legitimate alternatives to $\kappa$. The test is: hold the declared domain, codomain, comparison class, and grounding fixed; enumerate every conversion that grounding permits; recompute the conclusion under each; and report both the range of outcomes and the criterion by which the alternatives were admitted. The conclusion is invariant exactly when its stated truth-condition is unchanged across that set. If it changes when $\kappa$ is replaced by an equally permitted conversion, the conclusion is an artefact of the conversion rather than a fact about the frames.
 \end{proposition}
 
-This is a gauge condition --- the conclusion must be invariant under the admissible choices of $\kappa$ --- applied one level up from the choice of basis. The prohibition worth carrying is therefore narrower and more usable than ``no cross-frame accounting'': \textbf{convert if you must, but state $\kappa$, and check whether the conclusion survives changing it.} A silent conversion is unauditable, and an unstated one is usually a unit change assumed where a stipulation was required.
+This is a gauge condition --- the conclusion must be invariant under the admissible choices of $\kappa$ --- applied one level up from the choice of basis. A finite set permits direct comparison; a parameterised set requires a demonstrated invariant over its stated range. The evidence is therefore the displayed alternatives, their shared grounding, and the stable truth-condition, not an assertion that a conversion feels natural. The prohibition worth carrying is narrower and more usable than ``no cross-frame accounting'': \textbf{convert if you must, but state $\kappa$, and check whether the conclusion survives changing it.} A silent conversion is unauditable, and an unstated one is usually a unit change assumed where a stipulation was required.
 
 \section{Replenishment modes}\label{sec:replenishment}
 

@@ -1809,10 +1809,17 @@ reflects preference, the share should be stable or rising over long horizons; if
 should decline slowly and one-directionally while fast exit remains self-harming. \emph{Fails} on a
 stable or rising share over a long horizon, or on a fast exit by any substantial holder.
 
-\item \textsc{[detail]} \emph{The rate condition on capability gains} (Remark~\ref{rem:steelman}). Only
-gains propagating into frames faster than those frames absorb them widen the distance the adaptability
-paper's Remark~\ref{AD-rem:timing} measures. \emph{Fails} if a gain absorbed at the receiving frame's own
-speed is observed to produce the same signature, since the condition would then discriminate nothing.
+\item \textsc{[detail]} \emph{The rate condition on capability gains} (Remark~\ref{rem:steelman}).
+This is a credit-based application of the adaptability paper's timing result, made operational here. For
+a named receiving frame and comparison window $[t_0,t_1]$, record $g$, the rate at which a named
+capability gain becomes available across its relevant boundaries, and $a$, the rate at which the
+receiving frame incorporates that gain into its own exercised capacity; both rates are measured in the
+same declared observable (adoptions per period, trained operators per period, completed conversions per
+period, or another stated unit). The second-clock distance widens over that window exactly when
+$g>a$, is stable when $g=a$, and narrows when $g<a$. It is not a frame-free sum of debt, governance,
+or any other heterogeneous stock. \emph{Fails} if a gain with $g\leq a$ is observed to produce the
+same widening signature as one with $g>a$, or if the specified observable moves in the opposite
+direction, since the condition would then discriminate nothing.
 
 \item \textsc{[detail]} \emph{Sustaining is a threshold, so a suppressed decline arrives
 discontinuously} (Proposition~\ref{prop:sustaining-threshold}). \emph{Fails} if an externally supported

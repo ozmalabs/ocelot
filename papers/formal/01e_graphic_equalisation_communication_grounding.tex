@@ -1,0 +1,1069 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,array,booktabs,enumitem,microtype}
+\usepackage{natbib}
+\usepackage[margin=1in]{geometry}
+\usepackage{xr-hyper}
+\usepackage{hyperref}
+\externaldocument[GE-]{01_law_of_graphic_equalisation_theory_referenced}
+\externaldocument[MS-]{01b_graphic_equalisation_mind_and_self_grounding}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{proposition}[definition]{Proposition}
+\newtheorem{corollary}[definition]{Corollary}
+\theoremstyle{remark}\newtheorem{remark}[definition]{Remark}
+\title{The Law of Graphic Equalisation --- Communication Grounding\\\large Difference Across Frames, Kinetic Contact, Records, and Network Frames}
+\author{Matthew Parslow\\Independent Researcher}
+\date{\textbf{Draft \texorpdfstring{\textemdash}{---}\ \PaperDraft}\\[2pt]\PaperDisplayDate \texorpdfstring{\textbullet}{\textperiodcentered}\ document revision \PaperRevision}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[C]{\thepage}
+\fancyfoot[R]{\scriptsize\textsc{\PaperDraft\,r\PaperRevision}}
+\renewcommand{\headrulewidth}{0pt}
+\fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
+  \fancyfoot[R]{\scriptsize\textsc{\PaperDraft\,r\PaperRevision}}\renewcommand{\headrulewidth}{0pt}}
+
+\input{paper_metadata.tex}
+
+\begin{document}
+\maketitle
+\begin{center}
+\fbox{\parbox{0.92\textwidth}{\small
+\textbf{DRAFT --- \PaperDraft r\PaperRevision} (\PaperDisplayDate).
+This document is under active revision and is circulated for comment, not as a
+finished result. It is the \emph{01e} grounding companion to \emph{The Law of
+Graphic Equalisation --- Theory} (Graphic Equalisation), and inherits that
+paper's definitions, epistemic boundary, and level-of-claims. It does not add a
+primitive to the substrate, assign a communication ontology over it, or alter
+Graphic Equalisation's core claims. It develops a cross-frame grounding: all
+causal influence is communication at some grain, while communication may be
+held, offered, or carried without producing a relevant effect in a particular
+receiving frame. The sections on falsifiability identify promoted commitments,
+not a proof of the substrate.}}
+\end{center}
+\vspace{1em}
+
+\begin{abstract}
+Communication is usually split too early: physical influence is put on one side,
+signals and language on another, and the latter is made to depend on a human
+speaker, a shared intention, or an intrinsically meaningful symbol. This paper
+uses Graphic Equalisation to refuse that split. A tap on the shoulder, a punch,
+a molecular binding event, a written record, an Ethernet transmission, and a
+word-token are all differences carried, exposed, or held across frame relations.
+They differ in magnitude, grain, persistence, grammar, and what another frame
+can make of them, not in one being communication and another being merely
+physical cause. Causal influence is communication realised as a transition in a
+receiving frame. Conversely, a record, utterance, or offered packet can
+communicate substantial structure while producing no relevant uptake or action
+in a particular frame.
+
+The paper's governing constraint is economic: communication pays where it
+changes frames. Carriage, reception, and repair are distinct writes, charged to
+the frame relation in which each occurs; a later description or a containing
+frame may not silently provide distinctions free to the frame being described.
+Network link-layer frames provide the first central engineering grounding.
+Their delimiters, length or flag grammar, headers, payloads, integrity checks,
+discard paths, buffers, acknowledgement states, and encapsulation show literal,
+layer-relative frames in operation. They also impose limits: a checksum is not
+meaning, a frame is not a network-layer datagram, and endpoint correctness cannot
+be settled by a lower layer. Human lexical retrieval and tip-of-the-tongue are
+then a bounded receiver-side case of a held shape whose lexical edge is
+unavailable, rather than the definition of communication.
+\end{abstract}
+
+\section{Scope and claim}\label{sec:scope}
+
+This is a grounding paper, not a new substrate and not a psychology of
+communication. It inherits Graphic Equalisation's minimal graph $G=(g,r,\Gamma)$,
+its frame-relative grounding (Axiom~\ref{GE-ax:no-view}), its account of
+admissibility and residual, and its write-economics. A frame is real graph data
+that runs (Graphic Equalisation's Definition~\ref{GE-def:frame}); a frame's
+aperture and grammar determine what it can take in and what it can do with what
+it takes in. The present task is to show that cross-frame communication can be
+stated entirely in those inherited terms. It does not posit a semantic substance,
+an intrinsic message, a universal codebook, a privileged observer, or a distinct
+communication primitive beneath relation.
+
+The strongest claim is structural. A difference can be carried from one frame
+such that another frame can hold, recover, classify, or act on it, and this is a
+relation between frames rather than a property a token possesses alone. The
+weaker and empirical claims concern which grammars permit which recovery, what
+has to be retained for repair, what costs are paid at which crossings, and how
+particular physical, biological, computational, and linguistic systems realise
+the relation. The evidence for a composition claim is recurrence of the same
+shape under independent domain descriptions; that recurrence is neither proof of
+the substrate nor proof that this paper has found an exhaustive taxonomy.
+
+The paper also corrects a familiar but unhelpful opposition. There is no
+substrate-level divide between causal influence and communication. A punch is
+not physical influence with communication absent, while a tap on the shoulder is
+communication because a human can interpret it. Both are kinetic communication:
+differences in pressure, momentum, direction, location, duration, and consequence
+cross a bodily boundary. They differ in magnitude and in what further frames can
+do with the event, not in kind. A tap may be low-energy and support a rich social
+reconstruction; a punch may be high-energy and force a large state transition.
+Neither has a meaning independent of every frame, and neither requires an
+intentional source in order to be communication.
+
+\begin{definition}[Communication]\label{def:communication}
+Communication is a distinction carried, exposed, or held across a frame relation.
+A \emph{causal influence} is communication realised as a transition in a
+receiving frame. An \emph{operative reception} is the narrower case in which the
+receiver's rules make the difference available for retention, recovery,
+classification, correction, or action.
+\end{definition}
+
+The three verbs in the definition are deliberately different. A carried
+difference traverses a relation as a realised event. An exposed difference is
+available at a boundary under some possible crossing, whether or not this frame
+currently takes it in. A held difference persists as graph structure or a record
+across the succession relevant to a later crossing. A letter in an unopened
+archive, an unqueried database row, and a packet retained in a buffer can all
+communicate in the latter senses without producing the action a writer, sender,
+or reader might have wanted. That lack of achievement is not a retroactive
+annulment of the distinction carried. It only says that an intended or relevant
+operative reception did not occur in the frame under examination.
+
+\begin{remark}[Communication is broad; uptake is not]\label{rem:breadth}
+The definition makes all causal influence communication at the grain at which it
+is a carried difference. It does not make every communication an immediately
+realised causal influence in every possible receiver. This is not wordplay. It
+keeps separate an inscription and its reading, a protocol offer and its
+acceptance, a stored program and its run, a warning and the action it fails to
+produce. The distinction is also what prevents an external observer from
+crediting a receiver with a difference merely because some containing frame can
+read it.
+\end{remark}
+
+\section{The economic constraint: payment at a frame change}\label{sec:payment}
+
+Graphic Equalisation's well-formedness condition is that a graph pays for nothing
+that does no work for it (Definition~\ref{GE-def:well-formed}); its economics
+locates cost in writes rather than in a frame's mere standing structure
+(Proposition~\ref{GE-prop:economics}). Communication gives that economy a sharp
+location. A difference is not made free to another frame because an external
+account can describe source and receiver together. Where it becomes a difference
+for that other frame, something changes, and that crossing is where the account
+must look for the payment.
+
+\begin{proposition}[Communication pays where it changes frames]\label{prop:pays-at-crossing}
+Where a communication becomes a realised, receiver-side difference, the
+transition is a write in the receiving frame, in the containing frame that
+sustains the crossing, or in both as their rules specify. A later interpretation,
+an external description, or a downstream compression may describe the result but
+may not silently supply that receiver-side distinction without such a change.
+\end{proposition}
+
+This is a promoted application of the inherited economics, not a claim that every
+case has one fixed physical price. The payment may be momentum transfer,
+deformation, receptor occupation, voltage change, bandwidth, buffer capacity,
+parsing work, retained state, a comparison, a repair write, or a rule firing. The
+kind and magnitude are contingent rule content. What is ruled out is only the
+level error: a receiving frame being credited with a distinction for which no
+transition has occurred in it or in the relation that supplies it.
+
+Three payments should be kept distinct.
+\begin{enumerate}[leftmargin=*]
+\item \emph{Carriage payment} is what makes a difference traverse or remain exposed
+at a boundary: pressure through contact, a voltage transition, a diffused molecule,
+an ink trace, or a radio signal.
+\item \emph{Reception payment} is what makes the difference available at the
+receiver's own grain: a receptor state, a membrane potential, a buffer entry, a
+parser state, a stored record, or an installed lexical edge.
+\item \emph{Repair or reconstruction payment} is what compares alternatives,
+registers a residual, corrects an error, requests a retransmission, or recovers a
+missing edge from a held shape.
+\end{enumerate}
+
+The distinctions are temporal as well as structural. An unread record has paid
+for inscription and retention in the holder; it has not yet charged a later
+reader for recovery. In the inherited state language this is a realised value that
+is not held by the reading frame---undisclosed to it rather than absent or
+resolved for it (Definition~\ref{GE-def:states}). A protocol sender may pay to construct and emit a frame; a
+receiver pays differently to validate and store it; a retransmission pays only
+where an error condition later causes a rule to fire. A record can therefore
+communicate much while achieving nothing relevant in the frame that has not read
+it. Conversely, the fact that a recipient reacts does not mean it has recovered
+every distinction the carrier could make available at another grain.
+
+\begin{remark}[Tap and punch]\label{rem:tap-punch}
+A tap and a punch make the rule concrete. Each pays at bodily contact: a kinetic
+difference crosses a boundary and changes some local configuration. The punch
+usually pays more heavily in momentum transfer, deformation, injury, and later
+repair; the tap may pay little kinetically while being rich under a learned social
+grammar. Those are differences of scale and of receiver-side structure. It is an
+error to call the punch ``mere causation'' and reserve communication for the tap,
+or to pretend that the tap's social reading was already present in the force alone.
+\end{remark}
+
+\section{The minimal communication relation}\label{sec:minimal-relation}
+
+The proposed construction introduces no object beyond the substrate. It gives
+names to roles already supplied by graph relations and rules, because those roles
+must be separated if a cross-frame claim is to remain level-correct.
+
+\begin{center}\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.23\textwidth}>{\raggedright\arraybackslash}p{0.67\textwidth}@{}}
+\toprule
+\textbf{Communication role} & \textbf{Inherited substrate reading}\\
+\midrule
+Source-relative distinction & A difference in graph structure, state, or admissible continuation at a named grain.\\
+Carrier or record & The realised transition or held graph structure through which that difference is exposed across a relation.\\
+Boundary & The relation between frames, whose crossings induce the relevant partial order and whose condition is known only by crossing (Proposition~\ref{GE-prop:boundary-by-crossing}).\\
+Receiver grammar & The receiver's $\Gamma$, including any installed recognition, decoding, selection, or response rules.\\
+Aperture & The receiver-relative restriction on what can enter and what can be expressed or acted upon.\\
+Available distinction & A difference the receiver can retain, reconstruct, discriminate, or condition a rule upon at its own grain.\\
+Residual & What remains when an offered or attempted transformation cannot be admitted, recovered, or made coherent under that grammar.\\
+Audit frame & A specified frame that can represent the relevant source and receiver relations; it is not a view from nowhere (Axiom~\ref{GE-ax:no-view}).\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{remark}[These are positional roles, not new graph types]\label{rem:positional-roles}
+Source, carrier, boundary, and receiver are positional roles that relations and
+adjacent frames occupy at a specified grain; they are not new graph types or a
+communication primitive added beneath relation. As in Graphic Equalisation,
+naming two ends of a relation differently marks the asymmetry between them, not
+two kinds of thing (Corollary~\ref{GE-cor:frame-dimension}). A frame is a source
+under one crossing and a receiver under another, and the same edge is carrier to
+one grain and boundary to another. These roles are made authoritative in the
+stratigraphy of Section~\ref{sec:stratigraphy}: source, sender, receiver,
+message, purpose, and intent are audit-band attributions and need not be
+represented by any constituent frame of the run
+(Remark~\ref{rem:attribution-not-participation}).
+\end{remark}
+
+\begin{definition}[Receiver-relative availability]\label{def:availability}
+Let $S$ and $R$ be named frames related through a carrier or record $c$. A
+source-side distinction is \emph{available at $R$} when $R$'s aperture and grammar
+make some receiver-side distinction conditional on $c$. It is \emph{operative at
+$R$} when that availability participates in a later rule, retained state, or
+realised action. Availability and operation are relative to $R$ and to the grain
+specified for it.
+\end{definition}
+
+The definition does not say that $c$ is an intrinsically meaningful object, that
+$S$ intends anything, or that $R$ reconstructs a source state exactly. It says
+only that a relation exists between a specified difference and a receiver-side
+one. An audit frame can assess a claimed correspondence only by holding the
+relevant relation itself; if it cannot, it has evidence local to one side rather
+than a settled mapping. This is the relativity of grounding applied to
+communication, not a sceptical denial that messages work.
+
+The same carrier can accordingly do different work at different grains. A printed
+sequence is graph structure to a camera sensor, an orthographic token to a reader,
+a byte stream to an optical-recognition system, and a decorative mark to a frame
+without the relevant aperture. No one of those readings supersedes the others.
+They are different communications because different receiver grammars pay for and
+make use of different distinctions. The receiving frame's grammar is not a
+private mental language: it can be a receptor geometry, a circuit, a protocol
+parser, a file format, a learned practice, or a rule in a containing system.
+
+\begin{remark}[No universal codebook]\label{rem:no-universal-codebook}
+A shared explicit codebook is neither the definition of communication nor a free
+precondition of it. Some receiver grammar must be realised somewhere if a
+specified receiver is to discriminate or recover at a specified grain, but it may
+be inherited, evolved, learned, installed, negotiated, or distributed across a
+larger frame. The paper therefore asks where the grammar is paid for and held; it
+does not assume that two communicating frames began with a jointly authored
+manual. The labels, tokens, and polarities a grammar uses are supplied by the
+frame that reads them rather than being intrinsic to a carrier: Graphic
+Equalisation already forces plurality of types without making any type privileged
+or self-interpreting (Remark~\ref{GE-rem:types-forced}). This paper accordingly
+adds receiver-side economics---where a distinction is paid for, held, and
+recovered---rather than a new derivation of the substrate or of its type
+plurality. A common grammar or codebook is a frame-relation fact where it is
+realised and a social-convention attribution in the audit band
+(Section~\ref{sec:stratigraphy}); neither reading makes it a free or universal
+precondition of communication.
+\end{remark}
+
+\section{The communication stratigraphy: one relation across grains}\label{sec:stratigraphy}
+
+The previous section named the positional roles of a single cross-frame relation.
+This section arranges those roles into an explicit hierarchy, or
+\emph{stratigraphy}, so that the level at which each concept is a fact can be read
+off directly. There is one communication relation; what changes across the
+hierarchy is not the relation but the \emph{grain} at which a distinction is a
+fact and the \emph{frame} that must hold it. Three bands are distinguished, and
+the discipline of the whole section is that a fact stated in a higher band may
+never be silently charged to a lower one.
+
+\begin{itemize}[leftmargin=*]
+\item The \textbf{substrate band} is where rules run and deformations occur. Its
+facts are graph facts: a rule, a deformation, a distinction, a grain, a causal
+influence. Nothing in the higher bands adds an operator here; they only describe,
+relate, or attribute.
+\item The \textbf{frame-relation band} is where a difference is carried, exposed,
+or held across a boundary, and where a receiver's aperture and grammar make some
+of it available or operative. Its facts are relational and receiver-relative.
+\item The \textbf{audit and self-model band} is where a frame that can represent
+the relation attributes source, receiver, provenance, purpose, or intent. Its
+facts are facts \emph{about} a run, held in an audit frame or a self-model, and
+are never constituents of the run they describe.
+\end{itemize}
+
+\begin{definition}[Stratal facticity]\label{def:stratal-facticity}
+A concept has \emph{stratal facticity} at the band that supplies the minimum
+factual frame in which it is realised. A concept licenses only what that minimum
+frame already contains, and does not license claims proper to a higher band. In
+particular: a substrate concept is a fact wherever the rule runs or the
+deformation occurs, and needs no frame relation; a frame-relation concept is a
+fact only relative to a specified receiver, aperture, and grammar; an
+audit concept is a fact only in a specified frame that holds the relevant relation
+and performs the attribution. A concept realised in one band may be
+\emph{referred to} from a higher band, but the reference does not relocate the
+fact downward, and no audit attribution may be projected down into the
+constituent frames of the run it describes.
+\end{definition}
+
+\paragraph{Reading the tables.} The three tables share the columns
+\textsc{Concept}, \textsc{minimum factual frame} (the smallest arrangement in
+which the concept is a fact), \textsc{what it licenses}, and \textsc{what it does
+not license}. They are deliberately split by band rather than merged into one
+long table, because the split is the claim: the last column of each band is where
+level errors are refused. The prose after each table ties the rows to the running
+cases without repeating them per row.
+
+\begingroup\small
+\begin{table}[t]\centering\small
+\caption{Substrate band: rules run and deformations occur at this grain.}
+\label{tab:band-substrate}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.15\textwidth}>{\raggedright\arraybackslash}p{0.26\textwidth}>{\raggedright\arraybackslash}p{0.26\textwidth}>{\raggedright\arraybackslash}p{0.24\textwidth}@{}}
+\toprule
+\textbf{Concept} & \textbf{Minimum factual frame} & \textbf{What it licenses} & \textbf{What it does not license}\\
+\midrule
+Rule & A frame's $\Gamma$ that runs at a grain. & That a transition can occur when conditions hold. & That the rule means, intends, or addresses anything.\\
+Deformation & A realised change of graph state under a rule. & That something happened at this grain. & That it was received, understood, or aimed.\\
+Distinction & A difference in state, structure, or admissible continuation. & That there is something to carry or hold. & That any frame has taken it in.\\
+Grain & The specified resolution at which a frame runs. & Relativising every other concept to a resolution. & A privileged or grainless view.\\
+Causal influence & A carried distinction realised as a transition in a receiving frame. & Calling the event communication at that grain. & A kind-split between ``mere cause'' and communication, or an intrinsic sender.\\
+\bottomrule
+\end{tabular}
+\end{table}
+\endgroup
+
+The substrate band is where the sodium channel actually gates: a
+conformational deformation follows a voltage distinction under the channel's rule,
+and that is a fact whether or not any downstream frame reads it as a signal. It is
+where the punch lands and the tap contacts---kinetic deformation at bodily
+grain---and where a stored record is physical structure before it is a message. In
+Ocelot's internal implementation, it is where a data structure is written or a
+procedure runs; that a run occurred is a substrate fact, but (per
+Remark~\ref{rem:ocelot-caveat}) it licenses no claim that the implementation
+proves the substrate.
+
+\begingroup\small
+\begin{table}[t]\centering\small
+\caption{Frame-relation band: a difference carried, exposed, or held across a boundary, relative to a receiver.}
+\label{tab:band-frame}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.17\textwidth}>{\raggedright\arraybackslash}p{0.25\textwidth}>{\raggedright\arraybackslash}p{0.25\textwidth}>{\raggedright\arraybackslash}p{0.24\textwidth}@{}}
+\toprule
+\textbf{Concept} & \textbf{Minimum factual frame} & \textbf{What it licenses} & \textbf{What it does not license}\\
+\midrule
+Boundary / crossing & A relation between two frames whose condition is known by crossing. & That a difference can traverse. & That the crossing was intended or attributed to a source.\\
+Carrier / trace / record & Realised transition or held structure exposing a distinction. & That a difference is available to be recovered. & That its origin or meaning travels with it.\\
+Holding / exposure & Structure persisting or offered at a boundary. & Communication without uptake. & That any receiver has acted.\\
+Aperture & Receiver-relative restriction on intake and action. & Bounding what can enter this receiver. & A claim about other receivers or a total intake.\\
+Grammar / admissibility & The receiver's rules for what it can admit. & Deciding what is admissible at this grain. & Semantic truth or provenance.\\
+Availability & A distinction the receiver can retain or discriminate. & Conditioning a later rule on the carrier. & That the distinction is operative or acted upon.\\
+Uptake / operative reception / action & Availability that participates in a rule, state, or action. & That a difference did work in this receiver. & Crediting a receiver from an external description alone.\\
+Encoding / decoding & A grammar mapping distinctions to and from a carrier form. & Recovery under a shared or installed scheme. & An intrinsic or universal code in the carrier.\\
+Token / label / polarity & Carrier features a grammar reads as discrete values. & Cheap selection of a held shape. & That the label is self-interpreting.\\
+Lexical edge & An installed selector to a held shape at a grain. & Fast retrieval when the edge is present. & That the shape equals the edge, or that absence erases the shape.\\
+Meaning / content / interpretation & A receiver-side distinction made under a grammar. & Receiver-relative content at a grain. & A meaning intrinsic to the carrier or shared by fiat.\\
+Error / residual / integrity & A mismatch or non-admissible remainder under a rule. & Detecting a scoped failure. & Global storage of all that was discarded, or source truth.\\
+Repair / correction / feedback & A differential condition altering a later transition. & Discard, retransmit, correct, or degrade. & That two-way interaction is required for communication.\\
+Common grammar / codebook & A grammar realised across both frames. & Coordinated recovery where it is held. & A free or universal precondition of communication.\\
+Addressing / routing & Carrier features a relation uses to select a next frame. & Delivery toward a frame at a grain. & Proof that the addressee is the true or intended receiver.\\
+Time / order & A partial order induced by a receiver's rules over crossings. & Sequencing relative to a receiver. & A total order given free by the medium.\\
+\bottomrule
+\end{tabular}
+\end{table}
+\endgroup
+
+The frame-relation band is where the network link-layer frame lives: flags,
+stuffing, headers, a frame-check sequence, addressing, buffers, and
+acknowledgement state are all frame-relation facts, admissible or operative only
+at their layer's grain (Section~\ref{sec:networking}). The tap and punch sit here
+too once a receiver is specified: the same kinetic deformation is available under
+one bodily or social grammar and merely felt under another. The sodium channel's
+gating becomes a frame-relation fact the moment a downstream frame conditions on
+the resulting current. A record is a held carrier whose reading is a later,
+separate crossing. An Ocelot utterance and its lexicon belong here as a token or
+lexical edge selecting a held shape under a reader's installed grammar; a word in
+human language is the same relation at a learned grain. None of these rows names a
+source or an intent: those are audit facts, tabulated next.
+
+\begingroup\small
+\begin{table}[t]\centering\small
+\caption{Audit and self-model band: attributions about a run, held in a frame that represents the relation.}
+\label{tab:band-audit}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.17\textwidth}>{\raggedright\arraybackslash}p{0.25\textwidth}>{\raggedright\arraybackslash}p{0.25\textwidth}>{\raggedright\arraybackslash}p{0.24\textwidth}@{}}
+\toprule
+\textbf{Concept} & \textbf{Minimum factual frame} & \textbf{What it licenses} & \textbf{What it does not license}\\
+\midrule
+Source / receiver attribution & An audit frame that directly perceives a crossing or reads an attachment. & Naming ends of a relation for a purpose. & That the run itself contains a source or receiver participant.\\
+Direct perception & An audit frame that itself holds the crossing relation. & First-hand attribution of an end. & Attribution where the relation is not held.\\
+Explicit attachment & A paid carrier asserting an origin (signature, header, label). & Evidence toward a source. & Proof of provenance; it can be forged or copied.\\
+Implicit attachment & Context or convention a frame reads as origin evidence. & Weaker evidence toward a source. & Certainty, or a fact independent of the reading frame.\\
+Provenance & An audit chain of attachments and perceptions. & Accumulating frame-relative evidence of origin. & Closure of ultimate source from a delivered carrier alone.\\
+Identity / authentication & Rules testing an attachment against held keys or records. & A scoped predicate on claimed identity. & That the predicate settles truth or intent.\\
+Sender / receiver & Roles an audit frame assigns to attributed ends. & Talking about the relation's asymmetry. & Intrinsic participants inside the run.\\
+Purpose / function & An audit or selection ascription over a run. & Explaining or selecting for an effect. & An inner aim operative in the substrate step.\\
+Intent & A self-model or audit inference about a run's disposition. & Predicting or judging a frame from its course. & An inner operator, or a precondition of communication.\\
+Truth & An audit relation between a claim and a held relation. & Assessing a correspondence where the relation is held. & A view from nowhere or a carrier-intrinsic fact.\\
+Audit frame & A specified frame that can represent the relations. & Making any attribution above. & A privileged observer (Axiom~\ref{GE-ax:no-view}).\\
+Self-model & A frame's incomplete model of its own run. & Calibrated attribution of one's own intent or reception. & Completeness, or transparency to the run it models.\\
+Social convention & A grammar and attachment scheme held across many frames. & Shared, cheaper attribution and codebooks. & Intrinsic meaning or a universal precondition.\\
+\bottomrule
+\end{tabular}
+\end{table}
+\endgroup
+
+The audit band is where a network operator attributes a frame to a MAC address,
+where a signature or header is read as an origin attachment, and where a
+diagnostic log asserts provenance---each an audit fact scoped to a frame that
+holds the relevant relation, never a constituent of the transmitted frame itself.
+It is where a reader of a record attributes an author, where a hearer of a word
+attributes a speaker's intent, and where an Ocelot audit or self-model would
+attribute source, purpose, or intent to one of its own runs. Crucially, the ends
+named ``sender'' and ``receiver'' are assigned here, not found in the substrate
+step; the run proceeds whether or not any frame ever performs the attribution.
+
+\begin{remark}[Attribution is not participation]\label{rem:attribution-not-participation}
+Source, receiver, sender, message, purpose, and intent are not intrinsic
+participants in a communication. They are attributions made in an audit band.
+An audit frame may attribute a source or a receiver to a crossing only if it
+either \emph{directly perceives} that crossing---by itself holding the relevant
+relation---or reads an \emph{explicit} or \emph{implicit attachment} carried with,
+or contextually bound to, the difference. Absent direct perception or a readable
+attachment, a frame has evidence local to one side and no licensed attribution of
+the other. This is the relativity of grounding (Axiom~\ref{GE-ax:no-view})
+applied to origin and destination: naming the ends of a relation records an
+asymmetry an audit frame draws, and does not insert a participant into the run.
+Consequently, the roles of the minimal relation (Section~\ref{sec:minimal-relation})
+need not be represented by any constituent frame of the run; a substrate step can
+be fully a communication at its grain while no frame within it holds a
+representation of ``source'' or ``receiver'' at all.
+\end{remark}
+
+\begin{remark}[Attachments are paid evidence, not proof]\label{rem:attachments-evidence}
+An attachment---a signature, a header field, a return address, a byline, a
+contextual cue---is itself a carrier that was paid for at some crossing. It is
+therefore \emph{evidence} toward a source or receiver, weighted by the cost of
+producing and of forging it, and not a \emph{proof} of provenance. Explicit
+attachments can be copied, replayed, or fabricated; implicit attachments depend on
+the reading frame's conventions and can mislead. Authentication rules raise the
+cost of a false attachment but still yield a scoped predicate, not closure of
+ultimate origin (cf.\ the provenance limit, Proposition~\ref{prop:network-layered}
+and Section~\ref{sec:repair}). Accumulating attachments accumulates frame-relative
+evidence; it never manufactures a view from nowhere.
+\end{remark}
+
+\begin{remark}[Intent is a self-model inference about a run]\label{rem:intent-selfmodel}
+Intent is not an inner operator in the substrate step and is not a condition on
+communication. It is an inference---made in an audit frame or, reflexively, in a
+frame's own self-model---about the \emph{disposition} a run exhibits: what the run
+does, and would do, across the conditions the modeller can represent. This applies
+the mind-and-self grounding's self-model core: a self-model is incomplete by
+construction (\citealp[Prop.~\ref{MS-prop:selfmodel}, Sec.~\ref{MS-sec:selfmodel}]{}),
+so an attribution of one's own intent is a calibrated wager, not a readout of a
+hidden aim; and there is no dedicated primitive for influence beneath relation
+(\citealp[Prop.~\ref{MS-prop:one-influence}]{}), so intent adds no operator to the
+run. The constraint the fable of the reflexive animal makes vivid holds here: a
+run's nature is read from what it does under its conditions, not from a declared
+inner reason, and confining or reframing the conditions does not convert an
+attributed intent into a substrate participant. An attributed intent may inform
+prediction and judgement in the audit band; it may never be projected down into
+the constituent frames as though it were a rule they ran.
+\end{remark}
+
+\begin{remark}[Ocelot as an internal implementation example]\label{rem:ocelot-caveat}
+Where this paper mentions Ocelot's utterance pipeline, lexicon, records, or audit,
+it does so as a clearly labelled \emph{internal implementation example}, not as
+independent evidence for the substrate. That an implementation writes a record,
+runs a lexical lookup, or emits an utterance is a substrate and frame-relation
+fact about that system; it does not license the claim that the implementation
+\emph{proves} the substrate, and any attribution of source, purpose, or intent to
+one of its runs remains an audit-band inference subject to
+Remark~\ref{rem:attribution-not-participation} and
+Remark~\ref{rem:intent-selfmodel}. The utterance pipeline is therefore used only
+to instantiate the token/lexical-edge and record rows of
+Table~\ref{tab:band-frame}; source attribution over it is not asserted here,
+because doing so would overclaim.
+\end{remark}
+
+\subsection{Worked case: a frozen language model, a prompt-installed term, and a persistent update}\label{sec:llm-worked-case}
+
+The stratigraphy is easiest to misread where a token is treated as a property an
+input carries with it. This worked case fixes the reading against a standard,
+publicly documented system---a \emph{frozen} large language model---and does so
+with the strict graph-law definition of tokenisation stated first. Nothing below
+is offered as novel to language-model practitioners, and nothing below is offered
+as proof of the substrate; the case only exhibits the token/lexical-edge rows of
+Table~\ref{tab:band-frame} and the stratal-facticity discipline of
+Definition~\ref{def:stratal-facticity} in a familiar mechanism.
+
+\paragraph{The strict definition.} Tokenisation at a frame $F$ is the matching of
+an input made available at $F$'s boundary and grain to an \emph{already extant,
+admissible edge held by $F$}. A token is therefore the frame-relative successful
+match, not an intrinsic property of the input. Three consequences follow, and
+they must be kept apart because they occupy different rows of the band.
+\begin{itemize}[leftmargin=*]
+\item An input that $F$'s aperture excludes is \emph{absent} for $F$: there is no
+carrier at $F$'s boundary to match, so no question of tokenisation arises.
+\item An input that reaches the relevant grain but finds \emph{no matching
+admissible edge} is not tokenised there. It may be collapsed to a coarse unknown
+category, left as residual (Definition~\ref{GE-def:residual}), or trigger a
+separately paid extension of the grammar. None of these is tokenisation.
+\item Minting a new edge is not cheap tokenisation. Installing a durable new
+selector is a distinct write charged where it occurs
+(Proposition~\ref{prop:pays-at-crossing}); tokenisation to an existing edge is
+the cheap selection the token row licenses, and the two must not be conflated.
+\end{itemize}
+
+\paragraph{Frame~1: the fixed tokenizer and model.} A deployed frozen model holds
+a fixed tokenizer vocabulary and fixed parameters. Its tokeniser can match an
+input only to pre-existing vocabulary or token-ID edges; ordinary inference mints
+no persistent vocabulary edge and no persistent parameter edge. This is exactly
+the fixed-vocabulary constraint that fixed-vocabulary neural language models make
+explicit \citep{bengio2003}. Two situations that look alike must be separated at
+this frame. A genuinely \emph{novel token} would require an edge the frame does
+not hold, and the frozen frame cannot supply it during inference. A \emph{novel
+string}, by contrast, is routinely representable as a novel \emph{sequence of
+existing} subword or byte units \citep{sennrich2016,kudo2018,radford2019}: the
+string is new, but every edge used to segment it is already held, so this is
+successful tokenisation to extant edges, not minting. The distinction between a
+new string over old units and a new unit is the whole of the point.
+
+\paragraph{Grain, not exemption from the rule.} Early closed word-vocabulary
+systems make the rule visible by failing loudly: an out-of-vocabulary word form
+finds no matching admissible edge at the \emph{word} grain and is collapsed to a
+coarse unknown category, the \texttt{UNK} token \citep{luong2015}. Modern subword
+and byte-level systems do not repeal this rule; they \emph{lower the grain} at
+which matching succeeds. Byte-level schemes push the grain down to a small,
+closed set of byte edges so that essentially any input segments to held units
+\citep{radford2019}, and subword schemes sit between word and byte grains
+\citep{sennrich2016,kudo2018}. The coarse-unknown outcome has become rare in
+practice not because the graph law changed but because the admissible edge set was
+made fine enough that a match almost always exists. The residual and coarse-unknown
+possibilities of the strict definition remain the correct account of what happens
+when they do not.
+
+\paragraph{Frame~2: the runtime context.} A prompt can install a temporary
+association---``let \emph{glorp} denote the following shape''---between an existing
+token sequence and a prompt-provided definition, and the model can condition its
+continuation on that association without any gradient update
+\citep{brown2020}. In stratal terms this is a frame-relation fact local to the
+runtime context frame: a receiver-side availability (Definition~\ref{def:availability})
+held for the duration of the context. It is real, and it is paid for---in context
+capacity and in the conditioning it induces---but it changes neither the tokenizer
+vocabulary nor the model weights. The token sequence for \emph{glorp} is still
+matched to the same pre-existing subword edges as in Frame~1; what is new is a
+context-local relation between that sequence and a shape, not a new lexical edge in
+the fixed frame. This is precisely the paper's distinction between a context-local
+availability and a persistent update: the term is operative in this run and absent
+from the next fresh context.
+
+\paragraph{Frame~3: the containing persistent-update frame.} A durable new relation
+can be paid for and held, but only in a larger frame than ordinary inference. Three
+such frames are standard. A tokenizer/vocabulary change with a matching embedding
+update mints a genuinely new token edge and pays for its parameters. Training or
+fine-tuning revises parameter edges so that a relation becomes held in the weights.
+An external memory or retrieval write records a durable relation in a datastore the
+model reads at inference, so that a nearest-neighbour or retrieval step can recover
+it later \citep{khandelwal2020}. Each is a minting or update write in the sense of
+Proposition~\ref{prop:pays-at-crossing}, charged in the containing frame; none is
+performed by the frozen inference frame on its own. The context installation of
+Frame~2 and the persistent update of Frame~3 are the same distinction the paper
+draws throughout between an availability held for a crossing and a relation held
+across successions.
+
+\paragraph{Caveats.} Some deployed systems do perform online learning, periodic
+fine-tuning, or external-memory writes during operation
+\citep{khandelwal2020}; those are larger-frame operations in the sense above, not
+counterexamples to the account of ordinary frozen inference. The mapping claims
+only what the stratigraphy already says: tokenisation is a frame-relative match to
+a held admissible edge; a coarse-unknown category, a residual, or a paid grammar
+extension are the distinct outcomes when no such edge exists; and a context-local
+association is not a persistent lexical or parameter edge. These are facts about
+the model as a frame relation and its containing update frames, and they are used
+here only to instantiate the token and lexical-edge rows of
+Table~\ref{tab:band-frame}, not to assert any implementation-specific claim about
+Ocelot or to prove the substrate.
+
+
+\section{Network frames: a literal engineering grounding}\label{sec:networking}
+
+Networking is not a decorative analogy for this paper. At the data-link layer,
+engineers literally call the bounded unit of transmission a \emph{frame}. The
+standards supply a mature, independently developed case in which boundary,
+grammar, admissibility, opacity, residual, finite aperture, and layered
+containment are operational rather than metaphorical.
+
+Terminology must be exact. RFC~1662 calls a \emph{frame} the data-link-layer unit
+of transmission; a \emph{datagram} is a network-layer unit such as an IP
+datagram; and a \emph{packet} is ordinarily the unit of encapsulation passed
+between the network and data-link layers \citep{simpson1994}. A frame is therefore
+not a universal name for any bundle of bits. The same bounded configuration can
+be a link-layer frame under one grammar and an opaque payload carrying a
+higher-layer packet or datagram under another. This is a direct engineering
+instance of the distinction between a local frame and a containing one.
+
+Ethernet MAC framing supplies destination and source addresses, a length or
+EtherType field, payload and padding, and a frame check sequence; the standard
+specifies the MAC frame separately from physical-layer preamble and start-frame
+delimiter \citep{ieee8023}. PPP supplies an especially transparent grammar: flags
+mark a boundary, byte or bit stuffing prevents payload from forging that boundary,
+and a frame-check sequence detects specified corruptions \citep{simpson1994}.
+These mechanisms do not make a frame meaningful in a human sense. They make a
+boundary decidable and integrity testable at a particular link-layer grain.
+
+\begin{proposition}[Network admissibility is layer-relative]\label{prop:network-layered}
+A link-layer frame may be admissible under its framing and integrity grammar while
+its payload remains opaque, malformed, or unusable under a receiver's next-layer
+grammar. Conversely, an apparent higher-layer packet cannot be received as such
+without some lower-layer framing relation making a carrier available. Integrity,
+addressing, and interpretation are therefore scoped to the layers that realise
+them.
+\end{proposition}
+
+The proposition is an arrangement claim about a known engineering fact, not a
+claim that Ethernet proves the substrate. The distinction is visible in the
+checks themselves. Ethernet's frame check sequence covers the MAC frame; IPv4's
+header checksum covers the IP header rather than the whole payload
+\citep{ieee8023,postel1981}. A passed check says that a scoped predicate was met.
+It does not establish source truth, application semantics, or even a valid next
+layer. An unknown EtherType or protocol number can leave payload present but
+non-operative at a receiver's current grammar.
+
+An invalid PPP frame is equally instructive. It can be discarded by the PPP
+receiver because it violates its frame grammar or check sequence. That does not
+make it an absence of communication in the broad sense of this paper. Physical
+differences have crossed; the failed frame may change an error counter or trigger
+an interface rule; a diagnostic frame may retain a residual. That residual is
+per-rule---it is what a particular receiver rule could not admit at its grain
+(Definition~\ref{GE-def:residual})---not a global store of everything discarded.
+Any retained diagnostic form is a separately paid later record or copy in some
+holder, charged where that retention occurs, rather than a standing residual the
+relation keeps for free. It is instead
+non-admissible or non-operative \emph{as a PPP payload carrier} at that grain. The
+same discipline prevents a reader from treating a human message ignored by its
+addressee as though no difference had been communicated at all.
+
+TCP makes the payment structure visible at a larger layer. Sequence numbers,
+acknowledgements, retransmission timers, receive windows, and sender/receiver
+buffers retain distinctions across successive crossings \citep{eddy2022,paxson2011}.
+They pay for a particular form of reliable, ordered reception. The ordering they
+provide is a partial order carried by the receiver's rules over its crossings,
+not a total order given free by the medium (Proposition~\ref{GE-prop:partial-order}).
+They are not
+necessary to communication as such: an IP datagram, a UDP datagram, a one-way
+broadcast, or a forward-error-corrected transmission can make a difference
+available without a return acknowledgement or a durable sender-side copy. The
+end-to-end argument makes the limit principled. Correctness that depends on
+application knowledge cannot be supplied conclusively by a lower layer, even
+when lower layers provide useful checks and redundancy \citep{saltzer1984}.
+
+This gives four constraints that the general account must respect. First,
+framing grammar is not semantic truth. Second, a receiver's acceptance of a
+carrier is not a proof of provenance. Third, repair can be layered and
+contingent, not a universal prerequisite. Fourth, no frame may be credited with
+higher-layer distinctions merely because a containing network observer can read
+the bits. The name \emph{frame} in networking is not evidence for Graphic
+Equalisation; the operational recurrence is evidence only for the limited
+composition claim that a common shape is doing work across domains.
+
+\section{Records, code, signalling, and lexical edges}\label{sec:instances}
+
+The network case is deliberately first because it is precise, non-human, and
+literal. It is not the sole case. The following instances are not offered as
+separate origins of a communication primitive. They are ways the same inherited
+frame machinery is independently made concrete.
+
+\paragraph{Records and code.} A record carries a difference across a separation in
+successions. Inscription pays where the holder writes a trace; preservation pays
+where the holder retains it; reading pays where a later frame constructs a
+receiver-side distinction. Source code provides a sharper case. The source file,
+parser, abstract syntax tree, compiled artifact, instruction stream, and running
+machine are nested carriers at distinct grammars. A token may be irrelevant to a
+processor, decisive to a parser, and decomposable in a compiler's intermediate
+representation. That does not make the token decorative: at its own grain it is a
+cheap edge to a held syntactic or semantic shape. The code case also denies a
+common error. An executable file can communicate a reusable capability even when
+it is not currently run; running it is a later, separately paid transition.
+
+\paragraph{Molecular and cellular signalling.} Ligand binding, ion gradients,
+hormone reception, gene regulation, and quorum-sensing systems make clear that a
+receiver grammar need not be linguistic or conscious. The relevant grammar may
+be receptor geometry, concentration sensitivity, timing, or a downstream
+regulatory rule. A molecular event is kinetic communication before it is a
+biological signal in any special historical sense. Evolutionary signalling theory
+can then ask an additional question---how sender and receiver dispositions became
+stabilised---without defining the cross-frame communication relation itself
+\citep{maynardsmithharper2003,scottphillips2008}.
+
+\paragraph{Animal signals and social convention.} Alarm calls, displays, scent
+marks, and contact cues are richly useful tests because they combine a physical
+carrier, receiver-side discrimination, interaction, deception, and sometimes
+shared interest. Their biological history may distinguish a signal from a cue in
+the specialist literature. That distinction remains important for explaining
+reliability and selection, but it does not licence the paper to call a predator's
+impact on prey non-communicative merely because it is coercive, or to require an
+intentional sender before a receiver-side difference can exist.
+
+\paragraph{Human language.} Language is a high-density, learned case in which a
+small token can make a large held shape available under a reader's lexical and
+grammatical practices. Its significance here is not that language creates
+communication. It makes the costs of naming, recovery, ambiguity, repair, and
+cross-domain coordination unusually inspectable. A project term is operative
+compression at a reader's lexical grain. It must be installed in prose,
+definition, mechanism, and boundary; a lexical edge is not a proof, and it is not
+a substitute for the shape it names.
+
+\subsection{Exact retrieval and constrained reconstruction}\label{sec:retrieval}
+
+An exact token match is cheap when the receiver has that token in an installed
+grammar. The receiver need not search a universal space: the token selects an
+edge already held at its grain. When exact retrieval fails, recovery need not
+become global reconstruction. A held target shape can constrain a local search
+among nearby candidate edges, partial forms, related contrasts, or routes through
+a grammar. This is a structural possibility, not an unsupported claim that every
+system has one particular search algorithm or complexity class.
+
+Tip-of-the-tongue is the bounded human limit case. A speaker can hold a target's
+meaning and portions of its phonology or syntax while failing to fetch the full
+lexical form \citep{brownmcneill1966,levelt1999}. The phenomenon is not itself a
+cross-frame event unless one chooses an internal subsystem boundary; it is better
+used as evidence that receiver-side availability is layered. The lexical edge can
+be unavailable while the held shape remains sufficiently present to guide a
+close-enough recovery. Its value is precisely that it does not require a thesis
+about consciousness or qualia.
+
+\begin{remark}[Carrier identity is not success]\label{rem:identity}
+Exact preservation of a carrier is one mode of communication, not its definition.
+A packet can be re-encoded across a different physical link; a program can be
+compiled; a record can be copied; an explanation can be paraphrased; a receptor
+can act on a concentration range rather than one molecule's identity. What is
+preserved is assessed only at a specified grain and in a specified audit frame.
+No such assessment licenses a claim of absolute message identity.
+\end{remark}
+
+\section{Residual, repair, and the limits of reception}\label{sec:repair}
+
+Residual is where the account becomes more than a vocabulary of carriers. A
+receiver can fail to admit a difference, can admit it without recovering a later
+shape, can recover a shape without acting, or can act on a corrupted or partial
+reconstruction. These are not one failure mode. They occur at different grammars,
+and their distinction is what stops a system's external description from being
+silently charged to its internal reception.
+
+Error correction supplies a clear family. A parity check, checksum, syndrome,
+missing acknowledgement, or violated prediction creates a differential condition
+under a receiver grammar. A later rule may discard, correct, request another
+carrier, select an alternative reconstruction, or continue with degraded
+operation. Most such repair runs under an existing grammar: it fires rules the
+receiver already holds, and pays only for the comparison, correction, or
+retransmission those rules specify. Extending the grammar itself---installing a
+new rule, decoder, or lexical edge so that a previously inadmissible difference
+becomes recoverable---is a distinct and separately paid write, and is only one
+repair mode among the others. The paper's claim is deliberately weak enough to
+include both
+feedback and forward correction: successful correction requires some mismatch or
+constraint to alter a later state transition; it does not require that mismatch to
+be conscious, visible to an auditor, returned to the source, or held indefinitely.
+
+Conversation repair and protocol repair are therefore analogous without being
+identical. In conversation, a recipient can request clarification, offer a
+candidate, or correct a reference \citep{clark1996,clarkwilkesgibbs1986}. In a
+network, a receiver can reject a malformed frame, acknowledge a sequence number,
+or correct a decodable codeword. Both expose a residual to a later rule. Neither
+supports the stronger claim that all communication requires two-way interaction:
+a written record, broadcast, or molecular gradient may be received without a
+reply, and may be carried without reception at all.
+
+The same constraint limits provenance. A receiver can often establish that a
+carrier meets its own integrity predicate. It cannot thereby settle, from inside,
+why the carrier was produced, whether every relevant source condition was known,
+or whether an external description's intended interpretation is correct. This is
+the general prohibition on a frame closing its own provenance, applied at the
+communication boundary. Authentication, signatures, logs, and social testimony
+are additional carriers and rules; they can improve a frame's local evidence but
+do not create a view from nowhere.
+
+\section{Prior art, contribution, and exclusions}\label{sec:prior-art}
+
+The paper does not claim to discover transmission, signalling, coding, or
+language. Its contribution, if the construction survives scrutiny, is an
+arrangement: the same frame-relative economy describes kinetic influence,
+records, protocol frames, and lexical recovery without treating one human case as
+the foundation of the rest.
+
+Shannon's mathematical theory gives an indispensable account of encoding,
+channels, noise, capacity, and reliable transmission, while explicitly bracketing
+semantic aspects of communication \citep{shannon1948}. Rate--distortion theory
+shows why recovery can be graded and task-relative rather than exact
+\citep{coverthomas2006}. Neither supplies a frame-relative account of what a
+receiver can hold, what an audit frame may claim about provenance, or where a
+particular cross-frame transformation pays. Communication complexity instead
+measures what distributed parties must exchange to compute a function of their
+separate inputs \citep{yao1979,kushilevitznisan1997}; it is a useful lower-bound
+literature for specific cooperative tasks, not a definition of all communication.
+
+Semiotic and pragmatic traditions correctly deny that a sign is self-contained.
+Peirce's interpretant and Millikan's consumer-side account are especially useful
+warnings against treating a token as sufficient by itself \citep{peirce1931,millikan1984}.
+Gricean intention and later ostensive accounts illuminate a demanding human case,
+but they must not become a universal gate that excludes punches, protocols, or
+cellular signalling. Conversely, an account broad enough to include all causal
+influence must not pretend that all causal differences possess the same
+conventionality, reliability, or reconstructive richness. Those are contingent
+properties of particular grammars and histories.
+
+Networking prior art is direct rather than metaphorical. The standards and RFCs
+already specify frame boundaries, transparent encoding, layered encapsulation,
+integrity tests, retransmission, finite receive state, and endpoint limits
+\citep{ieee8023,simpson1994,postel1981,eddy2022,saltzer1984}. This paper does not
+improve those specifications. It uses them as a stringent independent case: if
+the proposed grounding cannot distinguish link-layer admissibility from
+application-level correctness, or cannot account for a frame becoming opaque
+payload at another layer, its vocabulary is not doing the work claimed.
+
+Consciousness, phenomenal character, and qualia are out of scope, as they are in
+the mind-and-self grounding. So is a claim that communication requires a
+conceptual space, a global semantic geometry, or the free-energy principle.
+Those may be useful domain models under additional commitments; none is required
+to state a difference crossing and paying at a frame boundary.
+
+\section{Falsifiability commitments and evidence}\label{sec:falsifiability}
+
+The framework-level identification of causal influence with communication is not
+presented as an ordinary laboratory hypothesis. It is a way of refusing an
+otherwise unmotivated kind split: a causal influence is a carried distinction at
+some grain. The claims below are narrower promoted commitments. A failure bounds
+this grounding's range or replaces one mechanism; it does not prove or disprove
+the substrate from a view outside every frame.
+
+\begin{enumerate}[leftmargin=*]
+\item \textsc{[shape]} \textbf{Payment is located at a frame change.} The
+application fails if a realised receiver-side distinction can be supplied with no
+write in the receiver and no sustaining or coupling write in the containing
+relation, after the relevant frames are specified. A later observer's compact
+description is not a counterexample.
+\item \textsc{[shape]} \textbf{A causal influence is communicable difference at a stated grain.}
+The identification is a structural vocabulary unification, not a claim that every grain supplies the
+same recovery or semantic description. For a named receiving frame, boundary, and grain, the
+construction fails if a realised causal influence requires an element not representable as a carried or
+changed relation at that boundary, and no finer stated grain renders it a cross-frame difference. An
+intra-frame change with no carried distinction across the selected boundary is excluded from the
+communication relation at that grain; it may be communication only under a different, explicitly named
+frame relation. Mere unavailability of recovery at the chosen grain is not a counterexample.
+\item \textsc{[detail]} \textbf{Admissibility is layer-relative.} The network
+mapping fails if a single validity predicate is found to be authoritative across
+all layers of an actual stack, so that no carrier can be accepted at one grammar
+while opaque, malformed, or inoperative at another.
+\item \textsc{[detail]} \textbf{Recovery is graded and can outrun exact token
+identity.} The account's retrieval mechanism fails if reliable receiver action
+requires exact carrier identity in every relevant case, or if target-shape access
+never constrains a local lexical or structural recovery when direct access fails.
+\item \textsc{[detail]} \textbf{Repair uses a differential condition.} The
+repair account fails if a system corrects a carrier-dependent error while no
+mismatch, syndrome, constraint violation, or alternative comparison affects any
+later state transition. Feedback need not occur, so a forward-error-correcting
+code is not a counterexample.
+\item \textsc{[shape]} \textbf{Provenance is not closed by delivery.} The
+account fails if a receiver can settle from its own delivered carrier alone the
+ultimate source, truth, or complete intended interpretation of that carrier,
+rather than accumulating only additional frame-relative evidence. Attachments
+(signatures, headers, return addresses, contextual cues) are paid evidence toward
+a source, not proof of it (Remark~\ref{rem:attachments-evidence}); the account
+also fails if any single attachment is shown to be, by itself, incorrigible
+proof of provenance rather than forgeable, replayable, or convention-dependent
+evidence.
+\item \textsc{[shape]} \textbf{Audit attributions do not project into
+constituents.} The stratigraphy fails if a licensed communication requires that
+one of its constituent frames represent a source, sender, receiver, message,
+purpose, or intent---that is, if some causal influence cannot be a communication
+at its grain unless an audit-band attribution is already realised as a rule those
+frames run (Definition~\ref{def:stratal-facticity},
+Remark~\ref{rem:attribution-not-participation}). Attributing intent, source, or
+purpose from an audit frame or self-model is not a counterexample; projecting one
+of those attributions downward into the run as an operative participant would be.
+\end{enumerate}
+
+The evidence plan has corresponding layers. First, a formal audit should show
+that every term in Definition~\ref{def:communication} is realised through
+inherited graph, rule, aperture, residual, and boundary structure, without a new
+primitive. Second, executable protocol fixtures can demonstrate framing,
+encapsulation, corruption, discard, retransmission, and layer-specific parsing;
+they establish specification and implementation adequacy, not the substrate's
+truth. Third, standards and independently developed biological, computational,
+and linguistic cases can test whether the arrangement transfers. Finally,
+lexical-access experiments can test the narrow claim about partial recovery. None
+of these evidences should be silently promoted from a case of composition to a
+proof of the framework.
+
+\section{Conclusion}\label{sec:conclusion}
+
+Communication is difference across frames. It need not begin with a human mind,
+an intention, a word, a signal convention, or a recipient's success. A tap on the
+shoulder and a punch establish the ordinary case: kinetic influence is
+communication, differing from language in magnitude, grain, persistence, and
+recoverable structure rather than in kind. A record can communicate while unread;
+a network frame can be received while semantically opaque; a word can be held as
+a shape while its lexical edge cannot be fetched.
+
+What unifies these cases is not a free carrier or a view from nowhere. Each
+operative change pays where it changes frames. A boundary crossing, a receiver's
+admission, a retained record, and a repair operation are separately chargeable
+writes. The carrier is not its own meaning, and a higher frame's description does
+not make distinctions free to the lower one. Networking makes this especially
+clear because its frames are literal, bounded, layered, and independently
+specified: a link-layer frame, a network-layer datagram, and an application
+message are not interchangeable even when they travel in one physical event.
+
+The proposed grounding therefore earns its place only if it lets the same small
+substrate vocabulary do work that the local literatures leave distributed: locate
+the grain of a communication, the frame that pays for it, the grammar that can
+receive it, the residual that can repair it, and the boundary beyond which
+provenance cannot be closed. If it cannot make those distinctions without adding
+a communication primitive, treating causal influence as a different kind, or
+silently importing an external interpreter, the draft should be narrowed or
+rejected.
+
+\begin{thebibliography}{99}
+
+\bibitem[Bateson(1972)]{bateson1972}
+Gregory Bateson.
+\newblock \emph{Steps to an Ecology of Mind}.
+\newblock Chandler Publishing Company, San Francisco, 1972.
+
+\bibitem[Bengio et~al.(2003)]{bengio2003}
+Yoshua Bengio, R\'ejean Ducharme, Pascal Vincent, and Christian Jauvin.
+\newblock A neural probabilistic language model.
+\newblock \emph{Journal of Machine Learning Research}, 3:1137--1155, 2003.
+
+\bibitem[Brown and McNeill(1966)]{brownmcneill1966}
+Roger Brown and David McNeill.
+\newblock The ``tip of the tongue'' phenomenon.
+\newblock \emph{Journal of Verbal Learning and Verbal Behavior}, 5:325--337, 1966.
+
+\bibitem[Brown et~al.(2020)]{brown2020}
+Tom B. Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared Kaplan, et~al.
+\newblock Language models are few-shot learners.
+\newblock In \emph{Advances in Neural Information Processing Systems~33 (NeurIPS 2020)}, pages 1877--1901, 2020.
+
+\bibitem[Clark(1996)]{clark1996}
+Herbert H. Clark.
+\newblock \emph{Using Language}.
+\newblock Cambridge University Press, Cambridge, 1996.
+
+\bibitem[Clark and Wilkes-Gibbs(1986)]{clarkwilkesgibbs1986}
+Herbert H. Clark and Deanna Wilkes-Gibbs.
+\newblock Referring as a collaborative process.
+\newblock \emph{Cognition}, 22(1):1--39, 1986.
+
+\bibitem[Cover and Thomas(2006)]{coverthomas2006}
+Thomas M. Cover and Joy A. Thomas.
+\newblock \emph{Elements of Information Theory}.
+\newblock Second edition, Wiley, Hoboken, 2006.
+
+\bibitem[Eddy(2022)]{eddy2022}
+Wesley Eddy, editor.
+\newblock \emph{Transmission Control Protocol}.
+\newblock RFC 9293, Internet Engineering Task Force, August 2022.
+
+\bibitem[IEEE(2022)]{ieee8023}
+Institute of Electrical and Electronics Engineers.
+\newblock \emph{IEEE Standard for Ethernet}.
+\newblock IEEE Std 802.3-2022, New York, 2022.
+
+\bibitem[Khandelwal et~al.(2020)]{khandelwal2020}
+Urvashi Khandelwal, Omer Levy, Dan Jurafsky, Luke Zettlemoyer, and Mike Lewis.
+\newblock Generalization through memorization: Nearest neighbor language models.
+\newblock In \emph{International Conference on Learning Representations (ICLR 2020)}, 2020.
+
+\bibitem[Kudo and Richardson(2018)]{kudo2018}
+Taku Kudo and John Richardson.
+\newblock SentencePiece: A simple and language independent subword tokenizer and detokenizer for neural text processing.
+\newblock In \emph{Proceedings of the 2018 Conference on Empirical Methods in Natural Language Processing: System Demonstrations}, pages 66--71, 2018.
+
+\bibitem[Kushilevitz and Nisan(1997)]{kushilevitznisan1997}
+Eyal Kushilevitz and Noam Nisan.
+\newblock \emph{Communication Complexity}.
+\newblock Cambridge University Press, Cambridge, 1997.
+
+\bibitem[Levelt et~al.(1999)]{levelt1999}
+Willem J. M. Levelt, Ardi Roelofs, and Antje S. Meyer.
+\newblock A theory of lexical access in speech production.
+\newblock \emph{Behavioral and Brain Sciences}, 22(1):1--75, 1999.
+
+\bibitem[Luong et~al.(2015)]{luong2015}
+Minh-Thang Luong, Ilya Sutskever, Quoc V. Le, Oriol Vinyals, and Wojciech Zaremba.
+\newblock Addressing the rare word problem in neural machine translation.
+\newblock In \emph{Proceedings of the 53rd Annual Meeting of the Association for Computational Linguistics}, pages 11--19, 2015.
+
+\bibitem[Maynard Smith and Harper(2003)]{maynardsmithharper2003}
+John Maynard Smith and David Harper.
+\newblock \emph{Animal Signals}.
+\newblock Oxford University Press, Oxford, 2003.
+
+\bibitem[Millikan(1984)]{millikan1984}
+Ruth Garrett Millikan.
+\newblock \emph{Language, Thought, and Other Biological Categories}.
+\newblock MIT Press, Cambridge, Massachusetts, 1984.
+
+\bibitem[Paxson et~al.(2011)]{paxson2011}
+Vern Paxson, Mark Allman, Jerry Chu, and Matt Sargent.
+\newblock \emph{Computing TCP's Retransmission Timer}.
+\newblock RFC 6298, Internet Engineering Task Force, June 2011.
+
+\bibitem[Peirce(1931)]{peirce1931}
+Charles Sanders Peirce.
+\newblock \emph{Collected Papers of Charles Sanders Peirce, Volume~2: Elements of Logic}.
+\newblock Harvard University Press, Cambridge, Massachusetts, 1931.
+
+\bibitem[Postel(1981)]{postel1981}
+Jon Postel, editor.
+\newblock \emph{Internet Protocol}.
+\newblock RFC 791, Internet Engineering Task Force, September 1981.
+
+\bibitem[Radford et~al.(2019)]{radford2019}
+Alec Radford, Jeffrey Wu, Rewon Child, David Luan, Dario Amodei, and Ilya Sutskever.
+\newblock Language models are unsupervised multitask learners.
+\newblock Technical report, OpenAI, 2019.
+
+\bibitem[Saltzer et~al.(1984)]{saltzer1984}
+Jerome H. Saltzer, David P. Reed, and David D. Clark.
+\newblock End-to-end arguments in system design.
+\newblock \emph{ACM Transactions on Computer Systems}, 2(4):277--288, 1984.
+
+\bibitem[Scott-Phillips(2008)]{scottphillips2008}
+Thomas C. Scott-Phillips.
+\newblock Defining biological communication.
+\newblock \emph{Journal of Evolutionary Biology}, 21(2):387--395, 2008.
+
+\bibitem[Sennrich et~al.(2016)]{sennrich2016}
+Rico Sennrich, Barry Haddow, and Alexandra Birch.
+\newblock Neural machine translation of rare words with subword units.
+\newblock In \emph{Proceedings of the 54th Annual Meeting of the Association for Computational Linguistics}, pages 1715--1725, 2016.
+
+\bibitem[Shannon(1948)]{shannon1948}
+Claude E. Shannon.
+\newblock A mathematical theory of communication.
+\newblock \emph{Bell System Technical Journal}, 27:379--423 and 623--656, 1948.
+
+\bibitem[Simpson(1994)]{simpson1994}
+William A. Simpson, editor.
+\newblock \emph{PPP in HDLC-like Framing}.
+\newblock RFC 1662, Internet Engineering Task Force, July 1994.
+
+\bibitem[Yao(1979)]{yao1979}
+Andrew C.-C. Yao.
+\newblock Some complexity questions related to distributive computing.
+\newblock In \emph{Proceedings of the Eleventh Annual ACM Symposium on Theory of Computing}, pages 209--213. ACM, 1979.
+
+\end{thebibliography}
+\end{document}

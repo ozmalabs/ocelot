@@ -14,21 +14,23 @@
 
 \title{Certified Answers as an Audit\\\large Five Provably-False Keys on Humanity's Last Exam, and the Discipline That Makes Them Worth Reporting}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \texorpdfstring{\textemdash}{---}\ draft-2026-09-02.1}\\[2pt]2 September 2026 \texorpdfstring{\textbullet}{\textperiodcentered}\ document revision 3}
+\date{\textbf{Draft \texorpdfstring{\textemdash}{---}\ \PaperDraft}\\[2pt]\PaperDisplayDate \texorpdfstring{\textbullet}{\textperiodcentered}\ document revision \PaperRevision}
 
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r3}}
+\fancyfoot[R]{\scriptsize\textsc{\PaperDraft\,r\PaperRevision}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-09-02.1\,r3}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{\PaperDraft\,r\PaperRevision}}\renewcommand{\headrulewidth}{0pt}}
+\input{paper_metadata.tex}
+
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-09-02.1 r3} (2 September 2026).
+\textbf{DRAFT --- \PaperDraft r\PaperRevision} (\PaperDisplayDate).
 Circulated for comment, not as a finished result. It is a companion to \emph{The Law of Graphic
 Equalisation --- Theory} (referred to below as Graphic Equalisation), and inherits its definitions,
 epistemic boundary, and level-of-claims. \emph{This paper reports no benchmark score and
@@ -41,11 +43,15 @@ attack.}}
 A system that answers a question only when it can certify the answer, and otherwise returns an honest
 miss, is not a competitor on a benchmark. It is an \emph{auditor} of one. Run across the text-only
 portion of Humanity's Last Exam \citep{phan2025}, deriving every answer before the key is read, it
-certified $43$ answers: $36$ confirm their keys and $5$ convict them, with no banked conviction
-withdrawn, and one pre-banking flag retracted after re-derivation located a sign error in the system
-rather than in the key. The five convictions are set out with their diagnoses. \emph{Coverage is
-$1.8\%$ and that is the honest headline}: this is not a result about how much the system can answer; it is a
-result about what certified answering makes visible when it is pointed at the key rather than at the
+certified $43$ answers. Of these, $41$ reached an auditable key verdict: $36$ confirm their keys and
+$5$ convict them. The remaining $2$ certificates are retained here as certified-but-unclassified: this paper does
+not carry a visible key verdict for either, so both are excluded from the audit result rather than
+classified on credit. No banked
+conviction was withdrawn; one separate pre-banking flag was retracted after re-derivation located a
+sign error in the system rather than in the key. The five convictions are set out with their diagnoses.
+\emph{Certificate coverage is $1.8\%$; auditable-verdict coverage is $1.7\%$.} Both figures use the
+same $2{,}370$-question text-only snapshot. Neither is a result about how much the system can answer;
+the result is what certified answering makes visible when it is pointed at the key rather than at the
 score.
 \end{abstract}
 
@@ -94,10 +100,12 @@ derivation by a structurally different route, a held-exact computation, or a con
 case forced by the stem. Where it cannot, it returns a miss. \emph{The key is read only afterwards,
 and only to compare.}
 
-That ordering is what makes the arrangement an audit. Every certified answer puts one key on trial and
-returns one of two verdicts: it confirms the key, or it convicts it. A conviction is banked only when
-the derivation is certified sound, the key's error is demonstrable, and no reading of the stem rescues
-the key --- the last checked adversarially, by trying to rescue it.
+That ordering is what makes the arrangement an audit. Every certificate for which the audited
+snapshot and key state are retained puts one key on trial and returns one of two verdicts: it confirms
+the key, or it convicts it. The two certified-but-unclassified answers reported in the abstract are not
+counted as either verdict. A conviction is banked only when the derivation is certified sound, the key's
+error is demonstrable, and no reading of the stem rescues the key --- the last checked adversarially, by
+trying to rescue it.
 
 \begin{remark}[Zero false accusations is the whole of the value]\label{rem:zero}
 An audit claiming three convictions with airtight proofs of each is worth more than one claiming
@@ -262,10 +270,10 @@ Noam Elkies, Greg Kuperberg, Michael Larsen, and James Propp.
 \bibitem[Phan et al.(2025)]{phan2025}
 Long Phan, Alice Gatti, Ziwen Han, Nathaniel Li, Josephina Hu, et~al.
 \newblock Humanity's Last Exam.
-\newblock arXiv:2501.14249, 2025 (v1, 24 January 2025; v11, 28 July 2026).
+\newblock arXiv:2501.14249, 2025 (v1, \PaperDisplayDate; v11, \PaperDisplayDate).
 \newblock Dataset (public split, $2{,}500$ questions):
 \url{https://huggingface.co/datasets/cais/hle}; that repository's last recorded modification is
-20 January 2026.
+\PaperDisplayDate.
 
 \end{thebibliography}
 \end{document}

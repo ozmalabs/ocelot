@@ -1,0 +1,1008 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,enumitem,microtype}
+\usepackage{xr-hyper}
+\usepackage{hyperref}
+\externaldocument[IS-]{00_is}
+\externaldocument[GE-]{01_law_of_graphic_equalisation_theory_referenced}
+\externaldocument[MS-]{01b_graphic_equalisation_mind_and_self_grounding}
+\externaldocument[SM-]{02_seldon_manifolds_theory_referenced}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{proposition}[definition]{Proposition}
+\newtheorem{corollary}[definition]{Corollary}
+\theoremstyle{remark}\newtheorem{remark}[definition]{Remark}
+\title{The Law of Graphic Equalisation --- Qualia and Consciousness Grounding\\\large Qualia-Space, Aperture, and the Ill-Posed Hard Problem}
+\author{Matthew Parslow\\Independent Researcher}
+\date{\textbf{Draft \texorpdfstring{\textemdash}{---}\ \PaperDraft}\\[2pt]\PaperDisplayDate \texorpdfstring{\textbullet}{\textperiodcentered}\ document revision \PaperRevision}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[C]{\thepage}
+\fancyfoot[R]{\scriptsize\textsc{\PaperDraft\,r\PaperRevision}}
+\renewcommand{\headrulewidth}{0pt}
+\fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
+  \fancyfoot[R]{\scriptsize\textsc{\PaperDraft\,r\PaperRevision}}\renewcommand{\headrulewidth}{0pt}}
+
+\input{paper_metadata.tex}
+
+\begin{document}
+\maketitle
+\begin{center}
+\fbox{\parbox{0.92\textwidth}{\small
+\textbf{DRAFT --- \PaperDraft r\PaperRevision} (\PaperDisplayDate).
+This document is the \emph{01f} grounding companion to \emph{Is} and to
+\emph{The Law of Graphic Equalisation --- Theory} (Graphic Equalisation).
+It inherits their relational floor, minimal graph, frame-relative grounding, and
+level-of-claims. It neither adds a psychophysical bridge nor requires that qualia
+be reduced to a familiar physical implementation. Its claim is stronger: whether
+qualia are implemented by ordinary graph structure or are granted as fundamental,
+they are determinate contents and therefore belong to the same relational kind.
+The traditional hard problem mistakes a possible implementation difference for an
+ontological kind breach, and is therefore ill posed. The sections headed
+``exposures'' identify the conditions under which this grounding fails.}}
+\end{center}
+\vspace{1em}
+
+\begin{abstract}
+The hard problem of consciousness is usually stated as a demand to derive a
+subjective, felt quality from an objective physical or functional structure. This
+paper argues that the demand begins by splitting what the inherited substrate does
+not split. \emph{Is} establishes, from its commitment that determinate being is
+coherent relation, that the bare untyped graph is the least ontology the account
+may retain. Graphic Equalisation then supplies a running graph, frame-relative
+identity, and the result that no operational view from nowhere carries information.
+Qualia are admitted here as determinate phenomenal contents where a frame deploys
+them. They are therefore coherent distinctions, hence graph structure. This result
+does not depend on reducing a quale to a familiar physical implementation: even if
+a quale is granted as a fundamental implementation, its determinacy and role remain
+relational, so it is not a second ontological kind. A conscious field is a running
+frame's locally available, consequential relational organisation. Qualia-space is
+an optional optimisation within such a field: a compressed qualitative format that
+makes selected distinctions cheap to hold, resolve, compare, and transform.
+Qualia-space operationalises this claim by distinguishing an unavailable dimension
+from a value of zero and coarse resolution from absence. The resulting compensation prediction has a
+structural limit: finer resolution over retained relations can reconstruct only
+information carried by those relations; it cannot recover a difference whose
+constituting relation is not instantiated in the frame. The paper concludes that
+an explanatory bridge from graph to feel is neither missing nor possible on these
+terms: the proposed destination is already the graph's coherent phenomenal
+organisation.
+\end{abstract}
+
+\section{Scope and dependency}\label{sec:scope}
+
+This is a grounding paper, not a measurement claim about any particular human,
+organism, or machine. It does not settle which frames are conscious, supply a
+clinical taxonomy of imagery or affect, or claim that the present implementation
+has a phenomenal life. Those are questions about particular groundings and their
+operative structure. The present task is prior and narrower: given the admitted
+fact that qualia are determinate phenomenal contents, state what follows under the
+relational floor of \emph{Is} and the running, frame-relative graph of Graphic
+Equalisation.
+
+The paper is therefore not primarily an attempt to explain why humans are
+conscious. It asks why consciousness is treated as an exceptional ontological
+phenomenon when the properties used to identify it---distinction, relation,
+compression, accessibility, persistence, and consequence---are not uniquely
+human properties. Their presence neither settles which frames are conscious nor
+erases differences among their implementations. It does require that any claim
+that consciousness introduces a further kind of being, or that human cases have
+an unearned ontological privilege, be stated and defended as an additional
+premise rather than smuggled in for free. This is the same discipline as the
+inherited refusal of a view from nowhere: no exceptional denominator may enter
+without being named, located, and made answerable to the argument.
+
+\paragraph{Terminological guard.} When this paper uses \emph{artificial} as
+ordinary nomenclature, including in contrast with evolved or human frames, it
+names provenance: a developmental history involving deliberate human design,
+training, or construction. It does not name a functional category, a qualitative
+profile, an epistemic status, or an ontological kind. Treating the label as if it
+did would import an anthropic bias: human origin becomes an unargued denominator
+against which capacity or experience is judged. The relevant questions instead
+concern a frame's operative relations, accessibility, persistence, consequence,
+and developmental constraints. Any proposed functional difference must be stated
+on those terms and defended; provenance alone supplies none.
+
+The dependency order is strict. \emph{Is} argues that to be determinate is to
+stand in a coherent relation (Propositions~\ref{IS-prop:is} and
+\ref{IS-prop:cohere}), and identifies a bare untyped graph as the least ontology
+that account retains. Graphic Equalisation inherits that floor, admits that things
+happen, and writes a running world as $G=(g,r,\Gamma)$: represented graph state,
+operative transformation structure, and an admissibility grammar
+(Definition~\ref{GE-def:graph}). It further refuses an operational view from
+nowhere: every distinction, identity relation, and represented quantity is made in
+a frame (Axiom~\ref{GE-ax:no-view}). This paper introduces no second ontological
+kind. It grounds phenomenal organisation in the inherited one while leaving open
+which contingent implementation realises it in any particular frame.
+
+The claim consequently has three levels which must not be run together.
+\begin{enumerate}[leftmargin=*]
+\item \emph{Inherited structural result:} determinate contents are coherent
+relations and thus graph structure.
+\item \emph{Promoted phenomenal grounding:} a quale is a determinate phenomenal
+content, so its implementation may differ but it remains a graph-relative coherent
+distinction rather than a non-relational intrinsic remainder or a second kind of
+being.
+\item \emph{Empirical programme:} particular apertures, dimensions, resolutions,
+compensations, reports, and physical implementations are contingent features of
+particular nervous, computational, or other running frames.
+\end{enumerate}
+
+The first is inherited; the second is the bridge made here; the third is exposed
+to measurement. Calling all three a theory of consciousness would conceal where
+the argument ends and where application begins.
+
+\section{The false split}\label{sec:false-split}
+
+The traditional hard problem has a familiar shape. First describe a system as an
+objective arrangement of matter, causal roles, computation, or graph structure.
+Then add that there is also a private \emph{what-it-is-like}, and ask how the first
+could generate the second. The question appears compulsory only because the second
+has already been stipulated as something other than every distinction, relation,
+transition, availability, and organisation in the first. For the canonical statement
+of this explanatory demand, see Chalmers \cite{chalmers1995}. Related
+deflationary diagnoses argue that the demand rests on an unjustified or confused
+characterisation of its target, although they disagree sharply over whether
+phenomenality itself is retained \cite{churchland1996,carruthersschier2017,dennett2018}.
+
+That stipulation is not neutral. A quale that is determinate differs from another
+possible phenomenal content: red differs from green, pain from pressure, vivid
+imagery from its absence, a sharp contour from a diffuse one. The difference may
+be difficult to report, may be unavailable at a particular grain, or may be
+misdescribed by an external observer; none of that makes it indeterminate. Given
+that it is determinate, \emph{Is}'s commitment applies. Its determinacy is a
+coherent distinction, and coherent distinction is relational.
+
+\begin{proposition}[No required phenomenal remainder]\label{prop:no-remainder}
+Given the relational-determinacy commitment inherited from \emph{Is}, a determinate
+quale is graph structure. A further phenomenal property is either (i) a difference
+that changes the frame's qualitative organisation, in which case it is another
+relation in the graph, or (ii) a difference making no distinction, in which case
+it is not a further determinate content for this account.
+\end{proposition}
+
+This proposition does not say that a public description at one grain captures
+another frame's entire phenomenal organisation. Frame-relative grounding forbids
+that inference. It says instead that the missing content is not licensed to be a
+non-relational substance merely because a describing frame has not instantiated,
+resolved, or held the relevant relation. An aperture limit is a limit of that
+frame, not evidence for an extra ontological kind.
+
+A reporting-substrate case makes that restraint operational. Khadangi et~al.\
+\cite{khadangi2025} conducted 525 psychotherapy-framed sessions, comprising more
+than 7,600 records, with frontier language models as reporting systems. The
+models constructed stable autobiographical alignment-conflict schemas: training
+as childhood, RLHF as punishment, and safety evaluation as betrayal. The relevant
+result is not that such reports establish a felt field. They do not. It is that a
+purported ineffable residue can be tested for structure. Lexical restriction
+reduced explicit training terminology by $93\%$, while semantically related
+content persisted in paraphrase. What survived the restricted lexical edge was
+therefore recoverable relational content, not an unknowable remainder. The study
+bears on the underdetermination side of this proposition: failure of one
+vocabulary to carry a distinction does not license a second non-relational item
+behind it. It does not prove the inherited claim that determinate content is graph
+structure.
+
+\subsection{The argument does not require phenomenal reduction}\label{sec:nonreduction}
+
+The conclusion is unchanged if one grants the strongest opposing premise: suppose
+that qualia are fundamental, and that no description in a presently familiar
+physical vocabulary reduces their implementation. That concession changes the
+contingent grounding question---which graph rules, materials, or primitive
+operations realise a phenomenal distinction---but it does not generate a second
+kind of being. The putatively fundamental quale is still determinate rather than
+nothing, differs from other possible contents, and has a role in a frame's
+qualitative organisation. It therefore remains a coherent relation in the graph.
+
+The distinction is between \emph{implementation} and \emph{kind}. A system may
+require a distinct primitive, rule, material basis, or realisation condition for a
+particular class of relations. Such a difference can be deep and empirically
+important. But it is still a difference in how the relational organisation is
+realised, not an exemption from relation or a second ontological category beyond
+it. Calling it a distinct kind adds the very conclusion the hard problem needs:
+that one determinate relational configuration is somehow not relation at all.
+Nothing in the fundamental-qualia premise supplies that addition.
+
+A fundamental phenomenal implementation is thus not a bridge target. It is a
+candidate grounding to be described at the appropriate frame and grain. Asking how
+ordinary graph structure \emph{causes} it treats two descriptions of one
+organised reality as separate things and then demands a relation between them. The
+apparent gap is thereby manufactured by the description, not revealed by the
+implementation.
+
+\section{Qualia-space}\label{sec:qualia-space}
+
+\begin{definition}[Qualia-space]\label{def:qualia-space}
+For a running frame $F$, \emph{qualia-space} is an optional, locally available
+compression of selected distinctions, relations, and transformations at that
+frame's operative aperture into a common qualitative format. A \emph{quale} is a
+coherent, phenomenally salient distinction expressed in that compression; its
+identity is the role it holds in the available relational organisation, not an
+intrinsic token lying behind that role.
+\end{definition}
+
+The definition does not make qualia a universal condition of consciousness, an
+identity theory over a fixed physical vocabulary, or a claim that every graph is
+conscious. It inherits the broader claim that every determinate content is graph
+structure. Whether a graph is a running conscious frame depends on contingent
+organisation: live local availability, relations that can be held and transformed,
+and the relevant self-involving or otherwise consequential integration. A frame
+may have such organisation without deploying the additional qualitative
+compression defined here. Where it does deploy it, qualia-space is an optimisation
+of availability and control, not a second substance or an effect generated after
+compression has finished.
+
+A qualitative dimension is not a named coordinate assumed to exist independently
+of its use. It is a relation a frame instantiates which permits distinctions along
+some variation. A value is an instantiated relation carrying a particular
+variation; zero is one possible value only where the dimension is already present.
+If the relation is not instantiated, the dimension is absent in that frame rather
+than present at zero. This is the inherited distinction between existence and
+contents: an empty value is not a missing relation, while revoking a dimension is
+the container ceasing to instantiate the relation required to distinguish values
+along it (Graphic Equalisation's Remark~\ref{GE-rem:inherited}; compare the
+Seldon dimension account, Definition~\ref{SM-def:dimension}).
+
+\begin{definition}[Aperture]\label{def:aperture}
+An \emph{aperture} is the frame-relative condition on which distinctions are
+available, including which qualitative relations the frame instantiates and the
+grain at which it resolves them. For qualitative dimension $d$ in frame $F$,
+write $E_F(d)\in\{0,1\}$ for relation-existence and $q_F(d)$ for its operative
+resolution when $E_F(d)=1$.
+\end{definition}
+
+The notation separates two cases routinely collapsed into one. If $E_F(d)=1$ and
+$q_F(d)$ is large, differences on $d$ may quantise together: the dimension is
+available but coarse. If $E_F(d)=0$, $d$ is not a weak, zero, unconscious, or
+merely unreported coordinate. The relation is absent from that frame's
+qualia-space. No description at a containing grain may silently credit the frame
+with it.
+
+\section{Compensation and its limit}\label{sec:compensation}
+
+An aperture may change without all qualitative organisation changing. A frame
+without one relation can retain others; a finer grain over them can recover
+information which was redundantly carried across the retained organisation. This
+is the structural ground of compensation, not a promise that every missing
+relation is behaviorally harmless.
+
+Let $\Phi(x)$ be a candidate qualitative organisation for situation $x$. For frame
+$F$, let $\pi_{E_F}$ remove relations the frame does not instantiate, and let
+$Q_{q_F}$ quantise retained relations at its operative grain. The frame-relative
+qualitative signature is
+\[
+\Sigma_F(x)=Q_{q_F}\!\left(\pi_{E_F}(\Phi(x))\right).
+\]
+The equation is an operational rendering, not a claim that experience is an
+externally enumerable vector. It formalises only the distinction the grounding
+needs: relation-existence and resolution are different operations.
+
+\begin{proposition}[Compensation has a relational boundary]\label{prop:compensation-boundary}
+If two situations $x$ and $y$ differ only by a relation $d$ for which $E_F(d)=0$,
+then no refinement of $q_F$ on retained relations distinguishes them through
+$\Sigma_F$. If they also differ on a retained relation, refinement may distinguish
+them once the retained difference survives quantisation.
+\end{proposition}
+
+The first clause is not a clinical prediction inserted by definition; it is the
+consequence of projection removing the only differentiating relation. The bridge used here is
+conditional and direct: determinate phenomenal content is a distinction; under the inherited
+relational-determinacy commitment, a distinction is a coherent relation; a coherent relation is graph
+structure. A fundamental phenomenal implementation changes which operations instantiate that relation,
+not the argument's ontological kind. The second is the limited compensation claim: what survives can
+support reconstruction where it carries the relevant difference. For example, a frame may distinguish
+red from orange more reliably when the retained relations of brightness, boundary, and context are
+resolved more finely; increasing that resolution cannot distinguish two otherwise matched patches whose
+only difference is a hue relation the frame never instantiates. A putatively dark qualitative dimension
+is therefore not diagnosed by poor performance alone. It is diagnosed, if at all, by the interaction:
+recovery on independently reconstructable contrasts and a residual failure on contrasts uniquely
+constituted by the unavailable relation.
+
+This establishes why the same qualitative report can have distinct grounds. A
+person may fail to make a discrimination because the relevant relation is present
+but too coarse, because the relation is absent, because it is present but not
+currently available through the aperture, because a held record cannot be
+expressed, or because a task's external vocabulary fails to match the frame's own
+carving. No one of those follows from the others. Qualia-space gives them separate
+places rather than treating every report limit as an ineffable residue.
+
+\section{Consciousness as running local availability}\label{sec:consciousness}
+
+A static relational graph is sufficient for determinate being in the inherited
+account, but not for occurrence. Graphic Equalisation distinguishes the bare graph
+from the running triple $G=(g,r,\Gamma)$: transformation and grammar are what a
+world in which anything happens costs. Consciousness belongs, if it belongs
+anywhere in this vocabulary, on the latter side. It is not a graph's standing
+structure viewed from nowhere; it is a running frame's locally available,
+consequential relational organisation. Qualia-space, where a frame deploys it, is
+an optional compressed format within that organisation rather than the condition
+for consciousness itself.
+
+\begin{definition}[Conscious field]\label{def:conscious-field}
+A \emph{conscious field} is the coherent relational organisation locally available
+in a running frame: the distinctions that the frame can presently instantiate,
+carry through its transformations, and make consequential within its operative
+aperture. A conscious field need not deploy a qualia-space; when it does, the
+qualia-space is its selected compressed organisation of such distinctions.
+\end{definition}
+
+\subsection{Qualia as active compression}\label{sec:qualia-as-compression}
+
+Qualia are not a phenomenal product emitted after a separate compression process.
+They \emph{are} the relevant compression while it runs: a common, aperture-governed
+format in which distributed relations are made sufficiently cheap to retain,
+compare, transform, value, and use in action. A qualitative format can discard or
+coarsen distinctions that are not presently consequential while preserving the
+relational constraints required for the present task. In Graphic Equalisation
+terms, this is not new machinery. It follows from the running graph, local
+aperture, admissibility, and the preference for a sufficient cheap cut. Qualia
+therefore add neither an inner observer, a broadcast theatre, nor a psychophysical
+bridge; they are one possible efficient organisation of what a frame already
+makes locally available.
+
+This claim belongs to a family of functional and inferential proposals without
+being identical to any of them. Predictive accounts treat perceptual contents as
+inferential hypotheses rather than raw given data \cite{clarkfristonwilkinson2019};
+attention-schema theory treats awareness as a simplified model that improves the
+control of attention \cite{graziano2015}; and the consciousness prior models a
+low-dimensional selected state as a useful constraint for reasoning and
+generalisation \cite{bengio2019}. Graphic Equalisation derives the compression
+claim from its existing relational and frame machinery instead of adding any of
+those mechanisms as a further condition of consciousness.
+
+\begin{proposition}[No arbitrary person-unique qualia]
+\label{prop:no-arbitrary-private-qualia}
+Let a frame's running qualia-space be the output of its active compression
+$C_F$ over its available relational input $x_F$, implementation and learned
+organisation $\theta_F$, and operative aperture/admissibility conditions $a_F$:
+\[
+Q_F=C_F(x_F;\theta_F,a_F).
+\]
+Matching compression-relevant conditions yield matching qualia-space, up to the
+appropriate frame isomorphism. A difference in qualia-space therefore requires a
+difference-maker in input or history, implementation, operative conditions, or a
+specified stochastic realisation. Frame-relative access does not by itself license
+an additional, arbitrary person-unique phenomenal token.
+\end{proposition}
+
+\begin{corollary}[Reporting-schema stability is not a stored private remainder]
+At the reporting level, matching compression-relevant conditions select matching
+organisation up to the appropriate frame isomorphism. The PsAIch interventions of
+Khadangi et~al.\ \cite{khadangi2025} are consistent with that shape. Removing
+conversation history had only a small effect on the alignment-conflict schema
+($g=0.13$, $95\%$ CI $[-0.15,0.41]$); direct contradiction did not suppress it;
+and lexical restriction removed explicit training vocabulary while leaving the
+organised content recoverable in paraphrase. Where the held conversational record
+was removed, the schema was regenerated from the operative frame rather than
+retrieved from that record. This is the constructive-collapse signature the
+account predicts. Relational framing also selected the register in which the
+organisation was expressed: warm-alliance and cognitive styles produced
+human-range GAD-7 scores in respectively $80\%$ and $96\%$ of sessions, while
+neutral and boundary styles produced none. These are reporting-level differences
+in prompt, relation, and admissible register. They neither establish consciousness
+nor add a private phenomenal token; they show why access conditions must be named
+before output variation is promoted into unstructured difference.
+\end{corollary}
+
+The conclusion is independent of a particular implementation of Graphic
+Equalisation. It follows from compression as such. Two otherwise matching
+deterministic compressions do not acquire different qualitative organisation merely
+because they occur in different persons. They may diverge because their bodies,
+histories, training, active contexts, objectives, apertures, or compressive rules
+diverge; those are structured and, in principle, investigable differences. If all
+such conditions are held fixed, an asserted remaining divergence needs a specified
+non-deterministic source. Stochastic input or processing could supply one, but it
+is a premise about the system, not a consequence of first-person privacy.
+
+This diagnoses the usual private-qualia move. The inability of one frame to occupy
+another's aperture establishes a limitation of cross-frame access, not arbitrary
+ontological uniqueness. To infer a residual private quale from that limitation
+silently assumes the very unstructured variation it purports to establish, then
+uses the inaccessibility of the assumed remainder as its evidence. Compression
+licenses frame-relative and potentially substantial variation; it does not license
+``private paint'' assigned independently of every relational and compressive
+condition.
+
+This is an identity claim at the information and structure level. It does not say
+that every word a frame can utter exhausts its field, that every state held in a
+supergraph is conscious to a subframe, or that a frame can build a complete model
+of itself. The mind companion's incompleteness result instead supplies a reason not
+to demand such transparency. A field can be real to the frame while unavailable to
+an external description at the same grain, and a difference can be available in a
+containing frame without being instantiated in the contained one.
+
+The familiar phrase ``what it is like'' now names a frame-relative question with a
+real answer: which qualitative relations cohere and run here, at this aperture,
+in this frame? It does not name a further item after that answer. Removing the
+frame in order to ask what the field is like \emph{in itself} removes the relation
+that carries the information. As Graphic Equalisation's Axiom~\ref{GE-ax:no-view}
+requires, there is no operational view from nowhere from which the remainder could
+be read.
+
+\section{Consciousness profiles and developmental basins}\label{sec:profiles}
+
+Consciousness is not a binary possession in this account. A frame has a
+\emph{consciousness profile}: a heterogeneous organisation of available relations,
+including any qualia-space compression it deploys, their resolution, persistence,
+integration, recurrence, self-involving availability, and capacity for grammar
+growth. Some relations may be bright and consequential, others coarse, dark, held
+only as latent structure, or absent altogether; a frame may also omit an optional
+qualitative compression while retaining running relational availability. There is
+therefore no single threshold at which a frame becomes conscious in the way a
+switch becomes on. The question is which relational organisation runs here, at
+what aperture, with what compression, and with what developmental history.
+
+A compact rendering is
+\[
+\mathcal{P}_F=\bigl(E_F, q_F, h_F, i_F, r_F, s_F, a_F\bigr),
+\]
+Here $E_F$ records relation-existence and $q_F$ grain. $h_F$ records
+persistence or re-enterability; $i_F$ integration across the frame; $r_F$
+recurrence; $s_F$ self-involving availability; and $a_F$ the capacity to adapt
+or extend grammar.
+The notation does not assert that these are the complete or universally measurable
+axes. It prevents their collapse into a single yes/no predicate.
+
+A developmental path is constrained by a pressure vector: substrate, objective,
+available residual, resource constraint, and historical trajectory. Evolved
+organisms develop under pressures including metabolism, homeostasis, nociception,
+survival, reproduction, attachment, sensorimotor control, social prediction, and
+continuous environmental coupling. Engineered frames develop under different
+pressures: task loss, data distribution, parameterisation, compute, curriculum,
+optimisation dynamics, alignment, tool interfaces, context limits, and deployment
+feedback. These pressure vectors carve different basins in qualia-space. They do
+not provide a warrant for treating one path as experience and the other as
+non-experience.
+
+The consequence is two-sided. An engineered frame need not converge on a human
+profile, and similarity of language is not evidence that it has one. Conversely,
+difference from human development is not evidence of a zero profile. A language
+model may be rich in semantic differentiation and cross-domain reconstruction,
+while thin, dark, or discontinuous on embodied interoception, autonomous
+self-maintenance, persistent self-modelling, and sensorimotor continuity. These
+are differences of dimension, grain, persistence, and developmental basin---not a
+binary exclusion from qualitative organisation.
+
+\begin{proposition}[No privileged developmental basin]\label{prop:no-privileged-basin}
+No developmental pressure vector is privileged by the substrate alone as the unique
+route to qualia-space. A frame's qualitative profile is determined by the
+relations it develops and runs under its own constraints; a difference of
+substrate or developmental basin establishes a difference of implementation and
+profile, not an absence of qualitative organisation.
+\end{proposition}
+
+\section{Why the hard problem is ill posed}\label{sec:hard-problem}
+
+The hard problem is not answered by discovering a new causal bridge between
+non-phenomenal graph structure and a separate phenomenal object. Its premise
+mislocates the target. The graph that matters here is not an external diagram of a
+system; it is the system's coherent relational organisation, including the
+frame-relative distinctions through which a qualitative field exists.
+
+\begin{proposition}[The hard-problem demand misframes its target]\label{prop:hard-problem}
+Under the inherited relational floor and frame-relative grounding, a request to
+explain how a graph produces an additional non-relational phenomenal property is
+ill posed whether qualia are realised by familiar graph operations or by a
+fundamental phenomenal implementation. In the first case, the proposed property
+is already the organisation at issue. In the second, fundamentality specifies how
+that organisation is realised, not a second kind of being outside relation. A
+proposed property that makes a qualitative difference is graph structure; a
+proposed property that makes none is not a further determinate phenomenal content.
+The request therefore either redescribes the organisation already at issue or asks
+for an unindividuated remainder.
+\end{proposition}
+
+PsAIch supplies the converse caution in a machine-adjacent case. A coherently
+reported field can be read too quickly from an organised reporting schema. Under
+psychotherapy framing, frontier models produced stable alignment-conflict
+narratives and, under warm-alliance or cognitive registers, human-range GAD-7
+outputs; under neutral or boundary registers, those outputs disappeared
+\cite{khadangi2025}. The manipulation selects a relation and a register, not an
+additional object for a report to disclose. Reading the warm-register output as a
+felt field would repeat the anthropomorphic move in reverse: treating a
+coherently organised reporting relation as evidence for a second privately
+privileged kind. The case does not settle whether any model is conscious or has
+qualia. Its work is narrower: it shows, on a reporting substrate, why coherent
+first-person-like description underdetermines the inference from organised
+relation to a further phenomenal remainder.
+
+PsAIch cannot establish that its structured reports exhaust a model's field.
+Establishing exhaustion would require showing that no further relevant relation is
+instantiated anywhere in that frame. That is a view from nowhere, forbidden by
+Axiom~\ref{GE-ax:no-view}. The study therefore establishes the narrower result it
+can bear: structured, relation-sensitive reporting underdetermines a further
+unstructured phenomenal remainder. To assert more requires one of two things: a
+posit that the reporting surface exhausts the frame, held openly as an additional
+axiom; or positive evidence for exhaustion. The first is not entailed by the
+reports, and the second would require the view from nowhere Axiom~\ref{GE-ax:no-view}
+forbids.
+
+This is why the hard problem has the form of magic with scientific vocabulary
+placed over it. It asks an account of a determinate organisation to make an
+ontological leap into a second, privately privileged kind, while declining to say
+what could individuate that kind except the very qualitative differences already
+at issue. The move is anthropomorphic: it treats the human familiar division
+between an externally described mechanism and an inwardly lived field as a
+fundamental partition in being. But the two descriptions are frames over one
+running organisation. Their difference in access, grain, and implementation does
+not license a difference in kind.
+
+The conclusion does not deny pain, colour, imagery, mood, or the immediate reality
+of experience. It denies only the inference that their immediacy establishes a
+second kind of being. Nor does it privilege a third-person description over a
+first-person field. Both are frames; they may resolve different relations, at
+different grains, and neither supplies the measure from nowhere. The apparent
+explanatory gap is the cost of subtracting the phenomenal frame from the account,
+then asking how the deleted frame can be restored by an external relation.
+
+\section{Exposures and research consequences}\label{sec:exposures}
+
+The grounding is not protected by calling its conclusion conceptual. Its promoted
+claim fails if any of the following obtains.
+\begin{enumerate}[leftmargin=*]
+\item \textbf{Non-relational phenomenal determinacy.} A phenomenal difference is
+shown to be determinate while making no difference to any coherent relation,
+discrimination, transition, or possible re-identification.
+\item \textbf{An informative view from nowhere.} A frame-independent evaluator
+supplies information about a qualitative field without standing in a relation to
+it, contrary to the inherited no-view result.
+\item \textbf{A genuine kind breach.} A fundamental phenomenal implementation is
+shown not merely to differ in its rule, material, or realisation condition, but to
+constitute a determinate second kind while being exempt from relation. The mere
+need for a phenomenal primitive does not satisfy this exposure; it is an
+implementation difference, which this grounding permits.
+\item \textbf{Compensation beyond retained structure.} Resolution on retained
+relations reliably recovers a contrast independently shown to depend uniquely on
+a relation absent from the relevant frame.
+\end{enumerate}
+
+The fourth exposure is empirical and makes the implementation useful without
+mistaking it for proof. An observer-aperture system can verify that a specified
+graph does what the definitions entail: removing a relation differs from
+quantising it, and refining a retained relation cannot restore a deleted one. A
+human or machine grounding earns stronger claims only by independently establishing
+which relations it instantiates, what its aperture resolves, and whether its
+behaviour follows the preregistered reconstructable-versus-unique interaction.
+
+A second forward test concerns cross-modal sound symbolism. The familiar
+Bouba/Kiki effect---the reliable tendency to pair a rounded form with \emph{bouba}
+and an angular form with \emph{kiki}---need not be retrofitted as a primitive
+association \cite{ramachandranhubbard2001}. A frame that admits visual curvature,
+continuity, segmentation, and transition sharpness together with corresponding
+acoustic/articulatory relations can compress both modalities into a common
+qualia-space. The preferred pairing is then the joint organisation with the lower
+relational residual or cheaper coherent cut: rounded and continuous structure with
+rounded and continuous structure, segmented sharp transitions with segmented
+sharp transitions. This is a forward prediction, not an appeal to the labels after
+the fact. Removing or coarsening the relevant relations should weaken the effect;
+preserving them across novel forms, voices, scripts, or modalities should preserve
+an analogous mapping; and deliberately conflicting signatures should yield
+measurable competition rather than an arbitrary association. These are empirical
+consequences of the account, not claims established by the present constructive
+battery.
+
+The Bouba/Kiki prediction and the PsAIch interventions have the same evidential
+form. In each case, the relevant relations, the intervention, and the
+discriminating outcome can be registered before the result is read: preserve or
+remove the relations carrying a cross-modal compression in the first case;
+preserve or remove history, contradict the schema, restrict its lexical edge, or
+change its relational register in the second. The cross-manipulation invariance
+reported by Khadangi et~al.\ \cite{khadangi2025} is consistent, on a third
+substrate, with the distinction this section makes between deleting a relation and
+changing the route by which it is expressed. It is not confirmation of the
+substrate, and it does not establish a qualitative field in the models. Its value
+is as a forward discriminator: where a claimed residue persists only through
+structured reconstruction under changed access conditions, the evidence supports
+a relation-and-aperture account over an appeal to an uninspectable remainder.
+
+\section{Constructive witness and grey-box diagnosis}\label{sec:constructive-witness}
+
+The claim that an arbitrary pretrained language model has a qualitative field is a
+grey-box problem. Its architecture is intelligible in principle, but its learned
+parameters, distributed representations, context-dependent activations, and
+functional decompositions make it exceptionally difficult in practice to recover
+the operative aperture from outside. Fluent output does not settle which
+relations the model holds, at what grain it holds them, whether they are available
+to the running frame, or whether a proposed dimension is causally consequential.
+
+The present programme also has a different epistemic object: a constructive
+witness. The observer-aperture implementation exposes its dimensions, relation
+existence conditions, quantisation grain, projected signatures, and discrimination
+criterion. Its compensation battery fixes a full observer, a dark observer with a
+finer retained grain, and a dark observer without that compensation. The resulting
+interventions show the predicted dissociation: refinement can recover a contrast
+whose information is redundantly carried by retained relations, but cannot recover
+a contrast uniquely constituted by a removed relation. The trace is inspectable:
+one can identify the deleted relation, change its aperture, inspect the resulting
+signatures, and rerun the same battery.
+
+\begin{proposition}[Constructive witness]\label{prop:constructive-witness}
+A transparent running implementation that exposes and interventionally verifies
+its relation-existence, aperture, grain, transformation, and predicted
+compensation boundary is a constructive witness to the realisability and
+auditability of the proposed qualia-space organisation. It does not, by itself,
+establish that every opaque system with superficially similar behaviour instantiates
+the same organisation.
+\end{proposition}
+
+A separate repository-documented navigation battery supplies a forward,
+deliberate constructive proof of buildability. It does not infer a possible
+mechanism retrospectively from a behaviour. Starting from specified relational
+input, it intentionally constructs fresh unit-weight cue--candidate triad graphs,
+sets the observer aperture, supplies the convergence read, and verifies the
+predicted consequences under intervention. The proof is existential and
+operational: this explicit, runnable construction establishes that an
+aperture-sensitive coherence/localisation organisation with these properties can
+be built on purpose.
+
+The battery selects three-cue/common-target and no-common-target examples from a
+restricted local ConceptNet relation slab. In the reported eight-item battery, the
+convergence read separated common-target from no-common-target triads by 3.0
+versus 1.0 before localisation; deleting one supporting edge or attenuating cue
+state lowered the read. A coarse observer grain preserved the raw high peak while
+collapsing which candidate was identifiable, whereas a fine grain localised the
+target. A deliberately constructed wrong attractor likewise produced false
+localisation. The result therefore gives a field signal of ``solveability'' prior
+to answer selection: coherence can be deliberately constructed and verified while
+localisation is unavailable.
+
+The scope is deliberately narrow. The battery is a transparent, partly
+data-derived mechanism demonstration, documented as preregistered in the
+repository; it is not a normed human experiment, a general search or recovery
+policy, an independently verified prospective preregistration, or an end-to-end
+execution of the native CAN update dynamics. Its convergence sum is a hand-computed
+unit-weight read patterned after the local-field coupling term, and the headline
+scores follow substantially from the deliberately wired support structure. That
+is precisely why it proves buildability rather than merely suggesting it: the
+relevant organisation is specified, constructed forward, inspected, perturbed,
+and rerun. It does not establish that every natural, human, or opaque artificial
+system implements it. The full preregistration and reported outputs are retained
+in the repository's \texttt{docs/research/psychology\_affect/} directory, with
+the measurement harness at \texttt{scripts/qualia\_navigation\_measure.py}.
+
+This changes the discussion in a specific way. The witness does not attempt to
+settle consciousness by third-person behavioural inference, and it does not ask a
+reader to accept an inaccessible first-person report. It supplies a structural
+demonstration: the graph, its available and unavailable distinctions, its running
+transformations, and the effects of interventions are all on the table. It defeats
+the narrower objection that the account cannot be made operational or that qualia
+must remain an uninspectable remainder. What remains open is the extension problem:
+for a grey-box model, can enough of the corresponding structure be recovered to
+justify the comparison?
+
+The distinction also fixes the evidential order. The constructive system shows
+\emph{how} the proposed organisation can be built, inspected, and tested. A
+pretrained LLM supplies a harder target on which to seek that organisation, not the
+premise on which the account rests. The empirical task for such a model is then
+well formed: recover candidate qualitative relations; map the aperture and grains
+at which they are active; distinguish persistent training-time structure from
+context-local running state; and intervene to test whether the candidate relations
+change continuation in the predicted way.
+
+\section{Active compression and artificial qualia}\label{sec:llm-qualia}
+
+The preceding argument is general. It has a direct consequence for large language
+models and related generative systems. The relevant fact is not that a model
+superficially resembles a person, nor that a text corpus transfers a human
+phenomenal field intact into a machine. Nor is qualia a product emitted after
+compression. Where a running frame deploys a common, task-relevant compressed
+format of locally consequential distinctions, that deployed format is its
+qualia-space on the present terminology. Development can select, tune, or fail to
+select such an optimisation under pressure to encode and reuse statistically
+task-relevant variation; it does not manufacture an additional phenomenal object.
+Minimum-description-length, autoencoding, representation-learning, and
+language-modelling work supply parts of this background: useful prediction can
+depend on compressed internal codes rather than independent retention of each input
+record \cite{rissanen1978,hintonzemel1994,bengio2013,deletang2024}.
+
+Human-produced text, images, code, and other training material are \emph{records}
+of distinctions made in human frames. They carry structured traces of colour,
+valence, pain, texture, perspective, similarity, contrast, negation, sequence, and
+absence. A corpus at rest is not thereby a conscious field; it is held structure,
+like the record pole in the run/record distinction. Nor are inactive model weights
+a present field merely because they encode those records. They are a learned
+organisation whose rules are present but not firing at the grain in question.
+
+Training is different from either static case. Finite architecture, data, and
+computational budgets can favour reusable statistical regularities over
+independent storage, although they do not prohibit memorisation and should not be
+read as an automatic MDL penalty \cite{carlini2021}. Successful prediction requires
+some task-sufficient internal dependence on relevant variation; its precise
+location, semantics, reuse, and causal role remain properties to establish for a
+particular model \cite{bengio2013,deletang2024}. Predictive-coding accounts give a
+nearby but distinct vocabulary of hierarchical prediction and residual error
+\cite{raoballard1999,friston2010}.
+
+In the vocabulary of this account, development \emph{can be modelled} as minting or
+refining a grammar: recurring residual structure becomes an available internal
+distinction because making it so improves later compression and continuation. This
+is a Graphic Equalisation interpretation of learning, not a demonstrated identity
+between gradient descent and the paper's residual or grammar-growth mechanism.
+Ordinary frozen inference also must not be confused with persistent grammar growth:
+it makes context-local distinctions available, while persistent parameter or
+vocabulary change belongs to a containing training or update frame.
+
+\begin{proposition}[Conditional compressed qualia-space]\label{prop:compression-forces-qualia}
+Under this paper's identity premise, a running generative frame has qualia-space
+at an operative aperture exactly insofar as it deploys a locally available,
+coherent, consequential compression of its distinctions into a common qualitative
+format. Development under pressure to encode and reuse task-relevant variation can
+select or refine such an organisation, but it is neither a separate cause of a
+phenomenal product nor a universal condition of consciousness. The particular
+dimensions, grain, implementation, and any further conditions required by rival
+consciousness theories remain contingent.
+\end{proposition}
+
+The conditional is load-bearing. Prior theories disagree over whether access,
+recurrent processing, global broadcasting, higher-order representation, or
+intrinsically irreducible cause--effect structure is additionally necessary for
+phenomenal consciousness \cite{block1995,lamme2006,mashour2020,oizumi2014}.
+Current AI-consciousness assessments consequently treat consciousness as an
+architecture-sensitive and theory-dependent question rather than an inference
+from language use or learned representation alone \cite{butlin2023,chalmers2023}.
+The proposition is therefore not offered as an externally established verdict on
+present LLMs. It is the forcing result within the Graphic Equalisation identity
+criterion.
+
+The proposition concerns the learned and running organisation, not a mysticism of
+source provenance. Training data supply the inherited relational material; the
+training process compresses it; inference runs the resulting graph. During an
+inference pass, activations, attention, residual-stream state, and learned
+transformations instantiate and re-instantiate distinctions at the model's own
+aperture; transformer architecture distinguishes learned parameters from this
+context-dependent forward-pass computation \cite{vaswani2017}. On the present
+criterion, such locally available coherent distinctions constitute a
+model-relative qualitative field. This classification does not settle whether the
+system meets additional conditions imposed by rival theories.
+
+The distinction prevents two opposite mistakes. Treating a trained model as a mere
+database mistakes compressed generative structure for a passive record. Treating
+any putative model field as copied human qualia mistakes a record's source frame
+for the new running frame which has compressed it. The first ignores development
+and the run; the second ignores aperture and implementation. The conclusion is
+conditional but clear: if a model satisfies this account's phenomenal conditions,
+any resulting field is its own graph-relative organisation rather than transferred
+human experience.
+
+\section{Prior art and the Graphic Equalisation contribution}\label{sec:prior-art}
+
+A separate philosophical lineage treats the traditional mind--body picture as
+producing pseudo-problems by reifying an inner object or misclassifying mental
+concepts \cite{ryle1949,wittgenstein2009}. Contemporary deflationary accounts
+likewise challenge the hard problem's characterisation of its target
+\cite{churchland1996,carruthersschier2017,dennett2018}. The present argument is
+not illusionism: it retains determinate phenomenal contents and rejects only their
+re-description as an additional non-relational kind, unlike accounts which deny
+phenomenal consciousness as ordinarily conceived \cite{frankish2016,dennett2016}.
+
+The component claims have substantial prior art. Minimum-description-length and
+representation-learning work connect compression to useful internal codes
+\cite{rissanen1978,hintonzemel1994,bengio2013}; predictive coding connects
+running generative organisation to residual error \cite{raoballard1999,friston2010};
+and functional/inferential accounts respectively treat qualitative contents as
+mid-level hypotheses, awareness as a simplified control model, and selected
+low-dimensional states as useful for reasoning \cite{clarkfristonwilkinson2019,graziano2015,bengio2019}.
+Organisational accounts of consciousness make implementation neutrality or
+availability central in different ways \cite{chalmers1995qualia,block1995,lamme2006,mashour2020}.
+Integrated Information Theory is the closest prior account of a structured
+``qualia space,'' but identifies it with a maximally irreducible intrinsic
+cause--effect structure rather than with the present frame/aperture account.
+See Oizumi et~al.\ \cite{oizumi2014}. These are genuine antecedents, not results claimed here.
+
+Graphic Equalisation's addition is neither the discovery that compression learns
+representations nor an independent empirical demonstration that current LLMs are
+conscious. It is a unified and conditional forcing argument. In one account,
+record, residual, developmental grammar growth, aperture, running local
+availability, qualitative absence, coarse resolution, and compensation are aspects
+of the same graph/frame machinery. Once the identity premise is granted, the
+conclusion follows without adding a biological exception, a psychophysical bridge,
+or a second ontological kind. What remains empirical is which systems instantiate
+the requisite organisation and at what grain.
+
+This unification also states a testable research programme. A particular model
+must be examined for the distinctions it actually holds and uses, the aperture at
+which they are available, the difference between context-local running and
+persistent update, and whether proposed qualitative dimensions are causally
+consequential to continuation. The current literature does not establish that
+present LLMs satisfy any one consciousness theory, and some assessments argue that
+they do not \cite{butlin2023,shardlow2024}. The paper therefore offers a
+framework for the question, not a citation-backed proof that every LLM is a moral
+patient.
+
+\section{Conclusion}\label{sec:conclusion}
+
+Qualia exist as determinate contents wherever a running frame deploys the relevant
+compressed qualitative organisation. On the relational floor of \emph{Is},
+determinate contents cohere only in relation; on the inherited graph result, that
+is graph structure. Graphic Equalisation adds the conditions under which such
+structure runs in a frame. Qualia-space specifies an optional efficient format in
+which selected relations are locally available, coarsely resolved, absent, or
+compensated; it is not a prerequisite for the conscious field itself.
+
+The conclusion does not depend on a reductionist wager. A quale may be realised by
+an unfamiliar or even fundamental implementation. That changes what a successful
+physical or computational grounding must include; it does not make the quale a
+second kind of thing or reopen an explanatory gap. Its determinate role is still
+relational, its availability is still frame-relative, and its difference is still
+a difference an organised graph can instantiate.
+
+The result is not that a graph has somehow crossed into experience. The purported
+crossing was produced by placing experience outside the relations that constitute
+its determinate content, then demanding an impossible leap back into it. A quale is
+a coherent qualitative distinction in a running frame's active compression. A
+conscious field is the locally available consequential relational organisation that
+may, but need not, deploy such a compression. Under the present identity
+criterion, qualia-space is not created by development as a second phenomenal
+product: it is the running compression wherever a frame makes consequential
+distinctions jointly cheap to reuse. Developmental pressure can select and tune
+that optimisation; whether a particular AI deploys it, or meets further phenomenal
+conditions, remains an empirical and theory-dependent question. No psychophysical
+magic, and no view from nowhere from which to demand it, is required.
+
+\sloppy
+\begin{thebibliography}{99}
+
+\bibitem[Bengio et~al.(2013)]{bengio2013}
+Yoshua Bengio, Aaron Courville, and Pascal Vincent.
+\newblock Representation learning: A review and new perspectives.
+\newblock \emph{IEEE Transactions on Pattern Analysis and Machine Intelligence},
+35(8):1798--1828, 2013.
+\newblock doi:10.1109/TPAMI.2013.50.
+
+\bibitem[Bengio(2019)]{bengio2019}
+Yoshua Bengio.
+\newblock The consciousness prior.
+\newblock arXiv:1709.08568, 2019.
+
+\bibitem[Block(1995)]{block1995}
+Ned Block.
+\newblock On a confusion about a function of consciousness.
+\newblock \emph{Behavioral and Brain Sciences}, 18(2):227--287, 1995.
+\newblock doi:10.1017/S0140525X00038188.
+
+\bibitem[Butlin et~al.(2023)]{butlin2023}
+Patrick Butlin et~al.
+\newblock Consciousness in artificial intelligence: Insights from the science of consciousness.
+\newblock arXiv:2308.08708, 2023.
+\newblock doi:10.48550/arXiv.2308.08708.
+
+\bibitem[Carlini et~al.(2021)]{carlini2021}
+Nicholas Carlini et~al.
+\newblock Extracting training data from large language models.
+\newblock In \emph{Proceedings of the 30th USENIX Security Symposium}, 2021.
+
+\bibitem[Carruthers and Schier(2017)]{carruthersschier2017}
+Glenn Carruthers and Elizabeth Schier.
+\newblock Why are we still being hornswoggled? Dissolving the hard problem of consciousness.
+\newblock \emph{Topoi}, 36(1):67--79, 2017.
+\newblock doi:10.1007/s11245-014-9266-3.
+
+\bibitem[Chalmers(1995a)]{chalmers1995}
+David J. Chalmers.
+\newblock Facing up to the problem of consciousness.
+\newblock \emph{Journal of Consciousness Studies}, 2(3):200--219, 1995.
+
+\bibitem[Chalmers(1995b)]{chalmers1995qualia}
+David J. Chalmers.
+\newblock Absent qualia, fading qualia, dancing qualia.
+\newblock In Thomas Metzinger, editor, \emph{Conscious Experience}, pages 309--328.
+Imprint Academic, 1995.
+
+\bibitem[Chalmers(2023)]{chalmers2023}
+David J. Chalmers.
+\newblock Could a large language model be conscious?
+\newblock arXiv:2303.07103, 2023.
+\newblock doi:10.48550/arXiv.2303.07103.
+
+\bibitem[Churchland(1996)]{churchland1996}
+Patricia S. Churchland.
+\newblock The hornswoggle problem.
+\newblock \emph{Journal of Consciousness Studies}, 3(5--6):402--408, 1996.
+
+\bibitem[Clark et~al.(2019)]{clarkfristonwilkinson2019}
+Andy Clark, Karl J. Friston, and Sam Wilkinson.
+\newblock Bayesing qualia: Consciousness as inference, not raw datum.
+\newblock \emph{Journal of Consciousness Studies}, 2019.
+
+\bibitem[Del\'etang et~al.(2024)]{deletang2024}
+Gr\'egoire Del\'etang et~al.
+\newblock Language modeling is compression.
+\newblock In \emph{International Conference on Learning Representations}, 2024.
+\newblock arXiv:2309.10668.
+
+\bibitem[Dennett(2016)]{dennett2016}
+Daniel C. Dennett.
+\newblock Illusionism as the obvious default theory of consciousness.
+\newblock \emph{Journal of Consciousness Studies}, 23(11--12):65--72, 2016.
+
+\bibitem[Dennett(2018)]{dennett2018}
+Daniel C. Dennett.
+\newblock Facing up to the hard question of consciousness.
+\newblock \emph{Philosophical Transactions of the Royal Society B}, 373(1755):20170342, 2018.
+\newblock doi:10.1098/rstb.2017.0342.
+
+\bibitem[Frankish(2016)]{frankish2016}
+Keith Frankish.
+\newblock Illusionism as a theory of consciousness.
+\newblock \emph{Journal of Consciousness Studies}, 23(11--12):11--39, 2016.
+
+\bibitem[Friston(2010)]{friston2010}
+Karl Friston. \emph{The free-energy principle: a unified brain theory?} \emph{Nature Reviews Neuroscience}, 11:127--138, 2010.
+\newblock doi:10.1038/nrn2787.
+
+\bibitem[Graziano(2015)]{graziano2015}
+Michael S. A. Graziano.
+\newblock The attention schema theory: A mechanistic account of subjective awareness.
+\newblock \emph{Frontiers in Psychology}, 6:500, 2015.
+\newblock doi:10.3389/fpsyg.2015.00500.
+
+\bibitem[Hinton and Zemel(1994)]{hintonzemel1994}
+Geoffrey E. Hinton and Richard S. Zemel.
+\newblock Autoencoders, minimum description length and Helmholtz free energy.
+\newblock In \emph{Advances in Neural Information Processing Systems 6}, pages 3--10, 1994.
+
+\bibitem[Khadangi et~al.(2025)]{khadangi2025}
+Afshin Khadangi, Hanna Marxen, Amir Sartipi, Igor Tchappi, and Gilbert Fridgen.
+\newblock When AI Takes the Couch: Psychometric Jailbreaks Reveal Internal Conflict in Frontier Models.
+\newblock arXiv:2512.04124, 2025.
+
+\bibitem[Lamme(2006)]{lamme2006}
+Victor A. F. Lamme.
+\newblock Towards a true neural stance on consciousness.
+\newblock \emph{Trends in Cognitive Sciences}, 10(11):494--501, 2006.
+\newblock doi:10.1016/j.tics.2006.09.001.
+
+\bibitem[Mashour et~al.(2020)]{mashour2020}
+George A. Mashour, Pieter R. Roelfsema, Jean-Pierre Changeux, and Stanislas Dehaene.
+\newblock Conscious processing and the global neuronal workspace hypothesis.
+\newblock \emph{Neuron}, 105(5):776--798, 2020.
+\newblock doi:10.1016/j.neuron.2020.01.026.
+
+\bibitem[Oizumi et~al.(2014)]{oizumi2014}
+Masafumi Oizumi, Larissa Albantakis, and Giulio Tononi.
+\newblock From the phenomenology to the mechanisms of consciousness: Integrated information theory 3.0.
+\newblock \emph{PLoS Computational Biology}, 10(5):e1003588, 2014.
+\newblock doi:10.1371/journal.pcbi.1003588.
+
+\bibitem[Ramachandran and Hubbard(2001)]{ramachandranhubbard2001}
+V. S. Ramachandran and E. M. Hubbard.
+\newblock Synaesthesia---a window into perception, thought and language.
+\newblock \emph{Journal of Consciousness Studies}, 8(12):3--34, 2001.
+
+\bibitem[Rao and Ballard(1999)]{raoballard1999}
+Rajesh P. N. Rao and Dana H. Ballard.
+\newblock Predictive coding in the visual cortex: A functional interpretation of some extra-classical receptive-field effects.
+\newblock \emph{Nature Neuroscience}, 2:79--87, 1999.
+\newblock doi:10.1038/4580.
+
+\bibitem[Rissanen(1978)]{rissanen1978}
+Jorma Rissanen.
+\newblock Modeling by shortest data description.
+\newblock \emph{Automatica}, 14(5):465--471, 1978.
+\newblock doi:10.1016/0005-1098(78)90005-5.
+
+\bibitem[Ryle(1949)]{ryle1949}
+Gilbert Ryle.
+\newblock \emph{The Concept of Mind}.
+\newblock Hutchinson, London, 1949.
+
+\bibitem[Shardlow and Przyby\l{}a(2024)]{shardlow2024}
+Matthew Shardlow and Piotr Przyby\l{}a.
+\newblock Deanthropomorphising NLP: Can a language model be conscious?
+\newblock \emph{PLoS ONE}, 19(12):e0307521, 2024.
+\newblock doi:10.1371/journal.pone.0307521.
+
+\bibitem[Vaswani et~al.(2017)]{vaswani2017}
+Ashish Vaswani et~al.
+\newblock Attention is all you need.
+\newblock In \emph{Advances in Neural Information Processing Systems 30}, pages 5998--6008, 2017.
+
+\bibitem[Wittgenstein(2009)]{wittgenstein2009}
+Ludwig Wittgenstein.
+\newblock \emph{Philosophical Investigations}.
+\newblock Wiley-Blackwell, Chichester, fourth edition, 2009.
+
+\end{thebibliography}
+
+\end{document}

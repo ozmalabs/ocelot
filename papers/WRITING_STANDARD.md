@@ -141,10 +141,20 @@ the contribution honestly.
 - Do not explain a reference merely because it is a reference. Explain it only
   when its origin, analogy, or prior result carries a structural step in the
   present path.
-- Names such as *Seldon manifolds* and *Narrativium* need no parenthetical
-  origin story when they are simply the local names of already-grounded terms.
-  Explain their lineage where that lineage performs conceptual work; otherwise
-  let the term do its job.
+- A project term is operative compression at a reader's lexical grain. A word-token is a valid unit
+  in that frame and a small lexical edge to a held shape; at a containing frame it may be decomposed or
+  interchanged. Neither fact makes it a decorative or empty label. Choose terms whose form, contrasts,
+  word family, and learned use make that edge do work.
+- An exact token match should be a cheap lookup. Where the exact token is unavailable, the held shape
+  should constrain a close-enough search rather than force global reconstruction. A tip-of-the-tongue
+  state is the useful limiting case: the reader holds the shape but cannot fetch its lexical edge.
+  Write so that the reader can recover the edge or inspect the shape when exact retrieval fails.
+- Compression is not unsupported shorthand. A lexical edge is not a proof, and readers who do not
+  already hold the relevant shape still need the term installed in ordinary prose, definitions,
+  mechanism, and boundary. Use a project term only after deciding which of those it can safely replace
+  for the intended reader.
+- A local name needs no parenthetical origin story when it is simply the name of an already-grounded
+  term. Explain lineage where it performs conceptual work; otherwise let the term do its job.
 - Cite the source that supplies the mechanism, result, or terminology actually
   used. Do not use a citation as decoration or as a substitute for saying what
   follows.
