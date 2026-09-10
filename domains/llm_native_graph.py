@@ -280,6 +280,75 @@ def read_mode_nodes(bp_result, mode_concepts):
     return np.asarray(out, dtype=np.float32)
 
 
+def export_chain_structure(model, train_ids, heldout_ids, out_path, *,
+                           layers, k=32, ridge=1.0, all_positions=True):
+    """Block 325: export the mode coefficients across a CHAIN of layers (a list
+    of layer indices, e.g. [10,11,12,13,14]) for every train + held-out query,
+    so per-hop transports T_i: coeffs_{L_i} -> coeffs_{L_{i+1}} can be fit and
+    the chain settled as one graph. Writes tr_c[layer], ho_c[layer] as a stacked
+    array [n_layers, N, k]."""
+    from . import llm_structure_recovery as lsr
+    R = lsr.fit_mode_router(model, train_ids, k=k, ridge=ridge,
+                            all_positions=all_positions)
+    layers = list(layers)
+
+    def coeffs_at(ids, L):
+        xg, act = lsr._ffn_io(model, ids)[L]
+        return ((act - R.mean[L]) @ R.modes[L].T).astype(np.float32)
+
+    tr_c = np.stack([np.stack([coeffs_at(ids, L) for ids in train_ids])
+                     for L in layers])          # [n_layers, N_train, k]
+    ho_c = np.stack([np.stack([coeffs_at(ids, L) for ids in heldout_ids])
+                     for L in layers])          # [n_layers, N_ho, k]
+    np.savez(out_path,
+             tr_c=tr_c, ho_c=ho_c,
+             layers=np.asarray(layers, dtype=np.int64))
+    return out_path
+
+
+def build_chain_factor_graph(substrate, seed_paths, transports, coeffs0, *,
+                             n_modes=8, temperature=1.0, field_scale=1.0,
+                             transport_scale=1.0, discrete_mode="3state"):
+    """Block 325: the MULTI-HOP transport chain as ONE substrate factor graph.
+    A column of `n_modes` mode-nodes per layer in the chain; the FIRST layer's
+    nodes carry the known input (external_field = coeffs0[m]); every deeper
+    layer's nodes have NO self-field and are driven only through the transport
+    edges. `transports` is a list of per-hop maps T_i [k, k] (hop i couples
+    layer i's nodes to layer i+1's). Edges are bidirectional (undirected Ising).
+    Returns (mt, layer_nodes) where layer_nodes[i] is the list of that layer's
+    mode-node concepts (mode ids 0..n_modes-1)."""
+    import json
+    from substrate.seed_loader import engine_rules_only
+    for path in seed_paths:
+        substrate.load_seed_manifest(engine_rules_only(json.load(open(path))))
+    n_layers = len(transports) + 1
+    mt = substrate.add_node("Microtheory",
+                            {"temperature": float(temperature),
+                             "discrete_mode": discrete_mode})
+    layer_nodes = []
+    for li in range(n_layers):
+        nodes = []
+        for m in range(n_modes):
+            fld = float(coeffs0[m] * field_scale) if li == 0 else 0.0
+            c = substrate.add_node("Concept", {
+                "external_field": fld, "identity_field": 0.0, "state": 0.0})
+            substrate.add_edge(mt, "has_concept", c, {})
+            nodes.append(c)
+        layer_nodes.append(nodes)
+    for hop, T in enumerate(transports):
+        src, dst = layer_nodes[hop], layer_nodes[hop + 1]
+        for m1 in range(n_modes):
+            for m0 in range(n_modes):
+                w = float(T[m1, m0] * transport_scale)
+                if w == 0.0:
+                    continue
+                substrate.add_edge(src[m0], "causal_influence", dst[m1],
+                                   {"weight": w})
+                substrate.add_edge(dst[m1], "causal_influence", src[m0],
+                                   {"weight": w})
+    return mt, layer_nodes
+
+
 def export_transport_structure(model, train_ids, heldout_ids, out_path, *,
                                layer, k=32, ridge=1.0, all_positions=True):
     """Block 324: export the BETWEEN-LAYER transport structure for adjacent
