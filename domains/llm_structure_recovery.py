@@ -59,7 +59,8 @@ class SparseConfig:
     """
 
     def __init__(self, ffn_keep_frac=1.0, skip_layers=None, heads_keep=None,
-                 ffn_retrieve_frac=1.0, order2_shape=None, order2_frac=1.0):
+                 ffn_retrieve_frac=1.0, order2_shape=None, order2_frac=1.0,
+                 mode_router=None, mode_frac=0.5):
         self.ffn_keep_frac = float(ffn_keep_frac)
         self.skip_layers = set(skip_layers or ())
         self.heads_keep = heads_keep
@@ -70,12 +71,21 @@ class SparseConfig:
         # corpus-selected neurons — query-INDEPENDENT selection.
         self.order2_shape = order2_shape
         self.order2_frac = float(order2_frac)
+        # mode_router (block 320): a ModeRouter used INLINE in the forward pass.
+        # At each layer/position it predicts the activation from the MLP input
+        # x (already computed) via k mode coefficients (cost k·d + k·ff), picks
+        # the top `mode_frac` neurons, and computes ONLY those — WITHOUT the
+        # separate full-activation recompute that order2_shape needs. This is
+        # the CHEAP per-position selection path (recovered structure, then
+        # optimised).
+        self.mode_router = mode_router
+        self.mode_frac = float(mode_frac)
 
     @property
     def off(self):
         return (self.ffn_keep_frac >= 1.0 and not self.skip_layers
                 and self.heads_keep is None and self.ffn_retrieve_frac >= 1.0
-                and self.order2_shape is None)
+                and self.order2_shape is None and self.mode_router is None)
 
 
 class NumpyQwen3:
@@ -204,7 +214,40 @@ class NumpyQwen3:
             gate_W = self._t(p + "mlp.gate_proj.weight")        # [ff, d] keys
             up_W = self._t(p + "mlp.up_proj.weight")            # [ff, d]
             down = self._t(p + "mlp.down_proj.weight")          # [d, ff]
-            if sp.order2_shape is not None:
+            if sp.mode_router is not None:
+                # BLOCK 320 CHEAP PER-POSITION MODE SELECTION. The recovered
+                # structure (SVD modes + input->coefficient map) is used INLINE:
+                # for each position, predict the activation from x (already
+                # computed) via k mode coefficients, pick the top `mode_frac`
+                # neurons, and compute ONLY those neurons' gate/up/down. No
+                # separate full-activation recompute (that was block 319's cost
+                # caveat). Selection cost per position = k·d (coeffs) + k·ff
+                # (reconstruct) vs the FFN's 2·d·ff; the compute is then only
+                # over `keep` neurons.
+                R = sp.mode_router
+                Wc = R.Wc[L]                                   # [k, d]
+                U = R.modes[L]                                 # [k, ff]
+                mu = R.mean[L]                                 # [ff]
+                ff = gate_W.shape[0]
+                keep = max(1, int(round(ff * sp.mode_frac)))
+                mlp = np.zeros((T, self.d), dtype=np.float32)
+                for t in range(T):
+                    coeffs = Wc @ x[t]                         # [k]
+                    pred = mu + coeffs @ U                     # [ff] predicted
+                    st = np.argpartition(-np.abs(pred), keep - 1)[:keep]
+                    gt = x[t] @ gate_W[st].T                   # [keep]
+                    ut = x[t] @ up_W[st].T
+                    ht = self.silu(gt) * ut
+                    mlp[t] = ht @ down[:, st].T
+                    if fc is not None:
+                        kk = U.shape[0]
+                        fc["flops"] = fc.get("flops", 0) + (
+                            2 * kk * self.d          # coeffs = Wc·x
+                            + 2 * kk * ff            # reconstruct coeffs·U
+                            + 2 * self.d * keep * 3  # gate+up+down on kept
+                        )
+                h = h + mlp
+            elif sp.order2_shape is not None:
                 # ORDER-2: keep a corpus-fitted / retrieved neuron set for this
                 # layer. `sel` may be:
                 #   1D array [k]        — ONE fixed set for ALL positions
@@ -662,31 +705,54 @@ class ModeRouter:
         return self.mean[L] + coeffs @ self.modes[L]   # [ff] reconstructed act
 
 
-def fit_mode_router(model: "NumpyQwen3", corpus_token_ids, *, k=32, ridge=1.0):
+def fit_mode_router(model: "NumpyQwen3", corpus_token_ids, *, k=32, ridge=1.0,
+                    all_positions=False):
     """Fit the MODE-grain router. Per layer: SVD the centred corpus activation
-    matrix [N, ff] -> top-k right singular vectors (modes); ridge-regress input
-    -> mode COEFFICIENTS (k of them, not ff). The router predicts k mode
-    coefficients (the right, low-rank grain per the block-318 diagnostic) and
-    reconstructs the activation as mean + coeffs·modes — instead of predicting
-    the ff-dim neuron activation directly (block 315-317's wrong, high-dim
-    grain). Same numpy `score` interface as the other routers."""
+    matrix -> top-k right singular vectors (modes); ridge-regress input -> mode
+    COEFFICIENTS (k of them, not ff). The router predicts k mode coefficients
+    (the right, low-rank grain per the block-318 diagnostic) and reconstructs
+    the activation as mean + coeffs·modes — instead of predicting the ff-dim
+    neuron activation directly (block 315-317's wrong, high-dim grain). Same
+    numpy `score` interface as the other routers.
+
+    `all_positions` (block 320): fit over EVERY token position, not just the
+    last token. The per-position retrieval path (block 319) needs the router to
+    predict activations at ALL positions; a last-token-only fit makes weaker
+    predictions off the final token. Fitting on all positions matches the
+    router's quality to the grain the retrieval path uses."""
     m = model
     d = m.d
     feats_x = None
     tgts = None
     for ids in corpus_token_ids:
-        ios = _ffn_io(m, ids)
-        if feats_x is None:
-            feats_x = [[] for _ in ios]
-            tgts = [[] for _ in ios]
-        for L, (xg, act) in enumerate(ios):
-            feats_x[L].append(xg)
-            tgts[L].append(act)
+        if all_positions:
+            xgs = _ffn_io_all(m, ids)                     # per-layer [T, d]
+            if feats_x is None:
+                feats_x = [[] for _ in xgs]
+                tgts = [[] for _ in xgs]
+            for L, xg in enumerate(xgs):
+                gate_W = m._t("model.layers.%d.mlp.gate_proj.weight" % L)
+                up_W = m._t("model.layers.%d.mlp.up_proj.weight" % L)
+                act = np.abs(m.silu(xg @ gate_W.T) * (xg @ up_W.T))  # [T, ff]
+                feats_x[L].append(xg)                     # [T, d]
+                tgts[L].append(act)                       # [T, ff]
+        else:
+            ios = _ffn_io(m, ids)
+            if feats_x is None:
+                feats_x = [[] for _ in ios]
+                tgts = [[] for _ in ios]
+            for L, (xg, act) in enumerate(ios):
+                feats_x[L].append(xg)
+                tgts[L].append(act)
     modes, Wc, mean = {}, {}, {}
     kk = k
     for L in range(len(feats_x)):
-        X = np.stack(feats_x[L])                          # [N, d]
-        Y = np.stack(tgts[L])                             # [N, ff]
+        if all_positions:
+            X = np.concatenate(feats_x[L], axis=0)        # [sum T, d]
+            Y = np.concatenate(tgts[L], axis=0)           # [sum T, ff]
+        else:
+            X = np.stack(feats_x[L])                       # [N, d]
+            Y = np.stack(tgts[L])                          # [N, ff]
         mu = Y.mean(0)
         Yc = Y - mu
         kk = max(1, min(k, min(Yc.shape) - 1))

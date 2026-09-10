@@ -461,6 +461,58 @@ def test_per_position_order2_matches_fixed_when_all_same():
     assert np.allclose(lg_fx, lg_pp, atol=1e-4)   # same sets -> same result
 
 
+# ---- structural recovery: all-position fit + cheap inline (block 320000) ----
+
+@_need_model
+def test_fit_mode_router_all_positions_shapes():
+    npm = lsr.NumpyQwen3(MODEL)
+    corpus = [[464, 6722, 315, 9822, 374], [791, 14329, 315, 4106, 374],
+              [32, 5562, 374, 264, 3169, 315]]
+    R = lsr.fit_mode_router(npm, corpus, k=8, ridge=1.0, all_positions=True)
+    assert 1 <= R.k <= 8
+    for L in range(npm.n_layers):
+        ff = npm._t("model.layers.%d.mlp.gate_proj.weight" % L).shape[0]
+        assert R.modes[L].shape == (R.k, ff)
+        assert R.Wc[L].shape == (R.k, npm.d)
+        assert R.mean[L].shape == (ff,)
+
+
+@_need_model
+def test_inline_mode_router_off_and_default_bitexact():
+    import numpy as np
+    npm = lsr.NumpyQwen3(MODEL)
+    corpus = [[464, 6722, 315, 9822, 374], [791, 14329, 315, 4106, 374]]
+    R = lsr.fit_mode_router(npm, corpus, k=8, ridge=1.0)
+    # a config with a mode_router is NOT "off"
+    assert lsr.SparseConfig(mode_router=R, mode_frac=0.5).off is False
+    # default (no mode_router) stays off and bit-exact vs no sparse config
+    ids = [464, 6722, 315, 9603, 374]
+    lg_none = npm.forward_logits(ids)
+    lg_def = npm.forward_logits(ids, sparse=lsr.SparseConfig())
+    assert np.allclose(lg_none, lg_def)
+
+
+@_need_model
+def test_inline_mode_router_runs_and_counts_flops():
+    npm = lsr.NumpyQwen3(MODEL)
+    corpus = [[464, 6722, 315, 9822, 374], [791, 14329, 315, 4106, 374],
+              [32, 5562, 374, 264, 3169, 315]]
+    R = lsr.fit_mode_router(npm, corpus, k=8, ridge=1.0, all_positions=True)
+    ids = [464, 6722, 315, 9603, 374]
+    # inline path produces valid logits
+    fc = {"flops": 0}
+    lg = npm.forward_logits(ids, sparse=lsr.SparseConfig(mode_router=R,
+                                                         mode_frac=0.3),
+                            flop_counter=fc)
+    ff = npm._t("model.layers.0.mlp.gate_proj.weight").shape[0]
+    assert lg.ndim == 1 and lg.shape[0] > 0
+    assert fc["flops"] > 0
+    # cheaper than the full FFN at a tight fraction: inline MLP FLOPs < full
+    fc_full = {"flops": 0}
+    npm.forward_logits(ids, sparse=lsr.SparseConfig(), flop_counter=fc_full)
+    assert fc["flops"] < fc_full["flops"]
+
+
 # ---- trained router (block 317000, needs torch) ------------------------
 
 _need_torch = pytest.mark.skipif(not (_have_torch() and _HAVE_MODEL),
