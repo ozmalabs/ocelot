@@ -311,3 +311,56 @@ def test_transport_l0_field_drives_l1_through_transport():
     bp = run_loopy_bp(s, mt, combine="max_product")
     sh = lng.read_transport_modes(bp, n1)
     assert sh[0] == 1.0                 # L1 mode 0 driven positive via transport
+
+
+# ---- block 325: multi-hop transport chain ------------------------------
+
+@_need_substrate
+def test_build_chain_factor_graph_structure():
+    from substrate_rs import _native
+    from domains.can_native_bp import run_loopy_bp
+    rng = np.random.default_rng(20)
+    k, nm = 32, 6
+    Ts = [rng.standard_normal((k, k)).astype(np.float32) for _ in range(3)]
+    coeffs0 = rng.standard_normal(k).astype(np.float32)
+    s = _native.Substrate()
+    mt, layer_nodes = lng.build_chain_factor_graph(
+        s, ["seeds/can_native_reimplementation.json"], Ts, coeffs0,
+        n_modes=nm, temperature=1.0, discrete_mode="3state")
+    assert len(layer_nodes) == len(Ts) + 1          # n_hops + 1 layers
+    for nodes in layer_nodes:
+        assert len(nodes) == nm
+    bp = run_loopy_bp(s, mt, combine="max_product")
+    # every layer is readable
+    for nodes in layer_nodes:
+        sh = lng.read_transport_modes(bp, nodes)
+        assert sh.shape == (nm,)
+
+
+@_need_substrate
+def test_chain_transport_propagates_a_clamped_bit_forward():
+    # a diagonal +transport chain should carry a clamped +bit at layer 0 forward
+    # to the same mode at every deeper layer (feed-forward settle-and-clamp).
+    from substrate_rs import _native
+    from domains.can_native_bp import run_loopy_bp
+    k, nm, hops = 32, 4, 3
+    T = np.zeros((k, k), dtype=np.float32)
+    for m in range(nm):
+        T[m, m] = 3.0                    # identity-ish positive transport
+    cur = np.zeros(k, dtype=np.float32)
+    cur[0] = 5.0                         # mode 0 ON at layer 0
+    states = [1.0]
+    for hop in range(hops):
+        c0 = np.zeros(k, dtype=np.float32)
+        c0[:nm] = cur[:nm]
+        s = _native.Substrate()
+        mt, ln = lng.build_chain_factor_graph(
+            s, ["seeds/can_native_reimplementation.json"], [T], c0,
+            n_modes=nm, temperature=1.0, discrete_mode="3state")
+        bp = run_loopy_bp(s, mt, combine="max_product")
+        sh = lng.read_transport_modes(bp, ln[1])
+        states.append(sh[0])
+        cur = np.zeros(k, dtype=np.float32)
+        cur[:nm] = sh                    # feed settled states forward
+    # mode 0 stays positive through the whole feed-forward chain
+    assert all(v == 1.0 for v in states)
