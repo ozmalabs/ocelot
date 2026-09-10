@@ -394,6 +394,73 @@ def test_mode_router_drops_into_retrieval():
         assert 0 < len(shp[L]) <= ff
 
 
+# ---- per-position retrieval (block 319000, pure numpy) -----------------
+
+@_need_model
+def test_ffn_io_all_returns_all_positions():
+    npm = lsr.NumpyQwen3(MODEL)
+    ids = [464, 6722, 315, 9822, 374]
+    xgs = lsr._ffn_io_all(npm, ids)
+    assert len(xgs) == npm.n_layers
+    for xg in xgs:
+        assert xg.shape == (len(ids), npm.d)   # [T, d] per layer
+
+
+@_need_model
+def test_mode_retrieve_per_position_shapes():
+    npm = lsr.NumpyQwen3(MODEL)
+    corpus = [[464, 6722, 315, 9822, 374], [791, 14329, 315, 4106, 374],
+              [32, 5562, 374, 264, 3169, 315]]
+    R = lsr.fit_mode_router(npm, corpus, k=8, ridge=1.0)
+    ids = [464, 6722, 315, 9822, 374]
+    shp = lsr.mode_retrieve_per_position(npm, R, ids, target_frac=0.5)
+    assert set(shp) == set(range(npm.n_layers))
+    for L in range(npm.n_layers):
+        ff = npm._t("model.layers.%d.mlp.gate_proj.weight" % L).shape[0]
+        keep = max(1, int(round(ff * 0.5)))
+        assert len(shp[L]) == len(ids)                 # one set PER POSITION
+        for st in shp[L]:
+            assert len(st) == keep                     # each ~ target_frac*ff
+            assert st.min() >= 0 and st.max() < ff     # valid neuron indices
+
+
+@_need_model
+def test_per_position_order2_forward_differs_from_fixed():
+    import numpy as np
+    npm = lsr.NumpyQwen3(MODEL)
+    corpus = [[464, 6722, 315, 9822, 374], [791, 14329, 315, 4106, 374],
+              [32, 5562, 374, 264, 3169, 315]]
+    R = lsr.fit_mode_router(npm, corpus, k=8, ridge=1.0)
+    ids = [464, 6722, 315, 9603, 374]
+    # per-position selection
+    pp = lsr.mode_retrieve_per_position(npm, R, ids, target_frac=0.5)
+    lg_pp = npm.forward_logits(ids, sparse=lsr.SparseConfig(order2_shape=pp))
+    # fixed set = the LAST position's set applied to the whole sequence
+    fixed = {L: pp[L][-1] for L in pp}
+    lg_fx = npm.forward_logits(ids, sparse=lsr.SparseConfig(order2_shape=fixed))
+    assert lg_pp.shape == lg_fx.shape
+    # the two selection modes generally produce different logits (per-position
+    # gives earlier tokens their own active set); if identical the branch is
+    # not actually selecting per position.
+    assert not np.allclose(lg_pp, lg_fx)
+
+
+@_need_model
+def test_per_position_order2_matches_fixed_when_all_same():
+    import numpy as np
+    npm = lsr.NumpyQwen3(MODEL)
+    corpus = [[464, 6722, 315, 9822, 374], [791, 14329, 315, 4106, 374]]
+    R = lsr.fit_mode_router(npm, corpus, k=8, ridge=1.0)
+    ids = [464, 6722, 315, 9603, 374]
+    fixed = {L: np.array(sorted(range(0, 100))) for L in range(npm.n_layers)}
+    # per-position list where every position is the SAME set == the fixed set
+    perpos = {L: [fixed[L]] * len(ids) for L in range(npm.n_layers)}
+    lg_fx = npm.forward_logits(ids, sparse=lsr.SparseConfig(order2_shape=fixed))
+    lg_pp = npm.forward_logits(ids,
+                               sparse=lsr.SparseConfig(order2_shape=perpos))
+    assert np.allclose(lg_fx, lg_pp, atol=1e-4)   # same sets -> same result
+
+
 # ---- trained router (block 317000, needs torch) ------------------------
 
 _need_torch = pytest.mark.skipif(not (_have_torch() and _HAVE_MODEL),

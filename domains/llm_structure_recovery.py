@@ -205,12 +205,35 @@ class NumpyQwen3:
             up_W = self._t(p + "mlp.up_proj.weight")            # [ff, d]
             down = self._t(p + "mlp.down_proj.weight")          # [d, ff]
             if sp.order2_shape is not None:
-                # ORDER-2: keep the corpus-fitted neuron set for this layer
-                # (query-INDEPENDENT — the multi-query shape). Compute only
-                # those neurons' gate/up/down.
+                # ORDER-2: keep a corpus-fitted / retrieved neuron set for this
+                # layer. `sel` may be:
+                #   1D array [k]        — ONE fixed set for ALL positions
+                #                         (query-INDEPENDENT multi-query shape).
+                #   list/2D [T][k]      — a DIFFERENT set PER TOKEN POSITION
+                #                         (block 319: the true active set varies
+                #                         by position; a single fixed set across
+                #                         the sequence is the retrieval ceiling).
                 sel = sp.order2_shape.get(L)
-                if sel is None or len(sel) == 0:
+                per_pos = isinstance(sel, (list, tuple)) or (
+                    isinstance(sel, np.ndarray) and sel.dtype == object) or (
+                    isinstance(sel, np.ndarray) and sel.ndim == 2)
+                if sel is None or (not per_pos and len(sel) == 0):
                     mlp = np.zeros((T, self.d), dtype=np.float32)
+                elif per_pos:
+                    # per-position selection: each token gets its own neuron set
+                    mlp = np.zeros((T, self.d), dtype=np.float32)
+                    for t in range(T):
+                        st = sel[t]
+                        if st is None or len(st) == 0:
+                            continue
+                        st = np.asarray(st)
+                        gt = x[t] @ gate_W[st].T                 # [k]
+                        ut = x[t] @ up_W[st].T
+                        ht = self.silu(gt) * ut
+                        mlp[t] = ht @ down[:, st].T
+                        if fc is not None:
+                            fc["flops"] = fc.get("flops", 0) + \
+                                2 * self.d * len(st) * 3
                 else:
                     gsel = x @ gate_W[sel].T                     # [T, k]
                     usel = x @ up_W[sel].T
@@ -489,6 +512,72 @@ def _ffn_io(model: "NumpyQwen3", token_ids):
         ios.append((xg[-1].copy(), act[-1].copy()))
         h = h_att + ((m.silu(g) * u) @ m._t(p + "mlp.down_proj.weight").T)
     return ios
+
+
+def _ffn_io_all(model: "NumpyQwen3", token_ids):
+    """Like `_ffn_io` but returns the post-attention-norm INPUT for ALL token
+    positions per layer: list over layers of xg [T, d]. Block 319 needs the
+    per-POSITION input so retrieval can pick a different active set at each
+    position (the true active set varies by position; a single last-token set
+    across the sequence is the retrieval ceiling)."""
+    m = model
+    T = len(token_ids)
+    E = m._t("model.embed_tokens.weight")
+    h = E[np.asarray(token_ids)].astype(np.float32)
+    cos, sin = m._rope(T)
+    nh, nkv, hd = m.n_heads, m.n_kv, m.head_dim
+    rep = nh // nkv
+    causal = np.triu(np.full((T, T), -1e30, dtype=np.float32), k=1)
+    xgs = []
+    for L in range(m.n_layers):
+        p = "model.layers.%d." % L
+        x = m.rmsnorm(h, m._t(p + "input_layernorm.weight"), m.eps)
+        q = (x @ m._t(p + "self_attn.q_proj.weight").T).reshape(T, nh, hd)
+        k = (x @ m._t(p + "self_attn.k_proj.weight").T).reshape(T, nkv, hd)
+        v = (x @ m._t(p + "self_attn.v_proj.weight").T).reshape(T, nkv, hd)
+        q = m.rmsnorm(q, m._t(p + "self_attn.q_norm.weight"), m.eps)
+        k = m.rmsnorm(k, m._t(p + "self_attn.k_norm.weight"), m.eps)
+        q = m._apply_rope(q, cos, sin)
+        k = m._apply_rope(k, cos, sin)
+        k = np.repeat(k, rep, axis=1)
+        v = np.repeat(v, rep, axis=1)
+        att = np.empty((T, nh, hd), dtype=np.float32)
+        scale = 1.0 / np.sqrt(hd)
+        for hi in range(nh):
+            a = m.softmax((q[:, hi] @ k[:, hi].T) * scale + causal, axis=-1)
+            att[:, hi] = a @ v[:, hi]
+        h_att = h + (att.reshape(T, nh * hd) @ m._t(p + "self_attn.o_proj.weight").T)
+        xg = m.rmsnorm(h_att, m._t(p + "post_attention_layernorm.weight"), m.eps)
+        xgs.append(xg.copy())
+        g = xg @ m._t(p + "mlp.gate_proj.weight").T
+        u = xg @ m._t(p + "mlp.up_proj.weight").T
+        h = h_att + ((m.silu(g) * u) @ m._t(p + "mlp.down_proj.weight").T)
+    return xgs
+
+
+def mode_retrieve_per_position(model: "NumpyQwen3", router, token_ids, *,
+                               target_frac=0.5):
+    """PER-POSITION retrieval (block 319). For each layer and each token
+    position, score neurons with the router (the mode-grain router predicts the
+    activation for THAT position's input) and keep the top `target_frac`. Fixes
+    the retrieval ceiling: instead of one fixed neuron set across the sequence,
+    every position gets the active set its own activation needs. Returns
+    {layer -> list over positions of neuron-index arrays}, consumable by
+    SparseConfig(order2_shape=...) via the per-position forward branch."""
+    xgs = _ffn_io_all(model, token_ids)
+    shape = {}
+    for L, xg in enumerate(xgs):
+        T = xg.shape[0]
+        # ff from the router's mean vector (or gate weight)
+        ff = router.mean[L].shape[0] if hasattr(router, "mean") else \
+            model._t("model.layers.%d.mlp.gate_proj.weight" % L).shape[0]
+        keep = max(1, int(round(ff * target_frac)))
+        per_pos = []
+        for t in range(T):
+            sc = np.abs(router.score(L, xg[t]))         # predicted activation
+            per_pos.append(np.sort(np.argsort(-sc)[:keep]))
+        shape[L] = per_pos
+    return shape
 
 
 class LearnedRouter:
