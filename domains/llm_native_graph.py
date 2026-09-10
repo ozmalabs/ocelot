@@ -280,6 +280,118 @@ def read_mode_nodes(bp_result, mode_concepts):
     return np.asarray(out, dtype=np.float32)
 
 
+def export_transport_structure(model, train_ids, heldout_ids, out_path, *,
+                               layer, k=32, ridge=1.0, all_positions=True):
+    """Block 324: export the BETWEEN-LAYER transport structure for adjacent
+    layers (layer, layer+1). Fits a mode router (all layers) once and writes,
+    for L and L+1: modes, mean, Wc; and per-query (train + held-out) the TRUE
+    mode coefficients at BOTH layers. The transport map T: coeffs_L ->
+    coeffs_{L+1} is fit downstream (`fit_transport`) on the train coefficients.
+    This is the recovered TRANSPORT incidence — how the mode configuration at L
+    maps to the mode configuration at L+1, the between-layer aperture."""
+    from . import llm_structure_recovery as lsr
+    R = lsr.fit_mode_router(model, train_ids, k=k, ridge=ridge,
+                            all_positions=all_positions)
+    L0, L1 = layer, layer + 1
+
+    def coeffs_at(ids, L):
+        xg, act = lsr._ffn_io(model, ids)[L]
+        return ((act - R.mean[L]) @ R.modes[L].T).astype(np.float32)
+
+    tr_c0 = np.stack([coeffs_at(ids, L0) for ids in train_ids])
+    tr_c1 = np.stack([coeffs_at(ids, L1) for ids in train_ids])
+    ho_c0 = np.stack([coeffs_at(ids, L0) for ids in heldout_ids])
+    ho_c1 = np.stack([coeffs_at(ids, L1) for ids in heldout_ids])
+    np.savez(out_path,
+             modes_L0=R.modes[L0].astype(np.float32),
+             modes_L1=R.modes[L1].astype(np.float32),
+             mean_L0=R.mean[L0].astype(np.float32),
+             mean_L1=R.mean[L1].astype(np.float32),
+             Wc_L0=R.Wc[L0].astype(np.float32),
+             Wc_L1=R.Wc[L1].astype(np.float32),
+             tr_c0=tr_c0, tr_c1=tr_c1, ho_c0=ho_c0, ho_c1=ho_c1,
+             layer=np.int64(L0))
+    return out_path
+
+
+def fit_transport(tr_c0, tr_c1, *, ridge=1.0):
+    """Fit the between-layer TRANSPORT map T: coeffs_L -> coeffs_{L+1} by ridge
+    regression on train coefficients. T is the recovered transport incidence.
+    Returns T [k1, k0] (coeffs_L1 ≈ T @ coeffs_L0)."""
+    C0 = np.asarray(tr_c0, dtype=np.float32)          # [N, k0]
+    C1 = np.asarray(tr_c1, dtype=np.float32)          # [N, k1]
+    k0 = C0.shape[1]
+    A = C0.T @ C0 + ridge * np.eye(k0, dtype=np.float32)
+    T = np.linalg.solve(A, C0.T @ C1).T.astype(np.float32)   # [k1, k0]
+    return T
+
+
+def build_transport_factor_graph(substrate, seed_paths, T, coeffs0, *,
+                                  n_modes0=8, n_modes1=8, temperature=1.0,
+                                  field_scale=1.0, transport_scale=1.0,
+                                  discrete_mode="3state", bidirectional=False):
+    """Block 324: the BETWEEN-LAYER TRANSPORT aperture as a bipartite factor
+    graph on the substrate. L-mode-nodes carry the KNOWN input configuration
+    (external_field = coeffs0[m], the mode config at layer L); L+1-mode-nodes
+    have NO self-field (state 0) and must be driven ONLY through the transport
+    edges, weight T[m1, m0] (the recovered transport incidence). The settled
+    L+1-mode-node states are the transported mode reading — if they match the
+    true layer-L+1 mode config, the between-layer transition is aperture-
+    covariant on the substrate's own message-passing.
+
+    `n_modes0/1` = how many dominant L / L+1 mode-nodes to instantiate (by
+    |coeffs0| for L; the top L+1 rows of T's targets). `T` MUST be the full
+    k×k transport (indexed by mode id), since `dom0` holds mode ids into the
+    original coefficient vector. Returns
+    (mt, nodes_L0, nodes_L1, dom0, dom1)."""
+    import json
+    from substrate.seed_loader import engine_rules_only
+    for path in seed_paths:
+        substrate.load_seed_manifest(engine_rules_only(json.load(open(path))))
+    dom0 = np.argsort(-np.abs(coeffs0))[:n_modes0]
+    dom1 = np.arange(n_modes1)                          # first n_modes1 L+1 modes
+    mt = substrate.add_node("Microtheory",
+                            {"temperature": float(temperature),
+                             "discrete_mode": discrete_mode})
+    nodes_L0 = []
+    for m in dom0:
+        c = substrate.add_node("Concept", {
+            "external_field": float(coeffs0[m] * field_scale),
+            "identity_field": 0.0, "state": 0.0})
+        substrate.add_edge(mt, "has_concept", c, {})
+        nodes_L0.append(c)
+    nodes_L1 = []
+    for _ in dom1:
+        c = substrate.add_node("Concept", {
+            "external_field": 0.0, "identity_field": 0.0, "state": 0.0})
+        substrate.add_edge(mt, "has_concept", c, {})
+        nodes_L1.append(c)
+    # transport edges: L0-mode m0 -> L1-mode m1 with weight T[m1, m0]
+    for i1, m1 in enumerate(dom1):
+        for i0, m0 in enumerate(dom0):
+            w = float(T[m1, m0] * transport_scale)
+            if w == 0.0:
+                continue
+            substrate.add_edge(nodes_L0[i0], "causal_influence",
+                               nodes_L1[i1], {"weight": w})
+            if bidirectional:
+                substrate.add_edge(nodes_L1[i1], "causal_influence",
+                                   nodes_L0[i0], {"weight": w})
+    return mt, nodes_L0, nodes_L1, dom0, dom1
+
+
+def read_transport_modes(bp_result, nodes_L1):
+    """Read the settled L+1 mode-node states (the transported reading). Returns
+    state_hat [n_modes1] in {-1,+1}."""
+    fs = bp_result["final_state"]
+    out = []
+    for c in nodes_L1:
+        cid = c.value if hasattr(c, "value") else int(c)
+        s = float(fs.get(cid, 0.0))
+        out.append(1.0 if s >= 0 else -1.0)
+    return np.asarray(out, dtype=np.float32)
+
+
 def fit_incidence(modes, mean, Wc, train_x, neuron_idx, *, n_modes=None,
                   ridge=1.0, neuron_field_scale=1.0):
     """Block 323 lever 1: FIT the incidence weights so the mode-node settle

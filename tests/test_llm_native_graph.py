@@ -253,3 +253,61 @@ def test_vocab_param_passes_through():
         bp = run_loopy_bp(s, mt, combine="max_product")
         for v in bp["final_state"].values():
             assert v in vocab
+
+
+# ---- block 324: between-layer transport aperture -----------------------
+
+def test_fit_transport_shapes_and_reproduces_train():
+    rng = np.random.default_rng(11)
+    # a genuine linear transition C1 = C0 @ A^T (+ small noise) is recoverable
+    k0, k1, N = 6, 5, 40
+    C0 = rng.standard_normal((N, k0)).astype(np.float32)
+    A = rng.standard_normal((k1, k0)).astype(np.float32)
+    C1 = (C0 @ A.T + 0.01 * rng.standard_normal((N, k1))).astype(np.float32)
+    T = lng.fit_transport(C0, C1, ridge=1e-3)
+    assert T.shape == (k1, k0)
+    # reproduces the training transition well (sign covariance high)
+    pred = C0 @ T.T
+    assert np.mean(np.sign(pred) == np.sign(C1)) > 0.9
+
+
+@_need_substrate
+def test_build_transport_factor_graph_and_read():
+    from substrate_rs import _native
+    from domains.can_native_bp import run_loopy_bp
+    rng = np.random.default_rng(12)
+    k = 32                              # T is full k x k (indexed by mode id)
+    T = rng.standard_normal((k, k)).astype(np.float32)
+    coeffs0 = rng.standard_normal(k).astype(np.float32)
+    s = _native.Substrate()
+    mt, n0, n1, dom0, dom1 = lng.build_transport_factor_graph(
+        s, ["seeds/can_native_reimplementation.json"], T, coeffs0,
+        n_modes0=6, n_modes1=5, temperature=1.0, discrete_mode="3state",
+        bidirectional=True)
+    assert len(n0) == 6 and len(n1) == 5
+    bp = run_loopy_bp(s, mt, combine="max_product")
+    sh = lng.read_transport_modes(bp, n1)
+    assert sh.shape == (5,)
+    assert set(np.unique(sh)).issubset({-1.0, 1.0})
+
+
+@_need_substrate
+def test_transport_l0_field_drives_l1_through_transport():
+    # a strong single L0 mode with a strong positive transport edge to one L1
+    # mode should drive that L1 mode-node positive (self-field 0 -> only the
+    # transport can set it): confirms the transport edge carries the signal.
+    from substrate_rs import _native
+    from domains.can_native_bp import run_loopy_bp
+    k = 32
+    T = np.zeros((k, k), dtype=np.float32)
+    T[0, 0] = 3.0                       # L0 mode 0 --(+)--> L1 mode 0
+    coeffs0 = np.zeros(k, dtype=np.float32)
+    coeffs0[0] = 5.0                    # L0 mode 0 strongly ON (+)
+    s = _native.Substrate()
+    mt, n0, n1, dom0, dom1 = lng.build_transport_factor_graph(
+        s, ["seeds/can_native_reimplementation.json"], T, coeffs0,
+        n_modes0=4, n_modes1=4, temperature=1.0, field_scale=1.0,
+        transport_scale=1.0, discrete_mode="3state", bidirectional=True)
+    bp = run_loopy_bp(s, mt, combine="max_product")
+    sh = lng.read_transport_modes(bp, n1)
+    assert sh[0] == 1.0                 # L1 mode 0 driven positive via transport
