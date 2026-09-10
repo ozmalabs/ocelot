@@ -532,10 +532,50 @@
     "source"
    ],
    "built_from": [
-    "generative_source"
+    "generative_source",
+    "temporal_entity"
    ],
    "combination": "isa(qwen3, generative_source)",
    "reliability": "self_published_calibrated",
+   "default_trust": "self_published",
+   "timeline": {
+    "_doc": "The CALIBRATION TIMELINE of the qwen3 source-entity (block 330/334) held as graph DATA — the dated, trust-relevant EVENTS that COMPOSE the source's DERIVED trust band via source_provenance.context_for / _compose_trust, rather than a flat held tag. Each event is a GROUNDED FACT (a measured calibration outcome) with a WHEN (the calibration run date), a KIND, the concepts it GROUNDS_IN, and a trust signal. trust_dir: +1 a tier whose held-out control PASSED (earned trust), -1 a tier whose control FAILED (a trust-lowering finding), and trust_relevant:false a tier too weak to earn credit but not a red flag (neutral). The NET is what moves the band: knowledge earned (+1) and process control-failed (-1) OFFSET, leaving the calibrated self-published baseline — but now DERIVED + auditable, and still BELOW an attested reference (wikipedia). This is the honest per-tier calibration made structural.",
+    "events": [
+     {
+      "id": "qwen3_calibration_knowledge_isa",
+      "when": "2026-09-04",
+      "kind": "calibration_earned",
+      "label": "knowledge (is-a): held-out transitive entailment 1.00 (33/33 pos+neg), 0 self-loops / 24 edges, shuffle control 0.54 — EARNED (raises trust for the knowledge tier)",
+      "grounds_in": [
+       "generative_source",
+       "knowledge"
+      ],
+      "trust_relevant": true,
+      "trust_dir": 1
+     },
+     {
+      "id": "qwen3_calibration_concept_opposite",
+      "when": "2026-09-04",
+      "kind": "calibration_weak",
+      "label": "concept (opposite): transfer AUC 0.59 vs random-W control 0.52 — WEAK, not earned; carried as corroborate-only, neutral to the band (neither raises nor lowers)",
+      "grounds_in": [
+       "generative_source"
+      ],
+      "trust_relevant": false
+     },
+     {
+      "id": "qwen3_calibration_process_negate",
+      "when": "2026-09-04",
+      "kind": "calibration_control_failed",
+      "label": "process (negate): apply 1.00 / identity 0.00 BUT shuffle control ALSO 1.00 — CONTROL FAILED, readout not discriminating; a trust-LOWERING finding (lowers trust for the process tier)",
+      "grounds_in": [
+       "generative_source"
+      ],
+      "trust_relevant": true,
+      "trust_dir": -1
+     }
+    ]
+   },
    "provenance": {
     "_doc": "The PROVENANCE template the agent attaches to everything it grounds from reaped Qwen3 content — WHO/HOW/WHEN + the source's calibrated epistemic status, read off this held concept (NOT hardcoded in Python). WHERE is filled per-claim (the elicitation prompt / relation); the rest is the held understanding of the source.",
     "source": "qwen3",
