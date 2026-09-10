@@ -62,6 +62,15 @@ def _source_concept_name(source: str) -> Optional[str]:
     if any(k in low for k in ("twitter", "tweet", "x_post", "x post", "xpost")) \
             or low == "x":
         return "twitter_x"
+    # a GENERATIVE source — a language model. Reaped LLM content resolves to the
+    # held `<model>` Concept, which carries the generative-source provenance +
+    # a CALIBRATED reliability band below an attested reference (block 331: an
+    # LLM is a self-published synthetic source, not a consensus-tertiary one).
+    if "qwen3" in low or low == "qwen":
+        return "qwen3"
+    if any(k in low for k in ("language_model", "language model", "llm",
+                              "generative_source", "generative source")):
+        return "language_model"
     return None
 
 
@@ -187,6 +196,23 @@ def _reliability_band(reliability: str) -> dict[str, Any]:
                         "firmly than a conjecture, attributed (not self-derived), "
                         "reliable for established knowledge / weaker on the "
                         "obscure-recent-contested")}
+    # a GENERATIVE (self-published, calibrated) source — a language model. Below
+    # an attested reference: it is a confident CROWD-COMPRESSION, not consensus,
+    # and its content must be corroborated before it asserts alone. The
+    # confidence sits at the self-published baseline (between the attested hop
+    # and a conjecture) — the SAME midpoint `_compose_trust` uses for a
+    # self-published platform. Per-tier trust (knowledge > concept > process) is
+    # carried on the REAPED EDGES (block 332), not smeared into this source-wide
+    # band; the band is the ceiling a corroborated LLM claim can reach here.
+    if r in ("self_published_calibrated", "self_published_variable",
+             "self_published", "generative_calibrated", "generative"):
+        base = 0.5 if hop > 0.5 else hop * 0.5
+        return {"status": "self_published",
+                "confidence": round(base, 4),
+                "why": ("a generative (self-published, calibrated) source — a "
+                        "confident crowd-compression BELOW an attested reference; "
+                        "corroborate before it asserts alone; per-tier trust is "
+                        "carried on the reaped edges, not this source-wide band")}
     # an unrecognised reliability -> treat as attested-but-unweighted (still a
     # source, distinct from a self-derived fact). Honest fall-through.
     return {"status": "attested", "confidence": hop,
