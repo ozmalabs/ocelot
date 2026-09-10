@@ -90,12 +90,21 @@ def export_mode_structure(model, train_ids, heldout_ids, out_path, *,
         xg, act = ios[layer]
         ho_x.append(xg.astype(np.float32))
         ho_coef.append(((act - mean) @ modes.T).astype(np.float32))
+    tr_x = []
+    tr_coef = []
+    for ids in train_ids:
+        ios = lsr._ffn_io(model, ids)
+        xg, act = ios[layer]
+        tr_x.append(xg.astype(np.float32))
+        tr_coef.append(((act - mean) @ modes.T).astype(np.float32))
     np.savez(out_path,
              modes=modes.astype(np.float32),
              mean=mean.astype(np.float32),
              Wc=Wc.astype(np.float32),
              ho_x=np.stack(ho_x),
              ho_coef=np.stack(ho_coef),
+             tr_x=np.stack(tr_x),
+             tr_coef=np.stack(tr_coef),
              neuron_idx=neuron_idx,
              coact_J=coact_J,
              layer=np.int64(layer))
@@ -195,7 +204,8 @@ def build_mode_neuron_factor_graph(substrate, seed_paths, modes, coeffs,
                                    neuron_idx, field, *, temperature=1.0,
                                    mode_field_scale=1.0, neuron_field_scale=1.0,
                                    incidence_scale=1.0, n_modes=None,
-                                   discrete_mode="3state"):
+                                   discrete_mode="3state",
+                                   incidence_override=None):
     """Lever (b): the INCIDENCE MAP made explicit as a BIPARTITE factor graph.
 
     Block 321/322a read the mode back by PROJECTING settled neurons onto the
@@ -239,10 +249,15 @@ def build_mode_neuron_factor_graph(substrate, seed_paths, modes, coeffs,
             "identity_field": 0.0, "state": 0.0})
         substrate.add_edge(mt, "has_concept", c, {})
         mode_concepts.append(c)
-    # incidence edges (bidirectional causal_influence, weight = loading)
+    # incidence edges (bidirectional causal_influence, weight = loading, OR the
+    # fitted incidence W_inc[mode, neuron] when `incidence_override` is given
+    # (block 323 lever 1 — the incidence fit to reproduce the mode reading)).
     for mi, m in enumerate(dom):
         for ni in range(len(neuron_idx)):
-            w = float(M[m, ni] * incidence_scale)
+            if incidence_override is not None:
+                w = float(incidence_override[m, ni] * incidence_scale)
+            else:
+                w = float(M[m, ni] * incidence_scale)
             if w == 0.0:
                 continue
             substrate.add_edge(mode_concepts[mi], "causal_influence",
@@ -263,6 +278,43 @@ def read_mode_nodes(bp_result, mode_concepts):
         s = float(fs.get(cid, 0.0))
         out.append(1.0 if s >= 0 else -1.0)
     return np.asarray(out, dtype=np.float32)
+
+
+def fit_incidence(modes, mean, Wc, train_x, neuron_idx, *, n_modes=None,
+                  ridge=1.0, neuron_field_scale=1.0):
+    """Block 323 lever 1: FIT the incidence weights so the mode-node settle
+    REPRODUCES the mode reading, instead of taking raw loadings `modes[m,i]`.
+
+    The mode-node (self-field 0) settles by the sign of the message it receives
+    from its neurons: sign(Σ_i W_inc[m,i]·s_i), where s_i is neuron i's settled
+    state (≈ sign(field_i) in the field-driven regime). We fit W_inc[m,·] by
+    ridge regression on TRAIN so that Σ_i W_inc[m,i]·s_i^(train) matches the
+    true mode coefficient coeffs[m]^(train) — a per-mode linear read-out from
+    the neuron states to the mode value. Frozen after fit; still a RECOVERED
+    incidence (learned from train activations, never held-out).
+
+    Returns W_inc [k, N] to hand to `build_mode_neuron_factor_graph` via
+    `incidence_override`."""
+    if n_modes is None:
+        n_modes = modes.shape[0]
+    N = len(neuron_idx)
+    # per-train-query neuron states (sign of the modes' predicted drive) and
+    # true mode coefficients
+    S = []      # [T, N] neuron states
+    C = []      # [T, k] true coeffs
+    for x in train_x:
+        coeffs = Wc @ x
+        M = modes[:, neuron_idx]                     # [k, N]
+        field = coeffs @ M                           # [N] predicted drive
+        S.append(np.where(field * neuron_field_scale >= 0, 1.0, -1.0))
+        C.append(coeffs)
+    S = np.asarray(S, dtype=np.float32)              # [T, N]
+    C = np.asarray(C, dtype=np.float32)              # [T, k]
+    # ridge: neuron states -> mode coefficient, per mode (shared design matrix)
+    A = S.T @ S + ridge * np.eye(N, dtype=np.float32)
+    W = np.linalg.solve(A, S.T @ C).T.astype(np.float32)   # [k, N]
+    return W
+
 
 
 
