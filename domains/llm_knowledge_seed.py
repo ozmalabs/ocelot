@@ -67,6 +67,46 @@ def elicit_isa(model, tokenizer, subjects, *, candidates=None, template=None):
     return pairs
 
 
+def elicit_isa_batch(model, tokenizer, subjects, *, candidates=None,
+                     template=None, batch_size=32):
+    """Batched `elicit_isa` (block 335000): identical read (constrained
+    last-token argmax over `candidates`), but amortizes the forward over
+    `batch_size` subjects via `model.forward_logits_batch`. Falls back to
+    per-subject `forward_logits` if the model has no batch method. Returns the
+    same list of (subject, object) pairs, in subject order."""
+    template = template or "A {} is a kind of"
+    cand_ids = None
+    if candidates is not None:
+        cand_ids = {}
+        for w in candidates:
+            ids = tokenizer(" " + w, add_special_tokens=False)["input_ids"]
+            if ids:
+                cand_ids[ids[0]] = w
+    subjects = list(subjects)
+    has_batch = hasattr(model, "forward_logits_batch")
+    pairs = []
+
+    def _read(logits_row, s):
+        if cand_ids is not None:
+            best = max(cand_ids, key=lambda tid: float(logits_row[tid]))
+            return (s, cand_ids[best])
+        tid = int(np.argmax(logits_row))
+        return (s, tokenizer.decode([tid]).strip())
+
+    for i in range(0, len(subjects), batch_size):
+        chunk = subjects[i:i + batch_size]
+        seqs = [tokenizer(template.format(s), return_tensors="pt")["input_ids"][0].tolist()
+                for s in chunk]
+        if has_batch:
+            logits = model.forward_logits_batch(seqs)
+            for row, s in zip(logits, chunk):
+                pairs.append(_read(row, s))
+        else:
+            for seq, s in zip(seqs, chunk):
+                pairs.append(_read(model.forward_logits(seq), s))
+    return pairs
+
+
 # ---------------------------------------------------------------------------
 # SEED (substrate side, tree python3). Build a native CAN Microtheory from
 # triples: a Concept node per entity, a typed edge per relation.
