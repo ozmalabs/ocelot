@@ -10,10 +10,11 @@ trust (knowledge > concept > process, from the block-330 calibration) is carried
 on the reaped EDGES (block 332), not smeared into this source-wide band.
 
 These tests exercise the seed JSON shape + the in-tree `source_provenance`
-reader. The temporal-timeline elaboration (dated calibration events composed via
-`context_for`) needs the `communication_concepts` installer + `SourceEvent`
-grammar, which are not present in this checkout — deferred, documented in
-HARVEST_QWEN38_SOURCE_RESULTS.md.
+reader for the FLAT band. The temporal-timeline elaboration (dated calibration
+events composed via `context_for`) was deferred here for want of the
+`communication_concepts` installer; block 334 re-authored that installer as an
+additive seed-builder and the temporal path is now exercised in
+tests/test_qwen3_temporal_source.py.
 """
 from __future__ import annotations
 
