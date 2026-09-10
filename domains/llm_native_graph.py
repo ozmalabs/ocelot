@@ -280,6 +280,29 @@ def read_mode_nodes(bp_result, mode_concepts):
     return np.asarray(out, dtype=np.float32)
 
 
+def fit_transport_settle_aware(tr_c0, tr_c1, *, ridge=1.0, n_modes=8):
+    """Block 326: fit the transport for SETTLE agreement, not raw magnitude.
+
+    Block 324/325's `fit_transport` regresses the CONTINUOUS coeffs_L ->
+    coeffs_{L+1} (a magnitude fit). But in the transport factor graph the source
+    (layer-L) mode-nodes settle to DISCRETE states sign(coeffs_L) (the field
+    clamps them), so the destination node's effective drive is
+    `Σ_m0 T[m1,m0]·sign(coeffs_L)[m0]` — T is being applied to the BINARISED
+    input, not the continuous one. This fit regresses the binarised source
+    sign(coeffs_L) -> coeffs_{L+1} (the block-323 lever: fit to what the settle
+    actually reads), well regularised. Only the first `n_modes` source modes are
+    binarised drivers (the rest stay continuous, as they are weak). Returns
+    T [k1, k0]."""
+    C0 = np.asarray(tr_c0, dtype=np.float32).copy()   # [N, k0]
+    C1 = np.asarray(tr_c1, dtype=np.float32)          # [N, k1]
+    S0 = C0.copy()
+    S0[:, :n_modes] = np.where(C0[:, :n_modes] >= 0, 1.0, -1.0)  # binarise drivers
+    k0 = S0.shape[1]
+    A = S0.T @ S0 + ridge * np.eye(k0, dtype=np.float32)
+    T = np.linalg.solve(A, S0.T @ C1).T.astype(np.float32)
+    return T
+
+
 def export_chain_structure(model, train_ids, heldout_ids, out_path, *,
                            layers, k=32, ridge=1.0, all_positions=True):
     """Block 325: export the mode coefficients across a CHAIN of layers (a list
@@ -308,7 +331,8 @@ def export_chain_structure(model, train_ids, heldout_ids, out_path, *,
 
 def build_chain_factor_graph(substrate, seed_paths, transports, coeffs0, *,
                              n_modes=8, temperature=1.0, field_scale=1.0,
-                             transport_scale=1.0, discrete_mode="3state"):
+                             transport_scale=1.0, discrete_mode="3state",
+                             back_scale=1.0):
     """Block 325: the MULTI-HOP transport chain as ONE substrate factor graph.
     A column of `n_modes` mode-nodes per layer in the chain; the FIRST layer's
     nodes carry the known input (external_field = coeffs0[m]); every deeper
@@ -344,8 +368,14 @@ def build_chain_factor_graph(substrate, seed_paths, transports, coeffs0, *,
                     continue
                 substrate.add_edge(src[m0], "causal_influence", dst[m1],
                                    {"weight": w})
+                # reverse edge weakened by `back_scale` (block 326: the LLM
+                # computation is DIRECTED L->L+1; a weak back-edge reduces the
+                # back-message contamination of an undirected Ising settle while
+                # keeping BP's message channels present). back_scale=1.0 =
+                # symmetric (block 324/325); 0.0 would drop the reverse channel
+                # (breaks BP), so keep it small-positive, not zero.
                 substrate.add_edge(dst[m1], "causal_influence", src[m0],
-                                   {"weight": w})
+                                   {"weight": w * back_scale})
     return mt, layer_nodes
 
 

@@ -364,3 +364,35 @@ def test_chain_transport_propagates_a_clamped_bit_forward():
         cur[:nm] = sh                    # feed settled states forward
     # mode 0 stays positive through the whole feed-forward chain
     assert all(v == 1.0 for v in states)
+
+
+# ---- block 326: transport fidelity (settle-aware fit + edge asymmetry) --
+
+def test_fit_transport_settle_aware_shape():
+    rng = np.random.default_rng(30)
+    k0, k1, N = 32, 32, 40
+    C0 = rng.standard_normal((N, k0)).astype(np.float32)
+    A = rng.standard_normal((k1, k0)).astype(np.float32)
+    C1 = (C0 @ A.T).astype(np.float32)
+    T = lng.fit_transport_settle_aware(C0, C1, ridge=10.0, n_modes=8)
+    assert T.shape == (k1, k0)
+
+
+@_need_substrate
+def test_back_scale_wires_asymmetric_edges():
+    # back_scale reweights the reverse Ising edge; the graph must still build
+    # and settle (BP needs the reverse channel present, so back_scale>0).
+    from substrate_rs import _native
+    from domains.can_native_bp import run_loopy_bp
+    k = 32
+    T = np.zeros((k, k), dtype=np.float32)
+    T[0, 0] = 3.0
+    coeffs0 = np.zeros(k, dtype=np.float32); coeffs0[0] = 5.0
+    s = _native.Substrate()
+    mt, ln = lng.build_chain_factor_graph(
+        s, ["seeds/can_native_reimplementation.json"], [T], coeffs0,
+        n_modes=4, temperature=1.0, discrete_mode="3state", back_scale=0.1)
+    bp = run_loopy_bp(s, mt, combine="max_product")
+    sh = lng.read_transport_modes(bp, ln[1])
+    assert sh.shape == (4,)
+    assert sh[0] == 1.0                 # forward transport still drives mode 0
