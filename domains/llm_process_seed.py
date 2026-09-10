@@ -50,6 +50,22 @@ def statement_vectors(model, tokenizer, statements, *, layer=12):
     return out
 
 
+def statement_vectors_hf(hf_model, tokenizer, statements, *, layer=12):
+    """HF-forward variant of `statement_vectors` for models WITHOUT a numpy
+    reader (block 330: hybrid `qwen3_5` etc.). Uses the `HFForward` shim's
+    `hidden_all_layers` (per-layer last-token hidden state via
+    `output_hidden_states`) — the SAME contextual vector, from the full HF
+    forward. `layer` indexes hidden_states (0 = embeddings, 1..n = post-block).
+    Returns {statement: vec[d]}."""
+    out = {}
+    for s in statements:
+        ids = tokenizer(s, return_tensors="pt")["input_ids"][0].tolist()
+        hs = hf_model.hidden_all_layers(ids)
+        li = layer if layer < len(hs) else len(hs) - 1
+        out[s] = hs[li].astype(np.float32)
+    return out
+
+
 def fit_process_operator(vecs, pairs_A, *, ridge=1.0):
     """Fit the process transport N on context-A (input, output) statement pairs:
     N maps the input representation to the output representation (ridge). N is
