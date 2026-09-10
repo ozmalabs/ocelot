@@ -67,6 +67,39 @@ class HFForward:
             out = self.model(input_ids=ids)
         return out.logits[0, -1].detach().to(torch.float32).cpu().numpy()
 
+    def forward_logits_batch(self, batch_token_ids):
+        """Last-real-position next-token logits for a BATCH of variable-length
+        token-id sequences: returns np.ndarray [B, vocab]. Sequences are
+        LEFT-padded to a common length so position -1 is the true final token of
+        every row (correct for a causal LM), with an attention_mask zeroing the
+        pads. One forward for the whole batch — this is the throughput lever.
+
+        Block 335000: batched elicitation. Read is identical to B calls of
+        forward_logits (same last-token logits), just amortized over one forward.
+        """
+        torch = self._torch
+        seqs = [list(t) for t in batch_token_ids]
+        if not seqs:
+            return np.empty((0, 0), dtype=np.float32)
+        pad_id = self.tokenizer.pad_token_id
+        if pad_id is None:
+            pad_id = self.tokenizer.eos_token_id or 0
+        maxlen = max(len(s) for s in seqs)
+        B = len(seqs)
+        ids = torch.full((B, maxlen), int(pad_id), dtype=torch.long)
+        mask = torch.zeros((B, maxlen), dtype=torch.long)
+        for i, s in enumerate(seqs):
+            L = len(s)
+            ids[i, maxlen - L:] = torch.tensor(s, dtype=torch.long)  # LEFT pad
+            mask[i, maxlen - L:] = 1
+        if self.device != "cpu":
+            ids = ids.to(self.device)
+            mask = mask.to(self.device)
+        with torch.no_grad():
+            out = self.model(input_ids=ids, attention_mask=mask)
+        # last position is the true final token for every row (left-padded)
+        return out.logits[:, -1, :].detach().to(torch.float32).cpu().numpy()
+
     def hidden_at(self, token_ids, layer):
         """Last-token hidden state at `layer` [d] as numpy — the contextual
         vector the concept/process extractors use (analogous to
