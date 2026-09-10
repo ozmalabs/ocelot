@@ -107,6 +107,26 @@ def elicit_isa_batch(model, tokenizer, subjects, *, candidates=None,
     return pairs
 
 
+def elicit_relation_batch(model, tokenizer, subjects, *, template, candidates,
+                          batch_size=32):
+    """Elicit an ARBITRARY relation `(subject, relation, object)` for each
+    subject (block 338000): the constrained batched read of `elicit_isa_batch`,
+    generalized by passing a per-relation `template` (with one {} for the
+    subject) and a per-relation `candidates` object-vocabulary. The mechanism is
+    relation-agnostic — only the template + candidate set change:
+        part-of      "A {} is part of a"     candidates = whole-nouns
+        capital-of   "The capital of {} is"  candidates = city names
+        located-in   "{} is located in"      candidates = region/country names
+        same-as      "{} is the same as"     candidates = synonym pool
+        opposite-of  "The opposite of {} is" candidates = antonym pool
+    The LLM is the elicitation ORACLE only; it never appears at query time. Each
+    relation must PASS its own held-out control (block 338 calibration) before
+    its edges earn the trust band — this function only elicits, it does not
+    certify. Returns the same (subject, object) list as elicit_isa_batch."""
+    return elicit_isa_batch(model, tokenizer, subjects, candidates=candidates,
+                            template=template, batch_size=batch_size)
+
+
 # ---------------------------------------------------------------------------
 # SEED (substrate side, tree python3). Build a native CAN Microtheory from
 # triples: a Concept node per entity, a typed edge per relation.
