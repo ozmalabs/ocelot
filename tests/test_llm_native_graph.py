@@ -122,3 +122,73 @@ def test_strong_field_dominates_settle():
     bp = run_loopy_bp(s, mt, combine="max_product")
     settled = lng.settled_state_array(bp, concepts)
     assert [settled[i] for i in range(4)] == [1.0, -1.0, 1.0, -1.0]
+
+
+# ---- block 322 levers: signed coupling, incidence map, exact vs loopy ----
+
+def test_refine_to_neurons_signed_is_frustrated():
+    modes, mean, Wc = _toy_modes()
+    coeffs = Wc @ np.ones(Wc.shape[1], dtype=np.float32)
+    idx = np.argsort(-np.linalg.norm(modes, axis=0))[:10]
+    # positive-only cofiring magnitudes
+    coact = (np.abs(np.random.default_rng(2).standard_normal((10, 10)))
+             + 0.1).astype(np.float32)
+    field, J = lng.refine_to_neurons_signed(modes, coeffs, idx, coact,
+                                             n_dom_modes=4)
+    assert field.shape == (10,)
+    assert J.shape == (10, 10)
+    assert np.allclose(J, J.T)
+    assert np.allclose(np.diag(J), 0.0)
+    # frustration: signed J has BOTH signs (not a pure ferromagnet), unlike the
+    # positive cofiring magnitudes it is built from
+    off = J[np.triu_indices_from(J, k=1)]
+    assert np.any(off > 0) and np.any(off < 0)
+
+
+@_need_substrate
+def test_mode_neuron_factor_graph_builds_and_reads():
+    from substrate_rs import _native
+    from domains.can_native_bp import run_loopy_bp
+    modes, mean, Wc = _toy_modes(k=6, ff=40)
+    coeffs = Wc @ np.ones(Wc.shape[1], dtype=np.float32)
+    idx = np.argsort(-np.linalg.norm(modes, axis=0))[:8]
+    _, field, _ = lng.refine_to_neurons(modes, coeffs, n_neurons=8)
+    s = _native.Substrate()
+    mt, ncs, mcs, dom = lng.build_mode_neuron_factor_graph(
+        s, ["seeds/can_native_reimplementation.json"], modes, coeffs, idx,
+        field, temperature=1.0, mode_field_scale=0.0, neuron_field_scale=1.0,
+        incidence_scale=1.0, n_modes=4, discrete_mode="3state")
+    assert len(ncs) == 8 and len(mcs) == 4 and len(dom) == 4
+    bp = run_loopy_bp(s, mt, combine="max_product")
+    state_hat = lng.read_mode_nodes(bp, mcs)
+    assert state_hat.shape == (4,)
+    assert set(np.unique(state_hat)).issubset({-1.0, 1.0})
+
+
+@_need_substrate
+def test_exact_matches_loopy_on_factor_graph():
+    # lever (c): on this bipartite structure, exact MAP and loopy-BP settle
+    # the mode-nodes to the same signs (the block-322 finding that the ceiling
+    # is structural, not the solver — checked here on a toy for stability).
+    from substrate_rs import _native
+    from domains.can_native_bp import run_loopy_bp
+    from domains.can_junction_tree import can_network_from_mt, brute_force_map
+    modes, mean, Wc = _toy_modes(k=6, ff=40, seed=3)
+    coeffs = Wc @ np.ones(Wc.shape[1], dtype=np.float32)
+    idx = np.argsort(-np.linalg.norm(modes, axis=0))[:6]
+    _, field, _ = lng.refine_to_neurons(modes, coeffs, n_neurons=6)
+    s = _native.Substrate()
+    mt, ncs, mcs, dom = lng.build_mode_neuron_factor_graph(
+        s, ["seeds/can_native_reimplementation.json"], modes, coeffs, idx,
+        field, temperature=1.0, mode_field_scale=0.0, neuron_field_scale=1.0,
+        incidence_scale=1.0, n_modes=3, discrete_mode="3state")
+    bp = run_loopy_bp(s, mt, combine="max_product")
+    loopy_modes = lng.read_mode_nodes(bp, mcs)
+    net = can_network_from_mt(s, mt)
+    bf = brute_force_map(net["nodes"], net["unary"], net["pairwise"],
+                         net["vocab"])
+    exact_modes = np.array(
+        [1.0 if bf["state"][c.value] >= 0 else -1.0 for c in mcs],
+        dtype=np.float32)
+    # exact and loopy agree on the mode-node signs (structural, not solver-bound)
+    assert np.array_equal(loopy_modes, exact_modes)

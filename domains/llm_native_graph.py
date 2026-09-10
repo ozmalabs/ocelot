@@ -159,6 +159,113 @@ def refine_to_neurons_coact(modes, coeffs, neuron_idx, coact_J, *,
     return field, J
 
 
+def refine_to_neurons_signed(modes, coeffs, neuron_idx, coact_J, *,
+                             n_dom_modes=8):
+    """SIGNED / FRUSTRATED refinement (block 322 lever a). Block 321's
+    coactivation coupling was dense and POSITIVE, so the Ising settle collapsed
+    to a ferromagnetic consensus that erased the mode structure. Here the edge
+    MAGNITUDE is the real cofiring (dense edges) but the edge SIGN is the
+    neurons' AGREEMENT on the dominant modes: neurons that load the SAME way on
+    the query's active modes couple POSITIVELY (want the same state), neurons
+    that load OPPOSITELY couple NEGATIVELY (want opposite states) — frustration
+    that prevents consensus collapse and, if the modes' geometry is the real
+    graph, should make the settle re-express the mode reading.
+
+      sign_ij = sign( Σ_{m in dominant} coeffs[m] · modes[m,i] · modes[m,j] )
+      J_ij    = sign_ij · |coact_J_ij|
+
+    `n_dom_modes` = how many top-|coeff| modes define the agreement sign.
+    Returns (field [N], J [N,N])."""
+    M = modes[:, neuron_idx]                           # [k, N]
+    field = (coeffs @ M).astype(np.float32)            # [N]
+    dom = np.argsort(-np.abs(coeffs))[:n_dom_modes]
+    Md = M[dom]                                         # [d, N]
+    cd = coeffs[dom]                                    # [d]
+    # agreement matrix: neurons i,j signed by co-loading on the active modes
+    agree = (Md * cd[:, None]).T @ Md                  # [N, N]
+    sign = np.sign(agree).astype(np.float32)
+    mag = np.abs(np.asarray(coact_J, dtype=np.float32))
+    mag = 0.5 * (mag + mag.T)
+    J = (sign * mag).astype(np.float32)
+    np.fill_diagonal(J, 0.0)
+    return field, J
+
+
+def build_mode_neuron_factor_graph(substrate, seed_paths, modes, coeffs,
+                                   neuron_idx, field, *, temperature=1.0,
+                                   mode_field_scale=1.0, neuron_field_scale=1.0,
+                                   incidence_scale=1.0, n_modes=None,
+                                   discrete_mode="3state"):
+    """Lever (b): the INCIDENCE MAP made explicit as a BIPARTITE factor graph.
+
+    Block 321/322a read the mode back by PROJECTING settled neurons onto the
+    modes — a lossy read that assumed mode = flat neuron-support. Here the mode
+    is a FIRST-CLASS node coupled to its neuron-variables by the incidence
+    (`modes[m,i]` — the mode's loading on neuron i). The mode-node's OWN settled
+    state IS the mode reading, no projection: node ⇄ edge are the same object at
+    two apertures, joined by the incidence.
+
+    Structure:
+      neuron nodes  N of them, external_field = field_i (the query drive).
+      mode nodes    n_modes of them, external_field = coeffs[m] (the coarse
+                    coefficient — the mode's own drive).
+      incidence edges  mode_m —causal_influence— neuron_i, weight =
+                    modes[m, idx_i]·incidence_scale. A mode and a neuron that
+                    load together want the same state; opposite loading frustrates.
+    Returns (mt, neuron_concepts [N], mode_concepts [n_modes]).
+    Runs in tree python3 (substrate_rs)."""
+    import json
+    from substrate.seed_loader import engine_rules_only
+    for path in seed_paths:
+        substrate.load_seed_manifest(engine_rules_only(json.load(open(path))))
+    if n_modes is None:
+        n_modes = modes.shape[0]
+    dom = np.argsort(-np.abs(coeffs))[:n_modes]
+    M = modes[:, neuron_idx]                            # [k, N]
+    mt = substrate.add_node("Microtheory",
+                            {"temperature": float(temperature),
+                             "discrete_mode": discrete_mode})
+    neuron_concepts = []
+    for i in range(len(neuron_idx)):
+        c = substrate.add_node("Concept", {
+            "external_field": float(field[i] * neuron_field_scale),
+            "identity_field": 0.0, "state": 0.0})
+        substrate.add_edge(mt, "has_concept", c, {})
+        neuron_concepts.append(c)
+    mode_concepts = []
+    for m in dom:
+        c = substrate.add_node("Concept", {
+            "external_field": float(coeffs[m] * mode_field_scale),
+            "identity_field": 0.0, "state": 0.0})
+        substrate.add_edge(mt, "has_concept", c, {})
+        mode_concepts.append(c)
+    # incidence edges (bidirectional causal_influence, weight = loading)
+    for mi, m in enumerate(dom):
+        for ni in range(len(neuron_idx)):
+            w = float(M[m, ni] * incidence_scale)
+            if w == 0.0:
+                continue
+            substrate.add_edge(mode_concepts[mi], "causal_influence",
+                               neuron_concepts[ni], {"weight": w})
+            substrate.add_edge(neuron_concepts[ni], "causal_influence",
+                               mode_concepts[mi], {"weight": w})
+    return mt, neuron_concepts, mode_concepts, dom
+
+
+def read_mode_nodes(bp_result, mode_concepts):
+    """Read the mode-aperture state DIRECTLY off the mode nodes' settled state
+    (no projection) — the incidence-map reading. Returns state_hat [n_modes] in
+    {-1,+1} (0 mapped to +1 as the degenerate tie)."""
+    fs = bp_result["final_state"]
+    out = []
+    for c in mode_concepts:
+        cid = c.value if hasattr(c, "value") else int(c)
+        s = float(fs.get(cid, 0.0))
+        out.append(1.0 if s >= 0 else -1.0)
+    return np.asarray(out, dtype=np.float32)
+
+
+
 def read_back_modes(modes, neuron_idx, settled_state):
     """Read the settled NEURON-aperture state back UP to the mode aperture:
     project the settled state onto each mode (restricted to the refined
