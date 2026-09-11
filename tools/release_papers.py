@@ -45,6 +45,7 @@ CLEARED = ["00_is",
            "01d_graphic_equalisation_born_recovery",
            "01e_graphic_equalisation_communication_grounding",
            "01f_graphic_equalisation_qualia_and_consciousness_grounding",
+           "01g_graphic_equalisation_total_perspective_vortex_grounding",
            "01s_graphic_equalisation_statement",
            "02_seldon_manifolds_theory_referenced",
            "02a_seldon_manifolds_psychological_grounding",
@@ -687,6 +688,15 @@ INDEX_TMPL = """<!DOCTYPE html>
   .starthere a:hover {{ text-decoration:underline; }}
   .starthere .note {{ color:var(--muted); font-size:13.5px; margin-top:4px; opacity:0.85; }}
 
+  .llmbox {{ margin:16px 0 8px; padding:18px 22px; border-radius:14px;
+    background:rgba(91,154,255,0.06); border:1px solid rgba(91,154,255,0.22); }}
+  .llmbox h2 {{ font-size:14px; font-weight:700; letter-spacing:0.01em; margin-bottom:8px; color:var(--text); }}
+  .llmbox p {{ color:var(--muted); font-size:14px; line-height:1.6; margin:0; max-width:760px; }}
+  .llmbox code {{ font-size:13px; color:var(--emerald-bright); background:rgba(74,224,164,0.08);
+    padding:1px 6px; border-radius:6px; word-break:break-all; }}
+  .llmbox a {{ color:var(--emerald); text-decoration:none; font-weight:600; }}
+  .llmbox a:hover {{ text-decoration:underline; }}
+
   .family {{ margin-top:44px; }}
   .family > .fam-head {{ border-bottom:1px solid var(--border); padding-bottom:10px; margin-bottom:18px; }}
   .family h2 {{ font-size:22px; font-weight:800; letter-spacing:-0.02em; }}
@@ -788,6 +798,16 @@ INDEX_TMPL = """<!DOCTYPE html>
     Law \u2014 Theory</a>; it states its own dependencies, and the groundings are there when you want
     to see the claim tested against a specific field.</p>
     <p class="note">Came for one specific result? Every paper states its own dependencies; go straight to it. The full set is below, grouped by thread.</p>
+  </div>
+
+  <div class="llmbox">
+    <h2>If you are using an LLM, or you are an LLM, use this</h2>
+    <p>There is a single plain-text entry point built for machine reading:
+    <a href="/graphic-equalisation-for-llms.md">/graphic-equalisation-for-llms.md</a>.
+    Hand that URL to a language model to give it a compact, faithful operating model of the
+    theory; it links a markdown rendering of every paper below so the model can open a source
+    before asserting a result. Many people will meet this work through a model, and this is the
+    front door for that.</p>
   </div>
 
 {families}
