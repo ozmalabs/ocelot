@@ -803,7 +803,7 @@ INDEX_TMPL = """<!DOCTYPE html>
   <div class="llmbox">
     <h2>If you are using an LLM, or you are an LLM, use this</h2>
     <p>There is a single plain-text entry point built for machine reading:
-    <a href="/graphic-equalisation-for-llms.md">/graphic-equalisation-for-llms.md</a>.
+    <a href="graphic-equalisation-for-llms.md">graphic-equalisation-for-llms.md</a>.
     Hand that URL to a language model to give it a compact, faithful operating model of the
     theory; it links a markdown rendering of every paper below so the model can open a source
     before asserting a result. Many people will meet this work through a model, and this is the
