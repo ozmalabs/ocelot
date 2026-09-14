@@ -295,6 +295,7 @@ def run_inner_conversation(wa, *, topic: Optional[str] = None,
                            novelty_window: Optional[int] = 3,
                            on_unknown: str = "return",
                            ask_fn: Optional[Callable[[str], Any]] = None,
+                           select: Optional[Callable[..., Optional[str]]] = None,
                            enqueue: bool = True) -> dict[str, Any]:
     """Run the inner unspoken conversation: pick a starting topic (given or from a
     filed knowledge SelfConcern), then chain covert turns — each turn's next topics
@@ -309,6 +310,19 @@ def run_inner_conversation(wa, *, topic: Optional[str] = None,
     quanta OR a legacy float value — either is snapped on entry (a raw float never
     leaks a continuum in). An explicit `stance` name or `stance_fn` overrides the
     width axis.
+
+    NEXT-THOUGHT SELECTION (`select=`, block 350 — GLOBAL WORKSPACE): how the next
+    `cur` is chosen from the current candidate set (the agenda). DEFAULT `select=None`
+    is the block-346 FIFO agenda pop (agenda.pop(0) — seriality ASSERTED by queue
+    order), byte-for-byte backward-compatible. When `select` is a strategy callable
+    `select(wa, candidates, *, focus, tube) -> Optional[str]` (e.g.
+    global_workspace.workspace_select()), the next `cur` is PRODUCED by a competition:
+    the strategy scores the un-thought candidates by a teacher-free salience, returns
+    the argmax winner (the single broadcast slot — the serial bottleneck), or None when
+    the top salience is sub-threshold (honest silence). A returned winner is removed
+    from the agenda; None ends the train with stop_reason='sub_threshold_silence'
+    (the workspace declined to broadcast rather than forcing a pick). Losers stay in
+    the agenda for the next turn's contest. `select` NEVER changes the default path.
 
     HONEST TERMINATION (a dynamic on the axis, not a bolted-on rule): the train
     disengages when the last `novelty_window` turns recovered NOTHING new (novelty
@@ -343,14 +357,37 @@ def run_inner_conversation(wa, *, topic: Optional[str] = None,
     for _ in range(int(max_turns)):
         # pick the next un-thought topic from the agenda (train MOVES, no re-loop)
         cur = None
-        while agenda:
-            cand = agenda.pop(0)
-            if cand not in seen:
-                cur = cand
+        if select is None:
+            # DEFAULT (block-346): FIFO agenda pop — seriality ASSERTED by queue order.
+            while agenda:
+                cand = agenda.pop(0)
+                if cand not in seen:
+                    cur = cand
+                    break
+            if cur is None:
+                stop_reason = "converged"        # agenda exhausted — nothing left to think
                 break
-        if cur is None:
-            stop_reason = "converged"        # agenda exhausted — nothing left to think
-            break
+        else:
+            # GLOBAL WORKSPACE (block-350): seriality PRODUCED by competition. Score
+            # the un-thought candidates, broadcast the argmax winner into the single
+            # slot, sub-threshold => honest silence (None). The focus is the last
+            # topic thought (the current broadcast context).
+            candidates = [c for c in agenda if c not in seen]
+            if not candidates:
+                stop_reason = "converged"        # agenda exhausted — nothing left to think
+                break
+            focus = turns[-1]["topic"] if turns else None
+            cur = select(wa, candidates, focus=focus, tube=None)
+            if cur is None:
+                # the workspace declined to broadcast: every candidate is below the
+                # ignition threshold. Honest silence — the train yields rather than
+                # forcing a sub-threshold pick. Losers remain in the agenda.
+                stop_reason = "sub_threshold_silence"
+                break
+            try:
+                agenda.remove(cur)               # the winner leaves the contest pool
+            except ValueError:
+                pass
         seen.add(cur)
 
         turn = inner_turn(wa, cur, on_unknown=on_unknown, ask_fn=ask_fn)
