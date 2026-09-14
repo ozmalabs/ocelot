@@ -64,7 +64,7 @@ import json
 import math
 import os
 import sys
-from typing import Any, Optional
+from typing import Any, Iterable, Optional
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if ROOT not in sys.path:
@@ -434,11 +434,20 @@ def surprisal(native, p: float) -> float:
 
 def _source_strengths(word: str, *, register_freq: dict, beat_counts: dict,
                       ctx_content: list, class_register: list,
-                      meter_weights: dict) -> list[float]:
-    """The five graph-resident source strengths of a candidate word (a mechanical
+                      meter_weights: dict,
+                      goal_content: Optional[dict] = None) -> list[float]:
+    """The graph-resident source strengths of a candidate word (a mechanical
     graph read, no decision): [register-frequency (add-one smoothed unigram prior),
     recurring-beat arc-recurrence count, context active-entity count, writer-class
-    frequency-rank prior, meter/rhyme resonance]."""
+    frequency-rank prior, meter/rhyme resonance, GOAL-CONTENT strength].
+
+    The GOAL-CONTENT strength is the block-341 conditioning term: when a communicative
+    GOAL is driving the synthesis (a want-it-said goal carrying `content`), the words
+    that realize the goal's content get lifted, so the unclamped rollout is STEERED
+    toward saying what the goal wants said (rather than free-wind synthesis). It is the
+    goal's own weight on the candidate — mass the goal lends a word it wants uttered.
+    `goal_content` maps concept-surface -> weight (default weight 1.0 per goal concept);
+    zero for words the goal does not want. Absent goal => 0.0 (no steering, unchanged)."""
     s_reg = float(register_freq.get(word, 0)) + 1.0             # smoothed unigram
     s_beat = 0.0
     for beat, c in beat_counts.items():
@@ -449,14 +458,17 @@ def _source_strengths(word: str, *, register_freq: dict, beat_counts: dict,
     s_cls = (float(n_cls - class_register.index(word)) / n_cls
              if (n_cls and word in class_register) else 0.0)    # class freq-rank
     s_meter = float(meter_weights.get(word, 0.0))               # harmonic fit
-    return [s_reg, s_beat, s_ctx, s_cls, s_meter]
+    s_goal = float((goal_content or {}).get(word, 0.0))         # the goal's pull
+    return [s_reg, s_beat, s_ctx, s_cls, s_meter, s_goal]
 
 
 def predict_next_words(agent, ws_node, *, context: str = "",
                        use_production: bool = True,
                        seen_vocab: Optional[list[str]] = None,
                        register_freq: Optional[dict] = None,
-                       meter_weights: Optional[dict] = None) -> dict:
+                       meter_weights: Optional[dict] = None,
+                       goal_content: Optional[Iterable[str]] = None,
+                       goal_weight: float = 4.0) -> dict:
     """SYNTHESIZE the predicted next words — the production faculty run forward,
     conditioned on the writer model + the immediate discourse context.
 
@@ -515,6 +527,18 @@ def predict_next_words(agent, ws_node, *, context: str = "",
         # words the within-text signals had not already predicted.
         _add(w, "class_prior")
 
+    # ---- GOAL-CONTENT candidates (block 341: the want-it-said conditioning) --- #
+    # When a communicative GOAL drives the synthesis, its content concepts ENTER the
+    # candidate pool (so the goal can say a word the writer/context signals had not
+    # predicted) and are weighted up by the goal strength below — the goal STEERS the
+    # unclamped rollout toward saying what it wants said. Absent a goal, this is a
+    # no-op and the rollout is unchanged (free synthesis).
+    goal_words = [str(w).lower().strip(".,;:?!\"'") for w in (goal_content or [])]
+    goal_words = [w for w in goal_words if w]
+    goal_wmap = {w: float(goal_weight) for w in goal_words}
+    for w in goal_words:
+        _add(w, "goal")
+
     # ---- WEIGHTED LIKELIHOOD over the candidates (the finer grain) ----------- #
     # each candidate's combined score is a held `Plus` Term over its five graph-
     # resident source strengths; the distribution is the normalized scores; the
@@ -533,9 +557,9 @@ def predict_next_words(agent, ws_node, *, context: str = "",
     for w in predicted:
         s = _source_strengths(w, register_freq=reg_freq, beat_counts=beat_counts,
                               ctx_content=ctx_content, class_register=class_reg,
-                              meter_weights=mweights)
+                              meter_weights=mweights, goal_content=goal_wmap)
         strengths[w] = {"register": s[0], "beat": s[1], "context": s[2],
-                        "class_prior": s[3], "meter": s[4]}
+                        "class_prior": s[3], "meter": s[4], "goal": s[5]}
         weights[w] = _combine_score(_native, s)           # held Plus Term
     z = sum(weights.values())                             # normalizer (scalar)
     likelihoods = {w: (weights[w] / z if z else 0.0) for w in predicted}
