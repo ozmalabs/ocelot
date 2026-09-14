@@ -93,23 +93,66 @@ _STANCES: dict[str, Callable[[Any, dict, set], list[str]]] = {
 
 
 # --------------------------------------------------------------------------- #
-#  ATTENTION-WIDTH — the transition-breadth axis. This is the GRAPH-WALK ANALOGUE
-#  of aperture, and a DISTINCT axis from it: the substrate's `aperture`
-#  (observer_aperture resolves/grain) governs the RESOLUTION of a readout over a
-#  signature FIELD; attention_width governs the BREADTH of the neighbourhood a
-#  train of thought admits as its next transitions over the concept GRAPH. Both
-#  are a narrow<->wide dial, but they live in different spaces — so this is named
-#  distinctly and does NOT touch resolves/grain.
+#  ATTENTION-WIDTH — the transition-breadth axis, QUANTIZED (DISCRETE QUANTA).
 #
-#  The axis realizes the deliberate<->associative CONTINUUM (Christoff et al.):
-#    width ~ 0  narrow / GOAL-DIRECTED  — residual + is-a ancestors only (the
-#               deliberately-constrained regime; == residual_stance, the default);
-#    width mid  add is-a CHILDREN (hyponyms) + SIBLINGS (co-children of a parent);
-#    width ~ 1  wide / ASSOCIATIVE — any-relation neighbours (spreading activation
-#               over _DEFAULT_REL_EDGES), James's transitive/associative flights.
-#  'Could it be both?' — yes: goal-directed and associative are the two ENDS of
-#  one adjustable axis, not two stances.
+#  ONTOLOGY (the substrate's premise, corrected): breadth is NOT a float on a
+#  continuum, and NOT a coarse hardcoded int — it is DISCRETE QUANTA. The width is
+#  k quanta of breadth at a CONFIGURABLE grain: width = k * grain (integer k). The
+#  grain is the RESOLUTION dial — make it finer to get more breadth levels, never
+#  by reaching for a raw float. A caller-supplied width is SNAPPED the substrate's
+#  native way — k = round(width / grain) (exactly analogy_search._round_to_vocab /
+#  observer_aperture grain: value snapped onto k * quantum) — then clamped to the
+#  structurally meaningful shell count. So the axis is INTEGER quanta of breadth,
+#  and every float that ever appears is only an INPUT that gets snapped on entry.
+#
+#  This is the GRAPH-WALK ANALOGUE of aperture, and a DISTINCT axis from it: the
+#  substrate's `aperture` (observer_aperture resolves/grain) governs the RESOLUTION
+#  of a readout over a signature FIELD; attention_width governs the BREADTH of the
+#  neighbourhood a train of thought admits as its next transitions over the concept
+#  GRAPH. Both are a narrow<->wide dial quantized onto k * quantum, but they live
+#  in different spaces — so this is named distinctly and does NOT touch
+#  resolves/grain.
+#
+#  What the quanta LAND ON structurally are NEIGHBOURHOOD SHELLS (Christoff et al.'s
+#  deliberate<->associative continuum, now as integer shells k):
+#    k = 0  narrow / GOAL-DIRECTED  — residual + is-a ancestors only (the
+#           deliberately-constrained regime; == residual_stance, the default);
+#    k = 1  +1 shell — add is-a CHILDREN (in_neighbours) + SIBLINGS (co-children);
+#    k = 2  +2 shell / wide / ASSOCIATIVE — add the full associative neighbours over
+#           analogy_search._DEFAULT_REL_EDGES (spreading activation), James's
+#           transitive/associative flights.
+#  'Could it be both?' — yes: goal-directed and associative are the two ENDS of one
+#  adjustable axis (k=0 .. k=WIDTH_MAX_SHELL), not two stances.
+#
+#  DEFAULT GRAIN preserves block 347's demonstrated shapes: at grain 0.5 the
+#  exercised widths snap width 0.0 -> k=0, width 0.5 -> k=1, width 1.0 -> k=2,
+#  reproducing the goal / children+siblings / associative trains exactly.
 # --------------------------------------------------------------------------- #
+#: the configurable QUANTUM GRAIN of the breadth axis. Resolution = fineness of
+#: the quantum: a finer grain yields more integer breadth levels between the
+#: shells; the DEFAULT 0.5 snaps 347's demonstrated widths (0.0/0.5/1.0) onto the
+#: shell indices 0/1/2 so those train shapes reproduce.
+WIDTH_QUANTUM: float = 0.5
+#: the number of structural neighbourhood SHELLS the quanta land on (k is clamped
+#: here): 0 = goal core, 1 = +children/siblings, 2 = +associative neighbours.
+WIDTH_MAX_SHELL: int = 2
+
+
+def snap_width_to_quanta(width, quantum: float = WIDTH_QUANTUM,
+                         max_shell: int = WIDTH_MAX_SHELL) -> int:
+    """Snap a breadth `width` onto its DISCRETE QUANTUM — the integer shell count
+    k = round(width / quantum), clamped to [0, max_shell]. This is the substrate's
+    native quantiser (analogy_search._round_to_vocab / observer_aperture grain:
+    value -> k * quantum), applied to the breadth axis. `width` may arrive as a
+    float (a caller convenience / a legacy 347 value) OR already as an integer
+    number of quanta; either way it is snapped to the canonical integer k. Passing
+    a raw float never leaks a continuum in — it is resolved to a quantum on entry.
+    Resolution is set by `quantum` (finer = more levels), never by a raw float."""
+    try:
+        k = round(float(width) / float(quantum))
+    except Exception:
+        k = 0
+    return max(0, min(int(max_shell), int(k)))
 def _children(sub, node) -> list[str]:
     """is-a hyponyms: the in-neighbours over causal_influence (dog -> poodle,
     beagle). The downward associative step."""
@@ -162,13 +205,16 @@ def _relation_neighbours(sub, node, topic: str) -> list[str]:
     return out
 
 
-def breadth_stance(width: float) -> Callable[[Any, dict, set], list[str]]:
-    """A graded stance at attention-width `width` in [0,1]. width 0 is byte-for-
-    byte the goal-directed residual_stance; as width rises the admitted transition
-    neighbourhood widens (children + siblings, then any-relation associative
-    neighbours). The next topics are ordered goal-first so a mid-width train stays
-    anchored while it also wanders."""
-    w = max(0.0, min(1.0, float(width)))
+def breadth_stance(width, quantum: float = WIDTH_QUANTUM,
+                   max_shell: int = WIDTH_MAX_SHELL) -> Callable[[Any, dict, set], list[str]]:
+    """A graded stance at attention-width `width`, expressed as DISCRETE QUANTA.
+    `width` is snapped to an integer shell count k = round(width/quantum) (clamped
+    to [0, max_shell]) — the substrate's native quantiser. k = 0 is byte-for-byte
+    the goal-directed residual_stance; each +1 quantum widens the admitted
+    transition neighbourhood by one structural SHELL (k=1 adds children + siblings,
+    k=2 adds the full associative relation-neighbours). The next topics are ordered
+    goal-first so a mid-breadth train stays anchored while it also wanders."""
+    k = snap_width_to_quanta(width, quantum, max_shell)
 
     def _stance(wa, turn: dict, seen: set) -> list[str]:
         topic = turn.get("topic", "")
@@ -179,35 +225,36 @@ def breadth_stance(width: float) -> Callable[[Any, dict, set], list[str]]:
                 if c and c not in seen and c != topic and c not in nxt:
                     nxt.append(c)
 
-        # width 0..1 always includes the goal-directed core (residual + ancestors)
+        # shell 0 (k>=0) always includes the goal-directed core (residual + ancestors)
         _add(c for c in (turn.get("residual") or []))
         _add(transitive_ancestors(wa, topic))
-        if w <= 0.0:
+        if k <= 0:
             return nxt
 
         sub = sd._sub(wa)
         node = sd._find_concept(sub, topic)
         if node is None:
             return nxt
-        # mid width: lateral/downward associative steps (children + siblings)
-        if w >= 0.34:
+        # +1 shell: lateral/downward associative steps (children + siblings)
+        if k >= 1:
             _add(_children(sub, node))
             _add(_siblings(sub, node, topic))
-        # wide width: full associative spreading over the relation edge-classes
-        if w >= 0.67:
+        # +2 shell: full associative spreading over the relation edge-classes
+        if k >= 2:
             _add(_relation_neighbours(sub, node, topic))
         return nxt
 
     return _stance
 
 
-# convenience named points on the axis (still one axis — these are just labels)
-def goal_stance(wa, turn, seen):        # width 0
-    return breadth_stance(0.0)(wa, turn, seen)
+# convenience named points on the axis (still one axis — these are just integer
+# quanta of breadth: shell 0 and the widest shell)
+def goal_stance(wa, turn, seen):        # k = 0 quanta
+    return breadth_stance(0)(wa, turn, seen)
 
 
-def associative_stance(wa, turn, seen):  # width 1
-    return breadth_stance(1.0)(wa, turn, seen)
+def associative_stance(wa, turn, seen):  # k = WIDTH_MAX_SHELL quanta
+    return breadth_stance(WIDTH_MAX_SHELL * WIDTH_QUANTUM)(wa, turn, seen)
 
 
 _STANCES["goal"] = goal_stance
@@ -244,7 +291,7 @@ def inner_turn(wa, topic: str, *, on_unknown: str = "return",
 def run_inner_conversation(wa, *, topic: Optional[str] = None,
                            max_turns: int = 8, stance: Optional[str] = None,
                            stance_fn: Optional[Callable[[Any, dict, set], list[str]]] = None,
-                           width: float = 0.0,
+                           width=0,
                            novelty_window: Optional[int] = 3,
                            on_unknown: str = "return",
                            ask_fn: Optional[Callable[[str], Any]] = None,
@@ -253,11 +300,15 @@ def run_inner_conversation(wa, *, topic: Optional[str] = None,
     filed knowledge SelfConcern), then chain covert turns — each turn's next topics
     chosen by the STANCE over (turn, seen).
 
-    ATTENTION-WIDTH: `width` in [0,1] sets the transition breadth on the goal<->
-    associative axis (0 = goal-directed / is-a spine, 1 = wide associative). It is
-    used when neither `stance` nor `stance_fn` is given (the honest default width 0
-    == the block-346 residual_stance, backward-compatible). An explicit `stance`
-    name or `stance_fn` overrides the width axis.
+    ATTENTION-WIDTH: `width` sets the transition breadth on the goal<->associative
+    axis, expressed as DISCRETE QUANTA (shells). It is snapped to an integer shell
+    count k = round(width/WIDTH_QUANTUM) (0 = goal-directed / is-a spine, up to
+    WIDTH_MAX_SHELL = wide associative) via breadth_stance. It is used when neither
+    `stance` nor `stance_fn` is given (the honest default k=0 == the block-346
+    residual_stance, backward-compatible). `width` may be an integer number of
+    quanta OR a legacy float value — either is snapped on entry (a raw float never
+    leaks a continuum in). An explicit `stance` name or `stance_fn` overrides the
+    width axis.
 
     HONEST TERMINATION (a dynamic on the axis, not a bolted-on rule): the train
     disengages when the last `novelty_window` turns recovered NOTHING new (novelty
@@ -268,11 +319,13 @@ def run_inner_conversation(wa, *, topic: Optional[str] = None,
     proxy.]
 
     Returns {turns, topics_thought, stop_reason, frontier_growth, teacher_called,
-    width, recovered_total}."""
+    width, width_quanta, recovered_total}. `width_quanta` is the snapped integer
+    shell count k actually used; `width` echoes it (integer quanta, not a float)."""
     if stance_fn is None:
         stance_fn = _STANCES.get(stance) if stance else None
+    width_quanta = snap_width_to_quanta(width)
     if stance_fn is None:
-        stance_fn = breadth_stance(width)      # the width axis (0 == residual_stance)
+        stance_fn = breadth_stance(width)      # the quantized width axis (k=0 == residual_stance)
     start = topic or sd.select_curiosity_topic(wa)
     if not start:
         return {"turns": [], "topics_thought": [], "stop_reason": "no_topic",
@@ -334,5 +387,6 @@ def run_inner_conversation(wa, *, topic: Optional[str] = None,
             "stop_reason": stop_reason,
             "frontier_growth": frontier_growth,
             "teacher_called": teacher_called,
-            "width": max(0.0, min(1.0, float(width))),
+            "width": width_quanta,
+            "width_quanta": width_quanta,
             "recovered_total": sorted(recovered_total)}

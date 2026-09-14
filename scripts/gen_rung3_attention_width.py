@@ -73,28 +73,32 @@ def main() -> int:
     print("ATTENTION-WIDTH — goal<->associative axis + honest termination (block 347)")
     print("=" * 74)
 
-    # C1 + C3 + C4: width sweep on the same seed, teacher-free.
+    # C1 + C3 + C4: breadth sweep on the same seed, teacher-free. The breadth axis
+    # is DISCRETE QUANTA (integer shells k); we sweep k = 0, 1, 2 (goal /
+    # +children+siblings / +associative) — the same shapes 347 demonstrated at the
+    # float widths 0.0/0.5/1.0, now expressed as the integer quanta they snap to.
     spies = {}
     shapes = {}
-    for w in (0.0, 0.5, 1.0):
+    for w in (0, 1, 2):
         spy = AskSpy(); spies[w] = spy
         r = tot.run_inner_conversation(_seed(), topic="poodle", max_turns=12,
                                        width=w, on_unknown="return", ask_fn=spy)
         shapes[w] = r["topics_thought"]
-        print("\nwidth=%.1f  train: %s" % (w, r["topics_thought"]))
+        print("\nwidth=%d quanta (k=%d)  train: %s"
+              % (w, r["width_quanta"], r["topics_thought"]))
         print("   stop=%s  frontier=%s  ask_spy=%d"
               % (r["stop_reason"], r["frontier_growth"], len(spy.calls)))
 
-    # C4 backward-compat: width 0 == the block-346 default (stance='residual')
+    # C4 backward-compat: k=0 quanta == the block-346 default (stance='residual')
     r_res = tot.run_inner_conversation(_seed(), topic="poodle", max_turns=12,
                                        stance="residual")
-    c4 = (shapes[0.0] == r_res["topics_thought"])
+    c4 = (shapes[0] == r_res["topics_thought"])
     print("\nC4 backward-compat: width0 %s == residual %s -> %s"
-          % (shapes[0.0], r_res["topics_thought"], c4))
+          % (shapes[0], r_res["topics_thought"], c4))
 
-    # C1 distinct shapes: the three widths are not all identical (wide must wander wider)
-    c1 = (shapes[0.0] != shapes[1.0] and len(shapes[1.0]) > len(shapes[0.0]))
-    print("C1 width shapes the train (0 != 1, wide wanders wider): %s" % c1)
+    # C1 distinct shapes: the widest quantum wanders wider than the goal core
+    c1 = (shapes[0] != shapes[2] and len(shapes[2]) > len(shapes[0]))
+    print("C1 width shapes the train (0 != 2, wide wanders wider): %s" % c1)
 
     # C3 teacher-free at every width
     c3 = all(len(spies[w].calls) == 0 for w in spies)
@@ -147,7 +151,7 @@ def main() -> int:
     print("=" * 74)
     print("SUMMARY_JSON " + json.dumps({
         "c1": c1, "c2": c2, "c3": c3, "c4": c4,
-        "shape_w0": shapes[0.0], "shape_w05": shapes[0.5], "shape_w1": shapes[1.0],
+        "shape_w0": shapes[0], "shape_w05": shapes[1], "shape_w1": shapes[2],
         "stall_stop": r_stall["stop_reason"], "stall_turns": len(r_stall["turns"]),
         "churn_turns": len(r_churn["turns"]),
         "deferred": "global_workspace (348) + gated dimension-minting (349)"}))
