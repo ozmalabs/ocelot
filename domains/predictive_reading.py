@@ -594,6 +594,91 @@ def predict_next_words(agent, ws_node, *, context: str = "",
 
 
 # --------------------------------------------------------------------------- #
+#  THE UNCLAMPED SELF-CONDITIONED ROLLOUT (block 343 / rung 1.5). Rungs 1-2 took a
+#  top-k SELECTION over ONE prediction (a bag of the highest-ranked words). This is
+#  the true analysis-by-synthesis-in-reverse: emit one word, FEED IT BACK into the
+#  context + seen register, RE-PREDICT with the extended context, repeat — the
+#  reader's next-word synthesis run forward with its OWN output as the observation
+#  (self-conditioned), with NO external surface clamping it (no abs_compare/_words).
+#  Goal + audience conditioning (rung 2) carry through every step so content x voice
+#  x complexity compose per emitted word. Terminates on a stop condition; degeneracy
+#  (repetition / drift) is MEASURED via per-step provenance, never hidden.
+# --------------------------------------------------------------------------- #
+def rollout_unclamped(agent, ws_node, *, goal_content=None, voice_words=None,
+                      goal_weight: float = 2.0, voice_weight: float = 1.5,
+                      seed_context: str = "", max_steps: int = 16,
+                      no_immediate_repeat: bool = True,
+                      stop_on_goal_cover: bool = True,
+                      voice_headroom: int = 3) -> dict:
+    """Run the predictor FORWARD, feeding its own emitted word back as context, until
+    a stop condition. Returns
+        {tokens: [word...], surface: str, steps: [{word, source, rank}...],
+         stop_reason: str, goal_covered: [...], goal_uncovered: [...],
+         repeat_rate: float}
+    Stops on: (a) all goal_content emitted + voice_headroom extra words
+    (stop_on_goal_cover); (b) max_steps; (c) no fresh candidate (degeneracy — the
+    predictor can only re-propose already-emitted words). `no_immediate_repeat` skips
+    a candidate already emitted (the minimal anti-degeneracy guard), so a stall is
+    surfaced as stop_reason='exhausted' rather than looping.
+
+    NOTE (honest): this emits an ORDERED token stream (the feedback makes order
+    meaningful — later words are conditioned on earlier ones), but coherence is
+    bounded by the writer/register model driving the ranking; the stream is not
+    claimed to be grammatical. The point proven is the LOOP: self-conditioned,
+    goal-steered, terminating, with content recovered."""
+    goal_set = [str(w).lower().strip(".,;:?!\"'") for w in (goal_content or [])]
+    goal_set = [w for w in goal_set if w]
+    emitted: list[str] = []
+    steps: list[dict] = []
+    seen = list(dict.fromkeys((seed_context or "").lower().split()))
+    context = seed_context or ""
+    stop_reason = "max_steps"
+    covered_after = 0  # words emitted since goal fully covered (voice tail budget)
+
+    for _ in range(int(max_steps)):
+        pred = predict_next_words(agent, ws_node, context=context,
+                                  seen_vocab=seen,
+                                  goal_content=goal_set, goal_weight=goal_weight,
+                                  voice_words=voice_words, voice_weight=voice_weight)
+        ranked = pred.get("ranked") or []
+        # pick the highest-ranked candidate not already emitted (no-repeat guard)
+        pick = None
+        pick_rank = -1
+        for rank, (w, _lk) in enumerate(ranked):
+            if no_immediate_repeat and w in emitted:
+                continue
+            pick = w
+            pick_rank = rank
+            break
+        if pick is None:
+            stop_reason = "exhausted"          # degeneracy: only repeats left
+            break
+        emitted.append(pick)
+        steps.append({"word": pick, "source": pred["provenance"].get(pick, "?"),
+                      "rank": pick_rank})
+        # feed back: extend context + register with the emitted word (self-condition)
+        context = (context + " " + pick).strip()
+        if pick not in seen:
+            seen.append(pick)
+        # stop-on-goal-cover: once every goal word is out, allow a small voice tail
+        if stop_on_goal_cover and goal_set and all(g in emitted for g in goal_set):
+            covered_after += 1
+            if covered_after > int(voice_headroom):
+                stop_reason = "goal_covered"
+                break
+
+    covered = [g for g in goal_set if g in emitted]
+    uncovered = [g for g in goal_set if g not in emitted]
+    # repetition rate = fraction of emitted tokens that are duplicates (0 with the
+    # no-repeat guard; measured anyway so a relaxed run surfaces degeneracy).
+    dup = len(emitted) - len(set(emitted))
+    repeat_rate = (dup / len(emitted)) if emitted else 0.0
+    return {"tokens": emitted, "surface": " ".join(emitted), "steps": steps,
+            "stop_reason": stop_reason, "goal_covered": covered,
+            "goal_uncovered": uncovered, "repeat_rate": round(repeat_rate, 4)}
+
+
+# --------------------------------------------------------------------------- #
 #  THE COMPARE — a ShapeDecode COLLAPSE. The synthesized prediction is minted as a
 #  codebook; the arriving words are DECODED against it; the `residual` field IS
 #  the surprise (never a Python set-difference deciding it). The collapse
