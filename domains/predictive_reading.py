@@ -679,6 +679,132 @@ def rollout_unclamped(agent, ws_node, *, goal_content=None, voice_words=None,
 
 
 # --------------------------------------------------------------------------- #
+#  PLAN-THEN-REALIZE (block 344). Per two literature reviews, the grounded sign-
+#  grammar PRODUCER owns clause ORDER + admissible words as HARD CONSTRAINTS (the
+#  frontier); the statistical ranker (predict_next_words) is DEMOTED to filling
+#  OPEN slots only — it can never override a grammar-realized word or reorder the
+#  clause. This REPLACES the reverted 'grammar as a heavily-weighted term in a
+#  word-ranker' approach (which the reviews named as a known failure mode: a soft
+#  feature that never guarantees order/coverage). Faithful to the substrate's own
+#  analysis-by-synthesis identity: the comprehension grammar run in REVERSE owns
+#  structure; prediction only fills the rest.
+# --------------------------------------------------------------------------- #
+def _gapfill_slot(agent, ws_node, concept, clause_context, emitted):
+    """Fill ONE open grammar slot for `concept` via the statistical ranker,
+    restricted to this position: predict_next_words conditioned on goal_content=
+    [concept], returning its top1 surface (or None to keep the grammar placeholder).
+    Single top1 per slot — a self-conditioned rollout for gap-fill is a LATER rung.
+    ws_node None => no ranker available => return None (keep the placeholder)."""
+    if ws_node is None:
+        return None
+    try:
+        pred = predict_next_words(agent, ws_node, context=clause_context,
+                                  seen_vocab=list(emitted),
+                                  goal_content=[concept], goal_weight=4.0)
+    except Exception:
+        return None
+    top1 = pred.get("top1")
+    return top1 or None
+
+
+def realize_goal_clause(agent, producer, goal_frame, *, ws_node=None,
+                        language: str = "en", allow_fallback: bool = True,
+                        intended_concepts=None, fallback_kwargs=None):
+    """PLAN-THEN-REALIZE a communicative goal into an ORDERED grammatical clause.
+
+    The grounded `producer` (a LanguageProduction from literary_analysis._build_
+    producer) OWNS the clause: `producer.produce(language, goal_frame)` yields the
+    grammar-ordered slot sequence (surface_structure.ordered_slots) and the per-slot
+    realized surfaces (phonological_word.words, each {role,concept,surface,realized}).
+    We emit that sequence IN ORDER:
+      · realized == True  -> GRAMMAR-FIXED: emit the grammar's surface verbatim
+        (source 'grammar'); the ranker is NEVER consulted for this position.
+      · realized == False -> OPEN slot: the grammar left the bare concept as a
+        placeholder; try to improve it via the ranker as a GAP-FILLER for THIS slot
+        only (source 'gapfill'); keep the placeholder if the ranker offers nothing
+        (source 'grammar_lemma'). Order and slot count are fixed by the grammar.
+
+    FALLBACK (honest, reported): if produce() yields an empty clause (grammar
+    coverage gap), degrade to the rung-1.5 self-conditioned rollout_unclamped and
+    return mode='fallback' with the full fallback sub-result — never hidden.
+
+    Returns {surface, tokens, backbone:[{role,concept,surface,realized,source}...],
+    gaps_filled:[concept...], mode:'plan_then_realize'|'fallback',
+    fallback:<rollout result|None>, verdict:<score_self_target|None>, produce:<raw>}.
+    """
+    frame = dict(goal_frame or {})
+    frame.setdefault("intent", "inform")
+    intended = list(intended_concepts or [])
+    # PLAN: the grounded producer realizes the clause (grammar owns order).
+    try:
+        r = producer.produce(language, frame)
+    except Exception:
+        r = None
+    words = ((r or {}).get("phonological_word") or {}).get("words") or []
+    overt = ((r or {}).get("overt_speech") or "").strip()
+    core = overt.rstrip(".!?").strip()
+
+    # FALLBACK: no grammar clause -> rung-1.5 rollout (reported, not hidden).
+    if not words or not core:
+        if allow_fallback:
+            gc = intended or [str(v) for k, v in frame.items()
+                              if k in ("agent", "patient", "event") and v]
+            fb = rollout_unclamped(agent, ws_node, goal_content=gc,
+                                   **(fallback_kwargs or {}))
+            return {"surface": fb["surface"], "tokens": fb["tokens"],
+                    "backbone": [], "gaps_filled": [], "mode": "fallback",
+                    "fallback": fb, "verdict": None, "produce": r}
+        return {"surface": "", "tokens": [], "backbone": [], "gaps_filled": [],
+                "mode": "empty", "fallback": None, "verdict": None, "produce": r}
+
+    # REALIZE in grammar order; ranker fills OPEN slots only.
+    backbone = []
+    emitted = []
+    gaps_filled = []
+    for w in words:
+        concept = w.get("concept")
+        surface = w.get("surface")
+        if w.get("realized"):
+            src = "grammar"                       # grammar-fixed: verbatim
+            out = surface
+        else:
+            ctx = " ".join(emitted)
+            fill = _gapfill_slot(agent, ws_node, concept, ctx, emitted)
+            # ONLY a genuine substitution (a surface DIFFERENT from the grammar's
+            # placeholder) counts as gap-fill; if the ranker just re-picks the
+            # placeholder concept, the grammar lemma stands (honest accounting).
+            placeholder = surface or concept
+            if fill and fill != placeholder:
+                src, out = "gapfill", fill        # ranker improved the open slot
+                gaps_filled.append(concept)
+            else:
+                src, out = "grammar_lemma", placeholder  # keep grammar placeholder
+        backbone.append({"role": w.get("role"), "concept": concept,
+                         "surface": out, "realized": bool(w.get("realized")),
+                         "source": src})
+        if out:
+            emitted.append(out)
+
+    # If no gap was filled, the pure grammar clause stands verbatim (its own
+    # articulation/casing/terminator) — do not re-articulate.
+    surface = overt if not gaps_filled else " ".join(emitted)
+
+    # CHECK: grounded-comprehension parse-back (the outer self-monitor).
+    verdict = None
+    if intended:
+        try:
+            from domains.self_target_monitor import score_self_target
+            verdict = score_self_target(agent, surface, intended,
+                                        language=language, producer=producer)
+        except Exception:
+            verdict = None
+
+    return {"surface": surface, "tokens": emitted, "backbone": backbone,
+            "gaps_filled": gaps_filled, "mode": "plan_then_realize",
+            "fallback": None, "verdict": verdict, "produce": r}
+
+
+# --------------------------------------------------------------------------- #
 #  THE COMPARE — a ShapeDecode COLLAPSE. The synthesized prediction is minted as a
 #  codebook; the arriving words are DECODED against it; the `residual` field IS
 #  the surprise (never a Python set-difference deciding it). The collapse
