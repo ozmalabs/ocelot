@@ -149,30 +149,33 @@ def _force_hub(sub):
 def mint_communicative_goal(agent, force_kind: str, content,
                              interlocutor: Optional[dict] = None,
                              *, target_kind: str = "interlocutor",
+                             audience: Optional[dict] = None,
                              **extra_attrs) -> Any:
     """Mint a communicative `Goal{kind:'communicate', force_kind, content, target_kind}`
     directed at a TYPED TARGET (the thing the utterance means to deform toward a wanted
-    future). `target_kind` selects the target class; `for_audience`/`for_target` bind the
-    concrete target:
+    future). Two ORTHOGONAL slots:
 
-      · target_kind == 'interlocutor' (default, UNCHANGED): mint an
-        `Interlocutor{id, observed, known_concepts}` node (the SAME shape
-        `audience_production_dispatch.mint_produce_for_audience_request` uses) and bind
-        `g -for_audience-> interlocutor_node`. Requires `interlocutor`.
-      · target_kind == 'self' (rung 1, WANT-IT-SAID): the goal is satisfied by the SAYING
-        itself; bind `g -for_target-> <agent/self>` and mint NO Interlocutor. The
-        furtherance check is the self-monitor parse-back (recovered≈intended), fully
-        endogenous \u2014 no audience.
-      · other target_kinds (world_state / joint_state / record, future rungs) bind
-        `for_target` to their typed target node and dispatch a different furtherance test
-        at the SAME scan_and_monitor seam.
+    TARGET (`target_kind` + `for_audience`/`for_target`) — WHERE satisfaction is measured
+    (the furtherance check). interlocutor / self / world_state / joint_state / record.
 
-    Always adds `g -wants_force-> hub` (the ONE held ForceCodebookHub) + `agent -has_goal-> g`.
-    The DECISION of WHICH force applies happens later in the rule engine (`form_intent_<tag>`);
-    this function only writes the goal. Returns the Goal node id.
+    AUDIENCE (`audience` + a `for_audience` edge) — WHO the utterance is SHAPED FOR (voice
+    + complexity), INDEPENDENT of the target. The audience may be:
+      · unbound (default) -> the selection seam `resolve_audience` resolves it to the
+        SELF-as-own-audience (voice = the agent's own idiolect, complexity = its own
+        grounding depth) — the endogenous default, no chooser required;
+      · a specified `audience` dict -> shape voice/complexity for that audience;
+      · (future) an agent-CHOSEN audience -> the same seam, populated by a chooser over a
+        held register inventory (not built yet; the choice point is left OPEN, reachable).
+    Because audience is orthogonal to target, a SELF-target want-it-said goal can still be
+    aimed at a chosen audience (rehearse / say-it-as-if-to-X); satisfaction stays endogenous
+    while voice/complexity are audience-driven.
 
-    Backward compatible: callers passing a positional `interlocutor` with the default
-    `target_kind='interlocutor'` get the exact prior behavior."""
+    The interlocutor `target_kind` still mints its Interlocutor target node (UNCHANGED); the
+    `audience` slot is the general voice/complexity binding that also covers self/world
+    targets. Always adds `g -wants_force-> hub` + `agent -has_goal-> g`. Returns the Goal id.
+
+    Backward compatible: `mint_communicative_goal(agent, force, content, interlocutor)` with
+    the default `target_kind='interlocutor'` and no `audience` behaves exactly as before."""
     ensure_conceptualizer_seed(agent)
     sub, native, ag_node = _resolve(agent)
     # target_node is a control arg (a node handle), not a stored attr — pull it out.
@@ -189,6 +192,11 @@ def mint_communicative_goal(agent, force_kind: str, content,
     # is dispatched by scan_and_monitor on target_kind, not decided here.
     binder = _TARGET_BINDERS.get(str(target_kind), _bind_typed_target)
     binder(sub, native, g, ag_node, interlocutor, target_node)
+    # ORTHOGONAL audience binding (voice/complexity). The interlocutor target already
+    # bound its Interlocutor as the audience; for every OTHER target the audience slot
+    # is bound here via the selection seam (self-as-own-audience by default). No double
+    # binding: _bind_audience_slot skips when a for_audience edge already exists.
+    _bind_audience_slot(sub, native, g, ag_node, audience, str(target_kind))
     hub = _force_hub(sub)
     if hub is not None:
         _add_edge_unchecked(native, g, "wants_force", hub)
@@ -223,6 +231,58 @@ def _bind_typed_target(sub, native, g, ag_node, interlocutor, target_node):
 
 
 _TARGET_BINDERS = {"interlocutor": _bind_interlocutor_target}
+
+
+# --------------------------------------------------------------------------- #
+#  AUDIENCE SLOT (voice + complexity) — orthogonal to the target. resolve_audience
+#  is the reachable SELECTION SEAM: it returns the audience snapshot the utterance
+#  is shaped for. When the caller specifies one, that is used; when unbound, it
+#  resolves to the SELF-as-own-audience (the endogenous default). A future
+#  agent-driven chooser (over a held register inventory, not built yet) plugs in
+#  HERE by supplying the `audience` dict — the choice point stays OPEN and reachable
+#  without forcing a choice now. Mechanical I/O only.
+# --------------------------------------------------------------------------- #
+
+def resolve_audience(agent, audience: Optional[dict] = None) -> dict:
+    """Resolve the audience the utterance is SHAPED FOR (voice/complexity), the
+    choosable seam. `audience` (a dict {id, known_concepts, register?}) is used
+    verbatim when given; otherwise the endogenous default is the SELF as its own
+    audience: id='self', mode='self', so voice reads the agent's OWN idiolect and
+    complexity reads its OWN grounding depth. Returns the resolved audience dict
+    (never None). This function is the single point a chooser would populate."""
+    base = {"id": "self", "known_concepts": []}
+    spec = {k: v for k, v in (audience or {}).items() if v is not None}
+    base.update(spec)
+    # mode is data-derived: 'specified' when an audience was given, else 'self'
+    # (dict lookup keyed on emptiness — no decision branch).
+    base["mode"] = {True: "specified", False: "self"}[bool(spec)]
+    base.setdefault("id", "self")
+    return base
+
+
+def _bind_audience_slot(sub, native, g, ag_node, audience, target_kind: str):
+    """Bind the resolved audience as `g -for_audience-> Interlocutor` for voice/
+    complexity, IDEMPOTENTLY: if the target binder already wrote a for_audience edge
+    (the interlocutor target), leave it; otherwise bind the resolved audience. The
+    'already bound?' check is a DATA read (existing neighbours), looped — no decision
+    branch. Mechanical I/O only."""
+    existing = list(sub.neighbours(g, "for_audience"))
+    resolved = resolve_audience(_agent_for_resolve(ag_node), audience)
+    # bind only when none exists yet (conditional EXPRESSION over a list, not an if-stmt)
+    for _slot in ([resolved] if not existing else []):
+        aud_node = sub.add_node(_INTERLOCUTOR_TYPE, {
+            "id": _slot.get("id", "self"),
+            "observed": bool(_slot.get("observed", False)),
+            "audience_mode": str(_slot.get("mode", "self")),
+            "known_concepts": [str(c) for c in _slot.get("known_concepts", [])],
+        })
+        _add_edge_unchecked(native, g, "for_audience", aud_node)
+
+
+def _agent_for_resolve(ag_node):
+    """resolve_audience takes an agent handle only to keep its signature stable for a
+    future self-idiolect read; today it needs nothing from it. Pass-through."""
+    return ag_node
 
 
 # --------------------------------------------------------------------------- #

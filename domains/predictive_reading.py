@@ -468,7 +468,9 @@ def predict_next_words(agent, ws_node, *, context: str = "",
                        register_freq: Optional[dict] = None,
                        meter_weights: Optional[dict] = None,
                        goal_content: Optional[Iterable[str]] = None,
-                       goal_weight: float = 4.0) -> dict:
+                       goal_weight: float = 2.0,
+                       voice_words: Optional[Iterable[str]] = None,
+                       voice_weight: float = 1.5) -> dict:
     """SYNTHESIZE the predicted next words — the production faculty run forward,
     conditioned on the writer model + the immediate discourse context.
 
@@ -539,6 +541,17 @@ def predict_next_words(agent, ws_node, *, context: str = "",
     for w in goal_words:
         _add(w, "goal")
 
+    # ---- VOICE candidates (block 342: register/idiolect the utterance is shaped in) --- #
+    # The audience slot's voice words (own idiolect for a self audience; the audience's
+    # register otherwise) enter the pool and are lifted through the REGISTER channel — a
+    # DIFFERENT strength than the goal, so content (WHAT) and voice (HOW/framing) COMPOSE
+    # in the held Plus rather than one stomping the other (the rung-1 defect). Voice never
+    # carries content (the shaper already dropped content-overlap).
+    voice_list = [str(w).lower().strip(".,;:?!\"'") for w in (voice_words or [])]
+    voice_list = [w for w in voice_list if w]
+    for w in voice_list:
+        _add(w, "voice")
+
     # ---- WEIGHTED LIKELIHOOD over the candidates (the finer grain) ----------- #
     # each candidate's combined score is a held `Plus` Term over its five graph-
     # resident source strengths; the distribution is the normalized scores; the
@@ -549,6 +562,10 @@ def predict_next_words(agent, ws_node, *, context: str = "",
     reg_freq = dict(register_freq or {})
     if not reg_freq:                                     # no counts => uniform prior
         reg_freq = {w: 1 for w in (seen_vocab or [])}
+    # voice words carry register weight (their natural channel) — this is HOW content
+    # (goal channel) and voice (register channel) COMPOSE additively in the held Plus.
+    for w in voice_list:
+        reg_freq[w] = reg_freq.get(w, 0) + float(voice_weight)
     beat_counts = model.get("recurring_beat_counts") or {}
     class_reg = model.get("class_register") or []
     mweights = dict(meter_weights or {})
