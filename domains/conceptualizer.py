@@ -146,34 +146,83 @@ def _force_hub(sub):
 #     WHOM (force_kind + content + interlocutor); this function only writes it.
 # --------------------------------------------------------------------------- #
 
-def mint_communicative_goal(agent, force_kind: str, content, interlocutor: dict,
+def mint_communicative_goal(agent, force_kind: str, content,
+                             interlocutor: Optional[dict] = None,
+                             *, target_kind: str = "interlocutor",
                              **extra_attrs) -> Any:
-    """Mint an `Interlocutor{id, observed, known_concepts}` node (mechanical snapshot of
-    `interlocutor`, the SAME shape `audience_production_dispatch.mint_produce_for_audience_
-    request` uses) + a communicative `Goal{kind:'communicate', force_kind, content}` +
-    `g -for_audience-> interlocutor_node` + `g -wants_force-> hub` (the ONE held
-    ForceCodebookHub — always the same target, mechanical, no choice). The DECISION of WHICH
-    force applies happens later, in the rule engine (`form_intent_<tag>`'s Eq-join), not
-    here. Returns the Goal node id."""
+    """Mint a communicative `Goal{kind:'communicate', force_kind, content, target_kind}`
+    directed at a TYPED TARGET (the thing the utterance means to deform toward a wanted
+    future). `target_kind` selects the target class; `for_audience`/`for_target` bind the
+    concrete target:
+
+      · target_kind == 'interlocutor' (default, UNCHANGED): mint an
+        `Interlocutor{id, observed, known_concepts}` node (the SAME shape
+        `audience_production_dispatch.mint_produce_for_audience_request` uses) and bind
+        `g -for_audience-> interlocutor_node`. Requires `interlocutor`.
+      · target_kind == 'self' (rung 1, WANT-IT-SAID): the goal is satisfied by the SAYING
+        itself; bind `g -for_target-> <agent/self>` and mint NO Interlocutor. The
+        furtherance check is the self-monitor parse-back (recovered≈intended), fully
+        endogenous \u2014 no audience.
+      · other target_kinds (world_state / joint_state / record, future rungs) bind
+        `for_target` to their typed target node and dispatch a different furtherance test
+        at the SAME scan_and_monitor seam.
+
+    Always adds `g -wants_force-> hub` (the ONE held ForceCodebookHub) + `agent -has_goal-> g`.
+    The DECISION of WHICH force applies happens later in the rule engine (`form_intent_<tag>`);
+    this function only writes the goal. Returns the Goal node id.
+
+    Backward compatible: callers passing a positional `interlocutor` with the default
+    `target_kind='interlocutor'` get the exact prior behavior."""
     ensure_conceptualizer_seed(agent)
     sub, native, ag_node = _resolve(agent)
-    aid = interlocutor.get("id", "interlocutor")
-    interlocutor_node = sub.add_node(_INTERLOCUTOR_TYPE, {
-        "id": aid,
-        "observed": bool(interlocutor.get("observed", False)),
-        "known_concepts": [str(c) for c in interlocutor.get("known_concepts", [])],
-    })
+    # target_node is a control arg (a node handle), not a stored attr — pull it out.
+    target_node = extra_attrs.pop("target_node", None)
     attrs = {"kind": "communicate", "force_kind": str(force_kind),
-             "content": sorted({str(c) for c in content})}
+             "content": sorted({str(c) for c in content}),
+             "target_kind": str(target_kind)}
     attrs.update(extra_attrs)
     g = sub.add_node(_GOAL_TYPE, attrs)
-    _add_edge_unchecked(native, g, "for_audience", interlocutor_node)
+    # DATA-DRIVEN target binding (no Python decision branch): a table maps the
+    # target_kind to its mechanical binder; the default binder handles every
+    # non-audience typed target (self/world_state/joint_state/record) uniformly.
+    # The binder writes the concrete target edge; WHICH furtherance test runs later
+    # is dispatched by scan_and_monitor on target_kind, not decided here.
+    binder = _TARGET_BINDERS.get(str(target_kind), _bind_typed_target)
+    binder(sub, native, g, ag_node, interlocutor, target_node)
     hub = _force_hub(sub)
     if hub is not None:
         _add_edge_unchecked(native, g, "wants_force", hub)
     if ag_node is not None:
         _add_edge_unchecked(native, ag_node, "has_goal", g)
     return g
+
+
+def _bind_interlocutor_target(sub, native, g, ag_node, interlocutor, target_node):
+    """Bind the INTERLOCUTOR target: mint the Interlocutor snapshot node + the
+    `for_audience` edge (the UNCHANGED audience path). Mechanical I/O only."""
+    interlocutor = interlocutor or {}
+    interlocutor_node = sub.add_node(_INTERLOCUTOR_TYPE, {
+        "id": interlocutor.get("id", "interlocutor"),
+        "observed": bool(interlocutor.get("observed", False)),
+        "known_concepts": [str(c) for c in interlocutor.get("known_concepts", [])],
+    })
+    _add_edge_unchecked(native, g, "for_audience", interlocutor_node)
+
+
+def _bind_typed_target(sub, native, g, ag_node, interlocutor, target_node):
+    """Bind a non-audience TYPED target (self/world_state/joint_state/record) via a
+    `for_target` edge. For the SELF target the default target IS the agent (the saying
+    deforms the speaker's own held state); other kinds pass an explicit target_node.
+    Mechanical I/O only — the target node is `target_node or ag_node` (a value, not a
+    decision)."""
+    tgt = target_node or ag_node
+    # write the for_target edge iff a target exists (loop over a possibly-empty
+    # list — no decision branch; the SAME idiom the audit permits for optional writes).
+    for t in ([tgt] if tgt is not None else []):
+        _add_edge_unchecked(native, g, "for_target", t)
+
+
+_TARGET_BINDERS = {"interlocutor": _bind_interlocutor_target}
 
 
 # --------------------------------------------------------------------------- #
