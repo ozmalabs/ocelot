@@ -350,6 +350,14 @@ _GRAMMAR_BANK = [
      "expected_meaning": {"event": "find", "agent": "cat", "patient": "mat", "tense": "past"}},
     {"text": "The dog chased the ball.", "language": "en",
      "expected_meaning": {"event": "chase", "agent": "dog", "patient": "ball", "tense": "past"}},
+    # COPULAR clause shape (block 344) — grounds the "X is a Y" order so an is-a /
+    # class-membership frame realizes as an ORDERED grammatical clause (not a bag).
+    # Teacher-free via teacher_stub; carries the copula 'is' + the subject/complement
+    # order grammatical_encoding reads in reverse for a copular goal.
+    {"text": "The cat is a mammal.", "language": "en",
+     "expected_meaning": {"event": "is", "agent": "cat", "patient": "mammal", "tense": "present"}},
+    {"text": "The dog is a mammal.", "language": "en",
+     "expected_meaning": {"event": "is", "agent": "dog", "patient": "mammal", "tense": "present"}},
 ]
 
 
