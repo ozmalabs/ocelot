@@ -265,9 +265,26 @@ def bootstrap_ci(values: Sequence[float], *, iters: int = 2000,
 
 
 # Published LLM reference points from arXiv:2505.17117 (for side-by-side reporting).
+#
+# HONESTY / PERISHABILITY CAVEAT: these are ACCESSIBLE-MODEL, embedding-based
+# snapshots circa 2025 — the paper needs a model's *embeddings*, so it could NOT
+# include closed frontier models (no GPT-5/Claude). A newer/larger model would very
+# likely RAISE the RQ2 typicality rho toward the human ceiling, so "the substrate's
+# rho beats these" is a snapshot, NOT the load-bearing claim and NOT a permanent
+# scoreboard. The DURABLE, architecture-level claims are: T3 (a different COMPRESSION
+# MECHANISM — the paper's own training-dynamics show LLM over-compression deepens with
+# scale, not lifts), T4 (readiness-gated ACCOMMODATION — coining a new axis on
+# recurring evidence, which a frozen-weight model cannot do at inference; it needs
+# retraining), and T5 (the gate DISCRIMINATES genuine vs surface change). Treat the
+# rho contest as the weakest/most-perishable line and the mechanism claims as the point.
 LLM_REFERENCE = {
     "rq2_spearman_decoder_typical": 0.15,   # most decoder LLMs fall below ~0.15-0.2
     "rq2_spearman_bert": 0.38,              # BERT static-layer typicality rho
     "rq1_ami_human_aligned": 0.55,          # peak human-aligned AMI band
     "rq1_ami_encoder_peak": 0.60,           # encoder models peak
+    "_provenance": ("arXiv:2505.17117 — accessible/embedding-based models, circa 2025 "
+                    "(no closed frontier models). A newer model would likely raise RQ2 "
+                    "rho; the durable claims are architectural (T3/T4/T5), not the rho "
+                    "contest."),
 }
+
