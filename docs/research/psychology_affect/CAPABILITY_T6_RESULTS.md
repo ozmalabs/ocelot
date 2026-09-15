@@ -44,24 +44,40 @@ evaluations is a first-run rule-path warm-up — node/edge/admissibility are sta
 ## What is NOT measured (and why)
 
 LLM joules / FLOPs are **not** measured here — they depend on hardware, batching, and
-quantization, and this repo holds no model. The LLM figures in the track are a
-clearly-labelled **cited estimate for framing only**. The honest claim is not "our
-forward pass is cheaper by factor N," it is a cost-**class** difference:
+quantization, and this repo holds no model. The LLM figures are a clearly-labelled
+**cited estimate for framing only**. And the honest claim is **not** "LLMs cannot build
+new representations" — the Sept-2026 frontier shows they can: **GPT-6 Astra** turns
+unfamiliar ARC-AGI-3 environments into *compact symbolic world-models and its own DSL
+shorthand*, even writing game-specific code (ARC Prize, 2026-09-03). The claim is that
+their architecture **bounds** it and the cost is **orders of magnitude higher —
+different in kind**:
 
-- **Substrate:** coining a new dimension is ~55 graph ops at think time, teacher-free.
-- **LLM:** a genuinely new representational axis is **not an inference-time operation** —
-  a frozen-weight model must be **retrained / fine-tuned** to acquire it (a training run,
-  many GPU-hours), or cannot acquire it online at all.
+- **Substrate:** mints a **persistent** new dimension in ~55 graph ops at think time,
+  teacher-free, no GPU; the axis is a graph node that **survives and is reused**.
+- **LLM (frontier):** builds the representation in the **context window / opaque
+  per-session state** — it **evaporates at session end** (frozen weights); a weight-level
+  new axis needs retraining. Astra's ARC-AGI-3 runs cost **~$19K** (Provider Adapter,
+  99.9%) to **~$26K** (Standard harness, 62.7%) **per benchmark**; ARC Prize prices the
+  human brain-energy baseline at **~0.067 cents per game**.
 
-Different cost class (bounded-tick inference vs a training run), not a ratio.
+Persistence class + cost class — not a ratio.
 
 ## Why this is the durable comparison
 
-The RQ2 typicality contest (T2) is perishable — a frontier model likely raises its ρ. The
-cost class is not: scaling a transformer does not turn representational change into an
-inference-time operation; it remains a training-time event. So as models get bigger, the
-typicality gap narrows while the cost-class gap for *acquiring a new axis mid-reasoning*
-stays — or widens. That is the architecture-validation point this suite exists to make.
+The RQ2 typicality contest (T2) is perishable — a frontier model raises its ρ, and Astra
+shows frontier models now *match the substrate on building representations at all*. What a
+bigger model does **not** change:
+
+- **Persistence.** Scaling a transformer does not make its on-the-fly representation
+  persist beyond the session or become a reusable structural commitment; it stays context/
+  state-bound. The substrate's mint is a permanent graph axis.
+- **Cost class.** Astra's own published figures (~$19K–26K/benchmark) against the human
+  ~0.067-cents/game baseline confirm the gap is orders of magnitude — the substrate's ~55
+  graph ops sit on the human side of that divide. Bigger models widen this, not narrow it.
+
+That is the architecture-validation point, sharpened by the frontier evidence rather than
+refuted by it. (ARC Prize explicitly does **not** claim AGI and notes ARC-AGI-3 is
+bounded/closed-ended, not open-ended representational growth.)
 
 ## Guardrails
 

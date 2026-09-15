@@ -78,31 +78,47 @@ emergent geometric feat the LLM ~0.55 represents.
 - The saturation limit in T2 (commitment half_width=4) and the structural-vs-emergent
   asymmetry in T1 are stated, not hidden.
 
-## What a newer LLM would (and would not) change — read before citing the ρ contest
+## What a newer LLM changes — and the sharper thesis (frontier update, Sept 2026)
 
-The RQ2 reference points (decoder ~0.15, BERT ~0.38) and the RQ1 ~0.55 are
-**accessible-model, embedding-based snapshots circa 2025** — the paper needs a model's
-*embeddings*, so it excludes closed frontier models (no GPT-5/Claude). A newer/larger
-model would very likely **raise** the RQ2 typicality ρ toward the human ceiling.
+The RQ2 reference points (decoder ~0.15, BERT ~0.38) and RQ1 ~0.55 are
+**accessible-model, embedding-based snapshots circa 2025** — the paper excludes closed
+frontier models (it needs embeddings). A newer model **raises** RQ2 ρ toward the human
+ceiling, so "substrate ρ 0.89 beats BERT 0.38" is a **snapshot, not the load-bearing
+claim**. This suite is **architecture validation**, not a leaderboard win.
 
-So "substrate ρ 0.89 beats BERT 0.38" is a **snapshot, not a permanent scoreboard**, and
-it is **not** the load-bearing claim. This suite is **architecture validation**, not a
-leaderboard win. The perishable line is the ρ contest; the durable, architecture-level
-claims are:
+The Sept-2026 frontier makes the point sharper, not weaker. **GPT-6 Astra** (released
+Sept 3 2026) scores **99.9% on ARC-AGI-3** and — per ARC Prize's own analysis — does so
+by *"turn[ing] unfamiliar environments into compact symbolic world models ... [and
+developing] its own domain-specific language shorthand"*, even writing game-specific code
+libraries in the PRO-LONG harness. So the honest thesis is **not "LLMs cannot build new
+representations"** — frontier models demonstrably do. The thesis is:
 
-- **T3 — a different compression *mechanism*.** LLMs sit at the low-ℒ over-compressed
-  floor by training pressure, and the paper's own training-dynamics analysis shows this
-  *deepens* with scale/training, not lifts. The substrate's ℒ moving 2.57→4.56 by
-  *minting a new axis on demand* is a different mechanism, not a point on that curve.
-- **T4 — readiness-gated accommodation.** Coining a new dimension only on recurring
-  evidence (and refusing surface-only signals) is representational change *at inference*.
-  A frozen-weight model cannot do this regardless of size — it requires retraining. This
-  is a cost-*class* distinction (see Track 6), not a benchmark score.
-- **T5 — the gate discriminates** genuine representational change from surface presence.
+> **Their architecture bounds it, and the cost is so many orders of magnitude higher
+> that it is different in kind — not a factor-of-N gap.**
 
-Bottom line: read the ρ number as "the substrate is in the human-fidelity regime while
-accessible LLMs of that era were not," not as "we beat LLMs at typicality forever." The
-mechanism claims (T3/T4/T6) are what a bigger model does not erase.
+Three concrete, sourced distinctions (see `scoring/metrics.LLM_REFERENCE._frontier_2026`):
+
+- **Persistence class.** Astra's new representation lives in the **context window** (notes
+  it chooses to keep) or **opaque per-session reasoning state** — it evaporates at session
+  end; the weights are frozen. The substrate mints a **persistent `CapabilityAxis` node**
+  that survives and is reused. Astra **re-derives per session**; the substrate **accretes**.
+  A weight-level new axis still requires retraining.
+- **Harness / memory dependence.** Astra's 99.9% uses the **Provider Adapter** harness
+  (provider-managed opaque state). Under the **neutral Standard harness** — the
+  apples-to-apples condition ARC Prize says a future AGI should solve, and the one closest
+  to the substrate's teacher-free, no-hidden-state setting — Astra scores **62.7%**. ARC
+  Prize attributes the gap to *memory handling, not raw reasoning*.
+- **Cost class (the crux).** Astra's ARC-AGI-3 runs cost **~$19K** (Provider Adapter,
+  99.9%) to **~$26K** (Standard, 62.7%) **per benchmark**; ARC Prize prices the human
+  brain-energy baseline at **~0.067 cents per game**. The substrate mints a new axis in
+  **~55 native graph ops, no GPU** (Track 6). That is many orders of magnitude —
+  **different in kind**.
+
+So a bigger model narrows the typicality ρ gap and *matches the substrate on building
+representations at all* — but does not change the **persistence** or **cost** class. Those
+are the durable, architecture-level results (T3/T4/T6), sharpened by the frontier evidence
+rather than refuted by it. (ARC Prize explicitly does **not** claim AGI and notes
+ARC-AGI-3 is bounded/closed-ended, not open-ended representational growth.)
 
 ## Guardrails
 

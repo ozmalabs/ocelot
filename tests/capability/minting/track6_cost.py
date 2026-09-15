@@ -57,15 +57,22 @@ import substrate_runner as R            # noqa: E402
 
 
 # A clearly-LABELLED CITED ESTIMATE for framing only — NOT measured in this repo.
-# Order-of-magnitude figures for "acquire a genuinely new representational axis":
+# Frontier figures (Sept 2026) for "build/keep a new representation":
 LLM_COST_CLASS_ESTIMATE = {
-    "inference_forward_pass": "billions of FLOPs / GPU matmuls per token (hardware- "
-                              "and model-dependent; not measured here)",
-    "acquire_a_new_axis": "NOT an inference-time operation — requires retraining / "
-                          "fine-tuning (a training run: many GPU-hours), or is not "
-                          "acquirable online at all for a frozen-weight model",
-    "provenance": "cited/estimated for cost-CLASS framing only; this repo runs no "
-                  "model and measures no LLM joules",
+    "can_build_new_representation": "YES — frontier models do it. GPT-6 Astra (ARC "
+        "Prize, 2026-09-03) turns unfamiliar environments into compact symbolic "
+        "world-models + its own DSL shorthand, and writes game-specific code. The "
+        "claim is NOT 'LLMs cannot' — it is architecture-bounded + orders-of-magnitude "
+        "costlier = different in kind.",
+    "persistence": "session-bound — the representation lives in the context window / "
+        "opaque per-session state and evaporates at session end (frozen weights). A "
+        "weight-level new axis requires retraining. vs the substrate's PERSISTENT "
+        "CapabilityAxis node.",
+    "arcagi3_cost_usd": "~$19,000 (Provider Adapter, 99.9%) to ~$26,000 (Standard "
+        "harness, 62.7%) PER benchmark run (ARC Prize). Human brain-energy baseline "
+        "~$0.00067/game.",
+    "provenance": "cited published figures (arcprize.org/blog/astra, openai.com) for "
+        "cost-CLASS framing only; this repo runs no model and measures no LLM joules.",
 }
 
 
@@ -117,22 +124,22 @@ def main() -> int:
     print("  C2 %s" % ("PASS" if c2 else "FAIL"))
 
     print("\n" + "-" * 78)
-    print("C3  COST-CLASS (substrate mints at inference in bounded ticks; LLM "
-          "acquires an axis only by RETRAINING) — LLM side is a LABELLED CITED "
-          "ESTIMATE, not a measured ratio")
+    print("C3  COST-CLASS (frontier models CAN build new representations — GPT-6 "
+          "Astra does — but session-bound + orders-of-magnitude costlier = different "
+          "IN KIND) — LLM side is a LABELLED CITED ESTIMATE, not a measured ratio")
     print("-" * 78)
     mean_ops = sum(ops) / len(ops)
-    print("  SUBSTRATE (measured): coin a new dimension in ~%d native graph ops, "
-          "teacher-free, at think time, no GPU." % round(mean_ops))
-    print("  LLM (cited estimate, NOT measured here):")
-    print("     - inference forward pass: %s"
-          % LLM_COST_CLASS_ESTIMATE["inference_forward_pass"])
-    print("     - acquire a NEW axis:     %s"
-          % LLM_COST_CLASS_ESTIMATE["acquire_a_new_axis"])
-    print("  => DIFFERENT COST CLASS (bounded-tick inference vs a training run), "
-          "not a factor-of-N race.")
-    # C3 is a framing claim; it holds if the substrate cost is bounded-at-inference
-    # (measured above) AND we have honestly labelled the LLM side as an estimate.
+    print("  SUBSTRATE (measured): mint a PERSISTENT new dimension in ~%d native graph "
+          "ops, teacher-free, at think time, no GPU." % round(mean_ops))
+    print("  LLM frontier (cited, NOT measured here):")
+    print("     - can build new representation? %s"
+          % LLM_COST_CLASS_ESTIMATE["can_build_new_representation"][:70] + "...")
+    print("     - persistence: %s"
+          % LLM_COST_CLASS_ESTIMATE["persistence"][:70] + "...")
+    print("     - ARC-AGI-3 cost: %s"
+          % LLM_COST_CLASS_ESTIMATE["arcagi3_cost_usd"])
+    print("  => DIFFERENT IN KIND: session-bound context/opaque-state vs a persistent "
+          "graph axis; ~$19K-26K/benchmark vs ~55 graph ops. Not a factor-of-N race.")
     c3 = c1 and LLM_COST_CLASS_ESTIMATE["provenance"].startswith("cited")
     print("  C3 %s" % ("PASS" if c3 else "FAIL"))
 
@@ -153,14 +160,15 @@ def main() -> int:
     for name, ok in rows:
         print("  %-46s %s" % (name, "PASS" if ok else "FAIL"))
     allpass = all(ok for _, ok in rows)
-    verdict = ("TRACK 6 PASS: coining a new dimension costs the substrate a small, "
-               "bounded, integer number of native graph ops (~%d on average), "
-               "teacher-free and with no GPU/matmul/model — while an LLM acquires a "
-               "genuinely new representational axis only by RETRAINING (a training "
-               "run), not at inference. This is a cost-CLASS difference, not a "
-               "joules ratio; the LLM side is a labelled cited estimate, not measured "
-               "here. A newer LLM narrows the typicality gap but does not change this "
-               "cost class." % round(mean_ops)
+    verdict = ("TRACK 6 PASS: coining a PERSISTENT new dimension costs the substrate a "
+               "small, bounded, integer number of native graph ops (~%d on average), "
+               "teacher-free and with no GPU/matmul/model. Frontier LLMs (GPT-6 Astra) "
+               "CAN build new representations on the fly — so the claim is not 'LLMs "
+               "cannot' — but they do so in session-bound context/opaque state (not a "
+               "persistent axis) at a cost of ~$19K-26K per ARC-AGI-3 benchmark vs the "
+               "human ~0.067 cents/game. Different IN KIND (architecture-bounded + "
+               "orders of magnitude costlier), not a joules ratio; the LLM side is a "
+               "labelled cited figure, not measured here." % round(mean_ops)
                if allpass else
                "TRACK 6 HONEST RESULT: see failing claim(s) above.")
     print("\nVERDICT: %s" % verdict)
