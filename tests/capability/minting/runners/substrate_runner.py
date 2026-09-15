@@ -116,6 +116,62 @@ def build_category(category: str, items: list[dict], *,
     return s, name_to_node, proto
 
 
+def build_multi_category(categories: dict, *, with_isa: bool = True) -> tuple:
+    """Build ONE substrate holding several categories at once — every member carries
+    its graded typicality on identity_field (-> dynamical:commitment), and (when
+    with_isa) an is-a edge to its category prototype. Returns (substrate,
+    {item: node}, item_names, human_labels, {category: proto_name}). Used by the
+    category-recoverability (T1) and compression-meaning (T3) tracks. Pure additive
+    node data + the qualia codebook."""
+    s = _native.Substrate()
+    ag = s.add_node("Agent", {"name": "jabberwock"})
+    for path in (VOCAB, QUALIA):
+        summ = s.load_seed_manifest(json.load(open(path)), ag)
+        assert not summ.get("rules_skipped"), (path, summ)
+    asr._QUALIA_SCHEMA_CACHE.clear()
+
+    mt = s.add_node("Microtheory", {"name": "multi_cat", "temperature": 1.0,
+                                    "discrete_mode": "3state"})
+    nodes: dict = {}
+    item_names: list = []
+    labels: list = []
+    protos: dict = {}
+
+    def concept(name, commit, cat):
+        c = s.add_node("Concept", {"name": name, "category": cat, "state": 0.0,
+                                   "external_field": 0.0,
+                                   "identity_field": float(commit)})
+        s.add_edge_unchecked(mt, "has_concept", c)
+        nodes[name] = c
+        return c
+
+    for cat, items in categories.items():
+        proto = cat + "_proto"
+        concept(proto, 0.0, "prototype")
+        protos[cat] = proto
+        for it in items:
+            concept(it["item"], _typicality_to_field(it["score"]), cat)
+            if with_isa:
+                s.add_edge_unchecked(nodes[it["item"]], "causal_influence",
+                                     nodes[proto],
+                                     {"weight": 1.0, "relation": "isa"})
+            item_names.append(it["item"])
+            labels.append(cat)
+    return s, nodes, item_names, labels, protos
+
+
+def isa_parent(s, item_node):
+    """The prototype an item reaches via its is-a (causal_influence) edge — the
+    substrate's EMERGENT structural grouping, read from the graph (not from the
+    literal category attr, so the recoverability score is non-circular w.r.t. the
+    attr)."""
+    for nb in s.neighbours(item_node, "causal_influence"):
+        a = s.node(nb)["attrs"]
+        if a.get("category") == "prototype":
+            return a.get("name")
+    return None
+
+
 def observer(s, name: str, grain: dict):
     """An Observer node carrying a per-dimension GRAIN map {dimension: quantum}.
     Fine grain (small quantum) resolves the graded field into many integer steps;
