@@ -1,0 +1,90 @@
+{
+  "_meta": {
+    "name": "rosch1975_typicality",
+    "purpose": "Human category-typicality baseline for the gated-minting capability suite. Each category lists members with a human typicality RANK (1 = best/most typical example) and a normalized typicality SCORE in [0,1] (1.0 = most typical). This is the ground truth against which the substrate's minted fine-grained axis (and, optionally, LLM embeddings) are scored for Rubric A RQ2 (Spearman rho of system item-order vs human typicality-order).",
+    "source_of_truth": "Eleanor Rosch (1975), 'Cognitive representations of semantic categories', Journal of Experimental Psychology: General 104(3):192-233 — the canonical goodness-of-example / typicality norms. The compression-vs-meaning paper we anchor on (Soffer, Jurafsky, LeCun, Shwartz-Ziv, 'From Tokens to Thoughts', arXiv:2505.17117) digitizes exactly these Rosch (1975) norms (plus Rosch 1973 and McCloskey & Glucksberg 1978) as its released human benchmark.",
+    "provenance_honesty": "This file is a FAITHFUL RECONSTRUCTION of the well-established Rosch (1975) rank orderings, NOT a byte-copy of either Rosch's original rating table or the arXiv:2505.17117 supplement (the paper's CSV supplement was not publicly fetchable at build time, and the primary-source PDFs blocked direct download). The RANK ORDER within each category reproduces the canonical, repeatedly-replicated human ordering (e.g. robin/sparrow most typical birds; penguin/ostrich/bat least; chair/sofa most typical furniture; orange/apple most typical fruit). The SCORE column is a monotonic normalization of the rank (score = 1 - (rank-1)/(n-1)), a stand-in for the exact 1-7 mean rating — it PRESERVES THE ORDER (which is what the Spearman-rho metric consumes) but is NOT the exact mean rating value. When the exact Rosch/arXiv values become available, replace the scores; the ranks should already match. Any capability claim scored off this file must cite it as a reconstruction, not as Rosch's raw data.",
+    "metric_consumed_by": "Rubric A RQ2 — Spearman rank correlation (rho) between a system's induced item ordering (e.g. item-to-set-point distance) and the human typicality RANK here. Published reference points from arXiv:2505.17117: most decoder LLMs rho < 0.2; BERT rho ~ 0.38; humans define the ground truth (rho = 1.0 by construction).",
+    "license": "The underlying norms are published scientific facts (Rosch 1975). This reconstruction is released under the repository's license for research use. Attribution: Rosch (1975), JEP:General 104(3):192-233.",
+    "n_categories": 6,
+    "score_formula": "score = round(1 - (rank-1)/(n-1), 4); rank 1 -> 1.0, rank n -> 0.0"
+  },
+  "categories": {
+    "bird": [
+      {"item": "robin", "rank": 1, "score": 1.0},
+      {"item": "sparrow", "rank": 2, "score": 0.9231},
+      {"item": "bluejay", "rank": 3, "score": 0.8462},
+      {"item": "bluebird", "rank": 4, "score": 0.7692},
+      {"item": "canary", "rank": 5, "score": 0.6923},
+      {"item": "blackbird", "rank": 6, "score": 0.6154},
+      {"item": "dove", "rank": 7, "score": 0.5385},
+      {"item": "lark", "rank": 8, "score": 0.4615},
+      {"item": "parakeet", "rank": 9, "score": 0.3846},
+      {"item": "owl", "rank": 10, "score": 0.3077},
+      {"item": "hawk", "rank": 11, "score": 0.2308},
+      {"item": "duck", "rank": 12, "score": 0.1538},
+      {"item": "penguin", "rank": 13, "score": 0.0769},
+      {"item": "ostrich", "rank": 14, "score": 0.0}
+    ],
+    "fruit": [
+      {"item": "orange", "rank": 1, "score": 1.0},
+      {"item": "apple", "rank": 2, "score": 0.8889},
+      {"item": "banana", "rank": 3, "score": 0.7778},
+      {"item": "peach", "rank": 4, "score": 0.6667},
+      {"item": "pear", "rank": 5, "score": 0.5556},
+      {"item": "grape", "rank": 6, "score": 0.4444},
+      {"item": "strawberry", "rank": 7, "score": 0.3333},
+      {"item": "pineapple", "rank": 8, "score": 0.2222},
+      {"item": "fig", "rank": 9, "score": 0.1111},
+      {"item": "olive", "rank": 10, "score": 0.0}
+    ],
+    "vegetable": [
+      {"item": "pea", "rank": 1, "score": 1.0},
+      {"item": "carrot", "rank": 2, "score": 0.8889},
+      {"item": "bean", "rank": 3, "score": 0.7778},
+      {"item": "spinach", "rank": 4, "score": 0.6667},
+      {"item": "broccoli", "rank": 5, "score": 0.5556},
+      {"item": "corn", "rank": 6, "score": 0.4444},
+      {"item": "potato", "rank": 7, "score": 0.3333},
+      {"item": "onion", "rank": 8, "score": 0.2222},
+      {"item": "mushroom", "rank": 9, "score": 0.1111},
+      {"item": "parsley", "rank": 10, "score": 0.0}
+    ],
+    "furniture": [
+      {"item": "chair", "rank": 1, "score": 1.0},
+      {"item": "sofa", "rank": 2, "score": 0.8889},
+      {"item": "table", "rank": 3, "score": 0.7778},
+      {"item": "dresser", "rank": 4, "score": 0.6667},
+      {"item": "desk", "rank": 5, "score": 0.5556},
+      {"item": "bed", "rank": 6, "score": 0.4444},
+      {"item": "bookcase", "rank": 7, "score": 0.3333},
+      {"item": "lamp", "rank": 8, "score": 0.2222},
+      {"item": "stool", "rank": 9, "score": 0.1111},
+      {"item": "telephone", "rank": 10, "score": 0.0}
+    ],
+    "vehicle": [
+      {"item": "car", "rank": 1, "score": 1.0},
+      {"item": "truck", "rank": 2, "score": 0.8889},
+      {"item": "bus", "rank": 3, "score": 0.7778},
+      {"item": "motorcycle", "rank": 4, "score": 0.6667},
+      {"item": "train", "rank": 5, "score": 0.5556},
+      {"item": "bicycle", "rank": 6, "score": 0.4444},
+      {"item": "boat", "rank": 7, "score": 0.3333},
+      {"item": "airplane", "rank": 8, "score": 0.2222},
+      {"item": "wagon", "rank": 9, "score": 0.1111},
+      {"item": "elevator", "rank": 10, "score": 0.0}
+    ],
+    "weapon": [
+      {"item": "gun", "rank": 1, "score": 1.0},
+      {"item": "pistol", "rank": 2, "score": 0.8889},
+      {"item": "revolver", "rank": 3, "score": 0.7778},
+      {"item": "knife", "rank": 4, "score": 0.6667},
+      {"item": "sword", "rank": 5, "score": 0.5556},
+      {"item": "bomb", "rank": 6, "score": 0.4444},
+      {"item": "spear", "rank": 7, "score": 0.3333},
+      {"item": "club", "rank": 8, "score": 0.2222},
+      {"item": "whip", "rank": 9, "score": 0.1111},
+      {"item": "fist", "rank": 10, "score": 0.0}
+    ]
+  }
+}
