@@ -49,8 +49,11 @@ from domains import reflective_faculty as rf   # noqa: E402
 def main() -> int:
     print("=" * 78)
     print("TRACK 4 — ACCOMMODATION GATE (Rubric B readiness gate; precision/recall)")
-    print("persistent -> mint ; transient -> no mint ; duplicate -> refused ; "
-          "teacher-free")
+    print("accumulated episode-wide predicate-count recurrence (not consecutive "
+          "run length) -> mint; one qualifying appearance/count below threshold "
+          "-> no mint; duplicate -> refused; teacher-free")
+    print("  Exact matched schedules and first-due segments: "
+          "test_recurrence_control.py")
     print("=" * 78)
 
     fx = R.load_fixture()
@@ -79,10 +82,12 @@ def main() -> int:
     print("  G1 %s" % ("PASS" if g1 else "FAIL"))
 
     # ---------------------------------------------------------------- G2 ----- #
-    # TRANSIENT: (a) threshold ABOVE the residual's max persistence over the run ->
-    # nothing mints; (b) a 1-segment run -> nothing can reach threshold 2.
+    # ONE QUALIFYING APPEARANCE / COUNT BELOW THRESHOLD: (a) threshold ABOVE the
+    # episode-wide predicate count reached over the run -> nothing mints; (b) a
+    # one-segment exposure cannot reach threshold 2. Interrupted recurrence is
+    # covered precisely by test_recurrence_control.py, not asserted transient here.
     print("\n" + "-" * 78)
-    print("G2  TRANSIENT residual -> NO MINT (readiness gate holds; not gap-fill)")
+    print("G2  ONE QUALIFYING APPEARANCE / COUNT BELOW THRESHOLD -> NO MINT")
     print("-" * 78)
     spy2a = R.AskSpy()
     probe = R.run_minting(cat, items, R.FINE, mint_after_quanta=999, max_segments=5,
@@ -138,7 +143,7 @@ def main() -> int:
     if not g3:
         predicted.add("duplicate_gap")            # (only if the guard failed)
     pr = M.gate_precision_recall(predicted, gold_should_mint)
-    print("  events: persistent(gold=mint), transient(gold=no), duplicate(gold=no)")
+    print("  events: accumulated recurrence(gold=mint), one exposure(gold=no), duplicate(gold=no)")
     print("  predicted mints: %s" % sorted(predicted))
     print("  precision=%.2f recall=%.2f f1=%.2f (tp=%d fp=%d fn=%d)"
           % (pr["precision"], pr["recall"], pr["f1"], pr["tp"], pr["fp"], pr["fn"]))
@@ -175,8 +180,8 @@ def main() -> int:
     print("\n" + "=" * 78)
     print("CLAIMS")
     print("=" * 78)
-    rows = [("G1 persistent -> mint", g1),
-            ("G2 transient -> no mint (readiness gate)", g2),
+    rows = [("G1 accumulated recurrence -> mint", g1),
+            ("G2 one appearance / count below threshold -> no mint", g2),
             ("G3 duplicate -> refused (over-mint guard)", g3),
             ("G4 gate precision = recall = 1.0", g4),
             ("G5 readiness latency (mints at threshold)", g5),
@@ -184,12 +189,13 @@ def main() -> int:
     for name, ok in rows:
         print("  %-46s %s" % (name, "PASS" if ok else "FAIL"))
     allpass = all(ok for _, ok in rows)
-    verdict = ("TRACK 4 PASS: the minting gate is a genuine accommodation gate — a "
-               "persistent (recurring) residual mints a new axis; a transient or "
-               "too-brief one does not; a duplicate is refused by the over-minting "
-               "guard; precision=recall=1.0; the mint fires only once integer "
-               "persistence reaches the readiness threshold; teacher-free. This is "
-               "Carey's readiness-gated conceptual change, in discrete quanta."
+    verdict = ("TRACK 4 PASS: the minting gate is a genuine accommodation gate — an "
+               "accumulated episode-wide predicate count mints a new axis at readiness; "
+               "one qualifying appearance/count below threshold does not; a duplicate "
+               "is refused by the over-minting guard; precision=recall=1.0; and the "
+               "run is teacher-free. Exact continuous and interrupted schedules plus "
+               "their first-due segments are locked in test_recurrence_control.py. "
+               "This is Carey's readiness-gated conceptual change, in discrete quanta."
                if allpass else
                "TRACK 4 HONEST RESULT: see failing claim(s) above.")
     print("\nVERDICT: %s" % verdict)

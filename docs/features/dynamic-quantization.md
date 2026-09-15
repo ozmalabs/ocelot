@@ -97,3 +97,14 @@ frame invariant are documented in depth across `CLAUDE.md`'s own body text
 For the underlying engine/rule-matching mechanics this loop depends on (the
 `run_rules` fixpoint itself, incremental match, predicate retraction), see
 `docs/research/engine_substrate/`.
+
+
+## Recurring residuals and native recurrence
+
+For trajectory-level accommodation, `domains/minting_train_of_thought.py` only
+projects each completed aperture residual into immutable graph evidence. The
+`minting_recurrence_ledger` seed owns the episode-scoped predicate count,
+threshold comparison, once-only offer, and inspectable terminal provenance.
+`shape_decode_loop` still exclusively decides decode/recognition/deduplication
+and whether the offered residual mints a `CapabilityAxis`; the Python adapter
+neither schedules an offer nor creates an axis.

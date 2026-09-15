@@ -1179,7 +1179,10 @@ def learn_term_for_concern(agent, concern_keys) -> dict[str, Any]:
 # mints. All graph-native: Covers/AntiUnifyWitness are Rust Terms; the mint is a
 # graph mutation; no Python decision-if over graph state, no LLM.
 # ---------------------------------------------------------------------------
-_SHAPE_DECODE_LOOP_SEEDS = ("math_capability_shapes", "self_design_axis", "shape_decode_loop")
+_SHAPE_DECODE_LOOP_SEEDS = (
+    "math_capability_shapes", "self_design_axis", "shape_decode_loop",
+    "minting_recurrence_ledger",
+)
 
 
 def _installed_seed_ids(sub) -> set:
@@ -4524,17 +4527,18 @@ def _compose_experiment_rule(agent, keys, rels) -> dict[str, Any]:
         match = [["ag", "observed", "obs"], ["obs", "minted", "axis"]]
         where_items = [
             Eq(Attr(V("axis"), "is_axis"), L(1.0)),
-            Eq(Attr(V("axis"), "capability_keys"), L([str(k) for k in keys])),
+            # The framed self-experiment concern authors a standing consumer for a
+            # later unexplained residual. The rule already requires the observed
+            # axis to be induced and untested; constraining it to the bootstrap
+            # concern key would make that standing consumer unreachable.
             Not(Exists(Nb(V("axis"), "tested_by"), "_i", L(True))),   # fixpoint guard
             # induce_concern writes `description` in PYTHON, right after the SAME run_rules()
             # call that can mint this axis returns — so a freshly-minted axis has no
             # description yet WITHIN that call. Wait for it (a later run_rules() call, once
             # induce_concern has returned) so the hypothesis text is never a premature None.
             Not(Eq(Attr(V("axis"), "description"), L(None))),
-            # Only mint for axes whose concern shape includes 'test'. Comprehend-first
-            # promoted concerns (reply_fix) mint axes with comprehend/* but no test predicate.
-            Gt(Sum(Attr(V("axis"), "residual_predicates"), "p",
-                   Ite(Eq(V("p"), L("test")), L(1), L(0))), L(0.0)),
+            # The standing experiment capability consumes a later induced residual;
+            # it is not limited to duplicating the bootstrap concern's predicate set.
         ]
         hyp_term = Attr(V("axis"), "description")     # the hypothesis IS the axis's own residual description
         game_term = L("")
@@ -4604,14 +4608,36 @@ def _compose_experiment_rule(agent, keys, rels) -> dict[str, Any]:
                 Ite(Gte(StrIdx(Attr(node_t, "where_signature_json"), V("w")), L(0)), L(1), L(0)))
             candidates = Filter(NodesOfType("SeedSummary"), "s", Eq(Attr(V("s"), "skippable"), L(1.0)))
             best = Argmax(candidates, "s", overlap(V("s")), None)
-            struct_best = Argmax(candidates, "s2", struct_overlap(V("s2")), None)
-            struct_skip_id_expr = LetT("sbest", struct_best,
-                Ite(Eq(V("sbest"), L(None)), L(""),
-                    Ite(Gt(struct_overlap(V("sbest")), L(0.0)), Attr(V("sbest"), "seed_id"), L(""))))
-            skip_id_expr = LetT("best", best,
-                Ite(Eq(V("best"), L(None)), struct_skip_id_expr,
-                    Ite(Gt(overlap(V("best")), L(0.0)), Attr(V("best"), "seed_id"), struct_skip_id_expr)))
-            skip_seeds_expr = LetT("skip_id", skip_id_expr,
+            def graph_seed_skip_id_expr(suffix: str):
+                """Emit the graph seed's primary-first/fallback AST exactly.
+
+                The two deferred delta fields must each carry their own Term:
+                `skip_seeds` wraps the selected id in JSON while `skip_seed_id`
+                exposes it directly.  The graph-native composer uses distinct
+                a/b-scoped bindings for those terms; retaining that concrete
+                shape keeps the read-only Python oracle structurally comparable
+                without changing the held selection policy.
+                """
+                primary_name = "primary_seed_" + suffix
+                structural_name = "struct_seed_" + suffix
+                structural_candidate = "s2" + suffix
+                primary_id = LetT("best", best,
+                    Ite(Eq(V("best"), L(None)), L(""),
+                        Ite(Gt(overlap(V("best")), L(0.0)), Attr(V("best"), "seed_id"), L(""))))
+                structural_candidates = Filter(
+                    NodesOfType("SeedSummary"), structural_candidate,
+                    Eq(Attr(V(structural_candidate), "skippable"), L(1.0)))
+                structural_best = Argmax(structural_candidates, structural_candidate,
+                                          struct_overlap(V(structural_candidate)), None)
+                structural_id = LetT(structural_name, structural_best,
+                    Ite(Eq(V(structural_name), L(None)), L(""),
+                        Ite(Gt(struct_overlap(V(structural_name)), L(0.0)),
+                            Attr(V(structural_name), "seed_id"), L(""))))
+                return LetT(primary_name, primary_id,
+                    Ite(Eq(V(primary_name), L("")), structural_id, V(primary_name)))
+
+            skip_id_expr = graph_seed_skip_id_expr("b")
+            skip_seeds_expr = LetT("skip_id", graph_seed_skip_id_expr("a"),
                 Ite(Eq(V("skip_id"), L("")), L("[]"),
                     StrCat([L('["'), V("skip_id"), L('"]')])))
             delta_attrs["skip_seeds"] = {"__term__": skip_seeds_expr}

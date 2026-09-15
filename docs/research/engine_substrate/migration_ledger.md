@@ -711,3 +711,15 @@ attr-enumeration primitive). The agent's goal-pressure and action-choice — its
 few small Terms + one Rule. Pattern holds every cluster: read → strip glue (dissolves) → author the one
 formula/decision → parity-check → ledger; when the DSL genuinely can't express it, mint the primitive
 in Rust (not Python) and flag what's still missing rather than faking it.
+
+
+## Cluster: minting recurrence / accommodation
+
+| Python faculty | graph-native form | status |
+|---|---|---|
+| episode-wide predicate occurrence ledger | `MintingRecurrenceEpisode` + immutable `ResidualSegmentEvidence` + `PredicateRecurrenceCandidate`; persistence is `Count(supported_by_segment)` | **parity GREEN** |
+| threshold/due selection and once-only handoff | `mrl_offer_due_once` creates one native `Observation` only after native `Gte(persistence, mint_after_quanta)` | **parity GREEN** |
+| terminal/mint provenance | `mrl_record_offer_terminal` and `mrl_record_mint_result` retain offer status and candidate/episode→axis links | **parity GREEN** |
+| aperture residual extraction / evidence emission | Python adapter remains: it reads trajectory residuals and posts immutable facts, then reads results | adapter boundary |
+
+The policy is explicitly retained: one invocation is one episode; tuple witnesses project to a predicate-only candidate; counts accumulate across intervening absences; each candidate gets one offer. `shape_decode_loop` remains the sole recognition/deduplication/axis-mint authority. The held-out semantic consumer proves that a predicate-keyed axis is not itself sufficient for downstream use: only a matching graph-resident `bind(ITEM,SLOT)` witness licenses the SLOT operation. See `MINTING_RECURRENCE_LEDGER_PREREG.md` and `MINTING_RECURRENCE_LEDGER_RESULTS.md`.

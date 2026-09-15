@@ -296,12 +296,12 @@ def test_test_alone_structurally_matches_python_oracle():
     assert rules_semantically_equal(graph_rule, oracle_rule)
 
 
-def test_minted_rule_is_scoped_to_the_requested_capability_axis():
-    """A composer request must not author a rule that tests some other live gap.
+def test_minted_rule_consumes_a_later_induced_capability_axis():
+    """A graph-authored standing consumer tests a later, qualifying live gap.
 
-    The tag is inserted into the graph-authored predicate by the meta-rule's
-    RewriteTreeNodes term; this is a behavioral gate for that dynamic compile,
-    not merely an oracle-shape comparison.
+    The bootstrap concern composes the capability. A separate axis that fails
+    the rule's declared ``is_axis`` eligibility must not create an experiment;
+    a later qualified, differently-keyed axis must still be consumed.
     """
     ag = _fresh_agent_with_lexicon()
     requested = "scope_requested"
@@ -309,14 +309,32 @@ def test_minted_rule_is_scoped_to_the_requested_capability_axis():
     res = rf.ground_concern(ag, [requested])
     assert res.get("served_by") == "graph"
 
-    wrong = _axis(ag, "scope_other", ["test"])
-    ag.s.set_attr(wrong, "description", "a different capability gap")
+    non_qualifying = _axis(ag, "scope_non_qualifying", ["unrelated"])
+    ag.s.set_attr(non_qualifying, "is_axis", 0.0)
+    ag.s.set_attr(non_qualifying, "description", "an unrelated non-axis gap")
     obs = ag.s.add_node("Obs", {})
     ag.inner.add_edge_unchecked(ag.agent, "observed", obs)
-    ag.inner.add_edge_unchecked(obs, "minted", wrong)
+    ag.inner.add_edge_unchecked(obs, "minted", non_qualifying)
+    experiment_ids_before = {str(node) for node in ag.inner.nodes("Experiment")}
     ag.inner.run_rules()
 
-    assert list(ag.inner.neighbours(wrong, "tested_by")) == []
+    assert list(ag.inner.neighbours(non_qualifying, "tested_by")) == []
+    assert {str(node) for node in ag.inner.nodes("Experiment")} == experiment_ids_before
+
+    later = _axis(ag, "scope_other", [])
+    ag.s.set_attr(later, "description", "a different capability gap")
+    ag.inner.add_edge_unchecked(obs, "minted", later)
+    ag.inner.run_rules()
+
+    tested_by = list(ag.inner.neighbours(later, "tested_by"))
+    assert len(tested_by) == 1
+    assert list(ag.inner.neighbours(non_qualifying, "tested_by")) == []
+    experiment_ids_after = {str(node) for node in ag.inner.nodes("Experiment")}
+    assert experiment_ids_after - experiment_ids_before == {str(tested_by[0])}
+    ag.inner.run_rules()
+    assert list(ag.inner.neighbours(later, "tested_by")) == tested_by
+    assert list(ag.inner.neighbours(non_qualifying, "tested_by")) == []
+    assert {str(node) for node in ag.inner.nodes("Experiment")} == experiment_ids_after
 
 
 # ---------------------------------------------------------------------------

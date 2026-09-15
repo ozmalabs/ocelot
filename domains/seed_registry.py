@@ -593,6 +593,15 @@ REGISTRY.register(Seed(
 ))
 
 REGISTRY.register(Seed(
+    id="minting_recurrence_ledger", version="1.0.0",
+    depends_on=("shape_decode_loop",),
+    installer=_installer_from_manifest("minting_recurrence_ledger"),
+    description="Episode-scoped native recurrence ledger: immutable residual "
+                "evidence, predicate-only candidates, derived persistence, one "
+                "native mint offer, and durable terminal/mint provenance.",
+))
+
+REGISTRY.register(Seed(
     id="continuous_pose", version="1.0.0",
     depends_on=("shape_decode_loop",),
     installer=_installer_from_manifest("continuous_pose"),
