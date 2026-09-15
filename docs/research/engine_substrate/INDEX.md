@@ -82,6 +82,8 @@ must be represented as explicit transitions.
 | [`llm_touchpoint_audit.md`](llm_touchpoint_audit.md) | LLM-touchpoint audit + the `OZMA_NO_LLM` hard switch |
 | [`loop_to_graph_and_frontier_gap.md`](loop_to_graph_and_frontier_gap.md) | Loop reasoning → graph + the frontier-gap fixer |
 | [`manifold_collapse.md`](manifold_collapse.md) | Admissibility Manifold Collapse |
+| [`MINTING_RECURRENCE_LEDGER_PREREG.md`](MINTING_RECURRENCE_LEDGER_PREREG.md) | Minting recurrence ledger — policy/schema/rule-order preregistration |
+| [`MINTING_RECURRENCE_LEDGER_RESULTS.md`](MINTING_RECURRENCE_LEDGER_RESULTS.md) | Minting recurrence ledger — native accounting and semantic-counterfactual results |
 | [`migration_ledger.md`](migration_ledger.md) | Migration ledger — Python faculty → graph data (the agent owns this) |
 | [`migration_plan.md`](migration_plan.md) | The Migration: Python agent → graph-native, agent-driven |
 | [`native_backoff.md`](native_backoff.md) | Native back-off — the LAST Python piece of the cognition, migrated to graph Term-trees |

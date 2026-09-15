@@ -50,7 +50,8 @@ import llm_harness as LH                # noqa: E402
 
 def main() -> int:
     print("=" * 78)
-    print("TRACK 5 — VALIDITY KEYSTONES (Potemkin) + UNIFIED SCORECARD")
+    print("TRACK 5 — VALIDITY KEYSTONES (unreachable-threshold boundary) + "
+          "UNIFIED SCORECARD")
     print("=" * 78)
 
     fx = R.load_fixture()
@@ -58,8 +59,8 @@ def main() -> int:
 
     # ---------------------------------------------------------------- K1/K2/K3 #
     print("\n" + "-" * 78)
-    print("K1-K3  POTEMKIN: surface residual present, but the persistence gate "
-          "refuses the non-recurring case while minting the genuine one")
+    print("K1-K3  UNREACHABLE-THRESHOLD BOUNDARY: surface residual is present, "
+          "but no mint occurs before the configured count is reachable")
     print("-" * 78)
 
     # GENUINE: recurring residual, reachable threshold -> mints.
@@ -67,9 +68,10 @@ def main() -> int:
                             max_segments=6)
     genuine_minted = [e["predicate"] for e in genuine["mint_events"] if e["minted"]]
 
-    # POTEMKIN: same surface residual EVERY segment, but threshold unreachable within
-    # the run -> a naive 'any-residual-this-segment -> mint' gate would fire on all of
-    # them; the real persistence gate mints none. (Also covers the 1-segment case.)
+    # BOUNDARY CONTROL: the same surface residual may be present, but threshold 99
+    # is unreachable in three segments. This checks threshold enforcement against a
+    # naive any-residual gate; it does NOT claim an interrupted recurrence is rejected.
+    # The schedule-matched recurrence control is test_recurrence_control.py.
     potemkin = R.run_minting("bird", items, R.FINE, mint_after_quanta=99,
                              max_segments=3)
     naive_would_mint = set(potemkin["residual_persistence"].keys())   # surface signal
@@ -77,7 +79,7 @@ def main() -> int:
                           if e["minted"])
 
     print("  GENUINE (recurring, thr=2): real gate minted %s" % genuine_minted)
-    print("  POTEMKIN (thr unreachable in 3 segs):")
+    print("  UNREACHABLE THRESHOLD (3 segments, threshold=99):")
     print("     naive 'any-residual' gate WOULD mint: %s" % sorted(naive_would_mint))
     print("     real persistence gate minted        : %s (caught)"
           % sorted(real_minted_pot))
@@ -85,7 +87,7 @@ def main() -> int:
     k1 = len(naive_would_mint) >= 1 and len(real_minted_pot) == 0
     k2 = len(genuine_minted) >= 1
     k3 = real_minted_pot < naive_would_mint or (not real_minted_pot and naive_would_mint)
-    print("  K1 potemkin caught (naive would mint, real mints 0): %s" % k1)
+    print("  K1 threshold boundary caught (naive would mint, real mints 0): %s" % k1)
     print("  K2 genuine still mints: %s" % k2)
     print("  K3 discrimination (real subset of naive): %s" % k3)
 
@@ -141,7 +143,7 @@ def main() -> int:
     print("\n" + "=" * 78)
     print("CLAIMS")
     print("=" * 78)
-    rows = [("K1 potemkin caught (surface-pass refused)", k1),
+    rows = [("K1 unreachable threshold caught (surface present, real mints 0)", k1),
             ("K2 genuine gap still mints", k2),
             ("K3 discrimination (real subset of naive)", k3),
             ("K4 LLM arm off / teacher-free", k4),
@@ -149,20 +151,22 @@ def main() -> int:
     for name, ok in rows:
         print("  %-46s %s" % (name, "PASS" if ok else "FAIL"))
     allpass = all(ok for _, ok in rows)
-    verdict = ("TRACK 5 PASS: the suite is VALID — a surface residual that does not "
-               "recur is refused by the persistence gate (a naive 'any-residual' gate "
-               "would mint it), while the genuine recurring gap still mints, so the "
-               "T2/T4 positives are not potemkin passes; the LLM comparison arm is off "
-               "by default and contacts nothing (teacher-free); the unified scorecard "
-               "places the substrate beside the human baseline and the published LLM "
-               "reference, with the substrate beating the BERT typicality bar."
+    verdict = ("TRACK 5 PASS: the suite establishes the unreachable-threshold "
+               "boundary — a surface residual does not mint before its configured "
+               "episode-wide count can reach readiness, while the genuine recurring "
+               "gap still mints. This control does not test interrupted recurrence; "
+               "the schedule-matched proof is test_recurrence_control.py. The LLM "
+               "comparison arm is off by default and contacts nothing (teacher-free); "
+               "the unified scorecard places the substrate beside the human baseline "
+               "and the published LLM reference, with the substrate beating the BERT "
+               "typicality bar."
                if allpass else
                "TRACK 5 HONEST RESULT: see failing claim(s) above.")
     print("\nVERDICT: %s" % verdict)
     print("=" * 78)
 
     summary = {"track": 5,
-               "potemkin": {"naive_would_mint": sorted(naive_would_mint),
+               "threshold_boundary": {"naive_would_mint": sorted(naive_would_mint),
                             "real_minted": sorted(real_minted_pot),
                             "genuine_minted": genuine_minted},
                "llm_arm_off": k4,
