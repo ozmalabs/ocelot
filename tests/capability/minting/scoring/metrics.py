@@ -266,17 +266,37 @@ def bootstrap_ci(values: Sequence[float], *, iters: int = 2000,
 
 # Published LLM reference points from arXiv:2505.17117 (for side-by-side reporting).
 #
-# HONESTY / PERISHABILITY CAVEAT: these are ACCESSIBLE-MODEL, embedding-based
-# snapshots circa 2025 — the paper needs a model's *embeddings*, so it could NOT
-# include closed frontier models (no GPT-5/Claude). A newer/larger model would very
-# likely RAISE the RQ2 typicality rho toward the human ceiling, so "the substrate's
-# rho beats these" is a snapshot, NOT the load-bearing claim and NOT a permanent
-# scoreboard. The DURABLE, architecture-level claims are: T3 (a different COMPRESSION
-# MECHANISM — the paper's own training-dynamics show LLM over-compression deepens with
-# scale, not lifts), T4 (readiness-gated ACCOMMODATION — coining a new axis on
-# recurring evidence, which a frozen-weight model cannot do at inference; it needs
-# retraining), and T5 (the gate DISCRIMINATES genuine vs surface change). Treat the
-# rho contest as the weakest/most-perishable line and the mechanism claims as the point.
+# HONESTY / PERISHABILITY CAVEAT: the RQ1/RQ2 numbers are ACCESSIBLE-MODEL,
+# embedding-based snapshots circa 2025 — the paper needs a model's *embeddings*, so it
+# could NOT include closed frontier models. A newer/larger model raises the RQ2
+# typicality rho toward the human ceiling, so "the substrate's rho beats these" is a
+# snapshot, NOT the load-bearing claim.
+#
+# FRONTIER UPDATE (Sept 2026 — GPT-6 Astra, Claude Fable 5.1): frontier models
+# DEMONSTRABLY DO build new representations on the fly. ARC Prize's own analysis of
+# GPT-6 Astra on ARC-AGI-3 reports it "turn[s] unfamiliar environments into compact
+# symbolic world models ... represented game mechanics as logical rules and developed
+# its own domain-specific language shorthand," and in the PRO-LONG harness it WROTE
+# game-specific code libraries. So the thesis is NOT "LLMs cannot do this." The thesis
+# is that their ARCHITECTURE BOUNDS it and the COST is orders of magnitude higher —
+# different IN KIND:
+#   · PERSISTENCE CLASS. Astra's new representation lives in the context window
+#     (visible notes) or opaque per-session reasoning state and EVAPORATES at session
+#     end; its weights are frozen. The substrate mints a PERSISTENT CapabilityAxis node
+#     into the graph that survives and is reused. Astra re-derives per session; the
+#     substrate accretes. Acquiring a WEIGHT-level new axis still needs retraining.
+#   · HARNESS/MEMORY DEPENDENCE. Astra's 99.9% on ARC-AGI-3 is with the Provider
+#     Adapter harness (provider-managed opaque state); under the neutral Standard
+#     harness (the apples-to-apples condition ARC Prize says a future AGI should solve,
+#     closest to the substrate's no-hidden-state, teacher-free setting) it is 62.7%.
+#     The gap is memory handling, not raw reasoning (ARC Prize, 2026-09-03).
+#   · COST CLASS (the crux). Astra's ARC-AGI-3 runs cost ~$19K (Provider Adapter,
+#     99.9%) to ~$26K (Standard, 62.7%) PER benchmark; ARC Prize prices the human
+#     brain-energy baseline at ~0.067 CENTS per game attempted. The substrate mints a
+#     new axis in ~55 native graph ops, no GPU. Many orders of magnitude — different in
+#     kind, not a factor-of-N race. (See Track 6.)
+# The durable claims are therefore PERSISTENCE + COST CLASS, sharpened by the frontier
+# evidence rather than refuted by it.
 LLM_REFERENCE = {
     "rq2_spearman_decoder_typical": 0.15,   # most decoder LLMs fall below ~0.15-0.2
     "rq2_spearman_bert": 0.38,              # BERT static-layer typicality rho
@@ -284,7 +304,24 @@ LLM_REFERENCE = {
     "rq1_ami_encoder_peak": 0.60,           # encoder models peak
     "_provenance": ("arXiv:2505.17117 — accessible/embedding-based models, circa 2025 "
                     "(no closed frontier models). A newer model would likely raise RQ2 "
-                    "rho; the durable claims are architectural (T3/T4/T5), not the rho "
-                    "contest."),
+                    "rho; the durable claims are architectural (persistence + cost "
+                    "class), not the rho contest."),
+    "_frontier_2026": {
+        "gpt6_astra_arcagi3_provider_adapter": {"score": 0.999, "cost_usd": 19000,
+            "note": "provider-managed opaque reasoning state between requests"},
+        "gpt6_astra_arcagi3_standard_harness": {"score": 0.627, "cost_usd": 26098,
+            "note": "neutral harness; model keeps only notes it chooses — closest to "
+                    "the substrate's teacher-free no-hidden-state setting"},
+        "human_brain_energy_per_game_usd": 0.00067,
+        "on_the_fly_representation": "Astra builds compact symbolic world-models / DSL "
+            "shorthand in-context (ARC Prize 2026-09-03) — genuine, but session-bound "
+            "context/opaque-state, not a persistent weight/graph change",
+        "source": "arcprize.org/blog/astra ; openai.com/index/gpt-6-astra ; "
+                  "released Sept 2026 (Astra) / Claude Fable 5.1 Sept 1 2026",
+        "caveat": "cited published figures for framing; not re-measured in-repo; ARC "
+                  "Prize explicitly does NOT claim AGI and notes ARC-AGI-3 is bounded/"
+                  "closed-ended, not open-ended representational growth",
+    },
 }
+
 
