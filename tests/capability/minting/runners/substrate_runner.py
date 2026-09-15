@@ -266,3 +266,54 @@ def run_minting(category: str, items: list[dict], grain: dict, *,
 # axis and carries no gradation here.)
 FINE = {"dynamical:commitment": 0.125, "dynamical:valence": 1.0}
 COARSE = {"dynamical:commitment": 4.0, "dynamical:valence": 4.0}
+
+
+# --------------------------------------------------------------------------- #
+#  COST INSTRUMENTATION (Track 6) — read the substrate's OWN native compute
+#  counters around a minting run. These are hardware-independent op-counts (the
+#  substrate's native "cognitive load = countable quantity" units): node/edge
+#  inserts, admissibility checks, rule EVALUATIONS, cache hits/misses. No GPU, no
+#  matmul, no model load — the cost of coining a new dimension is a small, bounded
+#  number of graph operations. Wall-clock is captured too, but only as a SECONDARY,
+#  hardware-dependent figure; the native counters are the primary, portable unit.
+# --------------------------------------------------------------------------- #
+_COST_KEYS = ("nodes_inserted_total", "edges_inserted_total",
+              "admissibility_checks_total", "evaluations_total",
+              "cache_neighbours_hits", "cache_neighbours_misses",
+              "cache_filter_hits", "cache_filter_misses")
+
+
+def _counter_delta(before: dict, after: dict) -> dict:
+    return {k: int(after.get(k, 0)) - int(before.get(k, 0)) for k in _COST_KEYS}
+
+
+def capture_minting_cost(category: str, items: list, grain: dict, *,
+                         mint_after_quanta: int = 2, max_segments: int = 6,
+                         turns_per_segment: int = 3) -> dict:
+    """Run a full minting loop on `category` and return its COST in the substrate's
+    native counters (delta over the run) plus wall-clock seconds and the number of
+    axes minted. The build phase is EXCLUDED from the measured window (counters are
+    cleared after the graph is built, so the cost is the THINKING+MINTING, not the
+    seed I/O). Teacher-free (an ask-spy verifies 0 external calls). No GPU/model."""
+    import time
+    s, nodes, proto = build_category(category, items)
+    obs = observer(s, "cost_" + category, grain)
+    spy = AskSpy()
+    s.counters_clear()
+    before = s.counters()
+    t0 = time.perf_counter()
+    res = mtot.run_minting_train_of_thought(
+        s, topic=proto, setpoint_observer=obs, setpoint_topic=proto,
+        width0=2, turns_per_segment=turns_per_segment, max_segments=max_segments,
+        mint_after_quanta=mint_after_quanta, on_unknown="return", ask_fn=spy)
+    wall = time.perf_counter() - t0
+    after = s.counters()
+    delta = _counter_delta(before, after)
+    delta_total = sum(delta.values())
+    return {"category": category, "counters": delta,
+            "counter_ops_total": delta_total,
+            "wall_seconds": wall,
+            "minted_axes": res["minted_axes"],
+            "n_minted": len(res["minted_axes"]),
+            "ask_spy": len(spy.calls),
+            "rule_count": s.rule_count()}

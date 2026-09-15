@@ -78,6 +78,32 @@ emergent geometric feat the LLM ~0.55 represents.
 - The saturation limit in T2 (commitment half_width=4) and the structural-vs-emergent
   asymmetry in T1 are stated, not hidden.
 
+## What a newer LLM would (and would not) change — read before citing the ρ contest
+
+The RQ2 reference points (decoder ~0.15, BERT ~0.38) and the RQ1 ~0.55 are
+**accessible-model, embedding-based snapshots circa 2025** — the paper needs a model's
+*embeddings*, so it excludes closed frontier models (no GPT-5/Claude). A newer/larger
+model would very likely **raise** the RQ2 typicality ρ toward the human ceiling.
+
+So "substrate ρ 0.89 beats BERT 0.38" is a **snapshot, not a permanent scoreboard**, and
+it is **not** the load-bearing claim. This suite is **architecture validation**, not a
+leaderboard win. The perishable line is the ρ contest; the durable, architecture-level
+claims are:
+
+- **T3 — a different compression *mechanism*.** LLMs sit at the low-ℒ over-compressed
+  floor by training pressure, and the paper's own training-dynamics analysis shows this
+  *deepens* with scale/training, not lifts. The substrate's ℒ moving 2.57→4.56 by
+  *minting a new axis on demand* is a different mechanism, not a point on that curve.
+- **T4 — readiness-gated accommodation.** Coining a new dimension only on recurring
+  evidence (and refusing surface-only signals) is representational change *at inference*.
+  A frozen-weight model cannot do this regardless of size — it requires retraining. This
+  is a cost-*class* distinction (see Track 6), not a benchmark score.
+- **T5 — the gate discriminates** genuine representational change from surface presence.
+
+Bottom line: read the ρ number as "the substrate is in the human-fidelity regime while
+accessible LLMs of that era were not," not as "we beat LLMs at typicality forever." The
+mechanism claims (T3/T4/T6) are what a bigger model does not erase.
+
 ## Guardrails
 
 Additive only. `.so` md5 `7efe75eba05b006cafd15dbb4b7da246` frozen; no protected-file
