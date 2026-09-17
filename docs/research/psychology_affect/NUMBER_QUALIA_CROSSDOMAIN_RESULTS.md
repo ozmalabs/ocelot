@@ -77,6 +77,39 @@ author from held primitives, verify-gated, regression-free — is identical acro
 grows readings not just within graphs but across domains, by recombining each domain's held
 primitives under the one feel-then-verify loop.
 
+**Domain as a first-class object (`track_j5`) — the decision spine written once.** track_j4 argued
+the loop is domain-general by hand-instantiating it twice; `track_j5_domain_registry.py` *factors
+it out*. The shared control-flow **spine** (solver-free felt read → verify + score → confirmed /
+caught-wrong → search the repertoire for a verify-confirmed rescuing reading → first-hit distrust
+vs repeat → author from held primitives → verify-gated adopt) is written **once** as
+`domain_verify_then_update(domain, obj, ...)`, driven by a lightweight `Domain` dataclass supplying
+the four pieces the spine needs (coordinate extractor, solver-free default read, exact verify,
+authorable readings) plus a scorer and a live repertoire. The graph and sequence domains are
+registered as `GRAPH_DOMAIN` / `SEQUENCE_DOMAIN` built from the *existing* functions (no logic
+duplicated). A genuinely **new third domain** — `RESIDUE_DOMAIN` (residue-run partition over
+integer lists: feel parity-runs, verify mod-3 runs, author a `mod_k_runs` reading composed from
+the held modulus + run-boundary primitives) — plugs into the same loop with **no new loop code**,
+only a registration. Claims (all pass, run by author): E1 graph reproduced through the generic
+loop (path confirmed, barbell rescued); E2 sequence reproduced (polynomial confirmed, geometric
+abstain→repeat→author `log_degree`); E3 the new residue domain plugs in with no new loop code
+(confirmed / no-rescue→repeat→author `mod3_runs`); E4 felt reads solver-free (SolverSpy=0), verify
+the separate step; E5 the generic loop's `(reason, reading)` **matches** the existing hand-written
+loops on both a **confirmed** path (graph path-7, sequence n²) and a **rescue** path (graph barbell
+→ `(rescued_by_reading, spanned_k0)` in both loops; sequence 2ⁿ repeat → `log_degree` in both).
+
+Scope stated honestly: the generic loop reproduces the shared **decision spine**, not the graph
+loop's substrate **side-effects** — Shape-node minting, the `field_valence<0` repel, and held-state
+repeat-detection stay in `verify_then_update`; the generic loop takes the first-vs-repeat
+distinction as an explicit `prior_no_rescue` flag (the memory backend owns that state) and uses a
+deliberately coarser reason vocabulary (a first no-rescue reports `abstained`, not
+`no_rescue_minted_antishape`). The two existing loops and every function the tracks call are
+untouched — track_j3 (5/5) and track_j4 (5/5) still pass. The conceptualizer audit stays green: the
+`Domain` layer is pure Python plumbing over the identical felt-read/verify structure and relocates
+no decision into Python (the graph shape-field decision remains the composed `net_valence_term`
+graph Term). Added `Domain` / `domain_verify_then_update` + `GRAPH_DOMAIN` / `SEQUENCE_DOMAIN` /
+`RESIDUE_DOMAIN` registrations to `number_runner.py`, and `track_j5_domain_registry.py`. The
+pipeline's growth loop is now written once and open to any domain that supplies the four pieces.
+
 ## The claim
 
 A structural "isolation / prickliness" coordinate — the felt axis that makes the number
