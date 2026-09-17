@@ -1,0 +1,57 @@
+# Confidential Space VM metadata only. Replace every REPLACE_* value during reviewed deployment.
+# Do not put truth, credentials, tokens, private keys, or signed assertions here.
+tee-image-reference=REPLACE_TEE_IMAGE_REFERENCE
+tee-container-log-redirect=true
+tee-env-P5R0_AUTHORITY_JSON={"authority_id":"REPLACE","key_id":"REPLACE","public_key":"REPLACE","public_key_digest":"REPLACE","schema":"P5R0PublicAuthorityV4","transport_attestation":{"audience":"https://sts.googleapis.com","event":"confidential_space_attestation","provider":"REPLACE_WIP_PROVIDER","schema":"P5R0AuthorityTransportV1"}}
+tee-env-P5R0_ATTESTATION_AUDIENCE=https://sts.googleapis.com
+tee-env-P5R0_WIP_PROVIDER=//iam.googleapis.com/projects/REPLACE_PROJECT_NUMBER/locations/global/workloadIdentityPools/REPLACE_POOL/providers/REPLACE_PROVIDER
+tee-env-P5R0_EXPECTED_PROJECT_NUMBER=REPLACE_PROJECT_NUMBER
+tee-env-P5R0_EXPECTED_PROJECT_ID=REPLACE_PROJECT_ID
+tee-env-P5R0_EXPECTED_ZONE=REPLACE_ZONE
+tee-env-P5R0_EXPECTED_IMAGE_DIGEST=sha256:REPLACE_EXACT_64_HEX_DIGEST
+tee-env-P5R0_EXPECTED_DEBUG_STATE=disabled-since-boot
+tee-env-P5R0_EXPECTED_TEE=CONFIDENTIAL_SPACE
+tee-env-P5R0_EXPECTED_HARDWARE_MODEL=GCP_AMD_SEV
+tee-env-P5R0_EXPECTED_WORKLOAD=evaluator
+tee-env-P5R0_EXPECTED_SECURE_BOOT=true
+tee-env-P5R0_CLAIM_AUDIENCE=aud
+tee-env-P5R0_CLAIM_NONCE=eat_nonce
+tee-env-P5R0_CLAIM_ISSUED_AT=iat
+tee-env-P5R0_CLAIM_EXPIRES_AT=exp
+tee-env-P5R0_CLAIM_ISSUER=iss
+tee-env-P5R0_CLAIM_SUBJECT=sub
+tee-env-P5R0_CLAIM_IMAGE_DIGEST=submods.container.image_digest
+tee-env-P5R0_CLAIM_PROJECT_NUMBER=submods.gce.project_number
+tee-env-P5R0_CLAIM_PROJECT_ID=submods.gce.project_id
+tee-env-P5R0_CLAIM_ZONE=submods.gce.zone
+tee-env-P5R0_CLAIM_DEBUG_STATE=dbgstat
+tee-env-P5R0_CLAIM_TEE=swname
+tee-env-P5R0_CLAIM_HARDWARE_MODEL=hwmodel
+tee-env-P5R0_CLAIM_SECURE_BOOT=secboot
+tee-env-P5R0_CLAIM_WORKLOAD=submods.container.env.P5R0_EXPECTED_WORKLOAD
+tee-env-P5R0_ATTESTATION_ISSUER=https://confidentialcomputing.googleapis.com
+tee-env-P5R0_BUCKET=REPLACE_PRIVATE_BUCKET
+tee-env-P5R0_PREFIX=v3
+tee-env-P5R0_KMS_KEY_VERSION=projects/REPLACE_PROJECT_ID/locations/REPLACE_LOCATION/keyRings/REPLACE_RING/cryptoKeys/REPLACE_KEY/cryptoKeyVersions/REPLACE_VERSION
+tee-env-P5R0_RUNTIME_DIGEST=sha256:REPLACE_EXACT_64_HEX_RUNTIME_DIGEST
+tee-env-P5R0_RESOURCE_PROFILE_DIGEST=sha256:REPLACE_EXACT_64_HEX_RESOURCE_DIGEST
+tee-env-P5R0_BASE_IMAGE_DIGEST=sha256:REPLACE_EXACT_64_HEX_BASE_IMAGE_DIGEST
+tee-env-P5R0_SERVICE_NAME=REPLACE_CLOUD_RUN_SERVICE_NAME
+tee-env-P5R0_REGION=REPLACE_CLOUD_RUN_REGION
+tee-env-P5R0_CPU_LIMIT=1
+tee-env-P5R0_MEMORY_LIMIT=512Mi
+tee-env-P5R0_POLICY_DIGEST=sha256:REPLACE_EXACT_64_HEX_POLICY_DIGEST
+tee-env-P5R0_CLAIM_PATHS_DIGEST=sha256:REPLACE_EXACT_64_HEX_CLAIM_PATHS_DIGEST
+tee-env-P5R0_ATTESTATION_CLAIMS_DIGEST=sha256:REPLACE_EXACT_64_HEX_ATTESTATION_CLAIMS_DIGEST
+tee-env-P5R0_WIP_POLICY_DIGEST=sha256:REPLACE_EXACT_64_HEX_WIP_POLICY_DIGEST
+tee-env-P5R0_AUDIENCE=REPLACE_RUNNER_APPLICATION_AUDIENCE
+tee-env-P5R0_ALLOWED_SUBJECTS=REPLACE_RUNNER_SUBJECT
+
+# The attestation token is requested over /run/container_launcher/teeserver.sock;
+# no metadata URL, DNS lookup, or URL override is configured.
+
+# Independent timing authority binding (required when an external V2 ledger is enabled).
+tee-env-P5R0_TIMING_AUTHORITY_ID=REPLACE_INDEPENDENT_LEDGER_AUTHORITY
+tee-env-P5R0_TIMING_KEY_ID=REPLACE_INDEPENDENT_LEDGER_KEY
+tee-env-P5R0_TIMING_LEDGER_ID=REPLACE_INDEPENDENT_LEDGER_ID
+tee-env-P5R0_TIMING_PUBLIC_KEY_DIGEST=sha256:REPLACE_EXACT_64_HEX_LEDGER_KEY_DIGEST

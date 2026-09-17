@@ -1,0 +1,8 @@
+# Provisioned only from a locally available, digest-pinned runtime.  The release
+# lane passes P3_RUNTIME_IMAGE=<local-image>@sha256:... and Podman is invoked
+# with --pull=never; this file never authorizes a registry pull.
+ARG P3_RUNTIME_IMAGE
+FROM ${P3_RUNTIME_IMAGE}
+COPY p3_local_probe.py /runtime/p3_probe
+COPY p3_local_worker.py /runtime/p3_worker
+RUN chmod 0555 /runtime/p3_probe /runtime/p3_worker

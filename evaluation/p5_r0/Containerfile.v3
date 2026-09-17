@@ -1,0 +1,6 @@
+# The base must already exist locally: the rebuild invokes --pull=never.
+FROM python:3.13-slim
+COPY runtime/p5_r0_worker /runtime/p5_r0_worker
+RUN chmod 0555 /runtime/p5_r0_worker
+USER 65532:65532
+ENTRYPOINT ["python3", "/runtime/p5_r0_worker"]

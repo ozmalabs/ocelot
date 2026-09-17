@@ -1,0 +1,9 @@
+# Separate fixed hostile probe image. Runtime libraries are staged from its
+# measured local ELF closure; it contains no shell, interpreter, or sources.
+FROM scratch
+COPY p2_bypass_probe /runtime/p2_bypass_probe
+COPY lib/ /lib/
+COPY lib64/ /lib64/
+COPY etc/ /etc/
+USER 65532:65532
+ENTRYPOINT ["/lib64/ld-linux-x86-64.so.2", "--library-path", "/lib/x86_64-linux-gnu", "/runtime/p2_bypass_probe"]

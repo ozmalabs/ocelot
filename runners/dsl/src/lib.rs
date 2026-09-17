@@ -78,6 +78,10 @@ mod full_stack_integration;
 /// time-indexed shape slices. Domain-specific projectors may remain as
 /// adapters, but the audit/gate contract lives here.
 pub mod future_manifold;
+/// P4-R0 bounded local causal readiness state machine; it emits graph evidence only.
+pub mod p4_readiness;
+#[cfg(test)]
+mod p4_evaluator_adapter_tests;
 /// `g5` — the RESPONSIVENESS gate: does a counter MOVE WITH the thing being
 /// varied? The gate the A8 blindness (`VISION_VIDEO_PROBE_RERUN_RESULTS.md`
 /// §3.1) needed and no existing gate supplied.
@@ -152,8 +156,17 @@ pub mod l6_essential_variables;
 /// pure native function (same split as `shape_decode`): the Term answers
 /// membership; seed rules own when to compose and how to assemble.
 pub mod motor_compose;
+/// P2-B1's additive, finite native all-actions planning contract.  It owns no
+/// host authority and leaves existing future-manifold semantics untouched.
+pub mod p2_bounded;
+/// Shared sealed graph reconstruction for the fixed P2 worker/evaluator pair.
+pub mod p2_native;
 /// Native order-0 reflex scheduling with host effect boundaries.
 pub mod reflex_runtime;
+/// P3 data-plane proposal records; no evaluator or adoption authority.
+pub mod p3_learning;
+/// P3 graph validation plus deterministic snapshot/rollback primitives.
+pub mod p3_graph;
 /// `scale_audit` — the three-way scale-wall decomposition instrument.
 /// `VISION_VIDEO_PROBE_RESULTS.md` measured the wall (exponent 1.887, 164 h per
 /// 1080p frame) and named it "PyO3 then O(N²)" — two causes, with a plausible

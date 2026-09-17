@@ -1,0 +1,49 @@
+{
+  "schema": "P5R0ConfidentialSpacePolicyV1",
+  "image": {
+    "entrypoint": "services.p5_r0_evaluator.confidential_space_app:application",
+    "base_image_digest": "sha256:REPLACE_EXACT_64_HEX_BASE_IMAGE_DIGEST",
+    "image_digest": "sha256:REPLACE_EXACT_64_HEX_IMAGE_DIGEST",
+    "secure_boot": true,
+    "debug_state": "disabled-since-boot",
+    "tee": "CONFIDENTIAL_SPACE",
+    "hardware_model": "GCP_AMD_SEV",
+    "workload": "evaluator"
+  },
+  "attestation": {
+    "launcher_socket": "/run/container_launcher/teeserver.sock",
+    "token_path": "/v1/token",
+    "token_request": {"audience": "https://sts.googleapis.com", "token_type": "OIDC", "nonces": ["opaque_nonce"]},
+    "audience": "https://sts.googleapis.com",
+    "issuer": "https://confidentialcomputing.googleapis.com",
+    "nonce": "10-74-byte-per-startup-random-opaque-nonce",
+    "claim_paths": {
+      "audience": "aud",
+      "nonce": "eat_nonce",
+      "issued_at": "iat",
+      "expires_at": "exp",
+      "issuer": "iss",
+      "subject": "sub",
+      "image_digest": "submods.container.image_digest",
+      "project_number": "submods.gce.project_number",
+      "project_id": "submods.gce.project_id",
+      "zone": "submods.gce.zone",
+      "debug_state": "dbgstat",
+      "tee": "swname",
+      "hardware_model": "hwmodel",
+      "secure_boot": "secboot",
+      "workload": "submods.container.env.P5R0_EXPECTED_WORKLOAD"
+    }
+  },
+  "federation": {
+    "sts_endpoint": "https://sts.googleapis.com/v1/token",
+    "provider": "//iam.googleapis.com/projects/REPLACE_PROJECT_NUMBER/locations/global/workloadIdentityPools/REPLACE_POOL/providers/REPLACE_PROVIDER",
+    "credential_source": "verified_confidential_space_launcher_token",
+    "client_credentials": "none"
+  },
+  "capabilities": {
+    "gcs": ["locks/<sha256>.json", "manifests/<sha256>.json", "truth/<sha256>.json", "runs/<run-sha256>/"],
+    "kms": "one reviewed Ed25519 cryptoKeyVersion",
+    "truth": "locked until attestation and STS exchange"
+  }
+}

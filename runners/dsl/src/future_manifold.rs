@@ -719,7 +719,10 @@ pub fn counting_narrativium_by_dimension(
     // audit finished, and reporting an unfinished audit's retention as capacity
     // is exactly the "zero capacity versus not established" confusion this
     // function exists to refuse.
-    if records.iter().any(|record| !record.support || !record.resolved) {
+    if records
+        .iter()
+        .any(|record| !record.support || !record.resolved)
+    {
         return None;
     }
     let trajectories: Vec<Vec<Vec<f64>>> = candidates
@@ -779,7 +782,6 @@ pub fn counting_narrativium_by_dimension(
             .collect(),
     )
 }
-
 
 // ---------------------------------------------------------------------------
 // Feasible-set selection — making "admissible but never selected" expressible.
@@ -881,14 +883,7 @@ pub fn feasible_selection(
     candidates: &[NodeID],
 ) -> Option<FeasibleSelection> {
     let snapshot_field = interner.intern("snapshot");
-    feasible_selection_with_snapshot(
-        graph,
-        interner,
-        episode,
-        policy,
-        candidates,
-        snapshot_field,
-    )
+    feasible_selection_with_snapshot(graph, interner, episode, policy, candidates, snapshot_field)
 }
 
 /// Read-only selection entry used by graph Term evaluation.  Its parser owns
@@ -959,9 +954,7 @@ where
             Some(SelectionRecord {
                 candidate: *candidate,
                 established,
-                feasible: established
-                    && loss == 0.0
-                    && (!effort_supported || effort_authorized),
+                feasible: established && loss == 0.0 && (!effort_supported || effort_authorized),
                 intervention: scalar(graph, interner, *candidate, "intervention"),
                 goal_rank: scalar(graph, interner, *candidate, "goal_rank"),
                 withheld: scalar(graph, interner, *candidate, "withheld")
@@ -972,7 +965,11 @@ where
         .collect::<Option<Vec<_>>>()?;
 
     let pick = |f: &dyn Fn(&SelectionRecord) -> bool| -> Vec<NodeID> {
-        records.iter().filter(|r| f(r)).map(|r| r.candidate).collect()
+        records
+            .iter()
+            .filter(|r| f(r))
+            .map(|r| r.candidate)
+            .collect()
     };
     let unestablished = pick(&|r| !r.established);
     let infeasible = pick(&|r| r.established && !r.feasible);
@@ -980,7 +977,10 @@ where
 
     // A feasible candidate with no represented valuation makes "minimum
     // sufficient" unanswerable. Refuse rather than rank it as free.
-    if records.iter().any(|r| r.feasible && r.intervention.is_none()) {
+    if records
+        .iter()
+        .any(|r| r.feasible && r.intervention.is_none())
+    {
         return None;
     }
 
@@ -988,26 +988,31 @@ where
         .iter()
         .filter(|r| r.feasible)
         .filter_map(|r| r.intervention)
-        .fold(None::<f64>, |acc, v| Some(match acc {
-            Some(best) if best <= v => best,
-            _ => v,
-        }));
+        .fold(None::<f64>, |acc, v| {
+            Some(match acc {
+                Some(best) if best <= v => best,
+                _ => v,
+            })
+        });
 
     let minimal: Vec<NodeID> = match minimum {
-        None => Vec::new(),                     // nothing feasible: honest, not a failure
+        None => Vec::new(), // nothing feasible: honest, not a failure
         Some(min) => {
             let at_min: Vec<&SelectionRecord> = records
                 .iter()
                 .filter(|r| r.feasible && r.intervention == Some(min))
                 .collect();
             // Goals order only what intervention left equal.
-            let best_goal = at_min.iter().filter_map(|r| r.goal_rank).fold(
-                None::<f64>,
-                |acc, v| Some(match acc {
-                    Some(best) if best >= v => best,
-                    _ => v,
-                }),
-            );
+            let best_goal =
+                at_min
+                    .iter()
+                    .filter_map(|r| r.goal_rank)
+                    .fold(None::<f64>, |acc, v| {
+                        Some(match acc {
+                            Some(best) if best >= v => best,
+                            _ => v,
+                        })
+                    });
             match best_goal {
                 None => at_min.iter().map(|r| r.candidate).collect(),
                 Some(best) => at_min
@@ -1019,12 +1024,17 @@ where
         }
     };
 
-    let withheld_of = |id: NodeID| {
-        records.iter().any(|r| r.candidate == id && r.withheld)
-    };
-    let selected: Vec<NodeID> = minimal.iter().copied().filter(|id| !withheld_of(*id)).collect();
-    let withheld_minimal: Vec<NodeID> =
-        minimal.iter().copied().filter(|id| withheld_of(*id)).collect();
+    let withheld_of = |id: NodeID| records.iter().any(|r| r.candidate == id && r.withheld);
+    let selected: Vec<NodeID> = minimal
+        .iter()
+        .copied()
+        .filter(|id| !withheld_of(*id))
+        .collect();
+    let withheld_minimal: Vec<NodeID> = minimal
+        .iter()
+        .copied()
+        .filter(|id| withheld_of(*id))
+        .collect();
 
     Some(FeasibleSelection {
         tie_breadth: minimal.len(),
@@ -1275,7 +1285,10 @@ mod feasible_selection_tests {
         let sel = feasible_selection(&g, &mut i, ep, pol, &[held, esc]).expect("supported");
         assert_eq!(sel.feasible, vec![held]);
         assert_eq!(sel.infeasible, vec![esc]);
-        assert!(sel.unestablished.is_empty(), "nothing was left undecided here");
+        assert!(
+            sel.unestablished.is_empty(),
+            "nothing was left undecided here"
+        );
     }
 
     #[test]
@@ -1319,9 +1332,7 @@ mod feasible_selection_tests {
         let mut ctx = EvalCtx::new(&g, &i);
         assert_eq!(
             evaluate(&loaded, loaded_selection, &mut env, &mut ctx),
-            Value::Tuple(std::sync::Arc::new(smallvec::smallvec![Value::Node(
-                held
-            )])),
+            Value::Tuple(std::sync::Arc::new(smallvec::smallvec![Value::Node(held)])),
             "the cheaper escaping candidate was selected outside the manifold",
         );
 
@@ -1357,13 +1368,9 @@ mod feasible_selection_tests {
             &mut i,
         );
         let mut rebuilt = TermArena::new();
-        let rebuilt_selection = crate::reflect::term_from_subgraph(
-            &reflected_graph,
-            &i,
-            reflected,
-            &mut rebuilt,
-        )
-        .unwrap();
+        let rebuilt_selection =
+            crate::reflect::term_from_subgraph(&reflected_graph, &i, reflected, &mut rebuilt)
+                .unwrap();
         let mut rebuilt_env: Env = smallvec::smallvec![];
         let mut rebuilt_ctx = EvalCtx::new(&g, &i);
         assert_eq!(
@@ -1373,9 +1380,7 @@ mod feasible_selection_tests {
                 &mut rebuilt_env,
                 &mut rebuilt_ctx,
             ),
-            Value::Tuple(std::sync::Arc::new(smallvec::smallvec![Value::Node(
-                held
-            )])),
+            Value::Tuple(std::sync::Arc::new(smallvec::smallvec![Value::Node(held)])),
             "reflection changed the graph-owned selection",
         );
     }
@@ -1404,8 +1409,11 @@ mod feasible_selection_tests {
         set(&mut g, &mut i, dear, "goal_rank", 99.0);
 
         let sel = feasible_selection(&g, &mut i, ep, pol, &[cheap, dear]).expect("supported");
-        assert_eq!(sel.minimal, vec![cheap],
-                   "a high goal rank bought a more expensive intervention");
+        assert_eq!(
+            sel.minimal,
+            vec![cheap],
+            "a high goal rank bought a more expensive intervention"
+        );
         assert_eq!(sel.tie_breadth, 1);
     }
 
@@ -1425,13 +1433,11 @@ mod feasible_selection_tests {
             ]))
         };
 
-        let selection = feasible_selection_with_projector(
-            &g,
-            &i,
-            &[normal, compressed],
-            |candidate| Some(tuple(if candidate == compressed { 1.0 } else { 0.0 })),
-        )
-        .expect("snapshots are supported");
+        let selection =
+            feasible_selection_with_projector(&g, &i, &[normal, compressed], |candidate| {
+                Some(tuple(if candidate == compressed { 1.0 } else { 0.0 }))
+            })
+            .expect("snapshots are supported");
 
         assert_eq!(selection.infeasible, vec![normal]);
         assert_eq!(selection.selected, vec![compressed]);
@@ -1459,7 +1465,10 @@ mod feasible_selection_tests {
 
         let sel = feasible_selection(&g, &mut i, ep, pol, &[a, b]).expect("supported");
         assert_eq!(ids(&sel.minimal), ids(&[a, b]));
-        assert_eq!(sel.tie_breadth, 2, "the tie was collapsed to a single winner");
+        assert_eq!(
+            sel.tie_breadth, 2,
+            "the tie was collapsed to a single winner"
+        );
     }
 
     #[test]
@@ -1468,8 +1477,10 @@ mod feasible_selection_tests {
         // number, it is not a question. Ranking it free would launder the gap.
         let (mut g, mut i, ep, pol, held, esc) = bench();
         set(&mut g, &mut i, esc, "intervention", 1.0);
-        assert!(feasible_selection(&g, &mut i, ep, pol, &[held, esc]).is_none(),
-                "a feasible candidate with no valuation was ranked anyway");
+        assert!(
+            feasible_selection(&g, &mut i, ep, pol, &[held, esc]).is_none(),
+            "a feasible candidate with no valuation was ranked anyway"
+        );
     }
 
     #[test]
@@ -1498,8 +1509,11 @@ mod feasible_selection_tests {
 
         assert_eq!(stubborn.minimal, vec![held], "it was still the right move");
         assert!(stubborn.selected.is_empty(), "and it was not taken");
-        assert_eq!(stubborn.withheld_minimal, vec![held],
-                   "stubbornness is not countable -- the audit cannot see it");
+        assert_eq!(
+            stubborn.withheld_minimal,
+            vec![held],
+            "stubbornness is not countable -- the audit cannot see it"
+        );
     }
 
     #[test]
@@ -1520,8 +1534,10 @@ mod feasible_selection_tests {
         let stubborn = feasible_selection(&g, &mut i, ep, pol, &[held, esc]).expect("supported");
         assert!(stubborn.selected.is_empty());
         assert_eq!(stubborn.withheld_minimal.len(), 1);
-        assert!(stubborn.unestablished.is_empty(),
-                "a stubborn agent knew perfectly well; that is what makes it stubborn");
+        assert!(
+            stubborn.unestablished.is_empty(),
+            "a stubborn agent knew perfectly well; that is what makes it stubborn"
+        );
 
         // STUPID: the audit runs and cannot finish. Starving the budget below the
         // horizon used to falsify `support` outright, so this case was previously
@@ -1531,13 +1547,20 @@ mod feasible_selection_tests {
         let budget = i.intern("future_manifold_projection_budget");
         g.set_node_attr(pol, budget, Value::Float(1.0));
         let stupid = feasible_selection(&g, &mut i, ep, pol, &[held, esc]).expect("well-posed");
-        assert_eq!(stupid.unestablished.len(), 2,
-                   "an unfinished audit was reported as decided");
-        assert!(stupid.feasible.is_empty(),
-                "a candidate was called feasible without its retention established");
+        assert_eq!(
+            stupid.unestablished.len(),
+            2,
+            "an unfinished audit was reported as decided"
+        );
+        assert!(
+            stupid.feasible.is_empty(),
+            "a candidate was called feasible without its retention established"
+        );
         assert!(stupid.minimal.is_empty() && stupid.selected.is_empty());
-        assert!(stupid.withheld_minimal.is_empty(),
-                "stupidity is reading as stubbornness -- nothing was withheld here");
+        assert!(
+            stupid.withheld_minimal.is_empty(),
+            "stupidity is reading as stubbornness -- nothing was withheld here"
+        );
     }
 
     #[test]
@@ -1553,21 +1576,33 @@ mod feasible_selection_tests {
         // Assessed and outside: pure loss, nothing unestablished.
         let escaping = &reachable_deformation_set(&g, &mut i, ep, pol, &[esc])[0];
         assert!(escaping.loss > 0.0, "fixture no longer escapes the tube");
-        assert_eq!(escaping.information_loss, 0.0,
-                   "a cell that was assessed and failed is being counted as \
-                    unassessable");
+        assert_eq!(
+            escaping.information_loss, 0.0,
+            "a cell that was assessed and failed is being counted as \
+                    unassessable"
+        );
 
         // Never reached: pure information loss, nothing outside.
         let budget = i.intern("future_manifold_projection_budget");
         g.set_node_attr(pol, budget, Value::Float(1.0));
         let starved = &reachable_deformation_set(&g, &mut i, ep, pol, &[held])[0];
         assert!(starved.support, "a short budget falsified well-posedness");
-        assert!(!starved.resolved, "an unfinished audit reported as resolved");
-        assert_eq!(starved.loss, 0.0, "nothing left the tube in the audited part");
-        assert!(starved.information_loss > 0.0,
-                "the unreached ticks were not counted as unestablished");
-        assert_eq!(starved.retained_width, 0.0,
-                   "retention was claimed for ticks nobody audited");
+        assert!(
+            !starved.resolved,
+            "an unfinished audit reported as resolved"
+        );
+        assert_eq!(
+            starved.loss, 0.0,
+            "nothing left the tube in the audited part"
+        );
+        assert!(
+            starved.information_loss > 0.0,
+            "the unreached ticks were not counted as unestablished"
+        );
+        assert_eq!(
+            starved.retained_width, 0.0,
+            "retention was claimed for ticks nobody audited"
+        );
     }
 
     #[test]
@@ -1591,14 +1626,23 @@ mod feasible_selection_tests {
 
         let narrow = &reachable_deformation_set(&g, &mut i, ep, pol, &[esc])[0];
         assert!(narrow.support, "an aperture mask falsified well-posedness");
-        assert_eq!(narrow.loss, 0.0,
-                   "an unresolvable dimension was reported as a failure rather \
-                    than as unassessed");
-        assert!(narrow.information_loss > 0.0,
-                "the unresolved dimension was not counted as unestablished");
-        assert_eq!(narrow.retained_width, 0.0,
-                   "retention was claimed for a dimension never assessed");
-        assert!(!narrow.resolved, "an unassessable audit reported as resolved");
+        assert_eq!(
+            narrow.loss, 0.0,
+            "an unresolvable dimension was reported as a failure rather \
+                    than as unassessed"
+        );
+        assert!(
+            narrow.information_loss > 0.0,
+            "the unresolved dimension was not counted as unestablished"
+        );
+        assert_eq!(
+            narrow.retained_width, 0.0,
+            "retention was claimed for a dimension never assessed"
+        );
+        assert!(
+            !narrow.resolved,
+            "an unassessable audit reported as resolved"
+        );
     }
 
     #[test]
@@ -1628,7 +1672,10 @@ mod feasible_selection_tests {
         let outer: smallvec::SmallVec<[Value; 4]> =
             smallvec::smallvec![Value::Tuple(std::sync::Arc::new(row))];
         g.set_node_attr(pol, mask, Value::Tuple(std::sync::Arc::new(outer)));
-        assert_eq!(before, reachable_deformation_set(&g, &mut i, ep, pol, &[held, esc]));
+        assert_eq!(
+            before,
+            reachable_deformation_set(&g, &mut i, ep, pol, &[held, esc])
+        );
     }
 
     #[test]
@@ -1641,7 +1688,11 @@ mod feasible_selection_tests {
         set(&mut g, &mut i, esc, "intervention", 1.0);
 
         let wide = feasible_selection(&g, &mut i, ep, pol, &[held, esc]).expect("well-posed");
-        assert_eq!(wide.selected, vec![held], "the wide observer chooses normally");
+        assert_eq!(
+            wide.selected,
+            vec![held],
+            "the wide observer chooses normally"
+        );
         assert!(wide.unestablished.is_empty());
 
         let mask = i.intern("future_manifold_resolved_dims");
@@ -1651,11 +1702,20 @@ mod feasible_selection_tests {
         g.set_node_attr(pol, mask, Value::Tuple(std::sync::Arc::new(outer)));
 
         let narrow = feasible_selection(&g, &mut i, ep, pol, &[held, esc]).expect("well-posed");
-        assert_eq!(narrow.unestablished.len(), 2, "compression did not read as stupid");
-        assert!(narrow.feasible.is_empty(), "feasibility claimed without assessment");
+        assert_eq!(
+            narrow.unestablished.len(),
+            2,
+            "compression did not read as stupid"
+        );
+        assert!(
+            narrow.feasible.is_empty(),
+            "feasibility claimed without assessment"
+        );
         assert!(narrow.selected.is_empty());
-        assert!(narrow.withheld_minimal.is_empty(),
-                "compression is reading as stubbornness -- nothing was withheld");
+        assert!(
+            narrow.withheld_minimal.is_empty(),
+            "compression is reading as stubbornness -- nothing was withheld"
+        );
     }
 
     #[test]
@@ -1667,8 +1727,11 @@ mod feasible_selection_tests {
         let budget = i.intern("future_manifold_projection_budget");
         g.set_node_attr(pol, budget, Value::Float(1.0));
         let r = &reachable_deformation_set(&g, &mut i, ep, pol, &[held])[0];
-        assert!(r.support && !r.resolved,
-                "support={} resolved={} -- the two are still collapsed",
-                r.support, r.resolved);
+        assert!(
+            r.support && !r.resolved,
+            "support={} resolved={} -- the two are still collapsed",
+            r.support,
+            r.resolved
+        );
     }
 }

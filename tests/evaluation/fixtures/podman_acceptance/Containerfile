@@ -1,0 +1,6 @@
+# Local-only P0 acceptance image.  This must remain a pinned local image ID.
+FROM sha256:a6f700b96627c9d19a0147d664febb16fa0039b631cf2351b4c51365048ca962
+COPY evaluation /usr/local/lib/python3.13/site-packages/evaluation
+COPY site-packages /usr/local/lib/python3.13/site-packages
+COPY agent /agent
+ENTRYPOINT ["/usr/local/bin/python3", "-I", "-m", "evaluation.p0a.agent_worker"]

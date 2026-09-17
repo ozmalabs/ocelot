@@ -1,0 +1,34 @@
+{
+  "id": "p1_native_graph_proposal",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "Mint exactly one sealed GraphActionProposalV1 through the native rule engine.",
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "sealed_graph_action_to_proposal",
+      "match": [["root", "sealed_graph_action", "fact"]],
+      "where": {
+        "type": "Eq",
+        "a": {"type": "Attr", "node": {"type": "Var", "name": "fact"}, "key": "phase"},
+        "b": {"type": "Lit", "value": "sealed"}
+      },
+      "effects": [
+        ["add_node_if_absent", "proposal", "GraphActionProposalV1", {
+          "schema": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "fact"}, "key": "schema"}},
+          "proposal_id": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "fact"}, "key": "proposal_id"}},
+          "kind": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "fact"}, "key": "kind"}},
+          "args": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "fact"}, "key": "args"}},
+          "input_refs": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "fact"}, "key": "input_refs"}},
+          "source": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "fact"}, "key": "source"}},
+          "causal_parent_receipt_hash": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "fact"}, "key": "causal_parent_receipt_hash"}},
+          "requested_budget": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "fact"}, "key": "requested_budget"}},
+          "graph_logical_time": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "fact"}, "key": "graph_logical_time"}},
+          "proposal_digest": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "fact"}, "key": "proposal_digest"}}
+        }]
+      ]
+    }
+  ]
+}

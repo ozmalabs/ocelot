@@ -34,7 +34,6 @@ use crate::sym::Sym;
 use crate::value::Value;
 use rustc_hash::FxHashMap;
 
-
 /// Bundle of interned Sym keys + edge types this module reads. Built
 /// once by the caller from the live interner and passed in to every op.
 #[derive(Clone, Debug)]
@@ -303,4 +302,3 @@ pub fn apply_evidence_h(
         current + alpha * evidence,
     );
 }
-

@@ -1,0 +1,11 @@
+# P4-R0 finite scratch runtime. Every worker, runtime, trust, and input
+# byte is copied from the locally measured build context; launch uses no mounts.
+FROM scratch
+COPY p4_native_readiness_worker /runtime/p4_native_readiness_worker
+COPY lib/ /lib/
+COPY lib64/ /lib64/
+COPY etc/ /etc/
+COPY trust/p4-trusted-evaluator.json /trust/p4-trusted-evaluator.json
+COPY input/p4_r0_public_bundle_v1.json /input/p4_r0_public_bundle_v1.json
+USER 65532:65532
+ENTRYPOINT ["/lib64/ld-linux-x86-64.so.2", "--library-path", "/lib/x86_64-linux-gnu:/lib64", "/runtime/p4_native_readiness_worker"]

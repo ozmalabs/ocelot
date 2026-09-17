@@ -1,0 +1,12 @@
+# Separate finite hostile-Python probe image. The release worker never contains
+# this runtime. Packaging stages only a locally measured Python binary, its
+# shared-object closure, the selected local standard library, and this fixed probe.
+FROM scratch
+COPY python3 /runtime/python3
+COPY p2_python_bypass_probe.py /runtime/p2_python_bypass_probe
+COPY python-lib/ /runtime/lib/
+COPY lib/ /lib/
+COPY lib64/ /lib64/
+COPY etc/ /etc/
+USER 65532:65532
+ENTRYPOINT ["/runtime/python3", "-I", "-S", "/runtime/p2_python_bypass_probe"]

@@ -368,8 +368,7 @@ fn rule_has_write_contention(rule: &crate::rewrite::RewriteRule) -> bool {
     // question, and the measurement answers it by whether divergence reaches
     // zero with this test alone.
     rule.effects.iter().any(|e| match e {
-        Effect::SetAttr { var, .. }
-        | Effect::SetAttrIfDifferent { var, .. } => vars.contains(var),
+        Effect::SetAttr { var, .. } | Effect::SetAttrIfDifferent { var, .. } => vars.contains(var),
         Effect::ReplaceValue { old_var, .. } => vars.contains(old_var),
         _ => false,
     })
@@ -716,7 +715,10 @@ mod contention_tests {
     use crate::rewrite::{Effect, EffectArg, MatchEdge, RewriteRule};
     use crate::value::Value;
 
-    fn rule(edges: Vec<(&str, &str, &str)>, writes_var: Option<&str>) -> (RewriteRule, crate::sym::Interner) {
+    fn rule(
+        edges: Vec<(&str, &str, &str)>,
+        writes_var: Option<&str>,
+    ) -> (RewriteRule, crate::sym::Interner) {
         let mut i = crate::sym::Interner::new();
         let mut r = RewriteRule::default();
         r.match_edges = edges
@@ -744,8 +746,10 @@ mod contention_tests {
         // attribute — so the temporal test called it uncoupled and Stage A
         // batched it, while every `m` denoting one meaning writes that same node.
         let (r, _i) = rule(vec![("m", "denotes", "meaning")], Some("meaning"));
-        assert!(super::rule_has_write_contention(&r),
-                "the one rule the settling measurement caught is still batchable");
+        assert!(
+            super::rule_has_write_contention(&r),
+            "the one rule the settling measurement caught is still batchable"
+        );
     }
 
     #[test]
@@ -773,8 +777,10 @@ mod contention_tests {
         // ever collapsed into one, the settling measurement's divergence would
         // come straight back.
         let (r, _i) = rule(vec![("m", "denotes", "meaning")], Some("meaning"));
-        assert!(!super::rule_has_read_write_dependency(&r),
-                "fixture no longer isolates contention from temporal coupling");
+        assert!(
+            !super::rule_has_read_write_dependency(&r),
+            "fixture no longer isolates contention from temporal coupling"
+        );
         assert!(super::rule_has_write_contention(&r));
     }
 }

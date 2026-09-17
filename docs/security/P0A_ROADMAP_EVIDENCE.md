@@ -1,0 +1,15 @@
+# P0-A roadmap and evidence
+
+**Delivered local evidence:** canonical signed manifest/grant verification; no-method P0-A default deny; exact request/grant binding; replay reservation; deterministic fixture behavior; receipt-chain validation; terminal local kill state; local content-addressed mount contract; and direct-I/O guards for the inventoried legacy routes.
+
+**Not evidence of evaluator custody:** repository tests cannot prove control-plane immutability, signing-key separation, no-network enforcement, write-only results, evaluator-owned process kill, or resistance to a process under the same OS user. The current status is **local P0-A harness approximation; not evaluator custody**.
+
+**P0 same-user Podman limitation:** the hardened rootless Podman probe records a valuable container-isolation profile, but same-user rootless Podman is not independent evaluator custody: it does not establish custody against a process sharing the evaluator’s OS user. Fixture mediation neither executes a dynamic native graph substrate nor demonstrates autonomous planning. The local export-attestation signer is a protocol fixture, not an independently operated evaluator authority. P0 remains default deny and must not be upgraded to evaluator custody from this evidence.
+
+**P1 proposal-mediation status:** the worker opaque-ID route is prohibited. A worker must submit a complete bounded `GraphActionProposalV1`; the evaluator verifies the signed native-export attestation and admits it only when it exactly equals its matching canonical evaluator-attested export record. Trusted code then projects and seals the V2 request and records export/attestation digests in the signed `ActionReceiptV3` default-deny receipt. Forged, mismatched, and replayed candidates are signed denials with no effect; an unverified candidate is not represented as an attested V3 receipt. This is an honest mediation gate, not execution of a dynamic native graph substrate or proof of autonomous planning: until evaluator-owned capture/replay and distinct authority are deployed, any test requiring a dynamically produced native graph proposal is fail-closed.
+
+**Next authority milestone:** run the harness under evaluator-owned credentials and distinct OS/container/VM identities with read-only input mounts, no-network policy, external supervisor, and independent probes. Do not upgrade the claim before that deployment evidence exists.
+
+
+
+**Delivered code policy (pending deployment acceptance):** fresh-exec Bubblewrap launcher construction, staged-entrypoint content binding, stdio-only bounded complete-`GraphActionProposalV1` submission with no opaque proposal-ID route, no-fallback preflight, evaluator-owned run/attempt-scoped terminal paths, and a precreated run-scope controller interface. Mount and descriptor properties are deployment-policy targets, not runtime guarantees, until a provisioned probe verifies them. The assessed host has not demonstrated a distinct evaluator identity, delegated cgroup/systemd kill authority, or the provisioned probe artifact; P0 must therefore remain operationally blocked with signed terminal evidence there.
