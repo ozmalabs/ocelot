@@ -207,6 +207,16 @@ solver-free. (Residual latent coarseness, noted: still-unclaimed no-rescue class
 higher-degree, order-≥3 recurrences — share `(None,None)` until a reading is authored for each; the
 mechanism to split them is now the demonstrated pattern.)
 
+**Runtime discovery of an unseen class (`track_j7`).** A factual record, not a writeup: the
+sequence self-extension now searches wider recurrence orders (`discover_recurrence`) using the
+held exact-solve primitive (`_solve_linrec_order`, the same one `linrec2` uses) at a wider order
+when the order-2 repertoire fails. `track_j7` exercises this on tribonacci / fib² — order-3 linear
+recurrences the starting repertoire ({log_degree, linrec2}) provably does not claim: the loop
+fails, then on repeat composes and verifies a `linrec3` reading from the held primitive, adopts it,
+and reuses it on a fresh instance (E1–E5, all pass). The `seq_read_linrec2` body was refactored to
+call `_solve_linrec_order` at order 2 (behavior-preserving; j6 unchanged). Solver-free felt path,
+verify-gated adoption, no pretrained artifact.
+
 ## The claim
 
 A structural "isolation / prickliness" coordinate — the felt axis that makes the number

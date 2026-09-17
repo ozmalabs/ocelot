@@ -1058,6 +1058,45 @@ def seq_read_log_degree(seq: list) -> Optional[int]:
     return None
 
 
+def _solve_linrec_order(seq: list, order: int):
+    """HELD PRIMITIVE (the exact-solve, order-general): fit constant coefficients c_1..c_order
+    for x[n] = c_1*x[n-1] + ... + c_order*x[n-order] by an EXACT rational solve over the first
+    `order` equations, then VERIFY the recurrence holds for EVERY later term. Returns the tuple
+    of coefficients (ints where integral) if it fits, else None. This is the SINGLE linear-solve
+    move; order-2 (linrec2) and any higher order are the SAME primitive at a wider window — so a
+    higher-order reading is a COMPOSITION/generalization of this held piece, not a new bespoke
+    solver. Pure rational arithmetic (no float over-fit, no verify solver): feel = the coefficient
+    fit, verify = the exact all-terms check."""
+    from fractions import Fraction
+    n = len(seq)
+    if n < 2 * order:                                   # need `order` eqns + terms to verify
+        return None
+    x = [Fraction(v) for v in seq]
+    # equations from windows starting at order..2*order-1: x[i] = sum c_j x[i-1-j]
+    rows = [[x[i - 1 - j] for j in range(order)] for i in range(order, 2 * order)]
+    rhs = [x[i] for i in range(order, 2 * order)]
+    # exact rational Gaussian elimination on the augmented matrix
+    M = [rows[r][:] + [rhs[r]] for r in range(order)]
+    for c in range(order):
+        piv = next((r for r in range(c, order) if M[r][c] != 0), None)
+        if piv is None:
+            return None                                 # singular -> no unique fit at this order
+        M[c], M[piv] = M[piv], M[c]
+        inv = M[c][c]
+        M[c] = [v / inv for v in M[c]]
+        for r in range(order):
+            if r != c and M[r][c] != 0:
+                f = M[r][c]
+                M[r] = [a - f * b for a, b in zip(M[r], M[c])]
+    coeffs = [M[r][order] for r in range(order)]
+    for i in range(order, n):                           # VERIFY across ALL terms
+        if x[i] != sum(coeffs[j] * x[i - 1 - j] for j in range(order)):
+            return None
+    def _norm(f):
+        return int(f) if f.denominator == 1 else f
+    return tuple(_norm(c) for c in coeffs)
+
+
 def seq_read_linrec2(seq: list) -> Optional[tuple]:
     """An AUTHORABLE sequence reading, COMPOSED FROM HELD PRIMITIVES (a small EXACT rational
     2x2 solve + the finite-difference/check dial). CLAIMS a constant-coefficient ORDER-2
@@ -1072,21 +1111,10 @@ def seq_read_linrec2(seq: list) -> Optional[tuple]:
     from fractions import Fraction
     if len(seq) < 4:
         return None
-    x = [Fraction(v) for v in seq]
-    # first two triples give: x2 = a*x1 + b*x0 ; x3 = a*x2 + b*x1
-    # solve the 2x2 system exactly (rational). matrix [[x1,x0],[x2,x1]] on (a,b).
-    det = x[1] * x[1] - x[0] * x[2]
-    if det == 0:
-        return None                                     # degenerate -> no unique (a,b)
-    a = (x[1] * x[2] - x[0] * x[3]) / det
-    b = (x[1] * x[3] - x[2] * x[2]) / det
-    # VERIFY the recurrence holds for EVERY later term (exact rational check).
-    for n in range(2, len(x)):
-        if x[n] != a * x[n - 1] + b * x[n - 2]:
-            return None
-    def _norm(f):
-        return int(f) if f.denominator == 1 else f
-    return ("linrec2", _norm(a), _norm(b))
+    coeffs = _solve_linrec_order(seq, 2)                # order-2 IS the held solve at k=2
+    if coeffs is None:
+        return None
+    return ("linrec2", coeffs[0], coeffs[1])
 
 
 #: The sequence domain's authorable readings (composed from held numeric primitives), NOT
@@ -1102,6 +1130,58 @@ _SEQ_AUTHORABLE = {
     "linrec2": seq_read_linrec2,
 }
 _SEQ_REPERTOIRE: dict = {}          # authored sequence readings adopted so far
+
+
+# --------------------------------------------------------------------------- #
+#  RUNTIME DISCOVERY: author a reading for a PROVABLY-UNSEEN class, live, from a
+#  held primitive at a wider aperture — no reading pre-written for the target.
+#
+#  The starting sequence repertoire is order-2 (linrec2) + log_degree + poly-degree. A class
+#  whose only structure is a HIGHER-ORDER linear recurrence (tribonacci: x=x1+x2+x3; fib^2:
+#  (2,2,-1)) is UNCLAIMED by all of them. `discover_recurrence` is the runtime act: when the
+#  default read and the current repertoire fail on a REPEATED no-rescue class, SEARCH wider
+#  orders k=3,4,... using the SAME held exact-solve primitive (_solve_linrec_order) until one
+#  VERIFIES. The winning order becomes a new reading `linrec<k>` composed at runtime and adopted
+#  into the live repertoire. This is discovery, not lookup: no `tribonacci`/`fib_squared` reading
+#  exists; the composition is the held solve at an order the search found, verified exactly.
+#  Solver-free felt path (the search is pure rational arithmetic, no verify solver); the whole
+#  event happens in-process, no training, no gradient, no pretrained artifact.
+# --------------------------------------------------------------------------- #
+_SEQ_MAX_DISCOVER_ORDER = 5         # bounded aperture search (2 already covered by linrec2)
+
+
+def _make_linrec_reading(order: int):
+    """Compose a reading `linrec<order>` from the held order-k solve at a fixed order. Returns
+    a fn(seq)->signature|None with the SAME shape as the other authorable readings, namespaced
+    so distinct recurrences at the same order stay distinct classes."""
+    def rd(seq):
+        coeffs = _solve_linrec_order(seq, order)
+        return None if coeffs is None else (("linrec%d" % order,) + coeffs)
+    rd.__name__ = "seq_read_linrec%d" % order
+    return rd
+
+
+def discover_recurrence(seq: list, *, spy: Optional[SolverSpy] = None) -> Optional[str]:
+    """RUNTIME DISCOVERY of a higher-order linear-recurrence reading for a class no starting
+    reading claims. Search orders k=3.._SEQ_MAX_DISCOVER_ORDER with the held exact-solve; the
+    first k whose recurrence VERIFIES across all terms is authored as a new reading `linrec<k>`,
+    added to _SEQ_AUTHORABLE and _SEQ_REPERTOIRE (so the class is claimed thereafter). Returns
+    the authored reading name, or None if no bounded order fits. Solver-free (rational solve, no
+    verify solver); a supplied SolverSpy stays 0. This is the composed-from-held-primitives,
+    verify-gated authoring the runtime-discovery demonstration turns on."""
+    for order in range(3, _SEQ_MAX_DISCOVER_ORDER + 1):
+        name = "linrec%d" % order
+        if name in _SEQ_AUTHORABLE:                     # already discovered at this order
+            if _SEQ_AUTHORABLE[name](seq) is not None:
+                _SEQ_REPERTOIRE.setdefault(name, _SEQ_AUTHORABLE[name])
+                return name
+            continue
+        fn = _make_linrec_reading(order)
+        if fn(seq) is not None:                         # this order's recurrence fits + verifies
+            _SEQ_AUTHORABLE[name] = fn                  # AUTHOR it into the repertoire, live
+            _SEQ_REPERTOIRE[name] = fn
+            return name
+    return None
 
 
 def seq_verify_then_update(seq: list, *, prior_abstained: bool = False,
@@ -1160,11 +1240,17 @@ def seq_extend_repertoire(seq: list, *, spy: Optional[SolverSpy] = None) -> Opti
                 if max(ratios) - min(ratios) < 1e-9:    # constant ratio == geometric confirmed
                     _SEQ_REPERTOIRE[name] = fn
                     return name
-        elif name == "linrec2":
-            # seq_read_linrec2 already verifies the recurrence holds across ALL terms exactly
+        elif name.startswith("linrec"):
+            # seq_read_linrec* already verifies the recurrence holds across ALL terms exactly
             # (pure rational arithmetic); a non-None return is the verified structural claim.
+            # (Covers linrec2 and any higher-order reading discovered live by discover_recurrence.)
             _SEQ_REPERTOIRE[name] = fn
             return name
+    # nothing in the current authorable set claims it -> RUNTIME DISCOVERY: search wider
+    # recurrence orders with the held exact-solve primitive and author the winner (linrec3+).
+    discovered = discover_recurrence(seq, spy=spy)
+    if discovered is not None:
+        return discovered
     return None
 
 
