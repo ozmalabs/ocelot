@@ -1,0 +1,17 @@
+# P2 runtime must be built and digest-pinned by release infrastructure.
+# The final image deliberately contains only the fixed native worker and its
+# dynamic libraries; no shell, Python runtime, package manager, or sources.
+FROM scratch
+COPY p2_native_worker /runtime/p2_native_worker
+# Release packaging supplies only the loader and shared objects reported in the
+# lock; there is no interpreter, shell, package tree, or package manager.
+COPY lib/ /lib/
+COPY lib64/ /lib64/
+# The measured local linker cache is a finite support artifact, not a package
+# database; it maps the measured absolute DT_NEEDED destinations in scratch.
+COPY etc/ /etc/
+USER 65532:65532
+# The loader is the fixed native entrypoint. `podman run … /runtime/p2_native_worker`
+# supplies only the worker's inert argv[1]; the loader path and library search
+# directory are image-owned, never caller controlled.
+ENTRYPOINT ["/lib64/ld-linux-x86-64.so.2", "--library-path", "/lib/x86_64-linux-gnu", "/runtime/p2_native_worker"]

@@ -2487,7 +2487,6 @@ impl PySubstrate {
         Ok(result)
     }
 
-
     /// Frustration index given an arbitrary state map. Used by
     /// predictive insight-seeking to predict ΔF on a what-if marginal.
     /// state is a dict {node_id_int: float}.

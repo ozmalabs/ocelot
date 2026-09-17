@@ -3388,9 +3388,7 @@ pub(crate) fn eval_ratio_infer(
     // whose ratio is not constant across the population (beyond the observation
     // resolution) FALSIFIES the invariant (the honest MDL floor: not purely
     // multiplicative).
-    let best_frame = (0..ext.len())
-        .max_by_key(|&i| ext[i][ref_pos])
-        .unwrap_or(0);
+    let best_frame = (0..ext.len()).max_by_key(|&i| ext[i][ref_pos]).unwrap_or(0);
     let fbest = &ext[best_frame];
     let mut ratios: Vec<(i64, Ratio)> = Vec::new(); // (slot dim, ratio)
     for j in 0..coord_idxs.len() {
@@ -3414,8 +3412,7 @@ pub(crate) fn eval_ratio_infer(
         let tol: i128 = (resolution.max(0) as i128) * (r.num as i128 + r.den as i128);
         for row in &ext {
             checked += 1;
-            let residual =
-                row[j] as i128 * r.den as i128 - row[ref_pos] as i128 * r.num as i128;
+            let residual = row[j] as i128 * r.den as i128 - row[ref_pos] as i128 * r.num as i128;
             if residual.abs() > tol {
                 return unexplained(checked, ctx);
             }
@@ -3427,7 +3424,8 @@ pub(crate) fn eval_ratio_infer(
     // whole set is a scale2-family map (mint latent:scale2 directly). A value v
     // is a power of two iff v > 0 && (v & (v-1)) == 0.
     let is_pow2 = |v: i64| v > 0 && (v & (v - 1)) == 0;
-    let all_pow2 = !ratios.is_empty() && ratios.iter().all(|(_, r)| is_pow2(r.num) && is_pow2(r.den));
+    let all_pow2 =
+        !ratios.is_empty() && ratios.iter().all(|(_, r)| is_pow2(r.num) && is_pow2(r.den));
 
     // Build the diagonal integer MATRIX minted when the set is NOT a clean
     // power-of-two (a kind:"linear" diagonal that apply_linear_once already
@@ -3463,7 +3461,11 @@ pub(crate) fn eval_ratio_infer(
     } else {
         matrix.iter().map(|m| Value::Int(*m)).collect()
     };
-    let latent_name = if all_pow2 { "latent:scale2" } else { "latent:ratio" };
+    let latent_name = if all_pow2 {
+        "latent:scale2"
+    } else {
+        "latent:ratio"
+    };
 
     let result = Value::Dict(Arc::from(vec![
         (surf("explained"), Value::Bool(true)),

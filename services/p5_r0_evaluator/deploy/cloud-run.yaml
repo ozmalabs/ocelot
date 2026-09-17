@@ -1,0 +1,124 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: p5-v3-evaluator
+  annotations:
+    # No public ingress: callers must use an internal authenticated path.
+    run.googleapis.com/ingress: internal
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/maxScale: "1"
+        run.googleapis.com/execution-environment: gen2
+    spec:
+      serviceAccountName: p5-evaluator@PROJECT_ID.iam.gserviceaccount.com
+      containerConcurrency: 1
+      timeoutSeconds: 30
+      containers:
+        - image: REGION-docker.pkg.dev/PROJECT_ID/p5/evaluator@sha256:IMAGE_DIGEST
+          ports:
+            - containerPort: 8080
+          env:
+            - name: P5R0_BUCKET
+              value: p5-r0-private-PROJECT_ID
+            - name: P5R0_PREFIX
+              value: v3
+            - name: P5R0_AUDIENCE
+              value: https://p5-v3-evaluator-REPLACE.run.app
+            - name: P5R0_ALLOWED_SUBJECTS
+              value: p5-runner@PROJECT_ID.iam.gserviceaccount.com
+            - name: P5R0_ATTESTATION_AUDIENCE
+              value: https://sts.googleapis.com
+            - name: P5R0_WIP_PROVIDER
+              value: //iam.googleapis.com/projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/POOL/providers/PROVIDER
+            - name: P5R0_EXPECTED_PROJECT_NUMBER
+              value: PROJECT_NUMBER
+            - name: P5R0_EXPECTED_PROJECT_ID
+              value: PROJECT_ID
+            - name: P5R0_EXPECTED_ZONE
+              value: REGION-a
+            - name: P5R0_ATTESTATION_ISSUER
+              value: https://confidentialcomputing.googleapis.com
+            - name: P5R0_EXPECTED_DEBUG_STATE
+              value: disabled-since-boot
+            - name: P5R0_EXPECTED_TEE
+              value: CONFIDENTIAL_SPACE
+            - name: P5R0_EXPECTED_HARDWARE_MODEL
+              value: GCP_AMD_SEV
+            - name: P5R0_EXPECTED_WORKLOAD
+              value: evaluator
+            - name: P5R0_EXPECTED_SECURE_BOOT
+              value: "true"
+            - name: P5R0_CLAIM_AUDIENCE
+              value: aud
+            - name: P5R0_CLAIM_NONCE
+              value: eat_nonce
+            - name: P5R0_CLAIM_ISSUED_AT
+              value: iat
+            - name: P5R0_CLAIM_EXPIRES_AT
+              value: exp
+            - name: P5R0_CLAIM_ISSUER
+              value: iss
+            - name: P5R0_CLAIM_SUBJECT
+              value: sub
+            - name: P5R0_CLAIM_IMAGE_DIGEST
+              value: submods.container.image_digest
+            - name: P5R0_CLAIM_PROJECT_NUMBER
+              value: submods.gce.project_number
+            - name: P5R0_CLAIM_PROJECT_ID
+              value: submods.gce.project_id
+            - name: P5R0_CLAIM_ZONE
+              value: submods.gce.zone
+            - name: P5R0_CLAIM_DEBUG_STATE
+              value: dbgstat
+            - name: P5R0_CLAIM_TEE
+              value: swname
+            - name: P5R0_CLAIM_HARDWARE_MODEL
+              value: hwmodel
+            - name: P5R0_CLAIM_SECURE_BOOT
+              value: secboot
+            - name: P5R0_CLAIM_WORKLOAD
+              value: submods.container.env.P5R0_EXPECTED_WORKLOAD
+            - name: P5R0_KMS_KEY_VERSION
+              value: projects/PROJECT_ID/locations/LOCATION/keyRings/p5/cryptoKeys/evaluator/cryptoKeyVersions/VERSION
+            - name: P5R0_AUTHORITY_JSON
+              value: '{"authority_id":"REPLACE","key_id":"REPLACE","public_key":"REPLACE","public_key_digest":"REPLACE","schema":"P5R0PublicAuthorityV4","transport_attestation":{"audience":"https://sts.googleapis.com","event":"confidential_space_attestation","provider":"//iam.googleapis.com/projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/POOL/providers/PROVIDER","schema":"P5R0AuthorityTransportV1"}}'
+            # Immutable commitments, not credentials. The deployment gate must
+            # reject any REPLACE_/PROJECT_/IMAGE_DIGEST placeholder before apply.
+            - name: P5R0_EXPECTED_IMAGE_DIGEST
+              value: sha256:IMAGE_DIGEST
+            - name: P5R0_RUNTIME_DIGEST
+              value: sha256:RUNTIME_DIGEST
+            - name: P5R0_RESOURCE_PROFILE_DIGEST
+              value: sha256:RESOURCE_PROFILE_DIGEST
+            - name: P5R0_BASE_IMAGE_DIGEST
+              value: sha256:BASE_IMAGE_DIGEST
+            - name: P5R0_SERVICE_NAME
+              value: p5-v3-evaluator
+            - name: P5R0_REGION
+              value: REGION
+            - name: P5R0_CPU_LIMIT
+              value: "1"
+            - name: P5R0_MEMORY_LIMIT
+              value: "512Mi"
+            - name: P5R0_POLICY_DIGEST
+              value: sha256:POLICY_DIGEST
+            - name: P5R0_CLAIM_PATHS_DIGEST
+              value: sha256:CLAIM_PATHS_DIGEST
+            - name: P5R0_ATTESTATION_CLAIMS_DIGEST
+              value: sha256:ATTESTATION_CLAIMS_DIGEST
+            - name: P5R0_WIP_POLICY_DIGEST
+              value: sha256:WIP_POLICY_DIGEST
+            - name: P5R0_TIMING_AUTHORITY_ID
+              value: INDEPENDENT_LEDGER_AUTHORITY
+            - name: P5R0_TIMING_KEY_ID
+              value: INDEPENDENT_LEDGER_KEY
+            - name: P5R0_TIMING_LEDGER_ID
+              value: INDEPENDENT_LEDGER_ID
+            - name: P5R0_TIMING_PUBLIC_KEY_DIGEST
+              value: sha256:LEDGER_KEY_DIGEST
+          resources:
+            limits:
+              cpu: "1"
+              memory: 512Mi

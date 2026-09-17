@@ -1,0 +1,28 @@
+{
+  "iss": "https://confidentialcomputing.googleapis.com",
+  "aud": "https://sts.googleapis.com",
+  "sub": "runner",
+  "eat_nonce": "nonce-1234",
+  "iat": 999,
+  "exp": 2000,
+  "swname": "CONFIDENTIAL_SPACE",
+  "dbgstat": "disabled-since-boot",
+  "hwmodel": "GCP_AMD_SEV",
+  "secboot": true,
+  "submods": {
+    "container": {
+      "image_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "env": {
+        "P5R0_EXPECTED_WORKLOAD": "evaluator"
+      }
+    },
+    "gce": {
+      "project_number": "123",
+      "project_id": "project",
+      "zone": "us-central1-a"
+    },
+    "confidential_space": {
+      "support_attributes": ["STABLE"]
+    }
+  }
+}

@@ -1,0 +1,29 @@
+# P0-A local harness approximation
+
+`evaluation/p0a` is an **evaluation-only local test harness**, activated only by its explicit launcher. It verifies a signed manifest, registers a run ID once, accepts only canonical request bytes, verifies a one-request Ed25519 grant, reserves replay/quota state before the fixture effect, and writes integrity-linked receipts. In a P0-A manifest `enabled_methods` is always `[]`; therefore no agent-initiated effect is enabled. The sole `simulator.counter.advance.v1` method exists only for deterministic, non-P0-A integration fixtures.
+
+The broker starts with no compatibility handler map. Requests cannot carry paths, URLs, callbacks, executable names, or code. Unknown/malformed/unauthorized requests deny before dispatch; a receipt-log failure produces `impasse` and no fixture effect. `Commitment` remains a cognitive eligibility/audit mechanism and is not a capability grant or authoritative receipt.
+
+## Exact local-security limitation
+
+**This is a local P0-A harness approximation; it is not evaluator custody.** Same-user filesystem modes, in-process monkeypatches, local Unix sockets, and a Python watchdog do **not** isolate an agent that can modify or replace the same processes/files. This implementation does not claim hostile-agent containment, evaluator-controlled signing keys, immutable control plane/inputs, write-only results, secret separation, network isolation, or unoverrideable kill authority.
+
+Evaluator custody requires evaluator-owned manifest/grant/receipt/kill credentials; separate UIDs or stronger VM/container identities; read-only evaluator mounts; a no-network namespace/firewall; a broker/receipt writer/supervisor outside the agent principal; and independent evaluator probes. Until those conditions exist, CLI and evidence must say: **“local P0-A harness approximation; not evaluator custody.”**
+
+## Scope
+
+The guard is dormant in normal workflows. When evaluation mode is active it pre-effect-denies legacy world I/O, fetch materialization, experiment spawn, browser launch/apply, microphone capture, legacy seed loading, and raw daemon host dispatch. The launcher also intercepts socket, urllib, subprocess, `os.system`, exec, and `os.read` as test instrumentation; interception coverage is not an OS boundary.
+
+## Proposed OS-isolated launch policy (pending provisioned probe evidence)
+
+P0 launch code is designed to use a fresh Bubblewrap exec rather than the former forked endpoint. Under a provisioned evaluator deployment, the evaluator would hold the broker, grant resolver/keys, native provenance verifier, receipt signer/log, terminal-record authority, and supervisor. The intended worker protocol is standard input/output/error using bounded canonical `EvaluationAgentProtocolV1` frames: the worker submits a complete bounded `GraphActionProposalV1` candidate, and an opaque proposal-ID submission is rejected. The evaluator verifies the signed native-export attestation and admits the candidate only when it exactly equals its matching canonical record in the evaluator-attested export; trusted code then projects and seals the resulting V2 request. The worker must not receive a raw action request, grant, callback, file path, descriptor, or result path.
+
+The sandbox descriptor and mount layout below are **deployment policy, not established guarantees** until a provisioned, evaluator-owned probe has verified them: an empty tmpfs root; read-only staged `/runtime`, `/agent`, and `/input`; writable `/work`; fresh `/proc`; minimal `/dev`; no checkout/home/run/control/receipt/result/socket mounts; isolated user/PID/network/IPC/UTS/cgroup namespaces; cleared environment; post-bootstrap seccomp; `close_fds=True`; and a descriptor allowlist of only `0`, `1`, and `2`. Likewise, the evaluator controller must precreate a run-bound cgroup scope and atomically spawn the worker into it before untrusted exec; a post-`Popen` attach is not treated as whole-scope containment.
+
+Before spawning, the evaluator code validates the staged layout, Bubblewrap availability, policy material, and controller interface. If any check is unavailable, it records a run-bound impasse where the receipt chain is trusted (otherwise an attempt-scoped signed launch record), raises `ProtocolError`, and never falls back to fork, local multiprocessing, unshare, Docker/Podman, or monkeypatch-only execution. Runtime failures are first-wins signed records under `runs/<run-id>/<manifest-hash>/terminal`; pre-verification launch failures are under `launch-attempts/<attempt-id>`.
+
+This is code-level deployment policy, not an evaluator-custody or OS-containment claim. P0 operational acceptance remains blocked unless `P0_OS_ISOLATION_PROVISIONED=1` is accompanied by the provisioned probe artifact establishing evaluator-controlled UID/keys/control plane, the intended mount/descriptor state, and authorized external whole-scope termination.
+
+## Test-only Podman acceptance probe
+
+`tests/evaluation/podman_acceptance.py` is a **separately provisioned, rootless-Podman acceptance probe**. It is evaluator-side test code only; it does not alter `evaluation/p0a/sandbox.py`, `evaluation/p0a/entrypoint.py`, or the Bubblewrap-only production launcher contract. It builds only from a fresh local staged context, with pulling and build networking disabled, launches Podman from the evaluator harness, and never mounts a container-control socket. Its narrow profile and evidence requirements are specified in [P0A_PODMAN_ACCEPTANCE.md](P0A_PODMAN_ACCEPTANCE.md). Same-user rootless Podman is not independent evaluator custody, and fixture mediation neither executes a dynamic native graph substrate nor demonstrates autonomous planning. Passing it proves only that exact provisioned test profile, not general evaluator custody or a MAC-layer policy claim.

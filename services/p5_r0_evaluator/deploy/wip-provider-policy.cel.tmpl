@@ -1,0 +1,36 @@
+# Closed WIP provider policy. Render this file from the same reviewed policy
+# values used by LockedBootstrapConfig; deployment must reject unresolved
+# REVIEWED_* values before apply.
+attributeMapping = {
+  "google.subject": "assertion.sub",
+  "attribute.image_digest": "assertion.submods.container.image_digest",
+  "attribute.project_number": "assertion.submods.gce.project_number",
+  "attribute.project_id": "assertion.submods.gce.project_id",
+  "attribute.zone": "assertion.submods.gce.zone",
+  "attribute.debug_state": "assertion.dbgstat",
+  "attribute.tee": "assertion.swname",
+  "attribute.hardware_model": "assertion.hwmodel",
+  "attribute.secure_boot": "assertion.secboot",
+  "attribute.workload": "assertion.submods.container.env.P5R0_EXPECTED_WORKLOAD"
+}
+
+# Evaluate this before STS can issue a token. The launcher token audience is the
+# exact Google STS audience; the WIP provider resource is bound separately by
+# the STS exchange and IAM provider configuration.
+attributeCondition = """
+  assertion.aud == 'https://sts.googleapis.com' &&
+  assertion.iss == 'https://confidentialcomputing.googleapis.com' &&
+  assertion.submods.container.image_digest == 'sha256:REVIEWED_EXACT_64_HEX_DIGEST' &&
+  assertion.submods.gce.project_number == 'REVIEWED_PROJECT_NUMBER' &&
+  assertion.submods.gce.project_id == 'REVIEWED_PROJECT_ID' &&
+  assertion.submods.gce.zone == 'REVIEWED_ZONE' &&
+  assertion.dbgstat == 'disabled-since-boot' &&
+  assertion.swname == 'CONFIDENTIAL_SPACE' &&
+  assertion.hwmodel == 'GCP_AMD_SEV' &&
+  assertion.submods.container.env.P5R0_EXPECTED_WORKLOAD == 'evaluator' &&
+  assertion.secboot == true
+"""
+
+# IAM must bind only the exact provider principalSet and exact v3/runs prefix
+# plus reviewed locks/manifests/truth reads and one KMS key version. No pool-
+# wide grant, ambient ADC, or broad v3/runs permission is valid.
