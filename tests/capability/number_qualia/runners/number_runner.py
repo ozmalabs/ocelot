@@ -803,6 +803,90 @@ def search_rescue_reading(adj, truth: set, order_nodes: Optional[list] = None) -
     return None
 
 
+# --------------------------------------------------------------------------- #
+#  REPERTOIRE SELF-EXTENSION: authoring a new reading for a REPEATED no-rescue class.
+#
+#  The anti-shape mechanism learns WHAT it cannot read yet (a no-rescue class becomes a
+#  negative-valence shape). Self-extension closes the loop: learn HOW to read it. When the
+#  SAME no-rescue class is hit repeatedly, AUTHOR a new candidate reading and add it to the
+#  repertoire — after which that class is RESCUED (verify-confirmed) instead of distrusted.
+#
+#  NON-CIRCULARITY: the authored reading must be COMPOSED FROM PRIMITIVES ALREADY HELD
+#  (cycle_core + degree + adjacency), NOT a bespoke class-specific solver, and it is only
+#  ADOPTED for a shape when verify confirms it (via search_rescue_reading). A candidate that
+#  is globally imperfect (right on the new class, wrong elsewhere) is HARMLESS: per-shape
+#  verify-gated adoption means it only ever WINS where it is actually right; existing
+#  readings keep winning where they are right (no regression). This is the SAME recognise-
+#  then-compose move the salience terms and the track_j2 library used — the pieces recombine
+#  to rescue the class; nothing is planted.
+# --------------------------------------------------------------------------- #
+def _bridge_edge_endpoints(adj: dict) -> set:
+    """Nodes incident to a candidate BRIDGE edge — an edge whose endpoints share NO common
+    neighbour (no triangle closes it). Composed from a held primitive (adjacency/degree
+    neighbourhood). A cheap structural proxy for 'edge not on a short cycle'; it is
+    deliberately imperfect globally (it over-fires on long chordless cycles), which is why
+    the reading built on it is only ever ADOPTED where verify confirms it."""
+    out = set()
+    for u in adj:
+        for v in adj[u]:
+            if u < v and not (set(adj[u]) & set(adj[v])):
+                out.add(u); out.add(v)
+    return out
+
+
+def _read_bridge(adj, order_nodes, shape):
+    """An AUTHORED reading, composed from held primitives (cycle_core attachment points +
+    the bridge-edge-endpoint proxy): critical nodes are the cycle<->rest attachment points
+    UNION the endpoints of candidate bridge edges. Rescues bridged multi-cycle structures
+    (barbell) that no prior reading captured. Globally imperfect (wrong on plain cycles),
+    so only adopted per-shape under verify — exactly how self-extension stays honest."""
+    core = cycle_core(adj)
+    pred = {v for v in adj if v in core and any(u not in core for u in adj[v])}
+    return pred | _bridge_edge_endpoints(adj)
+
+
+#: The library of composable candidate readings self-extension can author from. Each is
+#: built ONLY from held primitives (cycle_core / degree / adjacency), NOT class-specific.
+#: They are NOT in the default repertoire — extend_repertoire adds one only when a repeated
+#: no-rescue class is verified to be rescued by it.
+_AUTHORABLE_READINGS = {
+    "bridge": _read_bridge,
+}
+
+
+def extend_repertoire(adj: dict, truth: set, *, order_nodes: Optional[list] = None) -> Optional[str]:
+    """AUTHOR a new reading for a no-rescue class. Search the authorable (composed-from-held-
+    primitives) readings for one that VERIFY confirms on this structure; if found, ADD it to
+    the live READING_REPERTOIRE and return its name. Thereafter search_rescue_reading will
+    find it, so the class flips from distrusted (anti-shape) to rescued. Returns None if no
+    authorable reading rescues it (the class stays genuinely no-rescue). Idempotent: a
+    reading already in the repertoire is not re-added."""
+    order_nodes = list(adj) if order_nodes is None else order_nodes
+    for name, fn in _AUTHORABLE_READINGS.items():
+        if name in READING_REPERTOIRE:
+            continue
+        if f1_score(fn(adj, order_nodes, manifold_shape(aperture_manifold(adj, order_nodes))),
+                    truth) >= 0.999:
+            READING_REPERTOIRE[name] = fn          # ADOPT into the live repertoire
+            return name
+    return None
+
+
+def _held_shape_for(substrate, coord: list, k: int) -> Optional[int]:
+    """The already-held Shape node matching this coordinate's order-k signature (within
+    tol), or None. Used to tell a FIRST no-rescue encounter (mint the anti-shape) from a
+    REPEAT (invest in authoring a reading via self-extension)."""
+    sig = aperture_signature(coord, k, substrate)
+    for sh in substrate.nodes("Shape"):
+        at = substrate.node(sh)["attrs"]
+        if int(at.get("aperture", -1)) != k:
+            continue
+        d = sum(abs(sig[i] - int(at.get("sig_%d" % i, 0))) for i in range(SHAPE_SIG_WIDTH))
+        if d <= SHAPE_MATCH_TOL:
+            return sh
+    return None
+
+
 def verify_then_update(substrate, adj: dict, field_valence: float,
                        *, order_nodes: Optional[list] = None,
                        spy: Optional[SolverSpy] = None) -> dict:
@@ -820,8 +904,13 @@ def verify_then_update(substrate, adj: dict, field_valence: float,
               · a rescue exists     -> the lesson is 'read this shape with R', NOT distrust ->
                 MINT a valence=+1 shape tagged reading=R (a verified correction, imported on
                 re-encounter). No anti-shape.
-              · no rescue           -> the shape is genuinely blind to the whole repertoire ->
-                MINT the valence=-1 anti-shape (honest LAST RESORT).
+          · no rescue in the current repertoire -> WHEN IT KEEPS HAPPENING (self-extension):
+                on the FIRST hit, mint the valence=-1 anti-shape (distrust; do not invest yet).
+                On a REPEAT (the anti-shape is already held for this class), AUTHOR a new reading
+                composed from held primitives (extend_repertoire); if it rescues the class, the
+                anti-shape flips POSITIVE (reading=the authored reading) — the pipeline learned
+                HOW to read it, not just that it couldn't. If even authoring fails, the anti-shape
+                stands (genuinely no-rescue).
     The felt read itself stays solver-free; the Tarjan here is the SEPARATE verify step,
     and the rescue search reuses its truth (no extra solver call)."""
     order_nodes = list(adj) if order_nodes is None else order_nodes
@@ -847,6 +936,19 @@ def verify_then_update(substrate, adj: dict, field_valence: float,
         mint_shape(substrate, coord, k, +1.0, order_nodes=order_nodes, reading=rescue)
         return {"verified": True, "f1": f1, "minted_valence": 1.0, "aperture": k,
                 "reading": rescue, "reason": "rescued_by_reading"}
+    # NO RESCUE in the current repertoire. Is this a REPEAT of an already-distrusted class?
+    prior = _held_shape_for(substrate, coord, k)
+    if prior is None or float(substrate.node(prior)["attrs"].get("valence", 0.0)) >= 0.0:
+        # first encounter of this no-rescue class -> distrust (do not invest in authoring yet)
+        mint_shape(substrate, coord, k, -1.0, order_nodes=order_nodes, reading="default")
+        return {"verified": True, "f1": f1, "minted_valence": -1.0, "aperture": k,
+                "reading": None, "reason": "no_rescue_minted_antishape"}
+    # REPEAT of a held no-rescue class -> SELF-EXTEND: author a reading from held primitives.
+    authored = extend_repertoire(adj, truth, order_nodes=order_nodes)
+    if authored is not None:                             # learned HOW to read it
+        mint_shape(substrate, coord, k, +1.0, order_nodes=order_nodes, reading=authored)
+        return {"verified": True, "f1": f1, "minted_valence": 1.0, "aperture": k,
+                "reading": authored, "reason": "self_extended_authored_reading"}
     mint_shape(substrate, coord, k, -1.0, order_nodes=order_nodes, reading="default")
     return {"verified": True, "f1": f1, "minted_valence": -1.0, "aperture": k,
-            "reading": None, "reason": "no_rescue_minted_antishape"}
+            "reading": None, "reason": "no_rescue_even_after_authoring"}
