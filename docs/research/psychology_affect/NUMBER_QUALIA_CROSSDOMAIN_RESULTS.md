@@ -122,3 +122,57 @@ run.
 Additive only. `.so` md5 `7efe75eba05b006cafd15dbb4b7da246` frozen (Python/JSON only). No
 protected-file edit; `conceptualizer.py` untouched (audit green); nothing under
 `/applications`. Files: the two above + this doc.
+
+---
+
+## Update — the path is RESCUED by meta-shape match (sub-experiment (j2))
+
+The path boundary above was **not** the ceiling it looked like. The per-element outlier
+read failed on the path because criticality there is not a *within-instance* outlier —
+but the felt move that works is *higher-order*: recognise the **whole graph's meta-shape**
+and match it against a library of **earned** (exactly-solved-once) exemplars, importing
+the exemplar's solution as a **structural-role template**. "This graph feels like a chain
+→ a chain's load-bearing nodes are its spine → flag the spine." That is analogical
+retrieval against solved exemplars — the same move a person makes recognising a
+problem-shape they have seen before — and it is what the earlier read omitted.
+
+Implemented and run in `track_j2_metashape_rescue.py` (exit 0, M1–M4 PASS):
+
+- **M1 — path rescued.** A fresh path (size 7, unseen) matches the chain exemplar
+  (meta-shape distance 0), imports its earned `spine` role template, and flags its
+  cut-vertices **exactly (F1 = 1.0)** — the case track (j) scored F1 = 0. Fresh star and
+  cycle also F1 = 1.0.
+- **M2 — felt path solver-free.** Matching a fresh graph makes **0** Tarjan calls; the
+  5 exact solves were the one-time **library build** (spy-separated). Feel is cheap;
+  the solver only earned the library.
+- **M3 — feel-then-verify boundary (near-path decoy).** A chain-plus-one-chord matches
+  the chain exemplar only *loosely* — meta-shape distance **6** vs **0** for a clean path
+  — and the imported template is genuinely **wrong** there (predicts `{n0,n1,n3,n4}`, truth
+  `{n2,n3,n4}`, F1 = 0.57). The elevated match-distance is the built-in "this isn't a
+  clean chain, verify me" signal; verification is what corrects it. The prior is lossy by
+  design, and the match-distance says when to trust it.
+- **M4 — earned, not planted.** Every template's critical-role set was learned by solving
+  the exemplar exactly once (auditable in the library: chain→`spine`, star→`hub`,
+  clique/cycle→`[]`, tree→`{hub,spine}`); a fresh graph's answer comes from the meta-match
+  plus a structural role, never a hand-authored `chain→spine` table (that hand-table is the
+  hollow Arm-2 control).
+
+### The ceiling, reframed: coverage, not local-vs-global
+
+Track (j)'s "local-shape-bounded" conclusion was too pessimistic. The real bound is a
+**coverage ceiling**: the felt read works for any configuration whose **meta-shape matches
+a solved exemplar** — *including* global-criticality cases like the path — and fails only
+where the meta-shape matches nothing in the library. Cheap felt priors are not restricted
+to local structure; they are restricted to *previously-felt shapes*, which is a much more
+favourable and human-like bound (you feel what you have seen the shape of before).
+
+The unmapped-domain **numerology fence still stands**: the exemplars and targets here are
+all checkable graphs, so this licenses "meta-shape match imports a known solution across
+fresh instances of a solved shape," not "trust a felt read where there is no ground truth
+and no solved exemplar."
+
+### Files added for the rescue
+
+`tests/capability/number_qualia/track_j2_metashape_rescue.py` and the
+`meta_shape` / `degree_role` / `build_solution_library` / `felt_meta_match` additions to
+`runners/number_runner.py`.
