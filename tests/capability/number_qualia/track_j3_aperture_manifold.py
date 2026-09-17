@@ -25,18 +25,15 @@ WHAT THIS SHOWS
     are two aperture settings of one read.
   · M3 FELT PATH SOLVER-FREE: the aperture read runs 0 Tarjan calls (the exact solver
     is the separate verify step; spy stays 0).
-  · M4 HONEST NULL: on a plain cycle (no cut vertices) the manifold is FLAT at every
-    aperture -> the read reports "no separating structure, verify" and manufactures NO
-    false peak.
-  · M5 THE FENCE, WITH TEETH (bounded vs unbounded witness / learned distrust):
-    on a ring+tail the felt read COMMITS and is WRONG (its local coordinates cannot see
-    that the ring closes — an unbounded-radius fact — so it flags the whole cycle interior
-    as critical, F1<1). There is deliberately NO hardcoded cycle veto: the read is allowed
-    to be fooled once, and VERIFY catches the mistake. That caught failure is what mints a
-    negative-valence anti-shape (see the anti-shape wiring); the shape field then repels the
-    same shape at its aperture next time. Distrust is LEARNED per-shape and aperture-scoped,
-    not a hand-coded special case. This is the sharp form of the coverage ceiling: feel
-    COMMITS on bounded-witness structure and is caught-then-remembered on unbounded-witness.
+  · M4 CYCLE DETECTED -> CYCLIC READING: on a plain cycle (no cut vertices) the cycle is
+    DETECTED (2-core peel) and TRIGGERS the cycle-aware reading, which correctly reports no
+    cut vertices (F1=1.0, confirmed) — a confident correct read, not an abstain.
+  · M5 THE STEER — the cycle is DETECTED and TRIGGERS A DIFFERENT APPROACH: on a ring+tail
+    the cycle is detected and the cycle-aware reading is triggered (a node purely on the ring
+    is not critical; only where a part attaches is), reading it correctly (F1=1.0). No
+    hardcoded veto and no distrust — a detected cycle is not untrustworthy, it just needs the
+    cyclic reading. Distrust via a learned anti-shape is reserved for genuine no-rescue
+    structures (e.g. bridged multi-cycles); see the anti-shape wiring.
 
 REFRAME: the track-(j2) coverage ceiling ("works where the meta-shape matches a solved
 exemplar") sharpens to a WITNESS-RADIUS ceiling: feel recovers any property with a
@@ -176,26 +173,29 @@ def main() -> int:
     print("  M3 FELT path solver-free (Tarjan calls during all felt reads = %d):      %s"
           % (felt_spy.calls, "PASS" if m3 else "FAIL"))
 
-    cyc_felt, _, _ = results["CYCLE-6       (no cut vertices)"]
-    m4 = (not cyc_felt["committed"]) and cyc_felt["reason"] == "flat_all_apertures"
-    print("  M4 HONEST NULL on the cycle (flat all apertures -> verify, no peak):     %s"
+    cyc_felt, cyc_truth, _ = results["CYCLE-6       (no cut vertices)"]
+    # Cycle DETECTION now triggers the cyclic reading: cycle6 is read the cyclic way and
+    # confirmed (no cut vertices), a confident correct read rather than an abstain.
+    m4 = (cyc_felt["committed"] and cyc_felt["reason"] == "cycle_detected_cyclic_reading"
+          and R.f1_score(cyc_felt["predicted"], cyc_truth) >= 0.999)
+    print("  M4 CYCLE-6 detected as cyclic -> cyclic reading -> confirmed (F1=1.0, no cut vs): %s"
           % ("PASS" if m4 else "FAIL"))
 
     rt_felt, rt_truth, _ = results["RING+TAIL     (ring interior LOOKS critical, is not)"]
-    # No hardcoded cycle veto: the felt read COMMITS and is WRONG here (F1<1). That caught
-    # failure is the entry point for the LEARNED anti-shape (verify catches it -> mint a
-    # negative-valence shape; the field repels it next time). The honest M5 is: the read
-    # commits and verify would catch it — distrust is earned, not a built-in predicate.
+    # The steer: the cycle is DETECTED and TRIGGERS a different reading. Ring+tail is read
+    # the cyclic way (only the attachment point is critical) and confirmed F1=1.0 — no
+    # hardcoded veto, no distrust; the cycle simply triggers the appropriate approach.
     rt_f1 = R.f1_score(rt_felt["predicted"], rt_truth) if rt_felt["committed"] else None
-    m5 = rt_felt["committed"] and rt_f1 is not None and rt_f1 < 0.999
-    print("  M5 FENCE with teeth: ring+tail COMMITS and is WRONG (F1=%s) -> verify catches it,"
+    m5 = (rt_felt["committed"] and rt_felt["reason"] == "cycle_detected_cyclic_reading"
+          and rt_f1 is not None and rt_f1 >= 0.999)
+    print("  M5 RING+TAIL: cycle DETECTED -> cyclic reading -> read correctly (F1=%s),"
           % ("%.2f" % rt_f1 if rt_f1 is not None else "n/a"))
-    print("     mints a LEARNED anti-shape (no hardcoded cycle veto):                   %s"
+    print("     the detected cycle triggers a different approach (steer):                %s"
           % ("PASS" if m5 else "FAIL"))
 
     ok = all([m1, m2, m3, m4, m5])
-    print("\n  VERDICT: %s" % ("ALL PASS — aperture manifold; commit on bounded witness, "
-                               "honest null when flat, caught-then-learned on unbounded"
+    print("\n  VERDICT: %s" % ("ALL PASS — aperture manifold; acyclic read by default, "
+                               "cycle DETECTED -> cyclic reading, all confirmed"
                                if ok else "SOME FAILED — see above"))
     return 0 if ok else 1
 

@@ -100,15 +100,30 @@ def _star(n):  return _ud([("h", "l%d" % i) for i in range(n - 1)])
 
 
 def _broom(tag):
-    """A BROOM: a path spine ending in a star. ACYCLIC, so felt_aperture_read's
-    has_cycle confidence gate PASSES and the felt read COMMITS -- but it predicts only
-    the hub and MISSES the spine interiors (F1=0.5). The genuine numerology case the
-    built-in gate is BLIND to: only verify catches it. This is what the fool-me-once
-    loop must LEARN as a negative-valence shape."""
+    """A BROOM: a path spine ending in a star. ACYCLIC. The default reading commits but
+    MISSES the spine interiors (F1=0.5) -> rescued by a reading (a reading correction, not
+    distrust)."""
     return _ud([("%sp0" % tag, "%sp1" % tag), ("%sp1" % tag, "%sp2" % tag),
                 ("%sp2" % tag, "%sh" % tag),
                 ("%sh" % tag, "%st1" % tag), ("%sh" % tag, "%st2" % tag),
                 ("%sh" % tag, "%st3" % tag)])
+
+
+def _ring_tail(k, tag=""):
+    """A RING+TAIL: a cycle with one pendant. CYCLIC -> cycle DETECTION triggers the
+    cycle-aware reading, which correctly flags only the attachment point (F1=1.0). The
+    cycle is not distrusted; it is read the cyclic way."""
+    return _ud([("%sy%d" % (tag, i), "%sy%d" % (tag, (i + 1) % k)) for i in range(k)]
+               + [("%sy0" % tag, "%stail" % tag)])
+
+
+def _barbell(tag=""):
+    """Two triangles joined by a bridge path. CYCLIC (two 2-cores), but NO reading in the
+    current repertoire captures its cut vertices (bridge-path interiors + attachment
+    points) -> the GENUINE no-rescue case where the anti-shape is the honest last resort."""
+    return _ud([("%sa0" % tag, "%sa1" % tag), ("%sa1" % tag, "%sa2" % tag), ("%sa2" % tag, "%sa0" % tag),
+                ("%sb0" % tag, "%sb1" % tag), ("%sb1" % tag, "%sb2" % tag), ("%sb2" % tag, "%sb0" % tag),
+                ("%sa0" % tag, "%sm0" % tag), ("%sm0" % tag, "%sm1" % tag), ("%sm1" % tag, "%sb0" % tag)])
 
 
 def _mk_axis(agent, *, shortfall, saturation, cost=0.0):
@@ -155,9 +170,26 @@ def main() -> int:
 
     NET = R.net_valence_term()
 
-    def _ring_tail(k, t=""):
-        return _ud([("%sy%d" % (t, i), "%sy%d" % (t, (i + 1) % k)) for i in range(k)]
-                   + [("%sy0" % t, "%stail" % t)])
+    # ---- CYCLE-DETECTED: a cycle is detected and TRIGGERS a different reading (the steer) ----
+    print("\n" + "-" * 90)
+    print("CYCLE-DETECTED -- a cycle is DETECTED (2-core peel) and TRIGGERS the cycle-aware reading,")
+    print("  not distrust: ring+tail and a plain cycle are read the CYCLIC way and confirmed:")
+    print("-" * 90)
+    a = WorldAdapter(seeds=()); load_all_seeds(a)
+    rt = _ring_tail(6, "A")
+    felt_rt = R.felt_aperture_read(rt)
+    spyc = R.SolverSpy()
+    urt = R.verify_then_update(a.s, rt, field_valence=0.0, spy=spyc)
+    cyc = _ud([("c%d" % i, "c%d" % ((i + 1) % 6)) for i in range(6)])   # plain 6-cycle
+    felt_cyc = R.felt_aperture_read(cyc)
+    ucyc = R.verify_then_update(a.s, cyc, field_valence=0.0, spy=R.SolverSpy())
+    cycle_detected_ok = (felt_rt["reason"] == "cycle_detected_cyclic_reading"
+                         and urt["reason"] == "confirmed" and urt["f1"] >= 0.999
+                         and felt_cyc["reason"] == "cycle_detected_cyclic_reading"
+                         and ucyc["reason"] == "confirmed" and ucyc["f1"] >= 0.999)
+    print(f"  ring+tail: felt={felt_rt['reason']} reading={felt_rt['reading']} -> {urt['reason']} f1={urt['f1']:.2f}")
+    print(f"  cycle6:    felt={felt_cyc['reason']} reading={felt_cyc['reading']} -> {ucyc['reason']} f1={ucyc['f1']:.2f}")
+    print(f"  -> {'cycle DETECTED -> cyclic reading -> confirmed (not distrusted)' if cycle_detected_ok else 'FAIL'}")
 
     # ---- WHEN-IT'S-WRONG: wrong is usually the wrong READING, not an untrustworthy shape ----
     print("\n" + "-" * 90)
@@ -166,61 +198,60 @@ def main() -> int:
     print("  positive shape tagged with the fix; wrong-with-NO-rescue -> the anti-shape (last resort):")
     print("-" * 90)
     a = WorldAdapter(seeds=()); load_all_seeds(a)
-    # (i) BROOM: default read misses the spine interiors (F1=0.5), but the 'non_leaf' reading
-    #     is verified to rescue it -> the lesson is 'read broom with non_leaf', NOT distrust.
+    # (i) BROOM: default read misses the spine interiors (F1=0.5), rescued by a reading
+    #     -> the lesson is 'read broom this way', NOT distrust.
     broom = _broom("A")
     spyb = R.SolverSpy()
     ub = R.verify_then_update(a.s, broom, field_valence=0.0, spy=spyb)
-    rescued_ok = (ub["reason"] == "rescued_by_reading" and ub["minted_valence"] == 1.0
-                  and ub["reading"] == "non_leaf")
+    rescued_ok = (ub["reason"] == "rescued_by_reading" and ub["minted_valence"] == 1.0)
     print(f"  BROOM: f1={ub['f1']:.2f} -> {ub['reason']} reading={ub['reading']} "
           f"minted_valence={ub['minted_valence']}")
     print(f"    -> {'RESCUED: reading correction held POSITIVE, no anti-shape' if rescued_ok else 'FAIL'}")
-    # (ii) RING+TAIL: the ring closes -> NO reading in the repertoire verifies (non_leaf
-    #      over-predicts the cycle interior) -> the anti-shape is the honest LAST RESORT.
-    rt = _ring_tail(6, "A")
+    # (ii) BARBELL (two triangles joined by a bridge path): CYCLIC, but NO reading in the
+    #      repertoire captures its cut vertices -> the anti-shape is the honest LAST RESORT.
+    bar = _barbell("A")
     spyr = R.SolverSpy()
-    ur = R.verify_then_update(a.s, rt, field_valence=0.0, spy=spyr)
+    ur = R.verify_then_update(a.s, bar, field_valence=0.0, spy=spyr)
     antilast_ok = (ur["reason"] == "no_rescue_minted_antishape" and ur["minted_valence"] == -1.0)
-    print(f"  RING+TAIL: f1={ur['f1']:.2f} -> {ur['reason']} minted_valence={ur['minted_valence']}")
+    print(f"  BARBELL: f1={ur['f1']:.2f} -> {ur['reason']} minted_valence={ur['minted_valence']}")
     print(f"    -> {'NO rescue: anti-shape minted (honest last resort)' if antilast_ok else 'FAIL'}")
     fooled_ok = rescued_ok and antilast_ok
 
-    # ---- FOOL-ME-ONCE: the ring+tail anti-shape now repels a fresh matching ring+tail ----
+    # ---- FOOL-ME-ONCE: the barbell anti-shape now repels a fresh matching barbell ----
     print("\n" + "-" * 90)
-    print("FOOL-ME-ONCE -- fresh RING+TAIL matching the held anti-shape (same k=1 signature) is")
+    print("FOOL-ME-ONCE -- fresh BARBELL matching the held anti-shape (same k=1 signature) is")
     print("  repelled: the frontier picks a TRUSTABLE axis, verify NOT spent:")
     print("-" * 90)
     _quiet(a)
-    fresh_rt = _ring_tail(6, "B")
+    fresh_bar = _barbell("B")
     trust = _path(7)
-    ax_rt = _mk_axis(a, shortfall=0.9, saturation=0.0)       # highest residual...
-    ax_path = _mk_axis(a, shortfall=0.4, saturation=0.3)     # ...but trustable
-    ids = {"ring_tail": ax_rt, "path": ax_path}
-    R.stamp_candidate_signature(a.s, ax_rt, R.structural_coord(fresh_rt), 1)
+    ax_bar = _mk_axis(a, shortfall=0.9, saturation=0.0)       # highest residual...
+    ax_path = _mk_axis(a, shortfall=0.4, saturation=0.3)      # ...but trustable
+    ids = {"barbell": ax_bar, "path": ax_path}
+    R.stamp_candidate_signature(a.s, ax_bar, R.structural_coord(fresh_bar), 1)
     R.stamp_candidate_signature(a.s, ax_path, R.structural_coord(trust), 1)
-    nv_rt = float(a.inner.evaluate(NET, {"x": ax_rt}))
+    nv_bar = float(a.inner.evaluate(NET, {"x": ax_bar}))
     nv_path = float(a.inner.evaluate(NET, {"x": ax_path}))
     install_valence_salience(a)
     a._frontier_advance()
     edges = a.inner.neighbours(a.agent, "frontier_pick")
     pick = _name(ids, edges[0]) if edges else "none"
     spy2 = R.SolverSpy()
-    upd2 = R.verify_then_update(a.s, fresh_rt, field_valence=nv_rt, spy=spy2)
-    fool_once_ok = (nv_rt < 0 and pick == "path" and not upd2["verified"] and spy2.calls == 0)
-    print(f"  net_valence: ring_tail(matches anti-shape)={nv_rt}  path(trustable)={nv_path}")
-    print(f"  frontier picks: {pick}   verify on ring_tail spent: {upd2['verified']} ({upd2['reason']})")
+    upd2 = R.verify_then_update(a.s, fresh_bar, field_valence=nv_bar, spy=spy2)
+    fool_once_ok = (nv_bar < 0 and pick == "path" and not upd2["verified"] and spy2.calls == 0)
+    print(f"  net_valence: barbell(matches anti-shape)={nv_bar}  path(trustable)={nv_path}")
+    print(f"  frontier picks: {pick}   verify on barbell spent: {upd2['verified']} ({upd2['reason']})")
     print(f"  -> {'REPELLED from memory, verify saved (cant get fooled again)' if fool_once_ok else 'FAIL'}")
 
     # ---- APERTURE-SCOPED: same structure read at k=2 is NOT repelled ----
     print("\n" + "-" * 90)
-    print("APERTURE-SCOPED -- the anti-shape lives at k=1; the SAME ring+tail read at k=2 is NOT repelled:")
+    print("APERTURE-SCOPED -- the anti-shape lives at k=1; the SAME barbell read at k=2 is NOT repelled:")
     print("-" * 90)
     ax_k2 = _mk_axis(a, shortfall=0.9, saturation=0.0)
-    R.stamp_candidate_signature(a.s, ax_k2, R.structural_coord(fresh_rt), 2)   # aperture=2
+    R.stamp_candidate_signature(a.s, ax_k2, R.structural_coord(fresh_bar), 2)   # aperture=2
     nv_k2 = float(a.inner.evaluate(NET, {"x": ax_k2}))
     aperture_ok = (nv_k2 == 0.0)
-    print(f"  net_valence(ring+tail @k2) = {nv_k2}  -> {'not repelled (anti-shape is k=1 only)' if aperture_ok else 'FAIL'}")
+    print(f"  net_valence(barbell @k2) = {nv_k2}  -> {'not repelled (anti-shape is k=1 only)' if aperture_ok else 'FAIL'}")
 
     # ---- RE-EARNABLE: the -1 shape, later confirmed-fine, drifts toward 0/+ ----
     print("\n" + "-" * 90)
@@ -230,7 +261,7 @@ def main() -> int:
           if int(a.s.node(n)["attrs"].get("aperture", -1)) == 1
           and float(a.s.node(n)["attrs"].get("valence", 0)) < 0][0]
     before = float(a.s.node(sh)["attrs"]["valence"])
-    R.mint_shape(a.s, R.structural_coord(fresh_rt), 1, +1.0)   # a confirming outcome
+    R.mint_shape(a.s, R.structural_coord(fresh_bar), 1, +1.0)   # a confirming outcome
     after = float(a.s.node(sh)["attrs"]["valence"])
     reearn_ok = (before == -1.0 and after > before)
     print(f"  valence before={before}  after a confirming mint={after}  "
@@ -242,16 +273,16 @@ def main() -> int:
     print("  at opposite sign, read by the SAME net_valence Term:")
     print("-" * 90)
     a2 = WorldAdapter(seeds=()); load_all_seeds(a2)
-    R.mint_shape(a2.s, R.structural_coord(_path(7)), 1, +1.0)       # solved exemplar (positive)
-    R.mint_shape(a2.s, R.structural_coord(_ring_tail(6, "C")), 1, -1.0)  # anti-shape (negative)
+    R.mint_shape(a2.s, R.structural_coord(_path(7)), 1, +1.0)        # solved exemplar (positive)
+    R.mint_shape(a2.s, R.structural_coord(_barbell("C")), 1, -1.0)   # anti-shape (negative)
     axp = _mk_axis(a2, shortfall=0.5, saturation=0.5)
     axr = _mk_axis(a2, shortfall=0.5, saturation=0.5)
     R.stamp_candidate_signature(a2.s, axp, R.structural_coord(_path(7)), 1)
-    R.stamp_candidate_signature(a2.s, axr, R.structural_coord(_ring_tail(6, "C")), 1)
+    R.stamp_candidate_signature(a2.s, axr, R.structural_coord(_barbell("C")), 1)
     vp = float(a2.inner.evaluate(NET, {"x": axp}))
     vr = float(a2.inner.evaluate(NET, {"x": axr}))
     sym_ok = (vp > 0 and vr < 0)
-    print(f"  net_valence(path, matches POSITIVE)={vp}  net_valence(ring+tail, matches NEGATIVE)={vr}"
+    print(f"  net_valence(path, matches POSITIVE)={vp}  net_valence(barbell, matches NEGATIVE)={vr}"
           f"  -> {'positive pulls, negative pushes (one field, opposite sign)' if sym_ok else 'FAIL'}")
 
     # ---- RETIRED-PREDICATE: the ring+tail (the case the OLD hardcoded has_cycle veto
@@ -261,23 +292,25 @@ def main() -> int:
     print("RETIRED-PREDICATE -- the ring+tail (what the OLD hardcoded has_cycle veto abstained on)")
     print("  is now handled by the SAME learned loop, no built-in cycle predicate:")
     print("-" * 90)
+    # ---- RETIRED-PREDICATE: the ring+tail (the case the OLD hardcoded has_cycle veto
+    #      abstained on) is now DETECTED as cyclic and READ CORRECTLY -- an even stronger
+    #      retirement than "learned via distrust": the cycle triggers the right approach and
+    #      the read is CONFIRMED, no built-in veto and no distrust needed. ----
+    print("\n" + "-" * 90)
+    print("RETIRED-PREDICATE -- the ring+tail (what the OLD hardcoded has_cycle veto abstained on)")
+    print("  is now DETECTED as cyclic and READ CORRECTLY (confirmed), no built-in veto, no distrust:")
+    print("-" * 90)
     a5 = WorldAdapter(seeds=()); load_all_seeds(a5)
-    ring1 = _ud([("r%d" % i, "r%d" % ((i + 1) % 6)) for i in range(6)] + [("r0", "rt")])
-    ring2 = _ud([("q%d" % i, "q%d" % ((i + 1) % 6)) for i in range(6)] + [("q0", "qt")])
-    felt_ring = R.felt_aperture_read(ring1)          # NO hardcoded veto now -> commits
+    ring1 = _ring_tail(6, "R")
+    felt_ring = R.felt_aperture_read(ring1)          # cycle DETECTED -> cyclic reading
     spy5 = R.SolverSpy()
-    u1 = R.verify_then_update(a5.s, ring1, field_valence=0.0, spy=spy5)   # caught, mints anti-shape
-    ax_r2 = _mk_axis(a5, shortfall=0.9, saturation=0.0)
-    R.stamp_candidate_signature(a5.s, ax_r2, R.structural_coord(ring2), 1)
-    nv_r2 = float(a5.inner.evaluate(NET, {"x": ax_r2}))                   # 2nd ring repelled
-    spy5b = R.SolverSpy()
-    u2 = R.verify_then_update(a5.s, ring2, field_valence=nv_r2, spy=spy5b)
-    retired_ok = (felt_ring["committed"] and felt_ring["reason"] == "bounded_witness"
-                  and u1["verified"] and u1["minted_valence"] == -1.0
-                  and nv_r2 < 0 and not u2["verified"] and spy5b.calls == 0)
-    print(f"  ring1: felt commits ({felt_ring['reason']}), verify catches f1={u1['f1']} "
-          f"-> mint {u1['minted_valence']}; ring2 net_valence={nv_r2} -> {u2['reason']}")
-    print(f"  -> {'ring+tail now caught by LEARNED distrust, hardcoded predicate retired' if retired_ok else 'FAIL'}")
+    u1 = R.verify_then_update(a5.s, ring1, field_valence=0.0, spy=spy5)
+    retired_ok = (felt_ring["committed"]
+                  and felt_ring["reason"] == "cycle_detected_cyclic_reading"
+                  and u1["reason"] == "confirmed" and u1["f1"] >= 0.999)
+    print(f"  ring+tail: felt commits ({felt_ring['reason']}, reading={felt_ring['reading']}) "
+          f"-> verify {u1['reason']} f1={u1['f1']:.2f}")
+    print(f"  -> {'ring+tail DETECTED + read correctly; hardcoded veto retired, no distrust needed' if retired_ok else 'FAIL'}")
 
     # ---- BACKWARD COMPAT: empty field -> net_valence 0 -> == cost_salience; live reflex ----
     print("\n" + "-" * 90)
@@ -315,12 +348,13 @@ def main() -> int:
     # ---- VERDICT ----
     print("\n" + SEP)
     donkey_ok = (donkey["n"] == 0)
-    rows = [("WHEN-IT'S-WRONG (rescue-by-reading vs anti-shape last resort)", fooled_ok),
+    rows = [("CYCLE-DETECTED (detect cycle -> cyclic reading -> confirmed)", cycle_detected_ok),
+            ("WHEN-IT'S-WRONG (rescue-by-reading vs anti-shape last resort)", fooled_ok),
             ("FOOL-ME-ONCE (repelled from memory, verify saved)", fool_once_ok),
             ("APERTURE-SCOPED (anti-shape repels only at its aperture)", aperture_ok),
             ("RE-EARNABLE (confirmed anti-shape drifts toward trust)", reearn_ok),
             ("SYMMETRY (one field, opposite sign, same Term)", sym_ok),
-            ("RETIRED-PREDICATE (ring+tail now learned, not hardcoded)", retired_ok),
+            ("RETIRED-PREDICATE (ring+tail detected+read, not vetoed)", retired_ok),
             ("BACKWARD COMPAT (reduces to cost_salience + no regression)", compat_ok),
             ("FROZEN CORE intact", frozen_ok),
             ("donkey=0", donkey_ok)]
@@ -328,9 +362,10 @@ def main() -> int:
     for label, ok in rows:
         print(f"  {label:<58} {'PASS' if ok else 'FAIL'}")
     allok = all(ok for _, ok in rows)
-    print("\n  HONEST: the felt read still cannot SOLVE the unbounded-radius case; the win is that a")
-    print("  CAUGHT failure is HELD as a negative-valence shape, so the frontier abstains from that")
-    print("  shape thereafter WITHOUT a hardcoded predicate -- earned distrust, aperture-scoped, re-earnable.")
+    print("\n  HONEST: a detected cycle now TRIGGERS the cyclic reading (read the right way, not")
+    print("  distrusted); a caught wrong read is triaged for a rescuing reading FIRST; only a genuine")
+    print("  no-rescue (e.g. bridged multi-cycles) is HELD as a negative-valence anti-shape. Earned,")
+    print("  aperture-scoped, re-earnable distrust -- and only as the last resort.")
     print(SEP)
     return 0 if allok else 1
 

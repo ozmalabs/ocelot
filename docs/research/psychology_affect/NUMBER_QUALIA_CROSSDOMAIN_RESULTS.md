@@ -357,6 +357,26 @@ unchanged: the felt read still cannot *solve* the no-rescue case; the win is it 
 shape only after confirming no reading rescues it, so it corrects *reading* mistakes instead of
 laundering them into distrust.
 
+**Cycle detection triggers the cyclic reading (not distrust).** A cycle is not untrustworthy — it
+is a *different structure that needs a different reading*. `felt_aperture_read` now **detects** a
+cycle up front (`cycle_core`, the 2-core found by iteratively peeling degree-1 leaves — cheap,
+structural, solver-free) and, when one is present, **triggers** the cycle-aware reading (a node
+purely on a ring is not a cut vertex; only where a part attaches to the ring is). This is a reading
+*selector*, categorically different from the retired `has_cycle` *veto*: detection routes to the
+right approach rather than abstaining. Effect: ring+tail and a plain cycle — which previously
+abstained or were caught-wrong — are now **read correctly and confirmed** (F1=1.0), no distrust
+needed. The learned anti-shape is now reserved for the *genuine* no-rescue case: a barbell (two
+cycles joined by a bridge path) is cyclic yet no reading in the repertoire captures its cut
+vertices, so it correctly falls through to the negative-valence anti-shape (last resort). Gates
+(`scripts/jabberwock_holds_antishapes.py`, all pass, donkey=0): CYCLE-DETECTED (ring+tail/cycle
+detected → cyclic reading → confirmed), WHEN-IT'S-WRONG (broom rescued by reading vs barbell
+anti-shape), FOOL-ME-ONCE / APERTURE-SCOPED / RE-EARNABLE / SYMMETRY (now on the barbell
+anti-shape), RETIRED-PREDICATE (ring+tail detected+read correctly, not vetoed), BACKWARD COMPAT,
+FROZEN CORE. Added `cycle_core` (detection) and `_read_cycle_aware` (the triggered reading) to the
+repertoire in `number_runner.py`; `felt_aperture_read` detects-then-branches. `track_j3` M4/M5
+updated honestly (cycle-6 and ring+tail now detected→cyclic-reading→confirmed rather than
+abstain/caught-wrong). The genuine no-rescue fence still has teeth (barbell).
+
 ### Files added
 
 `tests/capability/number_qualia/track_j3_aperture_manifold.py` and the
