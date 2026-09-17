@@ -176,3 +176,89 @@ and no solved exemplar."
 `tests/capability/number_qualia/track_j2_metashape_rescue.py` and the
 `meta_shape` / `degree_role` / `build_solution_library` / `felt_meta_match` additions to
 `runners/number_runner.py`.
+
+
+
+---
+
+## Track (j3) — the aperture manifold: "local/global is aperture, not magic"
+
+Track (j2)'s meta-shape library rescued the path, but it was not a *separate* mechanism.
+Matching the whole configuration against solved exemplars is the order-4 rung of the
+substrate's shape ladder — the **same structural read at a coarser aperture**. This track
+collapses the library into the aperture dial the substrate already owns:
+`domains.order_n_concepts.nth_order_terms` (the finite-difference machinery
+`falling_world` uses to discover an order-2 generator from raw pixels). Order 0 is the
+value; each order is one finite-difference pass — a wider aperture over the *same*
+structural coordinate. Local vs global was never two kinds of property; it is one read at
+two orders.
+
+**Design principle — no single method is chosen.** Every aperture stays *live* as a
+parallel coordinate over the structural quantity (degree in traversal order); we read the
+shape of the resulting (node × order) manifold — the map of local outliers per order — and
+never argmax to one aperture or "switch to calculator k". The property localizes wherever a
+bounded-radius outlier appears at *some* aperture; its shape across apertures *is* the
+confidence interval.
+
+### What it shows (all five claims PASS; run `track_j3_aperture_manifold.py`)
+
+- **M1 — the path localizes natively (F1 = 1.0), no library.** The path's degree is a flat
+  interior band `[1,2,2,2,2,2,1]` at order 0 (the track-(j) failure), but at order 1 the
+  finite differences `[1,0,0,0,0,-1]` put the only nonzero entries at the *boundary* and a
+  flat zero run through the interior — the interior is a bounded order-1 generator (a ramp),
+  and its interior nodes are exactly the cut-vertices. Read across the live apertures, F1 = 1.0.
+- **M2 — the same read, a different shape (star, F1 = 1.0).** The hub is an order-0 outlier;
+  the identical manifold read flags it with no method switch. Node-local and global
+  criticality are two aperture settings of one read.
+- **M3 — the felt path is solver-free.** Zero cut-vertex/Tarjan calls across every felt read
+  (SolverSpy = 0); the exact solver is only the separate verify step.
+- **M4 — honest null on the plain cycle.** No cut vertices exist; the manifold is flat at
+  *every* aperture, so the read reports "no separating structure — verify" and manufactures
+  no false peak. (Had it committed it would have scored F1 = 0.0 — the abstain is protective.)
+- **M5 — the fence, with teeth (anti-Dunning-Kruger).** On a ring+tail the only true
+  cut-vertex is the tail's attach point; every ring-interior node *looks* exactly like a
+  path interior to any local coordinate (degree 2, a neighbour each side) but is **not**
+  critical, because the "way around" is the whole rest of the ring — an **unbounded-radius**
+  fact no bounded aperture can see. The felt read would have committed the falsely-sharp peak
+  `{y0,y1,y2,y3,y4}` at F1 = 0.33; instead a cheap **confidence gate** detects the blind
+  regime (a cycle is present) and **abstains to verify**. The system detects where its own
+  local coordinates are blind rather than feeling falsely confident.
+
+### The ceiling, sharpened again: witness radius, not coverage
+
+Track (j2)'s coverage ceiling ("works where the meta-shape matches a solved exemplar")
+sharpens to a **witness-radius ceiling**: the felt read recovers any property with a
+**bounded-radius witness at some aperture** (a path's global criticality *is* such a
+witness — a local order-1 boundary), and **honestly abstains** where the only witness is
+**unbounded-radius** (does a large loop close?). Widening the aperture over a local
+coordinate crosses many apparent local/global lines but cannot cross that one; there is no
+cheaper local coordinate that fixes it, so the honest move is to detect the blind regime and
+escalate. The meta-shape "library" was order-4 doing by lookup what order-1 does by finite
+difference — one aperture dial, not two mechanisms.
+
+The choice of *which dimension to difference along* (traversal order here) is itself part of
+the aperture; for novel structure it must be earned/verified rather than assumed, and an
+ordering that makes noise look like a generator is the numerology failure mode. The
+unmapped-domain numerology fence therefore still stands: this licenses "one felt read at
+multiple live apertures, with an honest abstain where the discriminating structure is
+unbounded-radius," not "trust a felt peak wherever it appears."
+
+### Relevance to the manifold-navigation machinery
+
+The substrate's manifold-collapse work (`docs/research/engine_substrate/manifold_collapse.md`,
+the combine-all likelihood product, the `jabberwock_reviews_design` "diverse cheap checks
+sculpt a manifold" design) builds and collapses a manifold and measures its peakiness, but
+its escalation triggers are **scalar** (argmax margin, `mf_stall` plateau, residual salience)
+— they say "stuck" without saying "stuck *where*" and do not detect their own blind regime.
+This track is a minimal, honest witness that the design's own doc-only claim — *the manifold's
+shape says where to look, and a diverse check dissolves a falsely-sharp peak* — is
+implementable: a per-dimension flatness read over live apertures plus a confidence gate that
+abstains where the checks are jointly blind. Wiring this into `frontier_pick`/the escalation
+ladder (feedable via a `set_attr` on frontier salience, no frozen-Rust or tuned-seed changes)
+is the identified next stage, not done here.
+
+### Files added
+
+`tests/capability/number_qualia/track_j3_aperture_manifold.py` and the
+`aperture_manifold` / `manifold_shape` / `has_cycle` / `felt_aperture_read` / `f1_score`
+additions to `runners/number_runner.py`.
