@@ -377,6 +377,31 @@ repertoire in `number_runner.py`; `felt_aperture_read` detects-then-branches. `t
 updated honestly (cycle-6 and ring+tail now detected→cyclic-reading→confirmed rather than
 abstain/caught-wrong). The genuine no-rescue fence still has teeth (barbell).
 
+**Repertoire self-extension: learning HOW to read, not just WHAT it can't.** The anti-shape
+mechanism learns *what* the pipeline cannot read yet (a no-rescue class becomes a negative-valence
+shape). Self-extension closes the loop: on a **repeated** no-rescue class (the same anti-shape hit
+again after being distrusted once), the pipeline **authors a new reading** and adopts it, flipping
+the class from distrusted to rescued. Non-circularity is the crux and is respected three ways: (1)
+the authored reading is **composed from primitives already held** (`cycle_core` + a bridge-edge
+proxy over the held adjacency/degree), not a bespoke class-specific solver — the pieces recombine
+to rescue the class, the same recognise-then-compose move the salience terms and the track (j2)
+library used; (2) it is **verify-gated** — only adopted when verify confirms it rescues the class;
+(3) adoption is **per-class**, so a globally-imperfect authored reading (the bridge reading is
+right on bridged multi-cycles, wrong on plain cycles) is **harmless** — it only ever *wins* where
+it is actually right, and existing readings keep winning where they are right (**no regression**,
+verified). The trigger is *repetition*: the first encounter of a no-rescue class is distrusted (no
+investment yet); only when it recurs does the pipeline invest in authoring. Demonstrated
+end-to-end (`SELF-EXTEND` gate, all pass, donkey=0): barbell #1 → `no_rescue_minted_antishape`
+(distrust), barbell #2 → `self_extended_authored_reading` (bridge reading authored from held
+primitives and adopted), barbell #3 → `rescued_by_reading` (the class is now read correctly); the
+repertoire grows 6 → 7 readings and ring+tail/cycle/path/broom are unaffected. Added `cycle_core`
+edge-level bridge proxy (`_bridge_edge_endpoints`), the authorable `_read_bridge` reading, and
+`extend_repertoire` (verify-gated authoring) plus `_held_shape_for` (first-hit vs repeat) to
+`number_runner.py`; `verify_then_update` gained the repeated-no-rescue → self-extend branch. This
+turns the pipeline from *fixed-repertoire* into *self-growing*: it accumulates not just distrust
+of what fooled it, but the readings that dissolve those failures — each earned, verified, and
+regression-free.
+
 ### Files added
 
 `tests/capability/number_qualia/track_j3_aperture_manifold.py` and the

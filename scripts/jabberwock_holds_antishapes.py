@@ -38,6 +38,12 @@ GATES (all donkey=0):
                         opposite sign, read by the SAME net_valence Term.
   RETIRED-PREDICATE   — the ring+tail (what the OLD hardcoded has_cycle veto abstained on) is now
                         handled by the SAME learned loop, no built-in cycle predicate.
+  SELF-EXTEND        — a REPEATED no-rescue class (barbell hit again after being distrusted) makes
+                        the pipeline AUTHOR a new reading composed from HELD PRIMITIVES (cycle_core
+                        + a bridge-edge proxy), adopt it into the repertoire, and flip the class
+                        from distrusted to rescued — learning HOW to read it, not just that it
+                        couldn't. Verify-gated + per-class, so the globally-imperfect authored
+                        reading regresses nothing.
   BACKWARD COMPAT     — empty field / no match: net_valence=0, valence_salience == cost_salience
                         per axis; the live _frontier_advance still resolves onto the hard frontier.
   FROZEN CORE         — understand Drive stays frozen:true; only its frontier_pick_term data attr
@@ -312,6 +318,32 @@ def main() -> int:
           f"-> verify {u1['reason']} f1={u1['f1']:.2f}")
     print(f"  -> {'ring+tail DETECTED + read correctly; hardcoded veto retired, no distrust needed' if retired_ok else 'FAIL'}")
 
+    # ---- SELF-EXTEND: a REPEATED no-rescue class makes the pipeline AUTHOR a new reading ----
+    print("\n" + "-" * 90)
+    print("SELF-EXTEND -- a REPEATED no-rescue class (barbell) makes the pipeline AUTHOR a new")
+    print("  reading composed from HELD PRIMITIVES (cycle_core + bridge-edge proxy) and adopt it,")
+    print("  flipping the class from distrusted to rescued -- learning HOW to read it:")
+    print("-" * 90)
+    _repertoire_snapshot = dict(R.READING_REPERTOIRE)     # restore after (no leak to later runs)
+    try:
+        a6 = WorldAdapter(seeds=()); load_all_seeds(a6)
+        seq = []
+        for tag in ("S1", "S2", "S3"):
+            u = R.verify_then_update(a6.s, _barbell(tag), field_valence=0.0, spy=R.SolverSpy())
+            seq.append(u["reason"])
+            print(f"  barbell #{len(seq)} -> {u['reason']} (reading={u['reading']})")
+        authored_in = "bridge" in R.READING_REPERTOIRE
+        selfext_ok = (seq[0] == "no_rescue_minted_antishape"
+                      and seq[1] == "self_extended_authored_reading"
+                      and seq[2] == "rescued_by_reading"
+                      and authored_in)
+        print(f"  repertoire gained a reading: {authored_in} "
+              f"({len(_repertoire_snapshot)} -> {len(R.READING_REPERTOIRE)})")
+        print(f"  -> {'distrust -> AUTHOR from held primitives -> rescued (learned HOW to read it)' if selfext_ok else 'FAIL'}")
+    finally:
+        R.READING_REPERTOIRE.clear()
+        R.READING_REPERTOIRE.update(_repertoire_snapshot)  # no regression leak into later gates
+
     # ---- BACKWARD COMPAT: empty field -> net_valence 0 -> == cost_salience; live reflex ----
     print("\n" + "-" * 90)
     print("BACKWARD COMPAT -- empty field: valence_salience == cost_salience per axis; live reflex")
@@ -355,6 +387,7 @@ def main() -> int:
             ("RE-EARNABLE (confirmed anti-shape drifts toward trust)", reearn_ok),
             ("SYMMETRY (one field, opposite sign, same Term)", sym_ok),
             ("RETIRED-PREDICATE (ring+tail detected+read, not vetoed)", retired_ok),
+            ("SELF-EXTEND (repeated no-rescue -> author reading from held prims)", selfext_ok),
             ("BACKWARD COMPAT (reduces to cost_salience + no regression)", compat_ok),
             ("FROZEN CORE intact", frozen_ok),
             ("donkey=0", donkey_ok)]
