@@ -952,3 +952,141 @@ def verify_then_update(substrate, adj: dict, field_valence: float,
     mint_shape(substrate, coord, k, -1.0, order_nodes=order_nodes, reading="default")
     return {"verified": True, "f1": f1, "minted_valence": -1.0, "aperture": k,
             "reading": None, "reason": "no_rescue_even_after_authoring"}
+
+
+
+# --------------------------------------------------------------------------- #
+#  CROSS-DOMAIN SELF-EXTENSION: the SAME loop over a NON-graph coordinate.
+#
+#  The frontier the arc reached: the graph pipeline self-grows, but every authorable
+#  primitive is graph-structural. Is the recognise -> compose-from-held-primitives ->
+#  verify -> adopt loop DOMAIN-GENERAL, or a graph trick? This is the same machinery
+#  instantiated over NUMERIC SEQUENCES (the number-qualia integer axis), proving only the
+#  PRIMITIVE VOCABULARY changes across domains, not the loop.
+#
+#  The coordinate is a sequence's values in index order. The felt read is its "degree" —
+#  the order k at which the k-th finite difference is CONSTANT (falling_world's move:
+#  constant 2nd difference = an order-2 generator). SAME aperture dial (nth_order_terms) as
+#  the graph domain. Feel-then-verify: feel the degree cheaply; verify by exact differencing.
+#
+#  A geometric/exponential sequence has NO constant finite difference -> the default reading
+#  ABSTAINS (the sequence-domain no-rescue class). On a REPEAT, self-extension authors a
+#  reading composed from held NUMERIC primitives (log + the same finite-difference dial): a
+#  geometric sequence is "degree-1 in log space" (constant ratio = constant log-difference).
+#  Per-class + verify-gated, so it rescues geometric without mis-reading polynomials. This is
+#  the sequence-domain analogue of `bridge` rescuing the barbell — same loop, numeric primitives.
+# --------------------------------------------------------------------------- #
+def seq_felt_degree(seq: list, *, max_k: int = 5,
+                    spy: Optional[SolverSpy] = None) -> Optional[int]:
+    """FELT read (cheap, solver-free): the sequence's degree = the smallest order k whose
+    k-th finite difference (via the shared order_n_concepts aperture dial) is constant.
+    None if no constant diff <= max_k (the read ABSTAINS: not a low-order polynomial in the
+    index). Passes no spy to any solver; a supplied SolverSpy must stay 0."""
+    from domains.order_n_concepts import nth_order_terms
+    for k in range(0, max_k + 1):
+        diffs = [float(_eval_num(t)) for t in nth_order_terms(list(seq), k)]
+        if len(diffs) >= 2 and max(diffs) - min(diffs) < 1e-9:
+            return k
+    return None
+
+
+def seq_verify_degree(seq: list, *, spy: Optional[SolverSpy] = None) -> Optional[int]:
+    """VERIFY (the expensive/exact step): the true polynomial degree of the sequence in its
+    index by successive exact differencing to a constant. Pings the spy (this is the verify
+    solver; the felt read must not call it)."""
+    if spy is not None:
+        spy()
+    d = list(seq)
+    for k in range(len(seq)):
+        if len(d) >= 2 and max(d) - min(d) < 1e-9:
+            return k
+        if len(d) < 2:
+            return None
+        d = [d[i + 1] - d[i] for i in range(len(d) - 1)]
+    return None
+
+
+def seq_read_log_degree(seq: list) -> Optional[int]:
+    """An AUTHORABLE sequence reading, composed from held NUMERIC primitives (log + the
+    finite-difference dial): the degree of log(seq). A geometric sequence has a constant
+    ratio => a constant log-difference => log-degree 1. Rescues the geometric no-rescue
+    class the polynomial reading abstains on; returns None where log-space has no constant
+    diff (so it does not mis-read polynomials). NOT a bespoke geometric solver — a
+    recombination of held ops, adopted only under verify."""
+    import math
+    if any(v <= 0 for v in seq):
+        return None
+    logs = [math.log(v) for v in seq]
+    d = list(logs)
+    for k in range(len(logs)):
+        if len(d) >= 2 and max(d) - min(d) < 1e-9:
+            return k
+        if len(d) < 2:
+            return None
+        d = [d[i + 1] - d[i] for i in range(len(d) - 1)]
+    return None
+
+
+#: The sequence domain's authorable readings (composed from held numeric primitives), NOT
+#: in the default read -- seq_extend_repertoire adopts one only when a repeated no-rescue
+#: sequence is verified rescued by it. The sequence-domain twin of _AUTHORABLE_READINGS.
+_SEQ_AUTHORABLE = {
+    "log_degree": seq_read_log_degree,
+}
+_SEQ_REPERTOIRE: dict = {}          # authored sequence readings adopted so far
+
+
+def seq_verify_then_update(seq: list, *, prior_abstained: bool = False,
+                           spy: Optional[SolverSpy] = None) -> dict:
+    """THE SAME LOOP, sequence domain. Feel the degree; if the felt read ABSTAINS (no
+    constant finite difference), this is the no-rescue class:
+      · first abstain (prior_abstained False) -> report 'abstained' (distrust; no investment).
+      · repeat abstain (prior_abstained True) -> SELF-EXTEND: author a reading from held
+        numeric primitives (seq_extend_repertoire); if it verifies, the sequence is rescued
+        ('self_extended_authored_reading'); else it stays genuinely no-rescue.
+    If the felt read COMMITS a degree, VERIFY it exactly (confirmed / caught-wrong). The felt
+    read is solver-free; verify pings the spy."""
+    felt_k = seq_felt_degree(seq)                       # solver-free
+    if felt_k is not None:
+        true_k = seq_verify_degree(seq, spy=spy)        # verify (exact)
+        if felt_k == true_k:
+            return {"committed": True, "felt_degree": felt_k, "reason": "confirmed",
+                    "reading": "poly_degree"}
+        return {"committed": True, "felt_degree": felt_k, "reason": "caught_wrong",
+                "reading": "poly_degree", "true_degree": true_k}
+    # felt read abstained -> the sequence-domain no-rescue class
+    if not prior_abstained:
+        return {"committed": False, "felt_degree": None, "reason": "abstained",
+                "reading": None}
+    authored = seq_extend_repertoire(seq, spy=spy)      # REPEAT -> author
+    if authored is not None:
+        return {"committed": True, "felt_degree": None, "reason": "self_extended_authored_reading",
+                "reading": authored}
+    return {"committed": False, "felt_degree": None, "reason": "no_rescue_even_after_authoring",
+            "reading": None}
+
+
+def seq_extend_repertoire(seq: list, *, spy: Optional[SolverSpy] = None) -> Optional[str]:
+    """AUTHOR a sequence reading for a repeated no-rescue sequence: search the authorable
+    numeric-primitive readings for one that produces a defined degree AND is verify-consistent
+    (its structure is confirmed exactly), adopt it into _SEQ_REPERTOIRE, return its name. The
+    sequence-domain twin of extend_repertoire. Verify-gated (spy pinged for the exact check)."""
+    for name, fn in _SEQ_AUTHORABLE.items():
+        if name in _SEQ_REPERTOIRE:
+            continue
+        k = fn(seq)
+        if k is not None:
+            # verify the authored reading's structural claim exactly (log-space differencing
+            # is exact for a true geometric sequence: check the ratio is constant).
+            if spy is not None:
+                spy()
+            if len(seq) >= 3 and all(seq[i] > 0 for i in seq_indices(seq)):
+                ratios = [seq[i + 1] / seq[i] for i in range(len(seq) - 1)]
+                if max(ratios) - min(ratios) < 1e-9:    # constant ratio == geometric confirmed
+                    _SEQ_REPERTOIRE[name] = fn
+                    return name
+    return None
+
+
+def seq_indices(seq: list) -> list:
+    return list(range(len(seq)))
