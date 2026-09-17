@@ -1090,3 +1090,369 @@ def seq_extend_repertoire(seq: list, *, spy: Optional[SolverSpy] = None) -> Opti
 
 def seq_indices(seq: list) -> list:
     return list(range(len(seq)))
+
+
+
+# =========================================================================== #
+#  DOMAIN AS A FIRST-CLASS OBJECT — the shared DECISION SPINE written ONCE.
+#
+#  The graph pipeline (verify_then_update) and the sequence pipeline
+#  (seq_verify_then_update) above share ONE control-flow SPINE: solver-free felt
+#  read -> if committed, verify + score -> confirmed / caught-wrong -> search the
+#  repertoire for a verify-confirmed rescuing reading -> if none, first-hit distrust
+#  vs repeat -> author a reading from held primitives -> verify-gated adopt. This
+#  section factors THAT SPINE out ONCE as `domain_verify_then_update(domain, obj, ...)`
+#  driven by a lightweight `Domain` descriptor supplying the four domain-specific
+#  pieces the spine needs (coordinate extractor, a solver-free default felt read, an
+#  exact verify, a library of authorable readings composed from held primitives) plus
+#  a scorer and a live repertoire.
+#
+#  SCOPE (honest — this is the SPINE, not the whole graph loop): the generic loop
+#  reproduces the graph loop's DECISION FLOW, not its substrate SIDE-EFFECTS. The
+#  graph loop additionally (a) takes a `field_valence` and short-circuits to
+#  `repelled_by_held_antishape` when a held anti-shape already repels the candidate,
+#  (b) mints signed `Shape` nodes via `mint_shape`, and (c) derives first-hit-vs-repeat
+#  from held substrate state via `_held_shape_for`. The generic loop does NONE of
+#  those: it takes the first-vs-repeat distinction as an explicit `prior_no_rescue`
+#  flag (the caller/memory backend owns that state), and its reason vocabulary is
+#  intentionally COARSER — a first no-rescue reports `abstained` rather than the graph
+#  loop's `no_rescue_minted_antishape`, because minting is a graph-substrate side
+#  effect outside the spine. The sequence loop IS just this spine, so it maps tightly;
+#  the graph loop is this spine PLUS the shape-field memory layer.
+#
+#  This layer is PURE PYTHON PLUMBING over the identical felt-read/verify structure.
+#  It relocates NO decision into Python: it wraps/references the existing functions
+#  (felt_aperture_read / seq_felt_degree / tarjan_cut_vertices / seq_verify_degree /
+#  the existing repertoires) rather than duplicating their logic, and the graph
+#  domain's shape-field decision stays the composed graph Term (net_valence_term).
+#  The two existing loops and every function the tracks call remain untouched and
+#  behavior-identical; this is a unifying SPINE, proven equivalent on the sequence
+#  domain and on the graph loop's confirmed path (track_j5 E5), NOT a replacement.
+# =========================================================================== #
+from dataclasses import dataclass, field as _dc_field
+
+
+@dataclass
+class Domain:
+    """A domain is the four pieces the one loop needs, plus a scorer and its live
+    adopted-reading repertoire. Deliberately lightweight (a dataclass of callables),
+    NOT a framework:
+
+      name         : human label.
+      coordinate   : coordinate(obj) -> list[float]   the ordered numeric coordinate
+                     (graph: degree-in-order via structural_coord; sequence: the values).
+      default_read : default_read(obj) -> (committed: bool, predicted, reading_name, reason)
+                     the domain's SOLVER-FREE felt read, wrapped to a uniform 4-tuple.
+      verify       : verify(obj, spy) -> truth        the ONE solver touch (spy-pinged).
+      score        : score(predicted, truth) -> float in [0,1] (>=0.999 == confirmed).
+      readings     : {name: fn}  the domain's default repertoire (feel-side, solver-free).
+      authorable   : {name: fn}  composed-from-held-primitive candidates NOT in `readings`.
+      repertoire   : {name: fn}  the LIVE adopted readings; starts as a copy of `readings`.
+
+    A reading fn's arity is domain-defined; the loop only calls the domain's own
+    `try_reading`/`author` closures, so each domain keeps its native call shape."""
+    name: str
+    coordinate: Callable[[Any], list]
+    default_read: Callable[[Any], tuple]
+    verify: Callable[..., Any]
+    score: Callable[[Any, Any], float]
+    readings: dict = _dc_field(default_factory=dict)
+    authorable: dict = _dc_field(default_factory=dict)
+    repertoire: dict = _dc_field(default_factory=dict)
+    # how the loop applies a repertoire reading and authors a new one, kept as domain
+    # closures so the ONE loop never needs to know a reading fn's arity:
+    #   try_repertoire(obj, truth, repertoire) -> Optional[str]   (rescue search; solver-free)
+    #   author(obj, truth, repertoire, spy)    -> Optional[str]   (verify-gated adopt)
+    try_repertoire: Optional[Callable[..., Optional[str]]] = None
+    author: Optional[Callable[..., Optional[str]]] = None
+
+    def fresh_repertoire(self) -> None:
+        """Reset the live repertoire to a copy of the default readings (test hygiene)."""
+        self.repertoire = dict(self.readings)
+
+
+def domain_verify_then_update(domain: "Domain", obj, *, prior_no_rescue: bool = False,
+                              spy: Optional[SolverSpy] = None) -> dict:
+    """THE ONE DOMAIN-AGNOSTIC LOOP. Reproduces the control flow both existing loops share:
+
+      1. default (felt) read  -- solver-free.
+      2. if committed -> VERIFY + score:
+           - score >= 0.999            -> 'confirmed'
+           - else (caught wrong)       -> search repertoire for a reading verify confirms:
+                 - a rescue exists      -> 'rescued_by_reading'
+                 - no rescue            -> fall through to the no-rescue class.
+      3. no-rescue class (an abstaining read, or a caught-wrong read nothing rescues):
+           - first hit (prior_no_rescue False) -> distrust/abstain -> 'abstained'
+           - repeat  (prior_no_rescue True)    -> AUTHOR from domain.authorable
+                 (verify-gated adopt into domain.repertoire):
+                 - authored             -> 'self_extended_authored_reading'
+                 - nothing rescues      -> 'no_rescue_even_after_authoring'
+
+    Returns a dict using the reason vocabulary the existing loops use where it maps
+    cleanly (confirmed / rescued_by_reading / abstained / self_extended_authored_reading
+    / no_rescue_even_after_authoring), plus the winning `reading` name, `committed`, the
+    `score`, and (on a caught-wrong read) `truth`. The felt read is solver-free; `verify`
+    is the SEPARATE spy-pinged step; the rescue search reuses that truth (no extra solver
+    call), exactly as the hand-written loops do."""
+    committed, predicted, reading_name, felt_reason = domain.default_read(obj)
+    if committed:
+        truth = domain.verify(obj, spy)                  # VERIFY — the one solver touch
+        sc = domain.score(predicted, truth)
+        if sc >= 0.999:                                  # confirmed
+            return {"committed": True, "reason": "confirmed", "reading": reading_name,
+                    "score": sc, "felt_reason": felt_reason}
+        # caught wrong: is it the wrong READING, or a genuinely no-rescue class?
+        rescue = None
+        if domain.try_repertoire is not None:
+            rescue = domain.try_repertoire(obj, truth, domain.repertoire)
+        if rescue is not None:
+            return {"committed": True, "reason": "rescued_by_reading", "reading": rescue,
+                    "score": sc, "felt_reason": felt_reason, "truth": truth}
+        # no rescue in the repertoire -> the no-rescue class (fall through)
+        return _domain_no_rescue(domain, obj, truth=truth, sc=sc,
+                                 prior_no_rescue=prior_no_rescue, spy=spy)
+    # the felt read abstained -> the domain's no-rescue class (no truth computed yet:
+    # authoring computes/uses its own verify-gate)
+    return _domain_no_rescue(domain, obj, truth=None, sc=None,
+                             prior_no_rescue=prior_no_rescue, spy=spy)
+
+
+def _domain_no_rescue(domain: "Domain", obj, *, truth, sc, prior_no_rescue: bool,
+                      spy: Optional[SolverSpy]) -> dict:
+    """The shared no-rescue tail: first-hit distrust vs repeat-authors-from-held-primitives.
+    On a repeat, AUTHOR from domain.authorable (verify-gated adopt into domain.repertoire)."""
+    if not prior_no_rescue:                              # first encounter -> distrust
+        return {"committed": False, "reason": "abstained", "reading": None,
+                "score": sc, **({"truth": truth} if truth is not None else {})}
+    authored = None
+    if domain.author is not None:                        # REPEAT -> self-extend
+        authored = domain.author(obj, truth, domain.repertoire, spy)
+    if authored is not None:
+        return {"committed": True, "reason": "self_extended_authored_reading",
+                "reading": authored, "score": sc}
+    return {"committed": False, "reason": "no_rescue_even_after_authoring", "reading": None,
+            "score": sc}
+
+
+# --------------------------------------------------------------------------- #
+#  GRAPH_DOMAIN — the existing graph pipeline registered as a Domain (wrapping the
+#  EXISTING functions; no logic duplicated).
+# --------------------------------------------------------------------------- #
+def _graph_default_read(adj) -> tuple:
+    """Wrap felt_aperture_read to the uniform 4-tuple. Solver-free (no spy passed)."""
+    order = list(adj)
+    felt = felt_aperture_read(adj, order)                # solver-free
+    return (felt["committed"], felt["predicted"],
+            felt.get("reading", "default") if felt["committed"] else None,
+            felt["reason"])
+
+
+def _graph_verify(adj, spy) -> set:
+    return tarjan_cut_vertices(adj, spy=spy)             # the one solver touch
+
+
+def _graph_try_repertoire(adj, truth, repertoire) -> Optional[str]:
+    """Rescue search over the LIVE graph repertoire (solver-free; reuses `truth`)."""
+    order = list(adj)
+    for name in repertoire:
+        if name == "default":
+            continue
+        if f1_score(READING_REPERTOIRE[name](adj, order,
+                    manifold_shape(aperture_manifold(adj, order))), truth) >= 0.999:
+            return name
+    return None
+
+
+def _graph_author(adj, truth, repertoire, spy) -> Optional[str]:
+    """Author a reading from _AUTHORABLE_READINGS (verify-gated by the already-computed
+    `truth`), adopting it into BOTH the live domain repertoire and READING_REPERTOIRE so
+    the existing graph machinery sees it too. No extra solver call (reuses truth)."""
+    order = list(adj)
+    for name, fn in _AUTHORABLE_READINGS.items():
+        if name in repertoire:
+            continue
+        if f1_score(fn(adj, order, manifold_shape(aperture_manifold(adj, order))),
+                    truth) >= 0.999:
+            repertoire[name] = fn
+            READING_REPERTOIRE[name] = fn                # keep the existing repertoire in sync
+            return name
+    return None
+
+
+GRAPH_DOMAIN = Domain(
+    name="graph",
+    coordinate=lambda adj: structural_coord(adj, list(adj)),
+    default_read=_graph_default_read,
+    verify=_graph_verify,
+    score=f1_score,
+    readings=dict(READING_REPERTOIRE),
+    authorable=dict(_AUTHORABLE_READINGS),
+    repertoire=dict(READING_REPERTOIRE),
+    try_repertoire=_graph_try_repertoire,
+    author=_graph_author,
+)
+
+
+# --------------------------------------------------------------------------- #
+#  SEQUENCE_DOMAIN — the existing sequence pipeline registered as a Domain.
+# --------------------------------------------------------------------------- #
+def _seq_default_read(seq) -> tuple:
+    """Wrap seq_felt_degree to the uniform 4-tuple. Solver-free. A committed read carries
+    the felt degree as its `predicted`; the reading label matches the existing loop
+    ('poly_degree')."""
+    felt_k = seq_felt_degree(seq)                        # solver-free
+    if felt_k is not None:
+        return (True, felt_k, "poly_degree", "bounded_witness")
+    return (False, None, None, "abstained")
+
+
+def _seq_verify(seq, spy):
+    return seq_verify_degree(seq, spy=spy)               # the one solver touch
+
+
+def _seq_score(predicted, truth) -> float:
+    return 1.0 if predicted == truth else 0.0
+
+
+def _seq_author(seq, truth, repertoire, spy) -> Optional[str]:
+    """Author a sequence reading from _SEQ_AUTHORABLE (verify-gated), adopting into BOTH the
+    live domain repertoire and the existing module-level _SEQ_REPERTOIRE."""
+    name = seq_extend_repertoire(seq, spy=spy)           # reuses the existing verify-gate
+    if name is not None:
+        repertoire[name] = _SEQ_AUTHORABLE[name]
+    return name
+
+
+SEQUENCE_DOMAIN = Domain(
+    name="sequence",
+    coordinate=lambda seq: list(seq),
+    default_read=_seq_default_read,
+    verify=_seq_verify,
+    score=_seq_score,
+    readings={},                                         # no feel-side repertoire beyond the read
+    authorable=dict(_SEQ_AUTHORABLE),
+    repertoire={},
+    try_repertoire=None,                                 # sequence caught-wrong has no rescue search
+    author=_seq_author,
+)
+
+
+# --------------------------------------------------------------------------- #
+#  THE THIRD DOMAIN — RESIDUE-RUN PARTITION over integer lists. The real test that a
+#  genuinely NEW domain plugs into domain_verify_then_update with NO new loop code:
+#  only a Domain registration + domain-native primitives.
+#
+#  TASK: partition a list of integers into contiguous runs that share a residue class,
+#  and report the BOUNDARY indices (i where element i starts a new run). The felt read is
+#  the cheap naive guess "runs share parity (mod 2)"; the exact ground truth here groups by
+#  residue mod 3. A list whose mod-2 boundaries equal its mod-3 boundaries is confirmed for
+#  free; a list where they differ is the no-rescue class. On a REPEAT the loop AUTHORS a
+#  reading COMPOSED FROM HELD PRIMITIVES (the same run-boundary detector + the integer
+#  modulus op, searched over moduli m=3,4,5..) which is globally "wrong" as a default guess
+#  but right on the class, adopted only under verify. This is HONEST feel-then-verify:
+#    · the felt read (_res_boundaries at m=2) is cheap and SOLVER-FREE (no spy);
+#    · verify (mod-3 boundaries) is the SEPARATE exact step (spy-pinged);
+#    · the authorable reading is a RECOMPOSITION of held primitives (modulus + run-boundary),
+#      not a bespoke solver, and is adopted only when verify confirms it — exactly the
+#      `bridge` (graph) / `log_degree` (sequence) move in a new domain.
+# --------------------------------------------------------------------------- #
+_RES_TRUE_MOD = 3           # the ground-truth grouping modulus (only verify may use it)
+_RES_FELT_MOD = 2           # the naive felt guess (parity runs)
+
+
+def _res_boundaries(seq: list, m: int) -> set:
+    """Boundary indices of the contiguous runs of `seq` under residue class mod m: index i
+    (i>=1) is a boundary iff seq[i] % m != seq[i-1] % m. A held primitive (integer modulus +
+    consecutive comparison); the same op the felt read, verify, and authored readings all
+    reuse at different moduli. Solver-free."""
+    return {i for i in range(1, len(seq)) if (seq[i] % m) != (seq[i - 1] % m)}
+
+
+def res_felt_read(seq: list, *, spy: Optional[SolverSpy] = None) -> dict:
+    """FELT read (cheap, solver-free): guess the partition boundaries are the PARITY-run
+    boundaries (mod 2). Commits when the list has at least one parity change (a bounded
+    structural witness); abstains on a constant-parity list (nothing to separate). Passes no
+    spy to any solver; a supplied SolverSpy must stay 0."""
+    pred = _res_boundaries(seq, _RES_FELT_MOD)
+    if pred:
+        return {"committed": True, "predicted": pred, "reading": "parity_runs",
+                "reason": "bounded_witness"}
+    return {"committed": False, "predicted": None, "reading": None,
+            "reason": "flat_all_parity"}
+
+
+def res_verify(seq: list, *, spy: Optional[SolverSpy] = None) -> set:
+    """VERIFY (the exact/expensive step): the TRUE run boundaries group by residue mod 3.
+    Pings the spy (this is the verify solver; the felt read must not call it)."""
+    if spy is not None:
+        spy()
+    return _res_boundaries(seq, _RES_TRUE_MOD)
+
+
+def res_read_mod(m: int):
+    """FACTORY for an authorable residue-run reading at modulus m, composed from the held
+    run-boundary primitive. res_read_mod(3) reads boundaries by mod 3, etc."""
+    def rd(seq: list) -> set:
+        return _res_boundaries(seq, m)
+    return rd
+
+
+#: The residue domain's authorable readings (composed from held primitives: modulus +
+#: run-boundary), NOT in the default read. Searched over candidate moduli; adopted only when
+#: verify confirms one on a repeated no-rescue list. The third-domain twin of
+#: _AUTHORABLE_READINGS / _SEQ_AUTHORABLE.
+_RES_AUTHORABLE = {
+    "mod3_runs": res_read_mod(3),
+    "mod4_runs": res_read_mod(4),
+    "mod5_runs": res_read_mod(5),
+}
+_RES_REPERTOIRE: dict = {}          # authored residue readings adopted so far
+
+
+def _res_default_read(seq) -> tuple:
+    felt = res_felt_read(seq)                            # solver-free
+    return (felt["committed"], felt["predicted"], felt["reading"], felt["reason"])
+
+
+def _res_score(predicted, truth) -> float:
+    return 1.0 if predicted == truth else 0.0
+
+
+def _res_try_repertoire(seq, truth, repertoire) -> Optional[str]:
+    """Rescue search over the LIVE residue repertoire (solver-free; reuses `truth`)."""
+    for name, fn in repertoire.items():
+        if name == "parity_runs":
+            continue
+        if _res_score(fn(seq), truth) >= 0.999:
+            return name
+    return None
+
+
+def _res_author(seq, truth, repertoire, spy) -> Optional[str]:
+    """Author a residue reading from _RES_AUTHORABLE (verify-gated by the already-computed
+    `truth`), adopting into BOTH the live domain repertoire and module-level _RES_REPERTOIRE.
+    No extra solver call (reuses truth)."""
+    if truth is None:
+        return None
+    for name, fn in _RES_AUTHORABLE.items():
+        if name in repertoire:
+            continue
+        if _res_score(fn(seq), truth) >= 0.999:          # verify-gated: matches truth exactly
+            repertoire[name] = fn
+            _RES_REPERTOIRE[name] = fn
+            return name
+    return None
+
+
+RESIDUE_DOMAIN = Domain(
+    name="residue",
+    coordinate=lambda seq: list(seq),
+    default_read=_res_default_read,
+    verify=lambda seq, spy: res_verify(seq, spy=spy),
+    score=_res_score,
+    readings={"parity_runs": lambda seq: _res_boundaries(seq, _RES_FELT_MOD)},
+    authorable=dict(_RES_AUTHORABLE),
+    repertoire={"parity_runs": lambda seq: _res_boundaries(seq, _RES_FELT_MOD)},
+    try_repertoire=_res_try_repertoire,
+    author=_res_author,
+)
