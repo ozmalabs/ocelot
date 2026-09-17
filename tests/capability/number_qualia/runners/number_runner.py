@@ -507,41 +507,42 @@ def has_cycle(adj: dict) -> bool:
 def felt_aperture_read(adj: dict, order_nodes: Optional[list] = None,
                        *, spy: Optional[SolverSpy] = None) -> dict:
     """THE FELT PATH (solver-free): read cut-vertex criticality off the multi-aperture
-    manifold, choosing NO single method. Steps:
+    manifold, choosing NO single method, with cycle DETECTION selecting the reading. Steps:
       1. Build the aperture manifold (all orders live) over degree-in-order.
-      2. A node is felt-critical if it is INTERIOR to a bounded run (flanked in the
-         ordering AND not itself a degree outlier) OR a high-degree hub outlier.
-      3. If NO aperture separates anything (flat everywhere) -> abstain with an honest
-         null (that is a READ RESULT, not a special-case predicate). Otherwise COMMIT
-         the felt prediction.
-    NOTE (blindness is LEARNED, not hardcoded): there is deliberately NO built-in
-    cycle/blind-regime veto here. The felt read is ALLOWED to commit — and be wrong — on
-    a structure whose discriminating witness is unbounded-radius (a large closed loop).
-    That first mistake is what verify catches and mints as a negative-valence anti-shape
-    (verify_then_update); the shape field then repels the SAME shape at its aperture next
-    time (fool me once). This retires the old `has_cycle` predicate: distrust is earned
-    per-shape and aperture-scoped, not a hand-coded special case. `has_cycle` remains
-    defined below as a plain cheap invariant, but the felt read no longer calls it.
+      2. DETECT structure: if a cycle is present (cycle_core non-empty) TRIGGER the
+         cycle-aware reading (a cyclic structure read the cyclic way — a node purely on a
+         ring is not critical; only where a part attaches to the ring is). Otherwise use
+         the default acyclic reading (flanked-interior + hub).
+      3. If the chosen reading finds nothing AND no aperture separates anything, abstain
+         with an honest null. Otherwise COMMIT the chosen reading's prediction.
+    NOTE (cycle detection is a SELECTOR, not a veto): the retired has_cycle was a veto that
+    abstained on cycles; this DETECTS the cycle and reads it the cyclic way (the steer:
+    "the cycle needs to be detected and trigger a different approach"). Blindness is still
+    LEARNED — a reading that commits and is caught wrong routes to the rescue search and,
+    only if nothing rescues, an anti-shape (verify_then_update). No hand-coded distrust.
     Passes NO spy to any solver; a supplied SolverSpy must remain 0."""
     order_nodes = list(adj) if order_nodes is None else order_nodes
     manifold = aperture_manifold(adj, order_nodes)
     shape = manifold_shape(manifold)
-    deg_outliers = shape.get(0, set())
-    pos = {v: i for i, v in enumerate(order_nodes)}
-    predicted = set()
-    for i, v in enumerate(order_nodes):
-        flanked = any(pos[u] < i for u in adj[v]) and any(pos[u] > i for u in adj[v])
-        deg_outlier = i in deg_outliers
-        if flanked and not deg_outlier:
-            predicted.add(v)
-        elif deg_outlier and len(adj[v]) > 2:
-            predicted.add(v)
+    core = cycle_core(adj)                                # CYCLE DETECTION (the trigger)
+    if core:
+        # a cycle is present -> read it the cyclic way (different approach)
+        predicted = _read_cycle_aware(adj, order_nodes, shape)
+        reason = "cycle_detected_cyclic_reading"
+        peaked = [o for o in sorted(shape) if shape[o]]
+        return {"committed": True, "reason": reason, "predicted": predicted,
+                "manifold": manifold, "peaked": peaked, "reading": "cycle_aware",
+                "core": core}
+    # acyclic: the default flanked-interior + hub reading
+    predicted = _read_default(adj, order_nodes, shape)
     peaked = [o for o in sorted(shape) if shape[o]]
     if not peaked:
         return {"committed": False, "reason": "flat_all_apertures",
-                "predicted": None, "manifold": manifold, "peaked": peaked}
+                "predicted": None, "manifold": manifold, "peaked": peaked,
+                "reading": None, "core": core}
     return {"committed": True, "reason": "bounded_witness",
-            "predicted": predicted, "manifold": manifold, "peaked": peaked}
+            "predicted": predicted, "manifold": manifold, "peaked": peaked,
+            "reading": "default", "core": core}
 
 
 def f1_score(predicted: set, truth: set) -> float:
@@ -717,12 +718,58 @@ def _read_spanned(k):
     return rd
 
 
+def cycle_core(adj: dict) -> set:
+    """CYCLE DETECTION (cheap, structural, solver-free): the 2-core — the nodes that lie
+    on some cycle — found by iteratively peeling degree-1 leaves (the acyclic fringe); what
+    remains is the cyclic part. Empty set == the structure is acyclic. This is DETECTION
+    that TRIGGERS a different reading, NOT a veto/abstain (the retired has_cycle was a
+    veto; this is a reading selector — a cycle is not untrustworthy, it needs the cyclic
+    reading)."""
+    remaining = {v: set(ns) for v, ns in adj.items()}
+    changed = True
+    while changed:
+        changed = False
+        for v in list(remaining):
+            d = len(remaining[v])
+            if d == 1:
+                (u,) = tuple(remaining[v])
+                remaining[u].discard(v)
+                del remaining[v]
+                changed = True
+            elif d == 0:
+                del remaining[v]
+                changed = True
+    return set(remaining)
+
+
+def _read_cycle_aware(adj, order_nodes, shape):
+    """CYCLE-AWARE reading (the different approach a detected cycle triggers). On the
+    2-core (the cyclic part) a node is critical ONLY where a non-core part attaches to it
+    (the articulation joining a cycle to the rest); a node purely on the cycle is NOT a cut
+    vertex (the ring provides a way around). Off the core (tree part) fall back to the
+    non-leaf reading. Uniform + structural; adopted for a shape only when verify confirms
+    it (feel-then-verify), so it is never trusted for free on structures it does not fit
+    (e.g. bridged multi-cycles)."""
+    core = cycle_core(adj)
+    pred = set()
+    for v in adj:
+        if v in core:
+            if any(u not in core for u in adj[v]):     # attachment point cycle<->rest
+                pred.add(v)
+        elif len(adj[v]) > 1:                          # tree part: ordinary non-leaf
+            pred.add(v)
+    return pred
+
+
 # The FIXED structural reading repertoire (uniform reads, never answer-fitted). A rescue
 # reading is only ADOPTED for a shape once verify CONFIRMS it on that shape — it stays
 # feel-then-verify, so a broadly-applicable read like non_leaf cannot be trusted for free
-# where it would be wrong (e.g. cycles).
+# where it would be wrong (e.g. cycles). `cycle_aware` is TRIGGERED by cycle DETECTION
+# (cycle_core non-empty) and reads a cyclic structure the cyclic way rather than distrusting
+# it — the steer's "detect the cycle, trigger a different approach".
 READING_REPERTOIRE = {
     "default": _read_default,
+    "cycle_aware": _read_cycle_aware,
     "non_leaf": _read_non_leaf,
     "spanned_k0": _read_spanned(0),
     "spanned_k1": _read_spanned(1),
@@ -789,10 +836,11 @@ def verify_then_update(substrate, adj: dict, field_valence: float,
                 "reading": None, "reason": "felt_read_abstained"}
     truth = tarjan_cut_vertices(adj, spy=spy)            # VERIFY — the expensive step
     f1 = f1_score(felt["predicted"], truth)
+    used_reading = felt.get("reading", "default")        # the reading the felt read used
     if f1 >= 0.999:                                      # confirmed -> solved exemplar
-        mint_shape(substrate, coord, k, +1.0, order_nodes=order_nodes, reading="default")
+        mint_shape(substrate, coord, k, +1.0, order_nodes=order_nodes, reading=used_reading)
         return {"verified": True, "f1": f1, "minted_valence": 1.0, "aperture": k,
-                "reading": "default", "reason": "confirmed"}
+                "reading": used_reading, "reason": "confirmed"}
     # WHEN IT'S WRONG: is it the wrong reading, or a genuinely untrustworthy shape?
     rescue = search_rescue_reading(adj, truth, order_nodes)
     if rescue is not None:                               # wrong READING, not wrong shape
