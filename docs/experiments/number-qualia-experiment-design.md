@@ -194,6 +194,15 @@ The theory is **refuted** (not merely "unsupported") if any of these hold in the
 
 A **null mint** (sub-exp d) is *not* on this list: it weakens the "qualia coined mid-reasoning" flourish but does not by itself refute the compression-of-structure thesis.
 
+**Sub-experiment (h) — feel-then-verify — adds these falsifiers (all in the clean theory arm, teacher-free, arithmetic-spy == 0 during the felt window):**
+
+7. **Composition carries no information** — the composed felt region's hit-rate (h1) is indistinguishable from the shuffled-operand baseline (its CI overlaps chance). Tier-2 composition is refuted.
+8. **No "feels-wrong" faculty** — the felt region admits plausible decoys as readily as truths (h2 rejection precision/recall at chance). The error-detection value is refuted.
+9. **No compute economy** — the felt path is not materially cheaper than verification in native counters (h4), so "feel most, compute rarely" is empty.
+10. **Arm 1 needs the hand-coded transform** — Arm-1 (minted) composition collapses to chance and only Arm-2's hand-coded `T_op` succeeds, meaning the transform could not be learned from structure (the (h) analogue of falsifier #6 / circularity).
+
+A **null transform-mint** in (h) is likewise *not* a refuter: it leaves Tier-2 unsupported *for that run* but does not touch Tier-1 or the feel-then-verify architecture. A **failed search-guidance** (h3) is an expected honest-negative, not a falsifier of the thesis.
+
 ---
 
 ## 9. Honesty boundaries (explicit)
@@ -204,6 +213,95 @@ A **null mint** (sub-exp d) is *not* on this list: it weakens the "qualia coined
 - **Substrate figures as-given** (§6): quanta, half-widths, and `commitment` saturation come from the seed unchanged; results are reported as ordinal, within the substrate's discretization, and we do not tune constants to manufacture separation.
 - **Minting is graph-owned** (§5d): Python never mints; thresholds gate it; report mint/no-mint honestly with counters.
 - **`find_analogies` mutates the graph** (§5b): run on a snapshot/copy.
+- **Feel-then-verify — Tier-3 wall by design** (§9b.6): no exact value from feel; the feel yields a *region*, verification yields the *point*. Lossiness is why the read is cheap, not a shortfall to fix.
+- **Composition fidelity is the unproven, load-bearing step** (§9b.6): that operand qualia compose into a faithful result region is exactly where (h) can break; gated by hit-rate-vs-baseline and region-tightness, not asserted.
+- **The operation-transform must be minted, never hand-coded** (§9b.3): a hand-written `T_op` is the (h) form of planting/circularity; the Arm-2 hand-coded control exists to show the hollow version by contrast.
+- **No arithmetic in the felt path** (§9b.4): proven by an extended spy that must read 0 arithmetic-executor calls during the felt window; the exact op runs only in the separate verification step. "Feels wrong" is region-exclusion, not subjective experience.
+
+---
+
+## 9b. Sub-experiment (h): The FEEL of an equation — expression-qualia by composition, feel-then-verify
+
+This is a new major capability, distinct from (a–g). Where (a–g) ask *what is the quale of a number*, (h) asks: **can the substrate obtain the quale of a composed expression** (`a·b`, `a+b`, "is `n` prime?", "roughly how big?") **by COMPOSING the qualia of its parts — without evaluating the expression** — and then *optionally* verify that felt read against the exact math as a **separate** step? This is analysis-by-synthesis with a fast-path: a cheap felt prior first; an expensive exact audit only when it's worth it. The whole discipline of §1 carries over unchanged; the one *new* crux (§9b.3) is that the **composition/operation-transform must be minted or learned from structure, never hand-coded** — otherwise the demonstration is hollow.
+
+### 9b.0 The three tiers (graded honestly)
+
+- **Tier 1 — magnitude/shape feel (strongest, closest to demonstrable).** "big/small, round/jagged, near a landmark" as a **direct signature read** of a single number, no arithmetic. This is essentially (a)/(b) re-scored on magnitude-band and roundness axes; it is the floor the composition tier must beat.
+- **Tier 2 — relational/structural feel via COMPOSITION (load-bearing; the direct answer to the question).** The felt result of an *operation* obtained by applying a **felt operation-TRANSFORM** to the operand qualia on shared axes — `even·even→even`, `prime·prime→composite`, `small·small→still-smallish`, `·→magnitude-bands add` — producing a **RESULT QUALE (a region)** *without producing the RESULT VALUE*. This is where the thesis lives or dies.
+- **Tier 3 — exact value from feel (OUT OF SCOPE; a hard, principled wall).** Not a limitation to overcome. **Qualia are lossy by definition, and that lossiness is *why* they are cheap.** If the quale contained the exact value, it would contain the full computation and would not be cheap. The feel narrows to a **region**; verification recovers the **point**. We state this as a design boundary, not a failure.
+
+### 9b.1 Seed-map — operand structural axes + the (minted) operation-transform
+
+Reuse the **shared neutral seed** of §3 verbatim (`has_factor`/`divides`/`residue_mod_k` edges, neutral `decimal_cycle_length`, `is_a number`, and the uniform `deficit(n)`-derived produced field). No new per-number planting. On top of the existing signature, the felt read for an expression composes on a fixed set of **operand structural axes**, each of which is either already present or a uniform read of the neutral seed:
+
+- **parity-feel** — read from the `residue_mod_2` edge target (structural, type-uniform; not a `special` flag).
+- **magnitude-band** — a coarse read of the produced/derived field ordering (Tier-1 quantity), banded by the observer grain (e.g. ones / teens / "the-50s" / hundreds). This is the same graded axis (e), read at COARSE grain.
+- **roundness** — read from `residue_mod_{5,10}` structure (terminating/`decimal_cycle_length==0`), uniform for all `n`.
+- **primality-feel** — the *emergent* divisor-absence coordinate from (a)/(d): zero `has_factor` edges within `S`. Never a seeded `is_prime` attr.
+
+The **operation-transform** is a map `T_op: (quale(a), quale(b)) → region(quale(a op b))` **on these shared axes**. It is the only genuinely new object, and §9b.3 governs how it is *acquired* — it must **fall out of the substrate**, not be typed in.
+
+### 9b.2 Two tiers of readout (Tier 1 direct; Tier 2 composed)
+
+- **Tier 1 read (no arithmetic):** `item_signature_vector(s, n, obs_COARSE, magnitude_roundness_axes)` → a band + roundness bit. Score against ground truth of `n` (which we know at seed time, uniformly, for all `n`). This is a sanity floor.
+- **Tier 2 read (composed, no evaluation):** given operands `a, b` and operator `op`, apply `T_op` to `(v_a, v_b)` on the shared axes to obtain a **result region** `R = T_op(v_a, v_b)` — a set of admissible `(parity, band, roundness, primality)` tuples. **`R` is produced without ever computing `a op b`.** The verification step (§9b.4) is what later computes the exact value and checks `truth ∈ R`.
+
+### 9b.3 The central non-circularity crux — the transform is MINTED, not hand-coded (make-or-break)
+
+If we hand-write `T_×: even·even→even`, we have simply re-encoded the arithmetic and the demonstration is **hollow/circular** — the exact mirror of planting `special=1` on 7. So the operation-transform itself must **emerge**. Mirroring §5(d) and the §1 "operational definition of planted," the transform is acquired thus:
+
+- **Acquisition (theory arm):** feed the system a stream of **composed expressions** whose *result-feel has no held axis*. Each segment computes `residual = concept_signature(reached_result_feel) − admitted_signature(setpoint)`. When the system **repeatedly** encounters `even·even` pairs and the *result feel* consistently lands in the even band with no held axis to name that regularity, the recurring residual persists ≥ `mint_after_quanta` segments and the **graph mints a felt operation-axis** (a `CapabilityAxis` / new `QualiaDimension`) — a coined "product-parity" or "band-addition" coordinate — via `run_minting_train_of_thought(...)` / `induce_concern(...)`. The transform `T_op` is then **read off the minted axis**, not authored. Python never writes the rule; the graph coins it. Verify via returned `minted_axes` / `mint_events` and `capture_minting_cost`.
+- **Operational definition of "hand-coded transform" (extends §1's "planted"):** `T_op` is *hand-coded* if (i) it appears as an explicit Python/JSON rule table mapping operand-axis values to a result region, OR (ii) its result-region constants were tuned per-operator to match known arithmetic. A transform is *learned/minted* only if it is **read off an axis the graph itself coined** from a recurring, unnamed residual. Anything else voids the Tier-2 result.
+- **Circular control (Arm 2, mandatory, mirrors §4):** run the identical harness with `T_op` **hand-coded** as an explicit rule table (`even·even→even`, etc.). This is the **hollow** version: the result region will be trivially correct because we wrote the arithmetic into it. Report Arm-1 (minted) vs Arm-2 (hand-coded) side by side. The Tier-2 claim is only credible as the difference: **Arm 1 composes correctly using a transform it was never handed.** If Arm 1 cannot compose without the hand-coded table, the composition thesis is unsupported.
+
+### 9b.4 Arithmetic-free felt path — provable separation (extends the teacher-free guard)
+
+The felt read must be shown to **not execute the expression to produce the feeling**. We extend the existing `AskSpy` teacher-free guard into a **compute-audit guard** that wraps the felt path and asserts **zero** invocations of the exact operators: no multiply, no add, no factorization is called while `R = T_op(v_a, v_b)` is produced. Concretely:
+
+- The felt path may touch only: `concept_signature`, `item_signature_vector`, the minted-axis read, and signature-distance metrics. Any call into an arithmetic executor during the felt window increments a spy counter that **must stay 0** (alongside `ask_spy == 0`).
+- The exact op (`a·b`, `a+b`, trial-division primality) is run **only afterward**, inside the *verification* step, and only to **check** `truth ∈ R`. The harness enforces the ordering by clearing/reading the arithmetic-spy counter at the felt/verify boundary, exactly as `capture_minting_cost` clears counters at the build/think boundary. A run where the arithmetic-spy is nonzero during the felt window is **void** (the fast-path secretly computed).
+
+### 9b.5 Falsifiable readouts + predictions
+
+For each: **seed-map → readout/metric → prediction (support vs refute) → circular control → honest-negative.** All scoring reuses `scoring/metrics.py` (`bootstrap_ci`, `spearman_rho`, `pearson`) and `capture_minting_cost`; predictions are **pre-registered** into the harness before running (per §7).
+
+**(h1) COMPOSITION VALIDITY — does the felt region contain the truth?**
+- **Seed-map:** shared neutral seed; operand axes (§9b.1) + minted `T_op` (§9b.3). For many `(a,b)`, compose `v_a, v_b → R` on `{parity-feel, magnitude-band, roundness, primality-feel}`.
+- **Readout/metric:** compute true `a·b` (and `a+b`) in the **verify** step; score `hit = [truth ∈ R]`. Report **hit-rate + 95% CI** via `bootstrap_ci`, against a **shuffled/chance baseline** (regions drawn from mismatched operands). Support requires hit-rate CI **above** the shuffled baseline CI.
+- **Prediction (support):** minted-transform regions contain the truth **more often than chance** on parity and magnitude-band especially (the most structurally regular axes). **Refute** if Arm-1 hit-rate is indistinguishable from the shuffled baseline (composition carries no information).
+- **Circular control:** Arm 2's hand-coded `T_op` will hit near-perfectly by construction — the *gap-to-Arm-1* is the honest measure of how much real composition the minted transform achieved.
+- **Honest-negative:** a region that is *too wide* trivially contains the truth; we therefore also report **region tightness** (fraction of the axis-space admitted). A wide-but-correct region is weak evidence, reported as such.
+
+**(h2) DECOY REJECTION — the "feels wrong" faculty (error-detection value).**
+- **Seed-map:** as (h1). For each `(a,b)`, form the truth and a **plausible-but-wrong decoy** (off-by-parity, or off-by-one-magnitude-band).
+- **Readout/metric:** does `R` **admit the truth and exclude the decoy**? Report **precision/recall of rejection** (decoy correctly excluded = true positive for the "feels wrong" detector).
+- **Prediction (support):** off-parity decoys are rejected with high precision (parity-feel is the crispest axis); magnitude-band decoys rejected at above-chance recall. **Refute** if `R` admits decoys as readily as truths (no discriminative "feels-wrong" faculty).
+- **Circular control:** Arm 2 rejects decoys trivially (it encoded the arithmetic); contrast shows whether the *minted* transform earned its rejection.
+- **Honest-negative:** **"feels wrong" is operationalized strictly as region-exclusion**, not a subjective experience of wrongness. We claim a sanity-check faculty, not felt discomfort.
+
+**(h3) SEARCH GUIDANCE (optional, harder; honest-negative if not shown).**
+- **Seed-map:** as (h1), on a harder task, e.g. "which of these candidate factorizations *feels* closest?"
+- **Readout/metric:** does the felt **gradient** (signature-distance of each candidate's composed feel to the target feel) **rank the true/worth-computing step first**? Report rank-of-truth and `spearman_rho` between felt-distance rank and true-closeness rank.
+- **Prediction (support):** the felt gradient steers toward the exact step worth computing (truth in top-k by felt distance). **Refute / honest-negative:** if the gradient does not beat random ordering, report it as a **clean negative** — search-guidance is the least-supported claim and we do not dress it up.
+- **Circular control:** Arm 2 as above.
+- **Honest-negative:** this is explicitly the **hardest, most likely-to-null** readout; a null here does **not** touch (h1)/(h2).
+
+**(h4) COST — "feel most, compute rarely" as a real compute-economy claim.**
+- **Seed-map:** as (h1); measure both paths on the identical corpus.
+- **Readout/metric:** `capture_minting_cost(...)` for the **felt path** (`counter_ops_total` should sit in the signature-read regime — the same ~55-op scale as the existing minting-cost baseline) vs the **verify path** (exact op, invoked selectively). Report felt-path ops vs verify-path ops; assert `ask_spy == 0` and the §9b.4 arithmetic-spy `== 0` for the felt window.
+- **Prediction (support):** felt read is **cheap** (signature-read regime), verification is the **expensive** step invoked only on the fraction of cases that fail (h2)'s sanity check or need Tier-3 exactness — so aggregate compute drops when most reads never trigger a verify. **Refute** if the felt path is not materially cheaper than verification (then there is no economy to the fast-path).
+- **Circular control:** Arm 2's hand-coded transform is *also* cheap but *hollow*; cost alone does not rescue a circular transform — cost is reported **jointly** with (h1) validity.
+- **Honest-negative:** cost is in the substrate's **native counters**, not wall-clock arithmetic FLOPs; we claim an *ops-regime* economy, not a calibrated speedup.
+
+### 9b.6 Honesty boundaries specific to (h)
+
+- **Tier-3 wall is by design, not limitation:** no exact value from feel — the feel narrows to a region; verification recovers the point. Stated as a principled boundary (lossiness is *why* it's cheap).
+- **Composition fidelity is UNPROVEN and is exactly where it can break** — mirroring §5(d)/distillation-fidelity reasoning: that the parts' qualia compose into a *faithful* result region is the load-bearing, unproven step, gated by (h1)'s hit-rate-vs-baseline and region-tightness.
+- **A null transform-mint weakens but does not refute** the feel-then-verify thesis (parallel to §8's null-mint clause): if nothing mints, Tier-2 is unsupported *in this run*, but Tier-1 (h-magnitude/roundness) and the feel-then-verify *architecture* stand.
+- **"Feels wrong" = region-exclusion**, not subjective experience (§9b.5-h2).
+- **No arithmetic executor in the felt path**, proven by the extended spy (§9b.4); the exact op runs only in verification.
+- **Substrate figures/quanta as-given** (§6): bands, grain quanta, saturation come from the seed unchanged; we do not tune them to widen/narrow regions into a result.
+- **Correlation not causation** where applicable (h3 gradient): a felt-distance ranking that tracks truth is correlational evidence of guidance, not a proof the feel *caused* the right search.
 
 ---
 
@@ -225,5 +323,6 @@ A **null mint** (sub-exp d) is *not* on this list: it weakens the "qualia coined
 | 1–10 | **7** (then 1) | zero in-set factors AND multiples; 6-digit decimal cycle; awkward mod |
 | 1–12 | **7 and 11** (co-outliers) | 11 = new isolated prime (no in-set factor/multiple); 7 keeps longer cycle (period 6 > 11's period 2), 14∉set so 7 still multiple-free |
 | Similarity | 4↔9 (squares); 6↔10 (2·prime); 2,3,5,7 share divisor-absence; 6 central (highly composite) | shared/absent divisor structure |
+| (h) composition | `even·even`→even band; `prime·prime`→composite (divisor-present) band; `small·small`→still-smallish magnitude-band; `·`→magnitude-bands add | result-region on shared axes from a **minted** `T_op`; felt region must contain truth above shuffled baseline (h1) and exclude off-parity/off-band decoys (h2) |
 
 [STEERING steer-7fe214d9-775f-4b2c-8979-2a98745a5350: Applied throughout. The design seeds ONLY neutral structural connections (divides/has_factor/residue edges + a neutral decimal_cycle_length attr) and lets the qualia coordinates FALL OUT of the CAN fields via concept_signature (either by relaxation or a uniform, per-number-blind structural derivation) — never hand-set. The glyph/shape is never seeded; it is read strictly downstream (sub-exp g) and its correlation with the emergent structural signature is what gets measured. This is stated up front in §0/§1 and enforced by the non-circularity rules and schema invariants.]
