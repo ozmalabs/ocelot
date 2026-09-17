@@ -48,6 +48,35 @@ grows itself. The honest ceiling that remains: the authorable primitives are gra
 so cross-domain self-extension (authoring readings over non-graph coordinates) is the next
 frontier.
 
+**Cross-domain self-extension (`track_j4`) — the loop is domain-general.** The frontier the
+arc named is now demonstrated: the recognise → compose-from-held-primitives → verify → adopt
+loop is not a graph trick. `track_j4_cross_domain_self_extension.py` instantiates the *identical*
+loop over **numeric sequences** (the number-qualia integer axis) and shows only the primitive
+vocabulary changes, not the machinery. The felt read is a sequence's "degree" — the order k at
+which its k-th finite difference is constant (falling_world's move) — via the **same**
+`order_n_concepts.nth_order_terms` aperture dial that drives the graph felt read; verify is exact
+differencing. Polynomial sequences (constant..cubic) get the correct felt degree solver-free
+(S1); a geometric sequence's felt read **abstains** — the sequence-domain no-rescue class, the
+analogue of the barbell (S2); on a **repeat** the loop **authors** a `log_degree` reading from
+held numeric primitives (log + the finite-difference dial — a geometric sequence is degree-1 in
+log space), verify-gated, and rescues the geometric class (S3) — the exact analogue of `bridge`
+rescuing the barbell, in a different domain; the authored reading is per-class and does **not**
+mis-read polynomials (S4, no regression); and felt reads stay solver-free with verify the separate
+step (S5, clean feel-then-verify accounting cross-domain). The cross-domain map:
+
+| domain   | coordinate         | felt read (cheap)            | verify (exact)      | authored reading (held prims)      |
+|----------|--------------------|------------------------------|---------------------|------------------------------------|
+| graph    | degree in order    | aperture-manifold outliers   | Tarjan cut-vertices | `bridge` (cycle_core + bridge edge)|
+| sequence | values in index    | constant finite-diff order   | exact differencing  | `log_degree` (log + finite-diff)   |
+
+The machinery — felt read via one shared aperture dial, abstain as no-rescue, repeated-no-rescue →
+author from held primitives, verify-gated, regression-free — is identical across the two. Added
+`seq_felt_degree` / `seq_verify_degree` / `seq_read_log_degree` / `seq_verify_then_update` /
+`seq_extend_repertoire` (+ `_SEQ_AUTHORABLE` / `_SEQ_REPERTOIRE`) to `number_runner.py`, and
+`track_j4_cross_domain_self_extension.py`. This closes the arc's honest ceiling: the pipeline
+grows readings not just within graphs but across domains, by recombining each domain's held
+primitives under the one feel-then-verify loop.
+
 ## The claim
 
 A structural "isolation / prickliness" coordinate — the felt axis that makes the number
