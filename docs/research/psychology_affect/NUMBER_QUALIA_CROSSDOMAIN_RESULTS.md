@@ -137,6 +137,45 @@ generalization; the memory unification is deferred until the class-fingerprint i
 shipped with a false no-false-distrust guarantee. (Recorded per the discipline that a caught,
 unfixed correctness bug is documented as the open problem, not papered over.)
 
+**Memory backend unification — RESOLVED via a class fingerprint (`track_j6`).** The blocked
+frontier above is now solved. The root cause was keying anti-shapes on the coordinate's
+ordinal-*rank* signature, which collapses whole families (all monotone sequences rank alike). The
+fix keys the memory on a per-domain **class fingerprint** — *what makes a structure a no-rescue
+class*, i.e. its felt-read/verify **outcome**, not its raw coordinate: two structures are the same
+anti-shape iff **the same reading fails the same way** on them. Per domain: graph keeps its
+rank-signature key (graph classes genuinely differ in rank → behavior-preserving); sequence key =
+`(seq_felt_degree, authorable-reading-that-claims-it)` (e.g. geometric → `(None, log_degree)`,
+cubic → `(3, None)`, Fibonacci → `(None, None)`); residue key = `(felt_confirms, authorable-that-
+rescues)`. The no-false-distrust property now holds **by construction**, verified adversarially far
+beyond the test battery: the anti-shape key set and the confirm key set are **disjoint**, so an
+anti-shape key structurally cannot address a confirmable structure — a held geometric anti-shape
+does not repel `n`, `n²`, `n²+n`, `n³`, `n³+n`, `n⁴`, shifted/scaled geometrics, or a constant
+(all confirm); a residue no-rescue anti-shape does not repel any monotone-confirmable list. This is
+the exact bug the prior attempt shipped, now impossible rather than merely untested. First-vs-repeat
+is genuinely **derived from held state** (a held negative-valence entry for this class key == a
+repeat) rather than a caller-supplied flag; fool-me-once still fires on a genuine same-class repeat
+(a fresh 4ⁿ is repelled with zero verify calls). The signed-valence decision stays the composed
+`net_valence_term` graph Term (conceptualizer audit green); the class-key match is bookkeeping over
+felt/verify outcomes, not a relocated decision.
+
+Two honest scope notes (from the adversarial review, applied before commit): (1) the **felt-time
+rule-out (phase A)** is solver-free for every domain — a felt-*differing* candidate is cleared with
+no verify, and felt reads are always `SolverSpy=0`; the phase-B full-key confirm is additionally
+solver-free for sequence/graph, but the **residue** full key includes the mod-3 partition, so on a
+rare felt-*collider* (a confirmable list whose parity boundaries happen to match a held anti-shape's)
+residue spends one verify to confirm the class differs — acceptable (it fires only for a genuine
+collider candidate and mint is post-verify), but not a blanket "repel-check is always solver-free"
+for residue. (2) the sequence `(None, None)` key currently merges genuinely-distinct unclaimed
+no-rescue classes (Fibonacci, n⁵-and-up, primes) into one anti-shape — correct fool-me-once today
+(they are all "nothing authorable rescues this"), a latent coarseness to refine when an authorable
+reading is added for one of them. The memory is **opt-in** per call (pass a substrate/memory to
+enable; without one the loop is byte-for-byte the prior flag-based behavior, so track_j5 is
+unchanged). Added `Domain.class_key` / `Domain.felt_component`, the per-domain class keys, a
+`ClassFingerprintMemory`, and `domain_memory_verify_then_update` to `number_runner.py`, and
+`track_j6_class_fingerprint_memory.py` (C1–C6, all pass). The fool-me-once / re-earnable memory is
+now domain-general: a new domain inherits earned, class-keyed, false-distrust-free distrust for
+free by supplying its class fingerprint alongside the four pieces.
+
 ## The claim
 
 A structural "isolation / prickliness" coordinate — the felt axis that makes the number
