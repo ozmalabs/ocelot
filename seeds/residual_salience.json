@@ -230,7 +230,7 @@
   {
    "name": "aperture_salience",
    "domain": "autonomy",
-   "comment": "JABBERWOCK-AUTHORED aperture-manifold salience (donkey=0), the SAME residual_recurrence keystone the residual_salience/cost_salience concepts matched, extended with an explicit BLIND-REGIME repulsion. The residual/cost salience says WHERE to spend but is BLIND to whether the felt read at that axis can be TRUSTED: an axis whose structural property has only an UNBOUNDED-RADIUS witness (e.g. a graph criticality where the 'way around' is a large closed loop) is a regime where the cheap local/multi-aperture felt read is KNOWN-BLIND and would commit a falsely-sharp peak (the Dunning-Kruger failure the parallel-cheap-checks design warns about). The confidence gate (tests/capability/number_qualia: felt_aperture_read + has_cycle over the substrate's own order_n_concepts aperture dial) detects that regime; `blind` is stamped onto the axis (mechanical adapter I/O, no decision) as 1.0 when the felt read must ABSTAIN. salience(axis) = shortfall (measured residual) + (1 - saturation) (belief residual) - cost (sunk-effort) - blind*1e9 (blind-regime repulsion). A blind axis is pushed to a huge-negative salience so the frontier Argmax never PICKS it to COMMIT -- the agent abstains and the pick moves to a trustable axis (or, if all are blind, no commit -> route to VERIFY), instead of confidently investigating on a falsely-sharp felt peak. When blind=0 for every axis this reduces EXACTLY to cost_salience (Minus(0,0)=0 is a no-op addend), which itself reduces to residual_salience at zero cost -- fully backward compatible. The agent recognises this as the residual_recurrence keystone extended by a trust/confidence bound (feel where the residual is high, EXCEPT where the reader is blind), donkey=0. Graph-data term on this concept; the world adapter swaps it onto the understand Drive's frontier_pick_term, leaving seeds/autonomy.json and the Drive's frozen invariant untouched.",
+   "comment": "[SUPERSEDED by valence_salience] This used a blind*1e9 SCALAR mask stamped from Python \u2014 a Python decision wearing a graph read's clothing. Replaced by valence_salience, which reads a NATIVE signed shape field (dynamical:valence): the match/net-sign is a composed Term, not a stamped scalar, and blindness is one EARNED negative shape among others rather than a built-in has_cycle predicate. Kept readable as the superseded form; nothing installs it. --- JABBERWOCK-AUTHORED aperture-manifold salience (donkey=0), the SAME residual_recurrence keystone the residual_salience/cost_salience concepts matched, extended with an explicit BLIND-REGIME repulsion. The residual/cost salience says WHERE to spend but is BLIND to whether the felt read at that axis can be TRUSTED: an axis whose structural property has only an UNBOUNDED-RADIUS witness (e.g. a graph criticality where the 'way around' is a large closed loop) is a regime where the cheap local/multi-aperture felt read is KNOWN-BLIND and would commit a falsely-sharp peak (the Dunning-Kruger failure the parallel-cheap-checks design warns about). The confidence gate (tests/capability/number_qualia: felt_aperture_read + has_cycle over the substrate's own order_n_concepts aperture dial) detects that regime; `blind` is stamped onto the axis (mechanical adapter I/O, no decision) as 1.0 when the felt read must ABSTAIN. salience(axis) = shortfall (measured residual) + (1 - saturation) (belief residual) - cost (sunk-effort) - blind*1e9 (blind-regime repulsion). A blind axis is pushed to a huge-negative salience so the frontier Argmax never PICKS it to COMMIT -- the agent abstains and the pick moves to a trustable axis (or, if all are blind, no commit -> route to VERIFY), instead of confidently investigating on a falsely-sharp felt peak. When blind=0 for every axis this reduces EXACTLY to cost_salience (Minus(0,0)=0 is a no-op addend), which itself reduces to residual_salience at zero cost -- fully backward compatible. The agent recognises this as the residual_recurrence keystone extended by a trust/confidence bound (feel where the residual is high, EXCEPT where the reader is blind), donkey=0. Graph-data term on this concept; the world adapter swaps it onto the understand Drive's frontier_pick_term, leaving seeds/autonomy.json and the Drive's frozen invariant untouched.",
    "definition": {
     "type": "Argmax",
     "source": {
@@ -340,6 +340,354 @@
          {
           "type": "Lit",
           "value": 1000000000.0
+         }
+        ]
+       }
+      },
+      {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gte",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "x"
+          },
+          "edge_type": "investigated_by",
+          "any_type": false
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "other": {
+        "type": "Lit",
+        "value": -1000000000.0
+       }
+      }
+     ]
+    },
+    "default": null
+   }
+  },
+  {
+   "name": "valence_salience",
+   "domain": "autonomy",
+   "comment": "JABBERWOCK-AUTHORED valence-shape-field salience (donkey=0), the residual_recurrence keystone extended by a TRUST bound read off the substrate's NATIVE signed shape field. Replaces aperture_salience's blind*1e9 scalar mask (a Python decision) with a COMPOSED Term over held Shape nodes. 'An AntiShape is a Shape like any other -- it merely has a negative polarity' (dynamical:valence, -/0/+, seeds/qualia_space.json). 'The antishape identity depends on the aperture': a shape is a reading at an order_n_concepts order k, so a Shape node carries (aperture k, order-k signature sig_0..sig_7, valence). salience(axis) = shortfall + (1-saturation) - cost + net_valence, where net_valence = Sum over Shape nodes at aperture==axis.aperture of valence(sh) * [ L1(axis.csig, sh.sig) <= tol ? 1 : 0 ] -- L1 shape-distance (Sum(Abs(Minus)))+threshold+valence product, all EXISTING Term ops (no new Rust op; .so frozen). The match/net-sign is the DECISION and is the TERM the substrate evaluates; Python only STAMPS signature attrs (arithmetic I/O) and MINTS Shape nodes on verify outcomes (structural I/O), so no Python decision (conceptualizer audit). POSITIVE shapes (solved exemplars, track_j2 library) pull toward committing; NEGATIVE shapes (anti-shapes: structures a felt read committed on and verify caught WRONG) push toward abstain -- and only at THEIR aperture (a structure noise at k=1 but clean at k=2 is not repelled). FOOL ME ONCE: verify catching a false commit mints a valence=-1 shape (symmetric with minting +1 on a confirmed success); CAN'T GET FOOLED AGAIN: the next matching structure carries negative net_valence and is repelled from memory, verify not spent. RE-EARNABLE: a -1 shape later confirmed drifts toward 0/+ by the same valence update. When the field is EMPTY (or all matches net 0) net_valence=0 and this reduces EXACTLY to cost_salience -> residual_salience -- fully backward compatible. The world adapter swaps this onto the understand Drive's frontier_pick_term; seeds/autonomy.json and the Drive's frozen invariant untouched.",
+   "definition": {
+    "type": "Argmax",
+    "source": {
+     "type": "NodesWhere",
+     "node_type": "CapabilityAxis",
+     "attr_key": "is_axis",
+     "value": {
+      "type": "Lit",
+      "value": 1.0
+     }
+    },
+    "var_name": "x",
+    "value": {
+     "type": "Plus",
+     "items": [
+      {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "key": "shortfall"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      {
+       "type": "Minus",
+       "a": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "x"
+          },
+          "key": "saturation"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      },
+      {
+       "type": "Minus",
+       "a": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "x"
+          },
+          "key": "cost"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      },
+      {
+       "type": "Sum",
+       "source": {
+        "type": "NodesWhere",
+        "node_type": "Shape",
+        "attr_key": "aperture",
+        "value": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "key": "aperture"
+        }
+       },
+       "var_name": "sh",
+       "value": {
+        "type": "Times",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sh"
+          },
+          "key": "valence"
+         },
+         {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Lte",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Abs",
+              "arg": {
+               "type": "Minus",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "x"
+                },
+                "key": "csig_0"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "sh"
+                },
+                "key": "sig_0"
+               }
+              }
+             },
+             {
+              "type": "Abs",
+              "arg": {
+               "type": "Minus",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "x"
+                },
+                "key": "csig_1"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "sh"
+                },
+                "key": "sig_1"
+               }
+              }
+             },
+             {
+              "type": "Abs",
+              "arg": {
+               "type": "Minus",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "x"
+                },
+                "key": "csig_2"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "sh"
+                },
+                "key": "sig_2"
+               }
+              }
+             },
+             {
+              "type": "Abs",
+              "arg": {
+               "type": "Minus",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "x"
+                },
+                "key": "csig_3"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "sh"
+                },
+                "key": "sig_3"
+               }
+              }
+             },
+             {
+              "type": "Abs",
+              "arg": {
+               "type": "Minus",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "x"
+                },
+                "key": "csig_4"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "sh"
+                },
+                "key": "sig_4"
+               }
+              }
+             },
+             {
+              "type": "Abs",
+              "arg": {
+               "type": "Minus",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "x"
+                },
+                "key": "csig_5"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "sh"
+                },
+                "key": "sig_5"
+               }
+              }
+             },
+             {
+              "type": "Abs",
+              "arg": {
+               "type": "Minus",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "x"
+                },
+                "key": "csig_6"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "sh"
+                },
+                "key": "sig_6"
+               }
+              }
+             },
+             {
+              "type": "Abs",
+              "arg": {
+               "type": "Minus",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "x"
+                },
+                "key": "csig_7"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "sh"
+                },
+                "key": "sig_7"
+               }
+              }
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 2.0
+           }
+          },
+          "then": {
+           "type": "Lit",
+           "value": 1.0
+          },
+          "other": {
+           "type": "Lit",
+           "value": 0.0
+          }
          }
         ]
        }

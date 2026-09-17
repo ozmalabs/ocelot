@@ -547,3 +547,154 @@ def f1_score(predicted: set, truth: set) -> float:
     fp = len(predicted - truth)
     fn = len(truth - predicted)
     return (2 * tp / (2 * tp + fp + fn)) if (tp or fp or fn) else 1.0
+
+
+
+# --------------------------------------------------------------------------- #
+#  THE SIGNED, APERTURE-INDEXED SHAPE FIELD (anti-shapes).
+#
+#  "An AntiShape is a Shape like any other — it merely has a negative polarity"
+#  (user). The substrate already carries polarity natively: seeds/qualia_space.json
+#  `dynamical:valence` = "sign of the concept's committed state (-/0/+)". So the
+#  solution library (track_j2, positive exemplars) and the anti-shapes (things that
+#  fooled the felt read) are ONE field at opposite VALENCE — not two mechanisms.
+#
+#  "The antishape identity depends on the aperture" (user). A shape IS a reading at
+#  an aperture (order_n_concepts order k). A false commit caught at order k mints a
+#  NEGATIVE shape AT k; a fresh structure is repelled only when ITS order-k reading
+#  matches — a structure that is noise at k=1 but clean at k=2 is correctly NOT
+#  repelled. Distrust is aperture-scoped. Identity = (aperture k, order-k signature).
+#
+#  "Maybe it needs to be a Term op not a static method" (user). The match/net-sign is
+#  the DECISION, so it must be the Term (conceptualizer audit: no Python decision).
+#  The .so is frozen, so no NEW Rust op — but a shape SIGNATURE is a vector of ints
+#  and shape_signature_distance is L1 = Sum(Abs(Minus(...))), every piece an existing
+#  Term op. So net_valence is COMPOSED as a graph-resident Sum over held Shape nodes:
+#     net_valence(x) = Sum_{sh in Shape, aperture(sh)==aperture(x)}
+#                          valence(sh) * [ L1(sig(x), sig(sh)) <= tol ? 1 : 0 ]
+#  Python only STAMPS signature attrs (arithmetic I/O) and MINTS Shape nodes
+#  (structural I/O) on verify outcomes; the pick is the Term the substrate evaluates.
+#
+#  FOOL ME ONCE, CAN'T GET FOOLED AGAIN: verify catching a false commit MINTS a
+#  valence=-1 shape at the used aperture (symmetric with minting valence=+1 on a
+#  confirmed success). The next matching structure carries negative net valence and
+#  is repelled from memory — verify budget not spent. RE-EARNABLE: a -1 shape later
+#  confirmed-fine drifts toward 0/+ by the same valence update (not a bespoke decay).
+# --------------------------------------------------------------------------- #
+SHAPE_SIG_WIDTH = 8          # fixed signature width so the L1 Sum term has fixed shape
+SHAPE_MATCH_TOL = 2.0        # L1 shape-distance threshold for "same shape at this aperture"
+
+
+def _eval_num(x):
+    if isinstance(x, dict) and x.get("type") == "Minus":
+        return _eval_num(x["a"]) - _eval_num(x["b"])
+    return x
+
+
+def aperture_signature(coord: list, k: int, substrate) -> list:
+    """The order-k shape SIGNATURE of a structural coordinate: signature of its
+    k-th finite difference (the substrate's own order_n_concepts aperture dial fed
+    to shape_signature). Normalized to SHAPE_SIG_WIDTH (pad/truncate) so held and
+    candidate signatures compare component-wise in a fixed-arity L1 Term."""
+    from domains.order_n_concepts import nth_order_terms
+    diffs = [float(_eval_num(t)) for t in nth_order_terms(list(coord), k)]
+    sig = list(substrate.shape_signature(diffs)) if diffs else []
+    return (sig + [0] * SHAPE_SIG_WIDTH)[:SHAPE_SIG_WIDTH]
+
+
+def structural_coord(adj: dict, order_nodes: Optional[list] = None) -> list:
+    """The structural coordinate a graph's shape is read from — degree in traversal
+    order (the same coordinate felt_aperture_read uses). Kept separate so any domain
+    can supply its own ordered numeric coordinate."""
+    order_nodes = list(adj) if order_nodes is None else order_nodes
+    return [len(adj[v]) for v in order_nodes]
+
+
+def mint_shape(substrate, coord: list, k: int, valence: float,
+               *, order_nodes: Optional[list] = None) -> int:
+    """Hold a shape in the field: a `Shape` node carrying (aperture k, order-k
+    signature attrs sig_0..sig_{W-1}, valence). valence=+1 = solved exemplar
+    (positive pull), -1 = caught false-commit (anti-shape, negative pull). If an
+    identical-aperture shape within tol already exists, UPDATE its valence toward the
+    new sign (re-earning) instead of duplicating. Returns the Shape node id."""
+    sig = aperture_signature(coord, k, substrate)
+    for sh in substrate.nodes("Shape"):
+        at = substrate.node(sh)["attrs"]
+        if int(at.get("aperture", -1)) != k:
+            continue
+        d = sum(abs(sig[i] - int(at.get("sig_%d" % i, 0))) for i in range(SHAPE_SIG_WIDTH))
+        if d <= SHAPE_MATCH_TOL:                       # same shape already held -> re-earn
+            cur = float(at.get("valence", 0.0))
+            substrate.set_attr(sh, "valence", max(-1.0, min(1.0, cur + valence)))
+            return sh
+    attrs = {"aperture": float(k), "valence": float(valence)}
+    for i in range(SHAPE_SIG_WIDTH):
+        attrs["sig_%d" % i] = float(sig[i])
+    return substrate.add_node("Shape", attrs)
+
+
+def stamp_candidate_signature(substrate, axis: int, coord: list, k: int) -> None:
+    """Stamp the candidate axis's OWN order-k signature onto csig_0..csig_{W-1} and
+    its aperture. Pure arithmetic I/O (a finite difference + an ordinal rank), the
+    same category as stamp_axis_cost — no decision. The DECISION (match/net-sign) is
+    the net_valence Term the frontier evaluates."""
+    sig = aperture_signature(coord, k, substrate)
+    substrate.set_attr(axis, "aperture", float(k))
+    for i in range(SHAPE_SIG_WIDTH):
+        substrate.set_attr(axis, "csig_%d" % i, float(sig[i]))
+
+
+def net_valence_term() -> dict:
+    """COMPOSE the net-valence sub-term (graph data, evaluated by the substrate):
+        Sum_{sh in Shape, aperture(sh)==aperture(x)}
+            valence(sh) * IfThenElse( Sum_i |csig_i(x) - sig_i(sh)| <= tol, 1, 0 )
+    L1 shape-distance + threshold + valence product, all existing Term ops. `x` is
+    the outer candidate axis (bound by the enclosing frontier Argmax); `sh` is the
+    inner held Shape. Positive shapes pull toward commit, negative (anti-shapes) push
+    toward abstain. This is the match-as-Term the design requires."""
+    def A(var, key):
+        return {"type": "Attr", "node": {"type": "Var", "name": var}, "key": key}
+    l1 = {"type": "Plus", "items": [
+        {"type": "Abs", "arg": {"type": "Minus", "a": A("x", "csig_%d" % i),
+                                "b": A("sh", "sig_%d" % i)}}
+        for i in range(SHAPE_SIG_WIDTH)]}
+    match = {"type": "IfThenElse",
+             "cond": {"type": "Lte", "a": l1, "b": {"type": "Lit", "value": SHAPE_MATCH_TOL}},
+             "then": {"type": "Lit", "value": 1.0}, "other": {"type": "Lit", "value": 0.0}}
+    per_shape = {"type": "Times", "items": [A("sh", "valence"), match]}
+    return {"type": "Sum",
+            "source": {"type": "NodesWhere", "node_type": "Shape",
+                       "attr_key": "aperture",
+                       "value": A("x", "aperture")},
+            "var_name": "sh", "value": per_shape}
+
+
+def verify_then_update(substrate, adj: dict, field_valence: float,
+                       *, order_nodes: Optional[list] = None,
+                       spy: Optional[SolverSpy] = None) -> dict:
+    """THE FOOL-ME-ONCE LOOP. Given the felt read's committed prediction for `adj`
+    and the net field valence it saw, decide whether to VERIFY and what to MINT:
+      · field_valence < 0  -> a held anti-shape already repelled this; ABSTAIN,
+        verify NOT spent (can't get fooled again).
+      · field_valence >= 0 and the felt read COMMITTED -> VERIFY (Tarjan, spy-pinged,
+        the expensive step). If the felt prediction was WRONG (F1 < 1) -> the felt read
+        was fooled -> MINT a valence=-1 shape at the used aperture (fool me once). If
+        RIGHT -> MINT/strengthen a valence=+1 shape (a solved exemplar).
+    Returns {verified, f1, minted_valence, aperture}. The felt read itself stays
+    solver-free; the Tarjan here is the SEPARATE verify step."""
+    order_nodes = list(adj) if order_nodes is None else order_nodes
+    coord = structural_coord(adj, order_nodes)
+    felt = felt_aperture_read(adj, order_nodes)          # solver-free (no spy)
+    k = 1                                                # the aperture the read localizes at
+    if field_valence < 0:
+        return {"verified": False, "f1": None, "minted_valence": None,
+                "aperture": k, "reason": "repelled_by_held_antishape"}
+    if not felt["committed"]:
+        return {"verified": False, "f1": None, "minted_valence": None,
+                "aperture": k, "reason": "felt_read_abstained"}
+    truth = tarjan_cut_vertices(adj, spy=spy)            # VERIFY — the expensive step
+    f1 = f1_score(felt["predicted"], truth)
+    val = 1.0 if f1 >= 0.999 else -1.0                   # confirmed -> +, fooled -> -
+    mint_shape(substrate, coord, k, val, order_nodes=order_nodes)
+    return {"verified": True, "f1": f1, "minted_valence": val, "aperture": k,
+            "reason": "confirmed" if val > 0 else "fooled_minted_antishape"}
