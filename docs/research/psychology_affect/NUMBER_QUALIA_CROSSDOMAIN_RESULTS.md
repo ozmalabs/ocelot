@@ -257,6 +257,25 @@ abstains where the checks are jointly blind. Wiring this into `frontier_pick`/th
 ladder (feedable via a `set_attr` on frontier salience, no frozen-Rust or tuned-seed changes)
 is the identified next stage, not done here.
 
+**Update — the wiring is now done** (`scripts/jabberwock_gates_its_aperture.py`, the
+`aperture_salience` concept in `seeds/residual_salience.json`). The blind-regime confidence
+gate is stamped onto each `CapabilityAxis` as a `blind` attr (mechanically, from
+`felt_aperture_read` over the axis's structure — solver-free, SolverSpy = 0), and the
+frontier salience term gains one addend, `- blind*1e9`, appended to the existing
+`cost_salience` term (which itself extends `residual_salience`). A blind axis is repelled so
+the frontier Argmax never picks it to *commit*: the agent abstains and the pick moves to a
+trustable axis, or — if every axis is blind — no axis wins and the loop routes to verify.
+Gates (all pass, donkey = 0): ABSTAIN (a high-residual blind axis loses to a lower-residual
+trustable one, where plain cost salience would have committed the falsely-sharp peak),
+COMMIT-TRUST (a high-residual *trustable* axis still wins — the gate repels only blind axes),
+ALL-BLIND (every axis repelled → route to verify), BACKWARD COMPAT (blind = 0 everywhere is
+numerically identical to `cost_salience`, and the live `_frontier_advance` reflex still
+resolves onto the hard frontier), FROZEN CORE (the `understand` Drive stays `frozen:true`;
+only its `frontier_pick_term` data attr moved — not a frozen-core invariant). The full
+cost-scheduling suite (which shares the edited seed) still passes. Honest limit: this does not
+*solve* the unbounded-radius case; the win is that the frontier abstains there instead of
+committing a falsely-sharp peak.
+
 ### Files added
 
 `tests/capability/number_qualia/track_j3_aperture_manifold.py` and the
