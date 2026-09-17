@@ -238,6 +238,31 @@ def main() -> int:
     print(f"  net_valence(path, matches POSITIVE)={vp}  net_valence(broom, matches NEGATIVE)={vr}"
           f"  -> {'positive pulls, negative pushes (one field, opposite sign)' if sym_ok else 'FAIL'}")
 
+    # ---- RETIRED-PREDICATE: the ring+tail (the case the OLD hardcoded has_cycle veto
+    #      used to abstain on) is now caught by the SAME learned loop -- commit -> verify
+    #      catches -> mint anti-shape -> next one repelled. No built-in cycle predicate. ----
+    print("\n" + "-" * 90)
+    print("RETIRED-PREDICATE -- the ring+tail (what the OLD hardcoded has_cycle veto abstained on)")
+    print("  is now handled by the SAME learned loop, no built-in cycle predicate:")
+    print("-" * 90)
+    a5 = WorldAdapter(seeds=()); load_all_seeds(a5)
+    ring1 = _ud([("r%d" % i, "r%d" % ((i + 1) % 6)) for i in range(6)] + [("r0", "rt")])
+    ring2 = _ud([("q%d" % i, "q%d" % ((i + 1) % 6)) for i in range(6)] + [("q0", "qt")])
+    felt_ring = R.felt_aperture_read(ring1)          # NO hardcoded veto now -> commits
+    spy5 = R.SolverSpy()
+    u1 = R.verify_then_update(a5.s, ring1, field_valence=0.0, spy=spy5)   # caught, mints anti-shape
+    ax_r2 = _mk_axis(a5, shortfall=0.9, saturation=0.0)
+    R.stamp_candidate_signature(a5.s, ax_r2, R.structural_coord(ring2), 1)
+    nv_r2 = float(a5.inner.evaluate(NET, {"x": ax_r2}))                   # 2nd ring repelled
+    spy5b = R.SolverSpy()
+    u2 = R.verify_then_update(a5.s, ring2, field_valence=nv_r2, spy=spy5b)
+    retired_ok = (felt_ring["committed"] and felt_ring["reason"] == "bounded_witness"
+                  and u1["verified"] and u1["minted_valence"] == -1.0
+                  and nv_r2 < 0 and not u2["verified"] and spy5b.calls == 0)
+    print(f"  ring1: felt commits ({felt_ring['reason']}), verify catches f1={u1['f1']} "
+          f"-> mint {u1['minted_valence']}; ring2 net_valence={nv_r2} -> {u2['reason']}")
+    print(f"  -> {'ring+tail now caught by LEARNED distrust, hardcoded predicate retired' if retired_ok else 'FAIL'}")
+
     # ---- BACKWARD COMPAT: empty field -> net_valence 0 -> == cost_salience; live reflex ----
     print("\n" + "-" * 90)
     print("BACKWARD COMPAT -- empty field: valence_salience == cost_salience per axis; live reflex")
@@ -279,6 +304,7 @@ def main() -> int:
             ("APERTURE-SCOPED (anti-shape repels only at its aperture)", aperture_ok),
             ("RE-EARNABLE (confirmed anti-shape drifts toward trust)", reearn_ok),
             ("SYMMETRY (one field, opposite sign, same Term)", sym_ok),
+            ("RETIRED-PREDICATE (ring+tail now learned, not hardcoded)", retired_ok),
             ("BACKWARD COMPAT (reduces to cost_salience + no regression)", compat_ok),
             ("FROZEN CORE intact", frozen_ok),
             ("donkey=0", donkey_ok)]

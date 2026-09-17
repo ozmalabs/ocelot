@@ -318,6 +318,22 @@ hardcoded predicate. Added: `valence_salience` / `net_valence` composition, the
 `aperture_signature` / `mint_shape` / `stamp_candidate_signature` / `verify_then_update`
 machinery in `number_runner.py`, and `scripts/jabberwock_holds_antishapes.py`.
 
+**Follow-up — the hardcoded `has_cycle` veto is retired.** With blindness now *learned* as a
+negative-valence shape, the built-in `has_cycle` confidence gate inside `felt_aperture_read` was
+a redundant special-case — a hand-coded predicate doing what the shape field now does by earning.
+It is removed: the felt read no longer vetoes cycle-bearing structures, so it *commits and is
+allowed to be wrong* on a ring+tail (F1 = 0.33), verify catches that first mistake, and the same
+`verify_then_update` loop mints the anti-shape that repels the next matching structure. The
+`RETIRED-PREDICATE` gate in `scripts/jabberwock_holds_antishapes.py` demonstrates end-to-end that
+the ring+tail — the exact case the old veto abstained on — is now handled by the learned loop with
+no built-in cycle test (commit → verify catches → mint → next ring+tail repelled, verify saved).
+`track_j3`'s M5 is updated honestly: the fence is no longer "abstain via a cycle predicate" but
+"commit, be caught by verify, and remember" — distrust is earned per-shape and aperture-scoped,
+never hardcoded. `has_cycle` remains defined as a plain cheap invariant but nothing in the felt
+path calls it. The confidence gate now has *no* built-in special-cases: it commits on a bounded
+witness, returns an honest null only when no aperture separates anything, and learns everything
+else from caught failures.
+
 ### Files added
 
 `tests/capability/number_qualia/track_j3_aperture_manifold.py` and the
