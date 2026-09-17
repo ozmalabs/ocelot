@@ -276,6 +276,48 @@ cost-scheduling suite (which shares the edited seed) still passes. Honest limit:
 *solve* the unbounded-radius case; the win is that the frontier abstains there instead of
 committing a falsely-sharp peak.
 
+**Superseded by the signed shape field (anti-shapes).** The `blind*1e9` addend above was a
+Python-stamped SCALAR mask — a Python decision wearing a graph read's clothing — and a fixed
+`has_cycle` predicate rather than something learned. It is now superseded by `valence_salience`
+(same seed), which reads a **native signed, aperture-indexed shape field**. Three corrections
+drove the replacement: (1) *an AntiShape is a Shape like any other, merely negative polarity* —
+the substrate already carries polarity natively (`dynamical:valence`, −/0/+), so the track (j2)
+solution library (positive exemplars) and the anti-shapes are **one field at opposite sign**,
+not two mechanisms; (2) *the anti-shape's identity depends on the aperture* — a shape is a
+reading at an `order_n_concepts` order `k`, so a `Shape` node carries `(aperture k, order-k
+signature, valence)` and a false commit caught at `k` mints a negative shape **at `k`**, which
+repels a fresh structure only at its own aperture (noise at k=1 but clean at k=2 is not
+repelled); (3) *the match must be a Term op, not a static method* — the match/net-sign is the
+**decision**, so it is the Term the substrate evaluates. The `.so` is frozen (no new Rust op),
+but a shape signature is a vector of ints and shape-distance is L1 = `Sum(Abs(Minus(...)))`, so
+`net_valence` is **composed from existing Term ops**:
+
+```
+salience(axis) = shortfall + (1 - saturation) - cost + net_valence(axis)
+net_valence(x) = Sum over Shape nodes at aperture == aperture(x) of
+                     valence(sh) * [ L1(csig(x), sig(sh)) <= tol ? 1 : 0 ]
+```
+
+Python only *stamps* signature attrs (arithmetic I/O) and *mints* `Shape` nodes on verify
+outcomes (structural I/O); no Python computes the pick (conceptualizer audit passes).
+**Fool me once, can't get fooled again:** verify catching a false commit mints a valence=−1
+shape at the used aperture (symmetric with minting +1 on a confirmed success); the next
+matching structure carries negative net valence and is repelled from memory, verify not spent.
+**Re-earnable:** a −1 shape later confirmed drifts toward 0/+ by the same valence update — earned
+distrust, not permanent paranoia. Gates (all pass, `scripts/jabberwock_holds_antishapes.py`,
+donkey = 0): STAGE-B/FOOLED (a *broom* — acyclic, so the built-in gate passes and the felt read
+commits, yet it misses the spine interiors at F1 = 0.5, a genuine numerology the `has_cycle`
+gate is blind to — is caught by verify and minted as an anti-shape), FOOL-ME-ONCE (a fresh broom
+is repelled, verify saved), APERTURE-SCOPED (the same broom at k=2 is not repelled), RE-EARNABLE,
+SYMMETRY (positive pulls, negative pushes, one field read by the same Term), BACKWARD COMPAT
+(empty field ≡ `cost_salience`; live `_frontier_advance` still resolves onto the hard frontier),
+FROZEN CORE, donkey = 0. The full cost-scheduling suite still passes. Honest limit unchanged:
+the felt read still cannot *solve* the unbounded-radius case; the win is that a caught failure is
+*held* as a negative-valence shape and the frontier abstains from it thereafter without a
+hardcoded predicate. Added: `valence_salience` / `net_valence` composition, the
+`aperture_signature` / `mint_shape` / `stamp_candidate_signature` / `verify_then_update`
+machinery in `number_runner.py`, and `scripts/jabberwock_holds_antishapes.py`.
+
 ### Files added
 
 `tests/capability/number_qualia/track_j3_aperture_manifold.py` and the
