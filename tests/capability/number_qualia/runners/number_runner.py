@@ -507,13 +507,21 @@ def has_cycle(adj: dict) -> bool:
 def felt_aperture_read(adj: dict, order_nodes: Optional[list] = None,
                        *, spy: Optional[SolverSpy] = None) -> dict:
     """THE FELT PATH (solver-free): read cut-vertex criticality off the multi-aperture
-    manifold + the confidence gate, choosing NO single method. Steps:
+    manifold, choosing NO single method. Steps:
       1. Build the aperture manifold (all orders live) over degree-in-order.
       2. A node is felt-critical if it is INTERIOR to a bounded run (flanked in the
          ordering AND not itself a degree outlier) OR a high-degree hub outlier.
-      3. CONFIDENCE GATE: if a cycle is present the local coordinates are known-blind
-         -> ABSTAIN (committed=False, predicted=None) and route to verify. Otherwise
-         COMMIT the felt prediction.
+      3. If NO aperture separates anything (flat everywhere) -> abstain with an honest
+         null (that is a READ RESULT, not a special-case predicate). Otherwise COMMIT
+         the felt prediction.
+    NOTE (blindness is LEARNED, not hardcoded): there is deliberately NO built-in
+    cycle/blind-regime veto here. The felt read is ALLOWED to commit — and be wrong — on
+    a structure whose discriminating witness is unbounded-radius (a large closed loop).
+    That first mistake is what verify catches and mints as a negative-valence anti-shape
+    (verify_then_update); the shape field then repels the SAME shape at its aperture next
+    time (fool me once). This retires the old `has_cycle` predicate: distrust is earned
+    per-shape and aperture-scoped, not a hand-coded special case. `has_cycle` remains
+    defined below as a plain cheap invariant, but the felt read no longer calls it.
     Passes NO spy to any solver; a supplied SolverSpy must remain 0."""
     order_nodes = list(adj) if order_nodes is None else order_nodes
     manifold = aperture_manifold(adj, order_nodes)
@@ -532,10 +540,7 @@ def felt_aperture_read(adj: dict, order_nodes: Optional[list] = None,
     if not peaked:
         return {"committed": False, "reason": "flat_all_apertures",
                 "predicted": None, "manifold": manifold, "peaked": peaked}
-    if has_cycle(adj):
-        return {"committed": False, "reason": "cycle_present_local_coords_blind",
-                "predicted": None, "manifold": manifold, "peaked": peaked}
-    return {"committed": True, "reason": "acyclic_bounded_witness",
+    return {"committed": True, "reason": "bounded_witness",
             "predicted": predicted, "manifold": manifold, "peaked": peaked}
 
 

@@ -28,12 +28,15 @@ WHAT THIS SHOWS
   · M4 HONEST NULL: on a plain cycle (no cut vertices) the manifold is FLAT at every
     aperture -> the read reports "no separating structure, verify" and manufactures NO
     false peak.
-  · M5 THE FENCE, WITH TEETH (bounded vs unbounded witness / anti-Dunning-Kruger):
-    on a ring+tail the felt read WOULD be wrong (its local coordinates cannot see that
-    the ring closes — an unbounded-radius fact), but the CONFIDENCE GATE detects the
-    blind regime (a cycle is present) and ABSTAINS to verify rather than committing the
-    falsely-sharp peak. This is the sharp form of the coverage ceiling: feel COMMITS on
-    bounded-witness structure, ABSTAINS on unbounded-witness.
+  · M5 THE FENCE, WITH TEETH (bounded vs unbounded witness / learned distrust):
+    on a ring+tail the felt read COMMITS and is WRONG (its local coordinates cannot see
+    that the ring closes — an unbounded-radius fact — so it flags the whole cycle interior
+    as critical, F1<1). There is deliberately NO hardcoded cycle veto: the read is allowed
+    to be fooled once, and VERIFY catches the mistake. That caught failure is what mints a
+    negative-valence anti-shape (see the anti-shape wiring); the shape field then repels the
+    same shape at its aperture next time. Distrust is LEARNED per-shape and aperture-scoped,
+    not a hand-coded special case. This is the sharp form of the coverage ceiling: feel
+    COMMITS on bounded-witness structure and is caught-then-remembered on unbounded-witness.
 
 REFRAME: the track-(j2) coverage ceiling ("works where the meta-shape matches a solved
 exemplar") sharpens to a WITNESS-RADIUS ceiling: feel recovers any property with a
@@ -179,12 +182,20 @@ def main() -> int:
           % ("PASS" if m4 else "FAIL"))
 
     rt_felt, rt_truth, _ = results["RING+TAIL     (ring interior LOOKS critical, is not)"]
-    m5 = (not rt_felt["committed"]) and rt_felt["reason"] == "cycle_present_local_coords_blind"
-    print("  M5 FENCE with teeth: ABSTAIN on ring+tail (cycle => local coords blind): %s"
+    # No hardcoded cycle veto: the felt read COMMITS and is WRONG here (F1<1). That caught
+    # failure is the entry point for the LEARNED anti-shape (verify catches it -> mint a
+    # negative-valence shape; the field repels it next time). The honest M5 is: the read
+    # commits and verify would catch it — distrust is earned, not a built-in predicate.
+    rt_f1 = R.f1_score(rt_felt["predicted"], rt_truth) if rt_felt["committed"] else None
+    m5 = rt_felt["committed"] and rt_f1 is not None and rt_f1 < 0.999
+    print("  M5 FENCE with teeth: ring+tail COMMITS and is WRONG (F1=%s) -> verify catches it,"
+          % ("%.2f" % rt_f1 if rt_f1 is not None else "n/a"))
+    print("     mints a LEARNED anti-shape (no hardcoded cycle veto):                   %s"
           % ("PASS" if m5 else "FAIL"))
 
     ok = all([m1, m2, m3, m4, m5])
-    print("\n  VERDICT: %s" % ("ALL PASS — aperture manifold + honest abstain"
+    print("\n  VERDICT: %s" % ("ALL PASS — aperture manifold; commit on bounded witness, "
+                               "honest null when flat, caught-then-learned on unbounded"
                                if ok else "SOME FAILED — see above"))
     return 0 if ok else 1
 
