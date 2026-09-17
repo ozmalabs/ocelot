@@ -1,6 +1,6 @@
 # psychology_affect — index
 
-41 documents.
+42 documents.
 
 ## Documents
 
@@ -30,6 +30,7 @@
 | [`MOOD_R1C_RESULTS.md`](MOOD_R1C_RESULTS.md) | MOOD R1c — the DECISIVE, POWERED confirmation of R1b's near-miss — RESULTS (block 238000) |
 | [`MOOD_R1_PREREG.md`](MOOD_R1_PREREG.md) | MOOD AS MOMENTUM — R1: the AUTOCORRELATION ADAPTIVE GATE (PRE-REGISTRATION) |
 | [`MOOD_R1_RESULTS.md`](MOOD_R1_RESULTS.md) | MOOD R1 — the autocorrelation adaptive gate — RESULTS (block 236000) |
+| [`NUMBER_QUALIA_CROSSDOMAIN_RESULTS.md`](NUMBER_QUALIA_CROSSDOMAIN_RESULTS.md) | Number-qualia cross-domain transfer — results, and the aperture-manifold → anti-shape → self-extending-pipeline arc |
 | [`PSI_TEMPORAL_AFFECT.md`](PSI_TEMPORAL_AFFECT.md) | PSI temporal and affect contract |
 | [`PSYCHOSIS_DEMO_PREREG.md`](PSYCHOSIS_DEMO_PREREG.md) | Psychosis as a grounding failure mode — PREREGISTRATION |
 | [`PSYCHOSIS_DEMO_RESULTS.md`](PSYCHOSIS_DEMO_RESULTS.md) | Psychosis as a grounding failure mode — RESULTS |

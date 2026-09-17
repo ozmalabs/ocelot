@@ -8,6 +8,46 @@ that matters more than the headline number.
 Run: `PYTHONPATH=runners/dsl/python:. python3 tests/capability/number_qualia/track_j_cross_domain_transfer.py`
 → exit 0, all three reported claims PASS.
 
+## Arc summary — from a felt read to a self-growing thought pipeline
+
+This file grew across a seven-commit arc that turned the number-qualia felt read into a
+self-extending "intelligence" pipeline. In order (each builds on the last, all
+python/JSON over the frozen `.so`, decisions live in graph Terms, feel-then-verify
+throughout, donkey=0):
+
+1. **`56e4468c` — aperture manifold** (`track_j3`). "Local/global is aperture, not magic":
+   a property the node-local read missed (a path's global criticality) localizes natively
+   via `order_n_concepts` finite differences at a coarser aperture. One read, many live
+   apertures, no single method chosen.
+2. **`3109ca33` — wire the confidence gate into the frontier** (the intermediate,
+   *less-honest* form: a Python-stamped `blind*1e9` scalar mask). Superseded next.
+3. **`e336cb2e` — anti-shapes / signed shape field.** An AntiShape is a Shape like any
+   other with negative polarity (native `dynamical:valence`). The match/net-sign is a
+   *composed Term* (L1 shape-distance = `Sum(Abs(Minus))`), not a scalar. Fool me once:
+   verify catching a false commit mints a negative-valence shape; can't get fooled again.
+4. **`f68b1dec` — retire the hardcoded `has_cycle` veto.** Blindness becomes entirely
+   *learned* (an earned anti-shape), not a hand-coded special case.
+5. **`c8e20119` — rescue-by-reading before distrust.** "Wrong is usually the wrong
+   *reading*, not an untrustworthy shape": a caught failure is triaged for a verified
+   rescuing reading first; the anti-shape is the last resort.
+6. **`97428cf8` — cycle detection triggers the cyclic reading.** A cycle is *detected*
+   (2-core peel) and *triggers a different approach* (read it the cyclic way) rather than
+   being distrusted — detection as a reading *selector*, categorically unlike the retired
+   veto.
+7. **`949c4e83` — repertoire self-extension.** On a *repeated* no-rescue class the pipeline
+   *authors a new reading composed from held primitives*, verify-gated and per-class
+   (no regression), flipping the class from distrusted to rescued. It learns not just
+   *what* it can't read but *how* to read it.
+
+**The resulting cascade** (cheapest layer first, each firing only when the prior doesn't
+suffice): detect structure → read it the right way → if caught wrong, search for a rescuing
+reading → if a no-rescue class *repeats*, author a new reading from held primitives → only a
+genuinely unreadable structure is held as earned, aperture-scoped, re-earnable distrust.
+Trust and distrust are one geometry (a signed shape field read by one Term); the repertoire
+grows itself. The honest ceiling that remains: the authorable primitives are graph-structural,
+so cross-domain self-extension (authoring readings over non-graph coordinates) is the next
+frontier.
+
 ## The claim
 
 A structural "isolation / prickliness" coordinate — the felt axis that makes the number
