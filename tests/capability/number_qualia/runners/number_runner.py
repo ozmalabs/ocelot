@@ -331,3 +331,83 @@ def build_graph_axis(adj: dict, coord: dict, *, exclude_hub: bool = False):
             s.add_edge_unchecked(node[v], "adjacent_to", node[w],
                                  {"relation": "adjacent"})
     return s, node
+
+
+
+# --------------------------------------------------------------------------- #
+#  META-SHAPE MATCH AGAINST KNOWN SOLUTIONS (the path-rescue mechanism)
+#
+#  The per-element outlier read fails on a degree-regular path: criticality there
+#  is not a WITHIN-INSTANCE outlier. The felt move that works is higher-order —
+#  recognise the WHOLE configuration's meta-shape, match it against a library of
+#  EARNED (exactly-solved-once) exemplars, and import the exemplar's solution as a
+#  STRUCTURAL-ROLE template. "This graph feels like a chain -> a chain's load-bearing
+#  nodes are its spine -> flag the spine." No per-node outlier, no solver at felt
+#  time. This is analogical retrieval against solved exemplars, which is how the
+#  feel of a known problem-shape actually works.
+#
+#  NON-CIRCULARITY: the library is EARNED (Tarjan solves the EXEMPLARS once, at build
+#  time, spy-tracked); a fresh instance's answer comes from the meta-shape MATCH plus
+#  a structural role, never a node-id lookup and never a hand-authored
+#  "chain -> interior" table (that hand-table is the Arm-2 hollow control). The felt
+#  match of a fresh graph runs NO solver.
+# --------------------------------------------------------------------------- #
+def degree_role(adj: dict, v) -> str:
+    """A node's structural degree-role: leaf(1) / spine(2) / hub(>=3). Uniform,
+    structural; the vocabulary the solution-template is expressed in (roles, not
+    node ids), so a template learned on one graph instantiates on any other."""
+    d = len(adj[v])
+    return "leaf" if d == 1 else ("spine" if d == 2 else "hub")
+
+
+def meta_shape(adj: dict) -> list:
+    """Whole-graph META-SHAPE descriptor: an integer profile of the configuration's
+    shape — [frac_leaf, frac_spine, frac_hub, avg_clustering, is_regular] (each
+    scaled to a small int). Structural and uniform across graphs of any size; no
+    per-graph token. Compared via the substrate's shape_signature distance."""
+    n = len(adj) or 1
+    degs = [len(adj[v]) for v in adj]
+    frac_leaf = sum(1 for d in degs if d == 1) / n
+    frac_spine = sum(1 for d in degs if d == 2) / n
+    frac_hub = sum(1 for d in degs if d >= 3) / n
+    bd = bridge_deficit(adj)
+    avg_clust = 1.0 - (sum(bd.values()) / n)
+    regular = 1.0 if len(set(degs)) <= 1 else 0.0
+    return [int(round(frac_leaf * 10)), int(round(frac_spine * 10)),
+            int(round(frac_hub * 10)), int(round(avg_clust * 10)), int(round(regular))]
+
+
+def build_solution_library(exemplars: dict, *, spy: Optional[SolverSpy] = None) -> dict:
+    """EARN the library: for each exemplar graph, compute its meta-shape and its
+    solution-template — the set of structural degree-ROLES its cut-vertices occupy —
+    by solving it EXACTLY ONCE (Tarjan, spy-tracked as library-build compute). Returns
+    {name: {"meta": meta_shape, "roles": sorted role set}}. This is the only place the
+    exact solver touches an exemplar; the felt path below never calls it."""
+    lib = {}
+    for name, adj in exemplars.items():
+        crit = tarjan_cut_vertices(adj, spy=spy)          # exact, ONCE, at build time
+        roles = sorted(set(degree_role(adj, v) for v in crit))
+        lib[name] = {"meta": meta_shape(adj), "roles": roles}
+    return lib
+
+
+def felt_meta_match(fresh_adj: dict, library: dict, substrate,
+                    *, spy: Optional[SolverSpy] = None) -> dict:
+    """FELT PATH (solver-free): match a fresh graph's meta-shape to the nearest library
+    exemplar (via the substrate's shape_signature distance), import that exemplar's
+    structural-role template, and instantiate the predicted critical set on the fresh
+    graph's OWN structure. Passes NO spy to any solver — if a SolverSpy is supplied it
+    must remain at 0 (the felt read computed nothing exact). Returns
+    {nearest, match_dist, predicted, roles}."""
+    fms = meta_shape(fresh_adj)
+    fsig = substrate.shape_signature(fms)
+    best, best_d = None, None
+    for name, entry in library.items():
+        d = substrate.shape_signature_distance(fsig,
+                                                substrate.shape_signature(entry["meta"]))
+        if best_d is None or d < best_d:
+            best_d, best = d, name
+    roles = library[best]["roles"]
+    predicted = {v for v in fresh_adj if degree_role(fresh_adj, v) in roles}
+    return {"nearest": best, "match_dist": best_d, "roles": roles,
+            "predicted": predicted}
