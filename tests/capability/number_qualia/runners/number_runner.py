@@ -616,12 +616,16 @@ def structural_coord(adj: dict, order_nodes: Optional[list] = None) -> list:
 
 
 def mint_shape(substrate, coord: list, k: int, valence: float,
-               *, order_nodes: Optional[list] = None) -> int:
+               *, order_nodes: Optional[list] = None, reading: str = "default") -> int:
     """Hold a shape in the field: a `Shape` node carrying (aperture k, order-k
-    signature attrs sig_0..sig_{W-1}, valence). valence=+1 = solved exemplar
-    (positive pull), -1 = caught false-commit (anti-shape, negative pull). If an
-    identical-aperture shape within tol already exists, UPDATE its valence toward the
-    new sign (re-earning) instead of duplicating. Returns the Shape node id."""
+    signature attrs sig_0..sig_{W-1}, valence, reading). valence=+1 = solved/rescued
+    (positive pull), -1 = caught false-commit with NO rescuing reading (anti-shape,
+    negative pull). `reading` records WHICH structural reading was verified to work for
+    this shape ('default' if the default flanked-hub read; a repertoire name if a rescue
+    reading was needed) — so a re-encounter can import the correction, feel-then-verify.
+    If an identical-aperture shape within tol already exists, UPDATE its valence toward
+    the new sign (re-earning) and adopt the new reading when moving positive. Returns the
+    Shape node id."""
     sig = aperture_signature(coord, k, substrate)
     for sh in substrate.nodes("Shape"):
         at = substrate.node(sh)["attrs"]
@@ -630,9 +634,12 @@ def mint_shape(substrate, coord: list, k: int, valence: float,
         d = sum(abs(sig[i] - int(at.get("sig_%d" % i, 0))) for i in range(SHAPE_SIG_WIDTH))
         if d <= SHAPE_MATCH_TOL:                       # same shape already held -> re-earn
             cur = float(at.get("valence", 0.0))
-            substrate.set_attr(sh, "valence", max(-1.0, min(1.0, cur + valence)))
+            new = max(-1.0, min(1.0, cur + valence))
+            substrate.set_attr(sh, "valence", new)
+            if valence > 0:                            # a confirming outcome adopts its reading
+                substrate.set_attr(sh, "reading", reading)
             return sh
-    attrs = {"aperture": float(k), "valence": float(valence)}
+    attrs = {"aperture": float(k), "valence": float(valence), "reading": reading}
     for i in range(SHAPE_SIG_WIDTH):
         attrs["sig_%d" % i] = float(sig[i])
     return substrate.add_node("Shape", attrs)
@@ -674,32 +681,124 @@ def net_valence_term() -> dict:
             "var_name": "sh", "value": per_shape}
 
 
+def _read_default(adj, order_nodes, shape):
+    """The default felt reading: flanked-interior (not a degree outlier) OR high-degree
+    hub. The reading felt_aperture_read commits with."""
+    pos = {v: i for i, v in enumerate(order_nodes)}
+    deg_out = shape.get(0, set())
+    pred = set()
+    for i, v in enumerate(order_nodes):
+        flanked = any(pos[u] < i for u in adj[v]) and any(pos[u] > i for u in adj[v])
+        if flanked and i not in deg_out:
+            pred.add(v)
+        elif i in deg_out and len(adj[v]) > 2:
+            pred.add(v)
+    return pred
+
+
+def _read_non_leaf(adj, order_nodes, shape):
+    """A structural reading: every non-leaf (degree > 1). Uniform, not answer-fitted —
+    it is correct on trees (where every internal node is a cut vertex) and WRONG on
+    cycles (no cut vertices), so it is only ever ADOPTED for a shape when verify CONFIRMS
+    it on that shape; it is not trusted for free."""
+    return {v for v in adj if len(adj[v]) > 1}
+
+
+def _read_spanned(k):
+    """A structural reading family: the nodes spanned by an order-k outlier diff. Reads
+    the manifold's own outlier positions at aperture k back onto the nodes they cover."""
+    def rd(adj, order_nodes, shape):
+        idx_out = shape.get(k, set())
+        spanned = set()
+        for i in idx_out:
+            for j in range(i, min(i + k + 1, len(order_nodes))):
+                spanned.add(order_nodes[j])
+        return spanned
+    return rd
+
+
+# The FIXED structural reading repertoire (uniform reads, never answer-fitted). A rescue
+# reading is only ADOPTED for a shape once verify CONFIRMS it on that shape — it stays
+# feel-then-verify, so a broadly-applicable read like non_leaf cannot be trusted for free
+# where it would be wrong (e.g. cycles).
+READING_REPERTOIRE = {
+    "default": _read_default,
+    "non_leaf": _read_non_leaf,
+    "spanned_k0": _read_spanned(0),
+    "spanned_k1": _read_spanned(1),
+    "spanned_k2": _read_spanned(2),
+}
+
+
+def apply_reading(adj, name: str, order_nodes: Optional[list] = None) -> set:
+    """Apply a named structural reading from the repertoire to a graph (felt: no solver).
+    Used both to re-apply a shape's verified rescuing reading and to search for a rescue."""
+    order_nodes = list(adj) if order_nodes is None else order_nodes
+    manifold = aperture_manifold(adj, order_nodes)
+    shape = manifold_shape(manifold)
+    return READING_REPERTOIRE[name](adj, order_nodes, shape)
+
+
+def search_rescue_reading(adj, truth: set, order_nodes: Optional[list] = None) -> Optional[str]:
+    """When the DEFAULT reading was caught wrong: search the repertoire for a reading that
+    VERIFY confirms on THIS structure (matches truth). Returns the first non-default
+    reading name whose prediction is exactly right, or None if no reading in the
+    repertoire rescues it. The rescue is a feel-then-VERIFY candidate — truth here is the
+    verify outcome already computed by the caller, so no extra solver call. 'Wrong is
+    usually the wrong reading, not an untrustworthy shape': a rescue means the lesson is
+    'read this shape with R', an anti-shape is the last resort when NOTHING rescues."""
+    order_nodes = list(adj) if order_nodes is None else order_nodes
+    for name in READING_REPERTOIRE:
+        if name == "default":
+            continue
+        if f1_score(apply_reading(adj, name, order_nodes), truth) >= 0.999:
+            return name
+    return None
+
+
 def verify_then_update(substrate, adj: dict, field_valence: float,
                        *, order_nodes: Optional[list] = None,
                        spy: Optional[SolverSpy] = None) -> dict:
-    """THE FOOL-ME-ONCE LOOP. Given the felt read's committed prediction for `adj`
-    and the net field valence it saw, decide whether to VERIFY and what to MINT:
+    """THE FOOL-ME-ONCE + WHEN-IT'S-WRONG LOOP. Given the felt read's committed
+    prediction for `adj` and the net field valence it saw, decide whether to VERIFY and
+    what to MINT:
       · field_valence < 0  -> a held anti-shape already repelled this; ABSTAIN,
         verify NOT spent (can't get fooled again).
-      · field_valence >= 0 and the felt read COMMITTED -> VERIFY (Tarjan, spy-pinged,
-        the expensive step). If the felt prediction was WRONG (F1 < 1) -> the felt read
-        was fooled -> MINT a valence=-1 shape at the used aperture (fool me once). If
-        RIGHT -> MINT/strengthen a valence=+1 shape (a solved exemplar).
-    Returns {verified, f1, minted_valence, aperture}. The felt read itself stays
-    solver-free; the Tarjan here is the SEPARATE verify step."""
+      · not committed -> the read abstained (flat all apertures); nothing to verify.
+      · committed and field_valence >= 0 -> VERIFY (Tarjan, spy-pinged, the expensive
+        step) and branch on the result:
+          - RIGHT (F1>=1)          -> MINT a valence=+1 shape, reading='default'.
+          - WRONG (F1<1)           -> WHEN IT'S WRONG: before minting an anti-shape, SEARCH
+            the reading repertoire for a reading that verify confirms (search_rescue_reading).
+              · a rescue exists     -> the lesson is 'read this shape with R', NOT distrust ->
+                MINT a valence=+1 shape tagged reading=R (a verified correction, imported on
+                re-encounter). No anti-shape.
+              · no rescue           -> the shape is genuinely blind to the whole repertoire ->
+                MINT the valence=-1 anti-shape (honest LAST RESORT).
+    The felt read itself stays solver-free; the Tarjan here is the SEPARATE verify step,
+    and the rescue search reuses its truth (no extra solver call)."""
     order_nodes = list(adj) if order_nodes is None else order_nodes
     coord = structural_coord(adj, order_nodes)
     felt = felt_aperture_read(adj, order_nodes)          # solver-free (no spy)
-    k = 1                                                # the aperture the read localizes at
+    k = 1                                                # the aperture the shape is held at
     if field_valence < 0:
-        return {"verified": False, "f1": None, "minted_valence": None,
-                "aperture": k, "reason": "repelled_by_held_antishape"}
+        return {"verified": False, "f1": None, "minted_valence": None, "aperture": k,
+                "reading": None, "reason": "repelled_by_held_antishape"}
     if not felt["committed"]:
-        return {"verified": False, "f1": None, "minted_valence": None,
-                "aperture": k, "reason": "felt_read_abstained"}
+        return {"verified": False, "f1": None, "minted_valence": None, "aperture": k,
+                "reading": None, "reason": "felt_read_abstained"}
     truth = tarjan_cut_vertices(adj, spy=spy)            # VERIFY — the expensive step
     f1 = f1_score(felt["predicted"], truth)
-    val = 1.0 if f1 >= 0.999 else -1.0                   # confirmed -> +, fooled -> -
-    mint_shape(substrate, coord, k, val, order_nodes=order_nodes)
-    return {"verified": True, "f1": f1, "minted_valence": val, "aperture": k,
-            "reason": "confirmed" if val > 0 else "fooled_minted_antishape"}
+    if f1 >= 0.999:                                      # confirmed -> solved exemplar
+        mint_shape(substrate, coord, k, +1.0, order_nodes=order_nodes, reading="default")
+        return {"verified": True, "f1": f1, "minted_valence": 1.0, "aperture": k,
+                "reading": "default", "reason": "confirmed"}
+    # WHEN IT'S WRONG: is it the wrong reading, or a genuinely untrustworthy shape?
+    rescue = search_rescue_reading(adj, truth, order_nodes)
+    if rescue is not None:                               # wrong READING, not wrong shape
+        mint_shape(substrate, coord, k, +1.0, order_nodes=order_nodes, reading=rescue)
+        return {"verified": True, "f1": f1, "minted_valence": 1.0, "aperture": k,
+                "reading": rescue, "reason": "rescued_by_reading"}
+    mint_shape(substrate, coord, k, -1.0, order_nodes=order_nodes, reading="default")
+    return {"verified": True, "f1": f1, "minted_valence": -1.0, "aperture": k,
+            "reading": None, "reason": "no_rescue_minted_antishape"}

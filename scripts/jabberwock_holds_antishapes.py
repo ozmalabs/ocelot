@@ -24,19 +24,20 @@ land it properly:
                          valence(sh) * [ L1(csig(x), sig(sh)) <= tol ? 1 : 0 ]
 
 GATES (all donkey=0):
-  STAGE-B / FOOLED   — an adversarial numerology structure (noise whose order-1 reading LOOKS
-                        like a bounded generator) with an EMPTY field: the felt read commits,
-                        verify catches it WRONG, and a valence=-1 shape is minted at k=1.
-  FOOL-ME-ONCE       — with that anti-shape held, a fresh structure matching it carries
-                        negative net_valence -> the frontier picks a trustable axis instead,
-                        and verify is NOT spent (repelled from memory).
-  APERTURE-SCOPED    — a structure that is noise at k=1 (matches the anti-shape) but is asked
-                        at k=2 is NOT repelled — the anti-shape lives only at k=1.
-  RE-EARNABLE        — a -1 shape later confirmed-fine drifts toward 0/+ by the same valence
-                        update; distrust is not permanent paranoia.
-  SYMMETRY           — a positive (solved-exemplar) shape and a negative (anti) shape are the
-                        SAME field at opposite sign: positive pulls the pick toward it, negative
-                        pushes away, read by the SAME net_valence Term.
+  WHEN-IT'S-WRONG    — a caught false commit is TRIAGED before minting distrust: search the
+                        reading repertoire for a reading VERIFY confirms. A broom (default read
+                        misses the spine interiors, F1=0.5) is RESCUED by the 'non_leaf' reading
+                        -> held POSITIVE with reading=non_leaf (the lesson is 'read it this way',
+                        not 'distrust it'). A ring+tail (the ring closes -> no reading verifies)
+                        has NO rescue -> the anti-shape is the honest LAST RESORT.
+  FOOL-ME-ONCE       — with the ring+tail anti-shape held, a fresh ring+tail matching it carries
+                        negative net_valence -> the frontier picks a trustable axis, verify NOT spent.
+  APERTURE-SCOPED    — the same ring+tail read at k=2 is NOT repelled — the anti-shape is k=1 only.
+  RE-EARNABLE        — a -1 shape later confirmed-fine drifts toward 0/+ by the same valence update.
+  SYMMETRY           — positive (solved/rescued) and negative (anti) shapes are one field at
+                        opposite sign, read by the SAME net_valence Term.
+  RETIRED-PREDICATE   — the ring+tail (what the OLD hardcoded has_cycle veto abstained on) is now
+                        handled by the SAME learned loop, no built-in cycle predicate.
   BACKWARD COMPAT     — empty field / no match: net_valence=0, valence_salience == cost_salience
                         per axis; the live _frontier_advance still resolves onto the hard frontier.
   FROZEN CORE         — understand Drive stays frozen:true; only its frontier_pick_term data attr
@@ -154,67 +155,82 @@ def main() -> int:
 
     NET = R.net_valence_term()
 
-    # ---- STAGE-B / FOOLED: adversarial numerology, EMPTY field -> commit -> verify catches ----
+    def _ring_tail(k, t=""):
+        return _ud([("%sy%d" % (t, i), "%sy%d" % (t, (i + 1) % k)) for i in range(k)]
+                   + [("%sy0" % t, "%stail" % t)])
+
+    # ---- WHEN-IT'S-WRONG: wrong is usually the wrong READING, not an untrustworthy shape ----
     print("\n" + "-" * 90)
-    print("STAGE-B / FOOLED -- adversarial numerology (a BROOM: acyclic, so the felt read's has_cycle")
-    print("  gate PASSES and it COMMITS -- but it predicts only the hub and MISSES the spine interiors,")
-    print("  F1=0.5, a genuine numerology the built-in gate is BLIND to). EMPTY field -> verify catches")
-    print("  it WRONG -> mint a valence=-1 shape at k=1:")
+    print("WHEN-IT'S-WRONG -- a caught false commit is triaged BEFORE minting distrust: search the")
+    print("  reading repertoire for a reading VERIFY confirms. Wrong-because-wrong-reading -> a")
+    print("  positive shape tagged with the fix; wrong-with-NO-rescue -> the anti-shape (last resort):")
     print("-" * 90)
     a = WorldAdapter(seeds=()); load_all_seeds(a)
+    # (i) BROOM: default read misses the spine interiors (F1=0.5), but the 'non_leaf' reading
+    #     is verified to rescue it -> the lesson is 'read broom with non_leaf', NOT distrust.
     broom = _broom("A")
-    spy = R.SolverSpy()
-    upd = R.verify_then_update(a.s, broom, field_valence=0.0, spy=spy)
-    print(f"  verify spent: {upd['verified']}  f1={upd['f1']}  minted_valence={upd['minted_valence']} "
-          f"@aperture={upd['aperture']}  ({upd['reason']})")
-    n_shapes = len(a.s.nodes("Shape"))
-    fooled_ok = (upd["verified"] and upd["f1"] is not None and upd["f1"] < 0.999
-                 and upd["minted_valence"] == -1.0 and n_shapes == 1)
-    print(f"  held shapes now: {n_shapes}  -> {'anti-shape minted (fool me once)' if fooled_ok else 'unexpected'}")
+    spyb = R.SolverSpy()
+    ub = R.verify_then_update(a.s, broom, field_valence=0.0, spy=spyb)
+    rescued_ok = (ub["reason"] == "rescued_by_reading" and ub["minted_valence"] == 1.0
+                  and ub["reading"] == "non_leaf")
+    print(f"  BROOM: f1={ub['f1']:.2f} -> {ub['reason']} reading={ub['reading']} "
+          f"minted_valence={ub['minted_valence']}")
+    print(f"    -> {'RESCUED: reading correction held POSITIVE, no anti-shape' if rescued_ok else 'FAIL'}")
+    # (ii) RING+TAIL: the ring closes -> NO reading in the repertoire verifies (non_leaf
+    #      over-predicts the cycle interior) -> the anti-shape is the honest LAST RESORT.
+    rt = _ring_tail(6, "A")
+    spyr = R.SolverSpy()
+    ur = R.verify_then_update(a.s, rt, field_valence=0.0, spy=spyr)
+    antilast_ok = (ur["reason"] == "no_rescue_minted_antishape" and ur["minted_valence"] == -1.0)
+    print(f"  RING+TAIL: f1={ur['f1']:.2f} -> {ur['reason']} minted_valence={ur['minted_valence']}")
+    print(f"    -> {'NO rescue: anti-shape minted (honest last resort)' if antilast_ok else 'FAIL'}")
+    fooled_ok = rescued_ok and antilast_ok
 
-    # ---- FOOL-ME-ONCE: the anti-shape now repels a fresh matching structure ----
+    # ---- FOOL-ME-ONCE: the ring+tail anti-shape now repels a fresh matching ring+tail ----
     print("\n" + "-" * 90)
-    print("FOOL-ME-ONCE -- fresh BROOM matching the held anti-shape (same k=1 signature) is repelled:")
-    print("  the frontier picks a TRUSTABLE axis, verify NOT spent:")
+    print("FOOL-ME-ONCE -- fresh RING+TAIL matching the held anti-shape (same k=1 signature) is")
+    print("  repelled: the frontier picks a TRUSTABLE axis, verify NOT spent:")
     print("-" * 90)
     _quiet(a)
-    fresh_broom = _broom("B")
+    fresh_rt = _ring_tail(6, "B")
     trust = _path(7)
-    ax_broom = _mk_axis(a, shortfall=0.9, saturation=0.0)     # highest residual...
-    ax_path = _mk_axis(a, shortfall=0.4, saturation=0.3)      # ...but trustable
-    ids = {"broom": ax_broom, "path": ax_path}
-    R.stamp_candidate_signature(a.s, ax_broom, R.structural_coord(fresh_broom), 1)
+    ax_rt = _mk_axis(a, shortfall=0.9, saturation=0.0)       # highest residual...
+    ax_path = _mk_axis(a, shortfall=0.4, saturation=0.3)     # ...but trustable
+    ids = {"ring_tail": ax_rt, "path": ax_path}
+    R.stamp_candidate_signature(a.s, ax_rt, R.structural_coord(fresh_rt), 1)
     R.stamp_candidate_signature(a.s, ax_path, R.structural_coord(trust), 1)
-    nv_broom = float(a.inner.evaluate(NET, {"x": ax_broom}))
+    nv_rt = float(a.inner.evaluate(NET, {"x": ax_rt}))
     nv_path = float(a.inner.evaluate(NET, {"x": ax_path}))
     install_valence_salience(a)
     a._frontier_advance()
     edges = a.inner.neighbours(a.agent, "frontier_pick")
     pick = _name(ids, edges[0]) if edges else "none"
     spy2 = R.SolverSpy()
-    upd2 = R.verify_then_update(a.s, fresh_broom, field_valence=nv_broom, spy=spy2)
-    fool_once_ok = (nv_broom < 0 and pick == "path" and not upd2["verified"] and spy2.calls == 0)
-    print(f"  net_valence: broom(matches anti-shape)={nv_broom}  path(trustable)={nv_path}")
-    print(f"  frontier picks: {pick}   verify on broom spent: {upd2['verified']} ({upd2['reason']})")
+    upd2 = R.verify_then_update(a.s, fresh_rt, field_valence=nv_rt, spy=spy2)
+    fool_once_ok = (nv_rt < 0 and pick == "path" and not upd2["verified"] and spy2.calls == 0)
+    print(f"  net_valence: ring_tail(matches anti-shape)={nv_rt}  path(trustable)={nv_path}")
+    print(f"  frontier picks: {pick}   verify on ring_tail spent: {upd2['verified']} ({upd2['reason']})")
     print(f"  -> {'REPELLED from memory, verify saved (cant get fooled again)' if fool_once_ok else 'FAIL'}")
 
     # ---- APERTURE-SCOPED: same structure read at k=2 is NOT repelled ----
     print("\n" + "-" * 90)
-    print("APERTURE-SCOPED -- the anti-shape lives at k=1; the SAME broom read at k=2 is NOT repelled:")
+    print("APERTURE-SCOPED -- the anti-shape lives at k=1; the SAME ring+tail read at k=2 is NOT repelled:")
     print("-" * 90)
     ax_k2 = _mk_axis(a, shortfall=0.9, saturation=0.0)
-    R.stamp_candidate_signature(a.s, ax_k2, R.structural_coord(fresh_broom), 2)   # aperture=2
+    R.stamp_candidate_signature(a.s, ax_k2, R.structural_coord(fresh_rt), 2)   # aperture=2
     nv_k2 = float(a.inner.evaluate(NET, {"x": ax_k2}))
     aperture_ok = (nv_k2 == 0.0)
-    print(f"  net_valence(broom @k2) = {nv_k2}  -> {'not repelled (anti-shape is k=1 only)' if aperture_ok else 'FAIL'}")
+    print(f"  net_valence(ring+tail @k2) = {nv_k2}  -> {'not repelled (anti-shape is k=1 only)' if aperture_ok else 'FAIL'}")
 
     # ---- RE-EARNABLE: the -1 shape, later confirmed-fine, drifts toward 0/+ ----
     print("\n" + "-" * 90)
-    print("RE-EARNABLE -- minting valence=+1 on the SAME k=1 shape drifts it from -1 toward 0/+:")
+    print("RE-EARNABLE -- minting valence=+1 on the SAME k=1 anti-shape drifts it from -1 toward 0/+:")
     print("-" * 90)
-    sh = [n for n in a.s.nodes("Shape") if int(a.s.node(n)["attrs"].get("aperture", -1)) == 1][0]
+    sh = [n for n in a.s.nodes("Shape")
+          if int(a.s.node(n)["attrs"].get("aperture", -1)) == 1
+          and float(a.s.node(n)["attrs"].get("valence", 0)) < 0][0]
     before = float(a.s.node(sh)["attrs"]["valence"])
-    R.mint_shape(a.s, R.structural_coord(fresh_broom), 1, +1.0)   # a confirming outcome
+    R.mint_shape(a.s, R.structural_coord(fresh_rt), 1, +1.0)   # a confirming outcome
     after = float(a.s.node(sh)["attrs"]["valence"])
     reearn_ok = (before == -1.0 and after > before)
     print(f"  valence before={before}  after a confirming mint={after}  "
@@ -226,16 +242,16 @@ def main() -> int:
     print("  at opposite sign, read by the SAME net_valence Term:")
     print("-" * 90)
     a2 = WorldAdapter(seeds=()); load_all_seeds(a2)
-    R.mint_shape(a2.s, R.structural_coord(_path(7)), 1, +1.0)     # solved exemplar (positive)
-    R.mint_shape(a2.s, R.structural_coord(_broom("C")), 1, -1.0)  # anti-shape (negative)
+    R.mint_shape(a2.s, R.structural_coord(_path(7)), 1, +1.0)       # solved exemplar (positive)
+    R.mint_shape(a2.s, R.structural_coord(_ring_tail(6, "C")), 1, -1.0)  # anti-shape (negative)
     axp = _mk_axis(a2, shortfall=0.5, saturation=0.5)
     axr = _mk_axis(a2, shortfall=0.5, saturation=0.5)
     R.stamp_candidate_signature(a2.s, axp, R.structural_coord(_path(7)), 1)
-    R.stamp_candidate_signature(a2.s, axr, R.structural_coord(_broom("C")), 1)
+    R.stamp_candidate_signature(a2.s, axr, R.structural_coord(_ring_tail(6, "C")), 1)
     vp = float(a2.inner.evaluate(NET, {"x": axp}))
     vr = float(a2.inner.evaluate(NET, {"x": axr}))
     sym_ok = (vp > 0 and vr < 0)
-    print(f"  net_valence(path, matches POSITIVE)={vp}  net_valence(broom, matches NEGATIVE)={vr}"
+    print(f"  net_valence(path, matches POSITIVE)={vp}  net_valence(ring+tail, matches NEGATIVE)={vr}"
           f"  -> {'positive pulls, negative pushes (one field, opposite sign)' if sym_ok else 'FAIL'}")
 
     # ---- RETIRED-PREDICATE: the ring+tail (the case the OLD hardcoded has_cycle veto
@@ -299,7 +315,7 @@ def main() -> int:
     # ---- VERDICT ----
     print("\n" + SEP)
     donkey_ok = (donkey["n"] == 0)
-    rows = [("STAGE-B / FOOLED (anti-shape minted on caught false commit)", fooled_ok),
+    rows = [("WHEN-IT'S-WRONG (rescue-by-reading vs anti-shape last resort)", fooled_ok),
             ("FOOL-ME-ONCE (repelled from memory, verify saved)", fool_once_ok),
             ("APERTURE-SCOPED (anti-shape repels only at its aperture)", aperture_ok),
             ("RE-EARNABLE (confirmed anti-shape drifts toward trust)", reearn_ok),
