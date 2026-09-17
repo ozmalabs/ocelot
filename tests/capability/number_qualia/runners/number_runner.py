@@ -1130,6 +1130,7 @@ def seq_indices(seq: list) -> list:
 #  domain and on the graph loop's confirmed path (track_j5 E5), NOT a replacement.
 # =========================================================================== #
 from dataclasses import dataclass, field as _dc_field
+from typing import Hashable
 
 
 @dataclass
@@ -1166,12 +1167,28 @@ class Domain:
     try_repertoire: Optional[Callable[..., Optional[str]]] = None
     author: Optional[Callable[..., Optional[str]]] = None
 
+    # -- CLASS-FINGERPRINT MEMORY (track_j6, opt-in) ------------------------
+    # class_key(obj[, spy])  -> Hashable   the PER-DOMAIN CLASS FINGERPRINT the memory
+    #     keys anti-shapes on: what makes a structure a no-rescue class (its felt-read/
+    #     verify OUTCOME), NOT the raw coordinate rank. Two structures are the SAME
+    #     anti-shape iff the same reading fails the same way on them. May spend verify
+    #     (mint happens post-verify anyway); pass a spy to attribute the cost.
+    # felt_component(obj)    -> Hashable   the SOLVER-FREE part of the class_key, used
+    #     for the phase-A felt-time repel RULE-OUT: it is a NECESSARY condition for a
+    #     full-key match (if fresh.felt_component != held.felt_component, the full keys
+    #     cannot match, so there is NO repel and NO verify is spent). Must be pure
+    #     felt (SolverSpy stays 0).
+    class_key: Optional[Callable[..., Hashable]] = None
+    felt_component: Optional[Callable[[Any], Hashable]] = None
+
     def fresh_repertoire(self) -> None:
         """Reset the live repertoire to a copy of the default readings (test hygiene)."""
         self.repertoire = dict(self.readings)
 
 
 def domain_verify_then_update(domain: "Domain", obj, *, prior_no_rescue: bool = False,
+                              memory: Optional["ClassFingerprintMemory"] = None,
+                              invest: bool = False,
                               spy: Optional[SolverSpy] = None) -> dict:
     """THE ONE DOMAIN-AGNOSTIC LOOP. Reproduces the control flow both existing loops share:
 
@@ -1193,7 +1210,16 @@ def domain_verify_then_update(domain: "Domain", obj, *, prior_no_rescue: bool = 
     / no_rescue_even_after_authoring), plus the winning `reading` name, `committed`, the
     `score`, and (on a caught-wrong read) `truth`. The felt read is solver-free; `verify`
     is the SEPARATE spy-pinged step; the rescue search reuses that truth (no extra solver
-    call), exactly as the hand-written loops do."""
+    call), exactly as the hand-written loops do.
+
+    OPT-IN MEMORY (track_j6): when a `memory` (ClassFingerprintMemory) is supplied, this
+    delegates to `domain_memory_verify_then_update`, which adds the graph loop's shape-field
+    memory layer keyed on the per-domain CLASS FINGERPRINT (Domain.class_key): fool-me-once
+    repel (phase-A felt rule-out + phase-B full-key confirm), first-vs-repeat DERIVED from
+    held state (no prior_no_rescue flag), and mint keyed by class_key. When NO memory is
+    given, the EXACT current flag-based behavior below is unchanged (track_j5 holds)."""
+    if memory is not None:                               # OPT-IN class-fingerprint memory
+        return domain_memory_verify_then_update(domain, obj, memory, invest=invest, spy=spy)
     committed, predicted, reading_name, felt_reason = domain.default_read(obj)
     if committed:
         truth = domain.verify(obj, spy)                  # VERIFY — the one solver touch
@@ -1234,10 +1260,226 @@ def _domain_no_rescue(domain: "Domain", obj, *, truth, sc, prior_no_rescue: bool
             "score": sc}
 
 
+# =========================================================================== #
+#  CLASS-FINGERPRINT MEMORY UNIFICATION (track_j6).
+#
+#  The reverted memory backend (commit d9cd83fe) keyed anti-shapes on the raw
+#  coordinate's ORDINAL-RANK signature (aperture_signature). That is fine for GRAPHS
+#  (the rank signature genuinely discriminates graph classes) but WRONG for the numeric
+#  domains: every monotone-increasing numeric sequence collapses to the SAME low-order
+#  rank signature, so a geometric anti-shape falsely repelled an unrelated readable cubic
+#  (both rank to [0,1,2,3,...]); the cubic, which confirms at degree 3, got
+#  `repelled_by_held_antishape`. No fixed memory_aperture separates a class from the
+#  monotone family — the distrust was baked into the KEY, not merely untested.
+#
+#  THE FIX: key the memory by a per-domain CLASS FINGERPRINT = what makes a structure a
+#  no-rescue class (its felt-read/verify OUTCOME), NOT the raw coordinate rank. Two
+#  structures are the SAME anti-shape IFF the SAME reading fails the SAME way on them
+#  (Domain.class_key). This makes the false distrust IMPOSSIBLE BY CONSTRUCTION: a cubic
+#  and a geometric have different class fingerprints, so a geometric anti-shape simply
+#  cannot address the cubic.
+#
+#  TWO-PHASE, felt-time SOLVER-FREE:
+#    · PHASE A (felt-time, solver-free): rule OUT a repel using ONLY the felt component of
+#      the class_key (Domain.felt_component). If the fresh obj's felt component matches NO
+#      held anti-shape's felt component, there is NO repel and NO verify is spent. The felt
+#      component is a NECESSARY condition for a full-key match, so this rule-out is sound.
+#    · PHASE B (only if a felt component matched): confirm the FULL class_key, which MAY
+#      spend verify — but only for genuine candidates, and minting/repel-confirm is already
+#      post-verify in the loop anyway.
+#  SolverSpy stays 0 across all FELT reads and the phase-A felt-time rule-out.
+#
+#  The DECISION for the graph domain stays the composed net_valence_term graph Term; the
+#  class-key match here is BOOKKEEPING over which class was seen (a Hashable compare), not
+#  a relocated felt/verify decision — the conceptualizer audit protects the felt/verify
+#  DECISION (the graph Term / the felt reads), which is untouched.
+# =========================================================================== #
+class ClassFingerprintMemory:
+    """A per-domain memory that keys held anti-shapes (and confirmed classes) on the
+    domain's CLASS FINGERPRINT rather than the raw coordinate rank. Backing store is a
+    dict class_key -> valence-sign entry, PLUS a felt-component index for the solver-free
+    phase-A repel rule-out. Deliberately lightweight (opt-in bookkeeping), NOT a framework:
+
+      · seen(full_key)             -> is this exact class already held (first-vs-repeat)?
+      · held_valence(full_key)     -> the stored valence for a class_key (0.0 if unseen).
+      · felt_could_repel(fc)       -> PHASE A: does ANY held ANTI-shape share this felt
+                                      component? (solver-free necessary condition).
+      · mint(full_key, valence, reading) -> record/update a class outcome (post-verify)."""
+
+    def __init__(self):
+        self._by_key: dict = {}                          # full class_key -> {valence, reading}
+        self._anti_felt: dict = {}                       # felt_component -> count of held anti-shapes
+
+    def seen(self, full_key: Hashable) -> bool:
+        return full_key in self._by_key
+
+    def held_valence(self, full_key: Hashable) -> float:
+        e = self._by_key.get(full_key)
+        return float(e["valence"]) if e else 0.0
+
+    def held_reading(self, full_key: Hashable) -> Optional[str]:
+        e = self._by_key.get(full_key)
+        return e["reading"] if e else None
+
+    def felt_could_repel(self, felt_component: Hashable) -> bool:
+        """PHASE A (solver-free): a fresh obj CAN be repelled only if its felt component
+        matches some held ANTI-shape's felt component. If not, rule the repel OUT — no
+        verify is spent. Sound because the felt component is a necessary part of the key."""
+        return self._anti_felt.get(felt_component, 0) > 0
+
+    def mint(self, full_key: Hashable, felt_component: Hashable, valence: float,
+             reading: Optional[str]) -> None:
+        """Record/update a class outcome keyed by the FULL class fingerprint (post-verify).
+        valence=-1 == anti-shape (also indexed by felt component for phase-A rule-out);
+        valence=+1 == confirmed/rescued class. Re-earning: a held anti-shape later confirmed
+        drifts toward 0/+ and its felt-component anti-index is released."""
+        prev = self._by_key.get(full_key)
+        prev_v = float(prev["valence"]) if prev else 0.0
+        new_v = max(-1.0, min(1.0, prev_v + valence))
+        # maintain the anti-shape felt index (only NEGATIVE entries can repel in phase A)
+        was_anti = prev_v < 0.0
+        now_anti = new_v < 0.0
+        if now_anti and not was_anti:
+            self._anti_felt[felt_component] = self._anti_felt.get(felt_component, 0) + 1
+        elif was_anti and not now_anti:
+            self._anti_felt[felt_component] = max(0, self._anti_felt.get(felt_component, 0) - 1)
+        self._by_key[full_key] = {"valence": new_v,
+                                  "reading": reading if reading is not None
+                                  else (prev.get("reading") if prev else None),
+                                  "felt": felt_component}
+
+
+def _mem_repelled(domain: "Domain", obj, memory: "ClassFingerprintMemory",
+                  *, spy: Optional[SolverSpy]) -> bool:
+    """FOOL-ME-ONCE, class-key edition. Decide whether a held anti-shape repels `obj`:
+      PHASE A (solver-free): if the fresh obj's felt component matches NO held anti-shape's
+        felt component -> NOT repelled, and NO verify is spent (the load-bearing rule-out
+        that makes the false distrust impossible AND keeps the felt path solver-free).
+      PHASE B (only when phase A did not rule it out): form the FULL class_key (may spend
+        verify) and repel IFF a held anti-shape carries this exact class_key with negative
+        valence. Only genuine candidates reach here."""
+    fc = domain.felt_component(obj)                      # solver-free
+    if not memory.felt_could_repel(fc):                  # PHASE A rule-out (no verify)
+        return False
+    full = domain.class_key(obj, spy)                    # PHASE B (verify-gated for residue)
+    return memory.held_valence(full) < 0.0
+
+
+def domain_memory_verify_then_update(domain: "Domain", obj,
+                                     memory: "ClassFingerprintMemory",
+                                     *, invest: bool = False,
+                                     spy: Optional[SolverSpy] = None) -> dict:
+    """THE SUBSTRATE/MEMORY-ENABLED loop (opt-in). Same decision spine as
+    domain_verify_then_update, but with the class-fingerprint memory layer the graph loop
+    had (reintroduced from the reverted attempt, CORRECTED to key on class_key not rank):
+      (a) FOOL-ME-ONCE repel: if a held ANTI-shape's class_key matches the fresh obj
+          (ruled out cheaply by the felt component first) -> 'repelled_by_held_antishape',
+          verify NOT spent. This is the DEFAULT (invest=False): don't spend verify on a
+          class already known no-rescue.
+      (b) FIRST-vs-REPEAT is DERIVED FROM HELD STATE via class_key match (a held negative
+          entry for this class_key == a repeat), replacing the prior_no_rescue flag.
+      (c) MINT outcomes keyed by class_key (confirmed/rescued -> +1; first no-rescue -> -1
+          anti-shape; repeat that authors a reading -> the anti-shape flips +1).
+
+    `invest` mirrors the graph loop's caller-driven signal (the composed net_valence Term
+    decided repel-vs-invest there via field_valence): invest=False repels a held anti-shape
+    (fool-me-once, verify saved); invest=True DECLINES the repel to INVEST in a repeat —
+    routing a held-anti-shape re-encounter to self-extension (author a reading from held
+    primitives). Both keep first-vs-repeat STATE-DERIVED (no prior_no_rescue flag).
+
+    The felt read stays solver-free; the phase-A repel rule-out is solver-free; verify is
+    the separate spy-pinged step; mint is post-verify."""
+    # (a) FOOL-ME-ONCE — phase-A felt rule-out then phase-B full-key confirm. Skipped when
+    # the caller chooses to INVEST in a repeat (self-extension) instead of repelling.
+    if not invest and _mem_repelled(domain, obj, memory, spy=spy):
+        return {"committed": False, "reason": "repelled_by_held_antishape", "reading": None,
+                "score": None}
+
+    committed, predicted, reading_name, felt_reason = domain.default_read(obj)
+    if committed:
+        truth = domain.verify(obj, spy)                  # VERIFY — the one solver touch
+        sc = domain.score(predicted, truth)
+        full = domain.class_key(obj, spy)                # class fingerprint (post-verify)
+        fc = domain.felt_component(obj)
+        if sc >= 0.999:                                  # confirmed
+            memory.mint(full, fc, +1.0, reading_name)
+            return {"committed": True, "reason": "confirmed", "reading": reading_name,
+                    "score": sc, "felt_reason": felt_reason, "class_key": full}
+        rescue = None
+        if domain.try_repertoire is not None:
+            rescue = domain.try_repertoire(obj, truth, domain.repertoire)
+        if rescue is not None:
+            memory.mint(full, fc, +1.0, rescue)
+            return {"committed": True, "reason": "rescued_by_reading", "reading": rescue,
+                    "score": sc, "felt_reason": felt_reason, "truth": truth,
+                    "class_key": full}
+        return _mem_no_rescue(domain, obj, memory, truth=truth, sc=sc,
+                              full=full, fc=fc, spy=spy)
+    # felt read abstained -> the domain's no-rescue class. Its class_key still needs verify
+    # for residue (felt_confirms); the full key/mint is post-verify as always.
+    full = domain.class_key(obj, spy)
+    fc = domain.felt_component(obj)
+    return _mem_no_rescue(domain, obj, memory, truth=None, sc=None,
+                          full=full, fc=fc, spy=spy)
+
+
+def _mem_no_rescue(domain: "Domain", obj, memory: "ClassFingerprintMemory",
+                   *, truth, sc, full: Hashable, fc: Hashable,
+                   spy: Optional[SolverSpy]) -> dict:
+    """No-rescue tail with FIRST-vs-REPEAT DERIVED FROM HELD STATE (no prior_no_rescue flag):
+    a held negative-valence entry for this class_key == a repeat. First hit mints the -1
+    anti-shape; a repeat authors a reading from held primitives (verify-gated) and, if it
+    rescues, flips the class positive."""
+    prior_anti = memory.held_valence(full) < 0.0         # derived from held state
+    if not prior_anti:                                   # FIRST encounter -> mint anti-shape
+        memory.mint(full, fc, -1.0, None)
+        return {"committed": False, "reason": "no_rescue_minted_antishape", "reading": None,
+                "score": sc, "class_key": full,
+                **({"truth": truth} if truth is not None else {})}
+    # REPEAT of a held no-rescue class -> self-extend: author from held primitives
+    authored = None
+    if domain.author is not None:
+        authored = domain.author(obj, truth, domain.repertoire, spy)
+    if authored is not None:
+        memory.mint(full, fc, +1.0, authored)            # anti-shape flips POSITIVE
+        return {"committed": True, "reason": "self_extended_authored_reading",
+                "reading": authored, "score": sc, "class_key": full}
+    return {"committed": False, "reason": "no_rescue_even_after_authoring", "reading": None,
+            "score": sc, "class_key": full}
+
+
 # --------------------------------------------------------------------------- #
 #  GRAPH_DOMAIN — the existing graph pipeline registered as a Domain (wrapping the
 #  EXISTING functions; no logic duplicated).
 # --------------------------------------------------------------------------- #
+# -- graph CLASS FINGERPRINT: the EXISTING coordinate rank-signature ---------
+# The prior (reverted) memory keyed EVERY domain on this rank signature. That was
+# the bug for the NUMERIC domains (all monotone sequences collapse to one rank), but
+# for GRAPHS the coordinate rank-signature GENUINELY discriminates classes (barbell
+# repels barbell, NOT path/star — validated). So graph KEEPS this key unchanged;
+# the unified class-key memory reproduces verify_then_update's aperture_signature@k=1
+# behavior byte-for-byte. Solver-free (a finite difference + ordinal rank; no Tarjan).
+_GRAPH_SIG_SUB = None
+
+
+def _graph_sig_substrate():
+    """A tiny throwaway substrate used ONLY to compute shape_signature for graph class
+    keys (the same op mint_shape/aperture_signature use). Cached so key computation is
+    cheap and touches no solver."""
+    global _GRAPH_SIG_SUB
+    if _GRAPH_SIG_SUB is None:
+        _GRAPH_SIG_SUB = _native.Substrate()
+    return _GRAPH_SIG_SUB
+
+
+def graph_class_key(adj, spy: Optional[SolverSpy] = None) -> Hashable:
+    """Graph class fingerprint == the EXISTING order-1 coordinate rank-signature (the
+    key verify_then_update already holds Shape nodes at). Solver-free: a finite
+    difference + ordinal rank, NOT the cut-vertex solver."""
+    coord = structural_coord(adj, list(adj))
+    return tuple(aperture_signature(coord, 1, _graph_sig_substrate()))
+
+
 def _graph_default_read(adj) -> tuple:
     """Wrap felt_aperture_read to the uniform 4-tuple. Solver-free (no spy passed)."""
     order = list(adj)
@@ -1290,6 +1532,8 @@ GRAPH_DOMAIN = Domain(
     repertoire=dict(READING_REPERTOIRE),
     try_repertoire=_graph_try_repertoire,
     author=_graph_author,
+    class_key=graph_class_key,
+    felt_component=lambda adj: graph_class_key(adj),   # graph key is fully solver-free
 )
 
 
@@ -1304,6 +1548,27 @@ def _seq_default_read(seq) -> tuple:
     if felt_k is not None:
         return (True, felt_k, "poly_degree", "bounded_witness")
     return (False, None, None, "abstained")
+
+
+def seq_authorable_claim(seq) -> Optional[str]:
+    """The NAME of the _SEQ_AUTHORABLE reading whose fn(seq) is not None (else None) — the
+    authorable reading that CLAIMS this sequence. Solver-free: seq_read_log_degree is pure
+    arithmetic (log + finite differencing), no verify solver. This is the non-felt half of
+    the sequence class fingerprint."""
+    for name, fn in _SEQ_AUTHORABLE.items():
+        if fn(seq) is not None:
+            return name
+    return None
+
+
+def seq_class_key(seq, spy: Optional[SolverSpy] = None) -> Hashable:
+    """SEQUENCE class fingerprint = (seq_felt_degree(seq), name-of-authorable-that-claims-it).
+    Two sequences are the SAME anti-shape iff the SAME reading fails the SAME way: geometric
+    2^n and 4^n -> (None,'log_degree') MATCH; geometric vs cubic -> (None,'log_degree') vs
+    (3,None) DIFFER (the cubic is NOT repelled); geometric vs fibonacci -> (None,'log_degree')
+    vs (None,None) DIFFER (distinct no-rescue classes get distinct anti-shapes). Fully
+    solver-free (both components are felt/arithmetic); a supplied SolverSpy stays 0."""
+    return (seq_felt_degree(seq), seq_authorable_claim(seq))
 
 
 def _seq_verify(seq, spy):
@@ -1334,6 +1599,8 @@ SEQUENCE_DOMAIN = Domain(
     repertoire={},
     try_repertoire=None,                                 # sequence caught-wrong has no rescue search
     author=_seq_author,
+    class_key=seq_class_key,
+    felt_component=lambda seq: seq_felt_degree(seq),     # solver-free felt-time rule-out
 )
 
 
@@ -1414,6 +1681,39 @@ def _res_default_read(seq) -> tuple:
     return (felt["committed"], felt["predicted"], felt["reading"], felt["reason"])
 
 
+def res_felt_component(seq) -> Hashable:
+    """The SOLVER-FREE felt component of the residue class fingerprint: the felt (parity,
+    mod 2) run-boundary set, as a frozenset. Pure arithmetic (integer modulus + consecutive
+    comparison), NO verify solver. Used for the phase-A repel RULE-OUT: it is a NECESSARY
+    condition for the full key to match, so if a fresh list's felt boundaries differ from a
+    held anti-shape's, there is NO repel and NO verify is spent. no-rescue [1,2,4,7]->{1,3}
+    vs monotone-confirmable [1,2,3,4]->{1,2,3} DIFFER (the confirmable list is NOT repelled
+    without ever calling verify)."""
+    return frozenset(res_felt_read(seq)["predicted"] or set())
+
+
+def res_authorable_rescue(seq, truth) -> Optional[str]:
+    """The NAME of the _RES_AUTHORABLE reading that RESCUES this list (its fn(seq) equals the
+    verify truth), else None. The non-felt half of the residue class fingerprint."""
+    for name, fn in _RES_AUTHORABLE.items():
+        if _res_score(fn(seq), truth) >= 0.999:
+            return name
+    return None
+
+
+def res_class_key(seq, spy: Optional[SolverSpy] = None) -> Hashable:
+    """RESIDUE class fingerprint = (felt_confirms:bool, name-of-authorable-that-rescues).
+    felt_confirms == does the felt (parity) read equal the verify (mod-3) truth. This SPENDS
+    a verify (spy pinged) — that is fine: the full key is only ever formed at MINT, which is
+    post-verify anyway; the cheap felt_component above handles the felt-time rule-out. Two
+    lists are the SAME anti-shape iff the same reading fails the same way: no-rescue
+    [1,2,4,7] -> (False,'mod3_runs') vs monotone-confirmable [1,2,3,4] -> (True,'mod3_runs')
+    DIFFER (no false distrust)."""
+    truth = res_verify(seq, spy=spy)                     # verify (exact) — mint is post-verify
+    felt_confirms = (res_felt_read(seq)["predicted"] == truth)
+    return (felt_confirms, res_authorable_rescue(seq, truth))
+
+
 def _res_score(predicted, truth) -> float:
     return 1.0 if predicted == truth else 0.0
 
@@ -1455,4 +1755,6 @@ RESIDUE_DOMAIN = Domain(
     repertoire={"parity_runs": lambda seq: _res_boundaries(seq, _RES_FELT_MOD)},
     try_repertoire=_res_try_repertoire,
     author=_res_author,
+    class_key=res_class_key,
+    felt_component=res_felt_component,                   # solver-free felt-time rule-out
 )
