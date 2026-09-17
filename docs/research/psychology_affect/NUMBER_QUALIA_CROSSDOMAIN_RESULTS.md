@@ -110,6 +110,33 @@ graph Term). Added `Domain` / `domain_verify_then_update` + `GRAPH_DOMAIN` / `SE
 `RESIDUE_DOMAIN` registrations to `number_runner.py`, and `track_j5_domain_registry.py`. The
 pipeline's growth loop is now written once and open to any domain that supplies the four pieces.
 
+**Attempted next unification — memory backend — BLOCKED (honest negative result).** The natural
+follow-on was to make the fool-me-once / re-earnable signed-shape-field *memory* domain-general
+too (currently the graph loop derives first-vs-repeat from held `Shape` nodes via `_held_shape_for`
++ `net_valence_term`, while sequence/residue fake it with a caller-supplied `prior_no_rescue` flag).
+The mechanism *architecture* works and is sound: the memory helpers (`domain_mint` /
+`domain_held_shape` / `domain_net_valence`) are domain-general, the match stays the composed
+`net_valence_term` graph Term (audit-green, no decision moved to Python), behavior-preservation
+holds on graph (barbell anti-shape repels a fresh barbell at −1.0 but does NOT falsely repel path7
+or star6, both 0.0), and first-vs-repeat becomes genuinely state-derived rather than a flag. **But
+it is blocked by a real correctness bug for non-graph domains, confirmed in-loop:** `aperture_signature`
+is an ordinal-*rank* key (a monotonicity/curvature fingerprint), not a *class* fingerprint. Every
+strictly-increasing numeric sequence collapses to the same low-order rank signature, so a *geometric*
+anti-shape held at any fixed aperture falsely repels an unrelated but readable *cubic* (both rank to
+`[0,1,2,3,…]`) — the cubic, which should `confirm` at degree 3, instead gets
+`repelled_by_held_antishape`. No single fixed `memory_aperture` separates a class from the whole
+monotone family; a "discriminating aperture" only ever separates the one hand-picked pair a test
+happens to use. The graph domain is immune only because degree-coordinates of distinct graph classes
+genuinely differ in rank. **Root cause + open frontier:** an anti-shape must be keyed by *what makes
+it a no-rescue class* — its verify-outcome / the reading-that-failed, i.e. two structures are the
+same anti-shape iff the same reading fails the same way on them — NOT by the raw coordinate's rank
+signature. Designing that class-fingerprint (and a mint-guard that refuses to enable memory for a
+domain whose key does not discriminate its classes, falling back to flag-based behavior) is a genuine
+research step; it was NOT committed. The landed state is the sound `track_j5` domain-registry
+generalization; the memory unification is deferred until the class-fingerprint is solved rather than
+shipped with a false no-false-distrust guarantee. (Recorded per the discipline that a caught,
+unfixed correctness bug is documented as the open problem, not papered over.)
+
 ## The claim
 
 A structural "isolation / prickliness" coordinate — the felt axis that makes the number
