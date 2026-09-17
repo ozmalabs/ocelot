@@ -334,6 +334,29 @@ path calls it. The confidence gate now has *no* built-in special-cases: it commi
 witness, returns an honest null only when no aperture separates anything, and learns everything
 else from caught failures.
 
+**When it's wrong: rescue-before-distrust.** A caught false commit has two very different
+causes, and conflating them was a real over-distrust bug: the shape may be *genuinely blind* to
+the felt repertoire, or it may just have been *read the wrong way*. "Wrong is usually the wrong
+aperture/reading, not an untrustworthy shape" — the same move as the whole arc, now applied to
+failure itself. `verify_then_update` now **triages** before minting distrust: on a caught wrong
+commit it searches a small fixed structural reading repertoire (`default` flanked-hub, `non_leaf`,
+`spanned_k0/1/2`) for a reading that **verify confirms** on this structure. If one rescues it, the
+lesson is "read this shape with reading R" — a **positive** shape tagged `reading=R` (imported on
+re-encounter, still feel-then-verify), *not* an anti-shape. Only when **no** reading in the
+repertoire verifies is the anti-shape minted (the honest last resort). The rescue stays
+non-circular because a broadly-applicable reading like `non_leaf` (correct on trees, wrong on
+cycles) is only *adopted* for a shape once verify confirms it there — it is never trusted for free.
+Concretely: the *broom* (default read misses the spine interiors, F1=0.5) is now **rescued** by
+`non_leaf` and held positive — previously it was wrongly minted as an anti-shape; the *ring+tail*
+(the ring closes, so no reading verifies) correctly gets the anti-shape. Gates
+(`scripts/jabberwock_holds_antishapes.py`, all pass, donkey=0): WHEN-IT'S-WRONG (broom rescued vs
+ring+tail anti-shape last resort), FOOL-ME-ONCE, APERTURE-SCOPED, RE-EARNABLE, SYMMETRY,
+RETIRED-PREDICATE, BACKWARD COMPAT, FROZEN CORE. Added the reading repertoire (`apply_reading` /
+`search_rescue_reading`) and a `reading` tag on held shapes in `number_runner.py`. Honest limit
+unchanged: the felt read still cannot *solve* the no-rescue case; the win is it now distrusts a
+shape only after confirming no reading rescues it, so it corrects *reading* mistakes instead of
+laundering them into distrust.
+
 ### Files added
 
 `tests/capability/number_qualia/track_j3_aperture_manifold.py` and the
