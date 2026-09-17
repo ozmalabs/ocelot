@@ -226,6 +226,158 @@
     },
     "default": null
    }
+  },
+  {
+   "name": "aperture_salience",
+   "domain": "autonomy",
+   "comment": "JABBERWOCK-AUTHORED aperture-manifold salience (donkey=0), the SAME residual_recurrence keystone the residual_salience/cost_salience concepts matched, extended with an explicit BLIND-REGIME repulsion. The residual/cost salience says WHERE to spend but is BLIND to whether the felt read at that axis can be TRUSTED: an axis whose structural property has only an UNBOUNDED-RADIUS witness (e.g. a graph criticality where the 'way around' is a large closed loop) is a regime where the cheap local/multi-aperture felt read is KNOWN-BLIND and would commit a falsely-sharp peak (the Dunning-Kruger failure the parallel-cheap-checks design warns about). The confidence gate (tests/capability/number_qualia: felt_aperture_read + has_cycle over the substrate's own order_n_concepts aperture dial) detects that regime; `blind` is stamped onto the axis (mechanical adapter I/O, no decision) as 1.0 when the felt read must ABSTAIN. salience(axis) = shortfall (measured residual) + (1 - saturation) (belief residual) - cost (sunk-effort) - blind*1e9 (blind-regime repulsion). A blind axis is pushed to a huge-negative salience so the frontier Argmax never PICKS it to COMMIT -- the agent abstains and the pick moves to a trustable axis (or, if all are blind, no commit -> route to VERIFY), instead of confidently investigating on a falsely-sharp felt peak. When blind=0 for every axis this reduces EXACTLY to cost_salience (Minus(0,0)=0 is a no-op addend), which itself reduces to residual_salience at zero cost -- fully backward compatible. The agent recognises this as the residual_recurrence keystone extended by a trust/confidence bound (feel where the residual is high, EXCEPT where the reader is blind), donkey=0. Graph-data term on this concept; the world adapter swaps it onto the understand Drive's frontier_pick_term, leaving seeds/autonomy.json and the Drive's frozen invariant untouched.",
+   "definition": {
+    "type": "Argmax",
+    "source": {
+     "type": "NodesWhere",
+     "node_type": "CapabilityAxis",
+     "attr_key": "is_axis",
+     "value": {
+      "type": "Lit",
+      "value": 1.0
+     }
+    },
+    "var_name": "x",
+    "value": {
+     "type": "Plus",
+     "items": [
+      {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "key": "shortfall"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      {
+       "type": "Minus",
+       "a": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "x"
+          },
+          "key": "saturation"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      },
+      {
+       "type": "Minus",
+       "a": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "x"
+          },
+          "key": "cost"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      },
+      {
+       "type": "Minus",
+       "a": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "b": {
+        "type": "Times",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "x"
+            },
+            "key": "blind"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         },
+         {
+          "type": "Lit",
+          "value": 1000000000.0
+         }
+        ]
+       }
+      },
+      {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gte",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "x"
+          },
+          "edge_type": "investigated_by",
+          "any_type": false
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "other": {
+        "type": "Lit",
+        "value": -1000000000.0
+       }
+      }
+     ]
+    },
+    "default": null
+   }
   }
  ],
  "rules": [],
