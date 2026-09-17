@@ -411,3 +411,139 @@ def felt_meta_match(fresh_adj: dict, library: dict, substrate,
     predicted = {v for v in fresh_adj if degree_role(fresh_adj, v) in roles}
     return {"nearest": best, "match_dist": best_d, "roles": roles,
             "predicted": predicted}
+
+
+
+# --------------------------------------------------------------------------- #
+#  THE APERTURE MANIFOLD (track_j3): "local/global is aperture, not magic".
+#
+#  The meta-shape library (track_j2) rescued the path by matching the WHOLE
+#  configuration against solved exemplars — order-4 in the shape ladder. But that
+#  was not a SEPARATE mechanism: it was the SAME structural read at a COARSER
+#  APERTURE. The substrate already owns the aperture dial natively —
+#  domains.order_n_concepts.nth_order_terms — the finite-difference machinery
+#  falling_world uses to discover an order-2 generator from raw pixel samples.
+#  Order 0 = the value; each order is one finite-difference pass (a wider aperture
+#  over the SAME structural coordinate). Local vs global was never two kinds of
+#  property; it is one structural read at two orders.
+#
+#  DESIGN PRINCIPLE (there is no need to choose a single method): we do NOT argmax
+#  to one aperture and we do NOT "switch to calculator k". We KEEP EVERY APERTURE
+#  LIVE as parallel coordinates over the structural quantity and read the SHAPE of
+#  the resulting manifold — the (node x order) map of local outliers. The property
+#  localizes wherever a bounded-radius outlier appears at SOME aperture; its shape
+#  across apertures IS the confidence interval.
+#
+#  THE HONEST FENCE (bounded vs unbounded witness): widening the aperture over a
+#  LOCAL coordinate crosses many apparent local/global lines (a path's global
+#  criticality becomes a local order-1 boundary) but CANNOT cross into
+#  unbounded-radius facts — e.g. "does a large cycle close?", which no bounded
+#  aperture sees. There is no cheaper local coordinate that fixes this; the honest
+#  move is a CONFIDENCE GATE that detects the blind regime (a cycle is present) and
+#  ABSTAINS to verify, rather than committing a falsely-sharp peak (the
+#  anti-Dunning-Kruger property). This is the sharp form of the coverage ceiling:
+#  feel commits on bounded-witness structure, abstains on unbounded-witness.
+# --------------------------------------------------------------------------- #
+def _eval_diff(x):
+    """Evaluate an nth_order_terms result element for PLAIN NUMERIC samples: the
+    finite-difference tree is a nested {'type':'Minus','a':..,'b':..} dict (or a
+    bare number at order 0). Pure arithmetic over the tree — no Rust evaluator
+    needed for numeric structural coordinates; the aperture dial itself is the
+    substrate's order_n_concepts.nth_order_terms."""
+    if isinstance(x, dict) and x.get("type") == "Minus":
+        return _eval_diff(x["a"]) - _eval_diff(x["b"])
+    return x
+
+
+def aperture_manifold(adj: dict, order_nodes: list, *, max_order: int = 3) -> dict:
+    """KEEP ALL APERTURES LIVE. Lay the structural coordinate (degree in traversal
+    order) out as an ordered sample list and apply the substrate's
+    order_n_concepts.nth_order_terms at every order 0..max_order. Returns
+    {order: [per-position finite-difference value]} — the whole manifold, no
+    aperture chosen. This is the native aperture dial, not a bespoke descriptor."""
+    from domains.order_n_concepts import nth_order_terms
+    deg = [len(adj[v]) for v in order_nodes]
+    return {o: [_eval_diff(t) for t in nth_order_terms(deg, o)]
+            for o in range(max_order + 1)}
+
+
+def manifold_shape(manifold: dict, *, z: float = 1.0) -> dict:
+    """Read the (node x aperture) manifold SHAPE: per order, the set of positions
+    that are LOCAL OUTLIERS at that aperture (the SAME sign-free either-pole read as
+    outliers_from_bulk, applied ACROSS positions WITHIN each order). An aperture with
+    an empty outlier set is FLAT there (no separating structure at that scale)."""
+    out = {}
+    for o, diffs in manifold.items():
+        out[o] = outliers_from_bulk({i: d for i, d in enumerate(diffs)}, z=z)
+    return out
+
+
+def has_cycle(adj: dict) -> bool:
+    """A CHEAP global invariant (one boolean per connected component, NOT the
+    articulation computation): a connected component with |E| >= |V| contains a
+    cycle. This is the CONFIDENCE-GATE input — the felt read's local coordinates are
+    KNOWN-BLIND to cycle-interior non-criticality (the 'way around' is
+    unbounded-radius), so a present cycle means ABSTAIN. It detects the blind regime;
+    it does not solve the problem. Solver-free (a pure edge/vertex count over a DFS
+    component walk); passes no SolverSpy."""
+    nodes = list(adj)
+    seen = set()
+    for s in nodes:
+        if s in seen:
+            continue
+        comp, stack = set(), [s]
+        seen.add(s); comp.add(s)
+        while stack:
+            u = stack.pop()
+            for w in adj[u]:
+                if w not in seen:
+                    seen.add(w); comp.add(w); stack.append(w)
+        e = sum(len(adj[v]) for v in comp) // 2
+        if e >= len(comp):
+            return True
+    return False
+
+
+def felt_aperture_read(adj: dict, order_nodes: Optional[list] = None,
+                       *, spy: Optional[SolverSpy] = None) -> dict:
+    """THE FELT PATH (solver-free): read cut-vertex criticality off the multi-aperture
+    manifold + the confidence gate, choosing NO single method. Steps:
+      1. Build the aperture manifold (all orders live) over degree-in-order.
+      2. A node is felt-critical if it is INTERIOR to a bounded run (flanked in the
+         ordering AND not itself a degree outlier) OR a high-degree hub outlier.
+      3. CONFIDENCE GATE: if a cycle is present the local coordinates are known-blind
+         -> ABSTAIN (committed=False, predicted=None) and route to verify. Otherwise
+         COMMIT the felt prediction.
+    Passes NO spy to any solver; a supplied SolverSpy must remain 0."""
+    order_nodes = list(adj) if order_nodes is None else order_nodes
+    manifold = aperture_manifold(adj, order_nodes)
+    shape = manifold_shape(manifold)
+    deg_outliers = shape.get(0, set())
+    pos = {v: i for i, v in enumerate(order_nodes)}
+    predicted = set()
+    for i, v in enumerate(order_nodes):
+        flanked = any(pos[u] < i for u in adj[v]) and any(pos[u] > i for u in adj[v])
+        deg_outlier = i in deg_outliers
+        if flanked and not deg_outlier:
+            predicted.add(v)
+        elif deg_outlier and len(adj[v]) > 2:
+            predicted.add(v)
+    peaked = [o for o in sorted(shape) if shape[o]]
+    if not peaked:
+        return {"committed": False, "reason": "flat_all_apertures",
+                "predicted": None, "manifold": manifold, "peaked": peaked}
+    if has_cycle(adj):
+        return {"committed": False, "reason": "cycle_present_local_coords_blind",
+                "predicted": None, "manifold": manifold, "peaked": peaked}
+    return {"committed": True, "reason": "acyclic_bounded_witness",
+            "predicted": predicted, "manifold": manifold, "peaked": peaked}
+
+
+def f1_score(predicted: set, truth: set) -> float:
+    """F1 of a predicted critical set against ground truth (both node-id sets)."""
+    if predicted is None:
+        return float("nan")
+    tp = len(predicted & truth)
+    fp = len(predicted - truth)
+    fn = len(truth - predicted)
+    return (2 * tp / (2 * tp + fp + fn)) if (tp or fp or fn) else 1.0
