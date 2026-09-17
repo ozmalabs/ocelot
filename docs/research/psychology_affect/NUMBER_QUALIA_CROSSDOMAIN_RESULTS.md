@@ -176,6 +176,37 @@ unchanged). Added `Domain.class_key` / `Domain.felt_component`, the per-domain c
 now domain-general: a new domain inherits earned, class-keyed, false-distrust-free distrust for
 free by supplying its class fingerprint alongside the four pieces.
 
+**Refinement — the `(None,None)` bucket split by an authorable recurrence reading (`track_j6`
+C7–C11).** The scope note above flagged that the sequence `(None,None)` key merged genuinely-
+distinct unclaimed no-rescue classes (Fibonacci, primes, higher-degree). That refinement is now
+done — and it is the natural next in-domain self-extension. Two coupled changes: **(1) a felt-degree
+over-fit fix** — a probe exposed that `seq_felt_degree` spuriously confirmed *any* short sequence as
+a high-degree polynomial (an n-point sequence's (n−1)th difference is trivially ≤2 values, equal by
+coincidence), so Pell `[0,1,2,5,12,29,70]` wrongly read degree 5. Fixed with a scaled **witness
+margin** (a degree-k claim is credible only if `k ≤ len−2−1`, falling_world's order-N witness
+minimum), applied to both `seq_felt_degree` and `seq_verify_degree` so their agreement (track_j4 S1)
+holds; pell/fib → None, genuine polynomials keep their degree. **(2) an authorable `linrec2`
+reading** — an exact rational 2×2 solve for `(a,b)` in `x[n]=a·x[n-1]+b·x[n-2]` from the first two
+triples, then an all-terms recurrence check (feel = the fit, verify = the all-terms check;
+solver-free). Registered after `log_degree` so a geometric (also a degenerate linrec) keeps its
+`log_degree` claim. This lets Fibonacci become a *claimed* class with its own key, and the
+over-fit fix is the precondition (without it Pell/Fibonacci never reach the authorable claim).
+
+Caught-and-fixed during review (the honest part): the adversarial semantic review found that
+keying the class on the reading **name** alone (`(None,'linrec2')`) re-introduced the exact
+class-merge defect one level down — Pell `(a=2,b=1)` and Fibonacci `(a=1,b=1)` are distinct
+recurrences but collapsed to the same key, so a held Fibonacci anti-shape falsely repelled Pell
+in-loop. Verified by own probe, then fixed by keying on the **full namespaced signature**
+(`('linrec2', ('linrec2',a,b))`) the reading already computes. After the fix, Fibonacci, Pell,
+geometric, and primes are **four distinct classes**; Fibonacci and Lucas correctly share a key
+(same recurrence); a held Fibonacci anti-shape does not repel Pell/geometric/primes but does repel
+Lucas (C9). The confirm-key set and anti-key set stay disjoint. Added `seq_read_linrec2` + the
+witness margin + full-signature `seq_authorable_claim`/`seq_class_key` to `number_runner.py`;
+track_j6 gains C7–C11 (all pass); track_j3/j4/j5 unchanged; audit green; the recurrence solve is
+solver-free. (Residual latent coarseness, noted: still-unclaimed no-rescue classes — primes,
+higher-degree, order-≥3 recurrences — share `(None,None)` until a reading is authored for each; the
+mechanism to split them is now the demonstrated pattern.)
+
 ## The claim
 
 A structural "isolation / prickliness" coordinate — the felt axis that makes the number

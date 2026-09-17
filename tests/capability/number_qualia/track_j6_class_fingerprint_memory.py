@@ -15,11 +15,12 @@ THE FIX (this track): key the memory by a per-domain CLASS FINGERPRINT
 the SAME way on them:
   · graph:    the coordinate rank-signature already discriminates graph classes (barbell
               repels barbell, NOT path/star) -> graph KEEPS its key (behavior-preserving).
-  · sequence: key = (seq_felt_degree, name-of-authorable-that-claims-it). geometric 2^n and
-              4^n MATCH (None,'log_degree'); geometric vs cubic DIFFER ((None,'log_degree')
-              vs (3,None)) -> the cubic is NOT repelled; geometric vs fibonacci DIFFER
-              ((None,'log_degree') vs (None,None)) -> distinct no-rescue classes, distinct
-              anti-shapes.
+  · sequence: key = (seq_felt_degree, full-authorable-CLAIM-that-claims-it). The claim is
+              namespaced by reading AND its signature (log_degree -> its degree; linrec2 ->
+              its (a,b)), so distinct claims stay distinct. geometric 2^n and 4^n MATCH
+              (None,('log_degree',1)); geometric vs cubic DIFFER ((None,('log_degree',1)) vs
+              (3,None)) -> the cubic is NOT repelled; Fibonacci vs Pell DIFFER (distinct
+              recurrences (1,1) vs (2,1)); Fibonacci vs primes DIFFER (vs (None,None)).
   · residue:  key = (felt_confirms, name-of-authorable-that-rescues). no-rescue [1,2,4,7]
               (False,'mod3_runs') vs monotone-confirmable [1,2,3,4] (True,'mod3_runs')
               DIFFER -> no false distrust.
@@ -63,6 +64,38 @@ WHAT THIS SHOWS
     NOT repel any of a family of monotone polynomials (degrees 1..4); a residue no-rescue
     anti-shape does NOT repel a family of monotone-confirmable lists. net_valence==0 /
     reason=='confirmed' for every one.
+
+RECURRENCE READING (this commit's refinement — split the (None,None) no-rescue bucket)
+  The prior commit noted the sequence (None,None) bucket merges genuinely-distinct unclaimed
+  no-rescue classes (Fibonacci, primes, higher-degree). Two coupled changes split it honestly:
+    · CHANGE 1 — the felt-degree OVER-FIT fix (precondition): seq_felt_degree/seq_verify_degree
+      claimed a polynomial degree whenever the k-th finite difference was 'constant', but an
+      n-point sequence's high-order difference is trivially 1-2 values equal by COINCIDENCE, so
+      short recurrences over-fit (Pell [0,1,2,5,12,29,70] -> spurious degree 5). Fixed with a
+      SCALED WITNESS MARGIN: a degree-k claim is credible only if k <= len(seq)-2-1. Applied to
+      BOTH functions so felt==verify (S1) holds. pell/fib -> None; genuine polys keep degree.
+    · CHANGE 2 — an AUTHORABLE linrec2 reading: seq_read_linrec2 CLAIMS constant-coefficient
+      order-2 linear recurrences (exact rational 2x2 solve for (a,b) from the first two triples,
+      then verify the recurrence holds across ALL terms). Registered AFTER log_degree so a
+      geometric keeps its log_degree claim; fibonacci/lucas -> ('linrec2',1,1), pell ->
+      ('linrec2',2,1). The class key namespaces the FULL claim (name + signature), so fibonacci
+      gets its OWN key distinct from geometric (log_degree) AND from Pell (a DIFFERENT
+      recurrence (2,1)) AND from primes (None) -- the bucket is split at the class, not merged
+      at the reading name.
+  · C7  OVER-FIT FIXED: pell/fibonacci no longer read as high-degree polynomials (both -> None
+    under the witness margin); genuine polynomials keep their exact degree; felt==verify on S1.
+  · C8  RECURRENCE READING CLAIMS FIBONACCI: seq_read_linrec2 fits fibonacci/lucas
+    (('linrec2',1,1) -- same class) and pell (('linrec2',2,1) -- a DIFFERENT class); NOT
+    polynomials/primes; geometric is claimed by log_degree FIRST so its key keeps log_degree.
+  · C9  BUCKET SPLIT (no new merge): seq_class_key gives fibonacci, geometric, Pell, and primes
+    FOUR DISTINCT keys (the claim carries the (a,b)/degree, not just the reading name); no
+    cross-class false repel in any direction -- crucially a held fibonacci anti-shape does NOT
+    repel Pell (distinct recurrence), while a held fibonacci anti-shape DOES repel lucas (same
+    recurrence == same class).
+  · C10 SELF-EXTENSION AUTHORS linrec2: a repeated Fibonacci-like no-rescue class authors
+    linrec2 (reason self_extended_authored_reading) the same way geometric authored log_degree.
+  · C11 SOLVER-FREE: seq_read_linrec2 (pure rational arithmetic) and the margin-updated
+    seq_felt_degree spend 0 solver calls (SolverSpy=0).
 
 Run: PYTHONPATH=runners/dsl/python:. python3 tests/capability/number_qualia/track_j6_class_fingerprint_memory.py
 """
@@ -312,7 +345,9 @@ def main() -> int:
         "n^2+n (deg2)":    _poly([0, 1, 1]),
         "n^3 (deg3)":      _poly([0, 0, 0, 1]),
         "n^3+n (deg3)":    _poly([0, 1, 0, 1]),
-        "n^4 (deg4)":      _poly([0, 0, 0, 0, 1]),
+        "n^4 (deg4)":      _poly([0, 0, 0, 0, 1], n=7),   # deg4 needs >=7 pts under the
+                                                          # witness margin (k<=len-2-1) to be a
+                                                          # CREDIBLE (non-over-fit) polynomial read
     }
     seq_falsely_repelled = []
     for label, seq in poly_family.items():
@@ -350,12 +385,200 @@ def main() -> int:
           % ("PASS" if c6 else "FAIL"))
     results.append(c6)
 
+    # =====================================================================
+    # C7 — OVER-FIT FIXED (CHANGE 1): the scaled witness margin
+    # =====================================================================
+    print("\n" + "-" * 82)
+    print("C7  OVER-FIT FIXED: seq_felt_degree no longer spuriously confirms short recurrences")
+    print("    as high-degree polynomials. Pell/Fibonacci -> None (witness margin k<=len-2-1);")
+    print("    genuine polynomials keep their exact degree; felt==verify on the S1 battery.")
+    print("-" * 82)
+    pell = [0, 1, 2, 5, 12, 29, 70]              # was spuriously felt_degree=5
+    fib8 = [1, 1, 2, 3, 5, 8, 13, 21]            # a short recurrence, not a polynomial
+    over_fit_fixed = (R.seq_felt_degree(pell) is None and R.seq_verify_degree(pell) is None
+                      and R.seq_felt_degree(fib8) is None and R.seq_verify_degree(fib8) is None)
+    print("  pell [0,1,2,5,12,29,70] -> felt=%s verify=%s (was felt=5 -- OVER-FIT)"
+          % (R.seq_felt_degree(pell), R.seq_verify_degree(pell)))
+    print("  fib8 -> felt=%s verify=%s" % (R.seq_felt_degree(fib8), R.seq_verify_degree(fib8)))
+    genuine_polys = {
+        "n":     [0, 1, 2, 3, 4, 5],
+        "n^2":   [0, 1, 4, 9, 16, 25],
+        "n^3":   [0, 1, 8, 27, 64, 125],
+        "2n+1":  [1, 3, 5, 7, 9, 11],
+        "const": [5, 5, 5, 5, 5, 5],
+    }
+    expect_deg = {"n": 1, "n^2": 2, "n^3": 3, "2n+1": 1, "const": 0}
+    polys_kept = True
+    for label, seq in genuine_polys.items():
+        f = R.seq_felt_degree(seq)
+        ok = (f == expect_deg[label])
+        polys_kept = polys_kept and ok
+        print("  %-6s -> felt_degree=%s (expect %s) %s"
+              % (label, f, expect_deg[label], "OK" if ok else "WRONG"))
+    # felt==verify on the S1 battery (track_j4 S1) still holds under the margin
+    s1_battery = {
+        "constant":   [5, 5, 5, 5, 5, 5],
+        "linear":     [1, 3, 5, 7, 9, 11],
+        "quadratic":  [0, 1, 4, 9, 16, 25],
+        "triangular": [0, 1, 3, 6, 10, 15],
+        "cubic":      [0, 1, 8, 27, 64, 125],
+    }
+    s1_agree = all(R.seq_felt_degree(s) == R.seq_verify_degree(s) for s in s1_battery.values())
+    print("  S1 battery felt==verify under the margin: %s" % s1_agree)
+    c7 = over_fit_fixed and polys_kept and s1_agree
+    print("  C7 (over-fit fixed; genuine polys keep degree; felt==verify on S1):            %s"
+          % ("PASS" if c7 else "FAIL"))
+    results.append(c7)
+
+    # =====================================================================
+    # C8 — RECURRENCE READING CLAIMS FIBONACCI (CHANGE 2)
+    # =====================================================================
+    print("\n" + "-" * 82)
+    print("C8  RECURRENCE READING: seq_read_linrec2 fits Fibonacci/Lucas (('linrec2',1,1) --")
+    print("    same key, same class) and Pell (('linrec2',2,1)); does NOT fit polynomials or")
+    print("    primes; geometric is claimed by log_degree FIRST (order matters).")
+    print("-" * 82)
+    fib = [1, 1, 2, 3, 5, 8, 13]
+    lucas = [2, 1, 3, 4, 7, 11, 18]
+    pell = [0, 1, 2, 5, 12, 29, 70]
+    geo = [1, 2, 4, 8, 16, 32]
+    primes = [2, 3, 5, 7, 11, 13, 17]
+    quad = [0, 1, 4, 9, 16, 25]
+    cubic = [0, 1, 8, 27, 64, 125]
+    fib_key = R.seq_read_linrec2(fib)
+    lucas_key = R.seq_read_linrec2(lucas)
+    pell_key = R.seq_read_linrec2(pell)
+    print("  fibonacci linrec2 -> %s" % (fib_key,))
+    print("  lucas     linrec2 -> %s  (same recurrence, same class)" % (lucas_key,))
+    print("  pell      linrec2 -> %s" % (pell_key,))
+    print("  primes    linrec2 -> %s (must be None)" % (R.seq_read_linrec2(primes),))
+    print("  quad      linrec2 -> %s (must be None)" % (R.seq_read_linrec2(quad),))
+    print("  cubic     linrec2 -> %s (must be None)" % (R.seq_read_linrec2(cubic),))
+    print("  geometric authorable claim -> %s (log_degree FIRST; linrec2=%s)"
+          % (R.seq_authorable_claim(geo), R.seq_read_linrec2(geo)))
+    geo_claim = R.seq_authorable_claim(geo)
+    c8 = (fib_key == ("linrec2", 1, 1) and lucas_key == ("linrec2", 1, 1)
+          and pell_key == ("linrec2", 2, 1)
+          and R.seq_read_linrec2(primes) is None
+          and R.seq_read_linrec2(quad) is None and R.seq_read_linrec2(cubic) is None
+          and geo_claim is not None and geo_claim[0] == "log_degree")   # namespaced (name, sig)
+    print("  C8 (linrec2 claims fib/lucas/pell; not polys/primes; geometric -> log_degree):  %s"
+          % ("PASS" if c8 else "FAIL"))
+    results.append(c8)
+
+    # =====================================================================
+    # C9 — BUCKET SPLIT: fibonacci gets its OWN class key
+    # =====================================================================
+    print("\n" + "-" * 82)
+    print("C9  BUCKET SPLIT (no new merge): seq_class_key gives fibonacci, geometric, Pell and")
+    print("    primes FOUR DISTINCT keys (the claim carries the (a,b)/degree, not just the name).")
+    print("    A held fibonacci anti-shape does NOT repel geometric/primes/PELL; it DOES repel")
+    print("    lucas (same recurrence == same class).")
+    print("-" * 82)
+    k_fib = R.seq_class_key(fib)
+    k_geo = R.seq_class_key(geo)
+    k_primes = R.seq_class_key(primes)
+    k_pell = R.seq_class_key(pell)
+    k_lucas = R.seq_class_key(lucas)
+    print("  fibonacci class_key -> %s" % (k_fib,))
+    print("  pell      class_key -> %s" % (k_pell,))
+    print("  lucas     class_key -> %s" % (k_lucas,))
+    print("  geometric class_key -> %s" % (k_geo,))
+    print("  primes    class_key -> %s" % (k_primes,))
+    # fib, geo, pell, primes are FOUR distinct classes; fib and lucas are the SAME class
+    keys_distinct = (len({k_fib, k_geo, k_pell, k_primes}) == 4 and k_fib == k_lucas
+                     and k_fib != k_pell)          # the reviewer's crux: fib != pell
+    # a held fibonacci anti-shape does NOT repel a geometric, primes, or PELL (different keys)
+    R.SEQUENCE_DOMAIN.fresh_repertoire(); R._SEQ_REPERTOIRE.clear()
+    memf = R.ClassFingerprintMemory()
+    hold_fib = R.domain_verify_then_update(R.SEQUENCE_DOMAIN, fib, memory=memf, spy=R.SolverSpy())
+    r_geo_v_fib = R.domain_verify_then_update(R.SEQUENCE_DOMAIN, geo, memory=memf, spy=R.SolverSpy())
+    r_primes_v_fib = R.domain_verify_then_update(R.SEQUENCE_DOMAIN, primes, memory=memf,
+                                                 spy=R.SolverSpy())
+    r_pell_v_fib = R.domain_verify_then_update(R.SEQUENCE_DOMAIN, pell, memory=memf, spy=R.SolverSpy())
+    r_lucas_v_fib = R.domain_verify_then_update(R.SEQUENCE_DOMAIN, lucas, memory=memf, spy=R.SolverSpy())
+    print("  held fibonacci anti-shape: geometric->%s  primes->%s  PELL->%s  lucas->%s"
+          % (r_geo_v_fib["reason"], r_primes_v_fib["reason"], r_pell_v_fib["reason"],
+             r_lucas_v_fib["reason"]))
+    # a held geometric anti-shape does NOT repel fibonacci
+    R.SEQUENCE_DOMAIN.fresh_repertoire(); R._SEQ_REPERTOIRE.clear()
+    memg = R.ClassFingerprintMemory()
+    _seq_hold_geometric(memg)
+    r_fib_v_geo = R.domain_verify_then_update(R.SEQUENCE_DOMAIN, fib, memory=memg, spy=R.SolverSpy())
+    print("  held geometric anti-shape: fibonacci -> %s (its OWN anti-shape)"
+          % r_fib_v_geo["reason"])
+    no_cross_repel = (r_geo_v_fib["reason"] != "repelled_by_held_antishape"
+                      and r_primes_v_fib["reason"] != "repelled_by_held_antishape"
+                      and r_pell_v_fib["reason"] != "repelled_by_held_antishape"   # the crux
+                      and r_fib_v_geo["reason"] != "repelled_by_held_antishape"
+                      and r_lucas_v_fib["reason"] == "repelled_by_held_antishape")  # same class DOES repel
+    c9 = keys_distinct and no_cross_repel
+    print("  C9 (four distinct classes; fib!=pell; no cross-class false repel; lucas==fib):  %s"
+          % ("PASS" if c9 else "FAIL"))
+    results.append(c9)
+
+    # =====================================================================
+    # C10 — SELF-EXTENSION AUTHORS linrec2
+    # =====================================================================
+    print("\n" + "-" * 82)
+    print("C10 SELF-EXTENSION AUTHORS linrec2: a repeated Fibonacci-like no-rescue class run")
+    print("    through the sequence self-extension loop AUTHORS linrec2 (reason")
+    print("    self_extended_authored_reading, reading 'linrec2') -- like geometric->log_degree.")
+    print("-" * 82)
+    R.SEQUENCE_DOMAIN.fresh_repertoire(); R._SEQ_REPERTOIRE.clear()
+    mem10 = R.ClassFingerprintMemory()
+    f10_first = R.domain_verify_then_update(R.SEQUENCE_DOMAIN, fib, memory=mem10, spy=R.SolverSpy())
+    f10_repeat = R.domain_verify_then_update(R.SEQUENCE_DOMAIN, fib, memory=mem10, invest=True,
+                                             spy=R.SolverSpy())
+    print("  fibonacci first  -> reason=%s (class_key=%s)"
+          % (f10_first["reason"], f10_first.get("class_key")))
+    print("  fibonacci repeat -> reason=%s reading=%s (repertoire: %s)"
+          % (f10_repeat["reason"], f10_repeat.get("reading"), list(R.SEQUENCE_DOMAIN.repertoire)))
+    linrec2_adopted = ("linrec2" in R.SEQUENCE_DOMAIN.repertoire)   # captured before reset
+    # and via the flag-based loop too (same authoring path)
+    R.SEQUENCE_DOMAIN.fresh_repertoire(); R._SEQ_REPERTOIRE.clear()
+    flag_repeat = R.seq_verify_then_update(fib, prior_abstained=True, spy=R.SolverSpy())
+    print("  flag-based fibonacci repeat -> reason=%s reading=%s"
+          % (flag_repeat["reason"], flag_repeat.get("reading")))
+    c10 = (f10_first["reason"] == "no_rescue_minted_antishape"
+           and f10_repeat["reason"] == "self_extended_authored_reading"
+           and f10_repeat.get("reading") == "linrec2"
+           and linrec2_adopted
+           and flag_repeat["reason"] == "self_extended_authored_reading"
+           and flag_repeat.get("reading") == "linrec2"
+           and "linrec2" in R._SEQ_REPERTOIRE)
+    print("  C10 (repeated fibonacci-like no-rescue class authors linrec2, both loops):      %s"
+          % ("PASS" if c10 else "FAIL"))
+    results.append(c10)
+
+    # =====================================================================
+    # C11 — SOLVER-FREE (linrec2 + the margin-updated felt read)
+    # =====================================================================
+    print("\n" + "-" * 82)
+    print("C11 SOLVER-FREE: seq_read_linrec2 and the updated seq_felt_degree spend 0 solver")
+    print("    calls (the recurrence solve is pure rational arithmetic, no verify solver).")
+    print("-" * 82)
+    free_spy = R.SolverSpy()
+    for seq in (fib, lucas, pell, geo, primes, quad, cubic):
+        R.seq_read_linrec2(seq)
+        R.seq_felt_degree(seq, spy=free_spy)
+        R.seq_class_key(seq, spy=free_spy)
+        R.seq_authorable_claim(seq)
+    c11 = (free_spy.calls == 0)
+    print("  linrec2 + felt-degree + class-key solver calls: %d (must be 0)" % free_spy.calls)
+    print("  C11 (seq_read_linrec2 + updated seq_felt_degree solver-free):                   %s"
+          % ("PASS" if c11 else "FAIL"))
+    results.append(c11)
+
     print("\n" + "=" * 82)
     ok = all(results)
     print("  VERDICT: %s" % ("ALL PASS — anti-shapes keyed on the per-domain CLASS FINGERPRINT; "
                              "the geometric-repels-cubic false distrust is impossible by "
                              "construction; fool-me-once + self-extension + graph behavior "
-                             "preserved; felt-time rule-out solver-free"
+                             "preserved; felt-time rule-out solver-free; the felt-degree "
+                             "over-fit is fixed by a scaled witness margin and an authorable "
+                             "linrec2 reading splits the (None,None) bucket (fibonacci gets "
+                             "its own class key)"
                              if ok else "SOME FAILED — see above"))
     print("=" * 82)
     return 0 if ok else 1

@@ -976,14 +976,40 @@ def verify_then_update(substrate, adj: dict, field_valence: float,
 #  Per-class + verify-gated, so it rescues geometric without mis-reading polynomials. This is
 #  the sequence-domain analogue of `bridge` rescuing the barbell — same loop, numeric primitives.
 # --------------------------------------------------------------------------- #
+#: SCALED WITNESS MARGIN (falling_world's order-N witness-minimum idea). An n-point
+#: sequence's (n-1)th finite difference is trivially 1-2 values that can be equal by
+#: COINCIDENCE, so short recurrences/other sequences would spuriously CONFIRM as high-degree
+#: polynomials (Pell [0,1,2,5,12,29,70] over-fits to degree 5; Fibonacci over-fits too). A
+#: degree-k claim is only CREDIBLE if it is witnessed by a MARGIN of extra points beyond the
+#: k+1 a degree-k polynomial minimally needs: k <= len(seq) - _SEQ_WITNESS_MARGIN - 1. margin=2
+#: gives pell/fib -> None while genuine polynomials keep their exact degree (n^3 from 6 points:
+#: 3 <= 6-2-1 = 3, still credible); margin=3 is too strict (kills legitimate n^3 from 6 points).
+_SEQ_WITNESS_MARGIN = 2
+
+
+def _degree_credible(k: Optional[int], n: int) -> bool:
+    """A degree-k claim is credible only if witnessed by _SEQ_WITNESS_MARGIN extra points:
+    k <= n - _SEQ_WITNESS_MARGIN - 1. None (no claim) is always 'credible' (nothing to over-fit).
+    Pure arithmetic — solver-free."""
+    if k is None:
+        return True
+    return k <= n - _SEQ_WITNESS_MARGIN - 1
+
+
 def seq_felt_degree(seq: list, *, max_k: int = 5,
                     spy: Optional[SolverSpy] = None) -> Optional[int]:
     """FELT read (cheap, solver-free): the sequence's degree = the smallest order k whose
-    k-th finite difference (via the shared order_n_concepts aperture dial) is constant.
-    None if no constant diff <= max_k (the read ABSTAINS: not a low-order polynomial in the
-    index). Passes no spy to any solver; a supplied SolverSpy must stay 0."""
+    k-th finite difference (via the shared order_n_concepts aperture dial) is constant AND is
+    credibly witnessed (k <= len(seq) - _SEQ_WITNESS_MARGIN - 1; see _degree_credible). The
+    witness margin rejects the over-fit where a short sequence's high-order difference is
+    trivially constant by coincidence (Pell/Fibonacci -> None). None if no CREDIBLE constant
+    diff <= max_k (the read ABSTAINS: not a low-order polynomial in the index). Passes no spy
+    to any solver; a supplied SolverSpy must stay 0."""
     from domains.order_n_concepts import nth_order_terms
+    n = len(seq)
     for k in range(0, max_k + 1):
+        if not _degree_credible(k, n):
+            break                                       # further k only less credible
         diffs = [float(_eval_num(t)) for t in nth_order_terms(list(seq), k)]
         if len(diffs) >= 2 and max(diffs) - min(diffs) < 1e-9:
             return k
@@ -992,12 +1018,17 @@ def seq_felt_degree(seq: list, *, max_k: int = 5,
 
 def seq_verify_degree(seq: list, *, spy: Optional[SolverSpy] = None) -> Optional[int]:
     """VERIFY (the expensive/exact step): the true polynomial degree of the sequence in its
-    index by successive exact differencing to a constant. Pings the spy (this is the verify
-    solver; the felt read must not call it)."""
+    index by successive exact differencing to a constant, subject to the SAME scaled witness
+    margin as seq_felt_degree (a degree-k claim is credible only if k <= len(seq) -
+    _SEQ_WITNESS_MARGIN - 1). Applying the margin to BOTH keeps felt==verify (track_j4 S1).
+    Pings the spy (this is the verify solver; the felt read must not call it)."""
     if spy is not None:
         spy()
+    n = len(seq)
     d = list(seq)
     for k in range(len(seq)):
+        if not _degree_credible(k, n):
+            return None                                 # claim no longer credibly witnessed
         if len(d) >= 2 and max(d) - min(d) < 1e-9:
             return k
         if len(d) < 2:
@@ -1027,11 +1058,48 @@ def seq_read_log_degree(seq: list) -> Optional[int]:
     return None
 
 
+def seq_read_linrec2(seq: list) -> Optional[tuple]:
+    """An AUTHORABLE sequence reading, COMPOSED FROM HELD PRIMITIVES (a small EXACT rational
+    2x2 solve + the finite-difference/check dial). CLAIMS a constant-coefficient ORDER-2
+    linear recurrence x[n] = a*x[n-1] + b*x[n-2]: FEEL the (a,b) fit from the first two
+    triples via an exact rational solve (fractions.Fraction, no floats -> no over-fit), then
+    VERIFY the recurrence holds for EVERY later term. Returns the hashable signature
+    ('linrec2', a, b) with a,b as ints where integral (Fibonacci/Lucas -> ('linrec2',1,1);
+    Pell -> ('linrec2',2,1)), else None. Requires >=4 terms, a non-degenerate determinant,
+    and an exact fit across ALL terms. Solver-free: pure arithmetic (no Tarjan/verify
+    solver). This is the feel-then-verify move: the felt claim is the (a,b) fit; the exact
+    all-terms check is the verification."""
+    from fractions import Fraction
+    if len(seq) < 4:
+        return None
+    x = [Fraction(v) for v in seq]
+    # first two triples give: x2 = a*x1 + b*x0 ; x3 = a*x2 + b*x1
+    # solve the 2x2 system exactly (rational). matrix [[x1,x0],[x2,x1]] on (a,b).
+    det = x[1] * x[1] - x[0] * x[2]
+    if det == 0:
+        return None                                     # degenerate -> no unique (a,b)
+    a = (x[1] * x[2] - x[0] * x[3]) / det
+    b = (x[1] * x[3] - x[2] * x[2]) / det
+    # VERIFY the recurrence holds for EVERY later term (exact rational check).
+    for n in range(2, len(x)):
+        if x[n] != a * x[n - 1] + b * x[n - 2]:
+            return None
+    def _norm(f):
+        return int(f) if f.denominator == 1 else f
+    return ("linrec2", _norm(a), _norm(b))
+
+
 #: The sequence domain's authorable readings (composed from held numeric primitives), NOT
 #: in the default read -- seq_extend_repertoire adopts one only when a repeated no-rescue
 #: sequence is verified rescued by it. The sequence-domain twin of _AUTHORABLE_READINGS.
+#: ORDER MATTERS: log_degree is tried BEFORE linrec2, so a geometric sequence (which is ALSO
+#: a linrec2 with a=ratio, b=0) is claimed by log_degree FIRST and keeps its (None,'log_degree')
+#: class key; linrec2 then splits the remaining (None,None) no-rescue bucket, giving Fibonacci
+#: its OWN (None,'linrec2') key distinct from primes' (None,None). dict preserves insertion
+#: order, so iteration honours this priority.
 _SEQ_AUTHORABLE = {
     "log_degree": seq_read_log_degree,
+    "linrec2": seq_read_linrec2,
 }
 _SEQ_REPERTOIRE: dict = {}          # authored sequence readings adopted so far
 
@@ -1068,23 +1136,35 @@ def seq_verify_then_update(seq: list, *, prior_abstained: bool = False,
 
 def seq_extend_repertoire(seq: list, *, spy: Optional[SolverSpy] = None) -> Optional[str]:
     """AUTHOR a sequence reading for a repeated no-rescue sequence: search the authorable
-    numeric-primitive readings for one that produces a defined degree AND is verify-consistent
-    (its structure is confirmed exactly), adopt it into _SEQ_REPERTOIRE, return its name. The
-    sequence-domain twin of extend_repertoire. Verify-gated (spy pinged for the exact check)."""
+    numeric-primitive readings (in order: log_degree, then linrec2) for one that produces a
+    defined reading AND is verify-consistent (its structure is confirmed exactly), adopt it
+    into _SEQ_REPERTOIRE, return its name. The sequence-domain twin of extend_repertoire.
+    Verify-gated (spy pinged for the exact check). The verify gate is reading-specific:
+      · log_degree -> the log-space claim is confirmed by an exact constant-ratio check
+        (a true geometric sequence);
+      · linrec2 -> the (a,b) fit is confirmed by the exact all-terms recurrence check that
+        seq_read_linrec2 already performs (a non-None return IS the verified claim)."""
     for name, fn in _SEQ_AUTHORABLE.items():
         if name in _SEQ_REPERTOIRE:
             continue
         k = fn(seq)
-        if k is not None:
-            # verify the authored reading's structural claim exactly (log-space differencing
-            # is exact for a true geometric sequence: check the ratio is constant).
-            if spy is not None:
-                spy()
+        if k is None:
+            continue
+        # verify the authored reading's structural claim exactly (spy pinged for the check).
+        if spy is not None:
+            spy()
+        if name == "log_degree":
+            # log-space differencing is exact for a true geometric sequence: constant ratio.
             if len(seq) >= 3 and all(seq[i] > 0 for i in seq_indices(seq)):
                 ratios = [seq[i + 1] / seq[i] for i in range(len(seq) - 1)]
                 if max(ratios) - min(ratios) < 1e-9:    # constant ratio == geometric confirmed
                     _SEQ_REPERTOIRE[name] = fn
                     return name
+        elif name == "linrec2":
+            # seq_read_linrec2 already verifies the recurrence holds across ALL terms exactly
+            # (pure rational arithmetic); a non-None return is the verified structural claim.
+            _SEQ_REPERTOIRE[name] = fn
+            return name
     return None
 
 
@@ -1550,24 +1630,32 @@ def _seq_default_read(seq) -> tuple:
     return (False, None, None, "abstained")
 
 
-def seq_authorable_claim(seq) -> Optional[str]:
-    """The NAME of the _SEQ_AUTHORABLE reading whose fn(seq) is not None (else None) — the
-    authorable reading that CLAIMS this sequence. Solver-free: seq_read_log_degree is pure
-    arithmetic (log + finite differencing), no verify solver. This is the non-felt half of
-    the sequence class fingerprint."""
+def seq_authorable_claim(seq) -> Optional[Hashable]:
+    """The FULL SIGNATURE of the _SEQ_AUTHORABLE reading that CLAIMS this sequence (else None)
+    — namespaced by reading name so distinct claims stay distinct. A reading fn returns its own
+    signature (log_degree -> an int degree; linrec2 -> ('linrec2', a, b)); we namespace it as
+    (name, signature) so that DIFFERENT recurrences do NOT collapse: Fibonacci -> ('linrec2',
+    ('linrec2',1,1)) and Pell -> ('linrec2', ('linrec2',2,1)) are DISTINCT classes (they are
+    distinct recurrences; the task requires it), while log_degree geometrics collapse only by
+    their shared log-degree. Solver-free: both readings are pure arithmetic (log/finite-diff for
+    log_degree; an exact rational solve for linrec2), no verify solver. This is the non-felt
+    half of the sequence class fingerprint."""
     for name, fn in _SEQ_AUTHORABLE.items():
-        if fn(seq) is not None:
-            return name
+        sig = fn(seq)
+        if sig is not None:
+            return (name, sig)
     return None
 
 
 def seq_class_key(seq, spy: Optional[SolverSpy] = None) -> Hashable:
-    """SEQUENCE class fingerprint = (seq_felt_degree(seq), name-of-authorable-that-claims-it).
-    Two sequences are the SAME anti-shape iff the SAME reading fails the SAME way: geometric
-    2^n and 4^n -> (None,'log_degree') MATCH; geometric vs cubic -> (None,'log_degree') vs
-    (3,None) DIFFER (the cubic is NOT repelled); geometric vs fibonacci -> (None,'log_degree')
-    vs (None,None) DIFFER (distinct no-rescue classes get distinct anti-shapes). Fully
-    solver-free (both components are felt/arithmetic); a supplied SolverSpy stays 0."""
+    """SEQUENCE class fingerprint = (seq_felt_degree(seq), full-authorable-claim-that-claims-it).
+    Two sequences are the SAME anti-shape iff the SAME reading claims them WITH THE SAME
+    SIGNATURE: geometric 2^n and 4^n -> both (None, ('log_degree', 1)) MATCH; geometric vs cubic
+    -> (None, ('log_degree',1)) vs (3, None) DIFFER (cubic NOT repelled); Fibonacci vs Pell ->
+    (None, ('linrec2', ('linrec2',1,1))) vs (None, ('linrec2', ('linrec2',2,1))) DIFFER (distinct
+    recurrences get distinct anti-shapes — the key carries the (a,b), not just the reading name);
+    Fibonacci vs primes -> vs (None, None) DIFFER. Fully solver-free (both components are
+    felt/arithmetic); a supplied SolverSpy stays 0."""
     return (seq_felt_degree(seq), seq_authorable_claim(seq))
 
 
