@@ -25,6 +25,7 @@ import re as _re
 from substrate.boot_core import boot_core, CORE_SEEDS
 
 _SCALAR = (int, float, str, bool)
+_CONVERSATION_ERROR_SURFACE = "ERROR: no communicative response could be generated."
 
 # Scalar Lit policies (thresholds/weights) seeded onto the agent node as graph
 # data the agent reads (vs Python parameters). Editing a Lit changes behaviour.
@@ -1959,12 +1960,14 @@ class WorldAdapter:
         the turn ends — so it is also where the agent mechanically records what
         it just told the addressee. `substantive` distinguishes a real answer
         (the default) from the terminal honest-floor acknowledgment (passed
-        `substantive=False` at its one call site): a bare 'noted'/'got it' is
+        `substantive=False` at its one call site): a bare acknowledgement is
         not content told, and must not seed believed_concepts with its own
         register words."""
         if inbound is None or not str(text or "").strip():
             return text
         surface = str(text)
+        if surface.strip().lower().rstrip(".!?") == "noted":
+            surface = _CONVERSATION_ERROR_SURFACE
         try:
             self.inner.set_attr(inbound, "comp_reply_text", surface)
             self.inner.set_attr(inbound, "reply_from", str(source))
@@ -2052,12 +2055,11 @@ class WorldAdapter:
              'hello'). A render that merely echoes the bare concept name
              ('acknowledgment', 'greeting') is the renderer's fallback, NOT a
              real surface — it is rejected as the act-name leak.
-          2. the REGISTER TABLE (`surface_for`) — social acts render in the
-             register the agent believes the interlocutor uses ('got it' /
-             'noted' / 'understood'), so an untaught social act renders properly
-             and MATCHES the interlocutor, never leaking its name.
-          3. an HONEST minimal reply (register acknowledgment or 'I have no reply
-             to that.') — a true dead end still speaks, never falls silent."""
+          2. the REGISTER TABLE (`surface_for`) — valid social acts render in
+             the register the agent believes the interlocutor uses, never
+             leaking the act name.
+          3. an explicit conversation error — a true dead end is observable as
+             failure, never disguised as a dismissive acknowledgement."""
         sa = list(self.inner.neighbours(reply_mid, "has_speech_act"))
         if not sa:
             return self._honest_minimal_reply()
@@ -2073,11 +2075,14 @@ class WorldAdapter:
         return self._honest_minimal_reply()
 
     def _honest_minimal_reply(self):
-        """The always-honest floor for the conversational surface: a register-
-        matched acknowledgment ('got it'/'noted'/'understood'), or a fixed honest
-        sentence if even that is unavailable. Mechanical host I/O — an honest
-        'I heard you', never a fabricated content claim, never None/silence."""
-        return self.surface_for("acknowledgment") or "I have no reply to that."
+        """Expose an unhandled conversational dead end as an explicit error.
+
+        A generic acknowledgement would conceal a cognition/dispatch failure
+        and make the agent appear to have accepted a turn it did not process.
+        This is intentionally a fixed diagnostic surface, not a conversational
+        response and not a valid fallback for a missing faculty.
+        """
+        return _CONVERSATION_ERROR_SURFACE
 
     def _honest_self_reply(self, comp):
         """The HONEST self-process floor for a reflexive 'how do you <verb>' / 'how does X
@@ -2784,7 +2789,156 @@ class WorldAdapter:
                     return doc
         except Exception:  # noqa: BLE001
             pass
-        return None
+
+    def _record_communication_interpretation(self, mid, comp=None, *, native_kind=None,
+                                              speech_act=None,
+                                              interaction_mode=None):
+        """Create the single graph-resident interpretation for a communication event.
+
+        The native speech-act classifier and the general comprehension front
+        end are independent evidence sources. They may disagree deliberately
+        on pragmatic cases, but dispatch must not lose that disagreement in
+        transient Python locals. This record makes the selected interpretation,
+        its dispatch path, and the competing native kind auditable by later
+        cognition and gap-health rules. A turn is only one possible interaction
+        mode; streaming, overlap, asynchronous events, and unsolicited signals
+        can use the same event record without inventing a turn boundary.
+
+        This is mechanical state recording. The selected interpretation is the
+        already-produced ``Comprehension``; this method does not invent a new
+        classification or choose a reply.
+        """
+        try:
+            d = (getattr(comp, "dispatch", None) or {}) if comp is not None else {}
+            selected_kind = (getattr(comp, "kind", None) if comp is not None
+                             else speech_act) or "statement"
+            native = native_kind or ""
+            conflict = bool(native and str(native) != str(selected_kind))
+            relation = getattr(comp, "relation", None) if comp is not None else None
+            predicate = d.get("predicate")
+            if isinstance(predicate, dict):
+                predicate = predicate.get("surface")
+            obj = d.get("object")
+            frame = getattr(comp, "frame", None) if comp is not None else None
+            elements = (frame or {}).get("elements") or []
+            first = elements[0] if elements else {}
+            raw = str(getattr(comp, "raw", "") or "")
+            path = str(d.get("path") or ("social" if comp is None else "unknown"))
+            literal_ends_question = int(raw.strip().endswith("?"))
+            literal_mood = (
+                "interrogative" if literal_ends_question
+                or first.get("role") == "focus"
+                or (first.get("role") == "function" and first.get("pos")
+                    in {"copula", "auxiliary", "aux"})
+                else "imperative" if path in {"satisfiable", "honest_no_world"}
+                else "imperative" if first.get("pos") == "verb"
+                and first.get("role") == "content"
+                else "declarative_or_fragment")
+            force_hypothesis = {
+                "instruction": "request_action_or_account",
+                "satisfiable": "request_information",
+                "table": "request_information",
+                "meta": "request_information",
+                "know": "request_information",
+                "statement": "assertion_or_report",
+                "frontier": "unresolved_communication",
+                "social": "social_action",
+            }.get(path, "undetermined")
+            cognitive_goal = {
+                "request_action_or_account": "act_or_answer",
+                "request_information": "answer_or_learn",
+                "assertion_or_report": "update_common_ground",
+                "unresolved_communication": "clarify_or_defer",
+                "social_action": "coordinate_socially",
+            }.get(force_hypothesis, "undetermined")
+            grounding_status = (
+                "unresolved" if path == "frontier" or
+                bool(getattr(comp, "gaps", None)) and path == "statement"
+                else "candidate_grounded")
+            # Language-adapter output: graph arbitration consumes these
+            # language-neutral evidence categories, never English predicates or
+            # word-order cues. The English comprehension front end is currently
+            # the provider; another language adapter can emit the same profile.
+            predicate_lower = str(predicate or "").lower()
+            account_predicates = {
+                "tell", "report", "describe", "explain", "say", "show",
+                "state", "list", "name", "enumerate",
+            }
+            if literal_mood == "interrogative":
+                evidence_force = "information_request"
+            elif path in {"table", "satisfiable", "meta", "know"}:
+                evidence_force = "information_request"
+            elif path in {"instruction", "honest_no_world"}:
+                evidence_force = (
+                    "information_request" if predicate_lower in account_predicates
+                    else "action_request")
+            elif path == "frontier":
+                evidence_force = "repair_or_defer"
+            elif path == "social":
+                evidence_force = "social_action"
+            elif path == "statement" and first.get("role") == "gap":
+                evidence_force = "repair_or_defer"
+            else:
+                evidence_force = "assertion_or_correction"
+            evidence_goal = {
+                "information_request": "answer_or_learn",
+                "action_request": "act_or_clarify",
+                "assertion_or_correction": "update_common_ground",
+                "repair_or_defer": "clarify_or_defer",
+                "social_action": "coordinate_socially",
+            }[evidence_force]
+            attrs = {
+                "schema": "communication_interpretation.v1",
+                "authority": "comprehension" if comp is not None else "speech_act",
+                "status": "selected",
+                "interaction_mode": str(interaction_mode or "turn_compatible"),
+                "event_kind": "utterance",
+                "kind": str(selected_kind),
+                "native_kind": str(native),
+                "speech_act_input": str(speech_act or ""),
+                "dispatch_path": path,
+                "literal_mood": literal_mood,
+                "literal_ends_question": literal_ends_question,
+                "literal_first_role": str(first.get("role") or ""),
+                "literal_first_pos": str(first.get("pos") or ""),
+                "communicative_force_hypothesis": force_hypothesis,
+                "cognitive_goal_hypothesis": cognitive_goal,
+                "grounding_status": grounding_status,
+                "evidence_schema": "communication_evidence.v1",
+                "evidence_force": evidence_force,
+                "evidence_goal": evidence_goal,
+                "evidence_provider": "language_adapter",
+                "evidence_source": "native_kind+comprehension_dispatch+parse",
+                "intent": str(getattr(comp, "intent", "") or ""),
+                "focus": str(getattr(comp, "focus", "") or ""),
+                "reflexive": int(bool(getattr(comp, "reflexive", False))),
+                "fastpath": int(bool(getattr(comp, "fastpath", False))),
+                "predicate": str(predicate or ""),
+                "object": str(obj or ""),
+                "gap_count": float(len(getattr(comp, "gaps", None) or [])),
+                "kind_conflict": int(conflict),
+                "conflict_resolution": ("selected_comprehension"
+                                         if conflict else "agreement"),
+            }
+            if relation:
+                attrs["relation_focus"] = str(relation.get("focus") or "")
+            interpretation = self.s.add_node("CommunicationInterpretation", attrs)
+            self.inner.add_edge_unchecked(interpretation, "interprets", mid)
+            self.inner.add_edge_unchecked(mid, "has_interpretation", interpretation)
+            self.inner.add_edge_unchecked(self.agent, "holds_interpretation",
+                                          interpretation)
+            self.inner.set_attr(mid, "turn_interpretation_id", interpretation)
+            self.inner.set_attr(mid, "turn_interpretation_kind", str(selected_kind))
+            self.inner.set_attr(mid, "turn_interpretation_conflict", int(conflict))
+            self.inner.set_attr(mid, "communication_interpretation_id", interpretation)
+            return interpretation
+        except Exception:  # noqa: BLE001 -- interpretation audit cannot break a turn
+            return None
+
+    # Compatibility name for callers/tests written during the initial
+    # turn-oriented implementation. The canonical ontology is now the
+    # communication event, not the turn.
+    _record_turn_interpretation = _record_communication_interpretation
 
     def _text_decode_question_refs(self, comp, raw: str) -> bool:
         """Mechanical read: does this turn ask to READ/DECODE text in the upload?"""
@@ -3224,6 +3378,8 @@ class WorldAdapter:
         # follow-ups is the tracking rules' job; this is just the mechanical write).
         self._set_current_topic(concept)
         ans = self.answer_about(answer_key)
+        if ans is not None and not self._has_topic_grounding_evidence(str(concept)):
+            ans = None
         if ans is None and aspect:
             try:
                 from domains.topic_grounding import ground_topic_aspect as _ground_aspect
@@ -3235,6 +3391,8 @@ class WorldAdapter:
                 except Exception:  # noqa: BLE001
                     pass
                 ans = self.answer_about(answer_key)
+                if ans is not None and not self._has_topic_grounding_evidence(str(concept)):
+                    ans = None
         if ans is None and not aspect:
             # SELF-HEAL: the agent doesn't hold this topic -> learn it. PREFER
             # PHRASE grounding (a multi-word topic like "three body problem" must
@@ -3261,6 +3419,8 @@ class WorldAdapter:
                 except Exception:  # noqa: BLE001 -- no teacher / teacher failure -> honest miss below
                     pass
             ans = self.answer_about(answer_key)
+            if ans is not None and not self._has_topic_grounding_evidence(str(concept)):
+                ans = None
         # MECHANICAL OUTCOME RECORDING (a datum, not a decision): record on the
         # answer_topic Goal WHAT HAPPENED -- did the answer/ground attempt above
         # produce an answer or not. This is recording a factual outcome, no
@@ -3299,6 +3459,22 @@ class WorldAdapter:
         return (f"I don't hold anything about \u201c{concept}\u201d yet, and I "
                 f"couldn't find it through the sources I have. Tell me about it "
                 f"and I'll remember.")
+
+    def _has_answer_topic_goal_for(self, mid) -> bool:
+        """Whether graph cognition already routed this message to a topic.
+
+        This is an arbitration read, not a language classifier.  An explicit
+        answer-topic goal is more specific than the generic instruction
+        faculty for follow-ups such as an anaphoric "tell me more".
+        """
+        for goal in self.inner.neighbours(self.agent, "has_goal"):
+            if not self.inner.has_node(goal):
+                continue
+            attrs = self.s.node(goal)["attrs"]
+            if (attrs.get("kind") == "answer_topic"
+                    and mid in list(self.inner.neighbours(goal, "comprehends"))):
+                return True
+        return False
 
     def _answer_interlocutor_meta_reply(self, mid):
         """R6 (blind-spot closure, bare first-person routing): the SAME
@@ -3395,7 +3571,7 @@ class WorldAdapter:
                    % result.get("reason", "unrecognised request"))
         if validate is not None and not validate["agree"]:
             return ("I wrote a function for that, but it disagrees with my own "
-                   "prediction (%s), so I won't hand it over. I've noted this "
+                   "prediction (%s), so I won't hand it over. I've recorded this "
                    "as a gap." % validate.get("reason", "exec vs model mismatch"))
         return "Here is the function:\n\n%s" % result["source"]
 
@@ -3860,6 +4036,263 @@ class WorldAdapter:
         """Read only an explicit rule-minted reply; ``None`` means pending."""
         return self._graph_reply_for(mid)
 
+    def _record_conversation_decision(self, option_token, mid):
+        """Record and settle a conversation candidate through the shared
+        motor-decision value vocabulary.
+
+        The option is persistent across turns, so the grounded value is folded
+        back into its learned fast value rather than being discarded with the
+        current turn.
+        """
+        candidate_is_deliberative = str(option_token).startswith(
+            ("transitive", "residual", "follow_up"))
+        self._last_conversation_decision_deeper = bool(candidate_is_deliberative)
+        try:
+            policy = next(iter(self.s.nodes("MotorDecisionPolicy")), None)
+            pattrs = self.s.node(policy)["attrs"] if policy is not None else {}
+            alpha = float(pattrs.get("internalization_gain", 0.35))
+            tolerance = float(pattrs.get("settle_tolerance", 0.15))
+            grounded_by_token = {
+                "direct_fact": 0.90, "direct_relation": 0.80,
+                "transitive_continuation": 0.80, "transitive_fact": 0.75,
+                "transitive_relation": 0.70, "held_frame_continuation": 0.75,
+                "residual_frame": 0.65, "residual_fact": 0.60,
+                "residual_inquiry": 0.55, "follow_up_inquiry": 0.50,
+            }
+            grounded = float(grounded_by_token.get(str(option_token), 0.50))
+            option = next((n for n in self.s.nodes("DecisionOption")
+                           if self.s.node(n)["attrs"].get("token") == str(option_token)), None)
+            if option is None:
+                option = self.s.add_node("DecisionOption", {
+                    "token": str(option_token), "available": 1.0,
+                    "ordinal": float(len(list(self.s.nodes("DecisionOption")))),
+                    "default_value": 0.50, "learned_value": 0.50,
+                    "grounded_value": grounded,
+                    "decision_experience_count": 0.0,
+                })
+            attrs = self.s.node(option)["attrs"]
+            experiences = float(attrs.get("decision_experience_count", 0.0) or 0.0)
+            learned = float(attrs.get("learned_value", attrs.get("default_value", 0.50)) or 0.50)
+            fast = learned if experiences > 0 else float(attrs.get("default_value", 0.50) or 0.50)
+            residual = abs(fast - grounded)
+            settled = fast + alpha * (grounded - fast)
+            # Once the learned proposal is inside the seeded tolerance, the
+            # recurring candidate can settle directly on the fast path.
+            self._last_conversation_decision_deeper = bool(
+                candidate_is_deliberative and residual > tolerance)
+            self.s.set_attr(option, "grounded_value", grounded)
+            self.s.set_attr(option, "learned_value", settled)
+            self.s.set_attr(option, "decision_experience_count", experiences + 1.0)
+            cds = self.s.add_node("ConversationDecisionState", {
+                "token": str(option_token),
+                "settled_candidate": str(option_token),
+                "fast_value": fast,
+                "grounded_value": grounded,
+                "learned_value": settled,
+                "decision_experience_count": experiences + 1.0,
+                "residual": residual,
+                "settle_tolerance": tolerance,
+                "internalization_gain": alpha,
+                "deeper_enabled": int(residual > tolerance),
+                "settle_mode": "deep" if residual > tolerance else "shallow",
+            })
+            self.inner.add_edge_unchecked(cds, "has_option", option)
+            if mid is not None and self.s.has_node(mid):
+                self.inner.add_edge_unchecked(mid, "has_decision_state", cds)
+        except Exception:
+            pass
+
+    def _floor_holding_reply(self):
+        from domains.conversation_action import floor_holding_reply
+        return floor_holding_reply(self.register())
+
+    def _deliberate_turn_continuation(self, mid, text, comp=None):
+        """Phase 1 Dual-Process Turn Gating: on declarative statements, inspect
+        concepts mentioned, determine if there are unrecovered aspects, open
+        implications, or transitive relations via residual_stance or graph knowledge,
+        and generate an active conversational continuation or follow-up inquiry
+        rather than dropping to _honest_minimal_reply()."""
+        mentions = []
+        try:
+            for mn in self.inner.neighbours(mid, "has_mention"):
+                if self.s.has_node(mn):
+                    m_text = self.s.node(mn)["attrs"].get("text", "").lower().strip(self._MENTION_STRIP)
+                    if m_text:
+                        mentions.append(m_text)
+                    for ref in self.inner.neighbours(mn, "refers_to"):
+                        if self.s.has_node(ref) and self.s.node(ref).get("type") == "Concept":
+                            c_name = self.s.node(ref)["attrs"].get("name")
+                            if c_name:
+                                mentions.append(str(c_name).lower())
+        except Exception:
+            pass
+
+        try:
+            content_concepts, _ = self._content_concepts(text)
+            mentions.extend(content_concepts)
+        except Exception:
+            pass
+
+        if comp is not None:
+            try:
+                if getattr(comp, "focus", None):
+                    mentions.append(str(comp.focus).lower())
+                for gap in (getattr(comp, "gaps", None) or []):
+                    if isinstance(gap, dict) and gap.get("surface"):
+                        mentions.append(str(gap["surface"]).lower())
+                if getattr(comp, "dispatch", None) and isinstance(comp.dispatch, dict):
+                    rel = comp.dispatch.get("relation")
+                    if isinstance(rel, dict):
+                        for role in ("subject", "object", "predicate", "oblique"):
+                            val = rel.get(role)
+                            if isinstance(val, dict) and val.get("surface"):
+                                mentions.append(str(val["surface"]).lower())
+            except Exception:
+                pass
+
+        seen_c = set()
+        candidate_concepts = []
+        for c in mentions:
+            clean = c.strip().lower()
+            if clean and clean not in seen_c and len(clean) >= 3 and clean not in {"the", "and", "are", "for", "with", "that", "this"}:
+                seen_c.add(clean)
+                candidate_concepts.append(clean)
+                if clean.endswith("s") and len(clean) > 3:
+                    stem = clean[:-1]
+                    if stem not in seen_c:
+                        seen_c.add(stem)
+                        candidate_concepts.append(stem)
+                if clean.endswith("es") and len(clean) > 4:
+                    stem_es = clean[:-2]
+                    if stem_es not in seen_c:
+                        seen_c.add(stem_es)
+                        candidate_concepts.append(stem_es)
+
+        def _fact_for(c_term):
+            for fact in self.inner.neighbours(self.agent, "knows_fact"):
+                left = self.inner.neighbours(fact, "child.left")
+                if left and self.s.node(left[0])["attrs"].get("form") == c_term:
+                    return self.utterance_for(fact)
+                right = self.inner.neighbours(fact, "child.right")
+                if right and self.s.node(right[0])["attrs"].get("form") == c_term:
+                    return self.utterance_for(fact)
+            return self.answer_about(c_term)
+
+        grounded_concepts = []
+        for c in candidate_concepts:
+            c_node = self._concept_by_name(c)
+            if c_node is not None:
+                has_edges = bool(self.inner.neighbours(c_node, "causal_influence") or
+                                 self.inner.in_neighbours(c_node, "causal_influence") or
+                                 self.inner.neighbours(c_node, "has_part") or
+                                 self.inner.neighbours(c_node, "is_a") or
+                                 self.inner.in_neighbours(c_node, "is_a") or
+                                 _fact_for(c) is not None)
+                if has_edges:
+                    grounded_concepts.append((c, c_node))
+            else:
+                if _fact_for(c) is not None:
+                    grounded_concepts.append((c, None))
+
+        if not grounded_concepts:
+            return None
+
+        # Path A: Known relational fact (1-hop or taught)
+        for c, c_node in grounded_concepts:
+            fact = _fact_for(c)
+            if fact and fact.strip():
+                clean_fact = fact.strip()
+                if clean_fact.lower().rstrip(".!?") != text.strip().lower().rstrip(".!?"):
+                    continuation = clean_fact if clean_fact.endswith((".", "!", "?")) else clean_fact + "."
+                    self._record_conversation_decision("direct_fact", mid)
+                    return continuation
+
+        # Path B: Transitive inference via transitive_ancestors & self_answer
+        from domains import train_of_thought as tot
+        from domains import self_dialogue as sd
+        for c, c_node in grounded_concepts:
+            try:
+                ancestors = tot.transitive_ancestors(self, c)
+            except Exception:
+                ancestors = []
+            for anc in ancestors:
+                try:
+                    frames = sd.held_frames_for_topic(self, anc)
+                    if frames:
+                        ans = sd.self_answer(self, anc)
+                        if ans.get("answered") and ans.get("surface"):
+                            self._record_conversation_decision("transitive_continuation", mid)
+                            return f"Furthermore, {ans['surface']}"
+                except Exception:
+                    pass
+                anc_fact = _fact_for(anc)
+                if anc_fact:
+                    self._record_conversation_decision("transitive_fact", mid)
+                    return f"And {anc_fact}."
+                self._record_conversation_decision("transitive_relation", mid)
+                return f"Indeed, {c} relates to {anc}."
+
+            if c_node is not None:
+                for edge_type in ("causal_influence", "is_a", "has_part"):
+                    for n in self.inner.neighbours(c_node, edge_type):
+                        nm = self.s.node(n)["attrs"].get("name")
+                        if nm and nm != c:
+                            rel_fact = _fact_for(nm)
+                            if rel_fact:
+                                self._record_conversation_decision("direct_fact", mid)
+                                return f"And {rel_fact}."
+                            self._record_conversation_decision("direct_relation", mid)
+                            return f"Indeed, {c} relates to {nm}."
+
+        # Path C: Held frames for the concept itself
+        for c, c_node in grounded_concepts:
+            try:
+                frames = sd.held_frames_for_topic(self, c)
+                if frames:
+                    ans = sd.self_answer(self, c)
+                    if ans.get("answered") and ans.get("surface"):
+                        surf = ans["surface"]
+                        if surf.strip().lower().rstrip(".!?") != text.strip().lower().rstrip(".!?"):
+                            self._record_conversation_decision("held_frame_continuation", mid)
+                            return surf
+            except Exception:
+                pass
+
+        # Path D: Residual stance next topics
+        seen = getattr(self, "_seen_continuation_topics", set())
+        for c, c_node in grounded_concepts:
+            try:
+                nxt_topics = tot.residual_stance(self, {"topic": c, "residual": []}, seen)
+            except Exception:
+                nxt_topics = []
+            for nxt in nxt_topics:
+                seen.add(nxt)
+                self._seen_continuation_topics = seen
+                try:
+                    frames = sd.held_frames_for_topic(self, nxt)
+                    if frames:
+                        ans = sd.self_answer(self, nxt)
+                        if ans.get("answered") and ans.get("surface"):
+                            self._record_conversation_decision("residual_frame", mid)
+                            return f"And {ans['surface']}"
+                except Exception:
+                    pass
+                nxt_fact = _fact_for(nxt)
+                if nxt_fact:
+                    self._record_conversation_decision("residual_fact", mid)
+                    return f"And {nxt_fact}."
+                self._record_conversation_decision("residual_inquiry", mid)
+                return f"How does that connect to {nxt}?"
+
+        # Path E: Active follow-up inquiry when multiple grounded concepts exist
+        primary = grounded_concepts[0][0]
+        secondaries = [c for c, _ in grounded_concepts[1:] if c != primary]
+        if secondaries:
+            self._record_conversation_decision("follow_up_inquiry", mid)
+            return f"How does {primary} connect to {secondaries[0]}?"
+
+        return None
+
     def converse(self, text, speech_act="statement", speaker="user", context=None):
         """One full text-in -> text-out turn. Mechanical host I/O only:
 
@@ -3880,10 +4313,11 @@ class WorldAdapter:
              I?");
           3. the meta reader readback (_meta_reader_reply) — renders the front
              end's question_targets routing;
-          4. the honest-floor rule's reply / the mechanical minimal ack."""
+          4. the honest-floor rule's reply / an explicit conversation error."""
         self.enable_replies()
         self.install_register_lexicon()
         self.note_register(text)
+        self._last_conversation_decision_deeper = False
         try:
             from domains import context_model as _cm
             self._last_context_turn = _cm.observe_turn(self, text, context=context)
@@ -3925,7 +4359,45 @@ class WorldAdapter:
                 self._ensure_comprehension_seeds()
                 self._write_comprehension_to_graph(mid, comp)
 
+        # Phase 1: make the interpretation authoritative and inspectable before
+        # any faculty dispatch. The comprehension record is the selected
+        # interpretation; native speech-act output is retained as comparison
+        # evidence rather than silently discarded.
+        interaction_mode = (context or {}).get("interaction_mode") \
+            if isinstance(context, dict) else None
+        self._record_communication_interpretation(
+            mid, comp, native_kind=self.s.node(mid)["attrs"].get("sak_kind")
+            if self.s.has_node(mid) else None, speech_act=speech_act,
+            interaction_mode=interaction_mode)
+
         self.comprehend()
+        # COGNITIVE ACTION/REPAIR BRIDGE: comprehension has produced the
+        # graph-backed intent, and the conversation_action faculty now reads
+        # that intent to either execute a held instruction or open an honest
+        # clarification repair. This is deliberately before topic/readback
+        # rendering: an instruction or an untyped gap must not be mistaken for
+        # an answerable topic and then hidden behind a generic surface.
+        conversation_action_result = None
+        if comp is not None and speech_act not in self._SOCIAL_ACTS:
+            try:
+                from domains import conversation_action as _ca
+                if _ca.is_ask_back(comp):
+                    conversation_action_result = _ca.ask_back(self, comp, mid)
+                elif (comp.kind == "instruction"
+                      and not self._has_answer_topic_goal_for(mid)):
+                    conversation_action_result = _ca.act_on_instruction(self, comp, mid)
+            except Exception:
+                # A failed action/repair faculty is not allowed to fabricate a
+                # conversational acknowledgement. The normal graph path below
+                # remains responsible for exposing the explicit error floor.
+                conversation_action_result = None
+        if conversation_action_result and conversation_action_result.get("reply"):
+            action_reply = str(conversation_action_result["reply"])
+            self._form_reply_intent_for_text(
+                "request" if conversation_action_result.get("route") == "ask_back" else "inform",
+                action_reply)
+            return self._finish_turn_reply(mid, action_reply,
+                                           source="agent", substantive=True)
         topic_reply = None
         meta_reply = None
         if speech_act not in self._SOCIAL_ACTS:
@@ -3986,7 +4458,7 @@ class WorldAdapter:
             # that answer IS the turn's reply. Any other rule-minted text for
             # the same turn (a self-identity reply off the meta dispatch, the
             # floor) is the misroute the topic goal overrode.
-            self._form_reply_intent_for_text("inform", topic_reply)
+            self._form_reply_intent_for_text("answer", topic_reply)
             return self._finish_turn_reply(mid, topic_reply, source="adapter")
         graph_reply = self._graph_reply_for(mid)
         if meta_reply is not None:
@@ -3994,10 +4466,10 @@ class WorldAdapter:
             # honest-floor reply; a SUBSTANTIVE rule-minted reply still wins.
             graph_reply = self._graph_reply_for(mid, skip_floor=True)
         if graph_reply is not None:
-            self._form_reply_intent_for_text("inform", graph_reply)
+            self._form_reply_intent_for_text("answer", graph_reply)
             return self._finish_turn_reply(mid, graph_reply, source="agent")
         if meta_reply is not None:
-            self._form_reply_intent_for_text("inform", meta_reply)
+            self._form_reply_intent_for_text("answer", meta_reply)
             return self._finish_turn_reply(mid, meta_reply, source="adapter")
 
         replies = [r for r in self.agent_outbound_messages()
@@ -4005,14 +4477,55 @@ class WorldAdapter:
         if replies:
             out = self.emit_reply(replies[-1])
             if out is not None:
+                if speech_act in self._SOCIAL_ACTS:
+                    return self._finish_turn_reply(mid, out, source="agent")
+                ack_surfaces = {"got it", "understood", "i heard you",
+                                _CONVERSATION_ERROR_SURFACE.lower().rstrip(".!?")}
+                if out.strip().lower().rstrip(".!?") not in ack_surfaces:
+                    return self._finish_turn_reply(mid, out, source="agent")
+
+        # Phase 1 Dual-Process Turn Gating on declarative statements:
+        # Prevent premature termination on a generic acknowledgement when
+        # conversational continuation is possible via residual_stance / graph knowledge.
+        if speech_act not in self._SOCIAL_ACTS:
+            try:
+                continuation = self._deliberate_turn_continuation(mid, text, comp=comp)
+            except Exception:
+                continuation = None
+            if continuation is not None:
+                if getattr(self, "_last_conversation_decision_deeper", False):
+                    holder = self._floor_holding_reply()
+                    self._form_reply_intent_for_text("inform", holder)
+                    return self._finish_turn_reply(mid, holder, source="agent",
+                                                   substantive=True)
+                if continuation.strip().endswith("?"):
+                    self._form_reply_intent_for_text("request", continuation)
+                else:
+                    self._form_reply_intent_for_text("inform", continuation)
+                return self._finish_turn_reply(mid, continuation, source="agent", substantive=True)
+
+        if replies:
+            out = self.emit_reply(replies[-1])
+            if out is not None:
+                generic_ack_surfaces = {
+                    "got it", "understood", "i heard you",
+                    _CONVERSATION_ERROR_SURFACE.lower().rstrip(".!?"),
+                }
+                normalized_out = out.strip().lower().rstrip(".!?")
+                if (speech_act not in self._SOCIAL_ACTS
+                        and normalized_out in generic_ack_surfaces):
+                    return self._finish_turn_reply(
+                        mid, self._honest_minimal_reply(),
+                        source="adapter", substantive=False)
                 return self._finish_turn_reply(mid, out, source="agent")
 
-        # Terminal/one-pair-part acts mint no reply Message, but the
-        # conversational surface never falls silent: the mechanical honest
-        # floor ('noted'-class register acknowledgment). Host I/O only —
-        # every rule already had its chance to claim the turn above.
+        # Terminal/one-pair-part acts mint no reply Message. If every cognitive
+        # route failed to claim the turn, expose that failure explicitly rather
+        # than emitting a dismissive register acknowledgement.
         return self._finish_turn_reply(mid, self._honest_minimal_reply(),
                                        source="adapter", substantive=False)
+
+    utterance = converse
 
     # --- production: render a source Term to a surface via graph RenderRules ---
 
@@ -4125,7 +4638,15 @@ class WorldAdapter:
 
     def _persist_held_answer(self, topic: str, text: str):
         """Mechanical graph write: persist a taught topic answer as HeldAnswer
-        data the conversation_topic_reply rules can read back."""
+        data the conversation_topic_reply rules can read back.
+
+        The companion TopicGroundingEvidence is deliberately explicit.  A
+        HeldAnswer is an answer candidate, not by itself proof that the
+        candidate is about the requested referent.  Conversation cognition
+        must be able to follow the evidence path before treating a topic goal
+        as resolved; the topic key is retained as a useful index, but is not
+        the whole epistemic justification.
+        """
         topic = str(topic or "").strip()
         text = str(text or "").strip()
         if not topic or not text:
@@ -4134,9 +4655,18 @@ class WorldAdapter:
             for n in self.s.nodes("HeldAnswer"):
                 if (self.s.node(n)["attrs"].get("topic") or "").strip() == topic:
                     self.inner.set_attr(n, "text", text)
+                    self._set_topic_grounding_fields(n, topic)
+                    self._ensure_topic_grounding_evidence(n, topic)
                     return n
-            ha = self.s.add_node("HeldAnswer", {"topic": topic, "text": text})
+            ha = self.s.add_node("HeldAnswer", {
+                "topic": topic,
+                "text": text,
+                "grounding_referent": topic,
+                "grounding_status": "supported",
+                "grounding_evidence_path": "agent.holds_answer -> HeldAnswer.topic",
+            })
             self.inner.add_edge_unchecked(self.agent, "holds_answer", ha)
+            self._ensure_topic_grounding_evidence(ha, topic)
             # Composition answers are stored under "composition of <concept>"
             # but answer_topic goals key on the bare concept — mirror mechanically.
             low = topic.lower()
@@ -4147,6 +4677,51 @@ class WorldAdapter:
             return ha
         except Exception:  # noqa: BLE001
             return None
+
+    def _has_topic_grounding_evidence(self, topic: str) -> bool:
+        """Read the minimum evidence path required for a topic answer."""
+        for ha in self.s.nodes("HeldAnswer"):
+            attrs = self.s.node(ha)["attrs"]
+            if attrs.get("topic") != topic:
+                continue
+            if (attrs.get("grounding_referent") != topic
+                    or attrs.get("grounding_status") != "supported"
+                    or not attrs.get("grounding_evidence_path")):
+                continue
+            for ev in self.inner.neighbours(ha, "grounded_by"):
+                if not self.s.has_node(ev):
+                    continue
+                ea = self.s.node(ev)["attrs"]
+                if (ea.get("kind") == "topic_answer"
+                        and ea.get("referent") == topic
+                        and ea.get("status") == "supported"
+                        and ea.get("evidence_path")):
+                    return True
+        return False
+
+    def _ensure_topic_grounding_evidence(self, held_answer, topic: str):
+        """Attach the referent-linked evidence record for a HeldAnswer.
+
+        This is mechanical persistence of the teacher/document result.  The
+        graph rules, not this helper, decide whether the record is sufficient
+        to resolve a live answer goal.
+        """
+        for ev in self.inner.neighbours(held_answer, "grounded_by"):
+            if not self.s.has_node(ev):
+                continue
+            attrs = self.s.node(ev)["attrs"]
+            if (attrs.get("kind") == "topic_answer"
+                    and attrs.get("referent") == topic):
+                return ev
+        ev = self.s.add_node("TopicGroundingEvidence", {
+            "kind": "topic_answer",
+            "referent": topic,
+            "status": "supported",
+            "evidence_path": "agent.holds_answer -> HeldAnswer.topic",
+            "source": "held_answer",
+        })
+        self.inner.add_edge_unchecked(held_answer, "grounded_by", ev)
+        return ev
 
     # Salience/rendering caps for the document HeldAnswer bridge (Wave 4) --
     # plain aperture-style config, the same status as `max_sentences`/
@@ -4283,6 +4858,13 @@ class WorldAdapter:
         """Mechanical fulfilment of graph-minted SearchRequest / DetailRequest
         nodes. No routing decisions — the agent's rules mint requests; this
         performs the host I/O and persists results back into the graph."""
+        # The isolated P0-A launcher activates this before legacy adapters can
+        # run.  Normal daemon/conversation workflows never import that guard.
+        try:
+            from evaluation.p0a.legacy_io_guard import deny_direct_io
+            deny_direct_io("world.dispatch_pending_io")
+        except ImportError:
+            pass
         try:
             from domains.fetch_dispatch import (scan_and_search, scan_and_ingest_detail,
                                                 scan_and_sync_ground)
@@ -4407,6 +4989,13 @@ class WorldAdapter:
             if self.s.node(n)["attrs"].get("name") == name:
                 return n
         return None
+
+    def _set_topic_grounding_fields(self, held_answer, topic: str):
+        """Persist the compact read-off of the topic evidence path."""
+        self.inner.set_attr(held_answer, "grounding_referent", topic)
+        self.inner.set_attr(held_answer, "grounding_status", "supported")
+        self.inner.set_attr(held_answer, "grounding_evidence_path",
+                            "agent.holds_answer -> HeldAnswer.topic")
 
     def frame(self, name):
         """NodeID of the Frame named `name`, or None. Pure query."""
@@ -5589,22 +6178,40 @@ class WorldAdapter:
             node, "child.arg", self._meaning_to_graph(arg))
         return node
 
-    def _render_node(self, node):
-        """Render a meaning subgraph node to surface via the relational engine."""
+    def utterance_for(self, meaning):
+        """Render a relational meaning to its surface string via the unified
+        generation pipeline (LanguageProduction.produce() / goal clause realization)
+        with fallback/parity to the graph-resident relational Render engine."""
+        # Meaning is already a graph node (e.g. from answer_about or _render_node)
+        if isinstance(meaning, int) or (hasattr(meaning, "value") and not isinstance(meaning, dict)):
+            lang = self.install_relations_renderer()
+            return self.inner.evaluate(
+                {"type": "Render", "term": {"type": "Var", "name": "src"},
+                 "lang": {"type": "Var", "name": "render_lang"}},
+                {"src": meaning, "render_lang": lang})
+
+        # Route communicative goal frames through unified generation pipeline
+        if isinstance(meaning, dict) and any(
+                k in meaning for k in ("event", "agent", "patient")):
+            try:
+                full = self._realize_frame_reply(meaning)
+                if full is not None and full.strip():
+                    return full.strip()
+            except Exception:
+                pass
+
+        # Relational meaning rendering via graph RenderRules
+        node = self._meaning_to_graph(meaning)
         lang = self.install_relations_renderer()
-        return self.inner.evaluate(
+        out = self.inner.evaluate(
             {"type": "Render", "term": {"type": "Var", "name": "src"},
              "lang": {"type": "Var", "name": "render_lang"}},
             {"src": node, "render_lang": lang})
-
-    def utterance_for(self, meaning):
-        """Render a relational meaning to its surface string via the lexicon +
-        the graph-resident relational RenderRules. The structure is mirrored to
-        graph; the rendering is the Rust Render engine."""
-        out = self._render_node(self._meaning_to_graph(meaning))
         if isinstance(meaning, dict) and meaning.get("force") == "ask" and out:
             out += "?"
         return out
+
+    _render_node = utterance_for
 
     # --- factual Q&A: answer 'what is X?' from a known fact (definitional) ----
 
@@ -5886,6 +6493,82 @@ class WorldAdapter:
             return None
         text = result.get("overt_speech")
         return str(text) if text else None
+
+    def _realize_frame_reply(self, frame, audience_snap=None, *, language="en"):
+        """Route a semantic reply frame through audience design and grammar.
+
+        Audience selection records the terseness rung, while the grounded
+        producer remains authoritative for constituent order and function-word
+        insertion. Required semantic roles stay in the frame passed to grammar.
+        """
+        from domains import audience_driven_production as _adp
+        from domains import predictive_reading as _pr
+
+        goal = dict(frame or {})
+        goal.setdefault("intent", "inform")
+        goal.setdefault("tense", "present")
+        audience_input = audience_snap or self._delivery_snapshot()
+        if "grounded" in audience_input and "system_model" in audience_input:
+            audience = dict(audience_input)
+        else:
+            audience = _adp.audience_model(self, dict(audience_input))
+        concepts = {str(goal[key]) for key in
+                    ("event", "agent", "patient", "location", "recipient")
+                    if goal.get(key)}
+        lexicon = self._lexicon_with_known(
+            [{"form": c, "concept": c} for c in concepts], audience_input)
+        try:
+            selection = _adp.select_utterance(
+                self, concepts, audience, lexicon, n_rungs=5)
+        except Exception as exc:
+            selection = {"utterance": "", "terseness": 0.0,
+                         "grounded_used": False, "error": str(exc)}
+        producer = self._full_text_producer()
+        if producer is None:
+            self._last_frame_realization = {
+                "frame": goal, "audience": audience,
+                "selection": selection, "result": None}
+            return None
+        self._ground_full_text_words(producer.world, goal)
+        intended = [c for c in
+                    (goal.get("event"), goal.get("agent"), goal.get("patient"))
+                    if c]
+        gate_attempts = []
+        for attempt in range(2):
+            result = _pr.realize_goal_clause(
+                producer.world.s, producer, goal,
+                intended_concepts=intended, language=language,
+                allow_fallback=False)
+            surface = result.get("surface") if result else None
+            if not surface:
+                break
+            if goal.get("intent") == "ask" and not surface.rstrip().endswith("?"):
+                surface = surface.rstrip(".!?") + "?"
+            from domains import conceptualizer as _cz
+            gate = _cz.scan_and_monitor(
+                self, lexicon, candidate=surface,
+                intended_concepts=intended, producer=producer, language=language)
+            candidate_gate = gate[-1] if gate else {"recoverable": False,
+                                                     "missing": intended}
+            gate_attempts.append({"attempt": attempt,
+                                  "surface": surface,
+                                  "gate": candidate_gate})
+            if candidate_gate.get("recoverable"):
+                self._last_frame_realization = {
+                    "frame": goal, "audience": audience,
+                    "selection": selection, "result": result,
+                    "gate_attempts": gate_attempts,
+                    "committed": candidate_gate.get("committed")}
+                return surface
+            # One bounded repair pass: ask the same grammar to re-plan with an
+            # explicit mood marker; no unbounded regeneration loop is allowed.
+            goal = dict(goal)
+            goal["mood"] = "explicit"
+        self._last_frame_realization = {
+            "frame": goal, "audience": audience,
+            "selection": selection, "result": result if "result" in locals() else None,
+            "gate_attempts": gate_attempts, "committed": None}
+        return None
 
     def _self_account_frames(self, state):
         """Build goal frames FROM the real self-state: capability frames gated on real graph presence (it really
@@ -9854,13 +10537,13 @@ class WorldAdapter:
     _REGISTER_SURFACES = [
         ("greeting", "casual", "hey!"), ("greeting", "neutral", "hello"),
         ("greeting", "formal", "good day"),
-        ("acknowledgment", "casual", "got it"), ("acknowledgment", "neutral", "noted"),
+        ("acknowledgment", "casual", "got it"), ("acknowledgment", "neutral", "I heard you."),
         ("acknowledgment", "formal", "understood"),
         # a bare `statement` reply is an acknowledgment of what was said.
-        ("statement", "casual", "got it"), ("statement", "neutral", "noted"),
+        ("statement", "casual", "got it"), ("statement", "neutral", "I heard you."),
         ("statement", "formal", "understood"),
         # a received answer / backchannel is acknowledged, not echoed by name.
-        ("answer", "casual", "got it"), ("answer", "neutral", "noted"),
+        ("answer", "casual", "got it"), ("answer", "neutral", "I heard you."),
         ("answer", "formal", "understood"),
         ("backchannel", "casual", "mm-hm"), ("backchannel", "neutral", "I see"),
         ("backchannel", "formal", "indeed"),
