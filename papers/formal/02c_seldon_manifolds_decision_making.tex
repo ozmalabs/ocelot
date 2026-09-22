@@ -1,0 +1,416 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,enumitem,microtype}
+\usepackage[margin=1in]{geometry}
+\usepackage[round,authoryear]{natbib}
+\usepackage{xr-hyper}
+\usepackage{hyperref}
+\externaldocument[SM-]{02_seldon_manifolds_theory_referenced}
+\externaldocument[GE-]{01_law_of_graphic_equalisation_theory_referenced}
+\externaldocument[NM-]{03_law_of_narrative_momentum_theory_referenced}
+\externaldocument[NV-]{04_narrativium_theory_referenced}
+
+\newtheorem{definition}{Definition}[section]
+\newtheorem{proposition}[definition]{Proposition}
+\newtheorem{corollary}[definition]{Corollary}
+\theoremstyle{remark}
+\newtheorem{remark}[definition]{Remark}
+
+\newcommand{\Frame}{\mathcal F}
+\newcommand{\Seldon}{\mathcal S}
+\newcommand{\Target}{\mathcal T}
+\newcommand{\Eligible}{\mathcal E}
+\newcommand{\Pareto}{\mathcal P}
+\newcommand{\Meta}{\operatorname{MetaAnalyse}}
+\newcommand{\Cohere}{\operatorname{Cohere}}
+\newcommand{\Surprise}{\operatorname{Surprise}}
+
+\title{Seldon Manifolds --- Decision Making\\\large Narrative Continuation, Target Shapes, Surprise, and Meta-analysis}
+\author{Matthew Parslow\\Independent Researcher}
+\date{\textbf{Draft \texorpdfstring{\textemdash}{---}\ \PaperDraft}\\[2pt]\PaperDisplayDate \texorpdfstring{\textbullet}{\textperiodcentered}\ document revision \PaperRevision}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[C]{\thepage}
+\fancyfoot[R]{\scriptsize\textsc{\PaperDraft\,r\PaperRevision}}
+\renewcommand{\headrulewidth}{0pt}
+\fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
+  \fancyfoot[R]{\scriptsize\textsc{\PaperDraft\,r\PaperRevision}}\renewcommand{\headrulewidth}{0pt}}
+\input{paper_metadata.tex}
+
+\begin{document}
+\maketitle
+\begin{center}
+\fbox{\parbox{0.92\textwidth}{\small
+\textbf{DRAFT --- \PaperDraft r\PaperRevision} (\PaperDisplayDate).
+Circulated for comment, not as a finished result. This is the decision-making
+companion to \emph{Seldon Manifolds --- Theory} (referred to below as
+\emph{Seldon}) and inherits its definitions, together with those of
+\emph{The Law of Graphic Equalisation --- Theory}, the momentum paper, and
+\emph{Narrativium}. \emph{Seldon} defines a represented geometry of reachable
+futures; this paper specifies a proposed decision grammar over that geometry.
+It does not claim that human, organisational, or artificial agents instantiate
+that grammar. Its criterion is comparative operational usefulness under a
+stated scope, baseline, and inference budget, not abstract truth. Sections
+marked as operational commitments are intended points of attack.}}
+\end{center}
+\vspace{1em}
+
+\begin{abstract}
+A Seldon manifold represents the future states or histories distinguishably
+reachable in a frame under represented counterfactual interventions and boundary
+conditions. It does not by itself decide among them. This paper supplies a
+proposed decision grammar. Decision is evaluated only over the frame's
+represented landscape. The standing Narrative is the continuation requiring
+zero \emph{additional decision inference}; implementation may be costly without
+changing it. A decision is reopened either by represented surprise or by a
+costly, frame-triggered meta-analysis. Direct revision through surprise requires
+a resolution already available within aperture and coherent in the current
+frame; otherwise the surprise may motivate meta-analysis but cannot directly
+replace Narrative.
+
+Targets are represented acceptable shapes in the manifold rather than points
+with error bars. Narrativium supplies a feasibility gate, Pareto comparison does
+not supply selection, and no future self can authorise the transition that first
+installs it. The grammar is agent-neutral: individual, business, state, and
+collective differ through frame contents and coupling, not decision kind. The
+paper makes formal and operational commitments only. It claims no empirical
+validation and no universal optimisation theorem.
+\end{abstract}
+
+\section{Scope: a decision grammar, not an implementation}\label{sec:scope}
+
+\emph{Seldon} defines \(\Seldon_{h,\rho}(\Frame)\), the structured representation
+at horizon \(h\) and resolution \(\rho\) of future histories reachable under
+represented admissible interventions and boundary conditions
+(Definition~\ref{SM-def:seldon}). It distinguishes a local admissibility
+condition from non-zero-horizon future geometry
+(Proposition~\ref{SM-prop:local-vs-manifold}), and represents goals, where
+held, as acceptable subsets (Definition~\ref{SM-def:acceptable}). None of
+those constructions selects an action. This paper concerns that missing
+question: how a frame selects, retains, or reopens a decision over its
+represented future geometry.
+
+The boundary is strict. This is not a theory of search machinery, neural
+activity, runners, writes, motor control, or physical execution. An agent may
+retain a Narrative-based decision where implementation is expensive, delayed,
+or fails. Those are distinct questions about carrying, constraining, or
+realising a decision. An external change that makes no difference to the
+represented landscape makes no direct difference to this decision grammar.
+
+The paper also does not ask whether the grammar is ``true'' in a frame-free
+sense. A proposed grammar is useful only if, in a specified frame class and
+against a stated baseline, it improves prediction of decision persistence or
+revision, or changes selection toward a stated target at an acceptable
+additional inference cost. That is an operational commitment, not an
+ontological claim.
+
+\section{The decision frame}\label{sec:frame}
+
+\begin{definition}[Decision frame]\label{def:decision-frame}
+For a current frame \(\Frame\), let its decision description be
+\[
+D(\Frame)=(A_{\Frame},L_{\Frame},S_{\Frame},\Gamma_{\Frame},N_{\Frame},V_{\Frame},R_{\Frame}),
+\]
+where \(A_{\Frame}\) is aperture, \(L_{\Frame}\) the represented landscape,
+\(S_{\Frame}\) the standing Narrative, \(\Gamma_{\Frame}\) represented
+admissibility, \(N_{\Frame}\) Narrativium, \(V_{\Frame}\) active comparison
+descriptions, and \(R_{\Frame}\) represented residual.
+\end{definition}
+
+Aperture and residual are inherited from Graphic Equalisation
+(Definitions~\ref{GE-def:aperture} and \ref{GE-def:residual}). In particular,
+an aperture omission is absent to the frame, rather than automatically a
+residual. Narrativium is inherited as frame-relative capacity for consequential
+deformation (Definition~\ref{NV-def:narrativium}); it is a state measurement
+and feasibility relation, not expenditure, energy, a conserved balance, or a
+universal utility.
+
+\begin{definition}[Decision domain]\label{def:domain}
+The domain of decision evaluation is \(L_{\Frame}\) only. A candidate is not
+silently assessed as a negative option when it is outside \(A_{\Frame}\) or
+absent from \(L_{\Frame}\).
+\end{definition}
+
+\begin{remark}[Agent neutrality and coupling]\label{rem:coupling}
+The definition applies to an individual, business, state, institution, or
+coalition. At collective scale, aperture may be distributed across offices and
+information systems; Narrative may be carried by institutional memory,
+procedures, and commitments; admissibility may be carried by authority and
+rules; and meta-analysis may require coordination. These are differences in
+representation and cost, not in decision kind.
+
+A collective's partial frames differ by degree and structure of coupling, not
+by ontology. Shared representation, communication, authority, binding
+procedure, memory, commitment, and coordinated capacity can make the partial
+frames more mutually constraining. A so-called group mind is the high-coupling
+end of that continuum, not a distinct kind of agent. Where coupling is weak,
+the proper object of analysis is an interaction among partial frames; where it
+is strong, an effective collective frame can be used at the operative scale.
+\end{remark}
+
+\section{Narrative continuation and decision opening}\label{sec:opening}
+
+The momentum paper defines free continuation as what persists where no rule
+writes against standing history-bearing structure (Definition~\ref{NM-def:free-continuation}). At the decision level, this yields a narrower reading.
+
+\begin{definition}[Narrative default]\label{def:narrative-default}
+If the continuation induced by \(S_{\Frame}\) remains represented and
+admissible, retaining it requires zero \emph{additional decision inference}.
+This says nothing about its implementation, whose cost may be positive,
+negative, delayed, or prohibitive.
+\end{definition}
+
+\begin{definition}[Decision opening]\label{def:opening}
+A standing decision is reopened only by either a represented surprise
+\(\sigma_{\Frame}\), or a current-frame meta-analysis \(m_{\Frame}\):
+\[
+\operatorname{Change}(\Frame)\ \Longrightarrow\
+\Surprise_{\Frame}(\sigma_{\Frame})\ \lor\ \Meta_{\Frame}(m_{\Frame}).
+\]
+Meta-analysis is an additional decision-inference operation. Its cost and the
+conditions that trigger it vary by frame. It is not implementation cost.
+\end{definition}
+
+\begin{proposition}[Direct surprise revision is aperture-resolved]\label{prop:surprise-resolution}
+A surprise directly licenses revision only if it has a resolution \(x\) already
+available in the current aperture and represented landscape, and that resolution
+is admissible and coherent in the current frame:
+\[
+\operatorname{SurpriseRevision}_{\Frame}(\sigma_{\Frame},x)
+\ \Longrightarrow\
+x\in L_{\Frame}\text{ within }A_{\Frame}
+\ \land\ \Gamma_{\Frame}(x)
+\ \land\ \Cohere_{\Frame}(\sigma_{\Frame},x).
+\]
+\end{proposition}
+
+\begin{proof}
+The first conjunct is required by the decision domain
+(Definition~\ref{def:domain}); an unrepresented resolution is not yet a
+candidate. The second is required by admissibility. The third states that a
+resolution cannot borrow its warrant from a successor frame not yet installed.
+Without all three, the mismatch can be represented as surprise but not as a
+directly selectable replacement. \end{proof}
+
+\subsection{Expected non-occurrence is a negative observation}\label{sec:nonoccurrence}
+
+\begin{definition}[Expected non-occurrence]\label{def:nonoccurrence}
+Let \(X\) be a represented event and \(Y\) a represented opportunity condition
+or recurrence interval. The frame holds a negative observation \(\neg X\) over
+\(Y\) only if all of the following hold:
+\begin{enumerate}[label=(\roman*)]
+\item \(\Frame\) represents an expectation that \(X\) occurs under \(Y\), such
+      as a recurrent relation ``\(X\) each \(Y\)'';
+\item \(Y\) is represented as having occurred and the relevant observation
+      interval has elapsed;
+\item the current aperture can distinguish non-occurrence from an undisclosed
+      or unobserved occurrence; and
+\item \(X\) is not represented in that interval.
+\end{enumerate}
+Only then may \(\neg X\) be treated as candidate surprise rather than as
+silence or missing information.
+\end{definition}
+
+\begin{proposition}[Non-occurrence constrains, but does not identify, change]\label{prop:nonoccurrence}
+If an expected non-occurrence satisfies Definition~\ref{def:nonoccurrence}, it
+constrains the represented Seldon manifold by making continuations that require
+\(X\) under the observed \(Y\) non-coherent with the current observation. It
+does not identify a unique hidden change.
+\end{proposition}
+
+\begin{proof}
+The represented recurrence and observed opportunity make continuations requiring
+\(X\) incompatible with the represented absence. Several distinct represented
+causes can remain compatible with that absence: a changed boundary condition, a
+changed intervention, a changed coupling, a changed recurrence, or an
+observation failure not excluded by aperture. Hence the absence narrows the
+represented future geometry without determining one causal explanation.
+\end{proof}
+
+\begin{remark}[Counting what did not happen]\label{rem:nonoccurrence}
+A repeated event stopping is therefore not a mere lack of data. Given the
+represented expectation and adequate aperture, it is data of negative form. It
+may be surprise and thereby open decision. Direct revision still requires the
+aperture-available, frame-coherent resolution of
+Proposition~\ref{prop:surprise-resolution}; otherwise the absence may motivate
+meta-analysis to distinguish the surviving manifold shapes.
+\end{remark}
+
+\begin{remark}[Unresolved surprise]\label{rem:unresolved}
+An unresolved or frame-incoherent surprise may motivate meta-analysis. That
+operation may refine aperture, manifold resolution, active criteria, or the
+relation between them. It does not entail that the Narrative changes; it only
+pays to reopen comparison.
+\end{remark}
+
+\section{Target shapes and feasible selection}\label{sec:targets}
+
+\begin{definition}[Target shape]\label{def:target-shape}
+Where \(\Frame\) represents a Seldon manifold, a target is an acceptable shape
+\[
+\Target_{\Frame,h,\rho}\subseteq\Seldon_{h,\rho}(\Frame),
+\]
+which may contain regions of future states, families of histories, relations,
+or constraints. It is a represented object in \(\Frame\), not a hidden
+privileged destination.
+\end{definition}
+
+\begin{proposition}[A target shape is not a point with an error bar]\label{prop:shape-not-point}
+A point estimate \(\hat z\pm\epsilon\) represents uncertainty about one intended
+location or value. A target shape represents acceptability: distinct
+configurations may be acceptable while nearby configurations may not be. The
+two coincide only if the acceptable set is a small simply connected tolerance
+region around one point.
+\end{proposition}
+
+\begin{proof}
+The first object is indexed by uncertainty around \(\hat z\). The second is
+membership in \(\Target\). A disconnected, non-convex, or constraint-defined
+\(\Target\) cannot in general be recovered from a point and one scalar radius.
+\end{proof}
+
+\begin{definition}[Eligible decision set]\label{def:eligible}
+Let
+\[
+\Eligible_{\Frame}=\left\{x\in L_{\Frame}\ \middle|\
+\Gamma_{\Frame}(x)\ \land\ \text{any applicable Narrativium feasibility gate holds}\right\}.
+\]
+A transition may be desirable yet absent from \(\Eligible_{\Frame}\) because
+its represented consequential deformation is not currently reachable.
+\end{definition}
+
+\begin{proposition}[Pareto comparison does not select]\label{prop:pareto}
+Let \(v_{\Frame}:\Eligible_{\Frame}\to\mathbb{R}^k\) be declared comparison
+dimensions and let \(\Pareto_{\Frame}\) be its non-dominated subset. Membership
+in \(\Pareto_{\Frame}\) does not select a unique candidate.
+\end{proposition}
+
+\begin{proof}
+Two candidates can be mutually non-dominated. Then Pareto comparison supplies
+no ordering between them. A priority order, scalarisation, lexicographic rule,
+or another stated selection relation is still required.
+\end{proof}
+
+After a decision opening, selection can ask whether an eligible transition
+reaches or remains within \(\Target_{\Frame,h,\rho}\), then apply its stated
+selection relation among qualifying histories. Narrativium is still a capacity
+gate, not a value of one target point over another. Absent surprise and absent
+meta-analysis, the standing Narrative remains selected regardless of visible
+non-dominated alternatives.
+
+\section{Self-decision}\label{sec:self}
+
+\begin{proposition}[Successor landscapes are present candidates]\label{prop:self}
+A currently represented transformation \(\tau\) may have a successor decision
+frame
+\[
+\Frame' = \tau(\Frame),
+\]
+with changed aperture, target shape, Narrative, admissibility, or future
+manifold. The current frame evaluates \(\tau\) only through what it represents
+and orders now.
+\end{proposition}
+
+\begin{proof}
+Admissibility conditions are functions of antecedent state by the
+antecedent-state principle (Proposition~\ref{GE-prop:antecedent-state}). The
+newly installed frame cannot authorise the transition that first installs it
+(Corollary~\ref{GE-cor:no-self-auth}). Therefore a successor landscape is a
+current candidate, not a prior authority.
+\end{proof}
+
+\begin{remark}[No homunculus and no future veto]\label{rem:self}
+This is a structural constraint, not a claim that every human or artificial
+system actually makes self-revisions in this way. It permits direct self-change
+under a present frame's rules and capacity, but prevents a successor-only value,
+identity, or order from supplying the initial warrant.
+\end{remark}
+
+\section{Decision quality, implementation, and outcome}\label{sec:quality}
+
+The grammar is not an ideal-decision theory. A normal decision retains Narrative
+without opening. A frame-valid but poor decision can cohere within a limited or
+miscalibrated aperture. A well-considered decision may pay for meta-analysis and
+still fail. Implementation may fail while the decision remains unchanged, and a
+decision may be implemented as selected yet lead to undesirable realised
+consequences. These are distinct diagnosis classes.
+
+This distinction keeps outcome learning correctly typed. A later consequence may
+become represented surprise, which can then have an aperture-available,
+frame-coherent resolution or motivate meta-analysis. It does not make the
+external consequence a retroactive input to the original decision.
+
+\section{Operational commitments and research neighbours}\label{sec:operational}
+
+The operational commitment is comparative. For a stated population, frame
+class, target shape, horizon, baseline, and inference budget, the grammar must
+be tested for:
+\begin{enumerate}[label=(\arabic*)]
+\item predictive value for persistence, surprise, meta-analysis, revision, and
+      decision-relevant consequences;
+\item decision value for target-shape membership or other declared objectives;
+\item cost of representation, review, and meta-analysis; and
+\item transfer limits across aperture, coupling, and horizon.
+\end{enumerate}
+A failure to improve these relative to a baseline is a failure of operational
+usefulness in that scope, not a metaphysical refutation.
+
+Several literatures are close but non-equivalent. Resource-rational
+metareasoning treats additional reasoning as costly and models selection of
+reasoning processes \citep{godara2024}; it does not define Narrative or this
+opening condition. Default research establishes heterogeneous effects of
+preselected options \citep{jachimowicz2019}; it does not establish a general
+history-bearing Narrative law. Active inference supplies a Bayesian policy model
+using prediction and preference models \citep{dacosta2024}; GE residual is not
+thereby variational free energy, prediction error, or Bayesian surprise.
+Multiobjective optimisation confirms that Pareto-optimal alternatives require
+additional preference or selection information for final choice
+\citep{pajasmaa2025}. AGM belief revision provides a formal neighbour for
+retention and change of commitments \citep{agm1985}; it is not identical to
+Narrative revision.
+
+\section{Limits}\label{sec:limits}
+
+The paper does not establish that any nervous system, organisation, country, or
+artificial agent instantiates the complete grammar. It does not derive an
+implementation, an interpersonal Narrativium accounting, a universal target
+shape, a universal meta-analysis trigger, or a unique choice rule. It does not
+make a representation of another frame into access to that frame's actual
+interior. At collective scale it does not posit a categorical group mind; it
+models coupling among partial frames. Its contribution is a proposed
+agent-neutral decision specification over a represented manifold, answerable
+only by bounded comparative operational tests.
+
+\begin{thebibliography}{99}
+
+\bibitem[Alchourr\'on et~al.(1985)]{agm1985}
+Carlos E. Alchourr\'on, Peter G\"ardenfors, and David Makinson.
+On the logic of theory change: Partial meet contraction and revision functions.
+\emph{Journal of Symbolic Logic}, 50(2):510--530, 1985.
+
+\bibitem[da Costa et~al.(2024)]{dacosta2024}
+Lancelot da Costa, Samuel Tenka, Dominic Zhao, and Noor Sajid.
+Active inference as a model of agency.
+\emph{arXiv preprint arXiv:2401.12917}, 2024.
+
+\bibitem[Godara et~al.(2024)]{godara2024}
+Prakhar Godara, Tilman Diego Alem\'an, and Angela J. Yu.
+Metareasoning in uncertain environments: A meta-BAMDP framework.
+\emph{arXiv preprint arXiv:2408.01253}, 2024.
+
+\bibitem[Jachimowicz et~al.(2019)]{jachimowicz2019}
+Jon M. Jachimowicz, Shannon Duncan, Elke U. Weber, and Eric J. Johnson.
+When and why defaults influence decisions: A meta-analysis of default effects.
+\emph{Behavioural Public Policy}, 3(2):159--186, 2019.
+
+\bibitem[Pajasmaa et~al.(2025)]{pajasmaa2025}
+Juuso Pajasmaa, Kaisa Miettinen, and Johanna Silvennoinen.
+Group decision making in multiobjective optimization: A systematic literature review.
+\emph{Group Decision and Negotiation}, 34:329--371, 2025.
+
+\end{thebibliography}
+
+\end{document}

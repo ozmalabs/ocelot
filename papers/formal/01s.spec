@@ -138,9 +138,11 @@ discovered semantics.
 @pull prop:boundary-by-crossing
 
 \section{Time}
-Time is not a substrate dimension. It is inferred by a frame from its own closure cycles, so a frame
-with no closed loop has none, and what the past contributes is only whatever of it is still standing
-now.
+Time is not a substrate dimension. It is a dimension a frame constructs from represented succession.
+A closure cycle is the simplest self-contained, repeatable operational unit for that construction, and
+is therefore the default hypothesis where no finer or externally supplied counter is represented. It
+is not a substrate requirement: a frame cannot establish from inside whether an apparent cycle is
+self-closing, clocked, superframe-scheduled, or realised at a fixed hidden duration.
 
 @pull ax:no-time
 @pull prop:time-inferred

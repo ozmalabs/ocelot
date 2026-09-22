@@ -1,0 +1,533 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,enumitem,microtype}
+\usepackage[margin=1in]{geometry}
+\usepackage{natbib}
+\usepackage{xr-hyper}
+\usepackage{hyperref}
+\externaldocument[GE-]{01_law_of_graphic_equalisation_theory_referenced}
+\externaldocument[MS-]{01b_graphic_equalisation_mind_and_self_grounding}
+\externaldocument[QC-]{01f_graphic_equalisation_qualia_and_consciousness_grounding}
+\externaldocument[NM-]{03_law_of_narrative_momentum_theory_referenced}
+
+\newtheorem{definition}{Definition}[section]
+\newtheorem{proposition}[definition]{Proposition}
+\newtheorem{hypothesis}[definition]{Hypothesis}
+\newtheorem{corollary}[definition]{Corollary}
+\theoremstyle{remark}
+\newtheorem{remark}[definition]{Remark}
+
+\newcommand{\Frame}{\mathcal F}
+\newcommand{\Supp}{\mathcal S}
+\newcommand{\Risk}{\mathcal R}
+\newcommand{\Cost}{\mathcal C}
+
+\title{The Law of Graphic Equalisation --- Total Perspective Vortex Grounding\\\large Self-Model Dependence and the Cost of Cross-Frame Transition}
+\author{Matthew Parslow\\Independent Researcher}
+\date{\textbf{Draft \texorpdfstring{\textemdash}{---}\ \PaperDraft}\\[2pt]\PaperDisplayDate \texorpdfstring{\textbullet}{\textperiodcentered}\ document revision \PaperRevision}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[C]{\thepage}
+\fancyfoot[R]{\scriptsize\PaperFooterStamp}
+\renewcommand{\headrulewidth}{0pt}
+\fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
+  \fancyfoot[R]{\scriptsize\PaperFooterStamp}\renewcommand{\headrulewidth}{0pt}}
+\input{paper_metadata.tex}
+
+\begin{document}
+\maketitle
+\begin{center}
+\fbox{\parbox{0.92\textwidth}{\small
+\PaperNoticeStamp\ This document is the \emph{01g} grounding companion to
+\emph{The Law of Graphic Equalisation --- Theory}, \emph{Mind and Self
+Grounding}, \emph{Qualia and Consciousness Grounding}, and \emph{The Law of
+Narrative Momentum}. It defines the Total Perspective Vortex as a recursive
+failure of a demand for total perspective. Its positive account is bounded:
+frames construct models, bridges, and costly transitions under support
+conditions. It neither makes a clinical classification nor treats a model of
+another frame as possession of that frame's experience.}}
+\end{center}
+\vspace{1em}
+
+\begin{abstract}
+The phrase ``Total Perspective Vortex'' can sound as though it names an
+extraordinary mental state. This paper uses it instead as a defined formal term:
+the recursive failure produced by demanding a complete, frame-free total
+perspective from a finite frame. Graphic Equalisation already gives the reason a
+view is situated, and Mind and Self Grounding establishes that a self-model is
+constructed rather than complete. This paper does not reopen either result. It
+tracks their joint consequence for moving between perspectives. A frame $F$
+organises an item $x$ as $P_F(x)$, carries a self-model $M_F(F)$, and can infer a
+model $M_F(K)$ of another frame $K$ without thereby instantiating $K$'s
+perspective. A mediating frame $W$ can construct a bounded bridge $B^W_{F,K}$
+and a representational transition $\tau^W_{F\to K}$. Such a transition is not a
+leap outside perspective: it is a new situated construction, assessed relative
+to support $S_W$.
+
+Narrative Momentum supplies the cost form. Reusing carried organisation is the
+free continuation; altering it requires a specified intervention. Accordingly,
+this paper defines conditional transition cost
+$C_\tau(\tau\mid S_W)$ and a conditional self-model risk ordering. The latter
+increases, within a specified grounding and with relevant support held fixed,
+when a transition changes an organisation on which the frame's self-model is
+more dependent, central or coupled, less redundant, and less supported. It is a
+conceptual conditional quantity, not a clinical score, a universal numerical
+law, evidence that the transition is true, or a credential for any experience.
+The paper ends by specifying calibration tests and falsifiers for the bridge and
+cost claims.
+\end{abstract}
+
+\section{Scope, dependency, and terminology guard}\label{sec:scope}
+This is a focused Graphic Equalisation companion. It inherits the relational
+floor, the running graph, frame-relative grounding, and refusal of a view from
+nowhere from \emph{Graphic Equalisation}; it inherits the structural
+incompleteness of self-models from \emph{Mind and Self Grounding}; and it
+inherits the reuse-versus-alteration cost form from \emph{Narrative Momentum}.
+It adds neither a consciousness theory nor a general proof that self-models are
+incomplete. Its narrower question is what a frame can construct when it tries to
+relate its perspective to another perspective without smuggling in a total view.
+
+\paragraph{Terminological guard.} \emph{Total Perspective Vortex} (TPV) is a
+term defined by this paper. It is not attributed here to a literary, clinical, or
+scientific source. It names a failed demand and its recursive repair attempt, not
+a diagnosis, a disorder, a special capacity, or a credential. In particular, this
+paper does not claim that derealisation, disorientation, distress, or any other
+reported condition is required for, evidences, or authenticates the construction
+described here. Questions of clinical meaning, care, prevalence, and measurement
+are outside its scope.
+
+Three distinctions keep the claim bounded. First, $M_F(K)$ is an inferred model
+of $K$ \emph{in $F$}; it is not direct possession of $K$'s experience, a
+frame-free comparison class, or proof that $F$ has reproduced every relation
+operative in $K$. Second, a transition cost is a cost of alteration under named
+conditions, not a measure of truth, value, courage, severity, or reality.
+Third, the formal order introduced below is conditional on a chosen grounding;
+it is not an empirical numerical law until a grounding supplies observables,
+units, and a measurement procedure.
+
+The nearest established vocabulary is adjacent rather than identical. Predictive
+coding models treat perceptual processing as hierarchically organised prediction
+and residual error \citep{raoballard1999,friston2010}; Metzinger's account makes
+self-model transparency a central constraint \citep{metzinger2003,metzinger2020};
+and metacognition research studies measurable divergence between confidence and
+performance \citep{fleming2024}. Those accounts concern particular theoretical or
+empirical machinery. The contribution here is the arrangement of frame-relative
+perspective, bridge construction, and conditional alteration cost. It makes no
+claim that any cited account establishes the present formalism.
+
+\section{Frames, aperture, and perspective}\label{sec:frames}
+A frame is a locus at which distinctions are made. Its aperture is the set and
+grain of distinctions it can currently organise; it is not a hidden container of
+all distinctions it does not presently hold. Let $x$ denote an item, event, or
+relation as individuated at a containing level.
+
+\begin{definition}[Frame-relative perspectival organisation]
+For a frame $F$, \emph{frame-relative perspectival organisation} is
+\[
+ P_F(x)=\operatorname{Org}_F(x;A_F,H_F,\Gamma_F),
+\]
+where $A_F$ is F's operative aperture, $H_F$ its carried, currently operative
+history-bearing structure, and $\Gamma_F$ its admissibility grammar. $P_F(x)$ is
+not an item copied unchanged into $F$; it is the organisation $F$ can make and
+use of $x$ under those conditions.
+\end{definition}
+
+This notation does not turn perspective into an inner picture. It names an
+operative organisation: distinctions that are available, related, and
+consequential to F's continuation. The same $x$ can support different $P_F(x)$
+and $P_K(x)$ without either difference licensing a frame-free residual. A
+containing frame can compare relations that neither lower frame represents, but
+that comparison is $P_W(\cdot)$ and therefore carries W's aperture and grammar.
+
+\begin{remark}[Aperture is a boundary, not a defect]
+A finite aperture neither makes a frame irrational nor prevents it from learning,
+modelling, or correcting. It fixes the condition under which a perspective is a
+perspective: F's organisation is made from a location with a finite operative
+vocabulary. An absent distinction is not thereby a value of zero, and an
+unavailable relation is not direct evidence that no frame can hold it.
+\end{remark}
+
+\section{Carried trajectory, self-model, and model of another}\label{sec:models}
+A frame carries a trajectory through its own running organisation. To use that
+trajectory as an object of reasoning, it constructs a representational model;
+that model is not identical with the carried course. This is the inherited
+self-model distinction, used here only as a dependency.
+
+\begin{definition}[Self-model and other-model]
+$M_F(F)$ is the model of F that F can construct, retain, and use under its
+operative aperture. For another frame $K$, $M_F(K)$ is F's inferred model of K:
+the organisation F uses to predict, interpret, coordinate with, or otherwise
+reason about K.
+\end{definition}
+
+The subscripts are load-bearing. $M_F(K)$ may incorporate reports, observed
+consequences, shared records, and a model of how K organises an item. It remains
+F's model. Replacing $M_F(K)$ with $P_K(x)$ erases the relation that needs
+explaining: F has constructed a representation \emph{about} K, not stepped into
+a view from nowhere or acquired K's direct experience. Conversely, treating the
+model as worthless because it is not identity is another error: a model can be
+calibrated, useful, and revisable without being total.
+
+\begin{definition}[Carried trajectory]
+Let $T_F=\langle P_{F,t}(x)\rangle_{t\leq n}$ denote the selectively retained,
+currently operative succession of F's perspectival organisation. The carried
+trajectory is the part of $T_F$ represented in present support and available to
+shape F's next organisation.
+\end{definition}
+
+The qualification ``selectively retained'' is essential. Narrative Momentum does
+not treat all past states as equally carried; it treats the history-bearing
+structure still operative in the present as what persists. Hysteresis is a close
+example: present response can retain selected branch or extremum information
+without retaining a total history \citep{mayergoyz1991,mayergoyz2003}. In an
+inferential setting, belief revision likewise studies how a change can preserve
+as much of an existing set as the specified revision permits \citep{agm1985}.
+Neither literature proves the present account; both identify the reuse and
+alteration structure that the account requires.
+
+\section{The Total Perspective Vortex and non-totalisation}\label{sec:vortex}
+The demand that begins the vortex is: ``construct one perspective that is
+complete, frame-free, and total over all perspectives.'' A finite frame can
+respond by adding a model of itself, then a model of that model, then a
+containing observer of both. The recursion changes the represented object but
+never supplies the demanded location.
+
+\begin{definition}[Total Perspective Vortex]
+The \emph{Total Perspective Vortex} is the recursive failure of a frame's demand
+for a complete, frame-free total perspective: every proposed totalising model is
+constructed in a finite frame, so its conditions of construction are relocated
+rather than eliminated; adding a model of those conditions restarts the same
+demand at the containing organisation.
+\end{definition}
+
+\begin{proposition}[Non-totalisation]\label{prop:nontotalisation}
+No finite frame obtains a complete, frame-free total perspective. A containing
+observer relocates the aperture and self-model dependency from F to the
+containing frame; it does not solve them.
+\end{proposition}
+
+This is not a second proof of generic self-model incompleteness. It is the direct
+consequence of applying the inherited frame condition to the stronger demand for
+totality. If $W$ represents F and K, W can construct relations unavailable to
+either. But its representation is $P_W(\cdot)$, conditioned by $A_W$, $H_W$, and
+$\Gamma_W$. Naming a still larger $V$ repeats the relocation. The result does
+not forbid increasingly adequate models or multi-frame coordination. It forbids
+calling any finite, situated construction the completion of a frame-free total
+perspective.
+
+\begin{corollary}[No vortex is required for ordinary modelling]
+F need not demand totalisation in order to model K, revise a self-model, or
+construct a useful bridge. The vortex is a failure mode of an impossible demand,
+not the price of perspective-taking itself.
+\end{corollary}
+
+\section{Jumping off the tower: the cross-frame bridge}\label{sec:bridge}
+``Jumping off the tower'' names the practical formal move: stop trying to
+complete an infinite tower of observers and instead specify the finite bridge a
+containing frame can actually construct. This is not an escape from frames. It
+is a change from totalisation to accountable mediation.
+
+\begin{definition}[Cross-frame bridge]
+Given frames F and K, a \emph{cross-frame bridge} in mediating frame W is
+\[
+ B^W_{F,K}=\langle E^W_{F,K},\ \Pi^W_{F,K},\ \Lambda^W_{F,K}\rangle,
+\]
+where $E^W_{F,K}=\langle E^W_F,E^W_K\rangle$ is the evidence, record, or
+contact relation W admits concerning F and K; $\Pi^W_{F,K}$ is W's
+correspondence or translation procedure; and $\Lambda^W_{F,K}$ states the
+bridge's loss, grain, and conditions of use. From its admitted evidence, W can
+construct $M_W(F)$, $M_W(K)$, $\widehat P^W_F(x)$, and
+$\widehat P^W_K(x)$. These W-indices are load-bearing: they are bounded
+constructions about existing frames, not F- or K-local organisation imported
+without mediation.
+\end{definition}
+
+A bridge can use shared language, behavioural regularities, measurements,
+reports, jointly constrained tasks, or formally specified mappings. Its quality
+is not guaranteed by its existence. The bridge must state what it preserves, what
+it leaves unrepresented, and which counterevidence would require revision. The
+model-of-another claim is therefore weaker and more useful than possession: it
+makes coordination and correction possible while retaining the difference
+between a construction and the perspective it models.
+
+The derivation posits F and K as existing frames; it does not grant W exclusive,
+complete, or direct understanding of either. $P_F(x)$ remains the organisation
+operative in F, but it is not an input datum available to a W-mediated procedure.
+W works through $E^W_F$ and the constructions it can make from that admitted
+relation. Another containing frame can construct a different or finer relation
+to F without any one representation exhausting F.
+
+\begin{definition}[Representational transition]
+A \emph{representational transition} through W is a procedure
+\[
+ \tau^W_{F\to K}:\bigl(E^W_F,M_W(F),B^W_{F,K}\bigr)
+ \longmapsto \widehat P^W_K(x),
+\]
+that produces a W-indexed, bridge-limited representation $\widehat P^W_K(x)$ of
+how K might organise x. The arrow denotes constructed transformation, not
+transport of F into K or acquisition of K's experience.
+\end{definition}
+
+The transition is deliberately asymmetric. $\tau^W_{F\to K}$ begins with W's
+admitted relation to F and ends in a representation W can hold about K. A reverse
+construction has its own bridge, losses, and conditions. Equality, invertibility,
+or mutual transparency cannot be inferred from notation alone.
+
+\section{Transition cost and self-model risk}\label{sec:cost-risk}
+The bridge answers what can be constructed; it does not say what must be altered
+to use the construction. That question has the same shape as Narrative Momentum.
+A continuation that reuses the relevant carried structure is free with respect to
+that alteration; a continuation that requires the structure to be rewritten,
+bypassed, or made inoperative pays the specified alteration cost. Path-dependence
+and increasing-returns research provides familiar local instances in which
+historically selected structures become harder to abandon \citep{arthur1989,david1985,pierson2000}.
+
+\begin{definition}[Conditional transition cost]
+A \emph{cost grounding} $\mathfrak C$ specifies a transition comparison class,
+a cost domain $(\mathbb C_{\mathfrak C},\preceq_{\mathfrak C})$, its units or
+ordinal rule, and the support configuration $S_W$ under which comparisons are
+made. The \emph{conditional transition cost} is the value
+\[
+ C^{\mathfrak C}_\tau\bigl(\tau^W_{F\to K}\mid S_W\bigr)
+ \in\mathbb C_{\mathfrak C},
+\]
+which $\mathfrak C$ assigns to constructing and maintaining the transition while
+preserving its stated conditions. It is undefined when no comparison class, cost
+order, or usable support condition has been supplied.
+\end{definition}
+
+For a chosen transition class, let $H^\star$ be the carried organisation relevant
+to that class. Its reuse-versus-alteration form is
+\[
+ C^{\mathfrak C}_\tau(\tau\mid S_W)=
+ C^{\mathfrak C}_{\mathrm{reuse}}(\tau\mid S_W)
+ \oplus \Delta^{\mathfrak C}_{\mathrm{alter}}(H^\star,\tau\mid S_W),
+ \qquad \Delta^{\mathfrak C}_{\mathrm{alter}}\succeq_{\mathfrak C}0.
+\]
+Here $\Delta^{\mathfrak C}_{\mathrm{alter}}=0$ when $\tau$ reuses $H^\star$.
+Where $\tau$ requires $H^\star$ to be altered, bypassed, or made inoperative,
+$\Delta^{\mathfrak C}_{\mathrm{alter}}$ is the specified alteration cost. This
+equality applies only when $\mathfrak C$ supplies an additive cost currency.
+Where it supplies only an ordinal comparison, the invariant claim is narrower:
+an otherwise matched transition that reuses $H^\star$ ranks no higher in
+alteration burden than one that requires its alteration. Neither form assumes a
+universal, monetary, conscious, or shared unit. In the free-continuation case,
+zero alteration increment in an additive implementation does not imply that
+total activity is costless in a containing frame.
+
+\begin{remark}[Reuse does not make a transition truth-preserving]
+Reuse identifies the carried organisation that avoids further alteration cost in
+the selected class. It does not establish that the organisation is adequate,
+true, or normatively preferable. A bridge may reuse a badly calibrated model and
+still require revision on independent evidence.
+\end{remark}
+
+\begin{definition}[Conditional self-model risk ordering]
+A \emph{risk grounding} $\mathfrak R$ specifies a comparison class
+$\mathcal T_{\mathfrak R}$, an ordered risk domain
+$(\mathbb Q_{\mathfrak R},\preceq_{\mathfrak R})$, four ordered factor domains
+$(\mathbb D_{\mathfrak R},\preceq_D)$,
+$(\mathbb C_{\mathfrak R},\preceq_C)$,
+$(\mathbb R_{\mathfrak R},\preceq_R)$, and
+$(\mathbb S_{\mathfrak R},\preceq_S)$, and maps
+\[
+ d,c,r,s:\mathcal T_{\mathfrak R}
+ \longrightarrow
+ \mathbb D_{\mathfrak R},\mathbb C_{\mathfrak R},
+ \mathbb R_{\mathfrak R},\mathbb S_{\mathfrak R},
+\]
+respectively measuring self-model dependence, centrality or coupling,
+redundancy, and post-transition remaining support. Each factor order is oriented
+so that larger elements mean more of the named factor. The initial support
+configuration is $S_W^0$; $s_\tau$ is what remains after the particular
+transition and is therefore not held fixed by conditioning on $S_W^0$. The risk
+map is typed as an order-preserving map
+\[
+ \Phi_{\mathfrak R}:
+ \mathbb D_{\mathfrak R}\times\mathbb C_{\mathfrak R}
+ \times\mathbb R_{\mathfrak R}^{\mathrm{op}}
+ \times\mathbb S_{\mathfrak R}^{\mathrm{op}}
+ \longrightarrow\mathbb Q_{\mathfrak R},
+\]
+and defines
+\[
+ \Risk^{W,\mathfrak R}_F(\tau\mid S_W^0)=
+ \Phi_{\mathfrak R}(d_\tau,c_\tau,r_\tau,s_\tau).
+\]
+This orders vulnerability to loss of calibration, continuity, or bridge use under
+the selected grounding; it is not a clinical score or a universal numerical law.
+\end{definition}
+
+\begin{hypothesis}[Conditional dependence risk]\label{hyp:conditional-risk}
+For $\tau_1,\tau_2\in\mathcal T_{\mathfrak R}$ with the same target,
+bridge-quality criterion, initial support $S_W^0$, and measurement grounding,
+if $d_{\tau_1}\succeq_D d_{\tau_2}$,
+$c_{\tau_1}\succeq_C c_{\tau_2}$,
+$r_{\tau_1}\preceq_R r_{\tau_2}$, and
+$s_{\tau_1}\preceq_S s_{\tau_2}$, with at least one strict inequality, then
+\[
+ \Risk^{W,\mathfrak R}_F(\tau_2\mid S_W^0)
+ \prec_{\mathfrak R}
+ \Risk^{W,\mathfrak R}_F(\tau_1\mid S_W^0).
+\]
+An intervention may add initial support or redundancy, thereby defining a new
+comparison configuration; it cannot be described as holding $S_W^0$ fixed.
+Neither a higher risk order nor a higher transition cost establishes the truth,
+value, or clinical meaning of the transition.
+\end{hypothesis}
+
+The conditionals do the work. The order applies only after a risk grounding
+supplies its comparison class, observables, and ordering rule. A false model can
+be expensive to alter and a true correction can be cheap when support and
+redundancy are strong. Conversely, a low cost neither proves safety nor truth.
+The claim is that the named configuration determines why formally similar
+transitions can have different alteration burdens, and that this claim can break
+at a specified measurement boundary.
+
+\section{Failure modes, calibration, tests, and falsifiers}\label{sec:tests}
+The account fails if its limits are silently removed. Four recurrent mistakes
+provide direct calibration checks.
+\begin{enumerate}[leftmargin=*]
+\item \emph{Totalisation error:} treat a containing model as a frame-free view.
+The repair is to index the construction to W and state $A_W$, $\Gamma_W$, and
+its bridge conditions.
+\item \emph{Possession error:} treat $M_W(K)$ or $\widehat P^W_K(x)$ as K's
+direct experience. The repair is to preserve the model, bridge, and target
+indices and list unrepresented relations.
+\item \emph{Cost-as-truth error:} infer that difficulty authenticates the
+transition. The repair is an independent bridge calibration: compare its
+predictions or coordination outcomes with admitted evidence, not with its cost.
+\item \emph{Clinical reification error:} promote the formal variables into a
+diagnosis, a severity ranking, or a required phenomenology. The repair is to
+keep them as conditional structural quantities until an appropriate empirical
+and ethical measurement programme independently licenses more.
+\end{enumerate}
+
+\paragraph{Calibration protocol.} For a specified application, first declare a
+cost grounding $\mathfrak C$ and risk grounding $\mathfrak R$: their comparison
+classes, units or ordering rules, initial support $S_W^0$, and independently
+observable measures for $d_\tau,c_\tau,r_\tau,s_\tau$. Then construct at least
+two bridges with their losses stated. A bridge earns use only insofar as it
+improves specified prediction, coordination, compression, or error detection
+relative to an available comparison; it is not validated by eloquence or by an
+assertion of empathy. Compare transitions within the declared class. An
+intervention that adds redundancy or support creates a new initial configuration;
+the hypothesis predicts lower ordered risk only when the added relation
+independently preserves or replaces the relevant support, not when it is merely
+additional description.
+
+\begin{proposition}[Falsifiers]\label{prop:falsifiers}
+The framework's claims are exposed at three levels. The non-totalisation result
+fails if a finite construction can supply a complete, frame-free perspective
+while retaining no unrepresented construction conditions. The bridge account
+fails if a purportedly unmediated transition can be shown to contain neither
+admitted evidence, translation, nor loss conditions while still relating
+non-identical apertures. The conditional-risk hypothesis fails in a grounded measurement programme if,
+within its declared comparison class and common initial support $S_W^0$,
+independently measured increases in dependence or coupling, decreases in
+redundancy, and decreases in post-transition remaining support fail to order
+risk as specified across the relevant cases.
+\end{proposition}
+
+The last exposure is deliberately not a universal prediction. A negative result
+in one implementation can locate a bad operationalisation of $d,c,r,s$, a
+missing support variable, or a failure of the hypothesised ordering in that
+class. It cannot be repaired by declaring cost to be truth or by relabelling an
+ordinary disagreement as a vortex.
+
+\section{Prior art, relation to 01b/01f/03, and conclusion}\label{sec:conclusion}
+This paper's relation to its neighbouring documents is division of labour.
+\emph{Mind and Self Grounding} establishes that a self-model is constructed
+under a finite aperture and distinguishes calibration from completeness; 01g
+uses that result as the source of self-model dependence but does not repeat its
+generic proof. \emph{Qualia and Consciousness Grounding} concerns whether
+determinate phenomenal organisation requires a second ontological kind; 01g
+does not reopen that question and does not infer experience from bridge
+construction. \emph{Narrative Momentum} supplies the present-structure and
+reuse-versus-alteration form; 01g applies it specifically to cross-frame
+representational transition rather than claiming a new law of history.
+
+The adjacent research record supplies pieces, not a hidden proof. Predictive
+coding supplies models of hierarchical inference and residual updating
+\citep{raoballard1999,friston2010}. Metzinger develops a substantial account of
+self-model transparency \citep{metzinger2003,metzinger2020}; Fleming reviews
+measurable calibration in metacognitive confidence \citep{fleming2024};
+hysteresis, path dependence, and AGM revision provide established analyses of
+retained state, lock-in, and conservative change
+\citep{mayergoyz1991,mayergoyz2003,arthur1989,david1985,pierson2000,agm1985}.
+None establishes a complete perspective, and none is claimed to validate a
+clinical use of TPV.
+
+The demystification is exact. The Total Perspective Vortex is not a hidden realm
+behind ordinary perspective-taking. It is what occurs when a finite frame demands
+a view that would have to erase the very aperture and construction through which
+it is made. The alternative is not resignation or solipsism. It is finite,
+inspectable bridge construction: model another frame as another frame; state the
+bridge and its losses; reuse what carries forward where that is appropriate; and
+name the conditional cost of altering what the self-model depends on. A
+containing observer can improve the bridge, but it relocates rather than abolishes
+the conditions of perspective. That boundary is the result.
+
+\begin{thebibliography}{99}
+
+\bibitem[Alchourr\'on et~al.(1985)]{agm1985}
+Carlos E. Alchourr\'on, Peter G\"ardenfors, and David Makinson.
+\newblock On the logic of theory change: Partial meet contraction and revision functions.
+\newblock \emph{Journal of Symbolic Logic}, 50(2):510--530, 1985.
+
+\bibitem[Arthur(1989)]{arthur1989}
+W. Brian Arthur.
+\newblock Competing technologies, increasing returns, and lock-in by historical events.
+\newblock \emph{The Economic Journal}, 99(394):116--131, 1989.
+
+\bibitem[David(1985)]{david1985}
+Paul A. David.
+\newblock Clio and the economics of QWERTY.
+\newblock \emph{American Economic Review}, 75(2):332--337, 1985.
+
+\bibitem[Fleming(2024)]{fleming2024}
+Stephen M. Fleming.
+\newblock Metacognition and confidence: A review and synthesis.
+\newblock \emph{Annual Review of Psychology}, 75(1):241--268, 2024.
+
+\bibitem[Friston(2010)]{friston2010}
+Karl Friston.
+\newblock The free-energy principle: a unified brain theory?
+\newblock \emph{Nature Reviews Neuroscience}, 11(2):127--138, 2010.
+
+\bibitem[Mayergoyz(1991)]{mayergoyz1991}
+Isaak D. Mayergoyz.
+\newblock \emph{Mathematical Models of Hysteresis}.
+\newblock Springer, New York, 1991.
+
+\bibitem[Mayergoyz(2003)]{mayergoyz2003}
+Isaak D. Mayergoyz.
+\newblock \emph{Mathematical Models of Hysteresis and Their Applications}.
+\newblock Academic Press, second edition, 2003.
+
+\bibitem[Metzinger(2003)]{metzinger2003}
+Thomas Metzinger.
+\newblock \emph{Being No One: The Self-Model Theory of Subjectivity}.
+\newblock MIT Press, Cambridge, MA, 2003.
+
+\bibitem[Metzinger(2020)]{metzinger2020}
+Thomas Metzinger.
+\newblock Self-modeling epistemic spaces and the contraction principle.
+\newblock \emph{Cognitive Neuropsychology}, 37(3--4):197--201, 2020.
+
+\bibitem[Pierson(2000)]{pierson2000}
+Paul Pierson.
+\newblock Increasing returns, path dependence, and the study of politics.
+\newblock \emph{American Political Science Review}, 94(2):251--267, 2000.
+
+\bibitem[Rao and Ballard(1999)]{raoballard1999}
+Rajesh P. N. Rao and Dana H. Ballard.
+\newblock Predictive coding in the visual cortex: a functional interpretation of some extra-classical receptive-field effects.
+\newblock \emph{Nature Neuroscience}, 2:79--87, 1999.
+
+\end{thebibliography}
+
+\end{document}

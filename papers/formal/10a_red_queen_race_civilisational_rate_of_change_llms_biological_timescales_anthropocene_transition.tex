@@ -1,0 +1,420 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{natbib}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue}
+\input{paper_metadata.tex}
+
+\newtheorem{definition}{Definition}
+\newtheorem{proposition}[definition]{Proposition}
+\newtheorem{remark}[definition]{Remark}
+
+\title{Cost-Floor Compression, the AI Wedge, and Civilisational Transition\\\large A Conditional GE Assessment}
+\author{Matthew Parslow\\Independent Researcher}
+\date{\textbf{Draft \texorpdfstring{\textemdash}{---}\ \PaperDraft}\\[2pt]\PaperDisplayDate\ \texorpdfstring{\textbullet}{\textperiodcentered}\ document revision \PaperRevision}
+
+\begin{document}
+\maketitle
+\begin{center}
+\textit{Unreleased application draft. This paper supplies a measurement contract and conditional accounting results; it does not forecast civilisational collapse, establish a realised GE substrate, or recommend a political programme.}
+\end{center}
+\vspace{1em}
+
+\begin{abstract}
+AI is a visible leading edge of a broader question: when the audited cost of
+performing specified transformations falls toward a measured feasible lower
+envelope, can the institutional arrangements that allocate work, income,
+access, and authority remain unchanged? This paper does not infer an answer
+from a benchmark, an API tariff, agricultural productivity, or a logistics
+platform. It defines an outcome-scaled cost ledger separating information,
+coordination, embodied, verification, governance, and externality costs. A
+nominally cheaper task is not thereby a cheaper successful social outcome.
+
+The paper then states two conditional results. First, a fall in technical
+capability cost alone does not identify delivered adaptation, equitable access,
+or net benefit: it may also increase deployment, induced demand, verification
+load, and residual harm. Second, given a declared GE transition premise that
+the present civilisational regime cannot reproduce all of its defining
+arrangements under measured cost-floor pressure, the relevant outcome is a
+partition, not a prediction: either minimum viable reproduction fails
+(terminal discontinuity), or viable activity continues through a successor
+regime. The latter has an analytically open, not automatically benign, space of
+possibilities. LLMs are treated as a cost and deployment variable, not as a
+claim about agency or general intelligence. A hypothetical graph-based GE
+substrate is an unverified additional scenario, not evidence. The paper states
+data requirements, counterweights, and falsifiers for every empirical step.
+\end{abstract}
+
+\section{Scope: a conditional transition question}\label{sec:scope}
+
+This paper supplies a conditional classification. If a named regime cannot
+continue to reproduce its defining arrangements while the cost basis of its
+principal transformations changes, then unchanged persistence is not the
+relevant comparison class. The possible continuations are classified as either
+failure to reproduce a declared viability vector or reproduction through a
+materially different regime. Whether the antecedent holds, when it might hold,
+and what a successor would be remain open empirical and political questions.
+
+This application extends neither the physical claims of GE nor its proposed
+graph-based substrate. Within the GE programme, narrative and narrativium name
+a way to ask whether a collective arrangement can retain its identity while its
+relations, costs, and means of reproduction are reorganised. They are not
+substitutes for labour, productivity, price, energy, environmental, or
+institutional data. A GE-derived implementation efficiency gain has not been
+shown here. It is only a separately labelled scenario in
+Section~\ref{sec:ge-scenario}.
+
+\subsection{Analysis lens: current manifold and possibility set}
+
+For this paper, the \emph{current manifold} $\mathcal{M}(R_0)$ is a declared
+analytical state space of the present regime's reproduction arrangements,
+ledger variables, and measured constraints. ``Manifold'' is a classificatory
+term here, not a claim that the regime is a differentiable physical manifold.
+Given $G(R_0)$, the analysis maps a possibility set containing terminal
+discontinuity and viable non-isomorphic successor regimes. It assigns no value
+ordering to those members. Its output is the declared state description,
+conditions, and branch classification.
+
+\subsection{Continuance interpretation}
+
+A separate interpretive lens may then ask what the classification means for a
+specified aim. This paper records the following continuance lens: civilisational
+continuance---a trajectory that continues to satisfy a declared collective
+viability condition---ranks above terminal discontinuity. Conditional on that
+continuance, a trajectory ranks higher when it reduces measured human suffering
+$S^{H}$ under a declared protocol and retains human participation $P^{H}$ in
+the continuing system. Thus, under this lens, continuance is the best outcome;
+within it, lower $S^{H}$ and continued $P^{H}$ define the ideal direction.
+
+This ordering is an explicit interpretive input, not a consequence of GE, the
+cost ledger, or the transition partition. It requires its own definitions of
+civilisation, humanity, suffering, participation, population, horizon, and
+measurement threshold. The analytical layer remains unchanged if a different
+interpretive lens is supplied.
+
+The empirical object is not ``civilisation'' at one unmeasurable speed. A first
+test must name a unit $u$, outcome $o$, population, time interval, viability
+threshold, and allocation boundary: for example, a public service's ability to
+deliver a specified safe outcome, an agricultural supply system's ability to
+meet a nutritional standard, or a jurisdiction's ability to maintain a
+critical infrastructure service. A claim about civilisation requires an
+explicit aggregation argument; this paper supplies none.
+
+\section{Cost-floor pressure and the ledger}\label{sec:ledger}
+
+\begin{definition}[Audited task cost]
+For named unit $u$, outcome $o$, task configuration $q$, and interval $i$, let
+\[
+ C^{\mathrm{aud}}_{i}(q)=C^{I}_{i}+C^{Q}_{i}+C^{B}_{i}+C^{V}_{i}+C^{G}_{i}+C^{E}_{i}
+\]
+be the cost required to produce a successful, accessible, and audited outcome.
+The terms are respectively information/inference, coordination, embodied
+material and energy, verification and repair, governance/authorisation, and
+allocated externality costs. Each term requires a stated payer, location,
+time horizon, allocation rule, and uncertainty range. A list API price is at
+most one component of $C^{I}_{i}$.
+\end{definition}
+
+\begin{definition}[Feasible lower envelope and compression]
+Let $F_{u,o,i}$ be the lowest \emph{observed and boundary-harmonised} audited
+cost among feasible configurations that meet the declared outcome, reliability,
+access, and externality conditions. A named configuration experiences
+cost-floor pressure only when repeated measurements establish
+\[
+ C^{\mathrm{aud}}_{i}(q)-F_{u,o,i}\downarrow 0
+\]
+on a stable outcome scale. $F$ is an empirical lower envelope, not a universal
+zero cost, a thermodynamic theorem, or a claim that all social costs vanish.
+\end{definition}
+
+\begin{remark}[Grammar-relative shapes, floors, and MDL]\label{rem:mdl-cost}
+Here a declared outcome $o$ is a shape, or a shape trajectory, rather than an
+invariant that a transformation must leave unchanged. A grammar $\gamma$ is a
+declared repertoire of generative relations/operations; it makes a shape space
+$\Sigma_{\gamma}$ available and induces a grammar-relative lower envelope
+$F^{\gamma}_{u,o,i}$. A new grammar $\gamma'$ can change the available shape
+space as well as the envelope. A grammar step is recorded through a declared
+shape comparison map $\Pi_{\gamma\to\gamma'}$ when
+\[
+ F^{\gamma'}_{u,\Pi_{\gamma\to\gamma'}(o),i}
+ < F^{\gamma}_{u,o,i}.
+\]
+It is thus a step change in what shape can be generated and at what audited
+cost, not preservation of a fixed outcome invariant.
+
+Minimum description length (MDL) selects a sufficient account by minimising
+\[
+ L(M)+L(D\mid M),
+\]
+the description of a model plus the residual description of its data
+\citep{rissanen1978}. Under the GE reading used here, MDL pressure and
+cost-floor pressure are the same compression pressure at different realisation
+levels. MDL acts on an account and its generative grammar; the audited ledger
+records the information, coordination, embodied, verification, authorisation,
+and externality transformations through which shapes are realised.
+
+This is not an equality $C^{\mathrm{aud}}=L(M)+L(D\mid M)$. The correspondence
+requires a declared map from descriptive grammar to realised grammar, and every
+cost component remains boundary-, substrate-, and frame-relative. In particular,
+MDL alone does not establish an API price, energy use, total social cost, an
+empirical lower envelope, a grammar step, or a civilisational transition.
+Paper~01 treats the agreement between its constitutive MDL reading and the
+account as a consistency condition rather than independent evidence; this
+application retains that limit.
+\end{remark}
+
+The definition prevents a common equivocation. A system may reduce token price,
+labour hours, or local cash expenditure while transferring work to users,
+future maintenance, a less powerful population, an energy system, or an
+environmental sink. Such a change has not established lower audited task cost.
+Conversely, some costs can fall sharply without approaching a physical limit.
+The relevant question is which declared component falls and what remains.
+
+For a declared outcome, let $D_i$ be changed demand, $A_i$ verified delivered
+adaptation, $H_i$ induced demand and residual harm, and $B_i$ recorded backlog:
+\[
+ B_{i+1}=\max\{0,B_i+\Delta D_i-A_i+H_i\}.\tag{1}
+\]
+Let $T_i$ denote task-relevant technical performance, $X_i$ deployment
+exposure, $Q_i$ coordination quality, and $L_i$ response lag. Cost compression
+is a possible input to delivered adaptation, but not its definition:
+\[
+ A_i=f(T_i,X_i,Q_i,L_i,C^{\mathrm{aud}}_i;\ \text{access, reliability, governance}).\tag{2}
+\]
+This notation allows a reduction in one cost term to help $A_i$, while the same
+change increases $X_i$, $\Delta D_i$, or $H_i$.
+
+\begin{proposition}[Cost is not delivered adaptation]\label{prop:cost-not-adaptation}
+A measured decline in $C^{I}_i$, or in any other one component of
+$C^{\mathrm{aud}}_i$, does not identify the sign of $\Delta D_i-A_i+H_i$.
+\end{proposition}
+\begin{proof}
+Equation~(2) leaves access, reliability, governance, coordination, and the
+other cost components unspecified. Hold the observed component fixed and
+construct one admissible case in which lower cost enables verified service and
+raises $A_i$, and another in which deployment grows but failures, fraud,
+rework, energy use, or exclusion raise $H_i$ or $\Delta D_i$. Both cases share
+the observed cost decline and give different signs in (1). Therefore the cost
+decline alone identifies neither net adaptation nor backlog direction. \qed
+\end{proof}
+
+\begin{proposition}[Conditional backlog growth]\label{prop:backlog}
+Fix a stable common outcome scale and intervals $i=1,\ldots,n$. If
+\[
+ \Delta D_i-A_i+H_i\geq\epsilon>0
+\]
+in every interval, with no unrecorded reserve, substitution, or threshold
+redefinition, then $B_n\geq B_0+n\epsilon$.
+\end{proposition}
+\begin{proof}
+The stated positive increment makes the lower clamp in (1) inactive as a lower
+bound. Thus $B_{i+1}\geq B_i+\epsilon$; iteration proves the result. \qed
+\end{proof}
+
+A converse catch-up condition remains equally important. If, while $B_i>0$,
+$A_i-\Delta D_i-H_i\geq\epsilon>0$, then
+$B_{i+1}\leq\max\{0,B_i-\epsilon\}$; backlog falls by at least
+$\min\{\epsilon,B_i\}$ in that interval. Cost compression cannot remove this
+recovery possibility by rhetoric.
+
+\section{What the evidence supports---and does not}\label{sec:evidence}
+
+The available evidence supports changes in particular task costs and production
+structures, not a universal cost-collapse law. The 2025 AI Index reports that
+inference cost at a GPT-3.5-comparable performance level fell by more than a
+factor of 280 from November 2022 to October 2024, alongside large advances on
+named technical benchmarks \citep{stanford2025}. That is strong evidence for a
+rapidly moving cost/performance frontier. It is not an all-in agent cost, a
+reliability guarantee, a capability measure for collective judgement, or a
+prediction of employment outcomes.
+
+The agricultural record illustrates the broader, slower pattern without making
+AI its cause. Agriculture is the clearest historical example of a primary
+activity whose labour requirement and input composition have been transformed:
+in historical series for France, the United Kingdom, Italy, and the Netherlands,
+the majority of the labour force worked in farming after the agricultural
+revolution \citep{owidag2026}. This is country evidence, not a reconstructed
+share for every human population or a single global historical estimate. USDA
+accounting further reports that U.S. farm output nearly tripled from 1948--2023,
+with aggregate inputs changing little; land and labour inputs fell while
+equipment and intermediate inputs grew \citep{usda2026}. The appropriate
+inference is labour, substitution, and productivity change under particular
+historical conditions, not a reconstructed all-in economic-cost series,
+costless food, or the disappearance of land, energy, water, biology, capital,
+and distribution. For logistics, OECD analysis finds that
+digital connectivity and trade-facilitation measures such as automated border
+processes can be especially trade-enhancing for parcels, while regulatory and
+physical frictions remain material \citep{oecd2021,oecd2025}. A platform's
+convenience therefore cannot stand as evidence that commerce or transport is
+near a universal floor.
+
+The proposed evidence protocol is task-level. It requires repeated
+performance-normalised cost data; the full audit boundary in Definition~1;
+reliability, appeal, and repair rates; accessibility and distribution; energy,
+water, material, and local infrastructure effects; and a comparison with an
+unchanged or alternative configuration. A named LLM release is admissible only
+with model/version, evaluation, prompt/tool setting, throughput, cache and
+context assumptions, tariff time, and oversight. Announced or vendor-listed
+pricing is a commercial input, not realised social cost.
+
+\section{Economic reorganisation is a hypothesis to test}\label{sec:economy}
+
+The civilisational concern is not that lower cost automatically makes people
+poorer. It is that many current arrangements connect access, purchasing power,
+and social status to paid work under conditions of costly production. If
+cost-floor pressure affects a large enough set of tasks, the relationships
+between labour income, ownership of productive assets, market demand, and
+legitimacy become empirical variables rather than stable background conditions.
+
+Regime existence and good governance are distinct. A regime can persist,
+extract, coerce, exclude, or externalise harms without equitable access,
+legitimacy, due process, or effective governance. None of those desirable
+properties is an antecedent of the terminal/successor partition. They enter this
+paper only when a named outcome claims them, or when their absence changes the
+declared viability vector, reliability, cost boundary, or harm ledger. A
+successor can therefore exist without being good; the partition does not
+endorse it.
+
+The ILO finds that roughly one quarter of global employment is potentially
+exposed to generative AI, while judging task transformation more likely than
+replacement in most cases \citep{ilo2023}. Its later evidence records a 1.6
+percentage-point decline in the global labour-income share from 2004--2024 and
+identifies several structural influences, including capital-augmenting
+technology and worker bargaining power \citep{ilo2025}. Neither result proves
+that AI causes a future income collapse. Together they justify measuring who
+owns productive capacity, who receives gains, whether demand remains adequate
+for the declared outcome, and whether institutions provide non-wage routes to
+access and agency when those outcomes are at issue.
+
+Competition and legitimacy are optional evaluative and pathway variables, not
+requirements for mere system continuation. The UK CMA has identified risks to
+fair, open, and effective competition in foundation-model markets \citep{cma2024}.
+The IEA reports that social acceptability of energy-intensive data-centre
+projects can depend on demonstrable local benefits and fair allocation of costs
+\citep{iea2026}. These are evidence relevant to named equitable or accepted
+deployment pathways, not conditions a system must meet in order to persist.
+
+\begin{remark}[A testable economic transition claim]
+For a named population, the economically relevant claim is not ``the economic
+system is destroyed.'' It is: after a declared cost reduction, do verified
+access, income security, agency, and outcome delivery keep pace with changes in
+labour demand, asset ownership, prices, and environmental burden? A negative
+result for one population or sector does not establish a civilisational result;
+a positive result falsifies a claim of necessary local exclusion. A system can
+continue despite either result; the result instead classifies the named quality
+of continuation.
+\end{remark}
+
+\section{The GE-conditioned fork}\label{sec:fork}
+
+\begin{definition}[Regime and transition premise]
+Let $R_0$ be a declared present regime, represented by a set of defining
+reproduction arrangements $\mathcal{I}_0$ and a minimum viability vector $v$.
+The \emph{GE transition premise} $G(R_0)$ is the additional theoretical and
+empirical premise that, under the stated cost-floor pressure, $R_0$ cannot
+continue indefinitely while retaining all of $\mathcal{I}_0$. This paper does
+not establish $G(R_0)$.
+
+A \emph{terminal discontinuity} occurs when the declared viable reproduction
+condition $v$ fails. A \emph{successor regime} occurs when viable reproduction
+continues but the arrangement is no longer isomorphic to $\mathcal{I}_0$ under
+a stated identity test. The successor may be more, less, or differently
+inclusive, stable, sustainable, or free.
+\end{definition}
+
+\begin{proposition}[Conditional transition partition]\label{prop:fork}
+Assume $G(R_0)$ and an exhaustive, mutually exclusive viability classification:
+a post-transition trajectory either fails $v$ or continues to satisfy $v$.
+Then every classified trajectory is either a terminal discontinuity or a
+successor regime.
+\end{proposition}
+\begin{proof}
+By the viability classification, a trajectory fails $v$ or satisfies $v$. In
+the first case it meets the definition of terminal discontinuity. In the second,
+$G(R_0)$ excludes indefinite retention of every defining arrangement in
+$\mathcal{I}_0$, so it meets the definition of successor regime. The cases are
+mutually exclusive by the classification. \qed
+\end{proof}
+
+This is a partition conditional on $G(R_0)$, not a date, probability, or
+prediction. It gives no cardinal measure of the successor's possibility space.
+It means only that a viable successor is not constrained to preserve the present
+regime's full identity. A broad description such as ``the end of the
+Anthropocene,'' ``phase change,'' ``singularity,'' or ``Lyapunov-horizon
+collapse'' is admissible only as a declared analytical umbrella for this
+question. It is not a formal geological epoch claim, demonstrated physical
+singularity, known mechanism, or end of human influence or geology.
+
+\section{Human timescales, physical constraints, and the GE scenario}\label{sec:ge-scenario}
+
+Human biology is one constrained and socially mediated timescale among learning,
+care, cohort replacement, organisation, law, infrastructure, and Earth-system
+processes. It is not a collective clock or a biological limit on institutional
+adaptation. Development and skill formation are responsive to social conditions
+and cumulative investment \citep{nasem2019,heckman2006}; institutions can
+coordinate under specified conditions, and can also fail through fragmented
+authority, missing resources, and illegitimacy \citep{ostrom1990,ipcc2022wgii}.
+
+Cost compression does not abolish physical conditions. IEA analysis reports
+both possible operational gains from AI and rebound risks, and projects growing
+data-centre electricity demand in its scenarios \citep{iea2025}. Its 2026
+update stresses that per-task efficiency can fall while total demand rises with
+volume and more intensive workloads \citep{iea2026}. Every proposed floor must
+therefore report the energy, material, water, land, grid, labour, and local
+burden boundary.
+
+A realised GE graph substrate would enter the ledger only if an independently
+reproducible implementation showed a lower $C^{\mathrm{aud}}$ at the same
+pre-registered task, reliability, access, and externality conditions. Until
+then, it is an unmeasured scenario: it may lower a technical component, leave
+the total unchanged, or introduce new costs. It cannot be used to establish the
+transition premise or accelerate a forecast.
+
+\section{Falsifiers and conclusion}\label{sec:falsifiers}
+
+The cost-floor thesis fails for a named case if: (i) performance-normalised,
+boundary-harmonised audited cost does not decline toward a measured lower
+envelope; (ii) the apparent saving is a transfer to an omitted payer, population,
+time, or environmental sink; (iii) verified adaptation, access, and repair do
+not improve despite the saving; or (iv) a comparable configuration provides the
+outcome at lower total cost. The economic reorganisation hypothesis fails
+locally if measured access, income security, agency, demand, and legitimacy
+remain adequate under the declared task transformation. The transition
+proposition does not apply unless $G(R_0)$ and the viability classification are
+made explicit and independently contestable.
+
+The evidence supports neither an inevitable collapse nor a guaranteed
+post-scarcity successor. It supports a more disciplined question. Rapid falls
+in selected information and coordination costs, together with longer-run
+productivity and automation changes, can place pressure on arrangements built
+around cost, work, and ownership. Whether that pressure becomes backlog,
+adaptation, terminal discontinuity, or a viable successor regime is a matter
+for declared measurements, not a title-level prophecy.
+
+\begin{thebibliography}{99}
+\sloppy
+\bibitem[CMA(2024)]{cma2024} Competition and Markets Authority. (2024). \emph{AI Foundation Models: initial review}. \href{https://www.gov.uk/cma-cases/ai-foundation-models-initial-review}{Case page}.
+\bibitem[Heckman(2006)]{heckman2006} Heckman, J. J. (2006). Skill formation and the economics of investing in disadvantaged children. \emph{Science}, 312(5782), 1900--1902. \href{https://doi.org/10.1126/science.1128898}{DOI}.
+\bibitem[IEA(2025)]{iea2025} International Energy Agency. (2025). \emph{Energy and AI}. \href{https://www.iea.org/reports/energy-and-ai/executive-summary}{Executive summary}.
+\bibitem[IEA(2026)]{iea2026} International Energy Agency. (2026). \emph{Key Questions on Energy and AI}. \href{https://www.iea.org/reports/key-questions-on-energy-and-ai/executive-summary}{Executive summary}.
+\bibitem[ILO(2023)]{ilo2023} International Labour Organization. (2023). \emph{Generative AI and Jobs: A Global Analysis of Potential Effects on Job Quantity and Quality}, Working Paper 96. \href{https://www.ilo.org/sites/default/files/wcmsp5/groups/public/---dgreports/---inst/documents/publication/wcms_890761.pdf}{Working-paper PDF}.
+\bibitem[ILO(2025)]{ilo2025} International Labour Organization. (2025). \emph{Policy Measures to Address Inequalities and Increase the Labour Income Share}. \href{https://researchrepository.ilo.org/view/pdfCoverPage?download=true&filePid=13138777410002676&instCode=41ILO_INST}{Publication PDF}.
+\bibitem[IPCC(2022)]{ipcc2022wgii} IPCC. (2022). \emph{Climate Change 2022: Impacts, Adaptation and Vulnerability}. \href{https://www.ipcc.ch/report/ar6/wg2/}{Report page}.
+\bibitem[NASEM(2019)]{nasem2019} National Academies of Sciences, Engineering, and Medicine. (2019). \emph{The Promise of Adolescence}. National Academies Press. \href{https://doi.org/10.17226/25388}{DOI}.
+\bibitem[OECD(2021)]{oecd2021} OECD. (2021). \emph{Trade in the Time of Parcels}, OECD Trade Policy Papers 249. \href{https://www.oecd.org/content/dam/oecd/en/publications/reports/2021/05/trade-in-the-time-of-parcels_acf1943f/0faac348-en.pdf}{PDF}.
+\bibitem[OECD(2025)]{oecd2025} OECD. (2025). \emph{Strengthening Supply Chains through Efficiency, Resilience, AI and Environmental Performance}. \href{https://www.oecd.org/en/publications/strengthening-supply-chains-through-efficiency-resilience-ai-and-environmental-performance_2a495d96-en.html}{Report page}.
+\bibitem[Ostrom(1990)]{ostrom1990} Ostrom, E. (1990). \emph{Governing the Commons}. Cambridge University Press.
+\bibitem[Our World in Data(2026)]{owidag2026} Our World in Data. (2026). \emph{In the Past, Most People Worked in Agriculture; in Today's Rich Countries, Only a Small Share Do}. Historical sources include Broadberry and Gardner (2013). \href{https://ourworldindata.org/data-insights/in-the-past-most-people-worked-in-agriculture-in-todays-rich-countries-only-a-small-share-do}{Data insight}.
+\bibitem[Rissanen(1978)]{rissanen1978} Rissanen, J. (1978). Modeling by shortest data description. \emph{Automatica}, 14(5), 465--471. \href{https://doi.org/10.1016/0005-1098(78)90005-5}{DOI}.
+\bibitem[Stanford HAI(2025)]{stanford2025} Stanford Institute for Human-Centered AI. (2025). \emph{AI Index Report 2025}. \href{https://hai.stanford.edu/assets/files/hai_ai_index_report_2025.pdf}{Report PDF}.
+\bibitem[USDA ERS(2026)]{usda2026} U.S. Department of Agriculture, Economic Research Service. (2026). \emph{Productivity Growth in U.S. Agriculture}. Data updated June 2026. \href{https://www.ers.usda.gov/data-products/agricultural-productivity-in-the-united-states/productivity-growth-in-us-agriculture}{Data page}.
+\fussy
+\end{thebibliography}
+
+\end{document}

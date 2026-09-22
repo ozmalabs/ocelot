@@ -1,6 +1,6 @@
 # papers/ — the formal record
 
-`formal/` holds 22 formal documents: LaTeX preprints with theorem environments,
+`formal/` holds 27 formal documents: LaTeX preprints with theorem environments,
 proofs, and falsifiability sections. They are the **citable artefacts**, and
 they do not disappear when the book is written: each book chapter carries a
 pointer of the form *the formal statement is Paper N §M*, and the chapter drafts
@@ -70,9 +70,13 @@ than in the paper.
 | `formal/01d_graphic_equalisation_born_recovery.tex` | The Law of Graphic Equalisation — Born Recovery |
 | `formal/01e_graphic_equalisation_communication_grounding.tex` | The Law of Graphic Equalisation — Communication Grounding |
 | `formal/01f_graphic_equalisation_qualia_and_consciousness_grounding.tex` | The Law of Graphic Equalisation — Qualia and Consciousness Grounding |
+| `formal/01g_graphic_equalisation_total_perspective_vortex_grounding.tex` | The Law of Graphic Equalisation — Total Perspective Vortex Grounding |
+| `formal/01h_graphic_equalisation_information_gravity_quantum_reconciliation.tex` | The Law of Graphic Equalisation — Information Gravity Grounding: Change-Load, Quantum Realisation, and the Reconciliation Programme |
+| `formal/01i_graphic_equalisation_passive_continuation_momentum_gravity.tex` | The Law of Graphic Equalisation — Passive Continuation Grounding: Momentum, Gravity, and the Cost of Alteration |
 | `formal/02_seldon_manifolds_theory_referenced.tex` | Seldon Manifolds — Theory |
 | `formal/02a_seldon_manifolds_psychological_grounding.tex` | Seldon Manifolds — Psychological Grounding |
 | `formal/02b_seldon_manifolds_social_and_psychological_application.tex` | Seldon Manifolds — Social and Psychological Application |
+| `formal/02c_seldon_manifolds_decision_making.tex` | Seldon Manifolds — Decision Making |
 | `formal/03_law_of_narrative_momentum_theory_referenced.tex` | The Law of Narrative Momentum — Theory |
 | `formal/04_narrativium_theory_referenced.tex` | Narrativium — Theory |
 | `formal/05_frames_relation_and_the_empty_limit.tex` | Frames, Relation, and the Empty Limit |
@@ -82,6 +86,7 @@ than in the paper.
 | `formal/09_adaptability.tex` | Adaptability |
 | `formal/09a_adaptability_implementation.tex` | Adaptability — Implementation |
 | `formal/10_applied_graphic_equalisation.tex` | Applied Graphic Equalisation |
+| `formal/10a_red_queen_race_civilisational_rate_of_change_llms_biological_timescales_anthropocene_transition.tex` | Cost-Floor Compression, the AI Wedge, and Civilisational Transition — A Conditional GE Assessment |
 | `formal/A1_constructive_graphic_equalisation_implementation_referenced.tex` | A Constructive Realisation of Graphic Equalisation |
 
 `01s` is **generated**, never hand-edited: edit `01s.spec` and the long paper,
@@ -123,11 +128,14 @@ bibliography and revision-history checks. `python3 tools/papers.py build
 runs the consistency gate.
 
 The release gate is deliberately separate and fail-closed. As of this draft it
-clears 19 documents: all except `09_adaptability`,
-`09a_adaptability_implementation`, and
-`A1_constructive_graphic_equalisation_implementation_referenced`. Those three
-remain excluded because they concern adaptive autonomous-control capability or
-executable realisation. Validate the cleared set, including rendered-PDF stamps,
+clears 20 documents. The adaptation and implementation papers
+`09_adaptability`, `09a_adaptability_implementation`, and
+`A1_constructive_graphic_equalisation_implementation_referenced` remain excluded
+because they concern adaptive autonomous-control capability or executable
+realisation. Other new documents, including the conditional 01h reconciliation
+programme and the conditional 01i passive-continuation programme, remain
+excluded unless an explicit editorial release decision adds them to the
+fail-closed allowlist. Validate the cleared set, including rendered-PDF stamps,
 with:
 
 ```sh

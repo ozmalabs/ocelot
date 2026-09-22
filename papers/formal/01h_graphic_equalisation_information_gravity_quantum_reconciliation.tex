@@ -1,0 +1,488 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,array,booktabs,enumitem,microtype}
+\usepackage[margin=1in]{geometry}
+\usepackage{natbib}
+\usepackage{xr-hyper}
+\usepackage{hyperref}
+\externaldocument[GE-]{01_law_of_graphic_equalisation_theory_referenced}
+\externaldocument[PH-]{01a_graphic_equalisation_physics_grounding}
+\externaldocument[BN-]{01d_graphic_equalisation_born_recovery}
+\externaldocument[TP-]{01g_graphic_equalisation_total_perspective_vortex_grounding}
+\externaldocument[NM-]{03_law_of_narrative_momentum_theory_referenced}
+
+\newtheorem{definition}{Definition}[section]
+\newtheorem{proposition}[definition]{Proposition}
+\newtheorem{hypothesis}[definition]{Hypothesis}
+\theoremstyle{remark}
+\newtheorem{remark}[definition]{Remark}
+
+\newcommand{\Rel}{\mathfrak R}
+\newcommand{\Poss}{\mathcal P}
+\newcommand{\Hist}{\mathcal H}
+\newcommand{\Load}{\mathcal C}
+\newcommand{\Obs}{\mathcal O}
+
+\title{The Law of Graphic Equalisation --- Information Gravity Grounding:\\
+\large Change-Load, Quantum Realisation, and the Reconciliation Programme}
+\author{Matthew Parslow\\Independent Researcher}
+\date{\textbf{Draft \texorpdfstring{\textemdash}{---}\ \PaperDraft}\\[2pt]\PaperDisplayDate \texorpdfstring{\textbullet}{\textperiodcentered}\ document revision \PaperRevision}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[C]{\thepage}
+\fancyfoot[R]{\scriptsize\PaperFooterStamp}
+\renewcommand{\headrulewidth}{0pt}
+\fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
+  \fancyfoot[R]{\scriptsize\PaperFooterStamp}\renewcommand{\headrulewidth}{0pt}}
+\input{paper_metadata.tex}
+
+\begin{document}
+\maketitle
+\begin{center}
+\fbox{\parbox{0.92\textwidth}{\small
+\PaperNoticeStamp\ This is the \emph{01h} grounding companion to \emph{The
+Law of Graphic Equalisation --- Theory}, \emph{Physics Grounding},
+\emph{Born Recovery}, \emph{Total Perspective Vortex Grounding}, and
+\emph{The Law of Narrative Momentum}. It presents a falsifiable
+\emph{reconciliation programme},
+not a completed solution to quantum gravity. Its positive result is a typed
+bridge ledger: it says what a physical realization must supply before the
+project can claim a common quantum--gravitational domain. It derives no metric,
+Einstein equation, Newton constant, Lorentz factor, numerical force law,
+dark-matter phenomenology, or successful quantum-gravity theory. Physical
+gravity is treated as one possible grounding of a more general
+relational-information principle; self-grounding and cross-modal recurrences
+remain independent structural witnesses with separate tests, not evidence for
+physical gravity.}}
+\end{center}
+\vspace{1em}
+
+\begin{abstract}
+Graphic Equalisation supplies a relational vocabulary for possibility,
+frame-indexed realization, history, and change cost. Its physics companion
+proposes a common change-budget shape for motion and change-load; its Born note
+maps the vocabulary to a conditional quantum-reconstruction programme. Neither
+map supplies a physical state space, gauge-invariant record, conserved source,
+metric, field equation, exact clock law, or empirical discriminator. This paper
+makes that boundary operational. It defines a common relational realization
+situation, separates inherited statements from new physical hypotheses, and
+sets out the Q1--Q6 quantum and G1--G8 gravitational bridges a concrete model
+must close. The result is a programme that can fail: a candidate loses its
+reconciliation claim if it cannot provide a noncircular quantum composition and
+Born bridge, a conserved dimensioned source, a controlled geometry and
+proper-time recovery, compatibility with established limits, and a constrained
+discriminator from general relativity plus standard quantum-field-theory
+effective field theory. Related thermodynamic, holographic,
+information-geometric, causal-set, and gravity-mediated-entanglement work
+supplies important conditional results and targets; none supplies these missing
+maps for the present substrate. The paper therefore advances a test protocol,
+not an asserted unification.
+\end{abstract}
+
+\section{Scope and terminology translation}\label{sec:scope}
+The familiar question is whether a relational-information account can reconcile
+quantum descriptions with gravity. The answer established here is precise: the
+current corpus supplies a \emph{programme specification}, not a quantum-gravity
+solution. A reconciliation requires one model with translation maps and
+compatible predictions in a shared quantum--gravitational domain. An analogy
+shares a motif; a recovery instantiates a target formalism under declared
+assumptions; a derivation proves a target from stated premises. These are not
+interchangeable achievements.
+
+The project starts from a general relational-information principle. Physical
+gravity is a proposed grounding of that principle, not its source. This
+asymmetry matters: a physical failure can reject a proposed physical grounding
+without deciding every nonphysical structural use of the relational vocabulary.
+Likewise, recurrence in self-model, cognitive, computational, or institutional
+cases is a structural witness only when its own comparison class and tests have
+been supplied. It neither proves a shared physical mechanism nor transports a
+gravitational result across modalities.
+
+\paragraph{Terminology guard.} ``Information'' below is not thermodynamic
+entropy, von Neumann entropy, a modular Hamiltonian, energy, or stress--energy.
+A frame-relative record is not automatically a diffeomorphism-invariant local
+observable. A graph or partial order is not a Lorentzian manifold; a statistical
+or Fisher metric is not the dynamical spacetime metric; and an entanglement
+pattern is not metric dynamics. Each identification would require a stated map
+and an independently checkable domain.
+
+\section{Existing project premises and the common reconciliation object}\label{sec:object}
+The inherited vocabulary can be collected without promoting it to physical
+ontology. Let the \emph{relational realization situation} be
+\[
+ \Rel_t=(W,G_t,\Gamma_t,\Poss_t,\Hist_t,\Load_t,\Obs_t),
+ \qquad G_t=(g_t,r_t,\Gamma_t),
+\]
+where $W$ is an individuating frame relation; $\Poss_t=\operatorname{Poss}(G_t)$
+is the admissible-continuation family; $\Hist_t$ is realized history when it is
+represented; $\Load_t$ is change-cost bookkeeping; and $\Obs_t$ is the relevant
+frame-held record/readout relation. The inherited realization relation is
+\[
+ \operatorname{Coll}^{W}_t:\Poss_t\rightsquigarrow G_{t+1}.
+\]
+This is a typed common schema, not a state space, action, path integral,
+causal-set dynamics, or observable algebra.
+
+\begin{proposition}[Frame-indexed realization]\label{prop:relative-realization}
+Under the corpus definitions, realization is indexed to the frame holding the
+relevant interaction and record. No frame-independent global realization time
+follows from this index.
+\end{proposition}
+\begin{proof}
+The possibility family, admissibility grammar, record, and represented
+successor are all defined relative to the antecedent graph as held through $W$.
+Erasing $W$ erases the relation that individuates the update. This establishes a
+typed internal consequence only; it does not establish covariant measurement,
+no-signalling, complete positivity, gauge invariance, or an observer-independent
+causal order.
+\end{proof}
+
+The object is useful because it prevents category drift. Possibility has a slot
+in $\Poss_t$, change-load in $\Load_t$, local succession in realization order,
+and physical geometry in a future map from $\Rel_t$. It is insufficient because
+none of those slots fixes amplitudes, a conserved source, proper time, or a
+metric. The history and cost slots inherit their limited roles from
+\emph{The Law of Narrative Momentum}: operative history and alteration burden
+are not universal physical energy. Their comparison-class, support, unit, and
+ordering discipline inherits from \emph{Total Perspective Vortex Grounding}.
+Neither companion supplies a physical source or observable; both prevent that
+missing bridge from being hidden. The table records the paper's claim ledger
+before any bridge is named.
+
+\begin{center}\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.22\textwidth}>{\raggedright\arraybackslash}p{0.23\textwidth}>{\raggedright\arraybackslash}p{0.24\textwidth}>{\raggedright\arraybackslash}p{0.23\textwidth}@{}}
+\toprule
+\textbf{Derived / inherited claims} & \textbf{New hypotheses} & \textbf{Open bridge obligations} & \textbf{Empirical predictions / constraints}\\
+\midrule
+A typed relational schema can be assembled; realization is frame-indexed; admissible possibility does not determine amplitudes. & H-QA: a physical amplitude/state representation exists for the schema. & Define composition, transformations, normalization, and gauge-invariant instruments. & The resulting probabilities must meet the stated quantum tests; a competing non-Born theory satisfying the premises rejects a claimed Born derivation.\\
+\addlinespace
+Change-cost is a grounding-dependent relation, not an identified physical source; cycle order is not proper time. & H-CL: change-load maps to a dimensioned conserved effective source. H-CT: one clock map yields both tested dilation limits. & Supply source units, exchange/conservation law, geometry, dynamics, and clock observable. & Weak-field, equivalence, local-Lorentz, redshift, Shapiro-delay, and precision-clock tests constrain or reject the map.\\
+\addlinespace
+Relational graphs do not determine Lorentzian geometry or dynamics; 01d remains conditional at its linearity/composition seam. & H-GEO: a controlled coarse-graining yields physical geometry and observables. & Recover a continuum/alternative, metric/connection or replacement, QFT/EFT overlap, and black-hole scope. & A candidate must state a finite parameterization and at least one result distinguishable from GR plus standard QFT EFT; a null or contrary result must exclude it.\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Physics grounding: change-load and existing relativistic limits}\label{sec:physics}
+The physics companion proposes a fixed change-budget picture: motion and
+internal change-load are two uses of one throughput. That is an information-level
+shape intended to organize a reading of kinematic and gravitational clock
+behavior. It is not a physical source equation. In particular, the existing
+project has not derived a metric, a connection, $G$, Einstein equations, a
+Lorentz transformation group, the exact Lorentz factor, a gravitational-redshift
+law, a numerical force law, or dark-matter phenomenology.
+
+\begin{proposition}[No source identification follows]\label{prop:no-source}
+The inherited alteration-cost and change-load vocabulary does not define an
+energy density, momentum flux, stress tensor, modular energy, entropy, or source
+for curvature.
+\end{proposition}
+\begin{proof}
+The cost currency, payer, and comparison class vary by grounding. A physical
+source requires units, an operational measurement, a locality or nonlocality
+domain, a conservation or exchange law, and a coupling rule. None is fixed by
+$\Load_t$ or by the budget image. Thus no insertion into a gravitational field
+equation is typed by the present premises.
+\end{proof}
+
+\begin{proposition}[No clock law follows]\label{prop:no-clock-law}
+Local realization order or closure-cycle counting does not entail either the
+special-relativistic Lorentz factor or gravitational redshift.
+\end{proposition}
+\begin{proof}
+An order admits many inequivalent clock functions. The present corpus supplies
+no metric, worldline functional, transformation group, or physical clock
+observable that identifies an operational counter with measured proper time. In
+particular, a closure-count is only the default simple clock hypothesis: the
+corresponding execution may be locally closure-driven, externally clocked, or
+scheduled by a superframe without an internally available discriminator.
+\end{proof}
+
+\begin{hypothesis}[H-CL: load--source bridge]\label{hyp:load-source}
+A candidate realization supplies a map from $\Load_t$ to a dimensioned effective
+source $T_{ab}^{(\mathrm{eff})}$, or to an explicitly different named source,
+with operational definition, coupling, and conservation or accounted exchange
+law.
+\end{hypothesis}
+\begin{hypothesis}[H-CT: unified-clock bridge]\label{hyp:clock}
+A candidate realization defines a physical clock observable and proves, in its
+claimed regime, both the tested kinematic and gravitational clock relations, or
+states an experimentally distinct alternative with its measurement protocol.
+\end{hypothesis}
+
+These hypotheses are hard constraints, not labels for a desired answer. H-CL
+fails if no source can meet the required conservation compatibility, or if a
+nonuniversal coupling violates established equivalence or local-Lorentz bounds.
+H-CT fails if its physical clocks disagree with established dilation, redshift,
+Shapiro-delay, post-Newtonian, or precision-comparison results in the regime it
+claims. The empirical review literature documents how tightly metric-gravity and
+universality departures are constrained \citep{will2014}.
+
+\section{Quantum possibility, realization, and what 01d supplies}\label{sec:quantum}
+The Born note supplies a correspondence programme between project vocabulary and
+operational/reconstruction conditions. It identifies a classical probability
+backbone and marks complex structure, composition, and linearity assumptions or
+residuals. This paper carries that boundary forward rather than treating a
+quantum vocabulary as a completed noncircular derivation.
+
+\begin{proposition}[Possibility is not amplitude]\label{prop:no-amplitude}
+From $G_t$, $\Gamma_t$, and $\Poss_t=\operatorname{Poss}(G_t)$ alone, no complex
+amplitude representation follows.
+\end{proposition}
+\begin{proof}
+Membership in an admissible set supplies neither a scalar field nor addition,
+phase, inner product, normalization, composition, or dynamics. Inequivalent
+probability theories can be defined over the same alternative set.
+\end{proof}
+
+\begin{proposition}[Conditional Born boundary]\label{prop:born-boundary}
+If a realization supplies quantum state structure, a suitable noncontextual
+probability measure, and every dimensional and composition assumption of an
+applicable reconstruction result, then Born weights can follow within that
+result's stated domain. The present corpus does not establish those premises in
+full.
+\end{proposition}
+
+\begin{hypothesis}[H-QA: quantum representation bridge]\label{hyp:quantum}
+A candidate realization provides an operational state/effect space, an amplitude
+or explicitly alternative representation, sequential and composite composition,
+and normalized frame-transformation rules without importing the conclusion it
+claims to derive.
+\end{hypothesis}
+
+Quantum information tools cannot close this gap merely by being invoked.
+Holographic codes, information geometry, and gravity-mediated-entanglement
+protocols ordinarily use quantum state spaces and Born statistics as input. A
+claimed Born bridge fails if it assumes Hilbert linearity, the trace rule, or
+standard composition while announcing those structures as outputs. A physical
+record bridge also fails if the record changes under gauge redundancy: gravity
+makes local observables and subsystem factorization nontrivial
+\citep{donnelly2016}.
+
+\section{The joint bridge map and exact unclosed obligations}\label{sec:bridges}
+A reconciliation candidate must publish a concrete realization $\mathfrak S$ of
+$\Rel$, not a prose analogy. The following maps are the minimum interfaces:
+\[
+ \begin{aligned}
+ Q_{W,t}&:\Poss_t\longrightarrow\mathcal S(\mathcal A_W), &
+ A_{W,t}&:\Poss_t\longrightarrow\mathcal H_W,\\
+ \Phi_\epsilon&:\Rel\longrightarrow(M,g_{ab},\nabla,\Obs_{\rm phys}), &
+ \Theta_W&:\Rel\longrightarrow\tau_W .
+ \end{aligned}
+\]
+Here $\mathcal S(\mathcal A_W)$, $\mathcal H_W$, $(M,g_{ab},\nabla)$, and
+$\tau_W$ are targets to be defined by the candidate, not objects supplied by the
+corpus. The amplitude codomain may be replaced by another operational theory,
+but then the alternative must state its composition, probability, and test
+domain.
+
+\paragraph{Quantum obligations.} Q1 defines operational state/effect spaces and
+normalized affine probabilities. Q2 defines sequential and composite
+composition, including any gauge-constrained replacement for naive
+factorization. Q3 derives or admits a complex Hilbert/C$^*$-algebraic structure
+with transformations and composition. Q4 derives Born weights from Q1--Q3 plus
+all necessary assumptions, or openly admits them as an input. Q5 makes records
+and realization events gauge-invariant relational observables or instruments.
+Q6 specifies unitary or nonunitary domain, normalization, and strong-gravity or
+black-hole scope.
+
+\paragraph{Gravitational obligations.} G1 supplies a controlled coarse-graining
+to a Lorentzian continuum or stated alternative with causal observables. G2
+identifies metric/connection data or an alternative and their transformation
+law. G3 closes H-CL. G4 supplies a field equation or tested alternative with
+error and domain. G5 derives or parameterizes universality and local Lorentz
+behavior. G6 closes H-CT. G7 derives entropy/area and black-hole behavior or
+limits the domain explicitly. G8 identifies how gauge-observable and relevant
+no-go assumptions are satisfied or evaded.
+
+\paragraph{Conditional compatibility target T0.} Let $\mathfrak S$ be a
+concrete realization. If it closes Q1--Q6 and G1--G8, preserves the claimed
+operational predictions in their shared domain, and publishes a discriminator
+from GR plus standard QFT EFT, it is a candidate reconciliation in that domain.
+T0 is a target specification rather than a theorem of this paper: no concrete
+$\mathfrak S$ has been supplied, so none of its antecedents has been proved.
+
+\section{Relation to prior art}\label{sec:prior-art}
+\paragraph{Thermodynamic and entropic routes.} Jacobson derives the Einstein
+equation as an equation of state under a local horizon Clausius relation,
+area-entropy, and stress-energy-flux assumptions \citep{jacobson1995}. His
+entanglement-equilibrium route adds fixed-volume causal-diamond and quantum
+input \citep{jacobson2016}. These are conditional gravitational results, not a
+derivation that $\Load_t$ is entropy, energy, or curvature. Verlinde's
+entropic-force proposal is also a proposal with additional screen, temperature,
+and equipartition assumptions \citep{verlinde2011}; implementations motivated by
+later emergent-gravity work faced empirical mismatches in isolated dwarf systems
+\citep{lelli2017}. This paper claims neither their force law nor their
+phenomenology.
+
+\paragraph{Holography and quantum error correction.} AdS/CFT is a conjectured
+gauge/gravity duality with extensive evidence in particular settings
+\citep{maldacena1998}. In static settings, Ryu--Takayanagi relates boundary
+entropy to a minimal bulk surface under its own conditions \citep{ryu2006}; the
+covariant Hubeny--Rangamani--Takayanagi extension uses extremal bulk surfaces
+\citep{hubeny2007}. Entanglement-wedge reconstruction has quantum-error-correcting
+structure in a code subspace \citep{almheiri2015}. These furnish exact examples
+of encoding and reconstruction, not evidence that an arbitrary relational graph
+produces generic spacetime, quantum amplitudes, or metric dynamics.
+
+\paragraph{Information geometry and causal sets.} Information geometry gives
+metrics on statistical models \citep{amari2016}; those metrics are not thereby
+Lorentzian spacetime metrics. Causal-set theory gives a concrete locally finite
+partial-order programme for spacetime \citep{bombelli1987,surya2019}. It is a
+useful target because causal order and volume provide more physical structure
+than the present graph vocabulary, but it does not itself supply this project's
+Born, budget, or cross-modal bridges.
+
+\paragraph{Quantum-gravity witnesses and constraints.} Gravity-mediated
+entanglement proposals test nonclassical mediation only conditional on their
+specified locality and mediator assumptions \citep{bose2017,belenchia2018}.
+Even a successful witness would not select this substrate, detect a graviton, or
+validate a unique quantum-gravity theory. Any emergent massless-spin-two claim
+must also identify its relation to the assumptions of Weinberg--Witten
+\citep{weinberg1980}; ``emergence'' alone is not an evasion. At low energies,
+quantum general relativity is usefully organized as an effective field theory
+\citep{donoghue1994}, which a candidate must recover or delimit.
+
+\section{Empirical discriminators, recovery conditions, and falsifiers}\label{sec:falsifiers}
+No numerical prediction is claimed because no realization fixes a source
+normalization, continuum scale, parameter, or observable. A candidate earns a
+calculation only after it gives a quantity with units, parameterization,
+uncertainty/control analysis, and comparison to GR plus standard QFT EFT in the
+same domain. Dimensional rhetoric is not a prediction.
+
+\paragraph{Recovery conditions.} The classical recovery condition is a specified
+low-velocity, weak-field, decohered limit with source law and force, potential,
+or geodesic equation. The special-relativistic condition is covariant
+observables and the exact tested clock relation. The general-relativistic
+condition is a metric/effective dynamics with weak-field, redshift, light, and
+post-Newtonian agreement. The quantum condition is a state space, composition,
+dynamics, instruments, and Born statistics. The semiclassical condition is a
+renormalized observable and controlled backreaction domain. None is presently
+obtained by the corpus; each is a required future calculation.
+
+\paragraph{Failure protocol.} The programme direction fails as a claimed
+reconciliation for a candidate if any of the following occurs:
+\begin{enumerate}[leftmargin=*]
+\item no noncircular quantum-composition and Born bridge can be constructed;
+\item no dimensioned, conserved source or accounted exchange law maps
+change-load to physical dynamics;
+\item no continuum/alternative map supplies gauge-invariant causal and clock
+observables compatible with local-Lorentz and equivalence constraints;
+\item the candidate conflicts with established clock, weak-field, or EFT
+predictions within its stated regime;
+\item it meets a no-go theorem's assumptions while asserting the prohibited
+object; or
+\item all proposed realizations remain observationally identical to GR plus
+standard QFT EFT and provide no further finite, rejectable parameter claim.
+\end{enumerate}
+The final item is not a demand for novelty theatre. It distinguishes a compatible
+reinterpretation from a theory with additional empirical content. A valid
+proposal must name the observable, parameter region, comparator, protocol, and
+null or contrary outcome that excludes its mechanism.
+
+\section{Conclusion}\label{sec:conclusion}
+The project currently supports one hard result: a reconciliation claim has a
+checkable type. A physical candidate must translate frame-indexed realization
+into gauge-invariant instruments, admissible possibility into a quantum
+representation without circular Born input, change-load into a conserved
+physical source, and relational structure into controlled causal geometry and
+proper-time observables. It must then recover the domains where GR and quantum
+field theory already work and risk a constrained disagreement.
+
+Until those bridges are published for a concrete realization, this is not a
+quantum-gravity solution. It is a reconciliation programme with named
+obligations and failure conditions. Physical gravity can ground one realization
+of the wider relational-information principle; it cannot be used as that
+principle's source, and nonphysical structural witnesses must continue to earn
+their status under their own tests.
+
+\begin{thebibliography}{99}
+\raggedright
+\bibitem[Almheiri, Dong and Harlow(2015)]{almheiri2015}
+A.~Almheiri, X.~Dong and D.~Harlow, ``Bulk locality and quantum error correction
+in AdS/CFT,'' \emph{Journal of High Energy Physics} \textbf{04}, 163 (2015),
+arXiv:1411.7041.
+
+\bibitem[Amari(2016)]{amari2016}
+S.-i.~Amari, \emph{Information Geometry and Its Applications} (Springer, 2016),
+https://doi.org/10.1007/978-4-431-55978-8.
+
+\bibitem[Belenchia et al.(2018)]{belenchia2018}
+A.~Belenchia \emph{et al.}, ``Quantum superposition of massive objects and the
+quantization of gravity,'' \emph{Physical Review D} \textbf{98}, 126009 (2018),
+https://doi.org/10.1103/PhysRevD.98.126009.
+
+\bibitem[Bombelli et al.(1987)]{bombelli1987}
+L.~Bombelli, J.~Lee, D.~Meyer and R.~D.~Sorkin, ``Space-time as a causal set,''
+\emph{Physical Review Letters} \textbf{59}, 521 (1987),
+https://doi.org/10.1103/PhysRevLett.59.521.
+
+\bibitem[Bose et al.(2017)]{bose2017}
+S.~Bose \emph{et al.}, ``Spin entanglement witness for quantum gravity,''
+\emph{Physical Review Letters} \textbf{119}, 240401 (2017),
+https://doi.org/10.1103/PhysRevLett.119.240401.
+
+\bibitem[Donnelly and Giddings(2016)]{donnelly2016}
+W.~Donnelly and S.~B.~Giddings, ``Observables, gravitational dressing, and
+obstructions to locality and subsystems,'' \emph{Physical Review D} \textbf{94},
+104038 (2016), https://doi.org/10.1103/PhysRevD.94.104038.
+
+\bibitem[Donoghue(1994)]{donoghue1994}
+J.~F.~Donoghue, ``General relativity as an effective field theory,''
+\emph{Physical Review D} \textbf{50}, 3874 (1994),
+https://doi.org/10.1103/PhysRevD.50.3874.
+
+\bibitem[Hubeny, Rangamani and Takayanagi(2007)]{hubeny2007}
+V.~E.~Hubeny, M.~Rangamani and T.~Takayanagi, ``A covariant holographic
+entanglement entropy proposal,'' \emph{Journal of High Energy Physics}
+\textbf{07}, 062 (2007), arXiv:0705.0016.
+
+\bibitem[Jacobson(1995)]{jacobson1995}
+T.~Jacobson, ``Thermodynamics of spacetime: The Einstein equation of state,''
+\emph{Physical Review Letters} \textbf{75}, 1260 (1995),
+https://doi.org/10.1103/PhysRevLett.75.1260.
+
+\bibitem[Jacobson(2016)]{jacobson2016}
+T.~Jacobson, ``Entanglement equilibrium and the Einstein equation,''
+\emph{Physical Review Letters} \textbf{116}, 201101 (2016),
+https://doi.org/10.1103/PhysRevLett.116.201101.
+
+\bibitem[Lelli et al.(2017)]{lelli2017}
+F.~Lelli, S.~S.~McGaugh, J.~M.~Schombert and M.~S.~Pawlowski, ``Testing emergent
+gravity with isolated dwarf galaxies,'' \emph{Monthly Notices of the Royal
+Astronomical Society} \textbf{468}, L68 (2017), arXiv:1706.00785.
+
+\bibitem[Maldacena(1998)]{maldacena1998}
+J.~M.~Maldacena, ``The large N limit of superconformal field theories and
+supergravity,'' \emph{Advances in Theoretical and Mathematical Physics}
+\textbf{2}, 231 (1998), arXiv:hep-th/9711200.
+
+\bibitem[Ryu and Takayanagi(2006)]{ryu2006}
+S.~Ryu and T.~Takayanagi, ``Holographic derivation of entanglement entropy from
+AdS/CFT,'' \emph{Physical Review Letters} \textbf{96}, 181602 (2006),
+https://doi.org/10.1103/PhysRevLett.96.181602.
+
+\bibitem[Surya(2019)]{surya2019}
+S.~Surya, ``The causal set approach to quantum gravity,'' \emph{Living Reviews
+in Relativity} \textbf{22}, 5 (2019),
+https://doi.org/10.1007/s41114-019-0023-1.
+
+\bibitem[Verlinde(2011)]{verlinde2011}
+E.~Verlinde, ``On the origin of gravity and the laws of Newton,'' \emph{Journal
+of High Energy Physics} \textbf{04}, 029 (2011), arXiv:1001.0785.
+
+\bibitem[Weinberg and Witten(1980)]{weinberg1980}
+S.~Weinberg and E.~Witten, ``Limits on massless particles,'' \emph{Physics
+Letters B} \textbf{96}, 59 (1980),
+https://doi.org/10.1016/0370-2693(80)90610-3.
+
+\bibitem[Will(2014)]{will2014}
+C.~M.~Will, ``The confrontation between general relativity and experiment,''
+\emph{Living Reviews in Relativity} \textbf{17}, 4 (2014),
+https://doi.org/10.12942/lrr-2014-4.
+\end{thebibliography}
+
+\end{document}

@@ -50,6 +50,33 @@ an account of the object: what changed, what the former version lost, what is
 now supported, and what remains open. “The earlier formulation excluded X” is
 useful. “Sorry, this was unclear” is not.
 
+## Revision under attack: strengthen before narrowing
+
+Criticism is new constraint information. Treat it first as an opportunity to
+make the claim harder, not as a cue to make it smaller. A result that survives a
+stricter type, index, comparison condition, counterexample, or falsifier has
+become more useful; a result that breaks has located its real boundary.
+
+1. **Locate the exact load-bearing distinction.** Ask whether the objection
+   exposes a missing type, frame index, quantifier, comparison class, causal
+   direction, or empirical discriminator. State the missing condition rather
+   than retreating into a weaker mood of caution.
+2. **Harden the claim first.** Add the stricter formalisation, test, or
+   falsifier that would make the original commitment genuinely vulnerable.
+   Do not answer a type error by deleting the result when the relation can be
+   typed correctly.
+3. **Let the strengthened form fail honestly.** If the harder formulation
+   cannot be made coherent or testable, change the claim at the break point.
+   Preserve the part that still follows and state what the earlier formulation
+   overreached.
+4. **Do not convert resistance into diminishment.** The default response to a
+   difficult claim must not be hedging, psychologising, or replacing it with a
+   familiar weaker claim. Narrow only where a concrete constraint requires it.
+
+This applies to review as well as drafting: a finding should identify the
+object, the stricter test it needs, and the operation that will decide whether it
+survives.
+
 ## Coherence is scaffolded and pathed
 
 A coherent document has visible architecture before it has elegant sentences.

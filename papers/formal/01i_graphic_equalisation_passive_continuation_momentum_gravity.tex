@@ -1,0 +1,910 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,array,booktabs,enumitem,microtype}
+\usepackage[margin=1in]{geometry}
+\usepackage{natbib}
+\usepackage{hyperref}
+
+\newtheorem{definition}{Definition}[section]
+\newtheorem{proposition}[definition]{Proposition}
+\newtheorem{hypothesis}[definition]{Hypothesis}
+\newtheorem{condition}[definition]{Condition}
+\theoremstyle{remark}
+\newtheorem{remark}[definition]{Remark}
+
+\newcommand{\Cont}{\mathfrak C}
+\newcommand{\Alt}{\mathcal A}
+\newcommand{\State}{\mathcal X}
+\newcommand{\Hist}{\mathcal H}
+\newcommand{\Obs}{\mathcal O}
+
+\title{The Law of Graphic Equalisation --- Passive Continuation Grounding:\\
+\large Momentum, Gravity, and the Cost of Alteration}
+\author{Matthew Parslow\\Independent Researcher}
+\date{\textbf{Draft \texorpdfstring{\textemdash}{---}\ \PaperDraft}\\[2pt]\PaperDisplayDate \texorpdfstring{\textbullet}{\textperiodcentered}\ document revision \PaperRevision}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[C]{\thepage}
+\fancyfoot[R]{\scriptsize\PaperFooterStamp}
+\renewcommand{\headrulewidth}{0pt}
+\fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
+  \fancyfoot[R]{\scriptsize\PaperFooterStamp}\renewcommand{\headrulewidth}{0pt}}
+\input{paper_metadata.tex}
+
+\begin{document}
+\maketitle
+\begin{center}
+\fbox{\parbox{0.92\textwidth}{\small
+\PaperNoticeStamp\ This is Paper 01i, a formal companion to the Graphic
+Equalisation, physics-grounding, total-perspective, information-gravity, and
+Narrative Momentum papers. It formalises a research and derivation ledger, not
+a new mechanics or gravitational theory. Its sole positive internal result is
+class-relative: reuse of declared carried structure has zero \emph{additional}
+alteration cost. The paper derives no physical momentum, four-momentum,
+metric, connection, Einstein equation, stress--energy source, equivalence
+principle, momentum-conservation law, geodesic equation, or quantum-gravity
+result. Flat transport and load-shaped free propagation are recovery targets
+for a concrete realization with stated equations, limits, and measurements.}}
+\end{center}
+\vspace{1em}
+
+\begin{abstract}
+Passive continuation is defined here as admissible reuse of presently operative
+structure with no additional alteration cost in a declared grounding class. It
+is not no activity, no time, no interaction at every grain, or no support cost
+in another frame. This strict distinction permits a comparison with two
+established targets without identifying their physical roles: momentum is not a
+force, and general-relativistic free fall is not a locally felt gravitational
+force on an ideal test body. In a flat regime a realization must establish
+measured four-momentum transport, $dp^\mu/d\tau=0$, from a state map,
+dynamics, symmetry, and isolation conditions. In a load-shaped regime it must
+establish $u^\nu\nabla_\nu u^\mu=0$ from a Lorentzian metric and its
+connection, a proper-time observable, and matter coupling, while separately supplying a
+source law. Neither target follows from the inherited project vocabulary. The
+conditional reconciliation investigated here is therefore exact: flat inertial
+transport and load-shaped geodesic motion are two physical readings of one
+passive-continuation law only if one concrete realization recovers their
+equations, source/exchange accounting, universal-coupling limits, and stated
+observables. A four-way ledger records what is inherited, hypothesised, still
+owed as a physical bridge, and constrained by experiment.
+\end{abstract}
+
+\section{Scope and terminology}\label{sec:scope}
+The question is not whether momentum and gravity are one force. They are not.
+Physical momentum is a state/charge-like quantity; force is a specified rate of
+its transfer or change. In general relativity (GR), an ideal freely falling test
+body has zero proper acceleration, while a supported body records a
+nongravitational support force. Curvature and tidal effects remain physically
+measurable \citep{einstein1916,gerochjang1975,will2014}.
+
+The question is narrower. Can one implemented law have a flat reading in which
+carried physical momentum selects inertial transport and a load-shaped reading
+in which geometry selects free propagation? This paper fixes the conditions
+under which that question becomes a physics claim. It supplies neither the
+implementation nor an inference that the conditions are already met.
+
+The inherited corpus uses frame-indexed graph, admissibility, operative
+history, and alteration-cost vocabulary. Its physics companion offers a
+change-budget comparison; its Narrative Momentum companion distinguishes
+preservation from alteration; its information-gravity companion requires typed
+sources, geometry, clocks, and observables before a physical reconciliation
+claim. The Stage-1 research record and Stage-2 derivation ledger for this paper
+show that none provides the missing physical maps. Momentum and gravity are
+historically distinguishable readings of a presently inseparable passive
+continuation: a present in-frame record can measure a declared local relation,
+but it cannot by itself attribute why the continuation is carried. That
+attribution requires a history-bearing inference record with stated support,
+source, and comparison conditions. It does not make momentum, gravity, inertia,
+curvature, or force identical.
+
+\begin{definition}[Declared continuation situation]\label{def:situation}
+A frame-indexed continuation situation is
+\[
+ \Cont_t^W=(W,G_t,\Gamma_t,\mathcal P_t,S_t,\Alt,\kappa,\mathcal R_t,\Obs_t),
+\]
+where $W$ is the frame, $G_t$ the represented graph, $\Gamma_t$ its
+admissibility grammar, $\mathcal P_t$ its admissible continuations, $S_t$ the
+presently operative carried structure when represented, $\Alt$ a declared
+alteration class, $\kappa$ its ordered cost domain, $\mathcal R_t$ relevant
+support, and $\Obs_t$ its record relation. This is project-level typed
+vocabulary; it is not a phase space, action, metric, clock, or source tensor.
+\end{definition}
+
+\begin{definition}[History-bearing attribution record]\label{def:history}
+For an interval $[t_0,t]$, a \emph{history-bearing attribution record} is
+\[
+ \Hist^W_{[t_0,t]}=
+ \langle (\Obs_s,S_s,\mathcal R_s)_{t_0\leq s\leq t},\ I^W,\ \Lambda^W\rangle,
+\]
+where the retained sequence may be compressed but must preserve the stated
+changes, supports, and comparison relations relevant to the typed attribution
+map
+\[
+ I^W:\bigl((\Obs_s,S_s,\mathcal R_s)_{t_0\leq s\leq t},\Lambda^W\bigr)
+ \longrightarrow \mathfrak A^W_{\rm phys}.
+\]
+The codomain $\mathfrak A^W_{\rm phys}$ is a declared set of typed physical
+attributions (for example, momentum transport, load-shaped continuation,
+curvature, or source claims), with their required observable and comparison
+models. $\Lambda^W$ states the record's grain, losses, uncertainty, and domain
+of use. The record is neither the total past nor a view from nowhere. It is the
+minimum kind of record from which W can attempt to attribute a present passive
+continuation to carried momentum-like history, load-shaped continuation
+conditions, or both.
+\end{definition}
+
+\section{Inherited free-continuation and change-load claims}\label{sec:inherited}
+Where $\kappa$ is additive, write
+\[
+ C_{\Alt}(a\mid S_t)=C_{0,\Alt}(a)+\Delta C_{\mathrm{alt},\Alt}(S_t,a).
+\]
+The inherited distinction licenses the following definition and no stronger
+physical conclusion.
+
+\begin{definition}[Passive continuation]\label{def:pc}
+An admissible continuation $a\in\mathcal P_t$ is \emph{passive within $\Alt$}
+when it reuses the declared carried structure and
+\[
+ \Delta C_{\mathrm{alt},\Alt}(S_t,a)=0.
+\]
+For an ordinal cost domain the valid statement is only the corresponding
+no-extra-alteration ranking. Passive continuation means no \emph{additional}
+alteration cost in $\Alt$; it does not mean zero total activity, zero total
+cost, zero elapsed or inferred time, zero environmental support, or zero
+interaction at every descriptive grain.
+\end{definition}
+
+\begin{proposition}[Internal passive-reuse result]\label{prop:reuse}
+Given Definition~\ref{def:pc}, an admissible reuse continuation has zero
+additional alteration cost in its declared class.
+\end{proposition}
+\begin{proof}
+The conclusion is the defining cost assignment for reuse in that class. It is
+not a conservation theorem because no physical state, unit, dynamics, symmetry,
+or boundary current occurs in the premises.
+\end{proof}
+
+\begin{proposition}[History required for physical attribution]\label{prop:history}
+A present passive-continuation relation does not determine a unique attribution
+to physical momentum or load-shaped gravity. Any such attribution requires a
+history-bearing record $\Hist^W_{[t_0,t]}$ and a declared inference map from
+that record to the relevant physical observables.
+\end{proposition}
+\begin{proof}
+Passive continuation classifies whether the present carried structure is reused;
+it contains neither a physical momentum map nor a source/geometry map. A present
+record can therefore be compatible with more than one physical realization. The
+record in Definition~\ref{def:history} supplies the retained changes, supports,
+and comparisons needed to test a proposed factorization, but still does not
+supply the required physical map. Thus history is necessary for attribution
+within this programme, though not sufficient without the declared inference
+map.
+\end{proof}
+
+\begin{remark}[What in-frame inseparability does and does not say]
+An unspecified in-frame record supplies no physical interpretation. With a
+declared local accelerometer observable, a frame can determine proper
+acceleration and distinguish free from supported motion in its stated domain.
+That result does not differentiate momentum and gravity as explanatory factors:
+both can remain readings of the present passive continuation. Their attribution
+requires the history-bearing record of Definition~\ref{def:history}, together
+with stated source, support, and comparison models. A local accelerometer cannot
+thereby infer curvature or source structure, or distinguish a homogeneous
+gravitational description from uniform acceleration without the specified
+extended, source, or cross-frame inference. The limitation is therefore local
+and operational: extended tidal measurements, support-force readings, source
+modelling, and cross-frame comparison contribute to the required historical
+inference. In particular, local inertial coordinates can remove connection
+coefficients at one event, not curvature across a region \citep{einstein1916}.
+\end{remark}
+
+\section{Standard physical targets}\label{sec:targets}
+Newtonian mechanics distinguishes momentum from force:
+\[
+ \mathbf p=m\mathbf v,\qquad \mathbf F_{\rm net}=\frac{d\mathbf p}{dt}.
+\]
+In an inertial frame, a free particle has constant momentum. For a closed
+system, total momentum conservation additionally requires an appropriate action
+or balance law, translation symmetry, and boundary-flux accounting; it does not
+follow from persistence language alone \citep{newton1687,noether1918}.
+
+Given a Lorentzian metric, a proper-time functional, and the point-particle
+action $S_{\rm pp}=-mc\int d\tau$, the GR free-test-body target is
+\[
+ u^\nu\nabla_\nu u^\mu=0,
+ \qquad u^\mu=\frac{dx^\mu}{d\tau}.
+\]
+It is equivalent in coordinates to the familiar connection equation. It is not
+a field equation and does not identify the source of the metric. A supported
+body has nonzero proper acceleration; a free body can have coordinate
+acceleration without locally feeling a gravitational force
+\citep{einstein1916,gerochjang1975}. Curvature appears operationally through,
+for example, geodesic deviation,
+\[
+ \frac{D^2\xi^\mu}{D\tau^2}=-R^\mu{}_{\nu\rho\sigma}u^\nu\xi^\rho u^\sigma.
+\]
+
+Universality of free fall, local Lorentz and position behaviour, redshift,
+light propagation, and post-Newtonian observables constrain any proposed
+coupling \citep{will2014,wagner2012,touboul2022,bertotti2003}. They do not
+show that inertial and gravitational concepts or mechanisms are identical.
+
+\section{Formal passive-continuation definition}\label{sec:formal}
+Definition~\ref{def:pc} is class-relative by construction. A containing frame
+can price apparatus support or an environmental interaction even where a
+mechanical-direction class assigns no additional alteration cost to reuse. No
+sum between classes is licensed without a typed conversion. The definition
+therefore has no physical units unless a realization supplies them.
+
+\begin{proposition}[Persistence is not propulsion]\label{prop:notpropulsion}
+Definition~\ref{def:pc} supplies no force, physical momentum, time parameter,
+or equation of motion.
+\end{proposition}
+\begin{proof}
+The definition fixes a relation in an ordered cost class. It specifies neither
+a physical state space nor a map to momentum, nor a derivative, symmetry, or
+interaction law. Each is required to state the listed physical objects.
+\end{proof}
+
+The strongest inherited result is thus structural: present operative structure
+can be reused without an added alteration of that structure in its declared
+class. Calling this a momentum-like reading is permissible only as a structural
+analogy. Calling it physical momentum, force, energy, action, mass, or
+stress--energy requires a separate map with units and measurements.
+
+\section{Narrative information-force derivation contract}\label{sec:informationforce}
+This section makes the proposed direction of grounding explicit: physical gravity
+is to be recovered from a realization of present operative Narrative, not used
+to define the general continuation principle. The following is a new conditional
+contract. It does not assert that the current corpus already supplies physical
+gravity, a force in Newtons, or a source equation.
+
+\begin{hypothesis}[H-IF: information-force realization]\label{hyp:informationforce}
+A candidate realization supplies a differential information-state space
+$\mathcal Q_I$, a preparation/readout map
+\[
+ Z:\bigl(S_t,\Hist^W_{[t_0,t]},\mathcal R_t,\Obs_t\bigr)
+ \longrightarrow q\in\mathcal Q_I,
+\]
+a physical clock/accelerometer bridge
+\[
+ \Theta:(q,\Obs_t)\longrightarrow(\tau,\mathcal A_{\rm acc}),
+\]
+where $\tau$ is an operational physical-clock reading and
+$\mathcal A_{\rm acc}$ is a declared proper-acceleration/support observable,
+a residual functional $\mathcal R_I:\mathcal Q_I\to K_I$, and a declared
+ordered or differentiable value structure on $K_I$. Where its derivative is
+defined, the \emph{information force} is the residual derivative
+\[
+ \boxed{\mathcal F_I(q):=-D\mathcal R_I(q)\in T_q^*\mathcal Q_I.}\tag{IF1}
+\]
+A response map $B_q:T_q^*\mathcal Q_I\to T_q\mathcal Q_I$, if used to select
+an update direction, must be supplied separately. Thus the information force is
+intrinsic to the declared information realization: it is the covector of
+unresolved balance, not a metaphorical name for a later mechanical force.
+\end{hypothesis}
+
+H-IF has three mandatory physical translation stages. First, it must supply
+measurement-preserving physical state and clock maps. Second, its Newton and
+covariant force readouts must be equations, not identifications:
+\[
+\begin{aligned}
+ K_{\rm N}&:(q,\mathcal F_I,\Theta)\longrightarrow\mathbb R^3,
+ & [K_{\rm N}]&=\mathrm{kg\,m\,s^{-2}},
+ &K_{\rm N}&=\frac{d\mathbf p}{dt},\\
+ K_4&:(q,\mathcal F_I,\Theta)\longrightarrow T^*M,
+ &K_4&=\frac{Dp_\mu}{d\tau}
+ &&\text{in its declared relativistic convention}.
+\end{aligned}\tag{IF2}
+\]
+Here $\Theta$ supplies the typed clock and accelerometer/readout conditions
+above. The first line is the required map by which a newton becomes a
+translation/readout unit for the candidate Narrative force; it does not give a
+Narrative magnitude SI units by definition. Third, the realization must
+independently close the existing source and geometry maps
+\[
+\begin{aligned}
+ L&:(q,\mathcal F_I,\Theta)\longrightarrow T^{\rm eff}_{\mu\nu},\\
+ \Phi&:(q,\mathcal F_I,\Theta)\longrightarrow\\[-2pt]
+ &\qquad(M,g_{\mu\nu},\nabla,\Obs_{\rm phys}).
+\end{aligned}\tag{IF3}
+\]
+Each map must state its tensor type and physical dimensions. It must also
+specify an exchange law, matter coupling, and controlled error. A
+force/exchange readout is not itself a rank-two gravitational source, and
+neither source nor geometry may be assumed in order to define
+$\mathcal R_I$.
+
+\begin{proposition}[Conditional gravity-derivation target]\label{prop:ifrecovery}
+If one realization satisfies H-IF, closes the maps in (IF2)--(IF3), and proves
+F1--F6, G1--G8, H-PC, history-bearing attribution, universal coupling, and the
+stated weak-field and precision limits, then that realization derives its
+claimed physical gravitational regime from the information-force construction.
+In particular, it must recover the Newtonian force law in its stated limit and
+the free-path/source/clock relations it claims in the relativistic regime.
+\end{proposition}
+\begin{proof}
+H-IF supplies a typed residual derivative; (IF2) supplies its testable physical
+momentum-exchange meaning; and (IF3), together with G1--G8, supplies a source,
+geometry, matter coupling, and observables. F1--F6 establish the flat recovery,
+while the remaining listed conditions establish the gravitational recovery and
+its empirical domain. Each arrow is a stated premise, so the conclusion applies
+only to a realization that proves every map and limit.
+\end{proof}
+
+\paragraph{Failure conditions.}
+The contract fails as a derivation if it (i) lacks a declared $\mathcal Q_I$,
+residual, derivative domain, or response/readout rule; (ii) calls
+$-D\mathcal R_I$ a physical newton without proving $K_{\rm N}$; (iii) inserts
+$\mathcal F_I$ directly into a stress--energy or metric equation without $L$,
+$\Phi$, and compatible exchange accounting; (iv) defines the residual using the
+very gravitational field equation, metric, or force law it claims to derive; or
+(v) fails the established free/support, tidal, universality, clock, weak-field,
+or post-Newtonian targets. A candidate observationally identical to GR plus
+standard low-energy matter remains a grounding interpretation unless it states
+a finite additional discriminator.
+
+\section{Conditional metric-source recovery of general relativity}\label{sec:gr}
+This section gives the exact classical GR consequence of a supplied metric-source
+realization. It does not claim that the generic information-force derivative
+selects such a realization. In units $c=1$, let a candidate supply an oriented,
+time-orientable four-dimensional Lorentzian manifold $(M,g)$, its Levi--Civita
+connection, a non-null boundary prescription, matter fields $\psi$, and a
+universal metric coupling $S_{\rm m}[g,\psi]$. For fixed induced boundary metric,
+the Dirichlet action is
+\[
+\begin{aligned}
+ S_{\rm GR}&=\frac{1}{2\kappa}\int_M(R-2\Lambda)\sqrt{|g|}\,d^4x
+ +\frac{1}{\kappa}\int_{\partial M}\varepsilon K\sqrt{|h|}\,d^3x\\
+ &\quad+S_{\rm joint}+S_{\rm m}[g,\psi],
+ \qquad
+ T_{\mu\nu}:=-\frac{2}{\sqrt{|g|}}\frac{\delta S_{\rm m}}{\delta g^{\mu\nu}},
+ \quad \kappa=8\pi G.
+\end{aligned}\tag{GR1}
+\]
+The boundary term and any required joint terms are part of the premise: the bare
+Einstein--Hilbert integral does not give a Dirichlet variational problem merely
+by fixing $h$. $T_{\mu\nu}$ is a symmetric covariant rank-two source obtained
+from matter metric variation, not a scalar information residual.
+
+For allowed variations, stationarity yields
+\[
+ \boxed{G_{\mu\nu}+\Lambda g_{\mu\nu}=\kappa T_{\mu\nu}}
+ \qquad\left(=\frac{8\pi G}{c^4}T_{\mu\nu}\ \text{when $c$ is restored}\right).
+ \tag{GR2}
+\]
+The contracted Bianchi identity is an off-shell geometric identity. Therefore
+GR2 requires $\nabla^\mu T_{\mu\nu}=0$ for the total modeled matter source.
+Diffeomorphism invariance of $S_{\rm m}$ gives the related Noether identity, and
+on the matter equations supplies this conservation statement; components may
+exchange energy--momentum and open systems retain boundary flux.
+
+The free-path consequence is separately conditional. With the test-particle
+premise $S_{\rm pp}=-m\int ds$, fixed-endpoint worldline variation gives
+\[
+ \boxed{u^\nu\nabla_\nu u^\mu=0.}\tag{GR3}
+\]
+A universal matter coupling is required before interpreting this as a
+composition-independent free-fall limit. GR2 alone does not make every charged,
+spinning, extended, self-gravitating, or quantum body exactly geodesic. In a
+weak, quasi-static, asymptotically Minkowskian regime with
+$T_{00}\simeq\rho c^2$ and negligible $\Lambda$ at the scale of interest, GR2
+and GR3 recover $\nabla^2\Phi=4\pi G\rho$ and
+$\ddot{\mathbf x}=-\nabla\Phi$. Clock, light, tidal, and post-Newtonian results
+require the corresponding metric solution, universal coupling, and stated
+test domain.
+
+\paragraph{The GE selection breakpoint.}
+The missing map is not GR2's variation but the noncircular selection of GR1:
+\[
+ \mathsf{Select}_{\rm GR}:
+ (\mathcal F_I,\Hist^W,\Obs,\mathsf{BC},\mathsf{Units})
+ \rightrightarrows
+ [g,\nabla,S_{\rm GR},S_{\rm m},G,\Lambda]_{\mathrm{Diff}(M)}.
+ \tag{GR4}
+\]
+No such map is currently supplied. It must declare its residual codomain,
+admissible geometry/action class, gauge quotient, boundary/initial conditions,
+calibration, uncertainty rule, and a uniqueness or empirical selection rule.
+Writing the Einstein--Hilbert action, a Lorentzian metric, $G$, $\Lambda$, or
+universal coupling directly into its output constraints assumes the result.
+Thus GR1--GR3 are an exact conditional GR derivation; GR4 is the remaining
+information-gravity derivation problem.
+
+\subsection{Strongest four-dimensional metric-selection result}
+The most that an action-selection argument can presently establish is a
+conditional classification theorem. Suppose a candidate GR4 selector proves,
+rather than inserts, all of the following restrictions: spacetime is fixed to
+four dimensions with a declared Lorentzian signature; $g$ is the sole
+geometrical gravitational field; the bulk metric equation $E_{\mu\nu}[g]$ is a
+local natural function of the metric two-jet, symmetric, and identically
+Levi--Civita-divergence-free; no nondynamical background structure occurs; and
+the Einstein-tensor coefficient is nonzero. Then the four-dimensional Lovelock
+classification gives
+\[
+ \boxed{E_{\mu\nu}=aG_{\mu\nu}+b g_{\mu\nu}.}\tag{GR5}
+\]
+With a separately supplied universal metric matter coupling, division by $a$
+puts the field equation into GR2 form with $\Lambda=b/a$ and the relative
+matter normalization identified as $\kappa=1/a$ in the chosen conventions.
+At the action level, the same restricted bulk dynamics is represented by the
+Einstein--Hilbert term plus a volume term; boundary completion and
+four-dimensional topological/total-derivative additions remain separately
+specified.
+
+\paragraph{What GR5 does not select.}
+GR5 does not fix $a$, $b$, $G$, $\Lambda$, the metric signature, topology,
+boundary conditions, matter species, or universal coupling. It also does not
+justify locality, the metric-only premise, absence of extra fields, or the
+restriction to second-order metric equations. Relaxing any of those assumptions
+admits higher-curvature effective-field-theory terms, nonlocal actions,
+metric-affine/torsional theories, extra fields, or other alternatives. A bare
+residual-minimization statement cannot supply the restrictions: its domain,
+norm, measure, admissible fields, and boundary data already carry the
+selection. In particular, a squared equation residual generally yields
+higher-order normal equations, while positive reweightings preserve the same
+zero set. Therefore GR5 narrows the GE selector to a precise proof obligation;
+it is not a derivation of its premises.
+
+\paragraph{Prior-layer realization obstruction.}
+No generic residual, entropy, or relation principle currently closes the prior
+realization map from GE to the input of GR5. A physical candidate must first
+supply: (R1) an event carrier and causal/order relation; (R2) a controlled
+manifold-like continuum limit with a declared dimension and time orientation;
+(R3) a volume/scale and observable map that determines a Lorentzian metric
+rather than a merely conformal or Riemannian structure; and (R4) a dynamical
+selection rule suppressing nonlocal, nonmetric, higher-derivative, or
+extra-field alternatives. These are not consequences of an untyped residual.
+They are the required domain of $\Phi_\epsilon$ and GR4.
+
+Known conditional routes do not remove this obligation. Horizon-thermodynamic
+and entanglement-equilibrium arguments begin with Lorentzian causal geometry,
+area entropy, and a stress tensor; causal-order reconstruction begins with a
+manifold-like causal order and a volume element; information geometry produces
+a statistical Riemannian metric; and massless-spin-two consistency begins with
+a Lorentzian quantum field theory and a graviton. Each can constrain a
+specified gravitational regime, but none selects Lorentzian four-dimensional,
+local metric GR and universal matter coupling from a generic information
+residual alone. This is an underdetermination result, not an impossibility claim
+about a future specified GE microtheory.
+
+\subsection{R1: realized-support proto-causal order}
+GE can nevertheless construct a narrower combinatorial object. For a declared
+realization trace, let $E^W$ contain typed realized-transition events
+\[
+ e_t=\langle W,G_t,a_t,G_{t+1},\mathcal R_t,\Obs_t\rangle,
+\]
+where $a_t$ is an actually selected admissible continuation. Define a primitive
+support link $e\leadsto e'$ only when the declared output/support of $e$ is a
+necessary input/support of $e'$ at the stated grain. This is a support relation,
+not yet a physical influence relation. If the trace supplies (R1a) acyclicity of
+$\leadsto$ and (R1b) a finite set of intermediate link-reachable events for
+each proposed comparable pair at its declared resolution, define
+\[
+ e\prec_D e'\quad\Longleftrightarrow\quad
+ e\neq e'\ \text{and there is a finite directed $\leadsto$ path from $e$ to $e'$}.
+ \tag{R1}
+\]
+Then $(E^W,\prec_D)$ is a locally finite strict partial order: irreflexivity
+follows from R1a, transitivity from path concatenation, and local finiteness
+from R1b. It is invariant under relabeling of events and construction order
+when all observables depend only on the typed trace and order relation; otherwise
+construction-order-sensitive observables must remain declared physical or
+operational data.
+
+\paragraph{Promotion gates.}
+R1 establishes only a candidate \emph{proto-causal} order. To call
+$\prec_D$ physical causal precedence, a realization must additionally prove
+that its events are physically individuated rather than states, records, or
+propositions; that each link denotes propagating possible influence under a
+declared intervention/dynamical model rather than inference, correlation, or
+resource support; and that omitted mediators/common causes are controlled. A
+Lorentzian-order claim further needs a faithful manifoldlike continuum
+realization with dimension and causal regularity. Under the appropriate
+continuum hypotheses, causal order fixes only a conformal metric class; a
+volume/counting calibration, clocks, and observables are separately needed for
+the full metric. The causal-order uniqueness programme for discrete realizations
+remains conditional; it cannot be used here as an established geometry theorem.
+
+\section{Conditional electromagnetic alternate-grounding}\label{sec:em}
+This is a separate conditional programme, not a claim that electromagnetism is
+already present in the inherited vocabulary. It proposes electromagnetic (EM)
+physics as a distinct field-edge grounding or physical realization of the same
+information-force structure in H-IF: it retains the single core residual
+derivative $\mathcal F_I=-D\mathcal R_I$ in (IF1), rather than adding a second
+residual force. The proposed EM realization is neither gravity nor a
+re-identification of gravitational load-shaped propagation. It has its own
+state, gauge, matter, source, exchange, boundary, and observable obligations.
+
+The relevant 01a material does not close those obligations. Its $S^1=U(1)$
+discussion motivates a complex amplitude and global phase invariance in a
+conditional Born-rule recovery; it supplies no local $U(1)$ connection, field
+strength, charge/current, matter coupling, Maxwell equation, or QED
+construction. The contingency of a gauge group there is likewise not an EM
+derivation.
+
+\begin{hypothesis}[H-EM: electromagnetic field-edge realization]\label{hyp:em}
+One candidate supplies, in addition to H-IF, a separately typed electromagnetic
+state and clock/readout,
+\[
+ X_{\rm EM}:\Cont\longrightarrow\State_{\rm EM},\qquad
+ \Theta_{\rm EM}:\State_{\rm EM}\longrightarrow
+ (\tau_{\rm EM},\mathcal O_{\rm EM}),
+\]
+with preparation, composition, physical units, and relativistic transformation
+rules. It supplies a local $U(1)$ connection $A_\mu$, its curvature/field
+strength $F_{\mu\nu}$, and a stated gauge equivalence (for example,
+$A_\mu\mapsto A_\mu+\partial_\mu\chi$ with the corresponding transformation of
+charged matter). It separately defines a measurable charge/current
+$(\rho,j^\mu)$, a matter coupling and physical response law, such as the
+Lorentz-force target $m u^\nu\nabla_\nu u^\mu=qF^\mu{}_{\nu}u^\nu$, or an
+explicitly different, testable alternative.
+
+The candidate must give an action and equations, or a viable alternative with
+equivalent stated conservation and variational/accounting content; gauge-
+invariant observables (at minimum a declared operational construction from
+$F_{\mu\nu}$, fluxes, and/or holonomies); interface and boundary conditions;
+and local and boundary exchange accounting. In a standard covariant realization
+this includes a current balance such as $\nabla_\mu j^\mu=0$ and a declared
+matter--field stress--energy exchange law. It must state relativistic covariance
+and its domain, and must recover Maxwell theory and QED in their respective
+tested domains, or name a quantitatively tested alternative with its distinct
+predictions and error bounds. None of these requirements is supplied by
+H-IF, H-PC, or 01a.
+\end{hypothesis}
+
+\subsection{Conditional variational recovery of classical electromagnetism}
+A classical electromagnetic recovery can be derived exactly once H-EM supplies
+additional geometric and dynamical premises. Let $M$ be an oriented
+four-dimensional Lorentzian manifold with metric $g$, let $P\to M$ be a
+principal $U(1)$ bundle, and let $A$ be a connection with local curvature
+$F=dA$. Let $\Phi$ be charged matter and stipulate the local gauge-invariant
+field-edge action
+\[
+ S_{\rm edge}[A,\Phi]=-
+ \frac{1}{4g_{\rm em}^{2}}\int_M F_{\mu\nu}F^{\mu\nu}\sqrt{|g|}\,d^4x
+ +S_{\rm m}[g,A,\Phi],\qquad
+ J^\nu:=-\frac{1}{\sqrt{|g|}}\frac{\delta S_{\rm m}}{\delta A_\nu}.
+ \tag{EM1}
+\]
+These are new realization premises. In particular, neither the choice of
+$U(1)$, the connection, the quadratic Maxwell term, $g_{\rm em}$, nor charged
+matter follows from global phase alone or from the generic residual derivative.
+
+For admissible variations of $A$, the action gives
+\[
+\begin{aligned}
+ \delta S_{\rm edge}
+ &=\int_M\sqrt{|g|}\left[
+ g_{\rm em}^{-2}\nabla_\mu F^{\mu\nu}-J^\nu\right]\delta A_\nu\,d^4x\\
+ &\quad-g_{\rm em}^{-2}\int_{\partial M}\sqrt{|h|}\,
+ n_\mu F^{\mu\nu}\delta A_\nu\,d^3x.
+\end{aligned}\tag{EM2}
+\]
+With a declared Dirichlet boundary condition (or the corresponding added
+Legendre term and declared flux data), stationarity for arbitrary interior
+variations therefore yields
+\[
+ \boxed{\nabla_\mu\bigl(g_{\rm em}^{-2}F^{\mu\nu}\bigr)=J^\nu,
+ \qquad dF=0.}\tag{EM3}
+\]
+The second equation follows from $F=dA$; the first follows from the stipulated
+action and source definition. Taking the divergence of the first requires
+$\nabla_\nu J^\nu=0$ in the stated smooth classical domain. Equivalently,
+local gauge invariance plus the matter equations supplies the corresponding
+current identity, with boundary flux retained rather than silently discarded.
+
+Matter response is another separate premise. Given, for example,
+\[
+ S_{\rm pp}=-m\int ds+q\int A_\mu dx^\mu,\tag{EM4}
+\]
+worldline variation with fixed endpoints yields
+\[
+ \boxed{m u^\nu\nabla_\nu u^\mu=qF^\mu{}_{\nu}u^\nu.}\tag{EM5}
+\]
+Together with (EM3), the electromagnetic stress tensor obeys the matching
+field--matter exchange relation only when $S_{\rm m}$ is a
+diffeomorphism-covariant matter action, the matter equations hold, and the
+specified boundary flux is retained. Thus EM1--EM4 plus those conditions entail
+the classical Maxwell field equations, charge balance, and the stated
+Lorentz-force response in their declared domain.
+
+\paragraph{Exact breakpoint.}
+This is a conditional classical-electrodynamics derivation, not a derivation of
+EM1 from GE. A globally defined phase supplies at most a pure-gauge derivative,
+not nonzero curvature, a Maxwell kinetic term, a charge representation, or a
+physical source. The map from $\mathcal F_I=-D\mathcal R_I$ to the field-edge
+action must still be supplied without inserting EM1 into the definition of the
+residual. Quantization, photon states, gauge fixing/BRST or an equivalent
+physical-state construction, anomaly control, and renormalization are further
+QED premises; they do not follow from EM3--EM5.
+
+\paragraph{Non-circularity and falsification.}
+H-EM is admissible only if the definition of $\mathcal R_I$, the state/clock
+maps, and the translation from the single $\mathcal F_I$ do not assume the
+Maxwell or QED action, Maxwell equations, a physical $A_\mu$ or $F_{\mu\nu}$,
+charge conservation, the Lorentz-force law, or the experimental EM observables
+that the realization claims to recover. It fails as a proposed physical
+realization if it lacks separately typed state/clock, local gauge connection or
+an explicit viable replacement, charge/current and matter response, an
+action/equations and gauge-invariant readout, interface/boundary conditions,
+conservation/exchange accounting, relativistic covariance, or the stated
+Maxwell/QED-or-alternative recovery. It also fails if a gauge variation changes
+an alleged physical observable without a declared symmetry breaking, if the
+charge/current or field/matter balance is violated in its claimed domain, or if
+its finite alternative prediction is experimentally excluded. These are
+falsifiers of H-EM, not of the internal passive-reuse proposition.
+
+This addition does not alter gravity's conditional recovery status. It preserves
+the limits on local accelerometry and history-bearing attribution, and 01i
+remains unreleased. It supplies neither physical electromagnetism nor Maxwell
+theory nor QED; it only makes explicit what a separately implemented EM
+grounding would have to establish.
+
+\section{Flat and curved recovery maps}\label{sec:maps}
+A candidate realization must present maps rather than metaphors:
+\[
+\begin{aligned}
+ X&:\Cont\longrightarrow\State, &
+ P_4&:\State\longrightarrow T^*M,\\
+ \Phi&:\Cont\longrightarrow(M,g_{\mu\nu},\nabla,\Obs_{\rm phys}), &
+ L&:\Cont\longrightarrow T^{\rm eff}_{\mu\nu}.
+\end{aligned}
+\]
+The domains, codomains, units, transformation rules, approximation errors, and
+operational readouts of all four maps are obligations. The project currently
+supplies none of them. In particular, a graph is not a Lorentzian manifold, an
+alteration cost is not stress--energy, and cycle order is not proper time.
+
+\subsection{Flat-map target}
+The following named conditions are required to label the flat equation a
+recovery rather than an assumption.
+\begin{condition}[F1--F6: flat passive-transport conditions]\label{cond:flat}
+A realization must provide: (F1) a flat spacetime structure
+$(M,\eta_{\mu\nu},\nabla^{(\eta)})$ with declared signature, physical state
+space, and preparation/readout protocol; (F2) a dimensioned covector momentum
+map $P_4:\State\to T^*M$, mass-shell convention, and the raised vector
+$p^\mu=\eta^{\mu\nu}p_\nu$ with its Lorentz transformation law; (F3) a
+proper-time or declared affine-parameter clock map and its timelike/massless
+domain; (F4) a free matter action or equations of motion; (F5) the translation
+symmetry or explicitly stated balance structure that supports the claimed
+conservation; and (F6) an isolation and boundary-flux domain. Only if F1--F6
+yield
+\[
+ \boxed{\frac{dp^\mu}{d\tau}=0}
+\]
+for the declared free flat regime is this a flat passive-continuation recovery
+target met. The equation is not derived in this paper.
+\end{condition}
+
+The condition does not confer global momentum conservation on an arbitrary
+curved spacetime or on a subsystem. It requires a current, symmetry, or stated
+replacement and explicit field/boundary exchange.
+
+\subsection{Load-shaped-map target}
+\begin{condition}[G1--G8: load-shaped free-propagation conditions]\label{cond:curved}
+A realization must provide: (G1) a controlled map to a Lorentzian metric
+$g_{\mu\nu}$ and a declared connection $\nabla$, including whether it is
+Levi--Civita or the constraint that determines otherwise; (G2) a causal and
+proper-time clock observable; (G3) a matter coupling and test-body
+approximation; (G4) a derivation of the metric geodesic law from that coupling;
+(G5) a dimensioned operational load/source map to $T^{\rm eff}_{\mu\nu}$;
+(G6) a metric field equation or explicitly parameterized metric modification;
+(G7) compatible source/exchange and boundary accounting; and (G8) tidal and
+accelerometer observables. Only if G1--G8 yield
+\[
+ \boxed{u^\nu\nabla_\nu u^\mu=0}
+\]
+in the stated free-body regime is this a load-shaped geodesic recovery target
+met. The equation is not derived in this paper.
+\end{condition}
+
+A geodesic target alone supplies neither the metric's source nor its dynamics.
+For an Einstein-tensor form, the contracted Bianchi identity requires a
+compatible source/exchange relation. A candidate must give the tensor type,
+units, operational definition, and any $\nabla^\mu T^{\rm eff}_{\mu\nu}=J_\nu$
+accounting; it cannot insert an untyped cost into a field equation
+\citep{einstein1916,brading2005,szabados2009}.
+
+\section{Equivalence and source obligations}\label{sec:obligations}
+\begin{hypothesis}[H-PC: physical passive-continuation bridge]\label{hyp:bridge}
+One concrete realization assigns the same declared physical passive-reuse
+sector to both the F1--F6 flat regime and the G1--G8 load-shaped regime, with
+all maps in Section~\ref{sec:maps} defined and measured.
+\end{hypothesis}
+
+H-PC is a new hypothesis, not an inherited result. It owes a universal matter
+coupling calculation before it can invoke the equivalence principle. That
+calculation must state inertial and gravitational response, composition,
+binding-energy, spin/history dependence, clock coupling, and the predicted
+Eotvos parameter or corresponding observable. Existing tests tightly constrain
+such departures \citep{will2014,wagner2012,touboul2022}.
+
+The source obligation is separate. The model must identify a dimensioned source
+$T^{\rm eff}_{\mu\nu}$, its exchange law, and metric gravity dynamics. It must
+recover or explicitly parameterize deviations from the weak-field targets
+\[
+ \nabla^2\Phi_N=4\pi G\rho,\qquad \ddot{\mathbf x}=-\nabla\Phi_N
+\]
+and the applicable redshift, light, clock, and post-Newtonian limits. Neither
+universal coupling nor geodesic motion derives Einstein equations;
+neither a source equation nor a metaphorical ``load'' derives a geodesic.
+
+\section{Four-way derivation ledger}\label{sec:ledger}
+\small\setlength{\tabcolsep}{2pt}\sloppy
+\begin{center}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.20\textwidth}>{\raggedright\arraybackslash}p{0.20\textwidth}>{\raggedright\arraybackslash}p{0.24\textwidth}>{\raggedright\arraybackslash}p{0.18\textwidth}@{}}
+\toprule
+\textbf{Inherited/internal results} & \textbf{New hypotheses} & \textbf{Open physical bridge obligations} & \textbf{Empirical constraints}\\
+\midrule
+Passive reuse has zero additional alteration cost in its declared class; it is not zero total activity or time. & H-PC: one physical realization has common passive-reuse sectors in both regimes. & Give state identity, physical alteration class, units, support, and operational readout. & Candidate must state which activity, clock, and support measurements distinguish class cost from total expenditure.\\
+\addlinespace
+Momentum is not force; persistence alone does not prove momentum conservation. & H-F: carried structure maps to measured four-momentum in a flat regime. & Close F1--F6 and derive $dp^\mu/d\tau=0$, including symmetry, isolation, and flux accounting. & Recover inertial transport and measured momentum balance within the declared special-relativistic/\allowbreak Newtonian domain.\\
+\addlinespace
+Free GR test-body motion has zero proper acceleration; support and tides remain real. & H-G: a dimensioned load maps to controlled geometry and matter coupling. & Close G1--G8 and derive $u^\nu\nabla_\nu u^\mu=0$ plus source dynamics. & Meet accelerometer, tidal, weak-field, redshift, light-propagation, and PPN limits.\\
+\addlinespace
+A present passive continuation is historically underdetermined; proper acceleration is only a local relation. & H-I: a history-bearing attribution record has a specified inference relation. & Define retained changes, source/support history, uncertainty, scale, and comparison protocol without a privileged observer. & Match local accelerometer results while testing momentum/load attribution through the declared historical record.\\
+\addlinespace
+No project source, metric, connection, equivalence principle, or conservation theorem has been established. & H-U: the coupling is universal in the stated domain. & Calculate composition, binding-energy, spin, and clock effects; give Bianchi-compatible exchange. & Satisfy UFF/EEP and local-Lorentz constraints or state a finite excluded parameter range.\\
+\bottomrule
+\end{tabular}
+\end{center}
+\fussy\normalsize\setlength{\tabcolsep}{6pt}
+
+\section{Prior art}\label{sec:priorart}
+\begin{sloppypar}
+Newton provides the historical inertial/change-law setting; Noether gives the
+symmetry--conservation theorem under its action hypotheses \citep{newton1687,noether1918}.
+Einstein supplies the metric field theory, while Geroch and Jang formalise a
+geodesic principle for suitably small bodies under stated hypotheses
+\citep{einstein1916,gerochjang1975}. These sources give targets in their own
+formalisms; none maps this project's alteration cost or carried history to
+physical momentum or geometry.
+\end{sloppypar}
+
+Machian and relational-inertia proposals motivate a comparison but do not close
+this bridge \citep{sciama1953,barbourbertotti1977}. Teleparallel gravity gives a
+reformulation of already specified GR variables; it is not a license to call
+gravity ordinary flat-space inertia, nor a derivation from passive continuation
+\citep{aldrovandipereira2013,lisotirioubarrow2011}. Effective field theory
+likewise constrains low-energy departures after fields and couplings have been
+defined; it does not supply them \citep{donoghue1994,burgess2004}.
+
+\section{Recovery conditions and falsifiers}\label{sec:falsifiers}
+The conditional reconciliation is met only if one realization closes F1--F6
+and G1--G8, supplies H-PC's common implemented dynamics, calculates universal
+coupling and source exchange, and recovers the declared tested limits. Even
+then it establishes two controlled readings of a law, not a force identity.
+
+A candidate fails as a physical reconciliation if any of the following holds:
+\begin{enumerate}[leftmargin=*]
+\item its alteration class lacks declared comparison, units or ordering,
+support, and a measurement protocol;
+\item its free flat regime fails to yield constant measured momentum/four-momentum
+under its stated isolation conditions, or it asserts conservation without a
+symmetry/current and boundary accounting;
+\item its load has no dimensioned source type, or its geometry/source equation
+has incompatible divergence or unaccounted exchange;
+\item its clock, proper-acceleration, free/support, or tidal observable conflicts
+with its claimed regime's established tests;
+\item its matter coupling violates UFF, local-Lorentz, redshift, or
+post-Newtonian constraints without a surviving quantitative fit;
+\item it uses a metric, geodesic principle, universal coupling, conservation
+law, or stress tensor as an input while calling it a passive-continuation
+derivation; or
+\item it attributes a present passive continuation to momentum or gravity
+without the declared history-bearing record and inference map; or
+\item it has no finite discriminator beyond GR plus standard low-energy matter
+while claiming a new physical theory. In that case it is, at most, an
+interpretation subject to its own coherence audit.
+\end{enumerate}
+
+\section{Conclusion}\label{sec:conclusion}
+This paper establishes one internal result and one strict programme condition.
+The result is Definition~\ref{def:pc}: reuse of presently operative structure
+has zero additional alteration cost in a declared grounding class. The condition
+is H-PC: flat inertial transport and load-shaped geodesic motion count as two
+physical readings of a common passive-continuation law only after a concrete
+realization derives their equations and limits through the named maps and
+conditions.
+
+Nothing in the inherited vocabulary derives physical momentum, its conservation,
+a metric, connection, source, equivalence principle, geodesic equation, or
+quantum-gravity result. Momentum remains distinct from force. GR free fall
+remains distinct from a locally felt gravitational force, while support and
+tidal effects remain observable. A present in-frame record can establish only
+its declared local relation; differentiating momentum from gravity as an
+explanatory attribution requires a history-bearing record and the stated
+inference map. That requirement supplies no contrary identity claim.
+
+H-EM adds a distinct, conditional electromagnetic field-edge programme while
+preserving those limits. It retains one information-force residual derivative
+and requires separately typed state/clock, local gauge, charge/current, matter,
+dynamics, observables, interface, exchange, covariance, and empirical-recovery
+bridges. It does not derive physical electromagnetism, Maxwell theory, or QED;
+01i remains unreleased, and gravity recovery remains conditional.
+
+\begin{thebibliography}{99}
+\raggedright
+\bibitem[Aldrovandi and Pereira(2013)]{aldrovandipereira2013}
+R.~Aldrovandi and J.~G.~Pereira, \emph{Teleparallel Gravity: An Introduction}
+(Springer, 2013), arXiv:1303.3897.
+
+\bibitem[Barbour and Bertotti(1977)]{barbourbertotti1977}
+J.~B.~Barbour and B.~Bertotti, ``Gravity and inertia in a Machian framework,''
+\emph{Physical Review D} \textbf{16}, 2738 (1977),
+https://doi.org/10.1103/PhysRevD.16.2738.
+
+\bibitem[Bertotti, Iess and Tortora(2003)]{bertotti2003}
+B.~Bertotti, L.~Iess and P.~Tortora, ``A test of general relativity using radio
+links with the Cassini spacecraft,'' \emph{Nature} \textbf{425}, 374 (2003),
+https://doi.org/10.1038/nature01997.
+
+\bibitem[Brading(2005)]{brading2005}
+K.~Brading, ``A note on general relativity, energy conservation, and
+Noether's theorems,'' arXiv:physics/0509097 (2005).
+
+\bibitem[Burgess(2004)]{burgess2004}
+C.~P.~Burgess, ``Quantum gravity in everyday life: General relativity as an
+effective field theory,'' \emph{Living Reviews in Relativity} \textbf{7}, 5
+(2004), arXiv:hep-th/0311082.
+
+\bibitem[Donoghue(1994)]{donoghue1994}
+J.~F.~Donoghue, ``General relativity as an effective field theory,''
+\emph{Physical Review D} \textbf{50}, 3874 (1994),
+https://doi.org/10.1103/PhysRevD.50.3874.
+
+\bibitem[Einstein(1916)]{einstein1916}
+A.~Einstein, ``Die Grundlage der allgemeinen Relativit\"atstheorie,''
+\emph{Annalen der Physik} \textbf{49}, 769 (1916),
+https://doi.org/10.1002/andp.19163540702.
+
+\bibitem[Geroch and Jang(1975)]{gerochjang1975}
+R.~Geroch and P.~S.~Jang, ``Motion of a body in general relativity,''
+\emph{Journal of Mathematical Physics} \textbf{16}, 65 (1975),
+https://doi.org/10.1063/1.522416.
+
+\bibitem[Li, Sotiriou and Barrow(2011)]{lisotirioubarrow2011}
+B.~Li, T.~P.~Sotiriou and J.~D.~Barrow, ``Large-scale structure in $f(T)$
+gravity,'' \emph{Physical Review D} \textbf{83}, 104017 (2011),
+arXiv:1010.1041.
+
+\bibitem[Newton(1687)]{newton1687}
+I.~Newton, \emph{Philosophiae Naturalis Principia Mathematica} (1687),
+https://cudl.lib.cam.ac.uk/view/PR-ADV-B-00039-00001/1.
+
+\bibitem[Noether(1918)]{noether1918}
+E.~Noether, ``Invariante Variationsprobleme,'' \emph{Nachrichten von der
+K\"oniglichen Gesellschaft der Wissenschaften zu G\"ottingen}, 235 (1918);
+English translation arXiv:physics/0503066.
+
+\bibitem[Sciama(1953)]{sciama1953}
+D.~W.~Sciama, ``On the origin of inertia,'' \emph{Monthly Notices of the Royal
+Astronomical Society} \textbf{113}, 34 (1953),
+https://doi.org/10.1093/mnras/113.1.34.
+
+\bibitem[Szabados(2009)]{szabados2009}
+L.~B.~Szabados, ``Quasi-local energy-momentum and angular momentum in general
+relativity,'' \emph{Living Reviews in Relativity} \textbf{12}, 4 (2009),
+https://doi.org/10.12942/lrr-2009-4.
+
+\bibitem[Touboul et al.(2022)]{touboul2022}
+P.~Touboul \emph{et al.}, ``MICROSCOPE mission: Final results of the test of the
+equivalence principle,'' \emph{Physical Review Letters} \textbf{129}, 121102
+(2022), https://doi.org/10.1103/PhysRevLett.129.121102.
+
+\bibitem[Wagner et al.(2012)]{wagner2012}
+T.~A.~Wagner \emph{et al.}, ``Torsion-balance tests of the weak equivalence
+principle,'' \emph{Classical and Quantum Gravity} \textbf{29}, 184002 (2012),
+https://doi.org/10.1088/0264-9381/29/18/184002.
+
+\bibitem[Will(2014)]{will2014}
+C.~M.~Will, ``The confrontation between general relativity and experiment,''
+\emph{Living Reviews in Relativity} \textbf{17}, 4 (2014),
+https://doi.org/10.12942/lrr-2014-4.
+\end{thebibliography}
+
+\end{document}
