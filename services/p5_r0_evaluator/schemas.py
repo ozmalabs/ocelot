@@ -24,7 +24,19 @@ def string(value: Any, name: str, *, digest_value: bool = False) -> str:
 
 
 def run_start(value: Any) -> dict[str, Any]:
-    out = closed(value, {"schema", "lock_digest", "manifest_digest", "worker_contract_digest", "idempotency_key"}, "P5R0RunStartRequestV1")
+    base = {"schema", "lock_digest", "manifest_digest", "worker_contract_digest", "idempotency_key"}
+    extended = base | {"execution_mode"}
+    if isinstance(value, dict) and set(value) == base:
+        # Requests from the old API are explicitly diagnostic-only. They may
+        # not reach the timing-first production path or issue a task there.
+        out = dict(value)
+        out["execution_mode"] = "diagnostic_only"
+    else:
+        out = closed(value, extended, "P5R0RunStartRequestV1")
+    if out.get("schema") != "P5R0RunStartRequestV1":
+        raise SchemaError("closed schema P5R0RunStartRequestV1")
+    if out["execution_mode"] not in {"diagnostic_only", "timing_first"}:
+        raise SchemaError("execution_mode")
     string(out["lock_digest"], "lock_digest", digest_value=True)
     string(out["manifest_digest"], "manifest_digest", digest_value=True)
     string(out["worker_contract_digest"], "worker_contract_digest", digest_value=True)
@@ -57,7 +69,24 @@ def worker_exit(value: Any) -> dict[str, Any]:
 
 
 def execution_evidence(value: Any) -> dict[str, Any]:
-    out = closed(value, {"schema", "closure_digest", "runtime_digest", "host_digest", "kill_digest", "native_verified"}, "P5R0ExecutionEvidenceV1")
+    base_fields = {"closure_digest", "runtime_digest", "host_digest", "kill_digest", "native_verified"}
+    schema = value.get("schema") if isinstance(value, dict) else None
+    if schema == "P5R0ExecutionEvidenceV1":
+        out = closed(value, {"schema", *base_fields}, schema)
+    elif schema == "P5R0ExecutionEvidenceV2":
+        timing_fields = {"timing_record_digest", "input_seed_digest", "input_digest"}
+        binding_fields = {"input_builder_implementation", "input_builder_version", "input_builder_source_digest", "time_seed_algorithm_source_digest"}
+        fields = {"schema", *base_fields, *timing_fields}
+        if isinstance(value, dict) and set(value) == fields:
+            out = dict(value)
+        else:
+            out = closed(value, fields | binding_fields, schema)
+        for key in (*timing_fields, "input_builder_source_digest", "time_seed_algorithm_source_digest"):
+            string(out[key], key, digest_value=True)
+        for key in ("input_builder_implementation", "input_builder_version"):
+            string(out[key], key)
+    else:
+        raise SchemaError("execution evidence schema")
     for key in ("closure_digest", "runtime_digest", "host_digest", "kill_digest"):
         string(out[key], key, digest_value=True)
     if type(out["native_verified"]) is not bool:

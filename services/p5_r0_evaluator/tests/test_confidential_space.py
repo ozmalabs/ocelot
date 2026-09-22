@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from dataclasses import replace
+
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 import pytest
@@ -15,8 +17,11 @@ from services.p5_r0_evaluator.confidential_space import (
     AttestationGate,
     CapabilityFactory,
     ConfidentialSpaceAdapter,
+    ConfidentialSpaceError,
+    DEFAULT_TIMING_BRIDGE_FREETSA_CA_PATH,
     FederatedAccessToken,
     LockedBootstrapConfig,
+    create_timing_bridge_attestor,
     MAX_METADATA_TOKEN_BYTES,
     MAX_STARTUP_EVIDENCE_BYTES,
     LauncherTokenSource,
@@ -28,7 +33,13 @@ from services.p5_r0_evaluator.confidential_space import (
 from services.p5_r0_evaluator.interfaces import Object, StoreError
 from services.p5_r0_evaluator.signing import KMSConfigurationError, KMSEd25519Signer
 from services.p5_r0_evaluator.store import GCSStore, MemoryStore
-from services.p5_r0_evaluator.timing import TimingAttestationError, validate_attestation
+from services.p5_r0_evaluator.timing import TimingAttestationError, TimingAuthorityConfig, validate_attestation
+from services.p5_r0_evaluator.timing_bridge_auth import (
+    IAMCredentialsAccessTokenFactory,
+    IAMCredentialsError,
+    IAM_CREDENTIALS_ENDPOINT,
+)
+from services.p5_r0_evaluator.rfc3161 import FREETSA_CA_PEM_SHA256, FREETSA_TSA_CERTIFICATE_SHA256
 
 
 class FakeSource:
@@ -58,7 +69,7 @@ class FakeSTS:
 
     def exchange(self, *, subject_token, audience, provider):
         self.calls.append((subject_token, audience, provider))
-        return FederatedAccessToken(self.token, 4_000_000_000)
+        return FederatedAccessToken(self.token, 1_200)
 
 
 class FakeBlob:
@@ -94,6 +105,25 @@ class FakeGCSClient:
         return self.bucket_obj
 
 
+class MissingBlob:
+    def reload(self):
+        error = RuntimeError("not found")
+        error.code = 404
+        raise error
+
+
+class MissingBucket:
+    def blob(self, name):
+        assert name == "missing"
+        return MissingBlob()
+
+
+class MissingGCSClient:
+    def bucket(self, name):
+        assert name == "private-bucket"
+        return MissingBucket()
+
+
 class FakeKMSClient:
     def __init__(self, key):
         self.key = key
@@ -117,6 +147,12 @@ class FakeKMSClient:
             signature = self.key.sign(request["data"])
 
         return Response()
+
+
+def test_gcs_store_preserves_create_only_missing_object_boundary():
+    store = GCSStore("private-bucket", client=MissingGCSClient())
+    with pytest.raises(StoreError, match="object not found"):
+        store.get("missing")
 
 
 def _config(nonce_factory=lambda: "nonce-1234"):
@@ -163,7 +199,7 @@ def _claims(config, nonce="nonce-1234", **overrides):
         "submods": {
             "container": {
                 "image_digest": config.image_digest,
-                "env": {"P5R0_EXPECTED_WORKLOAD": config.workload},
+                "env": {"P5R0_EXPECTED_WORKLOAD": config.workload, "P5R0_CONFIDENTIAL_SPACE_SMOKE": "1" if config.confidential_space_smoke else "0"},
             },
             "gce": {
                 "project_number": config.project_number,
@@ -183,6 +219,7 @@ def _claims(config, nonce="nonce-1234", **overrides):
         "hardware_model": ("hwmodel",),
         "secure_boot": ("secboot",),
         "workload": ("submods", "container", "env", "P5R0_EXPECTED_WORKLOAD"),
+        "smoke": ("submods", "container", "env", "P5R0_CONFIDENTIAL_SPACE_SMOKE"),
         "nonce": ("eat_nonce",),
         "issuer": ("iss",),
     }
@@ -238,6 +275,7 @@ def test_wip_token_validation_covers_nonce_issuer_and_fixed_claims():
         ({"secure_boot": False}, "secure_boot mismatch"),
         ({"hardware_model": "GCP_INTEL_TDX"}, "hardware_model mismatch"),
         ({"workload": "wrong-workload"}, "workload mismatch"),
+        ({"smoke": "1"}, "smoke mismatch"),
     )
     for overrides, message in cases:
         gate = AttestationGate(config, FakeSource(), FakeVerifier(_claims(config, **overrides)))
@@ -306,7 +344,112 @@ def test_local_mock_post_attestation_builds_federated_gcs_and_kms_clients():
     assert "federated" not in str(evidence) and "attestation-token" not in str(evidence)
 
 
-def test_sts_failure_keeps_adapter_locked_and_does_not_build_capabilities():
+
+
+def test_timing_bridge_factory_fails_closed_when_configuration_is_missing():
+    config, _ = _config()
+    with pytest.raises(STSError, match="configuration is incomplete"):
+        create_timing_bridge_attestor(FederatedAccessToken("federated", 4_000_000_000), config)
+
+
+def _bridge_config(config, ca_path, ca_pin, cert_pin):
+    return replace(
+        config,
+        timing_authority_id="bridge-authority",
+        timing_key_id="bridge-key",
+        timing_ledger_id="bridge-ledger",
+        timing_public_key_digest="sha256:" + "e" * 64,
+        timing_bridge_endpoint="https://timing-bridge.example.test/v1/timing",
+        timing_bridge_service_account="bridge-service@example.iam.gserviceaccount.com",
+        timing_bridge_audience="https://timing-bridge.example.test",
+        timing_bridge_freetsa_ca_pem_path=str(ca_path),
+        timing_bridge_freetsa_ca_pem_sha256=ca_pin,
+        timing_bridge_freetsa_certificate_sha256=cert_pin,
+    )
+
+
+def test_timing_bridge_factory_wires_post_sts_token_endpoint_audience_and_pins(tmp_path):
+    ca = tmp_path / "freetsa-ca.pem"
+    ca.write_bytes(b"reviewed public CA")
+    config, _ = _config()
+    config = _bridge_config(config, ca, digest(ca.read_bytes()), digest("tsa certificate"))
+    token = FederatedAccessToken("post-attestation-federated", 4_000_000_000)
+    client = create_timing_bridge_attestor(token, config)
+    auth_factory = client.config.authorization_header.__self__
+    assert auth_factory.credentials is token
+    assert auth_factory.service_account == config.timing_bridge_service_account
+    assert auth_factory.audience == config.timing_bridge_audience
+    assert client.config.endpoint == config.timing_bridge_endpoint
+    assert client.config.authority == TimingAuthorityConfig(
+        authority_id=config.timing_authority_id,
+        key_id=config.timing_key_id,
+        ledger_id=config.timing_ledger_id,
+        public_key_digest=config.timing_public_key_digest,
+    )
+    assert client.config.rfc3161_config.endpoint == "https://freetsa.org/tsr"
+    assert client.config.rfc3161_config.tsa_ca_pem_sha256 == digest(ca.read_bytes())
+
+
+@pytest.mark.parametrize("change, match", [
+    ("timing_bridge_endpoint", "timing bridge endpoint"),
+    ("timing_bridge_audience", "bridge audience must be HTTPS"),
+    ("timing_bridge_freetsa_ca_pem_sha256", "CA pin mismatch"),
+])
+def test_timing_bridge_factory_rejects_endpoint_audience_or_pin_mismatch(tmp_path, change, match):
+    ca = tmp_path / "freetsa-ca.pem"
+    ca.write_bytes(b"reviewed public CA")
+    config, _ = _config()
+    config = _bridge_config(config, ca, digest(ca.read_bytes()), digest("tsa certificate"))
+    values = {
+        "timing_bridge_endpoint": "https://timing-bridge.example.test/v1/timing?redirect=1",
+        "timing_bridge_audience": "http://timing-bridge.example.test",
+        "timing_bridge_freetsa_ca_pem_sha256": digest(b"different CA"),
+    }
+    with pytest.raises(STSError, match=match):
+        create_timing_bridge_attestor(FederatedAccessToken("federated", 4_000_000_000), replace(config, **{change: values[change]}))
+
+
+def test_adapter_injects_successful_bridge_attestor_after_sts(monkeypatch):
+    config, signing_key = _config()
+    config = replace(
+        config,
+        timing_authority_id="bridge-authority", timing_key_id="bridge-key",
+        timing_ledger_id="bridge-ledger", timing_public_key_digest="sha256:" + "e" * 64,
+        capability_service_account="p5-evaluator@ocelot-proof.iam.gserviceaccount.com",
+    )
+    seen = []
+    authority = TimingAuthorityConfig(
+        authority_id=config.timing_authority_id, key_id=config.timing_key_id,
+        ledger_id=config.timing_ledger_id, public_key_digest=config.timing_public_key_digest,
+    )
+
+    class Attestor:
+        independent = True
+        def __init__(self):
+            self.authority = authority
+
+    def attestor_factory(token, received_config):
+        seen.append((token, received_config))
+        return Attestor()
+
+    monkeypatch.setattr(CapabilityFactory, "_storage_client", lambda self, token: FakeGCSClient())
+    monkeypatch.setattr(CapabilityFactory, "_kms_client", lambda self, token: FakeKMSClient(signing_key))
+    captured = []
+    adapter = ConfidentialSpaceAdapter(
+        config, source=FakeSource(), verifier=FakeVerifier(_claims(config)), sts=FakeSTS(),
+        capability_factory=CapabilityFactory(
+            config,
+            impersonation_factory=lambda token: FederatedAccessToken("impersonated", 1_150),
+            timing_attestor_factory=attestor_factory,
+        ),
+        service_factory=lambda capabilities: captured.append(capabilities) or object(),
+    )
+    adapter.activate_attested_service()
+    assert seen and seen[0][0].access_token == "federated"
+    assert seen[0][1] is config
+    assert captured[0].timing_attestor.independent is True
+
+
     config, _ = _config()
 
     class FailingSTS:
@@ -370,6 +513,90 @@ def test_sts_serializes_canonical_provider_audience_and_validates_bearer_respons
         GoogleSTSClient(endpoint="https://attacker.invalid/token")
 
 
+def test_generate_access_token_is_fixed_bounded_and_expiry_bound():
+    import json
+
+    token = FederatedAccessToken("federated-source", 4_000)
+    endpoint = f"{IAM_CREDENTIALS_ENDPOINT}/p5-evaluator@ocelot-proof.iam.gserviceaccount.com:generateAccessToken"
+
+    class Response:
+        status = 200
+        headers = {"Content-Type": "application/json"}
+        def geturl(self):
+            return endpoint
+        def read(self, limit):
+            return b'{"accessToken":"impersonated","expireTime":"1970-01-01T00:33:20Z"}'[:limit]
+
+    class Opener:
+        def __init__(self):
+            self.requests = []
+        def open(self, request, timeout):
+            self.requests.append((request, timeout))
+            return Response()
+
+    opener = Opener()
+    factory = IAMCredentialsAccessTokenFactory(
+        "p5-evaluator@ocelot-proof.iam.gserviceaccount.com", token,
+        opener=opener, clock=lambda: 1_000,
+    )
+    effective = factory()
+    assert effective == FederatedAccessToken("impersonated", 2_000)
+    request, timeout = opener.requests[0]
+    assert request.full_url == endpoint
+    assert request.get_header("Authorization") == "Bearer federated-source"
+    assert json.loads(request.data) == {"lifetime": "2970s", "scope": ["https://www.googleapis.com/auth/cloud-platform"]}
+    assert timeout == 5.0
+
+    with pytest.raises(IAMCredentialsError, match="target service account"):
+        IAMCredentialsAccessTokenFactory("not-an-account", token)
+
+
+def test_generate_access_token_rejects_redirect_duplicate_expiry_and_oversize():
+    endpoint = f"{IAM_CREDENTIALS_ENDPOINT}/p5-evaluator@ocelot-proof.iam.gserviceaccount.com:generateAccessToken"
+    token = FederatedAccessToken("federated-source", 4_000)
+
+    class Response:
+        status = 200
+        headers = {"Content-Type": "application/json"}
+        def __init__(self, body, url=endpoint):
+            self.body, self.url = body, url
+        def geturl(self):
+            return self.url
+        def read(self, limit):
+            return self.body[:limit]
+
+    cases = (
+        (b'{"accessToken":"x","accessToken":"y","expireTime":"1970-01-01T00:33:20Z"}', endpoint, "response schema"),
+        (b'{"accessToken":"x","expireTime":"1970-01-01T01:23:20Z"}', endpoint, "outside the allowed lifetime"),
+        (b'{"accessToken":"x","expireTime":"1970-01-01T00:33:20Z"}', "https://attacker.invalid", "redirect"),
+        (b"x" * (16 * 1024 + 1), endpoint, "too large"),
+    )
+    for body, url, message in cases:
+        class Opener:
+            def open(self, request, timeout):
+                return Response(body, url)
+        factory = IAMCredentialsAccessTokenFactory(
+            "p5-evaluator@ocelot-proof.iam.gserviceaccount.com", token,
+            opener=Opener(), clock=lambda: 1_000,
+        )
+        with pytest.raises(IAMCredentialsError, match=message):
+            factory()
+
+
+def test_capability_factory_uses_impersonated_token_for_gcs_and_kms_but_not_timing():
+    config, key = _config()
+    config = replace(config, capability_service_account="p5-evaluator@ocelot-proof.iam.gserviceaccount.com")
+    seen = []
+    factory = CapabilityFactory(
+        config,
+        impersonation_factory=lambda token: FederatedAccessToken("impersonated", 1_150),
+        storage_client_factory=lambda token: seen.append(("gcs", token)) or FakeGCSClient(),
+        kms_client_factory=lambda token: seen.append(("kms", token)) or FakeKMSClient(key),
+    )
+    factory.build(FederatedAccessToken("federated", 4_000_000_000))
+    assert [(kind, token.access_token) for kind, token in seen] == [("gcs", "impersonated"), ("kms", "impersonated")]
+
+
 def test_gcs_store_rejects_ambient_adc_client_creation():
     from services.p5_r0_evaluator.store import GCSStore
     with pytest.raises(StoreError, match="explicit federated"):
@@ -400,7 +627,7 @@ def test_expired_federated_capability_relocks_adapter():
 
 def _env_for_config(config, authority):
     from dataclasses import replace
-    config = replace(config, authority=authority, timing_authority_id="independent-authority", timing_key_id="independent-key", timing_ledger_id="independent-ledger", timing_public_key_digest="sha256:" + "e" * 64, base_image_digest="sha256:" + "f" * 64, service_name="p5-evaluator", region="us-central1", cpu_limit="1", memory_limit="512Mi")
+    config = replace(config, authority=authority, timing_authority_id="independent-authority", timing_key_id="independent-key", timing_ledger_id="independent-ledger", timing_public_key_digest="sha256:" + "e" * 64, timing_bridge_endpoint="https://timing-bridge.example.test/v1/timing", timing_bridge_service_account="bridge-service@example.iam.gserviceaccount.com", timing_bridge_audience="https://timing-bridge.example.test", timing_bridge_freetsa_ca_pem_path="/app/services/p5_r0_evaluator/deploy/freetsa-cacert.pem", timing_bridge_freetsa_ca_pem_sha256="sha256:" + "f" * 64, timing_bridge_freetsa_certificate_sha256="sha256:" + "1" * 64, base_image_digest="sha256:" + "f" * 64, service_name="p5-evaluator", region="us-central1", cpu_limit="1", memory_limit="512Mi")
     provider = config.wip_provider
     env = {
         "P5R0_AUTHORITY_JSON": __import__("json").dumps(authority, sort_keys=True, separators=(",", ":")),
@@ -421,6 +648,7 @@ def _env_for_config(config, authority):
         "P5R0_BUCKET": config.bucket,
         "P5R0_PREFIX": "v3",
         "P5R0_KMS_KEY_VERSION": config.kms_key_version,
+        "P5R0_CAPABILITY_SERVICE_ACCOUNT": config.capability_service_account or "",
         "P5R0_RUNTIME_DIGEST": config.runtime_digest,
         "P5R0_RESOURCE_PROFILE_DIGEST": config.resource_profile_digest,
         "P5R0_BASE_IMAGE_DIGEST": config.base_image_digest,
@@ -436,11 +664,96 @@ def _env_for_config(config, authority):
         "P5R0_TIMING_KEY_ID": "independent-key",
         "P5R0_TIMING_LEDGER_ID": "independent-ledger",
         "P5R0_TIMING_PUBLIC_KEY_DIGEST": "sha256:" + "e" * 64,
+        "P5R0_TIMING_BRIDGE_ENDPOINT": "https://timing-bridge.example.test/v1/timing",
+        "P5R0_TIMING_BRIDGE_SERVICE_ACCOUNT": "bridge-service@example.iam.gserviceaccount.com",
+        "P5R0_TIMING_BRIDGE_AUDIENCE": "https://timing-bridge.example.test",
+        "P5R0_TIMING_BRIDGE_FREETSA_CA_PEM_PATH": "/app/services/p5_r0_evaluator/deploy/freetsa-cacert.pem",
+        "P5R0_TIMING_BRIDGE_FREETSA_CA_PEM_SHA256": "sha256:" + "f" * 64,
+        "P5R0_TIMING_BRIDGE_FREETSA_CERTIFICATE_SHA256": "sha256:" + "1" * 64,
     }
+    if config.attestation_subject_prefix is not None:
+        env["P5R0_ATTESTATION_SUBJECT_PREFIX"] = config.attestation_subject_prefix
     return env
 
 
-def test_closed_authority_and_wip_policy_fail_before_activation():
+def _set_production_env(monkeypatch, config):
+    from dataclasses import replace
+
+    prefix = f"https://www.googleapis.com/compute/v1/projects/{config.project_id}/zones/{config.zone}/instances/"
+    config = replace(config, attestation_subject_prefix=prefix, capability_service_account="p5-evaluator@ocelot-proof.iam.gserviceaccount.com")
+    key = Ed25519PrivateKey.generate()
+    public = b64encode(key.public_key().public_bytes_raw())
+    authority = {
+        "schema": "P5R0PublicAuthorityV4", "authority_id": "authority", "key_id": "key",
+        "public_key": public, "public_key_digest": digest(public),
+        "transport_attestation": {
+            "schema": "P5R0AuthorityTransportV1", "provider": config.wip_provider,
+            "audience": config.attestation_audience, "event": "confidential_space_attestation",
+        },
+    }
+    for name, value in _env_for_config(config, authority).items():
+        monkeypatch.setenv(name, value)
+    return config
+
+
+def test_production_from_env_requires_exact_vm_subject_prefix(monkeypatch):
+    from dataclasses import replace
+
+    config, key = _config()
+    prefix = "https://www.googleapis.com/compute/v1/projects/project/zones/us-central1-a/instances/"
+    config = replace(config, attestation_subject_prefix=prefix, capability_service_account="p5-evaluator@ocelot-proof.iam.gserviceaccount.com")
+    public = b64encode(key.public_key().public_bytes_raw())
+    authority = {
+        "schema": "P5R0PublicAuthorityV4", "authority_id": "authority", "key_id": "key",
+        "public_key": public, "public_key_digest": digest(public),
+        "transport_attestation": {
+            "schema": "P5R0AuthorityTransportV1", "provider": config.wip_provider,
+            "audience": config.attestation_audience, "event": "confidential_space_attestation",
+        },
+    }
+    env = _env_for_config(config, authority)
+    env.pop("P5R0_ATTESTATION_SUBJECT_PREFIX")
+    for name, value in env.items():
+        monkeypatch.setenv(name, value)
+    with pytest.raises(RuntimeError, match="P5R0_ATTESTATION_SUBJECT_PREFIX is required"):
+        LockedBootstrapConfig.from_env(None)
+
+    monkeypatch.setenv("P5R0_ATTESTATION_SUBJECT_PREFIX", prefix)
+    parsed = LockedBootstrapConfig.from_env(None)
+    assert parsed.attestation_subject_prefix == prefix
+    monkeypatch.delenv("P5R0_CAPABILITY_SERVICE_ACCOUNT")
+    with pytest.raises(RuntimeError, match="P5R0_CAPABILITY_SERVICE_ACCOUNT is required"):
+        LockedBootstrapConfig.from_env(None)
+    monkeypatch.setenv("P5R0_CAPABILITY_SERVICE_ACCOUNT", "not-an-account")
+    with pytest.raises(RuntimeError, match="P5R0_CAPABILITY_SERVICE_ACCOUNT is invalid"):
+        LockedBootstrapConfig.from_env(None)
+    monkeypatch.setenv("P5R0_CAPABILITY_SERVICE_ACCOUNT", "p5-evaluator@ocelot-proof.iam.gserviceaccount.com")
+    for invalid in (
+        prefix[:-1],
+        prefix.replace("/zones/us-central1-a/", "/zones/europe-west1-b/"),
+        "https://attacker.example/compute/v1/projects/project/zones/us-central1-a/instances/",
+    ):
+        monkeypatch.setenv("P5R0_ATTESTATION_SUBJECT_PREFIX", invalid)
+        with pytest.raises(RuntimeError, match="ATTESTATION_SUBJECT_PREFIX"):
+            LockedBootstrapConfig.from_env(None)
+
+
+def test_legacy_fixture_subject_binding_remains_exact_and_prefix_binds_separate_identity_domain():
+    from dataclasses import replace
+
+    legacy, _ = _config()
+    prefix = "https://www.googleapis.com/compute/v1/projects/project/zones/us-central1-a/instances/"
+    prefixed = replace(legacy, attestation_subject_prefix=prefix)
+    AttestationGate(prefixed, FakeSource(), FakeVerifier(_claims(prefixed, sub=prefix + "evaluator-cs"))).verify_startup()
+    with pytest.raises(AttestationError, match="subject mismatch"):
+        AttestationGate(prefixed, FakeSource(), FakeVerifier(_claims(prefixed, sub="runner"))).verify_startup()
+    AttestationGate(legacy, FakeSource(), FakeVerifier(_claims(legacy, sub="runner"))).verify_startup()
+    assert legacy.policy_digest != prefixed.policy_digest
+    assert legacy.attestation_claims_digest != prefixed.attestation_claims_digest
+    assert legacy.wip_policy_digest != prefixed.wip_policy_digest
+
+
+
     config, key = _config()
     public = b64encode(key.public_key().public_bytes_raw())
     authority = {"schema": "P5R0PublicAuthorityV4", "authority_id": "authority", "key_id": "key", "public_key": public, "public_key_digest": digest(public), "transport_attestation": {"schema": "P5R0AuthorityTransportV1", "provider": config.wip_provider, "audience": config.attestation_audience, "event": "confidential_space_attestation"}}
@@ -502,6 +815,89 @@ def test_launcher_posts_canonical_oidc_request_and_bounds_response():
         source.fetch(audience="aud", nonce="short")
     with pytest.raises(AttestationError, match="10-74"):
         source.fetch(audience="aud", nonce="x" * 75)
+
+
+def test_launcher_accepts_live_chunked_json_and_text_html_raw_jwt_responses():
+    cases = (
+        (
+            b"Content-Type: application/json\r\nTransfer-Encoding: chunked",
+            canonical_bytes({"token": "chunked-jwt"}),
+            "chunked-jwt",
+        ),
+        (
+            b"Content-Type: text/html\r\nContent-Length: 24",
+            b"header.payload.signature",
+            "header.payload.signature",
+        ),
+    )
+    for headers, body, expected in cases:
+        framed_body = body
+        if b"Transfer-Encoding: chunked" in headers:
+            framed_body = (b"%x\r\n" % len(body)) + body + b"\r\n0\r\n\r\n"
+        raw = b"HTTP/1.1 200 OK\r\n" + headers + b"\r\n\r\n" + framed_body
+
+        class FakeSocket:
+            def __init__(self):
+                self.chunks = [raw, b""]
+                self.request = b""
+
+            def settimeout(self, value):
+                assert value == 5
+
+            def connect(self, path):
+                assert path == "/run/container_launcher/teeserver.sock"
+
+            def sendall(self, data):
+                self.request = data
+
+            def recv(self, size):
+                del size
+                return self.chunks.pop(0)
+
+            def close(self):
+                pass
+
+        sock = FakeSocket()
+        assert LauncherTokenSource(socket_factory=lambda *args: sock).fetch(
+            audience="aud", nonce="nonce-1234"
+        ) == expected
+        assert sock.request.startswith(b"POST /v1/token HTTP/1.1\r\nHost: localhost\r\n")
+
+
+def test_launcher_redacts_invalid_response_body_from_production_errors():
+    secret = b"header.payload.extra.secret-never-log-this"
+    raw = (
+        b"HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: "
+        + str(len(secret)).encode("ascii")
+        + b"\r\n\r\n"
+        + secret
+    )
+
+    class FakeSocket:
+        def settimeout(self, value):
+            pass
+
+        def connect(self, path):
+            pass
+
+        def sendall(self, data):
+            pass
+
+        def recv(self, size):
+            del size
+            if not hasattr(self, "sent"):
+                self.sent = True
+                return raw
+            return b""
+
+        def close(self):
+            pass
+
+    with pytest.raises(AttestationError, match="not_token") as error:
+        LauncherTokenSource(socket_factory=lambda *args: FakeSocket()).fetch(
+            audience="aud", nonce="nonce-1234"
+        )
+    assert secret.decode("ascii") not in str(error.value)
 
 
 def test_launcher_rejects_oversized_response():
@@ -798,8 +1194,89 @@ def test_official_nested_token_fixture_matches_default_production_claim_paths():
         "hardware_model": "hwmodel",
         "secure_boot": "secboot",
         "workload": "submods.container.env.P5R0_EXPECTED_WORKLOAD",
+        "smoke": "submods.container.env.P5R0_CONFIDENTIAL_SPACE_SMOKE",
     }
 
+
+
+def test_confidential_space_smoke_disabled_by_default(monkeypatch):
+    import importlib
+    import os
+
+    config, _ = _config()
+    _set_production_env(monkeypatch, config)
+    monkeypatch.delenv("P5R0_CONFIDENTIAL_SPACE_SMOKE", raising=False)
+    app = importlib.import_module("services.p5_r0_evaluator.confidential_space_app")
+    assert app.service.config.confidential_space_smoke is False
+    assert app.service.attested is False
+
+
+def test_confidential_space_smoke_redacts_timing_record(monkeypatch):
+    import importlib
+    from types import SimpleNamespace
+
+    config, _ = _config()
+    _set_production_env(monkeypatch, config)
+    app = importlib.import_module("services.p5_r0_evaluator.confidential_space_app")
+    emitted = []
+
+    class Attestor:
+        independent = True
+        def __init__(self):
+            self.calls = []
+        def record(self, **kwargs):
+            self.calls.append(kwargs)
+            assert kwargs == {
+                "run_id": "sha256:" + "0" * 64,
+                "task_id": "sha256:" + "1" * 64,
+                "event": "task_issued",
+                "payload_digest": "sha256:" + "2" * 64,
+            }
+            return {"schema": "P5R0IndependentTimingAttestationV3", "sequence": 1, "proof": "secret-proof", "token": "secret-token"}
+    attestor = Attestor()
+    service = SimpleNamespace(timing_certified=True, timing_attestor=attestor)
+    adapter = SimpleNamespace(
+        config=replace(config, confidential_space_smoke=True),
+        startup_evidence={"schema": "P5R0StartupAttestationEvidenceV1", "status": "attested"},
+        activate_attested_service=lambda: service,
+    )
+    result = app.run_startup_smoke(adapter, emit=emitted.append)
+    assert result == {
+        "schema": "P5R0ConfidentialSpaceSmokeV1", "status": "passed",
+        "startup_evidence_digest": digest(adapter.startup_evidence), "startup_status": "attested", "bootstrap_failure": None,
+        "timing_record_digest": digest({"schema": "P5R0IndependentTimingAttestationV3", "sequence": 1, "proof": "secret-proof", "token": "secret-token"}),
+        "timing_schema": "P5R0IndependentTimingAttestationV3", "timing_sequence": 1,
+    }
+    assert len(emitted) == 1
+    assert len(attestor.calls) == 1
+    assert "secret-proof" not in emitted[0] and "secret-token" not in emitted[0]
+
+
+def test_confidential_space_smoke_timing_failure_is_redacted_and_fail_closed(monkeypatch):
+    import importlib
+    from types import SimpleNamespace
+
+    config, _ = _config()
+    _set_production_env(monkeypatch, config)
+    app = importlib.import_module("services.p5_r0_evaluator.confidential_space_app")
+    emitted = []
+
+    class Attestor:
+        independent = True
+        def record(self, **kwargs):
+            raise RuntimeError("raw bridge response and token must not escape")
+
+    service = SimpleNamespace(timing_certified=True, timing_attestor=Attestor())
+    adapter = SimpleNamespace(
+        config=replace(config, confidential_space_smoke=True),
+        startup_evidence={"schema": "P5R0StartupAttestationEvidenceV1", "status": "attested"},
+        activate_attested_service=lambda: service,
+    )
+    with pytest.raises(ConfidentialSpaceError, match="failed closed"):
+        app.run_startup_smoke(adapter, emit=emitted.append)
+    assert len(emitted) == 1
+    assert "raw bridge response" not in emitted[0] and "token" not in emitted[0]
+    assert '"status":"failed"' in emitted[0]
 
 
 def test_verified_binding_rejects_expired_token_and_policy_image_mismatch():
@@ -854,3 +1331,12 @@ def test_default_service_retains_binding_but_missing_independent_timing_stays_fa
     assert service.timing_certified is False
     assert service.bounded_compute_ready is False
     assert service.bounded_compute_certified is False
+
+
+
+def test_gcs_only_capability_account_cannot_activate_shared_kms_factory():
+    config, _ = _config()
+    config = replace(config, capability_service_account="p5-r0-gcs-only@ocelot-proof.iam.gserviceaccount.com")
+    factory = CapabilityFactory(config, storage_client_factory=lambda token: object(), kms_client_factory=lambda token: object())
+    with pytest.raises(STSError, match="separate KMS path is required"):
+        factory.build(FederatedAccessToken("federated", 4_000_000_000))

@@ -15,10 +15,15 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-LAUNCHER_SOCKET = "/run/container_launcher/teeserver.sock"
-TOKEN_PATH = "/v1/token"
-MAX_TOKEN_BYTES = 64 * 1024
-MAX_RESPONSE_HEADERS_BYTES = 8 * 1024
+try:
+    from services.cs_attestation_probe import launcher_protocol
+except ImportError:  # The minimal probe image copies this module beside probe.py.
+    import launcher_protocol
+
+LAUNCHER_SOCKET = launcher_protocol.LAUNCHER_SOCKET
+TOKEN_PATH = launcher_protocol.TOKEN_PATH
+MAX_TOKEN_BYTES = launcher_protocol.MAX_TOKEN_BYTES
+MAX_RESPONSE_HEADERS_BYTES = launcher_protocol.MAX_RESPONSE_HEADERS_BYTES
 MAX_EVIDENCE_BYTES = 16 * 1024
 MAX_PUBLIC_VALUE_LENGTH = 512
 MIN_NONCE_BYTES = 10
@@ -60,235 +65,24 @@ def _nonce() -> str:
     return value
 
 
-_TOKEN_CHARS = frozenset("!#$%&'*+-.^_`|~0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-
-
-def _is_token(value: str) -> bool:
-    return bool(value) and all(char in _TOKEN_CHARS for char in value)
-
-
-def _receive(sock: socket.socket, buffer: bytearray) -> None:
-    chunk = sock.recv(4096)
-    if not chunk:
-        raise RuntimeError("launcher response ended early")
-    buffer.extend(chunk)
-
-
-def _read_line(sock: socket.socket, buffer: bytearray, limit: int) -> bytes:
-    while True:
-        end = buffer.find(b"\r\n")
-        if end >= 0:
-            if end + 2 > limit:
-                raise RuntimeError("launcher response framing line is too large")
-            line = bytes(buffer[:end])
-            del buffer[:end + 2]
-            return line
-        if len(buffer) >= limit:
-            raise RuntimeError("launcher response framing line is too large")
-        _receive(sock, buffer)
-
-
-def _parse_header_line(line: str, headers: dict[str, str]) -> None:
-    name, separator, value = line.partition(":")
-    if not separator or not _is_token(name) or name.lower() in headers:
-        raise RuntimeError("launcher response headers are invalid")
-    if any(ord(char) < 32 and char != "\t" for char in value):
-        raise RuntimeError("launcher response headers are invalid")
-    headers[name.lower()] = value.strip()
-
-
-def _parse_chunk_extensions(value: str) -> None:
-    for extension in value.split(";"):
-        extension = extension.strip(" \t")
-        if not extension:
-            raise RuntimeError("launcher chunk extensions are invalid")
-        name, separator, extension_value = extension.partition("=")
-        name = name.strip(" \t")
-        if not _is_token(name):
-            raise RuntimeError("launcher chunk extensions are invalid")
-        if not separator:
-            continue
-        extension_value = extension_value.strip(" \t")
-        if not extension_value:
-            raise RuntimeError("launcher chunk extensions are invalid")
-        if extension_value.startswith('"'):
-            if not extension_value.endswith('"') or len(extension_value) < 2:
-                raise RuntimeError("launcher chunk extensions are invalid")
-            escaped = False
-            for char in extension_value[1:-1]:
-                if ord(char) < 32 and char != "\t":
-                    raise RuntimeError("launcher chunk extensions are invalid")
-                if escaped:
-                    escaped = False
-                elif char == "\\":
-                    escaped = True
-                elif char == '"':
-                    raise RuntimeError("launcher chunk extensions are invalid")
-            if escaped:
-                raise RuntimeError("launcher chunk extensions are invalid")
-        elif not _is_token(extension_value):
-            raise RuntimeError("launcher chunk extensions are invalid")
-
-
-def _parse_chunk_size(line: bytes) -> int:
+def _read_response(sock: object) -> bytes:
     try:
-        value = line.decode("ascii")
-    except UnicodeDecodeError as exc:
-        raise RuntimeError("launcher chunk size is invalid") from exc
-    size_text, separator, extensions = value.partition(";")
-    if not size_text or any(char not in "0123456789abcdefABCDEF" for char in size_text):
-        raise RuntimeError("launcher chunk size is invalid")
-    if separator:
-        _parse_chunk_extensions(extensions)
-    try:
-        size = int(size_text, 16)
-    except ValueError as exc:
-        raise RuntimeError("launcher chunk size is invalid") from exc
-    if size > MAX_TOKEN_BYTES:
-        raise RuntimeError("launcher token is too large")
-    return size
-
-
-def _read_exact(sock: socket.socket, buffer: bytearray, length: int) -> bytes:
-    while len(buffer) < length:
-        _receive(sock, buffer)
-    value = bytes(buffer[:length])
-    del buffer[:length]
-    return value
-
-
-def _reject_trailing_data(sock: socket.socket, buffer: bytearray) -> None:
-    if buffer or sock.recv(1):
-        raise RuntimeError("launcher response has trailing data")
-
-
-def _read_chunked_body(sock: socket.socket, buffer: bytearray) -> bytes:
-    body = bytearray()
-    chunk_count = 0
-    while True:
-        size = _parse_chunk_size(_read_line(sock, buffer, MAX_RESPONSE_HEADERS_BYTES))
-        if size == 0:
-            trailers: dict[str, str] = {}
-            trailer_bytes = 0
-            while True:
-                line = _read_line(sock, buffer, MAX_RESPONSE_HEADERS_BYTES)
-                trailer_bytes += len(line) + 2
-                if trailer_bytes > MAX_RESPONSE_HEADERS_BYTES:
-                    raise RuntimeError("launcher response trailers are too large")
-                if not line:
-                    break
-                try:
-                    text = line.decode("ascii")
-                except UnicodeDecodeError as exc:
-                    raise RuntimeError("launcher response trailers are invalid") from exc
-                _parse_header_line(text, trailers)
-                if text.partition(":")[0].lower() in {"content-length", "transfer-encoding"}:
-                    raise RuntimeError("launcher response trailers are invalid")
-            _reject_trailing_data(sock, buffer)
-            return bytes(body)
-        if size > MAX_TOKEN_BYTES - len(body):
-            raise RuntimeError("launcher token is too large")
-        body.extend(_read_exact(sock, buffer, size))
-        if _read_exact(sock, buffer, 2) != b"\r\n":
-            raise RuntimeError("launcher chunk data terminator is invalid")
-        chunk_count += 1
-        if chunk_count > MAX_TOKEN_BYTES:
-            raise RuntimeError("launcher response has too many chunks")
-
-
-def _read_response(sock: socket.socket) -> bytes:
-    data = bytearray()
-    marker = b"\r\n\r\n"
-    while marker not in data:
-        _receive(sock, data)
-        end = data.find(marker)
-        if end >= 0:
-            if end + len(marker) > MAX_RESPONSE_HEADERS_BYTES:
-                raise RuntimeError("launcher response headers are too large")
-            break
-        if len(data) > MAX_RESPONSE_HEADERS_BYTES:
-            raise RuntimeError("launcher response headers are too large")
-    end = data.index(marker)
-    if end + len(marker) > MAX_RESPONSE_HEADERS_BYTES:
-        raise RuntimeError("launcher response headers are too large")
-    try:
-        header = bytes(data[:end]).decode("ascii")
-    except UnicodeDecodeError as exc:
-        raise RuntimeError("launcher response headers are invalid") from exc
-    lines = header.split("\r\n")
-    if not lines or not lines[0].startswith("HTTP/1.1 "):
-        raise RuntimeError("launcher_response_status_invalid")
-    status_parts = lines[0].split()
-    if len(status_parts) < 2 or status_parts[1] != "200":
-        code = status_parts[1] if len(status_parts) > 1 and status_parts[1].isdigit() else "unknown"
-        raise RuntimeError("launcher_response_status_" + code)
-    status_code = status_parts[1]
-    headers: dict[str, str] = {}
-    for line in lines[1:]:
-        _parse_header_line(line, headers)
-    content_type = headers.get("content-type", "").split(";", 1)[0].lower()
-    buffer = bytearray(data[end + len(marker):])
-    transfer_encoding = headers.get("transfer-encoding")
-    if transfer_encoding is not None:
-        encodings = [part.strip().lower() for part in transfer_encoding.split(",")]
-        if "content-length" in headers or encodings != ["chunked"]:
-            detail = "content_length" if "content-length" in headers else "encoding"
-            raise RuntimeError("launcher_header_transfer_encoding_" + detail)
-        body = _read_chunked_body(sock, buffer)
-    else:
-        content_length = headers.get("content-length")
-        if content_length is None or not content_length.isdecimal():
-            raise RuntimeError("launcher response length is invalid")
-        length = int(content_length)
-        if length > MAX_TOKEN_BYTES:
-            raise RuntimeError("launcher token is too large")
-        body = _read_exact(sock, buffer, length)
-        _reject_trailing_data(sock, buffer)
-    if content_type not in {"application/json", "application/jwt", "text/html"}:
-        value = headers.get("content-type", "missing").lower().replace("/", "_").replace(";", "_")[:48]
-        raise RuntimeError("launcher_header_content_type_%s_status_%s_body_sha256_%s_len_%d" % (value, status_code, hashlib.sha256(body).hexdigest(), len(body)))
-    return body
+        return launcher_protocol.read_response(sock)
+    except launcher_protocol.LauncherProtocolError as exc:
+        raise RuntimeError(str(exc)) from exc
 
 
 def fetch_token(*, audience: str, nonce: str) -> str:
-    body = json.dumps(
-        {"audience": audience, "token_type": "OIDC", "nonces": [nonce]},
-        sort_keys=True,
-        separators=(",", ":"),
-    ).encode("utf-8")
-    request = (
-        b"POST " + TOKEN_PATH.encode("ascii") + b" HTTP/1.1\r\nHost: localhost\r\n"
-        b"Content-Type: application/json\r\nAccept: application/json\r\nContent-Length: " + str(len(body)).encode("ascii")
-        + b"\r\nConnection: close\r\n\r\n" + body
-    )
-    sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     try:
-        sock.settimeout(5)
-        sock.connect(LAUNCHER_SOCKET)
-        sock.sendall(request)
-        raw = _read_response(sock)
-    except RuntimeError:
-        raise
+        return launcher_protocol.fetch_token(
+            audience=audience,
+            nonce=nonce,
+            socket_factory=socket.socket,
+        )
+    except launcher_protocol.LauncherProtocolError as exc:
+        raise RuntimeError(str(exc)) from exc
     except Exception as exc:
         raise RuntimeError("launcher token unavailable") from exc
-    finally:
-        sock.close()
-    try:
-        result = json.loads(raw.decode("utf-8"))
-    except (UnicodeDecodeError, json.JSONDecodeError):
-        try:
-            token = raw.decode("ascii").strip()
-        except UnicodeDecodeError as exc:
-            raise RuntimeError("launcher_response_not_token") from exc
-        if len(token.encode("ascii")) > MAX_TOKEN_BYTES or token.count(".") != 2 or not all(token.split(".")):
-            raise RuntimeError("launcher_response_not_token")
-        return token
-    if not isinstance(result, dict) or set(result) != {"token"} or not isinstance(result.get("token"), str) or not result["token"]:
-        raise RuntimeError("launcher_response_token_schema")
-    token = result["token"]
-    if len(token.encode("utf-8")) > MAX_TOKEN_BYTES:
-        raise RuntimeError("launcher token is too large")
-    return token
 
 
 def verify_jwt(token: str, *, audience: str, issuer: str, nonce: str) -> dict:

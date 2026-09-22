@@ -20,6 +20,7 @@ class AttestationBindingError(ValueError):
 
 _BINDING_SEAL = object()
 _BINDING_SCHEMA = "P5R0VerifiedAttestationBindingV1"
+_BINDING_REGISTRY: dict[int, tuple["VerifiedAttestationBinding", tuple[Any, ...]]] = {}
 
 
 @dataclass(frozen=True, init=False)
@@ -78,9 +79,22 @@ class VerifiedAttestationBinding:
 
     def as_public_dict(self) -> dict[str, Any]:
         """Return only the non-secret commitment fields."""
+        if not _is_registered_attestation_binding(self):
+            raise AttestationBindingError("verified attestation binding is not adapter-issued")
         return {"schema": _BINDING_SCHEMA, **{
             field: getattr(self, field) for field in self.__dataclass_fields__
         }}
+
+
+def _binding_snapshot(value: VerifiedAttestationBinding) -> tuple[Any, ...]:
+    return tuple(getattr(value, field) for field in value.__dataclass_fields__)
+
+
+def _is_registered_attestation_binding(value: Any) -> bool:
+    if type(value) is not VerifiedAttestationBinding:
+        return False
+    entry = _BINDING_REGISTRY.get(id(value))
+    return entry is not None and entry[0] is value and _binding_snapshot(value) == entry[1]
 
 
 def _digest(value: Any, name: str) -> str:
@@ -161,7 +175,9 @@ def _build_verified_attestation_binding(attestation: Any, token: Any, policy: An
     for name in ("claims_digest", "policy_digest", "claim_paths_digest", "attestation_claims_digest", "wip_policy_digest"):
         _digest(values[name], name)
     values["binding_digest"] = digest({"schema": _BINDING_SCHEMA, **values})
-    return VerifiedAttestationBinding(**values, _seal=_BINDING_SEAL)
+    binding = VerifiedAttestationBinding(**values, _seal=_BINDING_SEAL)
+    _BINDING_REGISTRY[id(binding)] = (binding, _binding_snapshot(binding))
+    return binding
 
 
 __all__ = ["AttestationBindingError", "VerifiedAttestationBinding"]

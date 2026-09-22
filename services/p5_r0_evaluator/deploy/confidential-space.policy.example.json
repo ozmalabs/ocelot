@@ -16,6 +16,7 @@
     "token_request": {"audience": "https://sts.googleapis.com", "token_type": "OIDC", "nonces": ["opaque_nonce"]},
     "audience": "https://sts.googleapis.com",
     "issuer": "https://confidentialcomputing.googleapis.com",
+    "subject_prefix": "https://www.googleapis.com/compute/v1/projects/REPLACE_PROJECT_ID/zones/REPLACE_ZONE/instances/",
     "nonce": "10-74-byte-per-startup-random-opaque-nonce",
     "claim_paths": {
       "audience": "aud",
@@ -32,7 +33,8 @@
       "tee": "swname",
       "hardware_model": "hwmodel",
       "secure_boot": "secboot",
-      "workload": "submods.container.env.P5R0_EXPECTED_WORKLOAD"
+      "workload": "submods.container.env.P5R0_EXPECTED_WORKLOAD",
+      "smoke": "submods.container.env.P5R0_CONFIDENTIAL_SPACE_SMOKE"
     }
   },
   "federation": {
@@ -42,8 +44,14 @@
     "client_credentials": "none"
   },
   "capabilities": {
+    "impersonation": {
+      "service_account": "p5-evaluator@REPLACE_PROJECT_ID.iam.gserviceaccount.com",
+      "method": "IAM Credentials generateAccessToken",
+      "source": "verified_post_attestation_federated_token",
+      "scope": "https://www.googleapis.com/auth/cloud-platform"
+    },
     "gcs": ["locks/<sha256>.json", "manifests/<sha256>.json", "truth/<sha256>.json", "runs/<run-sha256>/"],
     "kms": "one reviewed Ed25519 cryptoKeyVersion",
-    "truth": "locked until attestation and STS exchange"
+    "truth": "locked until attestation, STS, and capability-account impersonation"
   }
 }

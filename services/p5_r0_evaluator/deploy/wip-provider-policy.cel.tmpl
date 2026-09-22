@@ -1,6 +1,5 @@
-# Closed WIP provider policy. Render this file from the same reviewed policy
-# values used by LockedBootstrapConfig; deployment must reject unresolved
-# REVIEWED_* values before apply.
+# Generated from rs-068-wip-policy-remediation.json and the locked DeploymentPolicy.
+# Review-only artifact: no apply, signing, approval, or cloud operation is performed.
 attributeMapping = {
   "google.subject": "assertion.sub",
   "attribute.image_digest": "assertion.submods.container.image_digest",
@@ -11,26 +10,26 @@ attributeMapping = {
   "attribute.tee": "assertion.swname",
   "attribute.hardware_model": "assertion.hwmodel",
   "attribute.secure_boot": "assertion.secboot",
-  "attribute.workload": "assertion.submods.container.env.P5R0_EXPECTED_WORKLOAD"
+  "attribute.workload": "assertion.submods.container.env.P5R0_EXPECTED_WORKLOAD",
+  "attribute.confidential_space_smoke": "assertion.submods.container.env.P5R0_CONFIDENTIAL_SPACE_SMOKE"
 }
 
-# Evaluate this before STS can issue a token. The launcher token audience is the
-# exact Google STS audience; the WIP provider resource is bound separately by
-# the STS exchange and IAM provider configuration.
 attributeCondition = """
   assertion.aud == 'https://sts.googleapis.com' &&
   assertion.iss == 'https://confidentialcomputing.googleapis.com' &&
-  assertion.submods.container.image_digest == 'sha256:REVIEWED_EXACT_64_HEX_DIGEST' &&
-  assertion.submods.gce.project_number == 'REVIEWED_PROJECT_NUMBER' &&
-  assertion.submods.gce.project_id == 'REVIEWED_PROJECT_ID' &&
-  assertion.submods.gce.zone == 'REVIEWED_ZONE' &&
+  assertion.sub.startsWith('https://www.googleapis.com/compute/v1/projects/ocelot-proof/zones/us-east1-b/instances/') &&
+  assertion.submods.container.image_digest == 'sha256:394a0707d1e162315bdf22de4ff034a7cf75a32b919cef6f12bba501521be11c' &&
+  assertion.submods.gce.project_number == '141633828616' &&
+  assertion.submods.gce.project_id == 'ocelot-proof' &&
+  assertion.submods.gce.zone == 'us-east1-b' &&
   assertion.dbgstat == 'disabled-since-boot' &&
   assertion.swname == 'CONFIDENTIAL_SPACE' &&
   assertion.hwmodel == 'GCP_AMD_SEV' &&
   assertion.submods.container.env.P5R0_EXPECTED_WORKLOAD == 'evaluator' &&
+  assertion.submods.container.env.P5R0_CONFIDENTIAL_SPACE_SMOKE == '0' &&
   assertion.secboot == true
 """
 
-# IAM must bind only the exact provider principalSet and exact v3/runs prefix
-# plus reviewed locks/manifests/truth reads and one KMS key version. No pool-
-# wide grant, ambient ADC, or broad v3/runs permission is valid.
+# The active provider observation remains separate and incomplete: it omits
+# debug_state, tee, hardware_model, and secure_boot attribute mappings.
+# This desired artifact does not assert that the cloud provider was changed.
