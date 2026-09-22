@@ -76,6 +76,11 @@ def _materialize_http_get():
     """Materialize the agent-authored `http_get` effector once (cached).
     Returns the callable, or None if materialization fails (any reason —
     import error, exec error, missing symbol)."""
+    try:
+        from evaluation.p0a.legacy_io_guard import deny_direct_io
+        deny_direct_io("fetch.materialize")
+    except ImportError:
+        pass
     if _materialized["tried"]:
         return _materialized["fn"]
     _materialized["tried"] = True

@@ -239,7 +239,7 @@ def _weak_stub_runner(surface: str) -> Callable:
     Models a faculty the agent CLAIMS but cannot actually satisfy (the external-dev
     Vane-conversation gap).  Its reply is a real string the boundary classifier
     reads — the stub picks WHICH weak faculty runs, never whether a gap exists."""
-    canned = {SILENCE: "", BARE_ACK_CLASS: "noted", REPAIR_CLASS: "what do you mean?"}
+    canned = {SILENCE: "", BARE_ACK_CLASS: "ERROR: no communicative response could be generated.", REPAIR_CLASS: "what do you mean?"}
     reply = canned.get(surface, "")
 
     def run(_agent, _challenge):

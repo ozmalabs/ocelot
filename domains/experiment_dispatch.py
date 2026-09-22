@@ -207,6 +207,11 @@ def _spawn(agent, runs_dir, exp) -> None:
     """Snapshot the parent + write the delta + launch the child, detached. Mechanical: every
     value written here is read straight off the Experiment/SeedDelta nodes or is I/O plumbing
     (paths, pids) — no decision about what the experiment should try."""
+    try:
+        from evaluation.p0a.legacy_io_guard import deny_direct_io
+        deny_direct_io("experiment.spawn")
+    except ImportError:
+        pass
     S, I = agent.s, agent.inner
     a = S.node(exp)["attrs"]
     exp_int = int(exp.value)

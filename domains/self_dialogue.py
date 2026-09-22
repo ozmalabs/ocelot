@@ -107,14 +107,36 @@ def held_frames_for_topic(wa, topic: str) -> list[dict]:
     return frames
 
 
+def held_graph_frame_for_topic(wa, topic: str) -> tuple[dict | None, list[str]]:
+    """Return the first graph-derived frame and its concept path.
+
+    This is the condensed inner-speech read: it follows graph structure directly
+    and does not create a clause or invoke the covert monitor.  The path is kept
+    as explicit node names so callers can compute trajectory residuals without
+    parsing an English surface back into concepts.
+    """
+    sub = _sub(wa)
+    node = _find_concept(sub, topic)
+    if node is None:
+        return None, [str(topic)]
+    for child in sub.neighbours(node, "causal_influence"):
+        obj = sub.node(child)["attrs"].get("name")
+        if obj and obj != topic:
+            return ({"event": "is", "agent": str(topic), "patient": str(obj),
+                     "tense": "present", "intent": "inform"},
+                    [str(topic), str(obj)])
+    return None, [str(topic)]
+
+
 # --------------------------------------------------------------------------- #
-#  3. SELF-ANSWER — realize the held frame as a clause; NO teacher when held.
+#  3. SELF-ANSWER — graph-read by default; realize only when requested.
 # --------------------------------------------------------------------------- #
 def self_answer(wa, topic: str, *, on_unknown: str = "return",
                 ask_fn: Optional[Callable[[str], Any]] = None,
-                language: str = "en") -> dict[str, Any]:
-    """Answer `topic` from HELD knowledge via the grammar-owned realizer, teacher-
-    free. Returns
+                language: str = "en", realize: bool = True) -> dict[str, Any]:
+    """Answer `topic` from HELD knowledge, optionally via the grammar-owned
+    realizer, teacher-free. With ``realize=False`` this is a graph-only read for
+    an intermediate inner-speech hop. Returns
         {answered: bool, topic, surface, verdict, residual, frame, source,
          reason?}
     where `verdict` is score_self_target's parse-back and `residual` = the
@@ -128,22 +150,30 @@ def self_answer(wa, topic: str, *, on_unknown: str = "return",
         pack.ask), record its result under `source='external_ask'`. If no ask_fn
         is supplied, behaves as 'return' (nothing to invoke).
     The teacher is invoked ONLY on this branch and ONLY when on_unknown=='ask'."""
-    frames = held_frames_for_topic(wa, topic)
-    if not frames:
+    frame, graph_path = held_graph_frame_for_topic(wa, topic)
+    if frame is None:
         res = {"answered": False, "topic": topic, "surface": "",
                "verdict": None, "residual": [topic], "frame": None,
-               "reason": "no_held_knowledge", "source": "held"}
+               "reason": "no_held_knowledge", "source": "held",
+               "graph_path": graph_path, "recovered": []}
         if on_unknown == "ask" and ask_fn is not None:
             asked = ask_fn(topic)
             res["source"] = "external_ask"
             res["external_answer"] = asked
         return res
 
+    # Inner trajectory hops stop here: graph state is sufficient to select the
+    # next topic, and no intermediate English clause is produced or parsed.
+    if not realize:
+        return {"answered": True, "topic": topic, "surface": "",
+                "verdict": None, "residual": [], "frame": frame,
+                "source": "held", "mode": "graph",
+                "graph_path": graph_path, "recovered": graph_path}
+
     from domains import literary_analysis as la
     from domains import predictive_reading as pr
     sub = _sub(wa)
-    frame = frames[0]                       # answer the first held relation
-    producer = la._build_producer(frames)   # teacher-free (teacher_stub, no LLM)
+    producer = la._build_producer([frame])  # teacher-free (teacher_stub, no LLM)
     r = pr.realize_goal_clause(sub, producer, frame,
                                intended_concepts=[frame["agent"], frame["patient"]],
                                language=language, allow_fallback=False)
@@ -152,7 +182,8 @@ def self_answer(wa, topic: str, *, on_unknown: str = "return",
     return {"answered": bool(r.get("surface")), "topic": topic,
             "surface": r.get("surface", ""), "verdict": verdict,
             "residual": residual, "frame": frame, "source": "held",
-            "mode": r.get("mode")}
+            "mode": r.get("mode"), "graph_path": graph_path,
+            "recovered": sorted(set(graph_path) | set(verdict.get("recovered") or []))}
 
 
 # --------------------------------------------------------------------------- #

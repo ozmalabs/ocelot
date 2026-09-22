@@ -61,7 +61,7 @@ REUSED PATHS (found by exploration, not reimplemented):
   `denotes` a Concept already — i.e. if the lexicon has been grounded/taught
   for that sound. Absent that, `comprehend()` still produces a turn (the
   Message gets a speech_act-based adjacency-pair reply, e.g.
-  statement -> acknowledgment -> "noted") but no CONTENT-level
+          statement -> acknowledgment -> an explicit error) but no CONTENT-level
   understanding. This module does not paper over that: it reports whatever
   `reply_for` actually returns, including None.
 
@@ -282,6 +282,11 @@ def capture_utterances_from_mic(fs: int = FS, *, frame_ms: float = 30.0,
     stops when `stop_event` (a threading.Event) is set or the subprocess exits.
     Mechanical world I/O — no decisions beyond the boundary cut. Raises RuntimeError
     if `arecord` can't be started (e.g. no capture device)."""
+    try:
+        from evaluation.p0a.legacy_io_guard import deny_direct_io
+        deny_direct_io("voice.capture_playback")
+    except ImportError:
+        pass
     frame_len = max(1, int(fs * frame_ms / 1000.0))
     cmd = [arecord_bin, "-q", "-f", "S16_LE", "-r", str(fs), "-c", "1", "-t", "raw"]
     if device:
@@ -619,7 +624,7 @@ class VoiceWorld:
         `WorldAdapter.converse()` composes for text (outbound_messages /
         responds_to), then rendered to an idiomatic surface via
         `WorldAdapter.surface_for` (register-matched surfaces, e.g.
-        acknowledgment -> "noted", greeting -> "hello" — `install_register_
+        acknowledgment -> an explicit error when no content is grounded, greeting -> "hello" — `install_register_
         lexicon()` was called once in `__init__`), falling back to
         `emit_reply`'s relational render (which, absent an installed Language/
         lexicon, returns the bare speech-act concept name, e.g.
@@ -628,8 +633,8 @@ class VoiceWorld:
 
         When `mid`'s own Mention `denotes` a Concept (the per-turn recognition
         Rule grounded it — see `install_recognition_rules`), the reply's plain
-        adjacency-pair surface ("noted") is enriched with what was actually
-        recognised ("noted — heard: cat"): this is what makes the honest
+        adjacency-pair surface is enriched with what was actually recognised
+        ("I heard you. — heard: cat"): this is what makes the honest
         content-vs-no-content distinction gate item (d) checks for. Pure
         rendering of graph state already resolved by the Rules — no new
         decision (mirrors `emit_reply`/`surface_for`'s existing conditionals)."""
@@ -644,6 +649,8 @@ class VoiceWorld:
             surface = self.wa.surface_for(name) if name else None
         if surface is None:
             surface = self.wa.emit_reply(reply)
+        if surface and surface.strip().lower().rstrip(".!?") == "noted":
+            surface = self.wa._honest_minimal_reply()
         words = self.grounded_words_for(mid)
         if words:
             heard = "heard: " + ", ".join(words)

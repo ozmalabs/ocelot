@@ -34,7 +34,8 @@ def _native_case(case_name: str, *, load_demo: bool = True):
             substrate._inner.run_rules()
             continue
         evidence = substrate.add_node("ResidualSegmentEvidence", {
-            "predicate": case["predicate"],
+            "predicate": case["predicate"], "recurrence_key": case["recurrence_key"],
+            "structural_signature": case["structural_signature"],
             "capability_key": "minted_bind", "segment_ordinal": ordinal,
             "display_name": case["display_name"], "integer_native": 1,
         })
@@ -108,3 +109,29 @@ def test_loader_installs_recurrence_rules_once():
     for name in ("mrl_open_candidate", "mrl_post_evidence_once", "mrl_derive_persistence",
                  "mrl_offer_due_once", "mrl_record_offer_terminal", "mrl_record_mint_result"):
         assert names.count(name) == 1
+
+
+
+def test_same_predicate_with_different_recurrence_keys_never_aggregates():
+    """Structural recurrence identity prevents predicate-only false aggregation."""
+    substrate, agent = boot_core(seeds=())
+    load_seeds_into(substrate, agent, ["minting_recurrence_ledger"])
+    episode = substrate.add_node("MintingRecurrenceEpisode", {"mint_after_quanta": 2, "integer_native": 1})
+    substrate.add_edge(agent, "has_minting_recurrence_episode", episode)
+    for ordinal, signature in enumerate((("rel:binding", "bind", "ITEM", "SLOT", 1),
+                                         ("rel:binding", "bind", "ITEM", "GROUP", 2))):
+        evidence = substrate.add_node("ResidualSegmentEvidence", {
+            "predicate": "bind", "recurrence_key": json.dumps([signature], separators=(",", ":")),
+            "structural_signature": [list(signature)], "capability_key": f"key_{ordinal}",
+            "segment_ordinal": ordinal, "integer_native": 1,
+        })
+        substrate.add_edge(episode, "has_residual_segment_evidence", evidence)
+    substrate._inner.run_rules()
+    candidates = list(substrate.neighbours(episode, "has_predicate_recurrence_candidate"))
+    assert len(candidates) == 2
+    assert {substrate.node(candidate)["attrs"]["recurrence_key"] for candidate in candidates} == {
+        json.dumps([["rel:binding", "bind", "ITEM", "SLOT", 1]], separators=(",", ":")),
+        json.dumps([["rel:binding", "bind", "ITEM", "GROUP", 2]], separators=(",", ":")),
+    }
+    assert {substrate.node(candidate)["attrs"]["persistence"] for candidate in candidates} == {1}
+    assert not [offer for candidate in candidates for offer in substrate.neighbours(candidate, "has_mint_offer")]

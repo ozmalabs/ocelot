@@ -43,6 +43,19 @@ from typing import Any, Optional
 from domains import reflective_faculty as _rf
 
 
+def realize_frame_reply(agent, frame: dict, audience_snap=None, *, language="en"):
+    """Mechanical bridge to the world adapter's active frame producer."""
+    return agent._realize_frame_reply(frame, audience_snap, language=language)
+
+
+def floor_holding_reply(register: str = "neutral") -> str:
+    """Return a short register-shaped floor holder for a deep turn."""
+    return {"formal": "Let me consider how that connects.",
+            "casual": "Let me see how that connects.",
+            "neutral": "Looking at how that connects."}.get(
+                str(register), "Looking at how that connects.")
+
+
 # --- SMOOTHING (mechanical connective-join over the agent's OWN produced pieces)
 #
 # The agent's substantive replies come out as one produced sentence PER item (a

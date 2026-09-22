@@ -64,6 +64,8 @@ def _post_segment_evidence(sub, episode, *, ordinal: int, predicates: list[str],
     for predicate in predicates:
         evidence = sub.add_node("ResidualSegmentEvidence", {
             "predicate": predicate,
+            "recurrence_key": predicate,
+            "structural_signature": [[predicate]],
             "capability_key": "minted_" + rf._key_component(predicate),
             "segment_ordinal": int(ordinal),
             "tuple_witnesses": witnesses_by_pred[predicate],

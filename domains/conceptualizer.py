@@ -387,7 +387,9 @@ def _decode_utterance(utterance: str, lexicon: list[dict]) -> set:
     return decoded
 
 
-def scan_and_monitor(agent, lexicon: list[dict]) -> list[dict]:
+def scan_and_monitor(agent, lexicon: list[dict], *, candidate: str | None = None,
+                     intended_concepts=None, producer=None,
+                     language: str = "en") -> list[dict]:
     """For every pending `MonitorRequest{status:'requested'}` (minted by the jabberwock-authored
     `request_monitor_<tag>` once a MessageShape exists): IMAGINE RECEPTION (`_decode_utterance`
     on the formulated `MessageShape.utterance`) union a FRESHLY REGROUNDED audience credit --
@@ -448,6 +450,39 @@ def scan_and_monitor(agent, lexicon: list[dict]) -> list[dict]:
         results.append({"request": req, "shape": shape, "intent": intent, "verdict": verdict,
                          "recoverable": recoverable, "missing": missing,
                          "perlocutionary_goal": iat.get("perlocutionary_goal")})
+    if candidate is not None:
+        # Output-null candidate gate: keep the produced string buffered until the
+        # self-target monitor establishes full semantic recoverability.  This
+        # uses the same Verdict/Committed graph vocabulary as the rule-driven
+        # request path above, while remaining a mechanical candidate scan.
+        from domains import self_target_monitor as _stm
+        verdict_data = _stm.score_self_target(
+            agent, candidate, intended_concepts or [], language=language,
+            producer=producer, coverage_threshold=1.0)
+        candidate_node = sub.add_node("OutputNullCandidate", {
+            "utterance": str(candidate),
+            "intended": sorted(str(c) for c in (intended_concepts or [])),
+            "status": "monitored",
+        })
+        verdict_node = sub.add_node(_VERDICT_TYPE, {
+            "recoverable": bool(verdict_data["recoverable"]),
+            "coverage": verdict_data["coverage"],
+            "missing": verdict_data["missing"],
+            "decoded": verdict_data["recovered"],
+            "mode": verdict_data["mode"],
+        })
+        _add_edge_unchecked(native, candidate_node, "has_verdict", verdict_node)
+        committed_node = None
+        if verdict_data["recoverable"]:
+            committed_node = sub.add_node(_COMMITTED_TYPE, {
+                "utterance": str(candidate),
+                "recoverable": True,
+                "coverage": verdict_data["coverage"],
+            })
+            _add_edge_unchecked(native, candidate_node, "has_committed", committed_node)
+        results.append({"candidate": candidate_node, "verdict": verdict_node,
+                        "committed": committed_node,
+                        **verdict_data})
     return results
 
 
