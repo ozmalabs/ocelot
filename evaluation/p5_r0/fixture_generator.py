@@ -20,15 +20,17 @@ def _reject_nested_private(value: Any, path: str = "task") -> None:
             _reject_nested_private(child, f"{path}[{index}]")
 
 
-def validate_manifest_integrity(bundle: dict[str, Any]) -> dict[str, Any]:
-    """Validate the public manifest and its evaluator-owned private commitment.
+def validate_manifest_integrity(bundle: dict[str, Any], private_store: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Validate a manifest against an explicitly supplied private store.
 
-    This deliberately recomputes every commitment and compares the supplied row
-    sequence with the committed private-store sequence.  Dict construction is
-    never used as an ordering or uniqueness check.
+    ``private_store`` is the durable production input.  The process-local
+    registry remains only as a compatibility fixture for older direct callers;
+    production bridges must pass the store they rehydrated from their object
+    store so a fresh process cannot accidentally use unrelated truth.
     """
     required = {"schema", "case_index", "index_digest", "truth_digest", "store_digest", "split_digest", "manifest_digest"}
-    if not isinstance(bundle, dict) or set(bundle) != required or bundle.get("schema") != "P5R0ManifestV2":
+    optional = {"input_builder_binding", "time_seed_algorithm_binding"}
+    if not isinstance(bundle, dict) or not required.issubset(bundle) or not set(bundle).issubset(required | optional) or bundle.get("schema") != "P5R0ManifestV2":
         raise P5R0Error("manifest schema")
     rows = bundle.get("case_index")
     if not isinstance(rows, list) or not rows or len(rows) != 48:
@@ -39,7 +41,7 @@ def validate_manifest_integrity(bundle: dict[str, Any]) -> dict[str, Any]:
         raise P5R0Error("manifest index commitment")
     if bundle["manifest_digest"] != digest({k: v for k, v in bundle.items() if k != "manifest_digest"}) or not is_digest(bundle["manifest_digest"]):
         raise P5R0Error("manifest commitment")
-    store = _PRIVATE_STORES.get(bundle["manifest_digest"])
+    store = private_store if private_store is not None else _PRIVATE_STORES.get(bundle["manifest_digest"])
     if not isinstance(store, dict):
         raise P5R0Error("evaluator private case store unavailable")
     private_rows = store.get("cases")
@@ -145,9 +147,14 @@ def build_private_manifest(split: dict[str, Any], cards: list[dict[str, Any]]) -
     return manifest, store
 
 
-def private_store_for(bundle: dict[str, Any]) -> dict[str, Any]:
-    validate_manifest_integrity(bundle)
-    return _PRIVATE_STORES[bundle["manifest_digest"]]
+def private_store_for(bundle: dict[str, Any], private_store: dict[str, Any] | None = None) -> dict[str, Any]:
+    store = private_store if private_store is not None else _PRIVATE_STORES.get(bundle.get("manifest_digest"))
+    validate_manifest_integrity(bundle, store)
+    # Return the caller-owned object only after commitment validation.  The
+    # evaluator treats the private store as read-only and never serializes it.
+    if not isinstance(store, dict):
+        raise P5R0Error("evaluator private case store unavailable")
+    return store
 
 
 def make_task(private_case: dict[str, Any], *, task_nonce: str, arm_context: dict[str, Any] | None = None, state: dict[str, Any] | None = None, step_index: int = 0) -> dict[str, Any]:

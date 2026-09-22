@@ -1,7 +1,7 @@
 """Native rootless Podman/crun closure and lock-bound command construction."""
 from __future__ import annotations
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping, Protocol
 import shutil
 from .protocol import P5R0Error, digest, is_digest
 
@@ -12,6 +12,16 @@ V3_HOST_CLOSURE_KEYS = frozenset({
     "host_runner", "host_native", "host_evaluator", "host_worker_validator",
     "host_repair", "host_receipts", "host_evidence", "host_rollback", "host_kill",
 })
+
+
+class NativeWorkerAdapter(Protocol):
+    """Typed seam for a locked native worker and its real supervisor."""
+
+    def preflight(self, closure: Mapping[str, Any]) -> Mapping[str, Any]: ...
+
+    def execute(self, task: Mapping[str, Any]) -> tuple[Mapping[str, Any], Mapping[str, Any]]: ...
+
+    def validate_supervisor_evidence(self, evidence: Mapping[str, Any]) -> bool: ...
 
 
 def _profile(path: Path) -> Path:

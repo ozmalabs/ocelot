@@ -9,17 +9,65 @@ from .rollback import Snapshot
 
 
 class P5R0Evaluator:
-    def __init__(self, bundle: dict[str, Any]):
+    def __init__(self, bundle: dict[str, Any], private_store: dict[str, Any] | None = None):
         if bundle.get("schema") != "P5R0ManifestV2": raise P5R0Error("fixture manifest")
-        validate_manifest_integrity(bundle)
-        self.bundle = bundle; self.store = private_store_for(bundle); self.cases = {c["case_id"]: deepcopy(c) for c in self.store["cases"]}; self._private_store_digest = self.store["store_digest"]
+        validate_manifest_integrity(bundle, private_store)
+        self.bundle = bundle; self.store = private_store_for(bundle, private_store); self.cases = {c["case_id"]: deepcopy(c) for c in self.store["cases"]}; self._private_store_digest = self.store["store_digest"]
         self.state = {"arm": None, "session_id": None, "case_order_digest": None, "case_ordinal": -1, "case_id": None, "domain_token": None, "case_split": None, "codebook": {}, "graph": {}, "adaptations": 0, "frozen": False, "session": {}, "episode": {"step": 0}, "episode_reset_digest": digest({"step": 0}), "adoption_count_case": 0}
         self.snapshot = Snapshot(self.state); self._training_digest = digest({"train": sorted(c["case_id"] for c in self.store["cases"] if c["split"] == "train")}); self._active_context: dict[str, Any] | None = None
         self._namespace_budget = 4
         self._min_confidence_milli = 900
 
+    @staticmethod
+    def _checkpoint_has_private_fields(value: Any) -> bool:
+        if isinstance(value, dict):
+            if any(key in {"truth", "secret_seed", "private_store", "private_truth"} for key in value):
+                return True
+            return any(P5R0Evaluator._checkpoint_has_private_fields(child) for child in value.values())
+        if isinstance(value, list):
+            return any(P5R0Evaluator._checkpoint_has_private_fields(child) for child in value)
+        return False
+
+    def checkpoint(self) -> dict[str, Any]:
+        """Return canonical evaluator mechanics without private truth."""
+        state = deepcopy(self.state)
+        context = deepcopy(self._active_context)
+        if self._checkpoint_has_private_fields(state):
+            raise P5R0Error("private truth leaked into checkpoint")
+        return {"schema": "P5R0EvaluatorCheckpointV1", "state": state,
+                "active_context": context, "state_digest": digest(state),
+                "context_digest": digest(context)}
+
+    def restore_checkpoint(self, checkpoint: dict[str, Any]) -> None:
+        """Restore a committed checkpoint into a fresh evaluator instance."""
+        required = {"schema", "state", "active_context", "state_digest", "context_digest"}
+        if not isinstance(checkpoint, dict) or set(checkpoint) != required or checkpoint.get("schema") != "P5R0EvaluatorCheckpointV1":
+            raise P5R0Error("evaluator checkpoint schema")
+        state = checkpoint.get("state"); context = checkpoint.get("active_context")
+        if not isinstance(state, dict) or checkpoint.get("state_digest") != digest(state) or checkpoint.get("context_digest") != digest(context):
+            raise P5R0Error("evaluator checkpoint commitment")
+        state_fields = {"arm", "session_id", "case_order_digest", "case_ordinal", "case_id", "domain_token", "case_split", "codebook", "graph", "adaptations", "frozen", "session", "episode", "episode_reset_digest", "adoption_count_case"}
+        if set(state) != state_fields or self._checkpoint_has_private_fields(state):
+            raise P5R0Error("evaluator checkpoint state")
+        if state["arm"] is not None and state["arm"] not in ARMS:
+            raise P5R0Error("evaluator checkpoint arm")
+        if context is not None:
+            context_fields = {"schema", "arm", "session_id", "state_origin_digest", "reset_scope", "training_digest", "write_mode", "adaptation_allowed", "case_order_digest", "persistent_namespace_schema", "episode_reset_policy"}
+            if not isinstance(context, dict) or set(context) != context_fields or context.get("schema") != "P5R0ArmContextV3":
+                raise P5R0Error("evaluator checkpoint context")
+            if context.get("arm") != state.get("arm") or context.get("session_id") != state.get("session_id") or context.get("case_order_digest") != state.get("case_order_digest") or context.get("case_order_digest") != self._expected_order:
+                raise P5R0Error("evaluator checkpoint context binding")
+        elif state.get("arm") is not None:
+            raise P5R0Error("evaluator checkpoint missing context")
+        self.state = deepcopy(state)
+        self._active_context = deepcopy(context)
+
+    @property
+    def _expected_order(self) -> str:
+        return digest([row["case_id"] for row in self.bundle["case_index"]])
+
     def private_case(self, case_id: str) -> dict[str, Any]:
-        validate_manifest_integrity(self.bundle)
+        validate_manifest_integrity(self.bundle, self.store)
         case = self.cases.get(case_id)
         if case is None: raise P5R0Error("evaluator case")
         return deepcopy(case)

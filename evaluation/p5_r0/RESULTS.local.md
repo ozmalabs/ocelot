@@ -12,7 +12,7 @@ The V3 implementation now fails closed at the repaired boundaries:
 - V3 native closure requires host execution, runtime, evidence/seal, rollback, and kill-path content digests in addition to the worker/runtime/image/seccomp bindings;
 - host execution/runtime/kill evidence is closure- and lock-bound, and missing evidence contributes a no-go reason.
 
-The remaining local result is intentionally **`local_readiness_only/no_go`** until an independently provisioned authority, authority-bound signer, external custody, and externally supervised kill/liveness path exist. A workspace/test authority remains insufficient by design.
+The remaining local result is intentionally **`local_readiness_only/no_go`** until a separately supplied authority trust binding, authority-bound signer, explicit custody boundary, and externally supervised kill/liveness path exist. A workspace/test authority remains insufficient for the required trust binding.
 
 ## Artifact preservation
 

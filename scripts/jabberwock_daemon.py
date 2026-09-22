@@ -3270,6 +3270,11 @@ def _execute_host_action_requests(state: DaemonState, world_ctx=None) -> int:
     merely invokes the selected external mechanism, then records completion or
     an honest capability/error receipt.
     """
+    try:
+        from evaluation.p0a.legacy_io_guard import deny_direct_io
+        deny_direct_io("raw.host.dispatch")
+    except ImportError:
+        pass
     adapter = state.adapter
     sub, native = adapter.s, adapter.inner
     handlers = _host_action_handlers(state, world_ctx)
@@ -3334,7 +3339,8 @@ def tick_loop(state: DaemonState, stop: threading.Event, hz: float,
               world_every: int = 0, world_ctx=None,
               auto_approve_every: int = 0, imagine_every: int = 0, collapse_every: int = 0,
               self_correct_every: int = 0, search_every: int = 0,
-              detail_every: int = 0, steer_every: int = 0, study_every: int = 0) -> None:
+              detail_every: int = 0, steer_every: int = 0, study_every: int = 0,
+              evaluation_action_client=None) -> None:
     """Event/request-driven graph cognition loop.
 
     The ``*_every`` arguments are retained only as deprecated invocation
@@ -3405,10 +3411,17 @@ def tick_loop(state: DaemonState, stop: threading.Event, hz: float,
             state.ticks += 1
         last_tick = now
         with AGENT_LOCK:
-            completed = _execute_host_action_requests(state, world_ctx)
+            if evaluation_action_client is None:
+                completed = _execute_host_action_requests(state, world_ctx)
+            else:
+                # Evaluation owns a separate, broker-only graph proposal pump.
+                # It never builds a legacy handler registry or world context.
+                from evaluation.p0a.graph_proposals import execute_evaluation_graph_proposals
+                completed = execute_evaluation_graph_proposals(
+                    state.adapter, evaluation_action_client, logical_time=state.ticks)
             # Voice is an external queue: draining it on a wake is mechanical
             # event handling, not a graph-cognitive periodic policy.
-            if voice_ctx is not None:
+            if voice_ctx is not None and evaluation_action_client is None:
                 _voice_tick(state, voice_ctx)
         if completed:
             # A host receipt is new grounded evidence.  It is the only

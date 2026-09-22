@@ -3,12 +3,7 @@
 ## What this closes
 
 The consciousness / inner-speech literature review's **must-have #2** for the train of
-thought (block 346): **produce seriality via broadcast/competition with an ignition
-threshold (Global Workspace Theory — Baars; Dehaene), rather than ASSERT it via the FIFO
-agenda queue.** (Same review that drove blocks 346/347's fixes; the item was tracked as
-still-open in `ATTENTION_WIDTH_AXIS_RESULTS.md` and `APERTURE_GRAIN_TUBE_RESULTS.md`:
-"Global workspace — produce seriality via broadcast/competition (block 350; the
-consciousness review's must-have #2, still open).")
+thought (block 346) was, at the time, still open: **produce seriality via broadcast/competition with an ignition threshold (Global Workspace Theory — Baars; Dehaene), rather than ASSERT it via the FIFO agenda queue.** (The item was tracked as still-open in the earlier `ATTENTION_WIDTH_AXIS_RESULTS.md` and `APERTURE_GRAIN_TUBE_RESULTS.md`; block 350 later addressed the local mechanism.)
 
 ### The honest diagnosis of what was wrong
 
@@ -156,13 +151,9 @@ verdicts — e.g. block 346 C4/C6 deferred, the regulated-manifold and aperture-
 awaiting their richer seeds — are unchanged by this block and are documented in their own
 results files; they are not regressions from block 350.)
 
-## Remaining plan
+## Remaining plan — historical note
 
-- **Block 351 — gated dimension-minting** on accumulated persistent residual: mint a new
-  discriminating dimension only once a residual has persisted across turns, gated (not on
-  every surprise). Needs the qualia substrate seeded in block 349
-  (`seeds/qualia_space.json` + typed edges + the collapse/residual loop). This is the next
-  distinct block (verify → build → experiment → commit), not retrofitted here.
+The original “next block” wording below is superseded by the landed block-351 work. The global-workspace result remains a local, opt-in mechanism result; gated dimension-minting is documented in `GATED_MINTING_RESULTS.md` and evaluated in the capability suite. Neither result establishes graph-native production ownership, general agency, P5 transfer, or trusted custody. The next production-facing work is governed by `THOUGHT_MANIFOLD_PRODUCTION_PLAN.md`, especially its Python-control-loop architecture gate.
 
 ## Guardrails (all green)
 

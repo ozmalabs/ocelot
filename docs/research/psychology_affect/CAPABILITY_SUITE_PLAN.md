@@ -74,20 +74,23 @@ time). Replaceable when exact values surface.
 
 | Track | Question | Rubric / metric | Status |
 |-------|----------|-----------------|--------|
-| **T2** | After minting, does item-to-set-point distance correlate with human typicality? | A · RQ2 Spearman ρ (vs LLM ρ<0.2 / BERT 0.38) | **first build** |
-| **T4** | Persistent → mint; transient → no mint; duplicate → refused, at the right time? | B readiness gate · precision/recall + latency | **first build** |
-| **T1** | Does the minted-axis clustering recover human category boundaries? | A · RQ1 AMI/NMI/ARI | planned |
-| **T3** | Does minting move ℒ toward the human "rich" band vs the LLM over-compressed band? | A · RQ3 ℒ objective (before/after mint) | planned |
-| **T5** | Are surface-pass-without-change keystones caught? + cross-population scorecard | Potemkin + FLEX CIs | planned |
+| **T1** | Does the minted-axis clustering recover human category boundaries? | A · RQ1 AMI/NMI/ARI | **complete; see [CAPABILITY_T1_T3_RESULTS.md](CAPABILITY_T1_T3_RESULTS.md)** |
+| **T2** | After minting, does item-to-set-point distance correlate with human typicality? | A · RQ2 Spearman ρ | **complete; see [CAPABILITY_T2_T4_RESULTS.md](CAPABILITY_T2_T4_RESULTS.md)** |
+| **T3** | Does minting move ℒ toward the human rich band rather than the LLM over-compressed band? | A · RQ3 ℒ objective | **complete; see [CAPABILITY_T1_T3_RESULTS.md](CAPABILITY_T1_T3_RESULTS.md)** |
+| **T4** | Persistent → mint; transient → no mint; duplicate → refused at the right time? | B readiness gate · precision/recall + latency | **complete; see [CAPABILITY_T2_T4_RESULTS.md](CAPABILITY_T2_T4_RESULTS.md)** |
+| **T5** | Are surface-pass-without-change keystones caught, with a cross-population scorecard? | Potemkin + FLEX CIs | **complete; see [CAPABILITY_T5_RESULTS.md](CAPABILITY_T5_RESULTS.md)** |
+
+### Current interpretation
+
+All five tracks have result documents and executable local evidence. They demonstrate bounded mechanism behavior under the stated fixtures and rubrics; they do **not** demonstrate general agency, P5 transfer, independent custody, production deployment, or a general-intelligence claim. The results retain their stated caveats: T1’s AMI reflects explicit is-a structure rather than emergent geometric induction; the LLM comparison uses published reference values; the human data is an order-faithful reconstruction; and all conclusions are bounded to the tested local substrate.
 
 ## Prove / stretch / measure
 
-- **Prove** — T1 & T4: recovers human categories; gates correctly (accommodation, not
-  gap-fill; refuses duplicates).
-- **Stretch** — T2 & T3 at increasing grain: how fine a distinction can it mint before
-  it breaks, relative to the LLM over-compression ceiling.
-- **Measure** — the side-by-side scorecard (T5) on the published metrics, with the
-  substrate's numbers placed next to the paper's human and 40-LLM numbers, with CIs.
+- **Prove (completed local tracks)** — T1 category recoverability and T4 readiness-gated accommodation have result documents and falsifiable local verdicts.
+- **Stretch (completed local tracks)** — T2 fidelity and T3 compression/meaning were measured at the tested grain and protocol settings; broader scaling remains future work.
+- **Measure (completed local track)** — T5 tests Potemkin keystones and records the cross-population scorecard with the available published/reference baselines and declared uncertainty.
+
+The suite is a capability-evidence layer. Any promotion into the general-agency roadmap or P5 evaluator requires a separate preregistration, evaluator custody, held-out data, containment evidence, and an explicit gate; these results do not supply those conditions.
 
 ## Architecture — three runners, one scorer
 
@@ -120,11 +123,11 @@ tests/capability/minting/
   scoring/
     metrics.py                     # AMI/NMI/ARI, Spearman rho, L objective, gate P/R
     scorecard.py                   # side-by-side substrate/human/LLM + CIs
-  track2_fine_grained_fidelity.py  # T2 experiment (first build)
-  track4_accommodation_gate.py     # T4 experiment (first build)
-  track1_category_recoverability.py
-  track3_compression_meaning.py
-  track5_keystones_and_scorecard.py
+  track2_fine_grained_fidelity.py  # T2 experiment (result documented)
+  track4_accommodation_gate.py     # T4 experiment (result documented)
+  track1_category_recoverability.py # T1 experiment (result documented)
+  track3_compression_meaning.py     # T3 experiment (result documented)
+  track5_keystones_and_scorecard.py # T5 experiment (result documented)
 ```
 
 ## Guardrails (every commit)

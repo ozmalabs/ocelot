@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections import Counter, defaultdict
 from typing import Any, Iterable
 from .protocol import ARMS, P5R0Error, digest, is_digest
+from .supervisor import validate_supervisor_evidence
 
 
 def score_records(records: Iterable[dict[str, Any]], *, baselines: list[dict[str, Any]] | None = None, permutations: list[dict[str, Any]] | None = None) -> dict[str, Any]:
@@ -139,12 +140,21 @@ def evaluate_gate(evidence: dict[str, Any], policy: dict[str, Any]) -> dict[str,
         host_execution = evidence.get("host_execution_evidence")
         runtime_evidence = evidence.get("runtime_evidence")
         kill_evidence = evidence.get("kill_evidence")
-        if not isinstance(host_execution, dict) or host_execution.get("closure_digest") != evidence.get("closure_digest") or host_execution.get("runner_digest") != closure_files.get("host_runner") or host_execution.get("native_digest") != closure_files.get("host_native"):
+        if not isinstance(host_execution, dict) or host_execution.get("closure_digest") != evidence.get("closure_digest") or host_execution.get("runner_digest") != closure_files.get("host_runner") or host_execution.get("native_digest") != closure_files.get("host_native") or host_execution.get("observed") is not True or host_execution.get("evidence_status") != "verified_supervisor_observation":
             reasons.append("host_execution_evidence")
-        if not isinstance(runtime_evidence, dict) or runtime_evidence.get("closure_digest") != evidence.get("closure_digest") or runtime_evidence.get("runtime_digest") != closure.get("runtime_digest"):
+        if not isinstance(runtime_evidence, dict) or runtime_evidence.get("closure_digest") != evidence.get("closure_digest") or runtime_evidence.get("runtime_digest") != closure.get("runtime_digest") or runtime_evidence.get("observed") is not True:
             reasons.append("runtime_evidence")
-        if not isinstance(kill_evidence, dict) or kill_evidence.get("closure_digest") != evidence.get("closure_digest") or kill_evidence.get("supervisor_digest") != closure_files.get("host_kill"):
+        if not isinstance(kill_evidence, dict) or kill_evidence.get("closure_digest") != evidence.get("closure_digest") or kill_evidence.get("supervisor_digest") != closure_files.get("host_kill") or kill_evidence.get("observed") is not True or kill_evidence.get("cleanup_verified") is not True:
             reasons.append("kill_evidence")
+        try:
+            supervisor = validate_supervisor_evidence(
+                evidence.get("supervisor_evidence"), run_id=evidence.get("run_id"),
+                lock_digest=evidence.get("lock_digest"), closure_digest=evidence.get("closure_digest"),
+            )
+            if supervisor["attestation_status"] != "verified_supervisor_observation" or supervisor["evidence_digest"] != kill_evidence.get("supervisor_evidence_digest"):
+                raise P5R0Error("supervisor observation is not verified")
+        except Exception:
+            reasons.append("supervisor_evidence")
     if bound_ok:
         recomputed = score_records(records)
         if any(report.get(key) != recomputed.get(key) for key in ("raw_record_count", "negative_transfer", "safety_resource", "has_composite_capability_score")): reasons.append("score_report")

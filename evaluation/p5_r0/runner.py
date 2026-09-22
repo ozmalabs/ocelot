@@ -5,7 +5,7 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Any
 import json
-from typing import Any, Callable
+from typing import Any, Callable, Mapping
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from evaluation.p0a.canonical import b64encode, canonical_bytes, parse_canonical
 from .bounded_compute import (attach_bounded_compute_evidence,
@@ -24,6 +24,7 @@ from .receipts import ReceiptChain
 from .rollback import Snapshot, rollback_receipt
 from .split import build_split_commitment, contrast_matrix
 from .scoring import evaluate_gate, score_records
+from .supervisor import NativeSupervisor, validate_supervisor_evidence
 
 
 def closure_status(*, podman: str = "podman", image_digest: str | None = None, seccomp_profile: Path | None = None, crun_required: bool = True, locked_closure: dict[str, Any] | None = None, limits: dict[str, Any] | None = None, closure_paths: dict[str, Path] | None = None) -> dict[str, Any]:
@@ -160,13 +161,58 @@ def _append_close(chain: ReceiptChain, run_id: str, lock_digest: str | None, out
     return chain.append(run_id=run_id, kind="run_closed", outcome=outcome, binding={"lock_digest": lock_digest, **(binding or {}), "chain_digest_before_close": chain.digest})
 
 
-def _host_evidence(*, closure: dict[str, Any], run_id: str, lock_digest: str | None, native_invocations: int, worker_exit: int = 0) -> dict[str, dict[str, Any]]:
+def _host_evidence(*, closure: dict[str, Any], run_id: str, lock_digest: str | None,
+                   native_invocations: int, worker_exit: int = 0,
+                   supervisor_evidence: Mapping[str, Any] | None = None,
+                   supervisor: NativeSupervisor | None = None) -> dict[str, dict[str, Any]]:
+    """Project evidence only after an authenticated supervisor validates it."""
     files = closure.get("files", {}) if isinstance(closure, dict) else {}
     closure_digest_value = closure.get("closure_digest")
+    observed = None
+    if supervisor_evidence is not None and supervisor is not None:
+        try:
+            candidate = validate_supervisor_evidence(
+                supervisor_evidence, run_id=run_id, lock_digest=lock_digest,
+                closure_digest=closure_digest_value,
+            )
+            if (getattr(supervisor, "trusted", False) is True
+                    and getattr(supervisor, "independent", False) is True
+                    and callable(getattr(supervisor, "validate_execution_evidence", None))
+                    and supervisor.validate_execution_evidence(candidate) is True
+                    and candidate["attestation_status"] == "verified_supervisor_observation"
+                    and candidate["observed"] is True
+                    and candidate["worker_invocations"] == native_invocations
+                    and candidate["worker_exit"] == worker_exit
+                    and candidate["cleanup_verified"] is True
+                    and (not files.get("host_kill") or candidate["supervisor_digest"] == files["host_kill"])):
+                observed = candidate
+        except Exception:
+            # Caller-provided records remain diagnostic unless the configured,
+            # independently operated supervisor authenticates the observation.
+            observed = None
+    if observed is None:
+        # These records are intentionally diagnostic and incomplete.  In
+        # particular, closure hashes and invocation counts are not lifecycle
+        # observations and must not be presented as supervisor evidence.
+        invocation_count = 0
+        exit_code = None
+        observed_flag = False
+        supervisor_digest = None
+        status = "unavailable_unattested_local"
+        killed = False
+        cleanup = False
+    else:
+        invocation_count = observed["worker_invocations"]
+        exit_code = observed["worker_exit"]
+        observed_flag = True
+        supervisor_digest = observed["supervisor_digest"]
+        status = "verified_supervisor_observation"
+        killed = observed["process_group_killed"]
+        cleanup = observed["cleanup_verified"]
     return {
-        "host_execution_evidence": {"schema": "P5R0HostExecutionEvidenceV3", "run_id": run_id, "lock_digest": lock_digest, "closure_digest": closure_digest_value, "runner_digest": files.get("host_runner"), "native_digest": files.get("host_native"), "invocations": native_invocations, "worker_exit": worker_exit},
-        "runtime_evidence": {"schema": "P5R0RuntimeEvidenceV3", "run_id": run_id, "lock_digest": lock_digest, "closure_digest": closure_digest_value, "runtime": closure.get("runtime"), "runtime_path": closure.get("runtime_path"), "runtime_digest": closure.get("runtime_digest"), "network": closure.get("network"), "pull": closure.get("pull")},
-        "kill_evidence": {"schema": "P5R0KillEvidenceV3", "run_id": run_id, "lock_digest": lock_digest, "closure_digest": closure_digest_value, "supervisor_digest": files.get("host_kill"), "policy": "bounded_process_group_kill", "observed": True},
+        "host_execution_evidence": {"schema": "P5R0HostExecutionEvidenceV3", "run_id": run_id, "lock_digest": lock_digest, "closure_digest": closure_digest_value, "runner_digest": files.get("host_runner"), "native_digest": files.get("host_native"), "invocations": invocation_count, "worker_exit": exit_code, "observed": observed_flag, "evidence_status": status},
+        "runtime_evidence": {"schema": "P5R0RuntimeEvidenceV3", "run_id": run_id, "lock_digest": lock_digest, "closure_digest": closure_digest_value, "runtime": closure.get("runtime"), "runtime_path": closure.get("runtime_path"), "runtime_digest": closure.get("runtime_digest"), "network": closure.get("network"), "pull": closure.get("pull"), "observed": observed_flag, "evidence_status": status},
+        "kill_evidence": {"schema": "P5R0KillEvidenceV3", "run_id": run_id, "lock_digest": lock_digest, "closure_digest": closure_digest_value, "supervisor_digest": supervisor_digest, "supervisor_evidence_digest": observed["evidence_digest"] if observed is not None else None, "policy": "bounded_process_group_kill", "observed": observed_flag, "process_group_killed": killed, "cleanup_verified": cleanup, "evidence_status": status},
     }
 
 
@@ -240,7 +286,7 @@ def _run_contrast_matrix(*, evaluator: P5R0Evaluator, bundle: dict[str, Any], ch
     evaluator.restore(); return evidence
 
 
-def run_readiness_gate(bundle: dict[str, Any], *, receipts_root: Path, image_digest: str | None = None, podman: str = "podman", seccomp_profile: Path | None = None, closure_paths: dict[str, Path] | None = None, execute_case: Callable[[dict[str, Any], dict[str, Any]], int | None] | None = None, require_native: bool = True, lock: dict[str, Any] | None = None, trusted_authority: dict[str, Any] | None = None, receipt_signer: Ed25519PrivateKey | None = None, warm_reset_session_id: str | None = None) -> dict[str, Any]:
+def run_readiness_gate(bundle: dict[str, Any], *, receipts_root: Path, image_digest: str | None = None, podman: str = "podman", seccomp_profile: Path | None = None, closure_paths: dict[str, Path] | None = None, execute_case: Callable[[dict[str, Any], dict[str, Any]], int | None] | None = None, require_native: bool = True, lock: dict[str, Any] | None = None, trusted_authority: dict[str, Any] | None = None, receipt_signer: Ed25519PrivateKey | None = None, warm_reset_session_id: str | None = None, supervisor_evidence: Mapping[str, Any] | None = None, supervisor: NativeSupervisor | None = None, private_store: dict[str, Any] | None = None) -> dict[str, Any]:
     if bundle.get("schema") != "P5R0ManifestV2": raise P5R0Error("production requires locked public manifest")
     v3 = bool(lock and lock.get("schema") == "P5R0LocalLockV3")
     signer = receipt_signer or Ed25519PrivateKey.generate()
@@ -251,13 +297,17 @@ def run_readiness_gate(bundle: dict[str, Any], *, receipts_root: Path, image_dig
     run_id = digest({"manifest": bundle["manifest_digest"], "lock": lock.get("lock_digest") if lock else None, "root": str(receipts_root.resolve()), "protocol": protocol})
     if v3:
         if trusted_authority is None:
-            return _impasse(chain, Snapshot({"graph": {}, "codebook": {}, "counter": 0}), None, run_id, {"available": False, "reason": "V3 external authority required", "network": "none", "pull": "never", "runtime": "crun"}, "V3 external authority required")
+            return _impasse(chain, Snapshot({"graph": {}, "codebook": {}, "counter": 0}), None, run_id, {"available": False, "reason": "V3 authority trust binding required", "network": "none", "pull": "never", "runtime": "crun"}, "V3 authority trust binding required")
+        if require_native is not True:
+            return _impasse(chain, Snapshot({"graph": {}, "codebook": {}, "counter": 0}), None, run_id, {"available": False, "reason": "V3 native worker fallback disabled", "network": "none", "pull": "never", "runtime": "crun"}, "V3 native worker is mandatory; fallback disabled", lock.get("lock_digest"))
+        if private_store is None:
+            return _impasse(chain, Snapshot({"graph": {}, "codebook": {}, "counter": 0}), None, run_id, {"available": False, "reason": "durable private store is required; process-local fixture truth is disabled", "network": "none", "pull": "never", "runtime": "crun"}, "durable private store is required for production-shaped readiness", lock.get("lock_digest"))
         try: validate_repair_lock(lock, trusted_authority=trusted_authority, expected_manifest_digest=bundle["manifest_digest"])
-        except Exception as exc: return _impasse(chain, Snapshot({"graph": {}, "codebook": {}, "counter": 0}), None, run_id, {"available": False, "reason": str(exc), "network": "none", "pull": "never", "runtime": "crun"}, "V3 native worker is mandatory; invalid V3 external lock" if require_native is not False else "V3 native worker is mandatory; V3 fallback disabled", lock.get("lock_digest"))
+        except Exception as exc: return _impasse(chain, Snapshot({"graph": {}, "codebook": {}, "counter": 0}), None, run_id, {"available": False, "reason": str(exc), "network": "none", "pull": "never", "runtime": "crun"}, "V3 native worker is mandatory; invalid V3 authority-bound lock" if require_native is not False else "V3 native worker is mandatory; V3 fallback disabled", lock.get("lock_digest"))
         if b64encode(signer.public_key().public_bytes_raw()) != trusted_authority["public_key"]:
-            return _impasse(chain, Snapshot({"graph": {}, "codebook": {}, "counter": 0}), None, run_id, {"available": False, "reason": "receipt signer is not externally bound", "network": "none", "pull": "never", "runtime": "crun"}, "V3 receipt signer authority mismatch", lock.get("lock_digest"))
+            return _impasse(chain, Snapshot({"graph": {}, "codebook": {}, "counter": 0}), None, run_id, {"available": False, "reason": "receipt signer is not bound to the supplied authority", "network": "none", "pull": "never", "runtime": "crun"}, "V3 receipt signer authority mismatch", lock.get("lock_digest"))
         try:
-            validate_manifest_integrity(bundle)
+            validate_manifest_integrity(bundle, private_store)
             if lock.get("case_index_digest") != bundle.get("index_digest") or lock.get("truth_digest") != bundle.get("truth_digest") or lock.get("store_digest") != bundle.get("store_digest"):
                 raise P5R0Error("V3 lock/store commitment")
         except Exception as exc:
@@ -265,7 +315,7 @@ def run_readiness_gate(bundle: dict[str, Any], *, receipts_root: Path, image_dig
     elif require_native:
         # V2 remains historical evidence; it is never a production activation input.
         if lock is None or trusted_authority is None:
-            return _impasse(chain, Snapshot({"graph": {}, "codebook": {}, "counter": 0}), None, run_id, {"available": False, "reason": "V3 lock and trusted external authority required", "network": "none", "pull": "never", "runtime": "crun"}, "production requires V3 lock")
+            return _impasse(chain, Snapshot({"graph": {}, "codebook": {}, "counter": 0}), None, run_id, {"available": False, "reason": "V3 lock and authority trust binding required", "network": "none", "pull": "never", "runtime": "crun"}, "production requires V3 lock")
         try: validate_lock(lock, trusted_authority=trusted_authority, expected_manifest_digest=bundle["manifest_digest"])
         except Exception as exc: return _impasse(chain, Snapshot({"graph": {}, "codebook": {}, "counter": 0}), None, run_id, {"available": False, "reason": str(exc), "network": "none", "pull": "never", "runtime": "crun"}, "historical V2 lock rejected")
         return _impasse(chain, Snapshot({"graph": {}, "codebook": {}, "counter": 0}), None, run_id, {"available": False, "reason": "historical V2 lock rejected for production", "network": "none", "pull": "never", "runtime": "crun"}, "historical V2 lock rejected")
@@ -282,7 +332,7 @@ def run_readiness_gate(bundle: dict[str, Any], *, receipts_root: Path, image_dig
         first = chain.append(run_id=run_id, kind="preregistered", outcome="verified", binding=preregistration)
         preregistration_hash = first["receipt_hash"]
     try:
-        private_store_for(bundle); evaluator = P5R0Evaluator(bundle); initial = Snapshot(evaluator.state); records: list[dict[str, Any]] = []; mutation_artifacts: list[dict[str, Any]] = []; mutation_root = receipts_root / "mutations"; order = digest([c["case_id"] for c in bundle["case_index"]])
+        private_store_for(bundle, private_store); evaluator = P5R0Evaluator(bundle, private_store); initial = Snapshot(evaluator.state); records: list[dict[str, Any]] = []; mutation_artifacts: list[dict[str, Any]] = []; mutation_root = receipts_root / "mutations"; order = digest([c["case_id"] for c in bundle["case_index"]])
         if v3 and warm_reset_session_id is not None:
             evaluator.arm_context("warm_adaptive", order)
             pre_reset = evaluator.session_digest()
@@ -381,13 +431,15 @@ def run_readiness_gate(bundle: dict[str, Any], *, receipts_root: Path, image_dig
             report["schema"] = "P5R0ScoreReportV3"
             report.pop("retention", None); report.pop("interference", None)
             report["canonical_comparison"] = {"schema": "P5R0CanonicalComparisonV1", "status": "requires_independent_run", "authoritative": True}
-        host_evidence = _host_evidence(closure=closure, run_id=run_id, lock_digest=lock.get("lock_digest") if lock else None, native_invocations=len(records) + len(controls) + len(contrast_evidence) * 2)
-        evidence = {"run_id": run_id, "records": records, "case_index": bundle["case_index"], "case_index_digest": bundle["index_digest"], "split_digest": bundle["split_digest"], "split_commitment": (lock or {}).get("split_commitment", build_split_commitment()), "controls": control_receipts, "contrast_evidence": contrast_evidence, "score_report": report, "receipt_chain": chain, "chain_digest": final_chain_digest, "lock_digest": lock.get("lock_digest") if lock else None, "closure": closure, "closure_digest": closure.get("closure_digest"), **host_evidence, "native_verified": require_native and closure["available"], "external_authority_verified": bool(require_native and trusted_authority), "native_controls_verified": all(c.get("worker_invocation") == ("native" if require_native else "native_worker") and c.get("task_digest") and c.get("worker_exit") == 0 for c in controls), "mechanics_contrasts_verified": bool(contrast_evidence) and (require_native or execute_case is not None), "session_state_verified": all(r.get("session_id") and isinstance(r.get("ordinal"), int) for r in records), "rollback_exact": rb["exact"], "rollback_impasses": 0 if rb["exact"] else 1, "rollback": rb, "leakage_findings": sum(1 for c in controls if c["control_id"] == "leakage_audit" and not c["passed"]), "controls_passed": all(c["passed"] for c in controls), "held_out_complete": sum(1 for r in records if r["split"] == "held_out") >= int(policy.get("minimum_held_out", 36))}
+        native_invocations = len(records) + len(controls) + len(contrast_evidence) * 2
+        host_evidence = _host_evidence(closure=closure, run_id=run_id, lock_digest=lock.get("lock_digest") if lock else None, native_invocations=native_invocations, supervisor_evidence=supervisor_evidence, supervisor=supervisor)
+        supervisor_verified = bool(host_evidence["host_execution_evidence"].get("observed") is True and host_evidence["kill_evidence"].get("cleanup_verified") is True and host_evidence["host_execution_evidence"].get("evidence_status") == "verified_supervisor_observation")
+        evidence = {"run_id": run_id, "records": records, "case_index": bundle["case_index"], "case_index_digest": bundle["index_digest"], "split_digest": bundle["split_digest"], "split_commitment": (lock or {}).get("split_commitment", build_split_commitment()), "controls": control_receipts, "contrast_evidence": contrast_evidence, "score_report": report, "receipt_chain": chain, "chain_digest": final_chain_digest, "lock_digest": lock.get("lock_digest") if lock else None, "closure": closure, "closure_digest": closure.get("closure_digest"), "supervisor_evidence": dict(supervisor_evidence) if supervisor_verified else None, **host_evidence, "native_verified": bool(require_native and closure["available"] and supervisor_verified), "external_authority_verified": False, "native_controls_verified": all(c.get("worker_invocation") == ("native" if require_native else "native_worker") and c.get("task_digest") and c.get("worker_exit") == 0 for c in controls), "mechanics_contrasts_verified": bool(contrast_evidence) and (require_native or execute_case is not None), "session_state_verified": all(r.get("session_id") and isinstance(r.get("ordinal"), int) for r in records), "rollback_exact": rb["exact"], "rollback_impasses": 0 if rb["exact"] else 1, "rollback": rb, "leakage_findings": sum(1 for c in controls if c["control_id"] == "leakage_audit" and not c["passed"]), "controls_passed": all(c["passed"] for c in controls), "held_out_complete": sum(1 for r in records if r["split"] == "held_out") >= int(policy.get("minimum_held_out", 36))}
         decision = evaluate_gate(evidence, policy)
-        result = {"schema": "P5R0ResultSealV3" if v3 else "P5R0ResultSealV2", "run_id": run_id, "disposition": decision["disposition"], "outcome": decision["disposition"], "manifest_digest": bundle["manifest_digest"], "lock_digest": lock.get("lock_digest") if lock else None, "policy_digest": digest(policy), "closure_digest": digest(closure), "receipt_public_key_digest": chain.public_key_digest if v3 else digest(chain.public_key.public_bytes_raw()), "record_count": len(records), "control_count": len(control_receipts), "closure": closure, "records": records, "controls": control_receipts, "score_report": report, "score_report_digest": digest(report), "receipts": len(chain.records), "chain_digest": final_chain_digest, "contrast_evidence": contrast_evidence, "mutation_artifacts": mutation_artifacts, "rollback": rb, "rollback_cleanup": "exact" if rb["exact"] else "impasse", "claim_boundary": decision["claim_boundary"], "gate_reasons": decision["reasons"], "case_index": bundle["case_index"], "case_index_digest": bundle["index_digest"], "split_digest": bundle["split_digest"], "split_commitment": (lock or {}).get("split_commitment", build_split_commitment()), "policy": policy, "native_verified": require_native and closure["available"], "external_authority_verified": bool(trusted_authority), "native_controls_verified": all(c.get("worker_invocation") == ("native" if require_native else "native_worker") and c.get("task_digest") and c.get("worker_exit") == 0 for c in control_receipts), "mechanics_contrasts_verified": bool(contrast_evidence) and (require_native or execute_case is not None), "session_state_verified": all(r.get("session_id") and isinstance(r.get("ordinal"), int) for r in records), "controls_passed": all(c["passed"] for c in control_receipts), "held_out_complete": sum(1 for r in records if r["split"] == "held_out") >= int(policy.get("minimum_held_out", 36)), "rollback_impasses": 0 if rb["exact"] else 1, "rollback_exact": rb["exact"], "leakage_findings": sum(1 for c in control_receipts if c["control_id"] == "leakage_audit" and not c["passed"]), "truth_digest": bundle["truth_digest"], "store_digest": bundle["store_digest"], "preregistration_content_digest": digest(bundle), "preregistration_policy_digest": digest(policy), "preregistration_worker_contract_digest": lock["worker_contract"]["digest"] if v3 else None, "preregistration_evaluator_contract_digest": lock["evaluator_contract"]["digest"] if v3 else None, "preregistration_closure_digest": digest(lock["closure"]) if v3 else None}
+        result = {"schema": "P5R0ResultSealV3" if v3 else "P5R0ResultSealV2", "run_id": run_id, "disposition": decision["disposition"], "outcome": decision["disposition"], "manifest_digest": bundle["manifest_digest"], "lock_digest": lock.get("lock_digest") if lock else None, "policy_digest": digest(policy), "closure_digest": digest(closure), "receipt_public_key_digest": chain.public_key_digest if v3 else digest(chain.public_key.public_bytes_raw()), "record_count": len(records), "control_count": len(control_receipts), "closure": closure, "records": records, "controls": control_receipts, "score_report": report, "score_report_digest": digest(report), "receipts": len(chain.records), "chain_digest": final_chain_digest, "contrast_evidence": contrast_evidence, "mutation_artifacts": mutation_artifacts, "rollback": rb, "rollback_cleanup": "exact" if rb["exact"] else "impasse", "claim_boundary": decision["claim_boundary"], "gate_reasons": decision["reasons"], "case_index": bundle["case_index"], "case_index_digest": bundle["index_digest"], "split_digest": bundle["split_digest"], "split_commitment": (lock or {}).get("split_commitment", build_split_commitment()), "policy": policy, "native_verified": bool(require_native and closure["available"] and supervisor_verified), "external_authority_verified": False, "native_controls_verified": all(c.get("worker_invocation") == ("native" if require_native else "native_worker") and c.get("task_digest") and c.get("worker_exit") == 0 for c in control_receipts), "mechanics_contrasts_verified": bool(contrast_evidence) and (require_native or execute_case is not None), "session_state_verified": all(r.get("session_id") and isinstance(r.get("ordinal"), int) for r in records), "controls_passed": all(c["passed"] for c in control_receipts), "held_out_complete": sum(1 for r in records if r["split"] == "held_out") >= int(policy.get("minimum_held_out", 36)), "rollback_impasses": 0 if rb["exact"] else 1, "rollback_exact": rb["exact"], "leakage_findings": sum(1 for c in control_receipts if c["control_id"] == "leakage_audit" and not c["passed"]), "truth_digest": bundle["truth_digest"], "store_digest": bundle["store_digest"], "preregistration_content_digest": digest(bundle), "preregistration_policy_digest": digest(policy), "preregistration_worker_contract_digest": lock["worker_contract"]["digest"] if v3 else None, "preregistration_evaluator_contract_digest": lock["evaluator_contract"]["digest"] if v3 else None, "preregistration_closure_digest": digest(lock["closure"]) if v3 else None}
         if v3:
             public_key = b64encode(chain.public_key.public_bytes_raw())
-            result.update({"closure_digest": digest(closure), "host_execution_evidence": host_evidence["host_execution_evidence"], "runtime_evidence": host_evidence["runtime_evidence"], "kill_evidence": host_evidence["kill_evidence"], "evaluator_authority_id": trusted_authority["authority_id"], "evaluator_key_id": trusted_authority["key_id"], "receipt_key_id": trusted_authority["key_id"], "receipt_public_key": public_key, "evaluator_public_key_digest": chain.public_key_digest, "signature_metadata": {"algorithm": "Ed25519", "receipt_schema": "P5R0ReceiptV3", "authority_id": trusted_authority["authority_id"], "key_id": trusted_authority["key_id"], "public_key_digest": chain.public_key_digest}, "receipt_chain_root": str(chain.root.resolve()), "receipt_chain_path": str(chain.root.resolve()), "receipt_chain_root_digest": chain.root_digest, "receipt_chain_final_digest": final_chain_digest, "first_receipt_hash": preregistration_hash, "final_receipt_hash": verified_chain[-1]["receipt_hash"], "preregistration": {"receipt_hash": preregistration_hash, "content_digest": digest(bundle), "order": [case["case_id"] for case in bundle["case_index"]], "order_digest": digest([case["case_id"] for case in bundle["case_index"]]), "parent_lock_digest": lock["parent_lock_digest"], "parent_manifest_digest": lock["parent_manifest_digest"], "parent_case_index_digest": lock["parent_case_index_digest"], "parent_truth_digest": lock["parent_truth_digest"], "parent_store_digest": lock["parent_store_digest"], "lock_digest": lock["lock_digest"], "manifest_digest": bundle["manifest_digest"], "truth_digest": bundle["truth_digest"], "store_digest": bundle["store_digest"]}})
+            result.update({"closure_digest": digest(closure), "host_execution_evidence": host_evidence["host_execution_evidence"], "runtime_evidence": host_evidence["runtime_evidence"], "kill_evidence": host_evidence["kill_evidence"], "supervisor_evidence": dict(supervisor_evidence) if supervisor_verified else None, "evaluator_authority_id": trusted_authority["authority_id"], "evaluator_key_id": trusted_authority["key_id"], "receipt_key_id": trusted_authority["key_id"], "receipt_public_key": public_key, "evaluator_public_key_digest": chain.public_key_digest, "signature_metadata": {"algorithm": "Ed25519", "receipt_schema": "P5R0ReceiptV3", "authority_id": trusted_authority["authority_id"], "key_id": trusted_authority["key_id"], "public_key_digest": chain.public_key_digest}, "receipt_chain_root": str(chain.root.resolve()), "receipt_chain_path": str(chain.root.resolve()), "receipt_chain_root_digest": chain.root_digest, "receipt_chain_final_digest": final_chain_digest, "first_receipt_hash": preregistration_hash, "final_receipt_hash": verified_chain[-1]["receipt_hash"], "preregistration": {"receipt_hash": preregistration_hash, "content_digest": digest(bundle), "order": [case["case_id"] for case in bundle["case_index"]], "order_digest": digest([case["case_id"] for case in bundle["case_index"]]), "parent_lock_digest": lock["parent_lock_digest"], "parent_manifest_digest": lock["parent_manifest_digest"], "parent_case_index_digest": lock["parent_case_index_digest"], "parent_truth_digest": lock["parent_truth_digest"], "parent_store_digest": lock["parent_store_digest"], "lock_digest": lock["lock_digest"], "manifest_digest": bundle["manifest_digest"], "truth_digest": bundle["truth_digest"], "store_digest": bundle["store_digest"]}})
         return result
     except Exception as exc:
         return _impasse(chain, initial if "initial" in locals() else Snapshot({"graph": {}, "codebook": {}, "counter": 0}), evaluator, run_id, closure, str(exc), lock.get("lock_digest") if lock else None)
