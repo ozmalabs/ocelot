@@ -34,31 +34,57 @@ from .service import EvaluatorService
 from .signing import KMSEd25519Signer, sign_object
 from .store import GCSStore
 from .timing import ExternallyKeyedTimingAttestor, TimingAttestor, TimingAuthorityConfig
+from ..cs_attestation_probe import launcher_protocol
 
 
-CONFIDENTIAL_SPACE_LAUNCHER_SOCKET = "/run/container_launcher/teeserver.sock"
-CONFIDENTIAL_SPACE_TOKEN_PATH = "/v1/token"
+# These aliases retain the production configuration/test surface while the
+# bounded framing and token protocol has one implementation shared with the
+# diagnostic probe.  Production does not import the probe itself.
+CONFIDENTIAL_SPACE_LAUNCHER_SOCKET = launcher_protocol.LAUNCHER_SOCKET
+CONFIDENTIAL_SPACE_TOKEN_PATH = launcher_protocol.TOKEN_PATH
 # These limits apply before any token, claims, or capability material can enter
 # the process. Evidence is intentionally much smaller than the request limit.
-MAX_METADATA_TOKEN_BYTES = 64 * 1024
-MAX_LAUNCHER_HEADERS_BYTES = 8 * 1024
+MAX_METADATA_TOKEN_BYTES = launcher_protocol.MAX_TOKEN_BYTES
+MAX_LAUNCHER_HEADERS_BYTES = launcher_protocol.MAX_RESPONSE_HEADERS_BYTES
 MAX_STS_RESPONSE_BYTES = 64 * 1024
 MAX_STARTUP_EVIDENCE_BYTES = 16 * 1024
 DEFAULT_WIP_TOKEN_AUDIENCE = "https://sts.googleapis.com"
 DEFAULT_ATTESTATION_ISSUER = "https://confidentialcomputing.googleapis.com"
+# The candidate evaluator image carries the reviewed public FreeTSA trust
+# anchor here; the configured digest is checked again when the bridge is built.
+DEFAULT_TIMING_BRIDGE_FREETSA_CA_PATH = "/app/services/p5_r0_evaluator/deploy/freetsa-cacert.pem"
 CONFIDENTIAL_SPACE_JWKS_URI = "https://www.googleapis.com/service_accounts/v1/metadata/jwk/signer@confidentialspace-sign.iam.gserviceaccount.com"
 _WIP_PROVIDER_PREFIX = "//iam.googleapis.com/projects/"
 _AUTHORITY_FIELDS = {"schema", "authority_id", "key_id", "public_key", "public_key_digest", "transport_attestation"}
 _TRANSPORT_FIELDS = {"schema", "provider", "audience", "event"}
-_CLAIM_KEYS = {"audience", "nonce", "issued_at", "expires_at", "issuer", "subject", "image_digest", "project_number", "project_id", "zone", "debug_state", "tee", "hardware_model", "secure_boot", "workload"}
+_CLAIM_KEYS = {"audience", "nonce", "issued_at", "expires_at", "issuer", "subject", "image_digest", "project_number", "project_id", "zone", "debug_state", "tee", "hardware_model", "secure_boot", "workload", "smoke"}
+CONFIDENTIAL_SPACE_SMOKE_RUN_ID = "sha256:" + "0" * 64
+CONFIDENTIAL_SPACE_SMOKE_TASK_ID = "sha256:" + "1" * 64
+CONFIDENTIAL_SPACE_SMOKE_PAYLOAD_DIGEST = "sha256:" + "2" * 64
 MIN_NONCE_BYTES = 10
 MAX_NONCE_BYTES = 74
+_COMPUTE_VM_SUBJECT_PREFIX_RE = re.compile(
+    r"https://www\.googleapis\.com/compute/v1/projects/"
+    r"([a-z][a-z0-9-]{4,28}[a-z0-9])/zones/([a-z][a-z0-9-]+)/instances/"
+)
+_SERVICE_ACCOUNT_RE = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9._-]{5,127}@[a-z][a-z0-9-]{4,29}\.iam\.gserviceaccount\.com$")
+
+
+def _validate_attestation_subject_prefix(prefix: str | None, project_id: str, zone: str) -> None:
+    if prefix is None:
+        return
+    if not isinstance(prefix, str) or not prefix:
+        raise ValueError("P5R0_ATTESTATION_SUBJECT_PREFIX is invalid")
+    match = _COMPUTE_VM_SUBJECT_PREFIX_RE.fullmatch(prefix)
+    if match is None or match.group(1) != project_id or match.group(2) != zone:
+        raise ValueError("P5R0_ATTESTATION_SUBJECT_PREFIX must be the exact project/zone Compute self-link prefix")
 
 
 def _wip_policy_contract(*, provider: str, token_audience: str, claim_paths: Mapping[str, str], issuer: str,
                          image_digest: str, project_number: str, project_id: str,
                          zone: str, debug_state: str, tee: str, hardware_model: str,
-                         secure_boot: bool, workload: str) -> dict[str, Any]:
+                         secure_boot: bool, workload: str, confidential_space_smoke: bool,
+                         attestation_subject_prefix: str | None = None) -> dict[str, Any]:
     """Single-source WIP mapping/condition commitment used by runtime and deploy."""
     mapped = {
         "google.subject": f"assertion.{claim_paths['subject']}",
@@ -71,11 +97,13 @@ def _wip_policy_contract(*, provider: str, token_audience: str, claim_paths: Map
         "attribute.hardware_model": f"assertion.{claim_paths['hardware_model']}",
         "attribute.secure_boot": f"assertion.{claim_paths['secure_boot']}",
         "attribute.workload": f"assertion.{claim_paths['workload']}",
+        "attribute.confidential_space_smoke": f"assertion.{claim_paths['smoke']}",
     }
     condition = {
         "audience": f"assertion.{claim_paths['audience']}",
         "audience_value": token_audience,
         "issuer": issuer,
+        "subject_prefix": attestation_subject_prefix,
         "image_digest": image_digest,
         "project_number": project_number,
         "project_id": project_id,
@@ -85,6 +113,7 @@ def _wip_policy_contract(*, provider: str, token_audience: str, claim_paths: Map
         "hardware_model": hardware_model,
         "secure_boot": secure_boot,
         "workload": workload,
+        "confidential_space_smoke": "1" if confidential_space_smoke else "0",
     }
     return {"schema": "P5R0WIPPolicyV2", "provider": provider, "token_audience": token_audience, "mapping": mapped, "condition": condition}
 
@@ -145,6 +174,9 @@ class LockedBootstrapConfig:
     memory_limit: str = "512Mi"
     expected_issuer: str | None = DEFAULT_ATTESTATION_ISSUER
     workload: str = "evaluator"
+    # Confidential Space JWT subjects identify the attested VM, not the caller.
+    # None is retained only for explicit legacy/local fixtures.
+    attestation_subject_prefix: str | None = None
     hardware_model: str = "GCP_AMD_SEV"
     claim_paths: Mapping[str, str] = field(default_factory=lambda: {
         "audience": "aud",
@@ -162,12 +194,21 @@ class LockedBootstrapConfig:
         "hardware_model": "hwmodel",
         "secure_boot": "secboot",
         "workload": "submods.container.env.P5R0_EXPECTED_WORKLOAD",
+        "smoke": "submods.container.env.P5R0_CONFIDENTIAL_SPACE_SMOKE",
     })
     clock: Callable[[], int] = field(default=lambda: int(time.time()))
+    confidential_space_smoke: bool = False
     timing_authority_id: str | None = None
     timing_key_id: str | None = None
     timing_ledger_id: str | None = None
     timing_public_key_digest: str | None = None
+    timing_bridge_endpoint: str | None = None
+    timing_bridge_service_account: str | None = None
+    timing_bridge_audience: str | None = None
+    timing_bridge_freetsa_ca_pem_path: str = DEFAULT_TIMING_BRIDGE_FREETSA_CA_PATH
+    timing_bridge_freetsa_ca_pem_sha256: str | None = None
+    timing_bridge_freetsa_certificate_sha256: str | None = None
+    capability_service_account: str | None = None
     nonce_factory: Callable[[], str] = secrets.token_urlsafe
 
     def __post_init__(self) -> None:
@@ -177,6 +218,19 @@ class LockedBootstrapConfig:
             raise ValueError("WIP token audience must not be the provider resource")
         if self.expected_issuer != DEFAULT_ATTESTATION_ISSUER:
             raise ValueError("Confidential Space issuer must be the Google Cloud Attestation issuer")
+        if self.hardware_model != "GCP_AMD_SEV":
+            raise ValueError("Confidential Space hardware must be GCP_AMD_SEV")
+        if self.secure_boot is not True:
+            raise ValueError("Confidential Space Secure Boot must be enabled")
+        if self.tee != "CONFIDENTIAL_SPACE":
+            raise ValueError("Confidential Space TEE binding is invalid")
+        if self.debug_state != "disabled-since-boot":
+            raise ValueError("Confidential Space debug state must be disabled-since-boot")
+        if self.workload != "evaluator":
+            raise ValueError("Confidential Space workload must be evaluator")
+        _validate_attestation_subject_prefix(self.attestation_subject_prefix, self.project_id, self.zone)
+        if self.capability_service_account is not None and not _SERVICE_ACCOUNT_RE.fullmatch(self.capability_service_account):
+            raise ValueError("capability service account is invalid")
         object.__setattr__(self, "authority", _freeze(dict(self.authority)))
         object.__setattr__(self, "claim_paths", _freeze(dict(self.claim_paths)))
         object.__setattr__(self, "allowed_subjects", frozenset(self.allowed_subjects))
@@ -264,6 +318,7 @@ class LockedBootstrapConfig:
             "hardware_model": values.get("P5R0_CLAIM_HARDWARE_MODEL", "hwmodel"),
             "secure_boot": values.get("P5R0_CLAIM_SECURE_BOOT", "secboot"),
             "workload": values.get("P5R0_CLAIM_WORKLOAD", "submods.container.env.P5R0_EXPECTED_WORKLOAD"),
+            "smoke": values.get("P5R0_CLAIM_SMOKE", "submods.container.env.P5R0_CONFIDENTIAL_SPACE_SMOKE"),
         }
         if set(claim_paths) != _CLAIM_KEYS or any(not isinstance(path, str) or not path or any(part == "" for part in path.split(".")) or "\\" in path for path in claim_paths.values()):
             raise RuntimeError("attestation claim paths must be a closed non-empty dotted mapping")
@@ -272,6 +327,15 @@ class LockedBootstrapConfig:
         expected_project_number = required("P5R0_EXPECTED_PROJECT_NUMBER")
         expected_project_id = required("P5R0_EXPECTED_PROJECT_ID")
         expected_zone = required("P5R0_EXPECTED_ZONE")
+        subject_prefix = values.get("P5R0_ATTESTATION_SUBJECT_PREFIX", "")
+        if not subject_prefix:
+            if env is None:
+                raise RuntimeError("P5R0_ATTESTATION_SUBJECT_PREFIX is required")
+            subject_prefix = None
+        try:
+            _validate_attestation_subject_prefix(subject_prefix, expected_project_id, expected_zone)
+        except ValueError as exc:
+            raise RuntimeError(str(exc)) from exc
         bucket = required("P5R0_BUCKET")
         prefix = values.get("P5R0_PREFIX", "v3")
         kms_key_version = required("P5R0_KMS_KEY_VERSION")
@@ -285,6 +349,13 @@ class LockedBootstrapConfig:
             raise RuntimeError("prefix is invalid")
         if not re.fullmatch(r"projects/[a-z][a-z0-9-]*/locations/[a-z0-9-]+/keyRings/[A-Za-z0-9_-]+/cryptoKeys/[A-Za-z0-9_-]+/cryptoKeyVersions/[1-9][0-9]*", kms_key_version):
             raise RuntimeError("KMS key version is invalid")
+        capability_service_account = values.get("P5R0_CAPABILITY_SERVICE_ACCOUNT", "")
+        if not capability_service_account:
+            if env is None:
+                raise RuntimeError("P5R0_CAPABILITY_SERVICE_ACCOUNT is required")
+            capability_service_account = None
+        elif not _SERVICE_ACCOUNT_RE.fullmatch(capability_service_account):
+            raise RuntimeError("P5R0_CAPABILITY_SERVICE_ACCOUNT is invalid")
         attestation_audience = values.get("P5R0_ATTESTATION_AUDIENCE", DEFAULT_WIP_TOKEN_AUDIENCE)
         wip_provider = required("P5R0_WIP_PROVIDER")
         provider_match = re.fullmatch(r"//iam\.googleapis\.com/projects/([0-9]+)/locations/global/workloadIdentityPools/([a-z0-9-]+)/providers/([a-z0-9-]+)", wip_provider)
@@ -295,10 +366,47 @@ class LockedBootstrapConfig:
         if transport["provider"] != wip_provider or transport["audience"] != attestation_audience:
             raise RuntimeError("authority transport must bind provider and token audience separately")
         timing_values = [values.get("P5R0_TIMING_AUTHORITY_ID", ""), values.get("P5R0_TIMING_KEY_ID", ""), values.get("P5R0_TIMING_LEDGER_ID", ""), values.get("P5R0_TIMING_PUBLIC_KEY_DIGEST", "")]
-        if not all(timing_values):
+        timing_present = any(timing_values)
+        if timing_present and not all(timing_values):
+            raise RuntimeError("independent timing authority configuration is incomplete")
+        if timing_present:
+            cls._digest(timing_values[3], "P5R0_TIMING_PUBLIC_KEY_DIGEST")
+
+        bridge_names = (
+            "P5R0_TIMING_BRIDGE_ENDPOINT",
+            "P5R0_TIMING_BRIDGE_SERVICE_ACCOUNT",
+            "P5R0_TIMING_BRIDGE_AUDIENCE",
+            "P5R0_TIMING_BRIDGE_FREETSA_CA_PEM_PATH",
+            "P5R0_TIMING_BRIDGE_FREETSA_CA_PEM_SHA256",
+            "P5R0_TIMING_BRIDGE_FREETSA_CERTIFICATE_SHA256",
+        )
+        bridge_present = any(values.get(name, "") for name in bridge_names)
+        if bridge_present and not timing_present:
             raise RuntimeError("independent timing authority configuration is required")
-        cls._digest(timing_values[3], "P5R0_TIMING_PUBLIC_KEY_DIGEST")
+        if timing_present:
+            bridge_values = {"endpoint": required("P5R0_TIMING_BRIDGE_ENDPOINT"),
+                             "service_account": required("P5R0_TIMING_BRIDGE_SERVICE_ACCOUNT"),
+                             "audience": required("P5R0_TIMING_BRIDGE_AUDIENCE"),
+                             "ca_path": required("P5R0_TIMING_BRIDGE_FREETSA_CA_PEM_PATH"),
+                             "ca_sha256": required("P5R0_TIMING_BRIDGE_FREETSA_CA_PEM_SHA256"),
+                             "certificate_sha256": required("P5R0_TIMING_BRIDGE_FREETSA_CERTIFICATE_SHA256")}
+            if bridge_values["ca_path"] != DEFAULT_TIMING_BRIDGE_FREETSA_CA_PATH:
+                raise RuntimeError("P5R0_TIMING_BRIDGE_FREETSA_CA_PEM_PATH must use the fixed image path")
+            if not re.fullmatch(r"https://[^\s?#]+", bridge_values["endpoint"]):
+                raise RuntimeError("timing bridge endpoint must be HTTPS without query or fragment")
+            if not re.fullmatch(r"https://[^\s?#]+", bridge_values["audience"]):
+                raise RuntimeError("timing bridge audience must be HTTPS without query or fragment")
+            if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{5,127}@[a-z][a-z0-9-]{4,29}\.iam\.gserviceaccount\.com", bridge_values["service_account"]):
+                raise RuntimeError("timing bridge service account is invalid")
+            for name in ("P5R0_TIMING_BRIDGE_FREETSA_CA_PEM_SHA256", "P5R0_TIMING_BRIDGE_FREETSA_CERTIFICATE_SHA256"):
+                cls._digest(bridge_values["ca_sha256"] if name.endswith("PEM_SHA256") else bridge_values["certificate_sha256"], name)
+        else:
+            bridge_values = {"endpoint": "", "service_account": "", "audience": "", "ca_path": DEFAULT_TIMING_BRIDGE_FREETSA_CA_PATH, "ca_sha256": "", "certificate_sha256": ""}
         expected_issuer = values.get("P5R0_ATTESTATION_ISSUER", DEFAULT_ATTESTATION_ISSUER)
+        smoke_value = values.get("P5R0_CONFIDENTIAL_SPACE_SMOKE", "0")
+        if smoke_value not in {"0", "1"}:
+            raise RuntimeError("P5R0_CONFIDENTIAL_SPACE_SMOKE must be exactly 0 or 1")
+        confidential_space_smoke = smoke_value == "1"
         if expected_issuer != DEFAULT_ATTESTATION_ISSUER:
             raise RuntimeError("P5R0_ATTESTATION_ISSUER must be the Google Cloud Attestation issuer")
         parsed = cls(
@@ -327,11 +435,20 @@ class LockedBootstrapConfig:
             memory_limit=memory_limit,
             expected_issuer=expected_issuer,
             workload=values.get("P5R0_EXPECTED_WORKLOAD", "evaluator"),
+            attestation_subject_prefix=subject_prefix,
+            confidential_space_smoke=confidential_space_smoke,
             claim_paths=claim_paths,
             timing_authority_id=timing_values[0] or None,
             timing_key_id=timing_values[1] or None,
             timing_ledger_id=timing_values[2] or None,
             timing_public_key_digest=timing_values[3] or None,
+            timing_bridge_endpoint=bridge_values["endpoint"],
+            timing_bridge_service_account=bridge_values["service_account"],
+            timing_bridge_audience=bridge_values["audience"],
+            timing_bridge_freetsa_ca_pem_path=bridge_values["ca_path"],
+            timing_bridge_freetsa_ca_pem_sha256=bridge_values["ca_sha256"],
+            timing_bridge_freetsa_certificate_sha256=bridge_values["certificate_sha256"],
+            capability_service_account=capability_service_account,
         )
         for name, actual in (("P5R0_POLICY_DIGEST", parsed.policy_digest),
                              ("P5R0_CLAIM_PATHS_DIGEST", parsed.claim_paths_digest),
@@ -357,11 +474,13 @@ class LockedBootstrapConfig:
         return digest({
             "schema": "P5R0AttestationClaimsV2", "claim_paths": dict(self.claim_paths),
             "token_audience": self.attestation_audience, "issuer": self.expected_issuer,
+            "subject_prefix": self.attestation_subject_prefix,
             "image_digest": self.image_digest, "project_number": self.project_number,
             "project_id": self.project_id, "zone": self.zone,
             "debug_state": self.debug_state, "tee": self.tee,
             "hardware_model": self.hardware_model,
             "secure_boot": self.secure_boot, "workload": self.workload,
+            "confidential_space_smoke": self.confidential_space_smoke,
         })
 
     @property
@@ -372,6 +491,8 @@ class LockedBootstrapConfig:
             project_number=self.project_number, project_id=self.project_id,
             zone=self.zone, debug_state=self.debug_state, tee=self.tee,
             hardware_model=self.hardware_model, secure_boot=self.secure_boot, workload=self.workload,
+            confidential_space_smoke=self.confidential_space_smoke,
+            attestation_subject_prefix=self.attestation_subject_prefix,
         ))
 
     @property
@@ -386,6 +507,7 @@ class LockedBootstrapConfig:
                 "caller_audience": self.caller_audience,
             },
             "allowed_subjects": sorted(self.allowed_subjects),
+            "attestation_subject_prefix": self.attestation_subject_prefix,
             "expected_issuer": self.expected_issuer,
             "wip_provider": self.wip_provider,
             "project_number": self.project_number,
@@ -396,10 +518,12 @@ class LockedBootstrapConfig:
             "tee": self.tee,
             "hardware_model": self.hardware_model,
             "workload": self.workload,
+            "confidential_space_smoke": self.confidential_space_smoke,
             "secure_boot": self.secure_boot,
             "bucket": self.bucket,
             "prefix": self.prefix,
             "kms_key_version": self.kms_key_version,
+            "capability_service_account": self.capability_service_account,
             "runtime_digest": self.runtime_digest,
             "resource_profile_digest": self.resource_profile_digest,
             "deployment": {
@@ -413,6 +537,14 @@ class LockedBootstrapConfig:
             "timing_key_id": self.timing_key_id,
             "timing_ledger_id": self.timing_ledger_id,
             "timing_public_key_digest": self.timing_public_key_digest,
+            "timing_bridge": {
+                "endpoint": self.timing_bridge_endpoint,
+                "service_account": self.timing_bridge_service_account,
+                "audience": self.timing_bridge_audience,
+                "freetsa_ca_pem_path": self.timing_bridge_freetsa_ca_pem_path,
+                "freetsa_ca_pem_sha256": self.timing_bridge_freetsa_ca_pem_sha256,
+                "freetsa_certificate_sha256": self.timing_bridge_freetsa_certificate_sha256,
+            },
             "claim_paths_digest": self.claim_paths_digest,
             "attestation_claims_digest": self.attestation_claims_digest,
             "wip_policy_digest": self.wip_policy_digest,
@@ -457,38 +589,18 @@ class LauncherTokenSource:
 
     def fetch(self, *, audience: str, nonce: str) -> str:
         _validate_nonce(nonce)
-        body = canonical_bytes({"audience": audience, "token_type": "OIDC", "nonces": [nonce]})
-        request = (
-            b"POST " + CONFIDENTIAL_SPACE_TOKEN_PATH.encode("ascii") + b" HTTP/1.1\r\n"
-            b"Host: localhost\r\nContent-Type: application/json\r\n"
-            b"Content-Length: " + str(len(body)).encode("ascii") + b"\r\n"
-            b"Connection: close\r\n\r\n" + body
-        )
-        sock = self.socket_factory(socket.AF_UNIX, socket.SOCK_STREAM)
         try:
-            sock.settimeout(5)
-            sock.connect(self.socket_path)
-            sock.sendall(request)
-            raw = _read_launcher_response(sock)
-        except AttestationError:
-            raise
+            return launcher_protocol.fetch_token(
+                audience=audience,
+                nonce=nonce,
+                socket_factory=self.socket_factory,
+            )
+        except launcher_protocol.LauncherProtocolError as exc:
+            # Translate the shared transport error at the production boundary;
+            # its message contains framing metadata only, never token bytes.
+            raise AttestationError(str(exc)) from exc
         except Exception as exc:
             raise AttestationError("Confidential Space launcher token unavailable") from exc
-        finally:
-            try:
-                sock.close()
-            except Exception:
-                pass
-        try:
-            result = json.loads(raw.decode("utf-8"))
-        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
-            raise AttestationError("Confidential Space launcher response is invalid") from exc
-        if not isinstance(result, dict) or set(result) != {"token"} or not isinstance(result.get("token"), str) or not result["token"]:
-            raise AttestationError("Confidential Space launcher response has invalid schema")
-        token = result["token"]
-        if len(token.encode("utf-8")) > MAX_METADATA_TOKEN_BYTES:
-            raise AttestationError("Confidential Space launcher token is too large")
-        return token
 
 
 def _validate_nonce(nonce: str) -> None:
@@ -503,43 +615,11 @@ def _validate_nonce(nonce: str) -> None:
 
 
 def _read_launcher_response(sock: Any) -> bytes:
-    data = bytearray()
-    separator = b"\r\n\r\n"
-    while separator not in data:
-        chunk = sock.recv(4096)
-        if not chunk:
-            raise AttestationError("Confidential Space launcher response ended early")
-        data.extend(chunk)
-        if len(data) > MAX_LAUNCHER_HEADERS_BYTES:
-            raise AttestationError("Confidential Space launcher headers are too large")
-    header_end = data.index(separator)
-    header = bytes(data[:header_end]).decode("ascii", errors="strict")
-    lines = header.split("\r\n")
-    if not lines or lines[0] != "HTTP/1.1 200 OK":
-        raise AttestationError("Confidential Space launcher returned an unexpected status")
-    fields: dict[str, str] = {}
-    for line in lines[1:]:
-        name, separator_text, value = line.partition(":")
-        if not separator_text or name.lower() in fields:
-            raise AttestationError("Confidential Space launcher response headers are invalid")
-        fields[name.lower()] = value.strip()
-    if fields.get("transfer-encoding") or fields.get("content-type", "").split(";", 1)[0].lower() != "application/json":
-        raise AttestationError("Confidential Space launcher response headers are invalid")
+    """Compatibility seam backed by the shared bounded launcher parser."""
     try:
-        length = int(fields["content-length"])
-    except (KeyError, ValueError) as exc:
-        raise AttestationError("Confidential Space launcher response length is invalid") from exc
-    if length < 0 or length > MAX_METADATA_TOKEN_BYTES:
-        raise AttestationError("Confidential Space launcher response is too large")
-    body = bytearray(data[header_end + 4:])
-    while len(body) < length:
-        chunk = sock.recv(min(4096, length - len(body)))
-        if not chunk:
-            raise AttestationError("Confidential Space launcher response ended early")
-        body.extend(chunk)
-    if len(body) != length:
-        raise AttestationError("Confidential Space launcher response has trailing data")
-    return bytes(body)
+        return launcher_protocol.read_response(sock)
+    except launcher_protocol.LauncherProtocolError as exc:
+        raise AttestationError(str(exc)) from exc
 
 
 class GoogleJwtAttestationVerifier:
@@ -603,7 +683,14 @@ class AttestationGate:
         if self.config.expected_issuer is None or _claim(claims, self.config.claim_paths["issuer"]) != self.config.expected_issuer:
             raise AttestationError("attestation issuer mismatch")
         subject = _claim(claims, self.config.claim_paths["subject"])
-        if not isinstance(subject, str) or subject not in self.config.allowed_subjects:
+        if not isinstance(subject, str):
+            raise AttestationError("attestation subject mismatch")
+        if self.config.attestation_subject_prefix is not None:
+            subject_matches = subject.startswith(self.config.attestation_subject_prefix)
+        else:
+            # Explicit local/legacy fixtures retain the pre-prefix exact binding.
+            subject_matches = subject in self.config.allowed_subjects
+        if not subject_matches:
             raise AttestationError("attestation subject mismatch")
         expected = {
             "image_digest": self.config.image_digest,
@@ -615,6 +702,7 @@ class AttestationGate:
             "hardware_model": self.config.hardware_model,
             "workload": self.config.workload,
             "secure_boot": self.config.secure_boot,
+            "smoke": "1" if self.config.confidential_space_smoke else "0",
         }
         for name, expected_value in expected.items():
             if _claim(claims, self.config.claim_paths[name]) != expected_value:
@@ -663,7 +751,7 @@ class GoogleSTSClient:
             raise STSError("attestation STS exchange failed") from exc
         token = result.get("access_token")
         expires_in = result.get("expires_in")
-        if not isinstance(token, str) or not token or result.get("token_type") != "Bearer" or type(expires_in) is not int or expires_in <= 60:
+        if not isinstance(token, str) or not token or result.get("token_type") != "Bearer" or type(expires_in) is not int or not 60 < expires_in <= 3600:
             raise STSError("STS returned an invalid short-lived token")
         return FederatedAccessToken(token, self.clock() + expires_in, "Bearer")
 
@@ -748,6 +836,10 @@ class RunScopedObjectStore(ObjectStore):
             suffix == "state.json" or suffix == "result.seal.json" or
             re.fullmatch(r"receipts/[0-9]{6}\.json", suffix) is not None or
             re.fullmatch(r"timing/[0-9]{6}-[A-Za-z0-9_-]+\.json", suffix) is not None or
+            re.fullmatch(r"timing-outbox/sha256:[0-9a-f]{64}\.json", suffix) is not None or
+            re.fullmatch(r"timing-outbox/record-sha256:[0-9a-f]{64}\.json", suffix) is not None or
+            suffix == "timing-outbox/seed-intent.json" or
+            re.fullmatch(r"result-intent/sha256:[0-9a-f]{64}\.json", suffix) is not None or
             re.fullmatch(r"evidence/[0-9]{6}\.json", suffix) is not None or
             re.fullmatch(r"compute-class/observation-[0-9]{6}\.json", suffix) is not None or
             re.fullmatch(r"idempotency/[A-Za-z0-9_-]+-sha256:[0-9a-f]{64}\.json", suffix) is not None
@@ -802,6 +894,9 @@ class Capabilities:
     store: ObjectStore
     signer: Signer
     timing_attestor: TimingAttestor
+    # Effective credential lifetime after optional service-account impersonation.
+    # It is internal bootstrap state and is never serialized into evidence.
+    credentials_expires_at: int | None = None
     # Optional keeps local/custom capability fixtures source-compatible. The
     # locked adapter attaches a verified binding before its default service is
     # constructed.
@@ -816,13 +911,76 @@ class Capabilities:
         return self.verified_attestation_binding
 
 
-class CapabilityFactory:
-    """Creates cloud clients only from the token returned by STS."""
+def create_timing_bridge_attestor(credentials: FederatedAccessToken, config: LockedBootstrapConfig) -> TimingAttestor:
+    """Build the evaluator's authenticated bridge client after STS exchange.
 
-    def __init__(self, config: LockedBootstrapConfig, *, storage_client_factory: Callable[[FederatedAccessToken], Any] | None = None, kms_client_factory: Callable[[FederatedAccessToken], Any] | None = None, timing_attestor_factory: Callable[[FederatedAccessToken, LockedBootstrapConfig], TimingAttestor] | None = None, timing_recorder_factory: Callable[[FederatedAccessToken, LockedBootstrapConfig], Any] | None = None):
+    The callback is intentionally pure construction: IAM Credentials is called
+    lazily by the bridge client's authorization-header provider, and bridge
+    requests contain only public IDs and committed payload digests.
+    """
+    from .rfc3161 import FREETSA_ENDPOINT, FREETSA_POLICY_OID, RFC3161Config
+    from .timing_bridge import HTTPSRFC3161TimingBridgeClient, TimingBridgeConfig, TimingBridgeError
+    from .timing_bridge_auth import IAMCredentialsIDTokenFactory, IAMCredentialsError
+
+    required = (
+        config.timing_bridge_endpoint,
+        config.timing_bridge_service_account,
+        config.timing_bridge_audience,
+        config.timing_bridge_freetsa_ca_pem_path,
+        config.timing_bridge_freetsa_ca_pem_sha256,
+        config.timing_bridge_freetsa_certificate_sha256,
+    )
+    if any(value is None or value == "" for value in required):
+        raise STSError("timing bridge configuration is incomplete")
+    try:
+        with open(config.timing_bridge_freetsa_ca_pem_path, "rb") as handle:
+            ca_pem = handle.read(512 * 1024 + 1)
+    except Exception as exc:
+        raise STSError("timing bridge CA material is unavailable") from exc
+    if len(ca_pem) > 512 * 1024 or digest(ca_pem) != config.timing_bridge_freetsa_ca_pem_sha256:
+        raise STSError("timing bridge CA pin mismatch")
+    try:
+        authority = TimingAuthorityConfig(
+            authority_id=config.timing_authority_id or "",
+            key_id=config.timing_key_id or "",
+            ledger_id=config.timing_ledger_id or "",
+            public_key_digest=config.timing_public_key_digest or "",
+        )
+        id_token_factory = IAMCredentialsIDTokenFactory(
+            service_account=config.timing_bridge_service_account,
+            audience=config.timing_bridge_audience,
+            credentials=credentials,
+        )
+        rfc3161_config = RFC3161Config(
+            endpoint=FREETSA_ENDPOINT,
+            policy_oid=FREETSA_POLICY_OID,
+            tsa_ca_pem=ca_pem,
+            tsa_ca_pem_sha256=config.timing_bridge_freetsa_ca_pem_sha256,
+            tsa_certificate_sha256=config.timing_bridge_freetsa_certificate_sha256,
+        )
+        bridge_config = TimingBridgeConfig(
+            endpoint=config.timing_bridge_endpoint,
+            authority=authority,
+            rfc3161_config=rfc3161_config,
+            authorization_header=id_token_factory.authorization_header,
+        )
+        return HTTPSRFC3161TimingBridgeClient(bridge_config)
+    except (TimingBridgeError, IAMCredentialsError) as exc:
+        raise STSError(str(exc)) from exc
+    except STSError:
+        raise
+    except Exception as exc:
+        raise STSError("timing bridge configuration is invalid") from exc
+
+
+class CapabilityFactory:
+    """Creates cloud clients only from explicit post-attestation credentials."""
+
+    def __init__(self, config: LockedBootstrapConfig, *, storage_client_factory: Callable[[FederatedAccessToken], Any] | None = None, kms_client_factory: Callable[[FederatedAccessToken], Any] | None = None, impersonation_factory: Callable[[FederatedAccessToken], FederatedAccessToken] | None = None, timing_attestor_factory: Callable[[FederatedAccessToken, LockedBootstrapConfig], TimingAttestor] | None = None, timing_recorder_factory: Callable[[FederatedAccessToken, LockedBootstrapConfig], Any] | None = None):
         self.config = config
         self.storage_client_factory = storage_client_factory
         self.kms_client_factory = kms_client_factory
+        self.impersonation_factory = impersonation_factory
         self.timing_attestor_factory = timing_attestor_factory
         self.timing_recorder_factory = timing_recorder_factory
 
@@ -831,24 +989,55 @@ class CapabilityFactory:
             return self.storage_client_factory(credentials)
         from google.oauth2.credentials import Credentials
         from google.cloud import storage
-        return storage.Client(credentials=Credentials(token=credentials.access_token, expiry=datetime.fromtimestamp(credentials.expires_at, tz=timezone.utc)))
+        return storage.Client(credentials=Credentials(token=credentials.access_token, expiry=datetime.utcfromtimestamp(credentials.expires_at)))
 
     def _kms_client(self, credentials: FederatedAccessToken) -> Any:
         if self.kms_client_factory is not None:
             return self.kms_client_factory(credentials)
         from google.oauth2.credentials import Credentials
         from google.cloud import kms
-        return kms.KeyManagementServiceClient(credentials=Credentials(token=credentials.access_token, expiry=datetime.fromtimestamp(credentials.expires_at, tz=timezone.utc)))
+        return kms.KeyManagementServiceClient(
+            credentials=Credentials(
+                token=credentials.access_token,
+                expiry=datetime.utcfromtimestamp(credentials.expires_at),
+            ),
+            transport="rest",
+        )
+
+    def _impersonate(self, credentials: FederatedAccessToken) -> FederatedAccessToken:
+        target = self.config.capability_service_account
+        if not target:
+            # Direct client factories are retained only for legacy/local tests;
+            # production's closed environment parser requires the target. Do
+            # not let a partially injected factory fall back to raw WIF.
+            if self.storage_client_factory is None or self.kms_client_factory is None:
+                raise STSError("capability service account is required")
+            return credentials
+        if self.impersonation_factory is not None:
+            effective = self.impersonation_factory(credentials)
+        else:
+            from .timing_bridge_auth import IAMCredentialsAccessTokenFactory, IAMCredentialsError
+            try:
+                effective = IAMCredentialsAccessTokenFactory(target, credentials)()
+            except IAMCredentialsError as exc:
+                raise STSError("evaluator service-account impersonation failed") from exc
+        if not isinstance(effective, FederatedAccessToken) or effective.token_type != "Bearer" or not effective.access_token:
+            raise STSError("evaluator impersonation returned an invalid token")
+        if effective.expires_at <= int(self.config.clock()) + 30 or effective.expires_at > credentials.expires_at:
+            raise STSError("evaluator impersonation returned an invalid expiry")
+        return effective
 
     def build(self, credentials: FederatedAccessToken) -> Capabilities:
         if not isinstance(credentials, FederatedAccessToken) or credentials.token_type != "Bearer" or not credentials.access_token:
             raise STSError("capabilities require a bearer federated access token")
-        if credentials.expires_at <= int(time.time()) + 30:
+        if credentials.expires_at <= int(self.config.clock()) + 30:
             raise STSError("federated token is expired or too close to expiry")
-        storage_client = self._storage_client(credentials)
-        kms_client = self._kms_client(credentials)
-        store = ScopedObjectStore(GCSStore(self.config.bucket, self.config.prefix, client=storage_client))
-        signer = KMSEd25519Signer(self.config.kms_key_version, self.config.authority, client=kms_client)
+        if self.config.capability_service_account and self.config.capability_service_account.startswith("p5-r0-gcs-only@"):
+            raise STSError("GCS-only capability account cannot construct a KMS signer; separate KMS path is required")
+
+        # Resolve the timing capability before constructing GCS/KMS clients.
+        # A production bridge factory must not be able to fall back to the
+        # diagnostic local recorder when its public policy is absent.
         timing_values = (self.config.timing_authority_id, self.config.timing_key_id, self.config.timing_ledger_id, self.config.timing_public_key_digest)
         if any(timing_values):
             if not all(timing_values):
@@ -869,23 +1058,36 @@ class CapabilityFactory:
             if not getattr(timing_attestor, "independent", False) or getattr(timing_attestor, "authority", None) != authority:
                 raise STSError("configured timing recorder is not bound to the independent authority")
         else:
-            # Direct in-memory fixtures may use the diagnostic V1 recorder.  The
-            # locked environment parser requires all independent timing fields,
-            # so this branch is not reachable by a production deployment.
+            if self.timing_attestor_factory is not None:
+                raise STSError("independent timing authority configuration is required")
+            # Direct in-memory fixtures may use the diagnostic V1 recorder.
+            # The local app's recorder seam remains source-compatible.
+            timing_attestor = None
+
+        effective_credentials = self._impersonate(credentials)
+        storage_client = self._storage_client(effective_credentials)
+        kms_client = self._kms_client(effective_credentials)
+        store = ScopedObjectStore(GCSStore(self.config.bucket, self.config.prefix, client=storage_client))
+        signer = KMSEd25519Signer(self.config.kms_key_version, self.config.authority, client=kms_client)
+        if timing_attestor is None:
             timing_attestor = SignedTimingAttestor(signer)
-        return Capabilities(store=store, signer=signer, timing_attestor=timing_attestor)
+        return Capabilities(
+            store=store, signer=signer, timing_attestor=timing_attestor,
+            credentials_expires_at=effective_credentials.expires_at,
+        )
 
 
 class ConfidentialSpaceAdapter:
     """Locked façade around EvaluatorService; workers never receive capabilities."""
 
-    def __init__(self, config: LockedBootstrapConfig, *, source: AttestationSource | None = None, verifier: AttestationVerifier | None = None, sts: STSClient | None = None, capability_factory: CapabilityFactory | None = None, timing_recorder_factory: Callable[[FederatedAccessToken, LockedBootstrapConfig], Any] | None = None, service_factory: Callable[[Capabilities], EvaluatorService] | None = None):
+    def __init__(self, config: LockedBootstrapConfig, *, source: AttestationSource | None = None, verifier: AttestationVerifier | None = None, sts: STSClient | None = None, capability_factory: CapabilityFactory | None = None, timing_attestor_factory: Callable[[FederatedAccessToken, LockedBootstrapConfig], TimingAttestor] | None = None, timing_recorder_factory: Callable[[FederatedAccessToken, LockedBootstrapConfig], Any] | None = None, service_factory: Callable[[Capabilities], EvaluatorService] | None = None):
         self.config = config
         self.gate = AttestationGate(config, source or LauncherTokenSource(), verifier or GoogleJwtAttestationVerifier())
         self.sts = sts or GoogleSTSClient()
-        self.capability_factory = capability_factory or CapabilityFactory(config, timing_recorder_factory=timing_recorder_factory)
+        self.capability_factory = capability_factory or CapabilityFactory(config, timing_attestor_factory=timing_attestor_factory, timing_recorder_factory=timing_recorder_factory)
         self.service_factory = service_factory or self._default_service
         self._service: EvaluatorService | None = None
+        self._capabilities: Any | None = None
         self._attestation_binding: VerifiedAttestationBinding | None = None
         self._expires_at: int | None = None
         self._lock = threading.Lock()
@@ -921,7 +1123,7 @@ class ConfidentialSpaceAdapter:
         never returned. Only their digests and the immutable policy bindings
         are exposed after successful activation.
         """
-        return copy.deepcopy(self._startup_evidence)
+        return parse_canonical(canonical_bytes(self._startup_evidence))
 
     def _mark_bootstrap_failure(self, error: BaseException) -> None:
         # Error class names are deliberately less revealing than exception
@@ -959,6 +1161,7 @@ class ConfidentialSpaceAdapter:
                     "hardware_model": self.config.hardware_model,
                     "secure_boot": self.config.secure_boot,
                     "workload": self.config.workload,
+                    "smoke": "1" if self.config.confidential_space_smoke else "0",
                 },
             },
             "federation": {
@@ -1010,8 +1213,9 @@ class ConfidentialSpaceAdapter:
         )
 
     def _expire_if_needed(self) -> None:
-        if self._service is not None and self._expires_at is not None and self.config.clock() >= self._expires_at:
+        if self._expires_at is not None and self.config.clock() >= self._expires_at:
             self._service = None
+            self._capabilities = None
             self._attestation_binding = None
             self._expires_at = None
             self._startup_evidence = self._locked_startup_evidence(failure="FederatedAccessTokenExpired")
@@ -1019,30 +1223,50 @@ class ConfidentialSpaceAdapter:
     @property
     def attested(self) -> bool:
         self._expire_if_needed()
-        return self._service is not None
+        return self._service is not None or self._capabilities is not None
+
+    def activate_attested_capabilities(self) -> Any:
+        """Run launcher/JWT/STS and capability construction without service handoff."""
+        self._expire_if_needed()
+        if self._capabilities is not None:
+            return self._capabilities
+        with self._lock:
+            self._expire_if_needed()
+            if self._capabilities is not None:
+                return self._capabilities
+            try:
+                attestation = self.gate.verify_startup()
+                token = self.sts.exchange(subject_token=attestation.subject_token, audience=self.config.wip_provider, provider=self.config.wip_provider)
+                attestation_expires_at = _claim(attestation.claims, self.config.claim_paths["expires_at"])
+                if type(attestation_expires_at) is not int or token.expires_at > attestation_expires_at:
+                    raise STSError("federated credential exceeds attestation lifetime")
+                binding = _build_verified_attestation_binding(attestation, token, self.config)
+                capabilities = self._attach_attestation_binding(self.capability_factory.build(token), binding)
+            except Exception as exc:
+                self._mark_bootstrap_failure(exc)
+                raise
+            evidence = self._attested_startup_evidence(attestation, token, binding)
+            credential_expires_at = getattr(capabilities, "credentials_expires_at", None) or token.expires_at
+            self._expires_at = min(credential_expires_at, token.expires_at, attestation_expires_at)
+            self._attestation_binding = binding
+            self._capabilities = capabilities
+            self._startup_evidence = evidence
+            return capabilities
 
     def activate_attested_service(self) -> EvaluatorService:
         self._expire_if_needed()
         if self._service is not None:
             return self._service
+        capabilities = self.activate_attested_capabilities()
         with self._lock:
             if self._service is not None:
                 return self._service
             try:
-                attestation = self.gate.verify_startup()
-                token = self.sts.exchange(subject_token=attestation.subject_token, audience=self.config.wip_provider, provider=self.config.wip_provider)
-                binding = _build_verified_attestation_binding(attestation, token, self.config)
-                capabilities = self._attach_attestation_binding(self.capability_factory.build(token), binding)
-                service = self.service_factory(capabilities)
+                self._service = self.service_factory(capabilities)
             except Exception as exc:
                 self._mark_bootstrap_failure(exc)
                 raise
-            evidence = self._attested_startup_evidence(attestation, token, binding)
-            self._expires_at = token.expires_at
-            self._attestation_binding = binding
-            self._service = service
-            self._startup_evidence = evidence
-            return service
+            return self._service
 
     def _health_payload(self) -> dict[str, Any]:
         evidence = self.startup_evidence

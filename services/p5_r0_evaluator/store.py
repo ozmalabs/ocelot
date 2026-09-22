@@ -39,6 +39,15 @@ class MemoryStore(ObjectStore):
         return self.create(name, canonical_bytes(value))
 
 
+def _is_not_found_error(exc: BaseException) -> bool:
+    """Recognize the GCS client's not-found shape without importing its SDK."""
+    code = getattr(exc, "code", None)
+    if code == 404 or code == "404":
+        return True
+    response = getattr(exc, "response", None)
+    return getattr(response, "status_code", None) == 404
+
+
 class GCSStore(ObjectStore):
     """Private GCS adapter; secure callers must inject federated credentials."""
     def __init__(self, bucket: str, prefix: str = "", *, client: Any | None = None):
@@ -61,6 +70,11 @@ class GCSStore(ObjectStore):
             blob.reload()
             return Object(blob.download_as_bytes(), int(blob.generation))
         except Exception as exc:
+            if _is_not_found_error(exc):
+                # Operation-4 uses this stable boundary to distinguish an
+                # absent object (generation 0 / create-only) from a remote
+                # read failure.  Do not expose SDK-specific exceptions.
+                raise StoreError("object not found") from exc
             raise StoreError("object read failed") from exc
 
     def create(self, name: str, data: bytes) -> Object:

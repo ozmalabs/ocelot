@@ -13,13 +13,14 @@ Record the exact values in the deployment change, never in source control as sec
 - verified Confidential Space token issuer and the actual claim paths for image, project, zone, debug, TEE, secure boot, workload, standard audience/nonce/time claims, and `exp`;
 - WIP token audience (default `https://sts.googleapis.com`) and WIP provider resource name, frozen as separate values; the provider resource is the exact STS exchange/IAM binding;
 - one KMS Ed25519 key version and the matching public authority digest;
-- private GCS bucket and `v3` prefix.
+- the exact GCS capability service account (`P5R0_CAPABILITY_SERVICE_ACCOUNT`, normally `p5-r0-gcs-only@PROJECT_ID.iam.gserviceaccount.com`) that owns only the reviewed operation-4 GCS grants; the KMS authority account is separate;
+- the private GCS bucket `p5-evaluator-ocelot-proof-141633828616` and exact operation-4 run prefix `p5-r0/operation-4/rs069r18r13-op4-04a98e3e/`;
 
 The claim paths must be copied from a real token obtained from the target Confidential Space image and then reviewed. The production defaults are `aud`, `eat_nonce`, `iat`, `exp`, `iss`, `sub`, `submods.container.image_digest`, `submods.gce.project_number`, `submods.gce.project_id`, `submods.gce.zone`, `dbgstat`, `swname`, `hwmodel`, `secboot`, and `submods.container.env.P5R0_EXPECTED_WORKLOAD`; the production issuer is `https://confidentialcomputing.googleapis.com`. A token is not accepted merely because it parses as a JWT: signature, issuer, audience, expiry, nonce, exact image digest, project, zone, debug-disabled, TEE, hardware-model, workload, and secure-boot checks all have to pass.
 
 ## Capability boundary
 
-The locked bootstrap parses only this non-secret policy. It does not instantiate Google Storage/KMS clients, read GCS, load truth, read ADC, accept a service-account key, or export a private key. After the gate, STS receives only the attestation JWT and returns a short-lived federated access token. The capability factory passes that explicit credential to one GCS client and one KMS client.
+The locked bootstrap parses only this non-secret policy. It does not instantiate Google Storage/KMS clients, read GCS, load truth, read ADC, accept a service-account key, or export a private key. After the gate, STS returns a short-lived federated access token. The capability factory immediately exchanges that explicit token through the fixed IAM Credentials `generateAccessToken` endpoint for the committed `P5R0_CAPABILITY_SERVICE_ACCOUNT`; only the resulting bounded-lifetime token is passed to GCS and KMS. The timing bridge remains separate and uses the original federated token for its own `generateIdToken` target. There is no metadata hostname, URL path, DNS lookup, or production URL override.
 
 GCS is restricted in code and IAM to reads of `locks/`, `manifests/`, `truth/`, and run state, plus generation-checked creates/replaces below `runs/`. There is no list, delete, bucket-admin, or worker-facing storage capability. KMS is restricted to public-key read and signing on the one pinned Ed25519 key version. The signer verifies the public key and every signature locally; private key material never enters the process.
 

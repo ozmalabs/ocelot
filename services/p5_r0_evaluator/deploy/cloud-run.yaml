@@ -12,32 +12,34 @@ spec:
         autoscaling.knative.dev/maxScale: "1"
         run.googleapis.com/execution-environment: gen2
     spec:
-      serviceAccountName: p5-evaluator@PROJECT_ID.iam.gserviceaccount.com
+      serviceAccountName: p5-r0-gcs-only@PROJECT_ID.iam.gserviceaccount.com
       containerConcurrency: 1
       timeoutSeconds: 30
       containers:
-        - image: REGION-docker.pkg.dev/PROJECT_ID/p5/evaluator@sha256:IMAGE_DIGEST
+        - image: REGION-docker.pkg.dev/PROJECT_ID/p5-cs/evaluator@sha256:IMAGE_DIGEST
           ports:
             - containerPort: 8080
           env:
             - name: P5R0_BUCKET
-              value: p5-r0-private-PROJECT_ID
+              value: p5-evaluator-ocelot-proof-141633828616
             - name: P5R0_PREFIX
-              value: v3
+              value: p5-r0/operation-4/rs069r18r13-op4-04a98e3e/
             - name: P5R0_AUDIENCE
               value: https://p5-v3-evaluator-REPLACE.run.app
             - name: P5R0_ALLOWED_SUBJECTS
               value: p5-runner@PROJECT_ID.iam.gserviceaccount.com
+            - name: P5R0_ATTESTATION_SUBJECT_PREFIX
+              value: https://www.googleapis.com/compute/v1/projects/ocelot-proof/zones/us-east1-b/instances/
             - name: P5R0_ATTESTATION_AUDIENCE
               value: https://sts.googleapis.com
             - name: P5R0_WIP_PROVIDER
-              value: //iam.googleapis.com/projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/POOL/providers/PROVIDER
+              value: //iam.googleapis.com/projects/141633828616/locations/global/workloadIdentityPools/p5-cs-pool/providers/p5-cs-production
             - name: P5R0_EXPECTED_PROJECT_NUMBER
-              value: PROJECT_NUMBER
+              value: "141633828616"
             - name: P5R0_EXPECTED_PROJECT_ID
-              value: PROJECT_ID
+              value: ocelot-proof
             - name: P5R0_EXPECTED_ZONE
-              value: REGION-a
+              value: us-east1-b
             - name: P5R0_ATTESTATION_ISSUER
               value: https://confidentialcomputing.googleapis.com
             - name: P5R0_EXPECTED_DEBUG_STATE
@@ -82,6 +84,8 @@ spec:
               value: submods.container.env.P5R0_EXPECTED_WORKLOAD
             - name: P5R0_KMS_KEY_VERSION
               value: projects/PROJECT_ID/locations/LOCATION/keyRings/p5/cryptoKeys/evaluator/cryptoKeyVersions/VERSION
+            - name: P5R0_CAPABILITY_SERVICE_ACCOUNT
+              value: p5-r0-gcs-only@PROJECT_ID.iam.gserviceaccount.com
             - name: P5R0_AUTHORITY_JSON
               value: '{"authority_id":"REPLACE","key_id":"REPLACE","public_key":"REPLACE","public_key_digest":"REPLACE","schema":"P5R0PublicAuthorityV4","transport_attestation":{"audience":"https://sts.googleapis.com","event":"confidential_space_attestation","provider":"//iam.googleapis.com/projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/POOL/providers/PROVIDER","schema":"P5R0AuthorityTransportV1"}}'
             # Immutable commitments, not credentials. The deployment gate must
@@ -97,7 +101,7 @@ spec:
             - name: P5R0_SERVICE_NAME
               value: p5-v3-evaluator
             - name: P5R0_REGION
-              value: REGION
+              value: us-east1
             - name: P5R0_CPU_LIMIT
               value: "1"
             - name: P5R0_MEMORY_LIMIT

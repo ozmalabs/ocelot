@@ -56,6 +56,19 @@ class ExternallyKeyedTimingAttestor:
         self._chains: dict[str, tuple[int, str | None]] = {}
         self._lock = threading.Lock()
 
+    def restore_chain(self, *, run_id: str, sequence: int, previous_digest: str | None) -> None:
+        """Restore the local validation head from durable service state."""
+        if type(sequence) is not int or sequence < 0:
+            raise TimingAttestationError("timing chain sequence")
+        if previous_digest is not None:
+            _digest_value(previous_digest, "timing chain previous")
+        with self._lock:
+            current = self._chains.get(run_id)
+            expected = (sequence, previous_digest)
+            if current is not None and current != expected:
+                raise TimingAttestationError("timing chain head conflict")
+            self._chains[run_id] = expected
+
     def record(self, *, run_id: str, task_id: str, event: str, payload_digest: str) -> dict[str, Any]:
         with self._lock:
             last_sequence, previous = self._chains.get(run_id, (0, None))
@@ -91,11 +104,12 @@ def validate_attestation(
     expected_key_id: str | None = None, expected_public_key_digest: str | None = None,
     expected_ledger_id: str | None = None, previous_digest: str | None = None,
     last_sequence: int | None = None,
+    expected_rfc3161_evidence_digest: str | None = None,
 ) -> dict[str, Any]:
-    """Validate a service timing record or a signed independent V2 record.
+    """Validate a service timing record or a signed independent V2/V3 record.
 
-    V1 is retained as a diagnostic compatibility format. Only V2 records with
-    an independently pinned authority are eligible for certification.
+    V1 is retained as a diagnostic compatibility format. Only V2/V3 records
+    with an independently pinned authority are eligible for certification.
     """
     if not isinstance(value, dict):
         raise TimingAttestationError("timing attestation schema")
@@ -107,13 +121,17 @@ def validate_attestation(
         for key in ("run_id", "task_id", "event", "observed_at", "authority_id", "signature"):
             if not isinstance(value.get(key), str) or not value[key]:
                 raise TimingAttestationError("timing metadata")
-    elif schema == "P5R0IndependentTimingAttestationV2":
+    elif schema in {"P5R0IndependentTimingAttestationV2", "P5R0IndependentTimingAttestationV3"}:
         fields = {"schema", "ledger_id", "run_id", "task_id", "event", "sequence", "previous_digest", "seed_digest", "payload_digest", "observed_at", "authority_id", "key_id", "public_key", "public_key_digest", "signature"}
-        if set(value) != fields or value.get("event") not in {"task_issued", "result_received"}:
+        if schema == "P5R0IndependentTimingAttestationV3":
+            fields.add("rfc3161_evidence_digest")
+        if set(value) != fields or value.get("event") not in {"task_issued", "result_received", "task_completed", "time_seed_issued"}:
             raise TimingAttestationError("independent timing attestation schema")
         for key in ("ledger_id", "run_id", "task_id", "event", "authority_id", "key_id", "public_key", "public_key_digest", "signature"):
             if not isinstance(value.get(key), str) or not value[key]:
                 raise TimingAttestationError("independent timing metadata")
+        if schema == "P5R0IndependentTimingAttestationV3":
+            _digest_value(value.get("rfc3161_evidence_digest"), "RFC3161 evidence digest")
         if value.get("previous_digest") is not None:
             _digest_value(value["previous_digest"], "previous")
         try:
@@ -132,7 +150,9 @@ def validate_attestation(
             raise TimingAttestationError("independent timing ledger mismatch")
         if last_sequence is not None and value["sequence"] != last_sequence + 1:
             raise TimingAttestationError("independent timing sequence")
-        if previous_digest is not None and value["previous_digest"] != previous_digest:
+        if last_sequence is not None and value["previous_digest"] != previous_digest:
+            raise TimingAttestationError("independent timing chain")
+        if last_sequence is None and previous_digest is not None and value["previous_digest"] != previous_digest:
             raise TimingAttestationError("independent timing chain")
     else:
         raise TimingAttestationError("timing attestation schema")
@@ -150,7 +170,30 @@ def validate_attestation(
         raise TimingAttestationError("timing observed_at") from exc
     if expected_authority_id is not None and value.get("authority_id") != expected_authority_id:
         raise TimingAttestationError("timing authority mismatch")
+    if schema == "P5R0IndependentTimingAttestationV3" and expected_rfc3161_evidence_digest is not None and value.get("rfc3161_evidence_digest") != expected_rfc3161_evidence_digest:
+        raise TimingAttestationError("RFC3161 evidence digest mismatch")
     return value
+
+
+def sign_independent_timing_attestation_v3(value: dict[str, Any], signer: Any) -> dict[str, Any]:
+    """Sign a closed V3 record with the bridge authority's Ed25519 signer.
+
+    The bridge endpoint owns this operation.  The evaluator only needs the
+    public record and never receives bridge private key material.
+    """
+    if not isinstance(value, dict) or value.get("schema") != "P5R0IndependentTimingAttestationV3":
+        raise TimingAttestationError("independent timing V3 schema")
+    signed = dict(value)
+    signed["signature"] = ""
+    try:
+        signed["signature"] = signer.sign_digest(signing_digest(signed))
+    except Exception as exc:
+        raise TimingAttestationError("independent timing V3 signing failed") from exc
+    return signed
+
+
+# Short alias for bridge implementations and tests.
+sign_v3_attestation = sign_independent_timing_attestation_v3
 
 
 def timing_digest(attestation: dict[str, Any] | None) -> str | None:

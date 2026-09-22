@@ -7,6 +7,7 @@ LABEL tee.launch_policy.log_redirect="always"
 
 RUN pip install --no-cache-dir google-auth==2.38.0 requests==2.32.3 PyJWT==2.9.0 cryptography==43.0.3
 
+COPY launcher_protocol.py /launcher_protocol.py
 COPY probe.py /probe.py
 USER 65532:65532
 ENTRYPOINT ["python3", "/probe.py"]
