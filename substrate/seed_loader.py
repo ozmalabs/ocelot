@@ -233,6 +233,11 @@ def load_manifest_file(path: pathlib.Path | str) -> dict:
 def manifest_for(seed_id: str) -> dict:
     """Read the captured manifest for `seed_id` from the default
     seeds/ directory (normalised to the loadable form)."""
+    try:
+        from evaluation.p0a.legacy_io_guard import deny_direct_io
+        deny_direct_io("seed.arbitrary_load")
+    except ImportError:
+        pass
     return load_manifest_file(SEED_DIR / f"{seed_id}.json")
 
 
