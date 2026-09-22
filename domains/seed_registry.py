@@ -597,8 +597,26 @@ REGISTRY.register(Seed(
     depends_on=("shape_decode_loop",),
     installer=_installer_from_manifest("minting_recurrence_ledger"),
     description="Episode-scoped native recurrence ledger: immutable residual "
-                "evidence, predicate-only candidates, derived persistence, one "
-                "native mint offer, and durable terminal/mint provenance.",
+                "evidence keyed by canonical structural recurrence_key, derived "
+                "persistence, one native mint offer, and durable provenance.",
+))
+
+REGISTRY.register(Seed(
+    id="minting_recurrence_semantic_demo", version="1.0.0",
+    depends_on=("minting_recurrence_ledger",),
+    installer=_installer_from_manifest("minting_recurrence_semantic_demo"),
+    description="Graph-native structural-relation consumer for recurrence-minted "
+                "axes. Licensing compares relation head and roles, never labels "
+                "or capability keys.",
+))
+
+REGISTRY.register(Seed(
+    id="autonomous_discovery", version="1.0.0",
+    depends_on=("minting_recurrence_ledger", "minting_recurrence_semantic_demo"),
+    installer=_installer_from_manifest("autonomous_discovery"),
+    description="Teacher-free graph-native discovery: rules choose the fixed "
+                "trajectory, derive semantic residual evidence, and delegate "
+                "recurrence, minting, and structural transfer to native seeds.",
 ))
 
 REGISTRY.register(Seed(

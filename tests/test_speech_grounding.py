@@ -287,8 +287,8 @@ def test_reply_differs_when_grounded_vs_ungrounded():
     assert grounded_out and ungrounded_out
     grounded_reply = grounded_out[0]["reply"]
     ungrounded_reply = ungrounded_out[0]["reply"]
-    assert ungrounded_reply == "noted", ungrounded_reply
-    assert grounded_reply != "noted", grounded_reply
+    assert ungrounded_reply == "ERROR: no communicative response could be generated.", ungrounded_reply
+    assert "noted" not in grounded_reply.lower(), grounded_reply
     assert "heard: alpha" in grounded_reply, grounded_reply
     assert vw.grounded_words_for(grounded_out[0]["message"]) == ["alpha"]
     assert vw.grounded_words_for(ungrounded_out[0]["message"]) == []

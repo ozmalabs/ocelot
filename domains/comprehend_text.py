@@ -325,6 +325,52 @@ def kind_signals(agent, text: str) -> dict:
     return _signals_of(stripped, frame)
 
 
+def first_imperative_evidence(agent: Any, text: str, *, first_role: str | None = None,
+                              first_pos: str | None = None) -> bool:
+    """Read the held verb-head faculty for a politeness-stripped clause.
+
+    This is additional grammatical evidence, not a new lexical command list:
+    the first recognized element must be content, and the existing native
+    verb-head measure must accept its surface. It covers words whose primary
+    POS is adjective/noun but which the language faculty still measures as
+    verb-headed (for example ``open``).
+    """
+    stripped = _strip_politeness(agent, text or "")
+    try:
+        # This evidence is specifically for a recognized politeness-prefixed
+        # imperative whose first content word has a misleading primary POS.
+        # Do not broaden the established bare-clause speech-act parity path:
+        # words such as ``focus`` and ``rain`` have verb senses but are not
+        # thereby directives in an unmarked declarative.
+        if stripped == (text or ""):
+            return False
+        if first_role is None or first_pos is None:
+            frame = _cg.parse_with_gaps(stripped, getattr(agent, "s", agent))
+            first = _first_element(frame)
+            first_role = first.get("role") if first else None
+            first_pos = first.get("pos") if first else None
+        if first_role != "content":
+            return False
+        if first_pos == "verb":
+            return False
+        # The politeness reader has already recognized and removed the leading
+        # marker. Read the first remaining surface token mechanically here;
+        # avoid a second substrate-backed parse that could perturb the live
+        # POS evidence used by the parity path.
+        words = _ws_tokens(stripped)
+        surface = str(words[0] if words else "").strip(" ,.;:?!")
+        if not surface:
+            return False
+        # Reporting/enumeration imperatives already have dedicated indirect
+        # information routes; this evidence is for action-like politeness,
+        # not for reclassifying "kindly list ..." as a bare action command.
+        if surface.lower() in _ACCOUNT_VERBS | _ENUMERATE_VERBS:
+            return False
+        return bool(_ir.is_verb_headed(surface))
+    except Exception:
+        return False
+
+
 _SAK_RULES_CACHE: Optional[list] = None
 
 
@@ -718,7 +764,9 @@ def _detect_satisfiable(agent: Any, text: str) -> Optional[str]:
     """A leading enumerate verb ("Name"/"List one of your rules") over held
     data + a self-possessive + a held-data noun -> the target faculty key
     ("rules" / "organisation"). None when it is not such an instruction."""
-    words = _recognise_words(agent, text)
+    recognised = [w.lower() for w in _recognise_words(agent, text)]
+    surface = [w.lower().strip(" ,.;:?!") for w in _ws_tokens(text)]
+    words = surface if surface and surface[0] in _ENUMERATE_VERBS else recognised
     if not words or words[0] not in _ENUMERATE_VERBS:
         return None
     if not any(w in ("your", "yours", "my") for w in words):
@@ -1049,6 +1097,24 @@ def comprehend_text(agent: Any, text: str, *, kind: Optional[str] = None) -> Com
     # available (the `_holds` fallback discipline).
     if kind not in ("question", "instruction", "statement"):
         kind = _classify_kind_rules(_signals_of(text, frame))
+    if kind == "statement" and first_imperative_evidence(
+            agent, original, first_role=_first_element(frame).get("role")
+            if _first_element(frame) else None,
+            first_pos=_first_element(frame).get("pos")
+            if _first_element(frame) else None):
+        # Canonical comprehension may resolve a pragmatic polite imperative
+        # even when the native speech-act classifier conservatively retained a
+        # statement reading. This is deliberately after native evidence is
+        # recorded, so the disagreement remains auditable.
+        kind = "instruction"
+    if kind == "statement":
+        surface = [w.lower().strip(" ,.;:?!") for w in _ws_tokens(text)]
+        if surface and surface[0] in _ACCOUNT_VERBS:
+            # Canonical comprehension preserves the reporting/account force
+            # even when the POS faculty failed to recognize the leading verb.
+            # The graph arbitration layer still decides whether the account is
+            # informational or actionable from the resulting predicate.
+            kind = "instruction"
     if kind is None:
         kind = _classify_kind(text, frame)
     comp = Comprehension(raw=text, kind=kind, focus=frame.get("focus"),

@@ -20,6 +20,9 @@
         "items": [
           {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "kind"}, "b": {"type": "Lit", "value": "answer_topic"}},
           {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ha"}, "key": "topic"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "concept"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ha"}, "key": "grounding_referent"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "concept"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ha"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "supported"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ha"}, "key": "grounding_evidence_path"}, "b": {"type": "Lit", "value": null}}},
           {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "topic_replied"}, "b": {"type": "Lit", "value": 1.0}}}
         ]
       },

@@ -24,7 +24,7 @@ def _agent():
     a = WorldAdapter(seeds=())
     load_all_seeds(a)
     a.learn_sign("hello", "greeting")
-    a.learn_sign("noted", "acknowledgment")
+    a.learn_sign("I heard you.", "acknowledgment")
     a._donkey = {"n": 0}
     a.set_self_teacher(lambda q: (a._donkey.__setitem__("n", a._donkey["n"] + 1), "D")[1])
     return a
@@ -49,15 +49,15 @@ def test_greeting_round_trip(agent):
 
 
 def test_statement_acknowledged(agent):
-    assert agent.converse("the sky is blue", "statement") == "noted"
+    assert agent.converse("the sky is blue", "statement") == \
+        "ERROR: no communicative response could be generated."
 
 
 def test_answer_is_terminal(agent):
-    # A received answer has no second-pair-part, but the conversational surface
-    # NEVER falls silent: it acknowledges honestly (register-matched), never None.
+    # A received answer has no second-pair-part. The dead-end is explicit and
+    # diagnostic, never disguised as a dismissive register acknowledgement.
     reply = agent.converse("it is blue", "answer")
-    assert isinstance(reply, str) and reply.strip()
-    assert reply.strip().lower() in ("noted", "got it", "understood")
+    assert reply == "ERROR: no communicative response could be generated."
 
 
 # ---------------------------------------------------------------------------

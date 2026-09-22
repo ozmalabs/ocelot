@@ -6,10 +6,10 @@ audience-targeted, self-monitored utterance machinery of rungs 341-345 turned IN
 clause is realized and HEARD (parsed back) but never emitted as overt speech.
 
 A TURN is one exchange in that inner conversation:
-  · SPEAKER-SELF says a covert clause about the current topic (self_dialogue.self_answer
-    -> realize_goal_clause; the surface is produced but routed nowhere overt);
-  · LISTENER-SELF hears it (score_self_target parse-back inside self_answer): what did
-    the saying recover, what is the RESIDUAL (what listener-self failed to recover)?
+  · SPEAKER-SELF traverses the graph about the current topic without realizing a
+    clause; only the collapsed final response is surfaced;
+  · LISTENER-SELF reads the graph path and computes the residual directly; the
+    covert monitor is used only on the collapsed final clause;
 The CONVERSATION is turns chained: speaker/listener-self alternating, each turn
 conditioned on the prior self-utterance and its residual. What drives the NEXT turn is a
 PLUGGABLE STANCE over (prev_turn, seen) — the core stance is 'residual' (pursue what
@@ -265,16 +265,17 @@ _STANCES["associative"] = associative_stance
 #  ONE covert TURN — speaker-self says (covertly), listener-self hears.
 # --------------------------------------------------------------------------- #
 def inner_turn(wa, topic: str, *, on_unknown: str = "return",
-               ask_fn: Optional[Callable[[str], Any]] = None) -> dict[str, Any]:
-    """One turn of the inner conversation: a COVERT self-utterance about `topic`
-    (self_dialogue.self_answer realizes + parse-backs the clause; the surface is
-    HEARD by listener-self but never emitted as overt speech — inner speech), and
-    the residual listener-self failed to recover.
+               ask_fn: Optional[Callable[[str], Any]] = None,
+               realize: bool = True) -> dict[str, Any]:
+    """One turn of the inner conversation. Graph-only turns traverse held
+    concepts without producing a clause; a realized turn is reserved for the
+    collapsed final response and is never emitted as overt speech.
 
     Returns {topic, inner_utterance, answered, verdict, residual, source, covert}.
     `inner_utterance` is the covert clause (labelled covert=True to make explicit
     it is inner speech — never routed to an overt output sink)."""
-    ans = sd.self_answer(wa, topic, on_unknown=on_unknown, ask_fn=ask_fn)
+    ans = sd.self_answer(wa, topic, on_unknown=on_unknown, ask_fn=ask_fn,
+                         realize=realize)
     return {"topic": topic,
             "inner_utterance": ans.get("surface", ""),   # covert: heard, not spoken
             "covert": True,
@@ -282,7 +283,10 @@ def inner_turn(wa, topic: str, *, on_unknown: str = "return",
             "verdict": ans.get("verdict"),
             "residual": ans.get("residual", []),
             "source": ans.get("source"),
-            "reason": ans.get("reason")}
+            "reason": ans.get("reason"),
+            "frame": ans.get("frame"),
+            "graph_path": ans.get("graph_path", []),
+            "recovered": ans.get("recovered", [])}
 
 
 # --------------------------------------------------------------------------- #
@@ -390,13 +394,17 @@ def run_inner_conversation(wa, *, topic: Optional[str] = None,
                 pass
         seen.add(cur)
 
-        turn = inner_turn(wa, cur, on_unknown=on_unknown, ask_fn=ask_fn)
+        # Condensed inner speech: intermediate hops remain graph-native.  Their
+        # concept paths drive the next transition; no clause is realized or
+        # parse-backed until the trajectory has collapsed.
+        turn = inner_turn(wa, cur, on_unknown=on_unknown, ask_fn=ask_fn,
+                          realize=False)
         turns.append(turn)
         if turn.get("source") == "external_ask":
             teacher_called = True
 
         # NOVELTY: what did this turn RECOVER that the train had not held before?
-        rec = set((turn.get("verdict") or {}).get("recovered") or [])
+        rec = set(turn.get("recovered") or [])
         fresh = rec - recovered_total
         recovered_total |= rec
         no_novelty_run = 0 if fresh else (no_novelty_run + 1)
@@ -418,6 +426,19 @@ def run_inner_conversation(wa, *, topic: Optional[str] = None,
         if novelty_window and no_novelty_run >= int(novelty_window):
             stop_reason = "novelty_stalled"
             break
+
+    # Overt/grammatical realization is reserved for the collapsed final inner
+    # response.  Intermediate turns intentionally retain empty surfaces.
+    if turns and turns[-1].get("frame") is not None:
+        final = inner_turn(wa, turns[-1]["topic"], on_unknown=on_unknown,
+                           ask_fn=ask_fn, realize=True)
+        turns[-1].update({"inner_utterance": final.get("inner_utterance", ""),
+                          "answered": final.get("answered", False),
+                          "verdict": final.get("verdict"),
+                          "surface": final.get("inner_utterance", ""),
+                          "residual": final.get("residual", []),
+                          "mode": "collapsed_final"})
+        recovered_total |= set(final.get("recovered") or [])
 
     return {"turns": turns,
             "topics_thought": [t["topic"] for t in turns],

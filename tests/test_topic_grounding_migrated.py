@@ -196,3 +196,25 @@ def test_topic_search_seed_mints_request_from_answer_topic(agent):
     # assertion is that the MINT happened, not that the turn left it pending.
     assert agent.s.node(reqs[0])["attrs"].get("status") in (
         "requested", "running", "candidates_ready", "done", "superseded")
+
+
+def test_topic_resolution_requires_referent_linked_evidence(agent, monkeypatch):
+    """A same-key answer without grounding evidence is not a resolution."""
+    ha = agent._persist_held_answer("borogove", "an answer about an unrelated referent")
+    assert ha is not None
+    # Simulate a legacy/poisoned candidate that has the index key but no
+    # referent-linked epistemic support.
+    agent.inner.set_attr(ha, "grounding_referent", None)
+    agent.inner.set_attr(ha, "grounding_status", None)
+    agent.inner.set_attr(ha, "grounding_evidence_path", None)
+    import domains.topic_grounding as _tg
+    monkeypatch.setattr(_tg, "ground_topic", lambda *args, **kwargs: None)
+
+    reply = agent.converse("What do you know about the borogove?",
+                           speech_act="question")
+    assert "unrelated referent" not in reply.lower()
+    goals = [g for g in agent.inner.neighbours(agent.agent, "has_goal")
+             if agent.s.node(g)["attrs"].get("kind") == "answer_topic"
+             and agent.s.node(g)["attrs"].get("concept") == "borogove"]
+    assert goals
+    assert agent.s.node(goals[-1])["attrs"].get("outcome") == "unresolved"

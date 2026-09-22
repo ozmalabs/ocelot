@@ -1,24 +1,16 @@
 {
-  "id":"minting_recurrence_semantic_demo", "version":"1.0.0",
-  "depends_on":["minting_recurrence_ledger"],
+  "id":"minting_recurrence_semantic_demo", "version":"1.0.0", "depends_on":["minting_recurrence_ledger"],
   "description":"Test-only downstream consumer for recurrence-minted axes. It licenses an operation only when a graph-resident residual relation witness structurally equals the operation's required relation head and roles; it never routes on capability key or display label.",
   "microtheory":"minting_recurrence_semantic_demo", "nodes":[], "edges":[],
   "productions":[
     {"provenance":"seed:minting_recurrence_semantic_demo:evidence-witness","src":{"type":"ResidualSegmentEvidence","var":"s"},"edge_type":"has_relation_witness","tgt":{"type":"ResidualRelationWitness","var":"t"}},
+    {"provenance":"seed:minting_recurrence_semantic_demo:agent-request","src":{"type":"Agent","var":"s"},"edge_type":"operation_request","tgt":{"type":"OperationRequest","var":"t"}},
     {"provenance":"seed:minting_recurrence_semantic_demo:axis-license","src":{"type":"CapabilityAxis","var":"s"},"edge_type":"licenses","tgt":{"type":"OperationRequest","var":"t"}},
     {"provenance":"seed:minting_recurrence_semantic_demo:request-axis","src":{"type":"OperationRequest","var":"s"},"edge_type":"licensed_by","tgt":{"type":"CapabilityAxis","var":"t"}},
     {"provenance":"seed:minting_recurrence_semantic_demo:request-reachable","src":{"type":"OperationRequest","var":"s"},"edge_type":"reachable_via","tgt":{"type":"CapabilityAxis","var":"t"}}
   ],
   "rules":[
-    {"name":"mrs_license_structural_relation", "match":[["candidate","minted_axis","axis"],["candidate","supported_by_segment","evidence"],["evidence","has_relation_witness","witness"],["agent","operation_request","request"]],
-     "where":{"type":"And","items":[
-       {"type":"Eq","a":{"type":"Attr","node":{"type":"Var","name":"witness"},"key":"relation_head"},"b":{"type":"Attr","node":{"type":"Var","name":"request"},"key":"relation_head"}},
-       {"type":"Eq","a":{"type":"Attr","node":{"type":"Var","name":"witness"},"key":"arg1_role"},"b":{"type":"Attr","node":{"type":"Var","name":"request"},"key":"arg1_role"}},
-       {"type":"Eq","a":{"type":"Attr","node":{"type":"Var","name":"witness"},"key":"arg2_role"},"b":{"type":"Attr","node":{"type":"Var","name":"request"},"key":"arg2_role"}},
-       {"type":"Not","arg":{"type":"Exists","source":{"type":"Neighbours","node":{"type":"Var","name":"axis"},"edge_type":"licenses"},"var_name":"prior","predicate":{"type":"Eq","a":{"type":"Var","name":"prior"},"b":{"type":"Var","name":"request"}}}}
-     ]},
-     "effects":[["add_edge","axis","licenses","request"],["add_edge","request","licensed_by","axis"]]},
-    {"name":"mrs_mark_licensed_operation", "match":[["request","licensed_by","axis"]], "where":{"type":"Lit","value":true},
-     "effects":[["set_attr","request","admissible",1],["add_edge","request","reachable_via","axis"]]}
+    {"name":"mrs_license_structural_relation","comment":"Licensing compares relation-head and role facts only; display labels and capability keys are intentionally absent from this predicate.","match":[["candidate","minted_axis","axis"],["candidate","supported_by_segment","evidence"],["evidence","has_relation_witness","witness"],["agent","operation_request","request"]],"where":{"type":"And","items":[{"type":"Eq","a":{"type":"Attr","node":{"type":"Var","name":"witness"},"key":"relation_head"},"b":{"type":"Attr","node":{"type":"Var","name":"request"},"key":"relation_head"}},{"type":"Eq","a":{"type":"Attr","node":{"type":"Var","name":"witness"},"key":"arg1_role"},"b":{"type":"Attr","node":{"type":"Var","name":"request"},"key":"arg1_role"}},{"type":"Eq","a":{"type":"Attr","node":{"type":"Var","name":"witness"},"key":"arg2_role"},"b":{"type":"Attr","node":{"type":"Var","name":"request"},"key":"arg2_role"}},{"type":"Not","arg":{"type":"Exists","source":{"type":"Neighbours","node":{"type":"Var","name":"axis"},"edge_type":"licenses"},"var_name":"prior","predicate":{"type":"Eq","a":{"type":"Var","name":"prior"},"b":{"type":"Var","name":"request"}}}}]},"effects":[["add_edge","axis","licenses","request"],["add_edge","request","licensed_by","axis"]]},
+    {"name":"mrs_mark_licensed_operation","match":[["request","licensed_by","axis"]],"where":{"type":"Lit","value":true},"effects":[["set_attr","request","admissible",1],["add_edge","request","reachable_via","axis"]]}
   ]
 }
