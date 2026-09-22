@@ -4565,6 +4565,101 @@ impl Substrate {
         self.run_rules_opts(max_steps, false)
     }
 
+    /// Apply one graph-resident, integer trajectory-control feedback step.
+    ///
+    /// `TrajectoryControlState` is deliberately a small native scheduling
+    /// seam rather than a Python callback. A graph rule (or the world
+    /// adapter's mechanical observation ingest) publishes the current
+    /// `deviation_count`; this method performs the discrete controller update
+    /// during the native cycle and clamps the tangent width to its envelope.
+    /// Missing control state is a no-op, preserving ordinary substrate
+    /// semantics.
+    pub fn apply_trajectory_control(&mut self) -> usize {
+        let state_type = self.interner.intern("TrajectoryControlState");
+        let enabled_key = self.interner.intern("enabled");
+        let deviation_key = self.interner.intern("deviation_count");
+        let wide_key = self.interner.intern("deviation_wide_quanta");
+        let converge_key = self.interner.intern("deviation_converge_quanta");
+        let width_key = self.interner.intern("tangent_width");
+        let legacy_width_key = self.interner.intern("width");
+        let min_key = self.interner.intern("min_tangent_width");
+        let max_key = self.interner.intern("max_tangent_width");
+        let legacy_max_key = self.interner.intern("max_width");
+        let widen_key = self.interner.intern("widen_step");
+        let narrow_key = self.interner.intern("narrow_step");
+        let previous_key = self.interner.intern("previous_tangent_width");
+        let adjustment_key = self.interner.intern("tangent_width_adjustment");
+        let epoch_key = self.interner.intern("trajectory_control_epoch");
+
+        let enabled = |value: Option<&Value>| match value {
+            None => true,
+            Some(Value::Bool(v)) => *v,
+            Some(Value::Int(v)) => *v != 0,
+            Some(Value::Float(v)) => *v != 0.0,
+            _ => false,
+        };
+        let integer = |attrs: &crate::graph::Attrs, key: Sym, fallback: i64| match attrs.get(&key) {
+            Some(Value::Int(v)) => *v,
+            Some(Value::Float(v)) if v.is_finite() => *v as i64,
+            _ => fallback,
+        };
+
+        let mut updates = Vec::new();
+        for state in self.graph.nodes_of_type(state_type) {
+            let attrs = &self.graph.node(state).attrs;
+            if !enabled(attrs.get(&enabled_key)) {
+                continue;
+            }
+            let Some(deviation) = attrs.get(&deviation_key).and_then(|value| match value {
+                Value::Int(v) => Some(*v),
+                Value::Float(v) if v.is_finite() => Some(*v as i64),
+                _ => None,
+            }) else {
+                continue;
+            };
+            let width = integer(attrs, width_key, integer(attrs, legacy_width_key, 0));
+            let min_width = integer(attrs, min_key, 0);
+            let max_width =
+                integer(attrs, max_key, integer(attrs, legacy_max_key, 2)).max(min_width);
+            let widen = integer(attrs, widen_key, 1).max(1);
+            let narrow = integer(attrs, narrow_key, 1).max(1);
+            let wide_threshold = integer(attrs, wide_key, 1);
+            let converge_threshold = integer(attrs, converge_key, 0);
+            let next = if deviation >= wide_threshold {
+                width.saturating_add(widen)
+            } else if deviation <= converge_threshold {
+                width.saturating_sub(narrow)
+            } else {
+                width
+            }
+            .clamp(min_width, max_width);
+            let adjustment = next.saturating_sub(width);
+            if adjustment == 0 {
+                continue;
+            }
+            updates.push((state, width, next, adjustment));
+        }
+
+        for (state, previous, next, adjustment) in &updates {
+            self.set_attr(*state, width_key, Value::Int(*next));
+            self.set_attr(*state, previous_key, Value::Int(*previous));
+            self.set_attr(*state, adjustment_key, Value::Int(*adjustment));
+            let epoch = self
+                .graph
+                .node(*state)
+                .attrs
+                .get(&epoch_key)
+                .and_then(|value| match value {
+                    Value::Int(v) => Some(*v),
+                    Value::Float(v) if v.is_finite() => Some(*v as i64),
+                    _ => None,
+                })
+                .unwrap_or(0);
+            self.set_attr(*state, epoch_key, Value::Int(epoch.saturating_add(1)));
+        }
+        updates.len()
+    }
+
     /// Settle only rules in one authored deadline class.
     ///
     /// This is the scheduling primitive used by the dual-process cognitive

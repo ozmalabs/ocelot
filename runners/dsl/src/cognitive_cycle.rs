@@ -605,12 +605,28 @@ fn execute_plan(
             let n = substrate.run_rules_opts(max_steps, detect_cycles);
             report.steps = n;
             push_trace(&mut report, substrate, "struct_rules", n, trace);
+            let adjusted = substrate.apply_trajectory_control();
+            push_trace(
+                &mut report,
+                substrate,
+                "trajectory_quantized_feedback",
+                adjusted,
+                trace,
+            );
         }
         CyclePlan::GraphThenStruct => {
             let graph_n =
                 crate::graph_rules::run_graph_rules_opts(substrate, max_steps, detect_cycles);
             report.steps = graph_n;
             push_trace(&mut report, substrate, "graph_rules", graph_n, trace);
+            let adjusted = substrate.apply_trajectory_control();
+            push_trace(
+                &mut report,
+                substrate,
+                "trajectory_quantized_feedback",
+                adjusted,
+                trace,
+            );
             let remaining = max_steps.saturating_sub(report.steps);
             if remaining > 0 {
                 let struct_n = substrate.run_rules_opts(remaining, detect_cycles);
@@ -680,6 +696,18 @@ fn execute_plan(
             );
             report.steps = fast;
             push_trace(&mut report, substrate, "system_one_settle", fast, trace);
+
+            // The hard sheet has first claim on the cycle. Only after native
+            // reflex settlement do we consume graph-resident deviation and
+            // adjust tangent width in integer quanta.
+            let adjusted = substrate.apply_trajectory_control();
+            push_trace(
+                &mut report,
+                substrate,
+                "trajectory_quantized_feedback",
+                adjusted,
+                trace,
+            );
 
             let commits_after = node_status_count(substrate, "SystemOneCommit", "committed");
             report.system_one_commits = commits_after.saturating_sub(commits_before);
@@ -857,6 +885,39 @@ mod tests {
             .expect("test edge");
     }
 
+    fn trajectory_state(substrate: &mut Substrate, width: i64, deviation: i64) -> NodeID {
+        let state_type = substrate.interner.intern("TrajectoryControlState");
+        let mut attrs = rustc_hash::FxHashMap::default();
+        attrs.insert(substrate.interner.intern("enabled"), Value::Int(1));
+        attrs.insert(
+            substrate.interner.intern("deviation_count"),
+            Value::Int(deviation),
+        );
+        attrs.insert(
+            substrate.interner.intern("deviation_wide_quanta"),
+            Value::Int(2),
+        );
+        attrs.insert(
+            substrate.interner.intern("deviation_converge_quanta"),
+            Value::Int(0),
+        );
+        attrs.insert(
+            substrate.interner.intern("tangent_width"),
+            Value::Int(width),
+        );
+        attrs.insert(
+            substrate.interner.intern("min_tangent_width"),
+            Value::Int(0),
+        );
+        attrs.insert(
+            substrate.interner.intern("max_tangent_width"),
+            Value::Int(2),
+        );
+        attrs.insert(substrate.interner.intern("widen_step"), Value::Int(1));
+        attrs.insert(substrate.interner.intern("narrow_step"), Value::Int(1));
+        substrate.add_node(state_type, attrs)
+    }
+
     fn add_request(
         substrate: &mut Substrate,
         process: Option<(NodeID, &str)>,
@@ -946,6 +1007,52 @@ mod tests {
                 "result_fold_boundary"
             ]
         );
+    }
+
+    #[test]
+    fn default_tick_uses_native_quantized_trajectory_feedback() {
+        let mut substrate = fresh();
+        let state = trajectory_state(&mut substrate, 1, 2);
+
+        let report = execute(&mut substrate, CyclePlan::Default, 1, false, true, 1);
+        let width = substrate.interner.intern("tangent_width");
+        let adjustment = substrate.interner.intern("tangent_width_adjustment");
+        assert_eq!(
+            substrate.graph.node(state).attrs.get(&width),
+            Some(&Value::Int(2))
+        );
+        assert_eq!(
+            substrate.graph.node(state).attrs.get(&adjustment),
+            Some(&Value::Int(1))
+        );
+        assert!(report
+            .trace
+            .iter()
+            .any(|event| event.phase == "trajectory_quantized_feedback"));
+
+        let deviation_key = substrate.interner.intern("deviation_count");
+        substrate.set_attr(state, deviation_key, Value::Int(0));
+        execute(&mut substrate, CyclePlan::Default, 1, false, false, 1);
+        assert_eq!(
+            substrate.graph.node(state).attrs.get(&width),
+            Some(&Value::Int(1))
+        );
+    }
+
+    #[test]
+    fn dual_process_trace_commits_hard_sheet_before_trajectory_feedback() {
+        let mut substrate = fresh();
+        let policy_type = substrate.interner.intern("DualProcessPolicy");
+        let enabled = substrate.interner.intern("enabled");
+        let mut attrs = rustc_hash::FxHashMap::default();
+        attrs.insert(enabled, Value::Int(1));
+        substrate.add_node(policy_type, attrs);
+        trajectory_state(&mut substrate, 0, 2);
+
+        let report = execute(&mut substrate, CyclePlan::Default, 1, false, true, 1);
+        let phases: Vec<_> = report.trace.iter().map(|event| event.phase).collect();
+        assert_eq!(phases[0], "system_one_settle");
+        assert_eq!(phases[1], "trajectory_quantized_feedback");
     }
 
     #[test]
