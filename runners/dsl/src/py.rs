@@ -4396,7 +4396,7 @@ impl PySubstrate {
         crate::cognitive_cycle::advance_cognitive_epoch(inner);
         crate::cognitive_cycle::execute(
             inner,
-            crate::cognitive_cycle::CyclePlan::GraphThenStruct,
+            crate::cognitive_cycle::CyclePlan::Default,
             max_steps,
             detect_cycles,
             false,
