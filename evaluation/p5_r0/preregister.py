@@ -1,4 +1,4 @@
-"""Signed local preregistration with an explicit external trust boundary."""
+"""Signed local preregistration with an explicit authority trust-anchor boundary."""
 from __future__ import annotations
 from pathlib import Path
 from typing import Any
@@ -15,11 +15,11 @@ def preregister(out: Path, *, signer: Ed25519PrivateKey | None = None, trusted_a
     """Create a lock.
 
     A generated signer is retained only for deterministic/unit-test fixture creation.
-    Production eligibility is determined later by ``validate_lock`` with an external
-    trust anchor; the lock never contains private signing material.
+    Production eligibility is determined later by ``validate_lock`` with a
+    separately supplied authority trust binding; the lock never contains private signing material.
     """
     if private_truth_out is not None:
-        raise P5R0Error("held-out store is evaluator-custodied; private_truth_out is disabled")
+        raise P5R0Error("held-out store is project-controlled; private_truth_out is disabled")
     if trusted_authority is not None and (signer is None or trusted_authority.get("transport_attestation") is None):
         raise P5R0Error("trusted authority requires injected signer and transport attestation")
     signer = signer or Ed25519PrivateKey.generate()
@@ -52,11 +52,11 @@ def validate_lock(lock: dict[str, Any], *, trusted_authority: dict[str, Any] | N
         raise P5R0Error("P5-R0 lock")
     _validate_authority(lock["authority"])
     if trusted_authority is None:
-        raise P5R0Error("P5-R0 external trust anchor required")
+        raise P5R0Error("P5-R0 authority trust binding required")
     if trusted_authority.get("transport_attestation") is None:
         raise P5R0Error("P5-R0 transport attestation required")
     _validate_authority(trusted_authority)
-    if _authority_public(trusted_authority) != _authority_public(lock["authority"]): raise P5R0Error("P5-R0 independent authority")
+    if _authority_public(trusted_authority) != _authority_public(lock["authority"]): raise P5R0Error("P5-R0 authority trust-anchor mismatch")
     if lock["authority_transport_digest"] != (digest(trusted_authority.get("transport_attestation")) if trusted_authority.get("transport_attestation") is not None else None): raise P5R0Error("P5-R0 authority transport")
     if lock.get("authority_verified") is not True or (expected_manifest_digest is not None and lock["manifest_digest"] != expected_manifest_digest): raise P5R0Error("P5-R0 authority binding")
     validate_taxonomy(lock["taxonomy"]); validate_split_commitment(lock["split_commitment"])

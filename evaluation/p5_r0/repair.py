@@ -2,7 +2,7 @@
 
 V3 is intentionally separate from the V2 ledger.  It binds the V2 parent,
 keeps the old workload commitments visible, and refuses native execution until
-an independently supplied authority and a V3 worker closure are present.
+a separately supplied authority trust binding and a V3 worker closure are present.
 """
 from __future__ import annotations
 from pathlib import Path
@@ -29,11 +29,11 @@ def repair_policy(*, case_count: int = 48, contrast_matrix: list[dict[str, Any]]
 
 def _authority_check(authority: dict[str, Any]) -> None:
     if not isinstance(authority, dict) or authority.get("schema") != "P5R0AuthorityV2" or not authority.get("authority_id") or not authority.get("key_id") or authority.get("public_key_digest") != digest(authority.get("public_key")):
-        raise P5R0Error("V3 external authority")
+        raise P5R0Error("V3 authority trust binding")
     try: Ed25519PublicKey.from_public_bytes(b64decode(authority["public_key"]))
     except Exception as exc: raise P5R0Error("V3 authority key") from exc
     if authority.get("authority_id", "").startswith("p5-r0-local") or authority.get("transport_attestation") is None:
-        raise P5R0Error("V3 independent authority required")
+        raise P5R0Error("V3 authority trust binding required")
 
 
 def preregister_repair(out: Path, *, parent_lock: dict[str, Any], signer: Ed25519PrivateKey | None = None, trusted_authority: dict[str, Any] | None = None, parent_lock_path: Path | None = None, parent_authority: dict[str, Any] | None = None, closure: dict[str, Any] | None = None, bundle: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -86,7 +86,7 @@ def validate_repair_lock(lock: dict[str, Any], *, trusted_authority: dict[str, A
     required = {"schema", "feature_id", "classification", "non_release", "adopted", "promotion_authority", "parent_lock_digest", "parent_manifest_digest", "parent_case_index_digest", "parent_truth_digest", "parent_store_digest", "parent_split_commitment", "authority", "authority_digest", "authority_verified", "authority_transport_digest", "manifest_digest", "case_index_digest", "truth_digest", "store_digest", "policy", "worker_contract", "evaluator_contract", "closure", "limits", "no_claims", "lock_digest", "signature"}
     if set(lock) != required or lock.get("schema") != V3_SCHEMA or lock.get("feature_id") != V3_FEATURE_ID or lock.get("parent_lock_digest") != V3_PARENT_LOCK_DIGEST or lock.get("classification") != "local_readiness_only" or lock.get("non_release") is not True or lock.get("adopted") is not False or lock.get("promotion_authority") is not False or lock.get("lock_digest") != object_hash(lock, "lock_digest", "signature"): raise P5R0Error("V3 lock")
     if expected_manifest_digest is not None and lock["manifest_digest"] != expected_manifest_digest: raise P5R0Error("V3 manifest binding")
-    if trusted_authority is None: raise P5R0Error("V3 external authority required")
+    if trusted_authority is None: raise P5R0Error("V3 authority trust binding required")
     _authority_check(trusted_authority)
     if lock.get("authority") != trusted_authority or lock.get("authority_digest") != digest(trusted_authority) or lock.get("authority_verified") is not True or lock.get("authority_transport_digest") != digest(trusted_authority["transport_attestation"]): raise P5R0Error("V3 authority binding")
     try: verify_signature(lock, Ed25519PublicKey.from_public_bytes(b64decode(trusted_authority["public_key"])), "lock_digest")

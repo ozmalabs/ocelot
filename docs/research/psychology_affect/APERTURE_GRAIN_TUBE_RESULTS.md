@@ -71,12 +71,9 @@ set-point the width stays low; under the sharpened set-point the deviation cross
 widen threshold and the width steps up `0→1→2`. The assertion was corrected to test the
 real controller; the substrate was not changed to make it pass.
 
-## Deferred (unchanged)
+## Deferred status — superseded by later landed blocks
 
-- Global workspace — produce seriality via broadcast/competition (block 350; the
-  consciousness review's must-have #2, still open).
-- Gated dimension-minting — on accumulated persistent residual (block 351; the qualia
-  substrate seeded here is the ground it needs).
+The original deferred list was accurate at block 349. It is now historical: block 350 landed the optional global-workspace broadcast/competition path, and block 351 landed the gated dimension-minting path. See [`GLOBAL_WORKSPACE_RESULTS.md`](GLOBAL_WORKSPACE_RESULTS.md), [`GATED_MINTING_RESULTS.md`](GATED_MINTING_RESULTS.md), and the capability-suite result documents. These later local results remain bounded mechanism evidence, not production or general-agency claims.
 
 ## Guardrails
 

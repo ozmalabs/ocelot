@@ -74,3 +74,27 @@ def test_v3_lock_is_new_and_requires_independent_authority(tmp_path):
     key = Ed25519PrivateKey.generate(); authority = authority_from_private(key, "external-test-authority", "external-test-key"); authority["transport_attestation"] = {"schema": "external", "nonce": "test"}
     # The local signer is not allowed to masquerade as the injected authority.
     with pytest.raises(P5R0Error): validate_repair_lock(artifact["lock"], trusted_authority=authority)
+
+
+
+def test_explicit_private_store_and_checkpoint_rehydrate_without_registry():
+    from evaluation.p5_r0 import fixture_generator
+
+    artifact = preregister(Path(TemporaryDirectory().name) / "lock.json")
+    bundle = artifact["bundle"]
+    store = private_store_for(bundle)
+    fixture_generator._PRIVATE_STORES.pop(bundle["manifest_digest"], None)
+    evaluator = P5R0Evaluator(bundle, store)
+    order = digest([row["case_id"] for row in bundle["case_index"]])
+    context = evaluator.arm_context("warm_adaptive", order)
+    case = bundle["case_index"][0]
+    evaluator.begin_case(case["case_id"], 0)
+    evaluator.evaluate(case, "warm_adaptive", 0)
+    checkpoint = evaluator.checkpoint()
+
+    restored = P5R0Evaluator(bundle, store)
+    restored.restore_checkpoint(checkpoint)
+    assert restored.session_digest() == evaluator.session_digest()
+    assert restored._active_context == context
+    with pytest.raises(P5R0Error):
+        P5R0Evaluator(bundle, {**store, "store_digest": digest("tampered")})

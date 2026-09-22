@@ -2,9 +2,9 @@
 
 This module deliberately does not update any existing stage root.  It creates a
 new root, stages the canonical worker source, builds exactly one local image,
-and records a V3 closure and lock.  The default authority is explicitly local
-only; callers must inject an independent authority if they want to perform the
-separate validator/activation step.
+and records a V3 closure and lock. The default authority is explicitly local
+only; callers must inject a separately supplied authority trust binding if they
+want to perform the separate validator/activation step.
 """
 from __future__ import annotations
 
@@ -99,7 +99,7 @@ def _default_host_paths(root: Path) -> dict[str, Path]:
         "host_receipts": p5 / "receipts.py",
         "host_evidence": p5 / "evidence.py",
         "host_rollback": p5 / "rollback.py",
-        # CgroupSupervisor is the evaluator-owned kill authority.  The
+        # The separate project-controlled supervisor is the kill authority.  The
         # LocalSupervisor in the same module is intentionally not used.
         "host_kill": root / "evaluation" / "p0a" / "supervisor.py",
     }
@@ -177,9 +177,9 @@ def rebuild_canonical_v3(
 
     ``trusted_authority`` is optional by design.  When omitted, the lock is
     signed by a generated local authority and the returned metadata explicitly
-    says that there is no external custody or promotion authority.  When it is
+    says that there is no project-controlled release or promotion authority.  When it is
     supplied, the lock is additionally checked with ``validate_repair_lock``;
-    that is an injected verification input, not a claim made by this local
+    that is an injected authority trust input, not a claim made by this local
     rebuild process.
     """
     root = Path(output_root).resolve()
@@ -271,7 +271,7 @@ def rebuild_canonical_v3(
         "promotion_authority": False,
         "custody_scope": "local_only",
         "transport_attestation": None,
-        "claim_boundary": "No external custody, release, adoption, or promotion claim.",
+        "claim_boundary": "No independent custody, release, adoption, or promotion claim.",
     }
     authority_path = root / "authority.local.json"
     _write_private(authority_path, local_authority)

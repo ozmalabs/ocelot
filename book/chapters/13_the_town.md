@@ -108,10 +108,9 @@ Measured, on one grass cell [TOWN-1]: forty crossings take wear from 0 to 1.0 an
 terrain becomes path, with the movement cost falling smoothly along the way
 rather than jumping at the end. Four hundred idle turns take it back to grass.
 
-That is population-scale narrative momentum, in the sense Part VII gives the
-term: history surviving as structure, and thereby entering the next possibility
-relation. The path is the town's memory of where people went, and it changes
-where they go next.
+That is population-scale history surviving as structure, and thereby entering
+the next possibility relation. The path is the town's memory of where people
+went, and it changes where they go next.
 
 And it is worth being precise about what kind of claim that is, because the
 word invites a weaker reading. **This is not a metaphor borrowed from

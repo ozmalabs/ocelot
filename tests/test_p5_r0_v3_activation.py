@@ -105,3 +105,14 @@ def test_v3_impasse_no_go_is_sealable_and_reloadable(tmp_path):
     assert result["disposition"] == "impasse" and result["outcome"] == "local_readiness_only/no_go"
     seal_result(result, tmp_path / "impasse.json")
     assert verify_result_seal(tmp_path / "impasse.json")["schema"] == "P5R0ResultSealV3"
+
+
+
+def test_v3_readiness_requires_explicit_durable_private_store(tmp_path):
+    artifact, key, authority = _v3(tmp_path)
+    result = run_readiness_gate(
+        artifact["bundle"], receipts_root=tmp_path / "receipts", lock=artifact["lock"],
+        trusted_authority=authority, receipt_signer=key, require_native=True,
+    )
+    assert result["disposition"] == "impasse"
+    assert "durable private store" in result["gate_reasons"][0]

@@ -333,6 +333,11 @@ class BrowserWorld:
     def reset(self, url: str) -> dict:
         """Launch (or reuse) the browser, navigate to `url`, full ingest at
         both levels. Returns a context dict (session node id + counts)."""
+        try:
+            from evaluation.p0a.legacy_io_guard import deny_direct_io
+            deny_direct_io("browser.launch_apply")
+        except ImportError:
+            pass
         if self._page is None:
             self._launch()
         self.session_wid = f"session_{uuid4().hex[:8]}"
@@ -352,6 +357,11 @@ class BrowserWorld:
     def apply(self, action) -> dict:
         """Perform `action` (an affordance world-id, optionally with a
         value to type/select) via Playwright, then incremental re-ingest."""
+        try:
+            from evaluation.p0a.legacy_io_guard import deny_direct_io
+            deny_direct_io("browser.launch_apply")
+        except ImportError:
+            pass
         name = action[0]
         value = action[1] if len(action) > 1 else None
         if name.startswith("scroll"):

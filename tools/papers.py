@@ -72,6 +72,9 @@ def stems(names):
     return sorted({Path(l).stem for l in out.split() if l.endswith(".tex")})
 
 def cmd_build(a):
+    metadata = subprocess.run([sys.executable, str(Path(__file__).parent / "build_paper_metadata.py")])
+    if metadata.returncode:
+        return metadata.returncode
     todo = stems(a.stems)
     if not todo:
         print("nothing changed; nothing to build")

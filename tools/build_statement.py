@@ -151,11 +151,13 @@ def preamble_of(tex, body_text=''):
         out.append(line)
     pre = '\n'.join(out)
 
-    rev = re.search(r'document revision (\d+)', tex)
-    src = re.search(r'\\textsc\{(draft-\S*?)[\\}]', tex)
-    stamp = (src.group(1) if src else 'draft') + ' / statement / from long r' + \
-            (rev.group(1) if rev else '?')
-    pre = re.sub(r'\\textsc\{draft-[^}]*\}', lambda m: '\\textsc{' + stamp + '}', pre)
+    # The copied long-paper metadata include resolves its values against the
+    # generated statement's jobname. Replace the ordinary footer presentation
+    # with the statement form; its revision is then derived from the manifest's
+    # declared long-paper parent rather than scraped from source text.
+    pre = pre.replace(
+        r'\fancyfoot[R]{\scriptsize\textsc{\PaperDraft\,r\PaperRevision}}',
+        r'\fancyfoot[R]{\scriptsize\PaperFooterStamp}')
     return pre
 
 

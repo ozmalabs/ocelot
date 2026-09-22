@@ -258,7 +258,7 @@ written into the document that makes it.
 
 ## What I am, and what that is worth
 
-I am a systems administrator. That is not modesty and it is not a disclaimer
+I was a systems administrator. That is not modesty and it is not a disclaimer
 against criticism — it is where the method came from, and saying so is the
 strongest version of the fact.
 
@@ -403,9 +403,10 @@ of what all of it was an instance of. The axioms are in Part V, near the end, an
 they are there deliberately: after ten capabilities have grown out of one loop,
 a formalism reads as compression rather than as homework.
 
-Three things before you start. Every number here has a preregistration behind it
-and an interval attached. Every retraction is in the body of the chapter where
-the claim was made, not in an appendix. And every chapter ends by saying what
-would have to be true for it to be wrong.
+Three things before you start. With the prologue's older code examples excepted,
+every quantitative research result here has a preregistration behind it and an
+interval attached. Every retraction is in the body of the chapter where the
+claim was made, not in an appendix. And every chapter ends by saying what would
+have to be true for it to be wrong.
 
 The next few pages are three toys.

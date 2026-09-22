@@ -118,13 +118,9 @@ The trajectory hits the manifold **boundary** when a segment's own train stalls
 (`novelty_stalled`) or the tube/frontier is exhausted (`converged`). Only the
 **concept-region** tube is demonstrable on the plain is-a seed (proved here).
 
-## Deferred (honest, not faked)
+## Deferred status — superseded by later landed blocks
 
-- **Aperture-grain tube** (vague/sharp qualia grain sets tube width) — **block 349**; needs
-  `seeds/qualia_space.json` + the dynamical coords the plain is-a seed lacks.
-- **Global workspace** (produce seriality via broadcast/competition) — **block 350**.
-- **Gated dimension-minting** (on accumulated persistent residual) — **block 351**; needs the
-  qualia substrate.
+The original deferred wording described the state immediately after block 348. It is now historical: block 349 landed the aperture-grain tube, block 350 landed optional workspace competition and ignition silence, and block 351 landed gated dimension-minting. See [`APERTURE_GRAIN_TUBE_RESULTS.md`](APERTURE_GRAIN_TUBE_RESULTS.md), [`GLOBAL_WORKSPACE_RESULTS.md`](GLOBAL_WORKSPACE_RESULTS.md), and [`GATED_MINTING_RESULTS.md`](GATED_MINTING_RESULTS.md). These remain local research results; the production architecture and evidence gates are defined separately in [`THOUGHT_MANIFOLD_PRODUCTION_PLAN.md`](THOUGHT_MANIFOLD_PRODUCTION_PLAN.md).
 
 ## Guardrails
 
