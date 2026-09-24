@@ -1539,3 +1539,29 @@ validation, and `git diff --check` pass.
   full-boot topo loader skips; selective loading now makes them visible for
   audit instead of silently implying closure completeness. Seed-loader suite
   passed after the change: **4 passed**.
+
+### 2026-09-24 — Resolve seed content connections in the pre-pass
+
+- Extended the map across both native typed manifest edges and the legacy
+  name-based `relations`/parent links that `load_all_seeds()` resolves after
+  installation. Typed edge providers become load-before constraints; named
+  relation endpoints expand the selected closure but do not reorder the
+  post-load relation pass. Current full-boot order remains unchanged.
+- Corpus audit: **141 typed refs** and **420 name/parent refs**; **134** refs
+  have multiple seed providers. They produce **207 distinct seed-provider
+  links** across **137 seeds**, of which **7** are typed load-before links.
+  There is **1 unresolved named endpoint** (`code_authoring`) in addition to
+  the **23** unresolved `depends_on` entries. Current typed-ref shapes are
+  supported exactly (type-only or string `name`/`id`); richer shapes are
+  reported unresolved rather than guessed.
+- A dependency-plus-content weak-component pass yields **232 groups**, but
+  still has a **379-seed** largest component. Whole-component loading is too
+  coarse. Anchor selection is more precise: selecting `conversation_reply`
+  yields **6 seeds** with no unresolved links; this is a candidate seed
+  closure, not yet proof that the whole conversational runtime can operate on
+  that subset.
+- Pre-pass measurement: **2.2 s** and about **66.7 MB** RSS growth in this
+  process. The earlier ID/dependency-only index measured about **38.8 MB**;
+  grouping/content lookup adds noticeable index cost that must be addressed in
+  the resource gate before production activation. Full-boot behavior is still
+  unchanged. `.venv` seed-loader suite: **4 passed**.

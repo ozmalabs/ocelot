@@ -55,6 +55,10 @@ def test_seed_index_preserves_dependency_order_and_generated_override(tmp_path):
             "capability_keys": ["base_cap"],
             "nodes": [{"type": "Base", "attrs": {"name": "base_node"}}],
         },
+        tmp_path / "base_alt.json": {
+            "id": "base_alt", "depends_on": [],
+            "nodes": [{"type": "Base", "attrs": {"name": "base_node"}}],
+        },
         tmp_path / "child.json": {
             "id": "child", "depends_on": ["base", "absent_dependency"],
             "rules": [{"name": "child_rule"}],
@@ -63,8 +67,15 @@ def test_seed_index_preserves_dependency_order_and_generated_override(tmp_path):
             "id": "self_load", "self_load_only": True,
         },
         generated / "child.json": {
-            "id": "child", "depends_on": ["base", "absent_dependency"],
-            "nodes": [{"type": "GeneratedChild"}],
+            "id": "child", "depends_on": ["absent_dependency"],
+            "nodes": [{"local_id": 1, "type": "GeneratedChild"}],
+            "extra_nodes": [{"type": "GeneratedChild", "name": "child_node"}],
+            "edges": [{
+                "src": {"type": "Base", "name": "base_node"},
+                "type": "references", "tgt": {"local": 1},
+            }],
+            "relations": [{"src": "child_node", "edge": "references",
+                           "tgt": "base_node"}],
         },
     }
     for path, payload in manifests.items():
@@ -73,40 +84,55 @@ def test_seed_index_preserves_dependency_order_and_generated_override(tmp_path):
     full = _read_seeds(str(tmp_path))
     index, paths = _read_seed_index(str(tmp_path))
 
-    assert set(index) == set(full) == {"base", "child"}
+    assert set(index) == set(full) == {"base", "base_alt", "child"}
     assert set(index["base"]) == {
         "id", "depends_on", "category", "microtheory", "capability_keys",
-        "group_keys", "node_types", "content_keys", "missing_dependencies",
+        "group_keys", "node_types", "content_keys", "content_dependencies",
+        "content_load_dependencies", "missing_content_references",
+        "missing_dependencies", "typed_content_reference_count",
+        "name_content_reference_count", "ambiguous_content_reference_count",
     }
     assert index["base"]["group_keys"] == [
         "capability:base_cap", "category:core",
     ]
     assert index["base"]["node_types"] == ["Base"]
     assert "base_node" in index["base"]["content_keys"]
+    assert index["child"]["content_dependencies"] == ["base", "base_alt"]
+    assert index["child"]["content_load_dependencies"] == ["base", "base_alt"]
+    assert index["child"]["missing_content_references"] == []
+    assert index["child"]["typed_content_reference_count"] == 1
+    assert index["child"]["name_content_reference_count"] == 2
+    assert index["child"]["ambiguous_content_reference_count"] == 2
+    assert "child_node" in index["child"]["content_keys"]
     assert paths["child"] == str(generated / "child.json")
     order = _topo_order(index)
     assert order.index("base") < order.index("child")
     selected, unresolved = _select_seed_ids(
         index,
         group_keys=["category:core"],
-        content_keys=["base_node", "not-present"],
+        content_keys=["not-present"],
     )
     assert selected == ["base"]
     assert unresolved == {
         "missing_seed_ids": [],
         "missing_content_keys": ["not-present"],
         "missing_dependencies": [],
+        "missing_content_references": [],
     }
     selected, unresolved = _select_seed_ids(index, seed_ids=["child"])
-    assert selected == ["base", "child"]
+    assert selected == ["base", "base_alt", "child"]
     assert unresolved == {
         "missing_seed_ids": [],
         "missing_content_keys": [],
         "missing_dependencies": [("child", "absent_dependency")],
+        "missing_content_references": [],
     }
     selected, unresolved = _select_seed_ids(index, seed_ids=["unknown"])
     assert selected == []
     assert unresolved["missing_seed_ids"] == ["unknown"]
+    selected, unresolved = _select_seed_ids(index, content_keys=["base_node"])
+    assert selected == ["base", "base_alt"]
+    assert unresolved["missing_content_keys"] == []
 
 
 def test_load_all_seeds_emits_no_malformed_rule_warnings(capsys):
