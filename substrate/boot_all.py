@@ -119,6 +119,11 @@ def _read_seed_index(seed_dir: str) -> tuple[dict, dict[str, str]]:
             "content_keys": sorted(content_keys),
         }
         paths[sid] = path
+    for meta in index.values():
+        meta["missing_dependencies"] = sorted({
+            dependency for dependency in meta["depends_on"]
+            if dependency not in index
+        })
     return index, paths
 
 
@@ -184,9 +189,15 @@ def _select_seed_ids(
                 closure.add(dependency)
                 pending.append(dependency)
     order = [sid for sid in _topo_order(seeds) if sid in closure]
+    missing_dependencies = sorted(
+        (sid, dependency)
+        for sid in closure
+        for dependency in seeds[sid].get("missing_dependencies", ())
+    )
     return order, {
         "missing_seed_ids": missing_seeds,
         "missing_content_keys": sorted(missing_content),
+        "missing_dependencies": missing_dependencies,
     }
 
 
