@@ -47,14 +47,14 @@ implemented. No `noted` fallback is accepted.
 |---|---|---|---|
 | **Gate 1** | Multi-turn continuity ($\ge 5$ statements without dismissive fallback output) | `tests/test_utterance_conversation_unification.py` | 🟢 Passed |
 | **Gate 2** | Method parity & aliasing (`converse` $\equiv$ `utterance`, `utterance_for`) | `tests/test_utterance_conversation_unification.py` | 🟢 Passed |
-| **Gate 3** | Deliberation-to-production trace (`ThoughtSegment` $\rightarrow$ `Committed`) | `tests/test_deliberative_production.py` | ⚪ Pending |
+| **Gate 3** | Native deliberation trace (`DeliberationExecutionTrace`/`Settlement` $\rightarrow$ `Committed`) | `tests/test_deliberative_production.py` | 🟢 Implemented; focused verification pending |
 | **Gate 4** | Pre-articulatory parse-back (100% semantic recoverability) | `tests/test_grammar_inversion.py` | 🟢 Passed (6 focused passes) |
 | **Gate 5** | Regression baseline safety | Existing test suite (`test_relations_render_migrated`, `test_conversation_reply_migrated`, `test_intent_migrated`, `test_conceptualized_converse`) | 🔴 Failed: 48 passed, 3 failed |
 
-**Verification note:** Gate 3 remains unimplemented: the current deliberation
-trace is native `DeliberationExecutionTrace`/settlement evidence, while the
-older `ThoughtSegment -> Committed` contract has no live integration path.
-Gate 4 is now present and passed using the existing grammar-owned
+**Verification note:** The older `ThoughtSegment -> Committed` label was
+replaced by the live native `DeliberationExecutionTrace`/settlement contract;
+the test now verifies the same-goal evidence before monitor-cleared release.
+Gate 4 is present and passed using the existing grammar-owned
 produce/comprehend round trip and self-target monitor.
 
 ---

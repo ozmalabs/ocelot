@@ -692,8 +692,12 @@ current acceptance evidence:
    - Assert `wa.utterance_for(meaning)` preserves relational rendering and routes goal frames through the active Phase 4 production path; full conversational integration remains subject to Phases 5–6.
    - Assert `receive_utterance` still correctly mints low-level graph structures for `test_intent_migrated.py`.
 3. **Deliberation-to-Production Gate (`tests/test_deliberative_production.py`):**
-   - Query a multi-hop relationship (e.g. cross-domain analogy or transitive classification).
-   - Assert: Graph trace contains `ThoughtSegment` and `Committed` nodes prior to outbound message emission.
+   - Establish a grounded candidate for a communicative goal and settle it through
+     the native deliberation path.
+   - Assert: the graph contains resolved `DeliberationExecutionTrace` and
+     `DeliberationSettlement` evidence for that goal before the existing
+     monitor-cleared `Committed` node is released. `ThoughtSegment` remains the
+     autonomous-discovery vocabulary, not a second conversational thought store.
 4. **Pre-Articulatory Covert Parse-Back Gate (`tests/test_grammar_inversion.py`):**
    - Verify produced clauses follow canonical constituent order (SVO) and include grounded determiners/prepositions.
    - Assert: `score_self_target` parse-back achieves 100% semantic recoverability on the designated grammar-inversion fixture/battery; this does not generalize to every production event.
