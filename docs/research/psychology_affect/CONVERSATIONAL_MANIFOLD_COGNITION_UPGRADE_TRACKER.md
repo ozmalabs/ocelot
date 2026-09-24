@@ -41,7 +41,7 @@
 
 1. **Phase 4 upstream cognition:** Preserve explicit `no_candidate` until an existing faculty supplies the complete live tuple. Phase 4R measured zero complete or near-match tuples in the 74-event corpus; no evidence may be inferred from adjacent faculties.
 2. **Phase 6W:** Adjudication is complete. The remaining `question_followup` mismatch lacks typed causal world evidence; add that event only if the benchmark intends to test causal learning, or revise its isolated expected disposition to `repair`/`unknown`. Do not add a conversation rule.
-3. **Phase 7 resource envelope:** Phase 7O indexed-ingress equivalence and Phase 7P selective kind-rule readback are complete, but cold RSS and latency remain over budget. The `run_rules_prefix` optimization was rejected for semantic drift and memory cost; a further change needs a substrate/runtime target and held-rule parity evidence.
+3. **Phase 7 resource envelope:** Phase 7O indexed-ingress equivalence and Phase 7P selective kind-rule readback are complete, but cold RSS and latency remain over budget. New stage profiling attributes most of the cold parse allocation to WordNet's first lookup in lexical recognition, while the information-question path also materializes 11,172 graph edges. A boot warm-up shifts cost into boot but has not shown a full-envelope win; profile boot plus the complete replay before adopting it.
 4. **Phase 8I:** Independently adjudicate existing raw runs and collect base/advanced human references with provenance before publishing scores.
 
 No wording-only repair is permitted for these items.
@@ -3019,3 +3019,22 @@ referent store, candidate ledger, or surface fallback was added.
 - No Phase 4/6/7/8 acceptance status changes: complete live Phase 4 evidence,
   the measured resource envelope, and base/advanced human references remain
   open.
+
+### Phase 7P continuation — cold comprehension stage attribution — 2026-09-24
+
+- Isolated the Phase 7 kind bridge stages after the selective native readback:
+  `kind_signals` took **1,607.6 ms / 66,531,328 bytes** cold and **0.37 ms / 0
+  bytes** warm; comprehension seed check took **117.1 ms / 561,152 bytes**;
+  native `export_rules_prefix` took **0.28 ms / 0 bytes**; isolated native
+  scratch classification took **0.70 ms / 397,312 bytes**.
+- A direct first `WordNet.synsets` lookup took **1,635.7 ms** and added
+  **61,702,144 bytes**, identifying lazy WordNet loading inside the
+  recognition path as the main cold `kind_signals` cost. The native selective
+  export was not the remaining multi-second allocation source.
+- A one-event warm-up probe moved **1,552.5 ms / 53,657,600 bytes** into boot;
+  the first information-question event still took **13,289.3 ms**, added
+  **46,931,968 bytes**, and materialized **11,172 edges**. This single-event
+  probe does not close the Phase 7 gate or establish a full replay benefit.
+- No boot/runtime policy changed. Next: measure a full replay with boot
+  warm-up included in the total resource accounting, and separately attribute
+  the required question/meta vocabulary backfill before any optimization.
