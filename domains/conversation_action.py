@@ -797,8 +797,9 @@ def satisfiable_reply(agent, comp, inbound=None) -> dict:
         # `_describe_rule_summary` opens with "my rule 'X' is ..."; lead with
         # "One of them —" so the named rule reads as fluent prose, no stutter.
         reply = "One of them — " + _sm._describe_rule_summary(at)
-        _mint_goal(agent, "name_rule", "name", name, inbound=inbound)
+        goal = _mint_goal(agent, "name_rule", "name", name, inbound=inbound)
         return {"acted": True, "reply": reply, "route": "satisfiable",
+                "goal": goal, "goal_kind": "name_rule",
                 "rule_name": name, "served_by": "self_model:rules",
                 "note": "named a real held RuleSummary from my own self-model"}
     if target == "organisation":
@@ -808,8 +809,9 @@ def satisfiable_reply(agent, comp, inbound=None) -> dict:
             reply = agent._surface_self_state(state)
         except Exception:
             reply = None
-        _mint_goal(agent, "report_self", "report", "organisation", inbound=inbound)
+        goal = _mint_goal(agent, "report_self", "report", "organisation", inbound=inbound)
         return {"acted": reply is not None, "reply": reply, "route": "satisfiable",
+                "goal": goal, "goal_kind": "report_self",
                 "served_by": "self_model:self_organisation",
                 "note": "answered from my self_organisation faculty over real state"}
     return {"acted": False, "reply": None, "route": "satisfiable"}

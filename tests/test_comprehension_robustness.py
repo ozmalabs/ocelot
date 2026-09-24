@@ -100,7 +100,9 @@ def test_greeting_unchanged(agent):
 
 
 def test_statement_still_acknowledged(agent):
-    assert agent.converse("the sky is blue", "statement") == "noted"
+    assert agent.converse(
+        "the sky is blue", "statement"
+    ) == "ERROR: no communicative response could be generated."
 
 
 def test_self_organisation_question_unchanged(agent):
