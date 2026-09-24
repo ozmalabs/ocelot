@@ -55,7 +55,13 @@ def _read_seeds(seed_dir: str) -> dict:
 
 
 def _read_seed_index(seed_dir: str) -> tuple[dict, dict[str, str]]:
-    """Read seed identity/dependency metadata without retaining full manifests."""
+    """Build the compact boot plan without retaining full manifests.
+
+    This is deliberately a pre-pass: dependencies determine safe ordering,
+    while category/microtheory/capability and declared-content keys form the
+    cached grouping map for future selective loading. The grouping is
+    descriptive only today; full boot still installs every eligible seed.
+    """
     index: dict = {}
     paths: dict[str, str] = {}
     for path in _seed_manifest_paths(seed_dir):
@@ -67,10 +73,50 @@ def _read_seed_index(seed_dir: str) -> tuple[dict, dict[str, str]]:
         if not isinstance(manifest, dict) or manifest.get("self_load_only"):
             continue
         sid = manifest.get("id") or os.path.basename(path)[:-5]
+        microtheory = manifest.get("microtheory")
+        category = manifest.get("category")
+        if isinstance(microtheory, dict):
+            category = category or microtheory.get("category") or microtheory.get("domain")
+            microtheory = microtheory.get("name")
+        node_types = sorted({
+            str(node.get("type")) for node in manifest.get("nodes", ())
+            if isinstance(node, dict) and node.get("type")
+        })
+        content_keys = set()
+        for concept in manifest.get("concepts", ()):
+            if isinstance(concept, dict) and concept.get("name"):
+                content_keys.add(str(concept["name"]))
+        for node in manifest.get("nodes", ()):
+            if not isinstance(node, dict):
+                continue
+            attrs = node.get("attrs") or {}
+            if isinstance(attrs, dict) and attrs.get("name"):
+                content_keys.add(str(attrs["name"]))
+        for rule in manifest.get("rules", ()):
+            if isinstance(rule, dict) and rule.get("name"):
+                content_keys.add(str(rule["name"]))
+        group_keys = set()
+        if isinstance(category, str) and category:
+            group_keys.add(f"category:{category}")
+        if isinstance(microtheory, str) and microtheory:
+            group_keys.add(f"microtheory:{microtheory}")
+        group_keys.update(
+            f"capability:{key}" for key in manifest.get("capability_keys") or []
+            if isinstance(key, str) and key
+        )
         # Preserve generated-seed override ordering from _read_seeds.
         index[sid] = {
             "id": sid,
             "depends_on": manifest.get("depends_on") or [],
+            "category": category,
+            "microtheory": microtheory,
+            "capability_keys": sorted({
+                key for key in (manifest.get("capability_keys") or [])
+                if isinstance(key, str) and key
+            }),
+            "group_keys": sorted(group_keys),
+            "node_types": node_types,
+            "content_keys": sorted(content_keys),
         }
         paths[sid] = path
     return index, paths

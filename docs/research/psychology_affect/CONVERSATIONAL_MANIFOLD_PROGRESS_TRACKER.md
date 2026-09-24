@@ -1509,3 +1509,20 @@ validation, and `git diff --check` pass.
   loops **21 passed**, and Phase 7 envelope **4 passed**. The envelope now
   reports boot RSS and total boot-plus-event growth, with opt-in WordNet
   prewarm measurement; no production warm-up was enabled.
+
+### 2026-09-24 — Seed connectivity pre-pass
+
+- Extended the compact boot index with category, microtheory, capability,
+  declared node-type, named-content, and grouping keys. The map remains in
+  memory through boot while full manifests are streamed; load behavior is
+  unchanged.
+- Inventory: **734 loadable seeds**, **515 explicit dependency edges**,
+  **23 missing dependency references**, and **95 `self_load_only` manifests**.
+  Dependency-only weak components give **344 groups**, including one
+  **269-seed** component; connected components therefore cannot be treated as
+  topic load groups. Explicit typed content links are needed before the map can
+  safely select lazy loads.
+- Full-corpus dependency metadata and topological ordering remain equivalent;
+  seed-loader tests: **4 passed**. Selective loading is not enabled. Next:
+  identify content providers/reference links and an invariant conversational
+  core, then test lazy selection against full-boot graph/cognition equivalence.

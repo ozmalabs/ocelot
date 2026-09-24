@@ -50,7 +50,9 @@ def test_seed_index_preserves_dependency_order_and_generated_override(tmp_path):
     generated.mkdir()
     manifests = {
         tmp_path / "base.json": {
-            "id": "base", "depends_on": [], "nodes": [{"type": "Base"}],
+            "id": "base", "depends_on": [], "category": "core",
+            "capability_keys": ["base_cap"],
+            "nodes": [{"type": "Base", "attrs": {"name": "base_node"}}],
         },
         tmp_path / "child.json": {
             "id": "child", "depends_on": ["base"],
@@ -71,8 +73,15 @@ def test_seed_index_preserves_dependency_order_and_generated_override(tmp_path):
     index, paths = _read_seed_index(str(tmp_path))
 
     assert set(index) == set(full) == {"base", "child"}
-    assert all(set(meta) == {"id", "depends_on"}
-               for meta in index.values())
+    assert set(index["base"]) == {
+        "id", "depends_on", "category", "microtheory", "capability_keys",
+        "group_keys", "node_types", "content_keys",
+    }
+    assert index["base"]["group_keys"] == [
+        "capability:base_cap", "category:core",
+    ]
+    assert index["base"]["node_types"] == ["Base"]
+    assert "base_node" in index["base"]["content_keys"]
     assert paths["child"] == str(generated / "child.json")
     order = _topo_order(index)
     assert order.index("base") < order.index("child")
