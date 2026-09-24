@@ -1609,3 +1609,42 @@ validation, and `git diff --check` pass.
   **195,031,040 bytes**, for **284,585,984 bytes combined**: faster and lower
   boot RSS, but still over the 100 MiB boot-plus-event gate. Full boot remains
   the production default.
+
+### 2026-09-24 — Reattribute the core-only event RSS spike
+
+- A fresh-process core-only reproduction measured `WorldAdapter()` at about
+  **40.7 MB RSS** before the first kind-signal read. `_graph_kind_for()` took
+  **1,731 ms** in `kind_signals()`; a complete one-event run grew RSS by
+  **235.4 MB**. Its seed check took **26.7 ms / 221 KB**, native isolated
+  kind-rule classification **0.4 ms / 397 KB**, and the second seed check had
+  no measurable allocation.
+- Instrumenting the inner signal path attributed about **200.9 MB / 1,802 ms**
+  to `_recognise_regions()` called by `_strip_politeness()`. The cost was in
+  `_is_dictionary_word()`'s calls to NLTK `wordnet.synsets()` (the first token
+  alone added **165.7 MB / 1,738 ms**); the subsequent `parse_with_gaps()`
+  added about **2.8 MB / 0.9 ms**. This explains why the earlier standalone
+  `parse_with_gaps()` probe substantially under-measured the live path.
+- Correction to the preceding provisional attribution: grouping the entire
+  `_graph_kind_for()` frame made its RSS look like native kind-rule work. This
+  finer trace shows native seed checks and rule classification are not the
+  source of this reproduced spike. The dominant resource target is the cold
+  dictionary-membership lookup in politeness recognition.
+- Replaced only that boolean lookup with a temporary, digest-keyed SQLite
+  index built from WordNet's lemma and exception files. Queries apply NLTK's
+  own morphology substitutions and exception precedence; when the corpus or
+  index is unavailable, the existing NLTK reader remains the fallback. A
+  76-form direct comparison against `bool(wordnet.synsets(token))` had no
+  mismatches; focused index/morphology tests passed **2/2**.
+- With the index, a fresh core-only `kind_signals()` probe measured **160.6 ms
+  / 35,749,888 bytes**, versus the preceding trace's **1,802 ms / 200,859,648
+  bytes** for politeness recognition. A complete one-question core-only event
+  added **92,983,296 bytes** and took **2,195 ms**. These are bounded probes,
+  not the 59-seed 8-event production envelope; combined boot-plus-event and
+  full replay resource acceptance remain open.
+- Verification: new membership tests **2 passed**; recognition tests **11
+  passed** with the existing AST audit deselected (it flags pre-existing
+  `re` usage in `comprehend_text.py`). The broader speech-act/comprehension
+  slice ran for **641 s** before interruption: **15 passed**, and the same
+  three documented fixture/seed parity failures occurred (`Focus on...`,
+  instruction content, and stale rule-count expectation). The full slice is
+  not claimed green; native authority remains unchanged.

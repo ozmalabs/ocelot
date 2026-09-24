@@ -910,8 +910,11 @@ def _is_dictionary_word(token: str) -> bool:
     hit = _DICT_WORD_CACHE.get(t)
     if hit is None:
         try:
-            from nltk.corpus import wordnet as wn
-            hit = bool(wn.synsets(t))
+            from .wordnet_membership import has_synset
+            hit = has_synset(t)
+            if hit is None:
+                from nltk.corpus import wordnet as wn
+                hit = bool(wn.synsets(t))
         except Exception:
             hit = False
         _DICT_WORD_CACHE[t] = hit
