@@ -95,6 +95,31 @@ def test_native_arbitration_consumes_typed_overlap_as_cognitive_disposition():
     assert attrs["interaction_mode"] == "non_turn"
 
 
+def test_core_only_boot_loads_native_interaction_arbitration_on_demand():
+    # Production-shaped minimal boot: no load_all_seeds() call. The selected
+    # communication faculty must still interpret typed, non-turn overlap from
+    # graph evidence rather than falling through to an ask-back-only route.
+    agent = WorldAdapter()
+    agent.converse(
+        "Where—", speech_act="statement", speaker="alice",
+        context={
+            "interaction_mode": "non_turn",
+            "interaction_relation": "overlap",
+            "literal_form": "fragment",
+        })
+    mid = agent._last_turn_inbound
+    interpretation = agent.s.node(
+        agent.s.node(mid)["attrs"]["communication_interpretation_id"])
+    attrs = interpretation["attrs"]
+    assert attrs["cognitive_disposition"] == "defer"
+    assert attrs["arbitration_basis"] == "typed_overlap_partial_event"
+    native_rules = agent.inner.export_rules_prefix(
+        "arbitrate_typed_overlap_fragment_as_defer")
+    assert any(rule.get("name") ==
+               "arbitrate_typed_overlap_fragment_as_defer"
+               for rule in native_rules)
+
+
 
 def test_unresolved_topic_is_evidence_but_not_grounded_current_topic():
     agent = _agent()

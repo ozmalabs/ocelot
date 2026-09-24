@@ -2892,6 +2892,12 @@ class WorldAdapter:
         # neither the full-boot glob nor a minimal boot double-installs.
         for seed_id, probe_rule in (
             ("speech_act_classify", "sak_kind_question"),
+            # Typed interaction evidence (overlap/partial, explicit failure,
+            # non-turn force) is a cognition input even on a core-only boot.
+            # Keep its native arbitration rules resident before the first
+            # CommunicationInterpretation is recorded.
+            ("communication_intent_arbitration",
+             "arbitrate_typed_overlap_fragment_as_defer"),
             ("comprehend_instruction", "comprehend_read_instruction"),
             ("conversation_self_concern", "mint_self_improvement_concern_confident"),
             # R7 before topic_route: route_question_to_topic's own deferral

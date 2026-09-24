@@ -1565,3 +1565,29 @@ validation, and `git diff --check` pass.
   grouping/content lookup adds noticeable index cost that must be addressed in
   the resource gate before production activation. Full-boot behavior is still
   unchanged. `.venv` seed-loader suite: **4 passed**.
+
+### 2026-09-24 — Candidate conversation profile and core-only arbitration
+
+- Derived a diagnostic profile from the 17 frozen cognition seeds plus the
+  current `WorldAdapter._ensure_comprehension_seeds()` faculties. Connection
+  expansion selected **59 seeds** from **45 roots** with no unresolved
+  dependency/content references.
+- The initial profile omitted `communication_intent_arbitration`; on the
+  eight-event Phase 7 trace this left the overlap event without the graph-owned
+  `defer` disposition even though other route/error outcomes matched. Added
+  that existing native faculty to the core-only on-demand comprehension path
+  and added a regression that starts from `WorldAdapter()` without a full
+  seed boot. The native `arbitrate_typed_overlap_fragment_as_defer` rule now
+  produces the expected `defer`/`typed_overlap_partial_event` evidence.
+- After the addition, all **8/8 stable structural observations** matched the
+  full-seed run and neither run reported event exceptions. Candidate boot
+  graph: **1,825 nodes / 1,301 edges** vs full boot **24,750 / 11,088**; the
+  reduced graph is not itself proof of cognition equivalence beyond this
+  corpus. The focused live bridge + conversation-loop suite passed: **20
+  tests**.
+- A fresh-process candidate run included the full-corpus pre-pass, selection,
+  and the 8-event trace: **4.33 s boot**, **103,755,776 bytes boot RSS growth**,
+  **184,586,240 bytes event growth**, and **288,342,016 bytes combined**.
+  Boot alone narrowly fits the 100 MiB threshold; the combined envelope does
+  not. Resource acceptance remains open, and the profile has not replaced full
+  boot in production.
