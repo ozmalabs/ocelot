@@ -1526,3 +1526,10 @@ validation, and `git diff --check` pass.
   seed-loader tests: **4 passed**. Selective loading is not enabled. Next:
   identify content providers/reference links and an invariant conversational
   core, then test lazy selection against full-boot graph/cognition equivalence.
+- Added a non-production selector to the cached index: exact seed IDs,
+  group-key matches, and exact declared content-key providers expand through
+  `depends_on` and return in topo order; unresolved IDs/keys are reported.
+  Corpus inventory finds **16,122 content keys** (15,538 with one provider,
+  584 ambiguous) and **485 grouping keys** across 432 seeds. Ambiguous content
+  resolves conservatively to every provider. Focused seed-loader tests remain
+  **4 passed**; no production load policy changed.
