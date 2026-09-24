@@ -1560,11 +1560,9 @@ validation, and `git diff --check` pass.
   yields **6 seeds** with no unresolved links; this is a candidate seed
   closure, not yet proof that the whole conversational runtime can operate on
   that subset.
-- Pre-pass measurement: **2.2 s** and about **66.7 MB** RSS growth in this
-  process. The earlier ID/dependency-only index measured about **38.8 MB**;
-  grouping/content lookup adds noticeable index cost that must be addressed in
-  the resource gate before production activation. Full-boot behavior is still
-  unchanged. `.venv` seed-loader suite: **4 passed**.
+- Initial uncached pre-pass measurement: about **2.2 s / 66.7 MB** RSS growth;
+  the ID/dependency-only index had measured about **38.8 MB**. Full-boot
+  behavior remained unchanged while content connectivity was audited.
 
 ### 2026-09-24 — Candidate conversation profile and core-only arbitration
 
@@ -1591,3 +1589,23 @@ validation, and `git diff --check` pass.
   Boot alone narrowly fits the 100 MiB threshold; the combined envelope does
   not. Resource acceptance remains open, and the profile has not replaced full
   boot in production.
+
+### 2026-09-24 — Persist and validate the seed connectivity map
+
+- Added a per-user temporary cache for the derived index. Cache validity uses a
+  SHA-256 digest over the ordered source paths and bytes for all **830** seed
+  manifests (about **288 MB**), plus a schema version and payload digest. The
+  hash streams files without retaining them; writes use a temporary file and
+  atomic replacement. Any content edit invalidates the entry even if file size
+  and timestamp are preserved. Cache write/read failures fall back to building
+  the map, so this remains an optimization only.
+- Cache correctness test: repeated read reuses the map; a same-size manifest
+  ID edit with its original mtime restored invalidates and rebuilds it. Seed
+  loader suite: **5 passed**.
+- Full-map cache miss: **2,305 ms / 69,672,960 bytes** RSS growth; serialized
+  cache **749,322 bytes**. Warm lookup: **207 ms** in this environment. A
+  fresh-process 8-event selected-profile run using the warm full-corpus cache
+  booted in **2.53 s**, with **89,554,944 bytes boot RSS growth**. Events added
+  **195,031,040 bytes**, for **284,585,984 bytes combined**: faster and lower
+  boot RSS, but still over the 100 MiB boot-plus-event gate. Full boot remains
+  the production default.
