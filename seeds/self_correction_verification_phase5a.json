@@ -1,0 +1,74 @@
+{
+  "id": "self_correction_verification_phase5a",
+  "version": "1.0.0",
+  "depends_on": ["gap_identity"],
+  "capability_keys": ["verified_self_correction"],
+  "description": "PHASE 5A bounded increment: a graph-held correction evidence node can close exactly one SelfConcern only when verification is explicit. The original concern and asserted record remain untouched; a CorrectionRecord preserves provenance and a level-2 RouteModel changes the future route. Failed evidence remains visible and does not resolve the concern.",
+  "rules": [
+    {
+      "name": "apply_verified_self_correction",
+      "match": [
+        ["agent", "has_self_concern", "sc"],
+        ["sc", "has_correction_evidence", "ev"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "status"}, "b": {"type": "Lit", "value": "noted"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ev"}, "key": "verification_status"}, "b": {"type": "Lit", "value": "verified"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "correction_recorded"}, "b": {"type": "Lit", "value": 1.0}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "sc", "status", "resolved"],
+        ["set_attr", "sc", "correction_recorded", 1.0],
+        ["set_attr", "sc", "correction_outcome", "verified"],
+        ["add_node", "record", "CorrectionRecord", {
+          "schema": "self_correction_record.v1",
+          "outcome": "verified",
+          "original_content": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "content"}},
+          "original_gap_identity": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "gap_identity"}},
+          "corrected_route": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "ev"}, "key": "corrected_route"}}
+        }],
+        ["add_edge", "agent", "has_correction_record", "record"],
+        ["add_edge", "record", "resolves_self_concern", "sc"],
+        ["add_node", "model", "RouteModel", {
+          "schema": "route_model.v1",
+          "model_layer": 2.0,
+          "route": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "ev"}, "key": "corrected_route"}},
+          "source_outcome": "verified"
+        }],
+        ["add_edge", "agent", "has_route_model", "model"],
+        ["add_edge", "model", "grounded_by", "record"]
+      ]
+    },
+    {
+      "name": "retain_failed_self_correction",
+      "match": [
+        ["agent", "has_self_concern", "sc"],
+        ["sc", "has_correction_evidence", "ev"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "status"}, "b": {"type": "Lit", "value": "noted"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ev"}, "key": "verification_status"}, "b": {"type": "Lit", "value": "failed"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "correction_recorded"}, "b": {"type": "Lit", "value": 1.0}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "sc", "correction_recorded", 1.0],
+        ["set_attr", "sc", "correction_outcome", "failed"],
+        ["add_node", "record", "CorrectionRecord", {
+          "schema": "self_correction_record.v1",
+          "outcome": "failed",
+          "original_content": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "content"}},
+          "original_gap_identity": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "gap_identity"}},
+          "corrected_route": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "ev"}, "key": "corrected_route"}}
+        }],
+        ["add_edge", "agent", "has_correction_record", "record"],
+        ["add_edge", "record", "attempted_for", "sc"]
+      ]
+    }
+  ]
+}

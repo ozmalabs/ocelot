@@ -1,0 +1,37 @@
+{
+  "schema": "phase7-kind-rule-readback-profile.v1",
+  "binary": "local .venv substrate_rs rebuilt from runners/dsl",
+  "authority": {
+    "rule_family": "sak_kind_*",
+    "selection_source": "native_rule_readback",
+    "python_classifier_replacement": false,
+    "selective_api": "Substrate.export_rules_prefix"
+  },
+  "baseline_before_selective_readback": {
+    "graph_kind_elapsed_ms": 3918.8,
+    "graph_kind_rss_delta_bytes": 106143744,
+    "total_event_elapsed_ms": 9193.4
+  },
+  "profile_after_selective_readback": {
+    "event_id": "direct_action",
+    "replay_equal": true,
+    "boot_elapsed_ms": 16305.6,
+    "event_elapsed_ms": 6813.0,
+    "cold_start_rss_growth_bytes": 109969408,
+    "event_rss_delta_bytes": 109969408,
+    "graph_delta": {
+      "nodes": 202,
+      "edges": 342,
+      "messages": 2,
+      "turns": 0,
+      "interpretations": 1,
+      "discourse_events": 1
+    }
+  },
+  "interpretation": {
+    "selective_readback_reduces_kind_bridge_cost": true,
+    "resource_exit_closed": false,
+    "remaining_cost_owner": "substrate runtime cold allocation / warm-up",
+    "surface_text_used_as_semantics": false
+  }
+}

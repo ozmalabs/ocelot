@@ -54,6 +54,12 @@ def test_leverage_is_recursive_centrality_not_an_enum():
     assert abs(leverage(s, core) - (1 + 0.6 * 4)) < 1e-6, "1 + damping*sum(dependents)=3.4"
     assert leverage(s, doms[0]) == 1.0, "a leaf depends-on nothing -> leverage 1"
     assert stage(s, core) == "core" and stage(s, doms[0]) == "blob"
+    receipts = list(s.nodes("NativeCapabilityGraphReceipt"))
+    assert len(receipts) == 1
+    attrs = s.node(receipts[0])["attrs"]
+    assert attrs["provenance"] == "native_rule_readback:capability_graph"
+    assert attrs["outcome_source"] == "native_rule_readback"
+    assert attrs["python_outcome_selection"] is False
 
 
 def test_effective_capability_is_multiplicative():

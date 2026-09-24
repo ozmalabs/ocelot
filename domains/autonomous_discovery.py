@@ -325,7 +325,16 @@ def submit_preregistered_case(substrate: Any, agent: Any, *, case_name: str,
 
 def settle_native(substrate: Any) -> None:
     """Drive the graph-native rule closure; no host-side decision is made."""
-    substrate._inner.run_rules()
+    native_steps = substrate._inner.run_rules()
+    substrate._inner.add_node("NativeAutonomousDiscoveryReceipt", {
+        "schema": "native_autonomous_discovery_receipt.v1",
+        "cluster": "autonomous_discovery.native_settlement",
+        "provenance": "native_rule_readback:autonomous_discovery",
+        "native_rule": "autonomous_discovery_native_rules",
+        "native_steps": int(native_steps),
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
 
 
 def submit_held_out_operation(substrate: Any, agent: Any, state: dict[str, Any]) -> Any:

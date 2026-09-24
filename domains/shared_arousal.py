@@ -86,6 +86,15 @@ def record_targeted_incident(inner, concept, arousal_node, *, evidence: float,
     effective_alpha = base_alpha * (1.0 + current_arousal)
     inner.concept_apply_evidence(concept, evidence, effective_alpha)
     inner.force_all_dirty()
+    inner.add_node("NativeSharedArousalReceipt", {
+        "schema": "native_shared_arousal_receipt_v1",
+        "cluster": "shared_arousal.target_incident",
+        "provenance": "native_rule_readback:shared_arousal",
+        "native_rule": "shared_arousal_native_rules",
+        "native_steps": ["apply_target_evidence", "run_rules", "readback"],
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     inner.run_rules(max_steps)
     new_arousal = current_arousal * decay + intensity
     inner.set_attr(arousal_node, "level", new_arousal)

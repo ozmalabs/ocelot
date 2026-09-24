@@ -1,0 +1,114 @@
+{
+  "id": "gap_learning_phase5d",
+  "version": "1.0.0",
+  "depends_on": ["gap_learning_phase5c"],
+  "capability_keys": ["gap_learning_review_repair_promotion"],
+  "description": "PHASE 5D bounded increment: a recurrent gap moves through explicit human review, attempted repair, verification, and either supervised promotion or retirement. Failed repair remains visible and no transition closes a concern without an explicit review decision.",
+  "rules": [
+    {
+      "name": "open_human_review_for_recurrent_gap",
+      "match": [["agent", "has_gap_learning_assessment", "assessment"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "assessment"}, "key": "promotion_status"}, "b": {"type": "Lit", "value": "human_review"}},
+          {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "assessment"}, "edge_type": "has_human_review"}, "var_name": "review", "predicate": {"type": "Eq", "a": {"type": "Var", "name": "review"}, "b": {"type": "Var", "name": "review"}}}}
+        ]
+      },
+      "effects": [
+        ["add_node", "review", "HumanReview", {"schema": "gap_human_review.v1", "decision": "pending", "review_status": "open", "gap_identity": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "assessment"}, "key": "gap_identity"}}}],
+        ["add_edge", "assessment", "has_human_review", "review"],
+        ["add_edge", "review", "reviews_assessment", "assessment"]
+      ]
+    },
+    {
+      "name": "retain_failed_repair_in_review",
+      "match": [
+        ["agent", "has_gap_learning_assessment", "assessment"],
+        ["assessment", "has_human_review", "review"],
+        ["review", "has_repair_attempt", "attempt"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "attempt"}, "key": "verification_status"}, "b": {"type": "Lit", "value": "failed"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "attempt"}, "key": "failure_recorded"}, "b": {"type": "Lit", "value": 1.0}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "attempt", "failure_recorded", 1.0],
+        ["set_attr", "review", "failed_repair_visible", 1.0],
+        ["add_node", "failure", "FailedRepairRecord", {"schema": "failed_repair_record.v1", "gap_identity": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "assessment"}, "key": "gap_identity"}}, "outcome": "failed", "repair_route": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "attempt"}, "key": "repair_route"}}}],
+        ["add_edge", "assessment", "has_failed_repair", "failure"],
+        ["add_edge", "failure", "preserves_review_visibility", "review"]
+      ]
+    },
+    {
+      "name": "verify_repair_after_explicit_review",
+      "match": [
+        ["agent", "has_gap_learning_assessment", "assessment"],
+        ["assessment", "has_human_review", "review"],
+        ["review", "has_repair_attempt", "attempt"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "review"}, "key": "decision"}, "b": {"type": "Lit", "value": "approve"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "attempt"}, "key": "verification_status"}, "b": {"type": "Lit", "value": "verified"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "review"}, "key": "verification_recorded"}, "b": {"type": "Lit", "value": 1.0}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "review", "verification_recorded", 1.0],
+        ["set_attr", "review", "review_status", "verified"],
+        ["add_node", "verification", "RepairVerification", {"schema": "repair_verification.v1", "status": "verified", "gap_identity": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "assessment"}, "key": "gap_identity"}}, "repair_route": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "attempt"}, "key": "repair_route"}}}],
+        ["add_edge", "assessment", "has_repair_verification", "verification"],
+        ["add_edge", "verification", "verifies_review", "review"]
+      ]
+    },
+    {
+      "name": "promote_only_after_human_review",
+      "match": [
+        ["agent", "has_gap_learning_assessment", "assessment"],
+        ["assessment", "has_human_review", "review"],
+        ["assessment", "assesses_recurrence", "rec"],
+        ["assessment", "has_repair_verification", "verification"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "review"}, "key": "decision"}, "b": {"type": "Lit", "value": "approve"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "verification"}, "key": "status"}, "b": {"type": "Lit", "value": "verified"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "rec"}, "key": "status"}, "b": {"type": "Lit", "value": "promoted"}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "rec", "status", "promoted"],
+        ["set_attr", "rec", "promotion_authority", "human_review"],
+        ["set_attr", "assessment", "promotion_status", "promoted"],
+        ["set_attr", "review", "review_status", "promoted"]
+      ]
+    },
+    {
+      "name": "retire_only_after_explicit_human_review",
+      "match": [
+        ["agent", "has_gap_learning_assessment", "assessment"],
+        ["assessment", "has_human_review", "review"],
+        ["assessment", "assesses_recurrence", "rec"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "review"}, "key": "decision"}, "b": {"type": "Lit", "value": "retire"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "rec"}, "key": "status"}, "b": {"type": "Lit", "value": "retired"}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "rec", "status", "retired"],
+        ["set_attr", "rec", "retirement_authority", "human_review"],
+        ["set_attr", "assessment", "promotion_status", "retired"],
+        ["set_attr", "review", "review_status", "retired"]
+      ]
+    }
+  ]
+}

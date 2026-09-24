@@ -130,6 +130,28 @@ _STATUS_RANK = {
 # discourse_referent_store — graph-resident state.
 # ---------------------------------------------------------------------------
 
+class DiscourseConceptProvider:
+    """Narrow concept access required by :class:`DiscourseStore`.
+
+    The discourse store must be usable by more than ``ConversationWorld``.
+    Keeping concept lookup/creation behind this tiny adapter prevents the
+    store from depending on a particular world implementation (or on its
+    private index names).  Both operations are graph I/O; referent identity
+    remains owned by ``DiscourseStore``.
+    """
+
+    def __init__(self, substrate, *, lookup, ensure):
+        self.s = substrate
+        self._lookup = lookup
+        self._ensure = ensure
+
+    def find(self, name: str) -> Any:
+        return self._lookup(name)
+
+    def ensure(self, name: str) -> Any:
+        return self._ensure(name)
+
+
 class DiscourseStore:
     """The discourse_referent_store as graph data, with the resolution
     procedure + centering update. One per conversation; keyed by concept so a
@@ -138,9 +160,18 @@ class DiscourseStore:
     Owns no agent reasoning beyond the taught procedure. Every datum is a node
     attr; resolution is a read over those attrs."""
 
-    def __init__(self, substrate, world):
+    def __init__(self, substrate, world=None, *, concept_provider=None):
         self.s = substrate
         self.world = world
+        if concept_provider is None:
+            if world is None:
+                raise TypeError("DiscourseStore requires world or concept_provider")
+            concept_provider = DiscourseConceptProvider(
+                substrate,
+                lookup=self._legacy_find_concept,
+                ensure=self._legacy_ensure_concept,
+            )
+        self.concept_provider = concept_provider
         # concept_name -> DiscourseReferent NodeID (mirror of the graph; the
         # graph is the source of truth — rebuilt on construction).
         self._ref_nodes: dict[str, Any] = {}
@@ -151,13 +182,32 @@ class DiscourseStore:
         self._open_productions()
         self._reload_from_graph()
 
+    def _legacy_find_concept(self, name: str) -> Any:
+        indexed = getattr(self.world, "_concept_nodes", {})
+        cid = indexed.get(name)
+        if cid is not None:
+            return cid
+        for c in self.s.nodes("Concept"):
+            if self.s.node(c)["attrs"].get("name") == name:
+                return c
+        return None
+
+    def _legacy_ensure_concept(self, name: str) -> Any:
+        getter = getattr(self.world, "_get_or_create_concept", None)
+        if getter is not None:
+            return getter(name)
+        found = self._legacy_find_concept(name)
+        if found is not None:
+            return found
+        return self.s.add_node("Concept", {"name": name})
+
     # ----- productions / cache --------------------------------------------
 
     def _open_productions(self) -> None:
         node_types = ("DiscourseReferent", "CenteringState", "Concept",
                       "DiscourseReferentStore")
         edge_types = ("refers_concept", "cf_member", "cb", "cp",
-                      "has_referent", "realized")
+                      "has_referent", "realized", "evidence_for")
         for a in node_types:
             for b in node_types:
                 for et in edge_types:
@@ -190,13 +240,7 @@ class DiscourseStore:
         read off its Concept node's ``category`` attr — the same graph data
         (seeds/conceptual_categories.json) the LanguageWorld inferer reads.
         None when the concept has no grounded category."""
-        cid = self.world._concept_nodes.get(concept)
-        if cid is None:
-            for c in self.s.nodes("Concept"):
-                a = self.s.node(c)["attrs"]
-                if a.get("name") == concept:
-                    cid = c
-                    break
+        cid = self.concept_provider.find(concept)
         if cid is None:
             return None
         return self.s.node(cid)["attrs"].get("category")
@@ -213,6 +257,18 @@ class DiscourseStore:
 
     # ----- store update — introduce / promote / decay ---------------------
 
+    def ensure_referent(self, concept: str) -> Any:
+        """Return the canonical referent for ``concept``, idempotently.
+
+        This is the public identity seam for adapters.  It deliberately does
+        not promote salience, increment mentions, or update centering: those
+        are mention/update operations, not consequences of projecting a
+        ``CurrentTopic`` node.
+        """
+        if not isinstance(concept, str) or not concept.strip():
+            raise ValueError("referent concept must be a non-empty string")
+        return self._get_or_create_referent(concept.strip())
+
     def _get_or_create_referent(self, concept: str) -> Any:
         rid = self._ref_nodes.get(concept)
         if rid is not None:
@@ -228,7 +284,7 @@ class DiscourseStore:
             "last_role": "",
             "mentions": 0,
         })
-        cid = self.world._get_or_create_concept(concept)
+        cid = self.concept_provider.ensure(concept)
         try:
             self.s.add_edge(rid, "refers_concept", cid, None)
         except Exception:
@@ -343,6 +399,47 @@ class DiscourseStore:
     def _candidates(self) -> list[Any]:
         return list(self._ref_nodes.values())
 
+    def _reference_evidence(self, result: dict[str, Any], turn: int,
+                            referent=None) -> dict[str, Any]:
+        """Persist the resolution trace as graph evidence.
+
+        A Python return value is not sufficient epistemic state: later
+        cognition must be able to distinguish a bound referent from an
+        unresolved/unknown expression after the procedure has returned.  The
+        record is deliberately bounded to the procedure's result and carries
+        no new resolution decision.
+        """
+        resolved = bool(result.get("resolved"))
+        status = "supported" if resolved else "unknown"
+        path = ("DiscourseStore -> CenteringState/DiscourseReferent -> bound"
+                if resolved else
+                "DiscourseStore -> reference_resolution_procedure -> unresolved")
+        attrs = {
+            "schema": "reference_evidence.v1",
+            "surface": str(result.get("surface") or ""),
+            "turn": int(turn),
+            "epistemic_status": status,
+            "resolved": 1.0 if resolved else 0.0,
+            "rule": str(result.get("rule") or ""),
+            "reason": str(result.get("reason") or ""),
+            "evidence_path": path,
+        }
+        try:
+            evidence = self.s.add_node("ReferenceResolutionEvidence", attrs)
+            if referent is not None:
+                self.s.add_edge(evidence, "evidence_for", referent, None)
+            result = dict(result)
+            result.update({"epistemic_status": status,
+                           "evidence_path": path,
+                           "evidence_id": evidence})
+        except Exception:
+            # The resolution result remains usable if an older substrate lacks
+            # the optional evidence node/edge vocabulary.
+            result = dict(result)
+            result.update({"epistemic_status": status,
+                           "evidence_path": path})
+        return result
+
     def _agrees(self, ref_attrs: dict[str, Any],
                 spec: dict[str, str]) -> tuple[bool, str]:
         """agreement_filter: does this referent agree with the pronoun's
@@ -390,9 +487,10 @@ class DiscourseStore:
         NOT bind to a non-agreeing entity to fake success)."""
         spec = form or _PRONOUNS.get(surface.lower())
         if spec is None:
-            return {"resolved": False, "surface": surface,
-                    "reason": f"'{surface}' is not a known pronoun form",
-                    "candidates": []}
+            return self._reference_evidence(
+                {"resolved": False, "surface": surface,
+                 "reason": f"'{surface}' is not a known pronoun form",
+                 "candidates": []}, turn)
 
         cand_trace: list[dict[str, Any]] = []
         survivors: list[tuple[Any, dict[str, Any]]] = []
@@ -416,10 +514,11 @@ class DiscourseStore:
                 survivors.append((rid, a))
 
         if not survivors:
-            return {"resolved": False, "surface": surface,
-                    "reason": ("no in-focus referent agrees with "
-                               f"'{surface}' ({spec['agree']})"),
-                    "candidates": cand_trace}
+            return self._reference_evidence(
+                {"resolved": False, "surface": surface,
+                 "reason": ("no in-focus referent agrees with "
+                            f"'{surface}' ({spec['agree']})"),
+                 "candidates": cand_trace}, turn)
 
         # (3) rank survivors.
         cb = getattr(self, "_prev_cb", None)
@@ -451,9 +550,10 @@ class DiscourseStore:
             self.s.set_attr(rid, "cognitive_status", "in_focus")
         except Exception:
             pass
-        return {"resolved": True, "surface": surface, "concept": concept,
-                "rule": rule, "candidates": cand_trace,
-                "agreement": self._agrees(a, spec)[1]}
+        return self._reference_evidence(
+            {"resolved": True, "surface": surface, "concept": concept,
+             "rule": rule, "candidates": cand_trace,
+             "agreement": self._agrees(a, spec)[1]}, turn, rid)
 
     def resolve_definite(self, head_concept: str,
                          turn: int) -> dict[str, Any]:
@@ -464,21 +564,23 @@ class DiscourseStore:
         definite / bridging case we do not handle)."""
         rid = self._ref_nodes.get(head_concept)
         if rid is None:
-            return {"resolved": False, "surface": f"the {head_concept}",
-                    "reason": (f"'the {head_concept}' names an entity never "
-                               "introduced (not uniquely_identifiable)"),
-                    "candidates": []}
+            return self._reference_evidence(
+                {"resolved": False, "surface": f"the {head_concept}",
+                 "reason": (f"'the {head_concept}' names an entity never "
+                            "introduced (not uniquely_identifiable)"),
+                 "candidates": []}, turn)
         a = self.s.node(rid)["attrs"]
         try:
             self.s.set_attr(rid, "cognitive_status", "in_focus")
         except Exception:
             pass
-        return {"resolved": True, "surface": f"the {head_concept}",
-                "concept": head_concept,
-                "rule": "form_status_licensing (the N -> uniquely_identifiable)",
-                "candidates": [{"concept": head_concept,
-                                "status": a.get("cognitive_status"),
-                                "category": a.get("category")}]}
+        return self._reference_evidence(
+            {"resolved": True, "surface": f"the {head_concept}",
+             "concept": head_concept,
+             "rule": "form_status_licensing (the N -> uniquely_identifiable)",
+             "candidates": [{"concept": head_concept,
+                             "status": a.get("cognitive_status"),
+                             "category": a.get("category")}]}, turn, rid)
 
     # ----- inspection ------------------------------------------------------
 

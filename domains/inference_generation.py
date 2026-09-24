@@ -1357,7 +1357,18 @@ def _mint_part_of(agent, entity_name: str, whole_name: str, unit=None) -> dict:
             sub.add_edge(e, "part_of", w, {"source": "inference_generation", "bridged": 1})
         except Exception:
             smr._edge(native, e, "part_of", w)
-    native.run_rules(10000)
+    native_steps = native.run_rules(10000)
+    sub.add_node("NativeInferenceGenerationReceipt", {
+        "schema": "native_inference_generation_receipt.v1",
+        "cluster": "inference_generation.part_of_settlement",
+        "provenance": "native_rule_readback:inference_generation",
+        "native_rule": "inference_generation_native_fixpoint",
+        "native_steps": int(native_steps),
+        "entity": str(entity_name),
+        "whole": str(whole_name),
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     return {"entity": entity_name, "whole": whole_name}
 
 

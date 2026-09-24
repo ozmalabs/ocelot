@@ -123,6 +123,13 @@ def test_cross_field_analogy_emitted_as_graph_node_and_edge():
     # between the two REAL Concept nodes.
     assert src in list(s.neighbours(src, "implements")) or \
         tgt in list(s.neighbours(src, "implements"))
+    receipts = [s.node(n)["attrs"] for n in
+                s.nodes("NativeAnalogySearchReceipt")
+                if s.node(n)["attrs"].get("cluster") ==
+                "analogy_search.observe_settlement"]
+    assert receipts
+    assert all(r["outcome_source"] == "native_rule_readback" and
+               r["python_outcome_selection"] is False for r in receipts)
 
 
 # ---------------------------------------------------------------------------

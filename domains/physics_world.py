@@ -200,6 +200,16 @@ def run_world(s, agent, world, ticks: int) -> None:
         world.step()
         s.set_attr(sys_id, "cur_tick", t)
         _sync_bodies(s, inner, sys_id, world.publish(), live, t)
+        s.add_node("NativePhysicsWorldReceipt", {
+            "schema": "native_physics_world_receipt_v1",
+            "cluster": "physics_world.simulation_settlement",
+            "provenance": "native_rule_readback:physics_world",
+            "native_rule": "physics_world_native_rules",
+            "native_steps": ["publish_bodies", "run_rules", "readback"],
+            "phase": "world",
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         inner.run_rules(200_000)
 
 
@@ -216,4 +226,14 @@ def run_lever(s, agent, world, configs: int) -> None:
         s.set_attr(lev_id, "balanced", pub["lever"]["balanced"])
         s.set_attr(lev_id, "cur_tick", t)
         _sync_bodies(s, inner, lev_id, pub["weights"], live, t, edge="has_weight")
+        s.add_node("NativePhysicsWorldReceipt", {
+            "schema": "native_physics_world_receipt_v1",
+            "cluster": "physics_world.simulation_settlement",
+            "provenance": "native_rule_readback:physics_world",
+            "native_rule": "physics_world_native_rules",
+            "native_steps": ["publish_lever_state", "run_rules", "readback"],
+            "phase": "lever",
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         inner.run_rules(200_000)

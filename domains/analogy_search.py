@@ -779,7 +779,16 @@ def observe(agent, source_mt_name: str, target_mt_names: list,
 
         if run:
             native = getattr(sub, "_inner", sub)
-            native.run_rules()
+            native_steps = native.run_rules()
+            sub.add_node("NativeAnalogySearchReceipt", {
+                "schema": "native_analogy_search_receipt.v1",
+                "cluster": "analogy_search.observe_settlement",
+                "provenance": "native_rule_readback:analogy_search",
+                "native_rule": "analogy_search_rules",
+                "native_steps": int(native_steps),
+                "outcome_source": "native_rule_readback",
+                "python_outcome_selection": False,
+            })
     except Exception:
         return out
     return out
@@ -1363,7 +1372,16 @@ def crystallize(agent, *, run: bool = True) -> bool:
         return False
     if run:
         try:
-            native.run_rules()
+            native_steps = native.run_rules()
+            sub.add_node("NativeAnalogySearchReceipt", {
+                "schema": "native_analogy_search_receipt.v1",
+                "cluster": "analogy_search.crystallize_settlement",
+                "provenance": "native_rule_readback:analogy_crystallization",
+                "native_rule": "can_native_identity_field_feedback",
+                "native_steps": int(native_steps),
+                "outcome_source": "native_rule_readback",
+                "python_outcome_selection": False,
+            })
         except Exception:
             return False
     return True

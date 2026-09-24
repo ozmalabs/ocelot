@@ -1334,7 +1334,7 @@
               "type": "Var",
               "name": "y"
              },
-             "key": "content"
+             "key": "kind"
             },
             "b": {
              "type": "Attr",
@@ -1342,7 +1342,7 @@
               "type": "Var",
               "name": "sc"
              },
-             "key": "content"
+             "key": "kind"
             }
            },
            {
@@ -1357,10 +1357,29 @@
             },
             "container": {
              "type": "Lit",
-             "value": [
-              "implicit",
-              "explicit_report"
-             ]
+            "value": [
+             "implicit",
+             "explicit_report"
+            ]
+           }
+          },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "y"
+             },
+             "key": "content"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "sc"
+             },
+             "key": "content"
             }
            },
            {
@@ -1548,6 +1567,35 @@
      "about_goal",
      "g"
     ]
+   ]
+  },
+  {
+   "name": "note_explicit_learning_observation",
+   "match": [["agent", "received", "m"]],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "learning_observation_schema"}, "b": {"type": "Lit", "value": "learning_observation.v1"}},
+     {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "learning_observation_noted"}, "b": {"type": "Lit", "value": 1.0}}},
+     {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "learning_gap_identity"}, "b": {"type": "Lit", "value": null}}}
+    ]
+   },
+   "effects": [
+    ["set_attr", "m", "learning_observation_noted", 1.0],
+    ["add_node", "sc", "SelfConcern", {
+     "status": "noted",
+     "source": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "learning_source"}},
+     "kind": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "learning_kind"}},
+     "content": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "learning_content"}},
+     "gap_identity_schema": "gap_identity.v1",
+     "gap_identity": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "learning_gap_identity"}},
+     "learning_stage": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "learning_stage"}},
+     "verification_status": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "learning_verification_status"}},
+     "event_id": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "learning_event_id"}},
+     "event_stage": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "learning_event_stage"}}
+    }],
+    ["add_edge", "agent", "has_self_concern", "sc"],
+    ["add_edge", "sc", "originated_in", "m"]
    ]
   }
  ],

@@ -565,6 +565,15 @@ def fire_lifted_rule(substrate, rule_index: int, node_type: str,
     types = [node_type] if isinstance(node_type, str) else list(node_type)
     count = sum(len(list(substrate.nodes(t))) for t in types)
     cap = max_iters if max_iters is not None else count * 4 + 16
+    substrate.add_node("NativeRuleLifterReceipt", {
+        "schema": "native_rule_lifter_receipt_v1",
+        "cluster": "rule_lifter.fixpoint_execution",
+        "provenance": "native_rule_readback:lifted_rule",
+        "native_rule": "lifted_rule_native_fixpoint",
+        "native_steps": ["install_lifted_rule", "run_rules", "readback"],
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     return nat.run_rules(cap)
 
 

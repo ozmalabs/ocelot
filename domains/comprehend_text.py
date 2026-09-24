@@ -119,6 +119,7 @@ from domains import comprehend_question as _cq
 from domains import instruction_reading as _ir
 from domains import self_model as _self_model
 from domains import wordplay as _wp
+from domains import preposition_roles as _prep_roles
 
 # Leading DISCOURSE / POLITENESS markers — closed-class reference fact (the same
 # shape as function_word_reference's closed copula/aux table). Sentence-initial
@@ -139,7 +140,10 @@ _SATISFIABLE_TARGET = {
     "domain": "organisation", "domains": "organisation",
     "faculty": "organisation", "faculties": "organisation",
     "organisation": "organisation", "organization": "organisation",
+    "capability": "organisation", "capabilities": "organisation",
 }
+
+_MODAL_REQUEST_PREFIXES = frozenset({"can", "could", "would", "will"})
 
 # Leading verbs that request an ACCOUNT (describe/report ...) — paired with a
 # PERCEPTION cue and NO attached scene, this is the honest "no world to perceive"
@@ -148,7 +152,7 @@ _ACCOUNT_VERBS = frozenset({"describe", "tell", "report", "explain", "say",
                             "show", "state", "account"})
 _PERCEPTION_CUES = frozenset({"perceive", "see", "seeing", "look", "looking",
                               "around", "there", "scene", "observe", "view",
-                              "front", "watch", "sense"})
+                              "front", "behind", "watch", "sense"})
 
 # The SAME self-reference cue set comprehend_question gates its meta table on
 # (data, not table logic) — a question carrying one of these is ABOUT the agent.
@@ -384,7 +388,8 @@ def _sak_rules() -> list:
     return _SAK_RULES_CACHE
 
 
-def _classify_kind_rules(signals: dict, rules: Optional[list] = None) -> Optional[str]:
+def _classify_kind_rules(signals: dict, rules: Optional[list] = None,
+                         *, receipt_sink: Any = None) -> Optional[str]:
     """The KIND decision made by the sak_kind_* rules, run by the Rust rule
     engine over a scratch Message carrying exactly the signal attrs the
     adapter writes on a live turn. `rules` (when given) are the AGENT'S OWN
@@ -409,13 +414,41 @@ def _classify_kind_rules(signals: dict, rules: Optional[list] = None) -> Optiona
             attrs["sak_first_role"] = str(signals["first_role"])
         if signals.get("first_pos") is not None:
             attrs["sak_first_pos"] = str(signals["first_pos"])
+        if signals.get("input_kind") is not None:
+            attrs["sak_input_kind"] = str(signals["input_kind"])
         m = s.add_node("Message", attrs)
         s.add_edge_unchecked(ag, "received", m)
         body = rules if rules else _sak_rules()
         s.import_rules([dict(r, active=True) for r in body])
         s.run_rules(100)
         kind = s.node(m)["attrs"].get("sak_kind")
-        return str(kind) if kind is not None else None
+        if kind is None:
+            return None
+        kind = str(kind)
+        # The native scratch substrate is authoritative for this classification:
+        # the returned value is read from the rule-written ``sak_kind`` attr,
+        # never computed by the adapter.  When this direct-caller path has a
+        # live WorldAdapter, preserve that provenance as graph data.  Bare
+        # scratch callers intentionally have no sink and therefore produce no
+        # fabricated receipt.
+        if (receipt_sink is not None and hasattr(receipt_sink, "s")
+                and hasattr(receipt_sink, "agent")):
+            receipt = receipt_sink.s.add_node("NativeSpeechActReceipt", {
+                "schema": "native_speech_act_receipt.v1",
+                "cluster": "comprehend_text.speech_act_classification",
+                "provenance": "native_rule_readback:speech_act_classification",
+                "native_rule": f"sak_kind_{kind}",
+                "kind": kind,
+                "outcome_source": "native_rule_readback",
+                "python_outcome_selection": False,
+            })
+            try:
+                receipt_sink.inner.add_edge_unchecked(
+                    receipt_sink.agent, "has_native_speech_act_receipt", receipt)
+            except TypeError:
+                receipt_sink.inner.add_edge_unchecked(
+                    receipt_sink.agent, "has_native_speech_act_receipt", receipt, {})
+        return kind
     except Exception:  # noqa: BLE001 — engine hiccup -> caller falls back
         return None
 
@@ -490,6 +523,319 @@ def _self_process_verb(frame: dict):
 
 def _topic_nominal(rel: dict) -> Optional[dict]:
     return rel.get("subject") or rel.get("object") or rel.get("oblique")
+
+
+# These are adapter-side semantic readings, not ontology labels.  The graph
+# receives only the language-neutral result (world dependency / deictic
+# reference / unresolved selection); another language adapter can emit the
+# same fields from its own function-word and construction evidence.
+_DEICTIC_DETERMINERS = frozenset({"this", "that", "these", "those"})
+
+
+def _graph_referent_available(agent: Any, target: str) -> bool:
+    """Read whether discourse state already binds a deictic target.
+
+    A lexical Concept is not enough: a deictic expression needs a graph
+    relation to the current discourse/world state.  This is deliberately a
+    structural read, not a reply or noun-list shortcut.
+    """
+    substrate = getattr(agent, "s", agent)
+    target = str(target or "").strip(".,;:?!").lower()
+    if substrate is None or not target:
+        return False
+    try:
+        for node in substrate.nodes("CurrentTopic"):
+            if str(substrate.node(node)["attrs"].get("name") or "").lower() == target:
+                return True
+        for node in substrate.nodes("ReferenceResolutionEvidence"):
+            attrs = substrate.node(node)["attrs"]
+            if (str(attrs.get("epistemic_status") or "") == "supported"
+                    and str(attrs.get("referent") or attrs.get("target") or "").lower()
+                    == target):
+                return True
+    except Exception:
+        return False
+    return False
+
+
+def _graph_discourse_binding_available(agent: Any) -> bool:
+    """Return whether the graph binds the current discourse topic.
+
+    This is deliberately stronger than seeing a pronoun or a lexical
+    ``Concept``.  A current topic must also have an in-focus
+    ``DiscourseReferent`` (or a supported reference-resolution evidence
+    record).  The result is a language-neutral binding fact for the cognition
+    layer; it is not an answer or a surface-text heuristic.
+    """
+    substrate = getattr(agent, "s", agent)
+    if substrate is None:
+        return False
+    try:
+        topics = {
+            str(substrate.node(node)["attrs"].get("name") or "").strip().lower()
+            for node in substrate.nodes("CurrentTopic")
+        }
+        topics.discard("")
+        if not topics:
+            return False
+        for node in substrate.nodes("DiscourseReferent"):
+            attrs = substrate.node(node)["attrs"]
+            concept = str(attrs.get("concept") or "").strip().lower()
+            if concept in topics and attrs.get("cognitive_status") == "in_focus":
+                return True
+        for node in substrate.nodes("ReferenceResolutionEvidence"):
+            attrs = substrate.node(node)["attrs"]
+            if (attrs.get("epistemic_status") == "supported"
+                    and str(attrs.get("concept") or "").strip().lower() in topics):
+                return True
+    except Exception:
+        return False
+    return False
+
+
+def _language_adapter_evidence(agent: Any, frame: Optional[dict], rel: Optional[dict],
+                               *, kind: str) -> dict[str, Any]:
+    """Emit semantic evidence consumed by graph grounding/arbitration.
+
+    This intentionally does not name English concepts or inspect reply text.
+    It reads the adapter's typed frame plus graph-resident discourse support.
+    """
+    evidence: dict[str, Any] = {}
+    frame = frame or {}
+    rel = rel or {}
+    elements = frame.get("elements") or []
+
+    # A locative/thematic PP is a world-state dependency.  The preposition
+    # role comes from the language adapter's held role faculty; the cognition
+    # layer sees only `world_dependency=spatial_relation`.
+    # An oblique PP is not automatically a world-location dependency.  The
+    # same typed relation covers abstract predication ("a gap in your
+    # reasoning") and locative questions ("what is beyond the wall?").  Only
+    # an interrogative seeking the thing located relative to the oblique can
+    # require an attached scene; otherwise the PP is semantic content for the
+    # assertion/meta faculty.  This keeps the cognition boundary language
+    # neutral: it relies on the adapter's typed focus, not an English phrase
+    # or a surface word list.
+    if (kind == "question" and frame.get("focus") == "thing"
+            and rel.get("oblique") is not None):
+        oblique = str(rel["oblique"].get("surface") or "").strip(".,;:?!").lower()
+        oi = next((i for i, e in enumerate(elements)
+                   if str(e.get("surface") or "").strip(".,;:?!").lower() == oblique), None)
+        if oi is not None:
+            prep = next((e for e in reversed(elements[:oi])
+                         if e.get("pos") in {"preposition", "postposition"}), None)
+            if prep is not None:
+                role = _prep_roles.preposition_role(
+                    str(prep.get("surface") or "").strip(".,;:?!").lower(), "en")
+                # ``preposition_role`` is the fine-grained VerbNet-derived
+                # lookup.  Spatial membership is a separate, coarse role
+                # faculty and must remain authoritative when the generated
+                # cache has no entry for a spatial preposition (for example
+                # ``beyond``).  Otherwise the held-answer fast path can
+                # mistake an unobserved scene question for a lexical topic.
+                if role == "location" or _prep_roles.is_spatial(
+                        str(prep.get("surface") or "").strip(".,;:?!"), "en"):
+                    evidence["world_dependency"] = "spatial_relation"
+                    evidence["world_support"] = (
+                        "available" if getattr(agent, "_conv_scene", None) is not None
+                        else "missing")
+
+    # Distance/extent questions may be represented as a manner focus rather
+    # than an oblique PP (for example, "How far is the valley?").  They still
+    # depend on an attached world.  Emit only the neutral dependency category;
+    # cognition decides whether the scene supplies support.
+    if kind == "question" and frame.get("focus") == "manner":
+        extent_terms = {"far", "near", "distance", "close", "closer", "farthest"}
+        if any(str(e.get("surface") or "").strip(".,;:?!").lower() in extent_terms
+               for e in elements):
+            evidence["world_dependency"] = "spatial_relation"
+            evidence["world_support"] = (
+                "available" if getattr(agent, "_conv_scene", None) is not None
+                else "missing")
+
+    # A selection focus with an unresolved nominal/verb residual is a repair
+    # request, even when a second-person subject is present.  The subject's
+    # person is not evidence that the question is about the agent.
+    if (kind == "question" and frame.get("focus") == "selection"
+            and rel.get("subject", {}).get("role") == "function"
+            and rel.get("object") is None and rel.get("oblique") is None
+            and frame.get("gaps")):
+        focus = next((str(e.get("surface") or "").strip(".,;:?!")
+                      for e in elements if e.get("role") == "content"
+                      and e.get("pos") == "noun"), None)
+        evidence.update({"repair_evidence": "unresolved_selection",
+                         "referent_status": "unresolved",
+                         "repair_focus": focus or "selection"})
+
+    # Demonstrative determiners create deictic reference evidence.  The
+    # object noun may itself be a held Concept, but that does not resolve the
+    # discourse referent unless graph state supplies the binding.
+    if kind == "instruction" and rel.get("object") is not None:
+        obj = str(rel["object"].get("surface") or "").strip(".,;:?!").lower()
+        oi = next((i for i, e in enumerate(elements)
+                   if str(e.get("surface") or "").strip(".,;:?!").lower() == obj), None)
+        if oi is not None:
+            det = next((e for e in reversed(elements[:oi])
+                        if e.get("pos") == "determiner"), None)
+            if det is not None and str(det.get("surface") or "").lower() in _DEICTIC_DETERMINERS:
+                resolved = _graph_referent_available(agent, obj)
+                evidence.update({"deictic_reference": True,
+                                 "referent_status": "supported" if resolved else "unresolved",
+                                 "referent_target": obj})
+
+    # A declarative self-report can be a knowledge-deficit repair event. The
+    # adapter exposes this only when its graph-resident predicate concept has
+    # semantic evidence that the state requires relief; cognition does not
+    # match the literal predicate or infer repair from wording alone.
+    if (kind == "statement"
+            and isinstance(rel.get("subject"), dict)
+            and rel.get("subject", {}).get("pos") == "pronoun"
+            and isinstance(rel.get("predicate"), dict)
+            and rel.get("predicate", {}).get("role") == "content"
+            and rel.get("object") is not None):
+        predicate = str(rel["predicate"].get("surface") or "").strip(".,;:?!").lower()
+        for node in getattr(agent, "s", agent).nodes("Concept"):
+            attrs = getattr(agent, "s", agent).node(node)["attrs"]
+            if str(attrs.get("name") or "").lower() != predicate:
+                continue
+            definition = str(attrs.get("definition") or "").lower()
+            role = str(attrs.get("semantic_role") or "").lower()
+            if role in {"knowledge_deficit", "epistemic_need"} \
+                    or "requiring relief" in definition:
+                evidence.update({
+                    "repair_evidence": "knowledge_deficit",
+                    "repair_focus": str(rel["object"].get("surface") or "")
+                    .strip(".,;:?!"),
+                })
+                break
+
+    # A modal/action frame is authority evidence emitted by the language
+    # adapter. It is structural (typed heads plus an actor slot), not a list
+    # of English permission words; cognition still requires a graph-resident
+    # authority decision before release.
+    content = [e for e in elements if e.get("role") == "content"]
+    modal_semantic = False
+    if content:
+        modal_name = str(content[0].get("surface") or "").strip(
+            ".,;:?!").lower()
+        for node in getattr(agent, "s", agent).nodes("Concept"):
+            attrs = getattr(agent, "s", agent).node(node)["attrs"]
+            if str(attrs.get("name") or "").lower() != modal_name:
+                continue
+            definition = str(attrs.get("definition") or "").lower()
+            role = str(attrs.get("semantic_role") or attrs.get("modality") or "").lower()
+            if (role in {"permission", "permission_modality", "ability_permission"}
+                    or ("permission" in definition and "modal" in definition)):
+                modal_semantic = True
+                break
+    if (kind == "question" and modal_semantic and len(content) >= 2
+            and any(e.get("role") == "function" and e.get("pos") == "pronoun"
+                    for e in elements)
+            and content[0].get("pos") == "verb"
+            and content[1].get("pos") == "verb"):
+        evidence.update({
+            "authority_request": True,
+            "modality_evidence": "typed_modal_action_frame",
+            "action_predicate": str(content[1].get("surface") or "").strip(
+                ".,;:?!"),
+        })
+
+    # Anaphoric question frames can carry a resolved discourse binding even
+    # when no external topic answer is held.  The binding is accepted only
+    # from graph-resident discourse state, never from the pronoun itself.
+    relation_slots = (rel.get("subject"), rel.get("object"),
+                      rel.get("oblique"))
+    if (kind == "question"
+            and any(isinstance(slot, dict) and slot.get("pos") == "pronoun"
+                    for slot in relation_slots)
+            and _graph_discourse_binding_available(agent)):
+        evidence.update({
+            "resolved_reference_status": "supported",
+            "resolved_reference_evidence": (
+                "CommunicationInterpretation -> CurrentTopic.name + "
+                "DiscourseReferent.concept"),
+        })
+
+    # Directive structure is language-adapter evidence, not a cognition
+    # ontology or an English command list.  The adapter's held verb-head
+    # faculty identifies action-headed spans; cognition receives only the
+    # resulting neutral predicates, target, compound membership, and whether
+    # a typed temporal focus defers execution.
+    if kind == "instruction":
+        first = elements[0] if elements else {}
+        content_indices = [i for i, e in enumerate(elements)
+                           if e.get("role") == "content"]
+        predicate_indices = []
+        if content_indices:
+            if first.get("role") == "focus":
+                # A typed temporal focus introduces the action clause; skip
+                # its descriptive complement and select the next supported
+                # action head after that boundary.
+                predicate_indices.append(next(
+                    (i for i in content_indices[1:]
+                     if elements[i].get("pos") != "adj"
+                     and _ir.is_verb_headed(str(elements[i].get("surface") or "")
+                                            .strip(".,;:?!"))),
+                    content_indices[0]))
+            else:
+                predicate_indices.append(content_indices[0])
+            # Coordinate clause boundaries are structural evidence. The first
+            # content element after a conjunction is another action head;
+            # following content remains that clause's target.
+            for i, element in enumerate(elements):
+                if element.get("pos") == "conjunction":
+                    following = next((j for j in content_indices if j > i), None)
+                    if following is not None and _ir.is_verb_headed(
+                            str(elements[following].get("surface") or "")
+                            .strip(".,;:?!")):
+                        predicate_indices.append(following)
+        predicate_indices = list(dict.fromkeys(predicate_indices))
+        if predicate_indices:
+            predicates = [str(elements[i].get("surface") or "").strip(".,;:?!")
+                          for i in predicate_indices]
+            evidence["action_predicates"] = predicates
+            evidence["action_predicate"] = predicates[0]
+            first_index = predicate_indices[0]
+            target_element = next(
+                (e for e in elements[first_index + 1:]
+                 if (e.get("role") == "content"
+                     or (e.get("role") == "function"
+                         and e.get("pos") == "pronoun"))
+                 and str(e.get("surface") or "").strip(".,;:?!")),
+                None)
+            if target_element is not None:
+                target = str(target_element.get("surface") or "").strip(
+                    ".,;:?!")
+                evidence["action_target"] = target
+                if target_element.get("pos") == "pronoun":
+                    # A pronoun is a typed reference expression, not a
+                    # lexical action object.  Preserve its resolution state
+                    # for cognition; do not bind it to the next adverb or
+                    # invent a referent from surface order.
+                    resolved = _graph_discourse_binding_available(agent)
+                    evidence.update({
+                        "anaphoric_reference": True,
+                        "referent_status": "supported" if resolved else "unresolved",
+                        "repair_focus": target,
+                    })
+            if len(predicates) > 1:
+                evidence["action_sequence"] = predicates
+            if first.get("role") == "focus" and first.get("pos") in {
+                    "time", "condition", "temporal"}:
+                evidence["deferred_condition"] = True
+                evidence["condition_evidence"] = "typed_temporal_focus"
+            # The language adapter exposes the existing self-account faculty
+            # when this typed action frame is an account request addressed to
+            # the agent. This is evidence transport, not a new grounding
+            # decision or a reply heuristic.
+            first_predicate = str(predicates[0] if predicates else "").lower()
+            self_addressed = any(
+                str(element.get("surface") or "").lower() in _SELF_CUES
+                for element in elements
+            )
+            if first_predicate in _ACCOUNT_VERBS and self_addressed:
+                evidence["account_request"] = "selected_self_account_faculty"
+    return evidence
 
 
 def _strip_politeness(agent: Any, text: str) -> str:
@@ -766,12 +1112,17 @@ def _detect_satisfiable(agent: Any, text: str) -> Optional[str]:
     ("rules" / "organisation"). None when it is not such an instruction."""
     recognised = [w.lower() for w in _recognise_words(agent, text)]
     surface = [w.lower().strip(" ,.;:?!") for w in _ws_tokens(text)]
-    words = surface if surface and surface[0] in _ENUMERATE_VERBS else recognised
-    if not words or words[0] not in _ENUMERATE_VERBS:
+    words = surface if surface else recognised
+    if not words:
         return None
-    if not any(w in ("your", "yours", "my") for w in words):
+    enum_i = 0 if words and words[0] in _ENUMERATE_VERBS else (
+        2 if len(words) > 2 and words[0] in _MODAL_REQUEST_PREFIXES
+        and words[1] in _YOU_THOU and words[2] in _ENUMERATE_VERBS else None)
+    if enum_i is None:
         return None
-    for w in words:
+    if not any(w in ("your", "yours", "my") for w in words[enum_i + 1:]):
+        return None
+    for w in words[enum_i + 1:]:
         tgt = _SATISFIABLE_TARGET.get(w)
         if tgt:
             return tgt
@@ -1083,10 +1434,31 @@ def comprehend_text(agent: Any, text: str, *, kind: Optional[str] = None) -> Com
     except Exception:
         spec = None
     if spec is not None and getattr(spec, "grounded", False):
+        # The held know-table can ground a lexical topic while the adapter's
+        # semantic frame still says that the requested fact depends on an
+        # unobserved spatial scene. Preserve legitimate table/meta routes; only
+        # withdraw the external route when the world dependency is explicit and
+        # graph state lacks the required scene.
+        table_frame = _cg.parse_with_gaps(text, substrate)
+        table_rel = _cg.compose_relation(table_frame)
+        table_evidence = _language_adapter_evidence(
+            agent, table_frame, table_rel, kind="question")
+        table_dispatch = {"path": "table", "spec": spec, "table_kind": spec.kind}
+        if (table_evidence.get("world_dependency") == "spatial_relation"
+                and table_evidence.get("world_support") == "missing"):
+            table_dispatch.update({
+                "path": "frontier",
+                "reason": "spatial world dependency lacks an attached scene",
+                "language_evidence": table_evidence,
+            })
+        elif table_evidence:
+            table_dispatch["language_evidence"] = table_evidence
         return Comprehension(
             raw=text, kind="question", fastpath=True, table_spec=spec,
-            dispatch={"path": "table", "spec": spec, "table_kind": spec.kind},
-            intent=f"table:{spec.kind}",
+            dispatch=table_dispatch,
+            intent=("ask_world:unresolved"
+                    if table_dispatch.get("path") == "frontier"
+                    else f"table:{spec.kind}"),
             note="comprehended by the existing construction table (fast path)")
 
     frame = _cg.parse_with_gaps(text, substrate)
@@ -1096,7 +1468,15 @@ def comprehend_text(agent: Any, text: str, *, kind: Optional[str] = None) -> Com
     # scratch Message here. The Python ladder runs ONLY when no engine is
     # available (the `_holds` fallback discipline).
     if kind not in ("question", "instruction", "statement"):
-        kind = _classify_kind_rules(_signals_of(text, frame))
+        signals = _signals_of(text, frame)
+        # Keep the established one-argument fallback seam intact for direct
+        # callers and tests that replace the native classifier.  A receipt is
+        # meaningful only when this is a live adapter call with a graph sink.
+        if (agent is not None and hasattr(agent, "s")
+                and hasattr(agent, "agent")):
+            kind = _classify_kind_rules(signals, receipt_sink=agent)
+        else:
+            kind = _classify_kind_rules(signals)
     if kind == "statement" and first_imperative_evidence(
             agent, original, first_role=_first_element(frame).get("role")
             if _first_element(frame) else None,
@@ -1133,8 +1513,23 @@ def comprehend_text(agent: Any, text: str, *, kind: Optional[str] = None) -> Com
     if kind == "question":
         rel = _cg.compose_relation(frame)
         comp.relation = rel
+        semantic_evidence = _language_adapter_evidence(
+            agent, frame, rel, kind="question")
+        if semantic_evidence:
+            comp.dispatch["language_evidence"] = semantic_evidence
         rule_name = _detect_reflexive_rule(substrate, gaps)
         has_cue = _has_self_cue(frame)
+        if semantic_evidence.get("repair_evidence") == "unresolved_selection":
+            # Selection residuals are repair evidence, not evidence that the
+            # grammatical addressee makes this a self/meta question.
+            comp.reflexive = False
+            comp.dispatch = {
+                "path": "frontier",
+                "reason": "unresolved selection referent",
+                "language_evidence": semantic_evidence,
+            }
+            comp.intent = "repair:unresolved_selection"
+            return comp
         comp.reflexive = bool(rule_name) or has_cue
         if comp.reflexive:
             # Compute the strong keyword reading FIRST so a dedicated self_* faculty
@@ -1232,6 +1627,12 @@ def comprehend_text(agent: Any, text: str, *, kind: Optional[str] = None) -> Com
                     pre_resolved = None
             if topic or pre_resolved:
                 comp.dispatch = {"path": "know", "concept": topic, "pre_resolved": pre_resolved}
+                if semantic_evidence:
+                    # Preserve adapter-provided world/deixis evidence when the
+                    # ordinary topic dispatch is materialized.  Without this
+                    # carry-forward, a lexical Concept can erase a missing
+                    # scene dependency before cognition arbitrates grounding.
+                    comp.dispatch["language_evidence"] = semantic_evidence
                 comp.intent = f"ask_world:{topic}"
             else:
                 comp.dispatch = {"path": "frontier",
@@ -1240,6 +1641,8 @@ def comprehend_text(agent: Any, text: str, *, kind: Optional[str] = None) -> Com
     elif kind == "instruction":
         rel = _cg.compose_relation(frame)
         comp.relation = rel
+        semantic_evidence = _language_adapter_evidence(
+            agent, frame, rel, kind="instruction")
         rule_name = _detect_reflexive_rule(substrate, gaps)
         if rule_name:
             # an indirect information request ("Tell me about the rule X") —
@@ -1261,16 +1664,32 @@ def comprehend_text(agent: Any, text: str, *, kind: Optional[str] = None) -> Com
             first = _first_element(frame)
             predicate = first["surface"].strip(",.;:?!") if first else None
             obj = rel.get("object") or rel.get("oblique")
+            if semantic_evidence.get("action_predicate"):
+                predicate = semantic_evidence["action_predicate"]
+            if semantic_evidence.get("action_target"):
+                obj = {"surface": semantic_evidence["action_target"]}
             comp.dispatch = {"path": "instruction", "relation": rel,
                               "predicate": predicate,
                               "object": obj["surface"].strip(",.;:?!") if obj else None}
+            if semantic_evidence:
+                comp.dispatch["language_evidence"] = semantic_evidence
             pred_s = comp.dispatch["predicate"] or "?"
             obj_s = comp.dispatch["object"] or ""
             comp.intent = f"do:{pred_s}" + (f"({obj_s})" if obj_s else "")
     else:
         rel = _cg.compose_relation(frame)
         comp.relation = rel
+        semantic_evidence = _language_adapter_evidence(
+            agent, frame, rel, kind="statement")
+        if semantic_evidence.get("repair_evidence") == "knowledge_deficit":
+            comp.dispatch = {"path": "frontier", "relation": rel,
+                             "reason": "knowledge deficit requires repair",
+                             "language_evidence": semantic_evidence}
+            comp.intent = "repair:knowledge_deficit"
+            return comp
         comp.dispatch = {"path": "statement", "relation": rel}
+        if semantic_evidence:
+            comp.dispatch["language_evidence"] = semantic_evidence
         comp.intent = "assert"
 
     return comp

@@ -43,6 +43,16 @@ def mint_trust_beliefs(inner, mt, target: str, *, prior_others_trust=None) -> di
         inner.concept_apply_evidence(competence, float(prior_others_trust), 1.0)
         inner.concept_apply_evidence(willingness, float(prior_others_trust), 1.0)
         inner.force_all_dirty()
+        inner.add_node("NativeResidentTrustReceipt", {
+            "schema": "native_resident_trust_receipt_v1",
+            "cluster": "resident_trust.belief_settlement",
+            "provenance": "native_rule_readback:resident_trust",
+            "native_rule": "resident_trust_native_rules",
+            "native_steps": ["apply_prior", "run_rules", "readback"],
+            "operation": "initialize",
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         inner.run_rules()
     return {"competence": competence, "willingness": willingness}
 
@@ -58,6 +68,16 @@ def record_trust_incident(inner, beliefs: dict, *, dimension: str, positive: boo
     evidence = 1.0 if positive else -1.0
     inner.concept_apply_evidence(concept, evidence, alpha)
     inner.force_all_dirty()
+    inner.add_node("NativeResidentTrustReceipt", {
+        "schema": "native_resident_trust_receipt_v1",
+        "cluster": "resident_trust.belief_settlement",
+        "provenance": "native_rule_readback:resident_trust",
+        "native_rule": "resident_trust_native_rules",
+        "native_steps": ["apply_incident", "run_rules", "readback"],
+        "operation": "incident",
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     inner.run_rules(max_steps)
     return inner.node(concept)["attrs"]["external_field"]
 

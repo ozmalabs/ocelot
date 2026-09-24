@@ -223,7 +223,19 @@ def annotate_predication_slots(agent, read: dict) -> list:
             existing.add(key)
             created.append(ps)
     if created:
-        native.run_rules()
+        native_steps = native.run_rules()
+        receipt = sub.add_node("NativeMeaningInferenceReceipt", {
+            "schema": "native_meaning_inference_receipt.v1",
+            "cluster": "meaning_inference.predication_slot_settlement",
+            "provenance": "native_rule_readback:selectional_inference",
+            "native_rule": "meaning_inference_selectional_rules",
+            "slot_count": len(created),
+            "native_steps": int(native_steps),
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
+        native.add_edge_unchecked(
+            ag_node, "has_native_meaning_inference_receipt", receipt)
     return created
 
 
@@ -305,7 +317,19 @@ def annotate_predication_facts(agent, read: dict) -> list:
         existing.add(key)
         created.append(pn)
     if created:
-        native.run_rules()
+        native_steps = native.run_rules()
+        receipt = sub.add_node("NativeMeaningInferenceReceipt", {
+            "schema": "native_meaning_inference_receipt.v1",
+            "cluster": "meaning_inference.predication_fact_settlement",
+            "provenance": "native_rule_readback:definitional_inference",
+            "native_rule": "meaning_inference_definitional_rules",
+            "predication_count": len(created),
+            "native_steps": int(native_steps),
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
+        native.add_edge_unchecked(
+            ag_node, "has_native_meaning_inference_receipt", receipt)
     return created
 
 
@@ -409,7 +433,19 @@ def annotate_affix_candidates(agent, read: dict) -> list:
                 existing.add(key)
                 created.append(ac)
     if created:
-        native.run_rules()
+        native_steps = native.run_rules()
+        receipt = sub.add_node("NativeMeaningInferenceReceipt", {
+            "schema": "native_meaning_inference_receipt.v1",
+            "cluster": "meaning_inference.morphology_settlement",
+            "provenance": "native_rule_readback:morphological_inference",
+            "native_rule": "meaning_inference_morphology_rules",
+            "candidate_count": len(created),
+            "native_steps": int(native_steps),
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
+        native.add_edge_unchecked(
+            ag_node, "has_native_meaning_inference_receipt", receipt)
     return created
 
 
@@ -505,7 +541,19 @@ def annotate_relational_signatures(agent, read: dict) -> list:
             sub.add_edge(ag_node, "has_concept_signature", cs)
             wired_cs.add(cs)
     if touched:
-        native.run_rules()
+        native_steps = native.run_rules()
+        receipt = sub.add_node("NativeMeaningInferenceReceipt", {
+            "schema": "native_meaning_inference_receipt.v1",
+            "cluster": "meaning_inference.relational_signature_settlement",
+            "provenance": "native_rule_readback:structural_analogy",
+            "native_rule": "meaning_inference_structural_analogy_rules",
+            "signature_count": len(created),
+            "native_steps": int(native_steps),
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
+        native.add_edge_unchecked(
+            ag_node, "has_native_meaning_inference_receipt", receipt)
     return created
 
 

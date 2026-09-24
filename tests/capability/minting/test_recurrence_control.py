@@ -94,6 +94,12 @@ def _run_replay(monkeypatch: pytest.MonkeyPatch, residuals: list[frozenset]):
         on_unknown="return",
         ask_fn=spy,
     )
+    receipts = list(substrate.nodes("NativeMintingTrainReceipt"))
+    assert receipts
+    assert all(substrate.node(n)["attrs"]["outcome_source"] ==
+               "native_rule_readback" for n in receipts)
+    assert all(substrate.node(n)["attrs"]["python_outcome_selection"] is False
+               for n in receipts)
     return substrate, observer, spy, result, gate_calls
 
 

@@ -158,4 +158,14 @@ def maintain_topic_interest(wa, topics, epoch, *, teacher=None, attempt_ground=T
         wa.s.set_attr(item, "obs", float(obs))
         wa.s.set_attr(item, "input_epoch", float(epoch))
     wa.inner.run_rules()
+    receipt = wa.s.add_node("NativeCuriosityReceipt", {
+        "cluster": "curiosity_topic_selection.native_settlement",
+        "provenance": "native_rule_readback:curiosity_topic_selection",
+        "rule": "learning_progress_curiosity_and_topic_selection",
+        "epoch": float(epoch),
+        "topic_count": len(topics),
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
+    wa.inner.add_edge_unchecked(wa.agent, "has_native_curiosity_receipt", receipt)
     return hub

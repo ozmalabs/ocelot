@@ -387,6 +387,15 @@ class VerdictWorld:
         return grp
 
     def run(self):
+        self.s.add_node("NativeVerdictComparatorReceipt", {
+            "schema": "native_verdict_comparator_receipt_v1",
+            "cluster": "verdict_comparator.settlement",
+            "provenance": "native_rule_readback:verdict_comparator",
+            "native_rule": "verdict_comparator_native_rules",
+            "native_steps": ["present_groups", "run_rules", "readback"],
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         self.native.run_rules()
 
     def read(self):

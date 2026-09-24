@@ -1,0 +1,90 @@
+{
+  "id": "proposition_commitment_lifecycle",
+  "version": "1.0.0",
+  "self_load_only": true,
+  "depends_on": [],
+  "area": "proposition_commitment",
+  "description": "Explicit native uptake/status transitions for graph-resident propositions. Missing or unsupported status/signal combinations do not transition; status guards make every transition idempotent.",
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "pcl_accept_uncommitted",
+      "area": "proposition_commitment",
+      "order": 1,
+      "match": [["proposition", "evidenced_by", "evidence"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "proposition"}, "key": "commitment_status"}, "b": {"type": "Lit", "value": "uncommitted"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "proposition"}, "key": "uptake_signal"}, "b": {"type": "Lit", "value": "accept"}}
+      ]},
+      "effects": [["set_attr_if_different", "proposition", "commitment_status", "accepted"], ["set_attr_if_different", "proposition", "uptake_applied", "accept"]]
+    },
+    {
+      "name": "pcl_accept_proposed",
+      "area": "proposition_commitment",
+      "order": 2,
+      "match": [["proposition", "evidenced_by", "evidence"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "proposition"}, "key": "commitment_status"}, "b": {"type": "Lit", "value": "proposed"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "proposition"}, "key": "uptake_signal"}, "b": {"type": "Lit", "value": "accept"}}
+      ]},
+      "effects": [["set_attr_if_different", "proposition", "commitment_status", "accepted"], ["set_attr_if_different", "proposition", "uptake_applied", "accept"]]
+    },
+    {
+      "name": "pcl_challenge_proposed",
+      "area": "proposition_commitment",
+      "order": 3,
+      "match": [["proposition", "evidenced_by", "evidence"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "proposition"}, "key": "commitment_status"}, "b": {"type": "Lit", "value": "proposed"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "proposition"}, "key": "uptake_signal"}, "b": {"type": "Lit", "value": "challenge"}}
+      ]},
+      "effects": [["set_attr_if_different", "proposition", "commitment_status", "challenged"], ["set_attr_if_different", "proposition", "uptake_applied", "challenge"]]
+    },
+    {
+      "name": "pcl_suspend_proposed",
+      "area": "proposition_commitment",
+      "order": 4,
+      "match": [["proposition", "evidenced_by", "evidence"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "proposition"}, "key": "commitment_status"}, "b": {"type": "Lit", "value": "proposed"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "proposition"}, "key": "uptake_signal"}, "b": {"type": "Lit", "value": "suspend"}}
+      ]},
+      "effects": [["set_attr_if_different", "proposition", "commitment_status", "suspended"], ["set_attr_if_different", "proposition", "uptake_applied", "suspend"]]
+    },
+    {
+      "name": "pcl_retract_accepted",
+      "area": "proposition_commitment",
+      "order": 5,
+      "match": [["proposition", "evidenced_by", "evidence"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "proposition"}, "key": "commitment_status"}, "b": {"type": "Lit", "value": "accepted"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "proposition"}, "key": "uptake_signal"}, "b": {"type": "Lit", "value": "retract"}}
+      ]},
+      "effects": [["set_attr_if_different", "proposition", "commitment_status", "retracted"], ["set_attr_if_different", "proposition", "uptake_applied", "retract"]]
+    },
+    {
+      "name": "pcl_retract_challenged",
+      "area": "proposition_commitment",
+      "order": 6,
+      "match": [["proposition", "evidenced_by", "evidence"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "proposition"}, "key": "commitment_status"}, "b": {"type": "Lit", "value": "challenged"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "proposition"}, "key": "uptake_signal"}, "b": {"type": "Lit", "value": "retract"}}
+      ]},
+      "effects": [["set_attr_if_different", "proposition", "commitment_status", "retracted"], ["set_attr_if_different", "proposition", "uptake_applied", "retract"]]
+    },
+    {
+      "name": "pcl_retract_suspended",
+      "area": "proposition_commitment",
+      "order": 7,
+      "match": [["proposition", "evidenced_by", "evidence"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "proposition"}, "key": "commitment_status"}, "b": {"type": "Lit", "value": "suspended"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "proposition"}, "key": "uptake_signal"}, "b": {"type": "Lit", "value": "retract"}}
+      ]},
+      "effects": [["set_attr_if_different", "proposition", "commitment_status", "retracted"], ["set_attr_if_different", "proposition", "uptake_applied", "retract"]]
+    }
+  ]
+}

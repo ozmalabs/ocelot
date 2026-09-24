@@ -2065,6 +2065,15 @@ class LanguageWorld:
                 except Exception:
                     pass
 
+            # The language adapter's plain declarative frame is explicitly an
+            # assertion before it crosses communication_evidence.v1.  The
+            # neutral boundary must reject an absent/unknown force; it must not
+            # silently convert one there.  Question/command adapters already
+            # carry their own speech_act signal.
+            if "speech_act" not in frame:
+                frame = dict(frame)
+                frame["speech_act"] = "assertion"
+
             self._record_observation(text, language, frame)
             matched = _frame_equal(frame, expected)
             structural = _frame_structural_match(frame, expected)

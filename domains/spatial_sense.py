@@ -120,6 +120,16 @@ def quanta_flood_step(agent, game, pose_rc, body_hw, passable_values, slide, gri
     I.set_attr(game, "closed", -1.0)   # sentinel: flood in progress — qf_closed reads only the
     _stamp_goal_poses(agent, game)     # converged field (phase 2 below stamps 0 to arm it)
     if pending_block:
+        I.add_node("NativeSpatialSenseReceipt", {
+            "schema": "native_spatial_sense_receipt_v1",
+            "cluster": "spatial_sense.quanta_flood",
+            "provenance": "native_rule_readback:spatial_sense_flood",
+            "native_rule": "spatial_sense_quanta_flood_rules",
+            "native_steps": ["stamp_observations", "run_rules", "readback"],
+            "phase": "pre_flood",
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         I.run_rules()          # let qf_stale_on_block_* / qf_stale_on_belief_change /
                                 # qf_requantize_flag / qf_goal_retire process this tick's
                                 # observations (BlockObs / BeliefChange / reached-or-stale goals)
@@ -149,8 +159,28 @@ def quanta_flood_step(agent, game, pose_rc, body_hw, passable_values, slide, gri
             I.remove_node(bc)
         qs["quantized"] = qs["belief_epoch"]
     I.set_attr(game, "flood_epoch", float(qs["tick"]))    # monotone; qdist freshness keys on it
+    I.add_node("NativeSpatialSenseReceipt", {
+        "schema": "native_spatial_sense_receipt_v1",
+        "cluster": "spatial_sense.quanta_flood",
+        "provenance": "native_rule_readback:spatial_sense_flood",
+        "native_rule": "spatial_sense_quanta_flood_rules",
+        "native_steps": ["space_quantize", "run_rules", "readback"],
+        "phase": "flood",
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     I.run_rules()                                         # phase 1: qf flood to fixpoint (+ hop)
     I.set_attr(game, "closed", 0.0)
+    I.add_node("NativeSpatialSenseReceipt", {
+        "schema": "native_spatial_sense_receipt_v1",
+        "cluster": "spatial_sense.quanta_flood",
+        "provenance": "native_rule_readback:spatial_sense_flood",
+        "native_rule": "spatial_sense_quanta_flood_rules",
+        "native_steps": ["arm_closed", "run_rules", "readback"],
+        "phase": "closed",
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     I.run_rules()                                         # phase 2: closed detection on converged field
 
 
@@ -200,6 +230,15 @@ def spatial_sense_step(agent) -> None:
     ar._emit_avatar_motion(agent, game, st["prev_grid"], now_grid, last_disp[0], last_disp[1])
     st["prev_grid"] = now_grid
     ar._stamp(agent, game, getattr(agent, "_score", 0), i, ar._action_budget(agent))
+    agent.inner.add_node("NativeSpatialSenseReceipt", {
+        "schema": "native_spatial_sense_receipt_v1",
+        "cluster": "spatial_sense.navigation_settlement",
+        "provenance": "native_rule_readback:spatial_navigation",
+        "native_rule": "spatial_sense_navigation_rules",
+        "native_steps": ["stamp_perception", "run_rules", "readback"],
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     agent.inner.run_rules()                              # correlate -> latch avatar; derive -> commit
 
     av = next((n for n in S.nodes("AvatarCandidate") if S.node(n)["attrs"].get("is_avatar")), None)
@@ -348,10 +387,28 @@ def spatial_sense_step(agent) -> None:
             reached_now = set(int(str(n).lstrip("#")) for n in I.neighbours(game, "reached"))
             I.set_attr(game, "frontier_flux", float(len(reached_now ^ st["prev_reached"]) if st["prev_reached"] else 0))
             st["prev_reached"] = reached_now
+            agent.inner.add_node("NativeSpatialSenseReceipt", {
+                "schema": "native_spatial_sense_receipt_v1",
+                "cluster": "spatial_sense.navigation_settlement",
+                "provenance": "native_rule_readback:spatial_navigation",
+                "native_rule": "spatial_sense_navigation_rules",
+                "native_steps": ["slide_flood", "run_rules", "readback"],
+                "outcome_source": "native_rule_readback",
+                "python_outcome_selection": False,
+            })
             agent.inner.run_rules()
             goal = next(iter(I.neighbours(game, "committed_goal")), None)
             if goal is not None:
                 I.slide_flood(int(str(goal).lstrip("#")), ls, fph, fpw, walls, 40, i, gid, False, "_dist")
+                agent.inner.add_node("NativeSpatialSenseReceipt", {
+                    "schema": "native_spatial_sense_receipt_v1",
+                    "cluster": "spatial_sense.navigation_settlement",
+                    "provenance": "native_rule_readback:spatial_navigation",
+                    "native_rule": "spatial_sense_navigation_rules",
+                    "native_steps": ["goal_slide_flood", "run_rules", "readback"],
+                    "outcome_source": "native_rule_readback",
+                    "python_outcome_selection": False,
+                })
                 agent.inner.run_rules()
         # mechanical fallbacks the rules leave to perception: pocket_escape sweep / unstick.
         if not (S.node(game)["attrs"].get("chosen_action") or ""):

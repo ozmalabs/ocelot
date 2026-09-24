@@ -102,6 +102,13 @@ def test_rules_are_registered_and_fire_via_run_rules():
     rep = cd.metonymic_redecode(ag, "")
     assert cd.event_theme(ag, ev)["name"] == "shakespeare_works"
     assert rep["shifts"] and rep["shifts"][0]["verdict"] == "re_decoded"
+    receipts = [ag.s.node(n)["attrs"] for n in
+                ag.s.nodes("NativeDisambiguationReceipt")]
+    assert len(receipts) == 1
+    assert receipts[0]["provenance"] == (
+        "native_rule_readback:metonymic_redecode")
+    assert receipts[0]["outcome_source"] == "native_rule_readback"
+    assert receipts[0]["python_outcome_selection"] is False
 
 
 def test_disabling_the_engine_kills_the_rebind_so_it_is_the_rule():

@@ -99,12 +99,14 @@ def _live_agent():
 def test_live_benign_incongruity_answered_in_kind():
     a = _live_agent()
     reply = a.converse("I asked the compiler for relationship advice.", "statement").lower()
-    assert "play along" in reply             # in kind, not a literal answer
-    assert reply.strip() != "noted"          # not the plain acknowledgment
+    # Humour cognition is not yet implemented; failure must remain explicit,
+    # never collapse to a fixed acknowledgement.
+    assert reply == "error: no communicative response could be generated."
     assert a._donkey["n"] == 0
 
 
-def test_live_plain_statement_still_acknowledged():
-    # discriminative regression: a non-humorous statement keeps its canonical 'noted'.
+def test_live_plain_statement_exposes_explicit_error():
+    # A non-humorous statement must not use the forbidden fixed acknowledgement.
     a = _live_agent()
-    assert a.converse("the sky is blue", "statement") == "noted"
+    assert a.converse("the sky is blue", "statement") == \
+        "ERROR: no communicative response could be generated."

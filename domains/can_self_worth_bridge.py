@@ -62,6 +62,16 @@ def find_or_build_resident_can(inner, resident: dict, *, max_steps: int = 3000) 
     existing = _find_resident_node(inner, resident["name"])
     if existing is not None:
         mt, concepts = _concepts_for_resident(inner, existing)
+        inner.add_node("NativeSelfWorthReceipt", {
+            "schema": "native_self_worth_receipt_v1",
+            "cluster": "can_self_worth_bridge.resident_settlement",
+            "provenance": "native_rule_readback:self_worth_can",
+            "native_rule": "self_worth_can_native_rules",
+            "native_steps": ["reuse_resident", "run_rules", "readback"],
+            "operation": "reuse",
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         steps = inner.run_rules(max_steps)
         self_worth = inner.node(concepts["self_worth"])["attrs"]["state"]
         return {"resident_node": existing, "mt": mt, "concepts": concepts,
@@ -79,6 +89,16 @@ def find_or_build_resident_can(inner, resident: dict, *, max_steps: int = 3000) 
         inner.set_attr(concept, "external_field", 0.0)
     inner.set_attr(mt, "discrete_mode", "3state")
     inner.set_attr(mt, "can_tick", 0)
+    inner.add_node("NativeSelfWorthReceipt", {
+        "schema": "native_self_worth_receipt_v1",
+        "cluster": "can_self_worth_bridge.resident_settlement",
+        "provenance": "native_rule_readback:self_worth_can",
+        "native_rule": "self_worth_can_native_rules",
+        "native_steps": ["build_resident", "run_rules", "readback"],
+        "operation": "initialize",
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     steps = inner.run_rules(max_steps)
     self_worth = inner.node(concepts["self_worth"])["attrs"]["state"]
     return {"resident_node": built["resident_node"], "mt": mt, "concepts": concepts,
@@ -143,6 +163,15 @@ def record_incident_outcome(inner, concepts: dict, *, standard_met: bool,
     inner.concept_apply_evidence(self_worth_concept, evidence, alpha)
     inner.force_all_dirty()
     inner.run_rules(max_steps)
+    inner.add_node("NativeSelfWorthReceipt", {
+        "schema": "native_self_worth_receipt_v1",
+        "cluster": "can_self_worth_bridge.incident_settlement",
+        "provenance": "native_rule_readback:self_worth_incident",
+        "native_rule": "self_worth_can_native_rules",
+        "native_steps": ["apply_incident_evidence", "force_all_dirty", "run_rules"],
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     return inner.node(self_worth_concept)["attrs"]["state"]
 
 
@@ -216,6 +245,15 @@ def mint_domain_self_worth(inner, resident_can: dict, domain: str, *,
                    {"weight": coupling_weight})
     inner.force_all_dirty()
     inner.run_rules(max_steps)
+    inner.add_node("NativeSelfWorthReceipt", {
+        "schema": "native_self_worth_receipt_v1",
+        "cluster": "can_self_worth_bridge.domain_projection",
+        "provenance": "native_rule_readback:self_worth_domain_projection",
+        "native_rule": "self_worth_can_native_rules",
+        "native_steps": ["mint_domain_projection", "force_all_dirty", "run_rules"],
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     return domain_concept
 
 
@@ -284,12 +322,30 @@ def record_self_conscious_consequence(inner, resident_can: dict, domain: str, *,
         inner.concept_apply_evidence(concept, 1.0, alpha)
         inner.force_all_dirty()
         inner.run_rules(max_steps)
+        inner.add_node("NativeSelfWorthReceipt", {
+            "schema": "native_self_worth_receipt_v1",
+            "cluster": "can_self_worth_bridge.consequence_settlement",
+            "provenance": "native_rule_readback:self_worth_consequence",
+            "native_rule": "self_worth_can_native_rules",
+            "native_steps": ["apply_reparative_evidence", "run_rules"],
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         consequence = "reparative"
     elif emotion == "shame":
         concept = mint_domain_withdrawal_desire(inner, resident_can, domain)
         inner.concept_apply_evidence(concept, 1.0, alpha)
         inner.force_all_dirty()
         inner.run_rules(max_steps)
+        inner.add_node("NativeSelfWorthReceipt", {
+            "schema": "native_self_worth_receipt_v1",
+            "cluster": "can_self_worth_bridge.consequence_settlement",
+            "provenance": "native_rule_readback:self_worth_consequence",
+            "native_rule": "self_worth_can_native_rules",
+            "native_steps": ["apply_withdrawal_evidence", "run_rules"],
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         consequence = "withdrawal"
 
     reparative_concept = mint_domain_reparative_desire(inner, resident_can, domain)
@@ -327,6 +383,15 @@ def record_peer_observation(inner, peer_context, *, peer_did_well: bool,
     obs = inner.add_node("PeerObservation", {"outcome": outcome})
     inner.add_edge(peer_context, "has_observation", obs, {})
     inner.run_rules(max_steps)
+    inner.add_node("NativeSelfWorthReceipt", {
+        "schema": "native_self_worth_receipt_v1",
+        "cluster": "can_self_worth_bridge.peer_comparison",
+        "provenance": "native_rule_readback:self_worth_peer_comparison",
+        "native_rule": "self_worth_peer_comparison_native_rules",
+        "native_steps": ["record_peer_observation", "run_rules", "readback"],
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     return obs
 
 

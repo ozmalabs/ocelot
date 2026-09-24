@@ -247,7 +247,19 @@ def annotate_passive_predication(agent, read: dict, marker_seq: list, roles: lis
         existing.add(key)
         created.append(pp)
     if created:
-        native.run_rules()
+        native_steps = native.run_rules()
+        receipt = sub.add_node("NativeMediaAnalysisReceipt", {
+            "schema": "native_media_analysis_receipt.v1",
+            "cluster": "media_analysis.passive_settlement",
+            "provenance": "native_rule_readback:passive_analysis",
+            "native_rule": "media_analysis_passive_rules",
+            "passive_count": len(created),
+            "native_steps": int(native_steps),
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
+        native.add_edge_unchecked(
+            ag_node, "has_native_media_analysis_receipt", receipt)
     # POSIT INTENTIONALITY (additive) — any FramingObservation this call's
     # run_rules() just minted (or one already held from an earlier call) now
     # gets its signals annotated, keyed to THIS clause's own text. See
@@ -399,7 +411,19 @@ def annotate_relational_noun(agent, out: dict, words: list) -> list:
         existing.add(lemma)
         created.append(nm)
     if created:
-        native.run_rules()
+        native_steps = native.run_rules()
+        receipt = sub.add_node("NativeMediaAnalysisReceipt", {
+            "schema": "native_media_analysis_receipt.v1",
+            "cluster": "media_analysis.relational_noun_settlement",
+            "provenance": "native_rule_readback:relational_noun_analysis",
+            "native_rule": "media_analysis_relational_noun_rules",
+            "mention_count": len(created),
+            "native_steps": int(native_steps),
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
+        native.add_edge_unchecked(
+            ag_node, "has_native_media_analysis_receipt", receipt)
     # POSIT INTENTIONALITY (additive) — any UnsaidRole this call's run_rules()
     # just minted (or one already held from an earlier call) now gets its
     # signals annotated, keyed to THIS clause's own text.
@@ -561,7 +585,19 @@ def annotate_intent_signals(agent, text: Optional[str]) -> list:
         existing.add(key)
         created.append(sig)
     if created:
-        native.run_rules()
+        native_steps = native.run_rules()
+        receipt = sub.add_node("NativeMediaAnalysisReceipt", {
+            "schema": "native_media_analysis_receipt.v1",
+            "cluster": "media_analysis.intent_signal_settlement",
+            "provenance": "native_rule_readback:intent_signal_analysis",
+            "native_rule": "media_analysis_intent_signal_rules",
+            "signal_count": len(created),
+            "native_steps": int(native_steps),
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
+        native.add_edge_unchecked(
+            ag_node, "has_native_media_analysis_receipt", receipt)
     return created
 
 

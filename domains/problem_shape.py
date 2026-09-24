@@ -167,6 +167,15 @@ def observe(agent, goal_node, *, run: bool = True) -> Optional[Any]:
         sub.add_edge(oid, "about_goal", goal_node)
         if run:
             native.run_rules()
+            sub.add_node("NativeProblemShapeReceipt", {
+                "schema": "native_problem_shape_receipt_v1",
+                "cluster": "problem_shape.observation_decode",
+                "provenance": "native_rule_readback:problem_shape",
+                "native_rule": "problem_shape_growth_native_decode",
+                "native_steps": ["observe_goal", "run_rules", "readback"],
+                "outcome_source": "native_rule_readback",
+                "python_outcome_selection": False,
+            })
         return oid
     except Exception:
         return None

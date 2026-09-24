@@ -165,7 +165,17 @@ def run_minting_train_of_thought(
         _post_segment_evidence(sub, episode, ordinal=ordinal, predicates=predicates,
                                residual=residual, reached=reached, topic=sp_topic,
                                setpoint_observer=setpoint_observer)
-        native.run_rules()
+        native_steps = native.run_rules()
+        sub.add_node("NativeMintingTrainReceipt", {
+            "schema": "native_minting_train_receipt.v1",
+            "cluster": "minting_train_of_thought.segment_settlement",
+            "provenance": "native_rule_readback:minting_train",
+            "native_rule": "minting_train_native_rules",
+            "native_steps": int(native_steps),
+            "segment_ordinal": int(ordinal),
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         deviation_trace.append(deviation)
         width_trace.append(width)
         segments.append({"topic": cur_topic, "width": width, "deviation": deviation,

@@ -86,6 +86,13 @@ def test_mint_fires_once_for_a_novel_pattern(agent, cues):
     # mechanical structural check: the minted BlobEdge is edged to BOTH real endpoints
     assert sub.has_edge(blobs[0], "links_a", na)
     assert sub.has_edge(blobs[0], "links_b", nb)
+    receipts = [sub.node(n)["attrs"] for n in
+                sub.nodes("NativeReflectiveFacultyReceipt")
+                if sub.node(n)["attrs"].get("cluster") ==
+                "reflective_faculty.correspondence_settlement"]
+    assert len(receipts) == 1
+    assert receipts[0]["outcome_source"] == "native_rule_readback"
+    assert receipts[0]["python_outcome_selection"] is False
 
 
 # --------------------------------------------------------------------------- #

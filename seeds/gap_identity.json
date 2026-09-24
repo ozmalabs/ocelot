@@ -1,0 +1,81 @@
+{
+ "id": "gap_identity",
+ "version": "1.0.0",
+ "depends_on": ["gap_awareness"],
+ "capability_keys": ["canonical_gap_identity"],
+ "description": "PHASE 5A bounded increment: every SelfConcern receives one graph-native, stable identity. The identity keeps the cognitive kind, source, content, and originating turn (when the concern is attached to a Message); it is metadata for later promotion/verification, not a conversational decision. No Python-side canonicalisation or surface matching is used.",
+ "rules": [
+  {
+   "name": "canonicalize_gap_identity_from_message",
+   "match": [
+    ["agent", "has_self_concern", "sc"],
+    ["sc", "about_message", "m"]
+   ],
+   "where": {
+    "type": "Not",
+    "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "gap_identity"}, "b": {"type": "Lit", "value": ""}}
+   },
+   "effects": [
+    ["set_attr", "sc", "gap_identity_schema", "gap_identity.v1"],
+    ["set_attr", "sc", "gap_identity", {"__term__": {"type": "StringConcat", "parts": [
+     {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "kind"},
+     {"type": "Lit", "value": "|"},
+     {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "source"},
+     {"type": "Lit", "value": "|"},
+     {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "content"},
+     {"type": "Lit", "value": "|turn:"},
+     {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "turn_id"}
+    ]}}]
+   ]
+  },
+  {
+   "name": "canonicalize_gap_identity_without_message",
+   "match": [["agent", "has_self_concern", "sc"]],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "gap_identity"}, "b": {"type": "Lit", "value": ""}}},
+     {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "sc"}, "edge_type": "about_message"}, "var_name": "m", "predicate": {"type": "Eq", "a": {"type": "Var", "name": "m"}, "b": {"type": "Var", "name": "m"}}}},
+     {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "sc"}, "edge_type": "about_goal"}, "var_name": "g", "predicate": {"type": "Eq", "a": {"type": "Var", "name": "g"}, "b": {"type": "Var", "name": "g"}}}}
+    ]
+   },
+   "effects": [
+    ["set_attr", "sc", "gap_identity_schema", "gap_identity.v1"],
+    ["set_attr", "sc", "gap_identity", {"__term__": {"type": "StringConcat", "parts": [
+     {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "kind"},
+     {"type": "Lit", "value": "|"},
+     {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "source"},
+     {"type": "Lit", "value": "|"},
+     {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "content"},
+     {"type": "Lit", "value": "|turn:none"}
+    ]}}]
+   ]
+  },
+  {
+   "name": "canonicalize_gap_identity_from_goal",
+   "match": [
+    ["agent", "has_self_concern", "sc"],
+    ["sc", "about_goal", "g"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "gap_identity"}, "b": {"type": "Lit", "value": ""}}},
+     {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "origin_turn_id"}, "b": {"type": "Lit", "value": null}}}
+    ]
+   },
+   "effects": [
+    ["set_attr", "sc", "gap_identity_schema", "gap_identity.v1"],
+    ["set_attr", "sc", "gap_identity", {"__term__": {"type": "StringConcat", "parts": [
+     {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "kind"},
+     {"type": "Lit", "value": "|"},
+     {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "source"},
+     {"type": "Lit", "value": "|"},
+     {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "content"},
+     {"type": "Lit", "value": "|turn:"},
+     {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "origin_turn_id"}
+    ]}}]
+   ]
+  }
+ ]
+}

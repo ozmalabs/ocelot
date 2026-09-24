@@ -153,7 +153,8 @@ _NOISE_PREPOSITIONS = {"of", "as"}
 # location slot the substrate uses.
 _SPATIAL_PREPOSITIONS = {
     "en": {"on", "in", "at", "under", "above", "below", "over", "inside",
-           "beside", "near", "onto", "into", "through", "within"},
+           "beside", "near", "onto", "into", "through", "within",
+           "beyond", "behind", "outside", "across", "around"},
     "es": {"en", "sobre", "bajo", "dentro", "encima", "debajo", "entre"},
 }
 

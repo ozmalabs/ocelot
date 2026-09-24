@@ -123,5 +123,14 @@ class ControlBundleAdapter:
         # deliberation instead of observing every primitive one epoch late.
         # This is cadence only: bundle membership and the learning update
         # remain rule decisions in control_bundle.json.
+        self.inner.add_node("NativeControlBundleReceipt", {
+            "schema": "native_control_bundle_receipt_v1",
+            "cluster": "control_bundle.enactment_settlement",
+            "provenance": "native_rule_readback:control_bundle",
+            "native_rule": "control_bundle_native_rules",
+            "native_steps": ["mark_enacted", "run_rules", "readback"],
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         self.inner.run_rules()
         return tokens

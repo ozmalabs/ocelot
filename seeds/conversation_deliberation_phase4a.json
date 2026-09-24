@@ -1,0 +1,187 @@
+{
+  "id": "conversation_deliberation_phase4a",
+  "version": "1.0.0",
+  "description": "Phase 4A bounded deliberation audit: native scoring and Argmax collapse over an explicit grounded candidate ledger. Unsupported candidates and outcompeted candidates are traced as rejected; an empty eligible set becomes no_candidate. The adapter only materializes evidence-bearing candidates.",
+  "productions": [],
+  "rules": [
+    {
+      "name": "cm4a_reject_missing_grounding",
+      "area": "deliberation",
+      "order": 1,
+      "match": [["d", "has_candidate", "c"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "status"}, "b": {"type": "Lit", "value": "proposed"}},
+        {"type": "Lt", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "grounding"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "grounding_floor"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "rejection_trace"}, "b": {"type": "Lit", "value": 0.0}}
+      ]},
+      "effects": [
+        ["set_attr", "c", "status", "rejected"],
+        ["set_attr", "c", "rejection_reason", "missing_grounding_evidence"],
+        ["set_attr", "c", "rejection_trace", 1.0]
+      ]
+    },
+    {
+      "name": "cm4a_score_grounded_candidates",
+      "area": "deliberation",
+      "order": 2,
+      "match": [["d", "has_candidate", "c"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "status"}, "b": {"type": "Lit", "value": "proposed"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "status"}, "b": {"type": "Lit", "value": "proposed"}},
+        {"type": "Gte", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "grounding"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "grounding_floor"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "score_epoch"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "epoch"}}}
+      ]},
+      "effects": [
+        ["set_attr", "c", "arbitration_score", {"__term__": {"type": "Plus", "items": [
+          {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "expected_value"},
+          {"type": "Times", "items": [{"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "consequence"}, {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "consequence_gain"}]},
+          {"type": "Times", "items": [{"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "novelty"}, {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "novelty_gain"}]},
+          {"type": "Minus", "a": {"type": "Lit", "value": 0.0}, "b": {"type": "Times", "items": [{"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "residual_cost"}, {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "residual_cost_gain"}]}}
+        ]}}],
+        ["set_attr", "c", "score_epoch", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "epoch"}}],
+        ["set_attr", "c", "valuation_trace", 1.0]
+      ]
+    },
+    {
+      "name": "cm4a_commit_native_collapse",
+      "area": "deliberation",
+      "order": 3,
+      "match": [["d", "has_candidate", "c"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "status"}, "b": {"type": "Lit", "value": "proposed"}},
+        {"type": "Eq", "a": {"type": "Var", "name": "c"}, "b": {"type": "Argmax", "source": {"type": "Filter", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "d"}, "edge_type": "has_candidate"}, "var_name": "eligible", "predicate": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "eligible"}, "key": "score_epoch"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "epoch"}}}, "var_name": "eligible", "value": {"type": "Attr", "node": {"type": "Var", "name": "eligible"}, "key": "arbitration_score"}}}
+      ]},
+      "effects": [
+        ["add_node", "selection", "DeliberativeSelection", {"status": "selected", "epoch": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "epoch"}}, "selected_candidate_id": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "candidate_id"}}}],
+        ["add_edge", "d", "has_selection", "selection"],
+        ["add_edge", "selection", "selects_candidate", "c"],
+        ["set_attr", "c", "status", "selected"],
+        ["set_attr", "d", "status", "selected"],
+        ["set_attr", "d", "candidate_trace_complete", 1.0]
+      ]
+    },
+    {
+      "name": "cm4a_trace_rejected_competitors",
+      "area": "deliberation",
+      "order": 4,
+      "match": [["d", "has_candidate", "c"], ["d", "has_selection", "selection"], ["selection", "selects_candidate", "winner"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "status"}, "b": {"type": "Lit", "value": "selected"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Var", "name": "c"}, "b": {"type": "Var", "name": "winner"}}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "rejection_trace"}, "b": {"type": "Lit", "value": 0.0}}
+      ]},
+      "effects": [
+        ["set_attr", "c", "status", "rejected"],
+        ["set_attr", "c", "rejection_reason", "outcompeted_by_native_collapse"],
+        ["set_attr", "c", "rejection_trace", 1.0]
+      ]
+    },
+    {
+      "name": "cm4a_no_candidate",
+      "area": "deliberation",
+      "order": 5,
+      "match": [["d", "has_candidate", "c"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "status"}, "b": {"type": "Lit", "value": "proposed"}},
+        {"type": "Eq",
+         "a": {"type": "Count", "source": {"type": "Filter",
+           "source": {"type": "Neighbours", "node": {"type": "Var", "name": "d"}, "edge_type": "has_candidate"},
+           "var_name": "eligible",
+           "predicate": {"type": "And", "items": [
+             {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "eligible"}, "key": "status"}, "b": {"type": "Lit", "value": "proposed"}},
+             {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "eligible"}, "key": "score_epoch"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "epoch"}}
+           ]}}},
+         "b": {"type": "Lit", "value": 0}}
+      ]},
+      "effects": [["set_attr", "d", "status", "no_candidate"], ["set_attr", "d", "candidate_trace_complete", 1.0]]
+    },
+    {
+      "name": "cm4c_no_candidate_from_empty_discourse_state",
+      "area": "deliberation",
+      "order": 5.5,
+      "match": [["d", "generated_from_discourse_state", "state"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "status"}, "b": {"type": "Lit", "value": "proposed"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "candidate_source"}, "b": {"type": "Lit", "value": "discourse_state"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "source_candidate_count"}, "b": {"type": "Lit", "value": 0.0}}
+      ]},
+      "effects": [["set_attr", "d", "status", "no_candidate"], ["set_attr", "d", "candidate_trace_complete", 1.0]]
+    },
+    {
+      "name": "cm4a_begin_execution",
+      "area": "deliberation",
+      "order": 6,
+      "match": [["d", "has_selection", "selection"], ["selection", "selects_candidate", "c"], ["d", "about_goal", "g"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "status"}, "b": {"type": "Lit", "value": "selected"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "status"}, "b": {"type": "Lit", "value": "selected"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "execution_ready"}, "b": {"type": "Lit", "value": 1.0}}
+      ]},
+      "effects": [
+        ["add_node", "execution", "DeliberationExecutionTrace", {"status": "executing", "candidate_id": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "candidate_id"}}}],
+        ["add_edge", "d", "has_execution_trace", "execution"],
+        ["add_edge", "execution", "executes_candidate", "c"],
+        ["add_edge", "execution", "for_goal", "g"],
+        ["set_attr", "d", "status", "executing"],
+        ["set_attr", "c", "status", "executing"]
+      ]
+    },
+    {
+      "name": "cm4d_no_candidate_from_empty_live_thought_manifold",
+      "area": "deliberation",
+      "order": 5.6,
+      "match": [["d", "generated_from_thought_manifold", "manifold"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "status"}, "b": {"type": "Lit", "value": "proposed"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "candidate_source"}, "b": {"type": "Lit", "value": "live_thought_manifold"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "source_candidate_count"}, "b": {"type": "Lit", "value": 0.0}}
+      ]},
+      "effects": [["set_attr", "d", "status", "no_candidate"], ["set_attr", "d", "candidate_trace_complete", 1.0]]
+    },
+    {
+      "name": "cm4a_settle_back_resolved",
+      "area": "deliberation",
+      "order": 7,
+      "match": [["d", "has_execution_trace", "execution"], ["execution", "executes_candidate", "c"], ["d", "about_goal", "g"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "status"}, "b": {"type": "Lit", "value": "executing"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "status"}, "b": {"type": "Lit", "value": "executing"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "outcome_status"}, "b": {"type": "Lit", "value": "resolved"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "execution"}, "key": "status"}, "b": {"type": "Lit", "value": "executing"}}
+      ]},
+      "effects": [
+        ["add_node", "settlement", "DeliberationSettlement", {"status": "resolved", "settle_back_trace": 1.0, "candidate_id": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "candidate_id"}}}],
+        ["add_edge", "d", "has_settlement", "settlement"],
+        ["add_edge", "settlement", "settles_candidate", "c"],
+        ["add_edge", "settlement", "returns_to_goal", "g"],
+        ["set_attr", "execution", "status", "resolved"],
+        ["set_attr", "c", "status", "resolved"],
+        ["set_attr", "d", "status", "resolved"],
+        ["set_attr", "d", "settle_back_trace", 1.0]
+      ]
+    },
+    {
+      "name": "cm4b_credit_grounded_rejected_alternatives",
+      "area": "deliberation",
+      "order": 8,
+      "match": [["d", "has_candidate", "c"], ["d", "has_selection", "selection"], ["selection", "selects_candidate", "winner"], ["d", "has_settlement", "settlement"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "status"}, "b": {"type": "Lit", "value": "resolved"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "settlement"}, "key": "status"}, "b": {"type": "Lit", "value": "resolved"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Var", "name": "c"}, "b": {"type": "Var", "name": "winner"}}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "status"}, "b": {"type": "Lit", "value": "rejected"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "rejection_reason"}, "b": {"type": "Lit", "value": "outcompeted_by_native_collapse"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "counterfactual_trace"}, "b": {"type": "Lit", "value": 0.0}},
+        {"type": "Gte", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "grounding"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "grounding_floor"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "winner"}, "key": "status"}, "b": {"type": "Lit", "value": "resolved"}}
+      ]},
+      "effects": [
+        ["add_node", "credit", "CounterfactualCredit", {"status": "recorded", "counterfactual_status": "unexecuted_alternative", "selected_candidate_id": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "winner"}, "key": "candidate_id"}}, "rejected_candidate_id": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "candidate_id"}}, "winner_outcome": "resolved", "winner_score": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "winner"}, "key": "arbitration_score"}}, "alternative_score": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "arbitration_score"}}, "winner_margin": {"__term__": {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "winner"}, "key": "arbitration_score"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "arbitration_score"}}}, "counterfactual_credit": {"__term__": {"type": "Minus", "a": {"type": "Lit", "value": 0.0}, "b": {"type": "Minus", "a": {"type": "Attr", "node": {"type": "Var", "name": "winner"}, "key": "arbitration_score"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "arbitration_score"}}}}, "trace": 1.0}],
+        ["add_edge", "d", "has_counterfactual_credit", "credit"],
+        ["add_edge", "credit", "credit_for_candidate", "c"],
+        ["add_edge", "credit", "compared_with_winner", "winner"],
+        ["set_attr", "c", "counterfactual_trace", 1.0]
+      ]
+    }
+  ]
+}

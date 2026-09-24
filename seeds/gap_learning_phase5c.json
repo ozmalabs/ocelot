@@ -1,0 +1,53 @@
+{
+  "id": "gap_learning_phase5c",
+  "version": "1.0.0",
+  "depends_on": ["gap_learning_phase5b", "self_correction_verification_phase5a"],
+  "capability_keys": ["gap_learning_promotion_assessment"],
+  "description": "PHASE 5C bounded increment: recurrence and failed correction remain graph evidence and are summarized into one supervised promotion assessment. The assessment never auto-promotes, closes, or duplicates a SelfConcern.",
+  "rules": [
+    {
+      "name": "assess_recurrent_gap_for_supervised_promotion",
+      "match": [["agent", "has_gap_recurrence", "rec"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Gte", "a": {"type": "Attr", "node": {"type": "Var", "name": "rec"}, "key": "recurrence_count"}, "b": {"type": "Lit", "value": 2.0}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "rec"}, "key": "assessment_recorded"}, "b": {"type": "Lit", "value": 1.0}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "rec", "assessment_recorded", 1.0],
+        ["add_node", "assessment", "GapLearningAssessment", {
+          "schema": "gap_learning_assessment.v1",
+          "gap_identity": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "rec"}, "key": "gap_identity"}},
+          "recurrence_count": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "rec"}, "key": "recurrence_count"}},
+          "failed_repair_count": {
+            "__term__": {
+              "type": "Count",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {"type": "Var", "name": "agent"},
+                  "edge_type": "has_correction_record"
+                },
+                "var_name": "record",
+                "predicate": {
+                  "type": "And",
+                  "items": [
+                    {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "record"}, "key": "outcome"}, "b": {"type": "Lit", "value": "failed"}},
+                    {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "record"}, "edge_type": "attempted_for"}, "var_name": "attempted", "predicate": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "attempted"}, "key": "gap_identity"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "rec"}, "key": "gap_identity"}}}
+                  ]
+                }
+              }
+            }
+          },
+          "promotion_status": "human_review",
+          "auto_promoted": 0.0
+        }],
+        ["add_edge", "agent", "has_gap_learning_assessment", "assessment"],
+        ["add_edge", "assessment", "assesses_recurrence", "rec"]
+      ]
+    }
+  ]
+}

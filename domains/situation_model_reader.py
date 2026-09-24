@@ -357,7 +357,17 @@ def ingest_predication(agent, pred: list, *, t: int = 0, unit=None) -> dict:
     if _is_property_pred(rel):
         ent = _entity(agent, a0, unit=unit)
         sub.set_attr(ent, a1, 1)                  # 'fragile' etc. becomes state=1
-        native.run_rules(10000)                   # a property may complete a stalled chain
+        native_steps = native.run_rules(10000)    # a property may complete a stalled chain
+        sub.add_node("NativeSituationModelReceipt", {
+            "schema": "native_situation_model_receipt.v1",
+            "cluster": "situation_model_reader.predication_settlement",
+            "provenance": "native_rule_readback:situation_model",
+            "native_rule": "situation_model_native_fixpoint",
+            "kind": "property",
+            "native_steps": int(native_steps),
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         return {"cos": False, "kind": "property", "predication": pred,
                 "entity": a0, "property": a1, "state": entity_state(agent, a0)}
 
@@ -413,7 +423,17 @@ def ingest_predication(agent, pred: list, *, t: int = 0, unit=None) -> dict:
         # no canonical delta rule matches a generic verb, but run the fixpoint so
         # any event_reasoning follow-on over already-stated state still reaches
         # fixpoint (mechanical, idempotent — no generic-specific branch).
-        native.run_rules(10000)
+        native_steps = native.run_rules(10000)
+        sub.add_node("NativeSituationModelReceipt", {
+            "schema": "native_situation_model_receipt.v1",
+            "cluster": "situation_model_reader.predication_settlement",
+            "provenance": "native_rule_readback:situation_model",
+            "native_rule": "situation_model_native_fixpoint",
+            "kind": "generic_event",
+            "native_steps": int(native_steps),
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         return {"cos": False, "kind": "generic_event", "predication": pred,
                 "membership": mem, "eventive": ev, "canon": ev["lemma"],
                 "object_role": "theme", "event": _v(event), "tracked_entity": a1,
@@ -473,11 +493,31 @@ def ingest_predication(agent, pred: list, *, t: int = 0, unit=None) -> dict:
     # RUN THE FIXPOINT — situation_model deltas + event_reasoning 3-hop chain. The
     # now-frame: only this event is active while its delta applies (the script idiom).
     sub.set_attr(event, "active", 1)
-    native.run_rules(10000)
+    native_steps = native.run_rules(10000)
+    sub.add_node("NativeSituationModelReceipt", {
+        "schema": "native_situation_model_receipt.v1",
+        "cluster": "situation_model_reader.predication_settlement",
+        "provenance": "native_rule_readback:situation_model",
+        "native_rule": "situation_model_native_fixpoint",
+        "kind": "change_of_state",
+        "native_steps": int(native_steps),
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     sub.set_attr(event, "active", 0)
     # a fresh `fell` may have completed the on_floor->broken->worthless chain; a
     # second sweep lets event_reasoning reach fixpoint over the whole model.
-    native.run_rules(10000)
+    native_steps = native.run_rules(10000)
+    sub.add_node("NativeSituationModelReceipt", {
+        "schema": "native_situation_model_receipt.v1",
+        "cluster": "situation_model_reader.predication_settlement",
+        "provenance": "native_rule_readback:situation_model",
+        "native_rule": "situation_model_native_fixpoint",
+        "kind": "change_of_state_followup",
+        "native_steps": int(native_steps),
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
 
     return {"cos": True, "kind": "change_of_state", "predication": pred,
             "membership": mem, "canon": canon, "verb_frame": sorted(frame),

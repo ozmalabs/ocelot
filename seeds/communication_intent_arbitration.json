@@ -1,0 +1,175 @@
+{
+  "id": "communication_intent_arbitration",
+  "version": "1.0.0",
+  "depends_on": ["intent"],
+  "capability_keys": ["communication_intent_arbitration"],
+  "description": "Phase 1 graph-native force/goal arbitration over language-neutral communication_evidence.v1. The language adapter supplies evidence categories; these rules derive communicative force and cognitive goal without treating grammatical kind, word order, or lexical form as the force. This is a deliberately small evidence policy, not a surface acknowledgement policy.",
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "arbitrate_explicit_failure_as_error",
+      "comment": "An adapter-supplied explicit failure is distinct from ordinary uncertainty. Native cognition records an error disposition before any repair surface can be released; ordinary uncertainty remains eligible for repair or defer.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "explicit_failure"}, "b": {"type": "Lit", "value": 1}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "communicative_force", "repair_or_defer"],
+        ["set_attr", "i", "cognitive_disposition", "error"],
+        ["set_attr", "i", "cognitive_goal", "error"],
+        ["set_attr", "i", "arbitration_basis", "explicit_failure"]
+      ]
+    },
+    {
+      "name": "arbitrate_account_instruction_as_information_request",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "information_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "communicative_force"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "communicative_force", "request_information"],
+        ["set_attr", "i", "cognitive_goal", "answer_or_learn"],
+        ["set_attr", "i", "arbitration_basis", "indirect_request_force"]
+      ]
+    },
+    {
+      "name": "arbitrate_instruction_as_action_request",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "action_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "communicative_force"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "communicative_force", "request_action"],
+        ["set_attr", "i", "cognitive_goal", "act_or_clarify"],
+        ["set_attr", "i", "arbitration_basis", "instruction_force"]
+      ]
+    },
+    {
+      "name": "arbitrate_question_as_information_request",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "information_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "communicative_force"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "communicative_force", "request_information"],
+        ["set_attr", "i", "cognitive_goal", "answer_or_learn"],
+        ["set_attr", "i", "arbitration_basis", "interrogative_force"]
+      ]
+    },
+    {
+      "name": "arbitrate_statement_as_common_ground_update",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "assertion_or_correction"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "communicative_force"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "communicative_force", "assertion_or_correction"],
+        ["set_attr", "i", "cognitive_goal", "update_common_ground"],
+        ["set_attr", "i", "arbitration_basis", "declarative_force"]
+      ]
+    },
+    {
+      "name": "arbitrate_frontier_as_repair_or_defer",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "repair_or_defer"}},
+        {"type": "Or", "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "explicit_uncertainty"}, "b": {"type": "Lit", "value": 0}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "explicit_uncertainty"}, "b": {"type": "Lit", "value": null}}
+        ]},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "communicative_force"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "communicative_force", "repair_or_defer"],
+        ["set_attr", "i", "cognitive_goal", "clarify_or_defer"],
+        ["set_attr", "i", "arbitration_basis", "grounding_failure"]
+      ]
+    },
+    {
+      "name": "arbitrate_declarative_native_over_table_promotion",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "information_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "literal_mood"}, "b": {"type": "Lit", "value": "declarative_or_fragment"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "native_kind"}, "b": {"type": "Lit", "value": "statement"}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "communicative_force", "assertion_or_correction"],
+        ["set_attr", "i", "cognitive_goal", "update_common_ground"],
+        ["set_attr", "i", "arbitration_basis", "declarative_native_evidence"]
+      ]
+    },
+    {
+      "name": "arbitrate_unresolved_statement_as_repair",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "repair_or_defer"}},
+        {"type": "Or", "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "explicit_uncertainty"}, "b": {"type": "Lit", "value": 0}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "explicit_uncertainty"}, "b": {"type": "Lit", "value": null}}
+        ]},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_goal"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "communicative_force", "repair_or_defer"],
+        ["set_attr", "i", "cognitive_goal", "clarify_or_defer"],
+        ["set_attr", "i", "arbitration_basis", "unresolved_gap"]
+      ]
+    },
+    {
+      "name": "arbitrate_social_event",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "social_action"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "communicative_force"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "communicative_force", "social_action"],
+        ["set_attr", "i", "cognitive_goal", "coordinate_socially"],
+        ["set_attr", "i", "arbitration_basis", "social_act"]
+      ]
+    },
+    {
+      "name": "arbitrate_typed_overlap_fragment_as_defer",
+      "comment": "Native cognition consumes an explicitly typed partial overlap event. The disposition is not inferred from a reply or from turn-taking.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_relation"}, "b": {"type": "Lit", "value": "overlap"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "literal_form"}, "b": {"type": "Lit", "value": "fragment"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "cognitive_disposition", "defer"],
+        ["set_attr", "i", "cognitive_goal", "clarify_or_defer"],
+        ["set_attr", "i", "arbitration_basis", "typed_overlap_partial_event"]
+      ]
+    }
+  ]
+}

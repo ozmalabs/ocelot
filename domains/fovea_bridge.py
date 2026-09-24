@@ -145,4 +145,13 @@ def resolve_fovea(cands: Sequence[dict],
     res = s.add_node("FoveaResolver", {})
     ids = ingest_candidates(s, res, cands, goal_logweights, admissible)
     native.run_rules()
+    s.add_node("NativeFoveaResolutionReceipt", {
+        "schema": "native_fovea_resolution_receipt_v1",
+        "cluster": "fovea_bridge.salience_selection",
+        "provenance": "native_rule_readback:fovea_salience",
+        "native_rule": "fovea_salience_argmin_unique",
+        "native_steps": ["ingest_candidates", "run_rules", "read_fovea"],
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     return read_fovea(s, ids)

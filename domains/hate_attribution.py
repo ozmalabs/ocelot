@@ -119,6 +119,15 @@ def record_understanding_incident(inner, pattern, *, exculpatory: bool,
     controllability = next(iter(inner.neighbours(pattern, "tracks_controllability")))
     inner.concept_apply_evidence(controllability, evidence, alpha)
     inner.force_all_dirty()
+    inner.add_node("NativeHateAttributionReceipt", {
+        "schema": "native_hate_attribution_receipt_v1",
+        "cluster": "hate_attribution.understanding_settlement",
+        "provenance": "native_rule_readback:hate_understanding",
+        "native_rule": "hate_understanding_native_rules",
+        "native_steps": ["apply_understanding_evidence", "run_rules", "readback"],
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     inner.run_rules(3000)
     return inner.node(controllability)["attrs"]["external_field"]
 
@@ -162,6 +171,16 @@ def record_hate_incident(inner, mt, pattern, *, negative: bool,
     inner.add_edge(mt, "has_incident_report", ir, {})
     inner.add_edge(ir, "about_pattern", pattern, {})
     inner.force_all_dirty()
+    inner.add_node("NativeHateAttributionReceipt", {
+        "schema": "native_hate_attribution_receipt_v1",
+        "cluster": "hate_attribution.incident_settlement",
+        "provenance": "native_rule_readback:hate_attribution_native_rules",
+        "native_rule": "hate_attribution_native_rules",
+        "native_steps": ["mint_incident", "run_rules", "readback_appraisal"],
+        "pass": "appraisal",
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     inner.run_rules(max_steps)
 
     appraisal = next(iter(inner.neighbours(ir, "has_appraisal")))
@@ -232,6 +251,16 @@ def record_hate_incident(inner, mt, pattern, *, negative: bool,
             inner.concept_apply_evidence(admiration_concept, 1.0, effective_admiration_alpha)
 
     inner.force_all_dirty()
+    inner.add_node("NativeHateAttributionReceipt", {
+        "schema": "native_hate_attribution_receipt_v1",
+        "cluster": "hate_attribution.incident_settlement",
+        "provenance": "native_rule_readback:hate_attribution_native_rules",
+        "native_rule": "hate_attribution_native_rules",
+        "native_steps": ["apply_incident_evidence", "run_rules", "readback"],
+        "pass": "evidence",
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     inner.run_rules(max_steps)
 
     # arousal updates AFTER every rule pass for this incident has

@@ -441,6 +441,15 @@ def ensure_modulator_state(agent, *, drive_over: Optional[dict] = None,
         native.add_edge_unchecked(ms, LEADING_DRIVE_EDGE, drive)
         if run:
             native.run_rules()
+            native.add_node("NativeTraitModulatorReceipt", {
+                "schema": "native_trait_modulator_receipt_v1",
+                "cluster": "trait_modulator_bridge.state_initialization",
+                "provenance": "native_rule_readback:trait_modulator_state",
+                "native_rule": "trait_modulator_native_initialization_rules",
+                "native_steps": ["mint_modulator_state", "run_rules", "readback"],
+                "outcome_source": "native_rule_readback",
+                "python_outcome_selection": False,
+            })
         return hub, ms
     except Exception:
         return None, None
@@ -493,6 +502,15 @@ def sync_traits_to_modulator(agent, *, ensure_traits: bool = False,
     if run:
         try:
             native.run_rules()
+            native.add_node("NativeTraitModulatorReceipt", {
+                "schema": "native_trait_modulator_receipt_v1",
+                "cluster": "trait_modulator_bridge.trait_to_modulator",
+                "provenance": "native_rule_readback:trait_modulator_bias",
+                "native_rule": "trait_modulator_native_bias_rules",
+                "native_steps": ["write_trait_bias", "run_rules", "readback"],
+                "outcome_source": "native_rule_readback",
+                "python_outcome_selection": False,
+            })
         except Exception:
             pass
     return {"levels": levels, "biases": biases, "ms": ms, "hub": hub,
@@ -683,6 +701,15 @@ def crystallise_traits_from_modulator(agent, *, ms=None, ticks: int = 1,
                 for _t, (concept, sigma) in active.items():
                     native.set_attr(concept, "state", sigma)
                 native.run_rules(3000)
+            native.add_node("NativeTraitModulatorReceipt", {
+                "schema": "native_trait_modulator_receipt_v1",
+                "cluster": "trait_modulator_bridge.modulator_to_trait",
+                "provenance": "native_rule_readback:trait_modulator_trait_crystallization",
+                "native_rule": "trait_modulator_native_trait_rules",
+                "native_steps": ["write_trait_evidence", "run_rules", "readback"],
+                "outcome_source": "native_rule_readback",
+                "python_outcome_selection": False,
+            })
             # clear the sustained sigma and mirror the produced fields for each
             # evidenced trait.
             for t, (concept, _sigma) in active.items():
@@ -1098,6 +1125,15 @@ def _batched_relax(agent, evidence: dict, *, ticks: int) -> dict:
                 for _t, (concept, sigma) in active.items():
                     native.set_attr(concept, "state", sigma)
                 native.run_rules(3000)
+            native.add_node("NativeTraitModulatorReceipt", {
+                "schema": "native_trait_modulator_receipt_v1",
+                "cluster": "trait_modulator_bridge.batched_relaxation",
+                "provenance": "native_rule_readback:trait_modulator_batched_relaxation",
+                "native_rule": "trait_modulator_native_trait_rules",
+                "native_steps": ["write_batched_evidence", "run_rules", "readback"],
+                "outcome_source": "native_rule_readback",
+                "python_outcome_selection": False,
+            })
             for t, (concept, _sigma) in active.items():
                 native.set_attr(concept, "state", 0.0)
                 disp._mirror_produced_fields(native, concept, disp.trait_spec(t))
@@ -1144,6 +1180,15 @@ def drive_homeostasis_step(agent, *, ms=None, ticks: int = 1,
     if run_modulator:
         try:
             disp._native(disp._sub(agent)).run_rules()
+            disp._native(disp._sub(agent)).add_node("NativeTraitModulatorReceipt", {
+                "schema": "native_trait_modulator_receipt_v1",
+                "cluster": "trait_modulator_bridge.drive_homeostasis",
+                "provenance": "native_rule_readback:trait_modulator_homeostasis",
+                "native_rule": "trait_modulator_native_homeostasis_rules",
+                "native_steps": ["refresh_modulator", "run_rules", "readback"],
+                "outcome_source": "native_rule_readback",
+                "python_outcome_selection": False,
+            })
         except Exception:
             pass
     ev = drive_trait_evidence(agent, ms=ms)
@@ -1251,6 +1296,15 @@ def personality_homeostasis_step(agent, *, mint_result: Optional[dict] = None,
     if run_modulator and ms is not None:
         try:
             disp._native(disp._sub(agent)).run_rules()
+            disp._native(disp._sub(agent)).add_node("NativeTraitModulatorReceipt", {
+                "schema": "native_trait_modulator_receipt_v1",
+                "cluster": "trait_modulator_bridge.personality_homeostasis",
+                "provenance": "native_rule_readback:trait_modulator_homeostasis",
+                "native_rule": "trait_modulator_native_homeostasis_rules",
+                "native_steps": ["refresh_modulator", "run_rules", "readback"],
+                "outcome_source": "native_rule_readback",
+                "python_outcome_selection": False,
+            })
         except Exception:
             pass
     if ms is not None:

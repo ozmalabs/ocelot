@@ -341,6 +341,15 @@ def validate_by_running(draft: dict) -> dict:
         result["observed"] = {"run_error": "%s: %s" % (type(e).__name__, e)}
 
     result["tests_pass"] = result["effect_matches"]
+    inner.add_node("NativeReadMethodValidationReceipt", {
+        "schema": "native_read_method_validation_receipt_v1",
+        "cluster": "read_method_draft.native_validation",
+        "provenance": "native_rule_readback:read_method_validation",
+        "native_rule": "read_method_draft_synthesized_rule",
+        "native_steps": ["install_draft_rule", "run_rules", "readback"],
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     result["how"] = ("built a minimal instance from the read model, ran the "
                      "synthesised rule, checked the described effect")
     # `notes` is what attach_validation persists (effect_matches/observed are not),

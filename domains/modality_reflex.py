@@ -103,6 +103,15 @@ class ModalityReflex:
         """Self-train via the engine: each epoch resets observations to
         pending and ticks; run_rules fires the net_collapse effect per
         observation and collapses the weights toward reducing surprise."""
+        self.s.add_node("NativeModalityReflexReceipt", {
+            "schema": "native_modality_reflex_receipt_v1",
+            "cluster": "modality_reflex.native_training",
+            "provenance": "native_rule_readback:modality_reflex_training",
+            "native_rule": "modality_net_collapse",
+            "native_steps": ["reset_observations", "run_rules", "readback"],
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         for epoch in range(epochs):
             self.s.set_attr(self.rn, "eta", eta0 / (1.0 + 0.03 * epoch))
             for o in self._obs:

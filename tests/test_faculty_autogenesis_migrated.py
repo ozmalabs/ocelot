@@ -44,6 +44,13 @@ def test_missing_humanoid_discriminator_is_authored_and_installed_live():
     _edge(agent, agent.agent, "has_embodied_development_episode", episode)
 
     faculty_autogenesis.pump(agent)
+    receipts = list(agent.s.nodes("NativeFacultyAutogenesisReceipt"))
+    assert len(receipts) == 1
+    receipt_attrs = agent.s.node(receipts[0])["attrs"]
+    assert receipt_attrs["provenance"] == (
+        "native_rule_readback:faculty_autogenesis")
+    assert receipt_attrs["outcome_source"] == "native_rule_readback"
+    assert receipt_attrs["python_outcome_selection"] is False
     needs = agent.inner.neighbours(agent.agent, "has_faculty_need")
     assert len(needs) == 1
     assert agent.s.node(needs[0])["attrs"]["status"] == "installed"

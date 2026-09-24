@@ -124,6 +124,12 @@ def test_mints_exactly_one_new_dimension(minted):
     # exactly one minted StyleDimension node.
     dims = ctp.dimensions(minted["ag"])
     assert sum(1 for d in dims if d["minted"]) == 1
+    receipts = list(minted["ag"].s.nodes("NativeCrossTextPriorReceipt"))
+    assert len(receipts) == 1
+    attrs = minted["ag"].s.node(receipts[0])["attrs"]
+    assert attrs["provenance"] == "native_rule_readback:cross_text_prior"
+    assert attrs["outcome_source"] == "native_rule_readback"
+    assert attrs["python_outcome_selection"] is False
 
 
 def test_two_texts_locate_distinctly_after_the_mint(minted):

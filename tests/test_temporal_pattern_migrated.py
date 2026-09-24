@@ -236,6 +236,8 @@ def _no_shipped_temporal_conflict_rule():
             m = json.loads(p.read_text())
         except Exception:
             continue
+        if not isinstance(m, dict):
+            continue
         for r in m.get("rules", []) or []:
             for eff in r.get("effects", []) or []:
                 if isinstance(eff, list) and len(eff) >= 3 and \

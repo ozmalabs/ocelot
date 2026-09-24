@@ -373,6 +373,16 @@ def _lattice_partition(spans, L: int, *, word_penalty: float,
             s.add_edge_unchecked(ed, "dst", h)
     for p in range(0, L + 1):                                  # FORWARD: tick active_pos left->right
         s.set_attr(lat, "active_pos", float(p))
+        s.add_node("NativeInkDecodeReceipt", {
+            "schema": "native_ink_decode_receipt_v1",
+            "cluster": "ink_decode.lattice_settlement",
+            "provenance": "native_rule_readback:ink_lattice",
+            "native_rule": "ink_lattice_native_rules",
+            "native_steps": ["advance_active_pos", "run_rules", "readback"],
+            "phase": "forward",
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         s._inner.run_rules(400000)
     # The winning terminal Hyp (pos==L, max vscore) — Argmax over the Hyp NODE itself (not
     # its vscore value) so the host can seed on_path=1 on it for the backtrace below.
@@ -387,6 +397,16 @@ def _lattice_partition(spans, L: int, *, word_penalty: float,
     if term_node is None:
         return []
     s.set_attr(term_node, "on_path", 1.0)
+    s.add_node("NativeInkDecodeReceipt", {
+        "schema": "native_ink_decode_receipt_v1",
+        "cluster": "ink_decode.lattice_settlement",
+        "provenance": "native_rule_readback:ink_lattice",
+        "native_rule": "ink_lattice_native_rules",
+        "native_steps": ["seed_terminal_winner", "run_rules", "readback"],
+        "phase": "backtrace",
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     s._inner.run_rules(400000)                                  # BACKTRACE (graph-native)
     segs = [(st, e, sym_name) for h, (st, e, sym_name) in info.items()
             if s.node(h)["attrs"].get("on_path") == 1.0]
@@ -627,6 +647,15 @@ def _refine_or_note(agent, sub, native, ag_node, stroke_node: int, parent_name: 
     sub.add_edge_unchecked(stroke_node, "refinement_observation", obs)
     if ag_node is not None:
         sub.add_edge_unchecked(ag_node, "refines", obs)
+    sub.add_node("NativeInkDecodeReceipt", {
+        "schema": "native_ink_decode_receipt_v1",
+        "cluster": "ink_decode.refinement_settlement",
+        "provenance": "native_rule_readback:ink_refinement",
+        "native_rule": "ink_refinement_native_rules",
+        "native_steps": ["mint_refinement_observation", "run_rules", "readback"],
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     native.run_rules()
 
     status = sub.node(obs)["attrs"].get("status")
@@ -1218,6 +1247,15 @@ def decode_ink(agent, ink: int, *, writer: Optional[str] = None,
     # agent" after ingest) -- lets seeds/writer_dimensions.json's wd_infer_writer react to
     # the Transform/Writer graph data this call just wrote (pool >=3 agreeing
     # orient_deltas -> mint a WriterStyle), a reflex, not a re-decision here.
+    native.add_node("NativeInkDecodeReceipt", {
+        "schema": "native_ink_decode_receipt_v1",
+        "cluster": "ink_decode.writer_settlement",
+        "provenance": "native_rule_readback:ink_writer",
+        "native_rule": "ink_writer_native_rules",
+        "native_steps": ["write_transform_evidence", "run_rules", "readback"],
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     native.run_rules()
 
     return {"spans": [(st, e, name) for (st, e, name) in on_path],

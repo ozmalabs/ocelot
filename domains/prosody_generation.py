@@ -221,6 +221,15 @@ def substrate_affect_coord(emotion: str):
             hub, ms = _hub_ms(eye, inner, **ms_over)
             _drive(eye, inner, ms, **dr_over)
         inner.run_rules()
+        inner.add_node("NativeProsodyAffectReceipt", {
+            "schema": "native_prosody_affect_receipt_v1",
+            "cluster": "prosody_generation.affect_coordinate",
+            "provenance": "native_rule_readback:modulator_affect",
+            "native_rule": "mod_valence_mod_arousal_mod_arousal_phasic",
+            "native_steps": ["configure_drive", "run_rules", "read_modulator_state"],
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         a = dict(_ms_attrs(eye, ms))
         eye.stop()
         return dict(valence=float(a.get("valence", 0.0)),

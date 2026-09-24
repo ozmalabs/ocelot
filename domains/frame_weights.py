@@ -252,6 +252,16 @@ def update_quantum_frame(agent, quantum_node, quantum_name: str, agreements: dic
         axis = ensure_axis(sub, frame_node, key, scope="quantum")
         write_axis_evidence(sub, axis, bool(agree))
     native.run_rules()
+    sub.add_node("NativeFrameWeightsReceipt", {
+        "schema": "native_frame_weights_receipt_v1",
+        "cluster": "frame_weights.quantum_update",
+        "provenance": "native_rule_readback:frame_weights",
+        "native_rule": "frame_weights_native_update_rules",
+        "native_steps": ["write_axis_evidence", "run_rules", "readback"],
+        "operation": "quantum_update",
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     return {"weights": frame_axis_weights(sub, frame_node)}
 
 
@@ -292,6 +302,16 @@ def pooled_reliability(sub) -> dict:
     ensure_loaded(sub, native, ag_node)
     frame_node = request_pool_refresh(sub)
     native.run_rules()
+    sub.add_node("NativeFrameWeightsReceipt", {
+        "schema": "native_frame_weights_receipt_v1",
+        "cluster": "frame_weights.pooled_update",
+        "provenance": "native_rule_readback:frame_weights_pool",
+        "native_rule": "frame_weights_native_pool_rules",
+        "native_steps": ["request_pool_refresh", "run_rules", "readback"],
+        "operation": "pooled_update",
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     return frame_axis_weights(sub, frame_node)
 
 

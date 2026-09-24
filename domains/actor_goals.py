@@ -326,7 +326,19 @@ def annotate_actor_action(agent, out: dict, marker_seq: list, roles: list) -> li
         existing.add(key)
         created.append(node)
     if created:
-        native.run_rules()
+        native_steps = native.run_rules()
+        receipt = sub.add_node("NativeActorGoalReceipt", {
+            "schema": "native_actor_goal_receipt.v1",
+            "cluster": "actor_goals.actor_action_settlement",
+            "provenance": "native_rule_readback:actor_goal_settlement",
+            "native_rule": "actor_goals_native_rule_set",
+            "actor_action_count": len(created),
+            "native_steps": int(native_steps),
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
+        native.add_edge_unchecked(
+            ag_node, "has_native_actor_goal_receipt", receipt)
     return created
 
 
@@ -486,7 +498,18 @@ def _author_layer_rule(agent, *, method_name: str, rule_name: str,
     gb = br.derive_binding(agent, model)
     res = ms.synthesise_rule_from_method(agent, model, gb.get("binding"), install=True)
     if res.get("installed"):
-        native.run_rules()
+        native_steps = native.run_rules()
+        receipt = sub.add_node("NativeActorRuleAuthoringReceipt", {
+            "schema": "native_actor_rule_authoring_receipt.v1",
+            "cluster": "actor_goals.authored_rule_execution",
+            "provenance": "native_rule_readback:actor_goal_authored_rule",
+            "authored_rule": rule_name,
+            "native_steps": int(native_steps),
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
+        native.add_edge_unchecked(
+            ag_node, "has_native_actor_rule_authoring_receipt", receipt)
         return True
     return False
 
@@ -676,7 +699,19 @@ def annotate_disclaimer_candidates(agent, utterance: str) -> list:
         existing.add(phrase)
         created.append(node)
     if created:
-        native.run_rules()
+        native_steps = native.run_rules()
+        receipt = sub.add_node("NativeDisclaimerReceipt", {
+            "schema": "native_disclaimer_receipt.v1",
+            "cluster": "actor_goals.disclaimer_settlement",
+            "provenance": "native_rule_readback:disclaimer_codebook",
+            "native_rule": "actor_goals_disclaimer_codebook_rules",
+            "candidate_count": len(created),
+            "native_steps": int(native_steps),
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
+        native.add_edge_unchecked(
+            ag_node, "has_native_disclaimer_receipt", receipt)
     return created
 
 
@@ -741,7 +776,23 @@ def annotate_utterance_phrases(agent, utterance: str) -> list:
         existing.add(phrase)
         created.append(node)
     if created:
-        native.run_rules()
+        native_steps = native.run_rules()
+        # The rule engine is authoritative for the downstream phrase-cue
+        # materialization.  Record only the native boundary readback; this
+        # helper emits candidate n-grams mechanically and makes no semantic
+        # selection in Python.
+        receipt = sub.add_node("NativeUtterancePhraseAnnotationReceipt", {
+            "schema": "native_utterance_phrase_annotation_receipt.v1",
+            "cluster": "actor_goals.utterance_phrase_annotation",
+            "provenance": "native_rule_readback:utterance_phrase_annotation",
+            "native_rule": "actor_goals_utterance_phrase_annotation_v1",
+            "utterance_phrase_count": len(created),
+            "native_steps": int(native_steps),
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
+        native.add_edge_unchecked(
+            ag_node, "has_native_utterance_phrase_annotation_receipt", receipt)
     return created
 
 
@@ -865,7 +916,19 @@ def annotate_action_pairs(agent) -> list:
             existing.add(key)
             created.append(node)
     if created:
-        native.run_rules()
+        native_steps = native.run_rules()
+        receipt = sub.add_node("NativeActionPairReceipt", {
+            "schema": "native_action_pair_receipt.v1",
+            "cluster": "actor_goals.action_pair_settlement",
+            "provenance": "native_rule_readback:action_pair_codebook",
+            "native_rule": "actor_goals_action_pair_codebook_rules",
+            "pair_count": len(created),
+            "native_steps": int(native_steps),
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
+        native.add_edge_unchecked(
+            ag_node, "has_native_action_pair_receipt", receipt)
     return created
 
 
@@ -1650,7 +1713,19 @@ def assess_epistemic_lean(agent) -> list:
     native.run_rules(10000)                    # detection + structural forcing + baseline apply
     ensure_epistemic_combine_rule(agent)
     native.run_rules(10000)                    # the banding fires once
-    return held_epistemic_readings(agent)
+    readings = held_epistemic_readings(agent)
+    receipt = sub.add_node("NativeEpistemicAssessmentReceipt", {
+        "schema": "native_epistemic_assessment_receipt.v1",
+        "cluster": "actor_goals.epistemic_assessment",
+        "provenance": "native_rule_readback:epistemic_assessment",
+        "native_rule": "epistemic_detection_and_combine_rule_set",
+        "reading_count": len(readings),
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
+    native.add_edge_unchecked(
+        ag_node, "has_native_epistemic_assessment_receipt", receipt)
+    return readings
 
 
 # =========================================================================== #

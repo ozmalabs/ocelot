@@ -123,6 +123,15 @@ class CrossFrameWorld:
         return node
 
     def run(self):
+        self.s.add_node("NativeCrossFrameReceipt", {
+            "schema": "native_crossframe_receipt_v1",
+            "cluster": "crossframe_world.identity_settlement",
+            "provenance": "native_rule_readback:crossframe_identity",
+            "native_rule": "crossframe_identity_native_rules",
+            "native_steps": ["present_observations", "run_rules", "readback"],
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         self.native.run_rules()
 
     def read(self):

@@ -172,6 +172,15 @@ def discover_order(s, ag, native, cy_seq, cx_seq):
                    {"frames": frames, "dim_types": DT,
                     "status": "motion_seq", "key": ["motion"]})
     s.add_edge(ag, "observed", o)
+    s.add_node("NativeFallingWorldReceipt", {
+        "schema": "native_falling_world_receipt_v1",
+        "cluster": "falling_world.order_discovery",
+        "provenance": "native_rule_readback:falling_order",
+        "native_rule": "falling_world_native_order_rules",
+        "native_steps": ["ingest_trajectory", "run_rules", "readback"],
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     native.run_rules()
     status = s.node(o)["attrs"].get("status")
     mints = []

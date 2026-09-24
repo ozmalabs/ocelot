@@ -127,6 +127,13 @@ def test_five_indices_and_residual():
     assert ing2["object_role"] == "theme"
     assert ing2["indices"]["protagonist"] == "john" and ing2["indices"]["entity"] == "glass"
     assert "space" in ing2["residual_indices"]
+    receipts = [ag2.s.node(n)["attrs"] for n in
+                ag2.s.nodes("NativeSituationModelReceipt")]
+    assert len(receipts) == 2
+    assert all(r["provenance"] ==
+               "native_rule_readback:situation_model" for r in receipts)
+    assert all(r["outcome_source"] == "native_rule_readback" and
+               r["python_outcome_selection"] is False for r in receipts)
 
 
 # --------------------------------------------------------------------------- #

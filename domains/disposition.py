@@ -656,6 +656,16 @@ def relax_trait(agent, trait, evidence: float, *, ticks: int = 1,
             native.set_attr(mt, "can_tick", base + i + 1)  # strictly-later epoch
             native.set_attr(concept, "state", sigma)        # sustain the sigma
             native.run_rules(max_steps)
+        native.add_node("NativeDispositionReceipt", {
+            "schema": "native_disposition_receipt_v1",
+            "cluster": "disposition.trait_settlement",
+            "provenance": "native_rule_readback:trait_dynamics",
+            "native_rule": "disposition_trait_native_rules",
+            "native_steps": ["set_evidence", "run_rules", "mirror_readback"],
+            "operation": "relax",
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         _mirror_produced_fields(native, concept, spec)
     except Exception:
         pass
@@ -692,6 +702,16 @@ def pull_trait(agent, trait, amount: float, *, max_steps: int = 3000) -> float:
             native.force_all_dirty()  # external_field written outside the
                                       # rule-effect path; otherwise no-op'd
         native.run_rules(max_steps)
+        native.add_node("NativeDispositionReceipt", {
+            "schema": "native_disposition_receipt_v1",
+            "cluster": "disposition.trait_settlement",
+            "provenance": "native_rule_readback:trait_dynamics",
+            "native_rule": "disposition_trait_native_rules",
+            "native_steps": ["set_external_field", "run_rules", "mirror_readback"],
+            "operation": "pull",
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         _mirror_produced_fields(native, concept, spec)
         return float(native.node(concept)["attrs"].get(spec.external_attr, 0.0))
     except Exception:
@@ -724,6 +744,16 @@ def crystallize_trait(agent, trait, *, run: bool = True) -> bool:
             base = int(native.node(mt)["attrs"].get("can_tick") or 0)
             native.set_attr(mt, "can_tick", base + 1)
             native.run_rules(3000)
+            native.add_node("NativeDispositionReceipt", {
+                "schema": "native_disposition_receipt_v1",
+                "cluster": "disposition.trait_settlement",
+                "provenance": "native_rule_readback:trait_dynamics",
+                "native_rule": "disposition_trait_native_rules",
+                "native_steps": ["advance_can_tick", "run_rules", "mirror_readback"],
+                "operation": "crystallize",
+                "outcome_source": "native_rule_readback",
+                "python_outcome_selection": False,
+            })
         _mirror_produced_fields(native, concept, spec)
     except Exception:
         return False

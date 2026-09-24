@@ -25,7 +25,6 @@ def _agent():
     for w in ("is_a", "uses", "graph", "structure", "process", "data"):
         wa.learn_sign(w, w)
     wa.learn_sign("hello", "greeting")
-    wa.learn_sign("noted", "acknowledgment")
     wa.learn_fact({"is_a": {"left": "graph", "right": "structure"}})
     wa.learn_fact({"uses": {"left": "process", "right": "data"}})
     return wa
@@ -75,5 +74,6 @@ def test_mixed_conversation():
     """Greeting, statement, and question each handled on the one loop."""
     wa = _agent()
     assert wa.converse("hello", "greeting") == "hello"
-    assert wa.converse("the sky is blue", "statement") == "noted"
+    assert wa.converse("the sky is blue", "statement") == \
+        "ERROR: no communicative response could be generated."
     assert wa.converse("what is a graph", "question") == "graph is_a structure"

@@ -239,13 +239,23 @@ def mint_fetch_request(agent, url: str, purpose: str = ""):
     })
 
 
-def mint_search_request(agent, query: str, purpose: str = ""):
+def mint_search_request(agent, query: str, purpose: str = "",
+                        *, referents=None, referent_status: str = "supported"):
     """Hand-mint a SearchRequest node. A test/authoring helper — the agent mints
     these itself via its own rules (`seeds/topic_search.json`); this exists so the
     search MECHANISM can be exercised/tested without that rule machinery (mirrors
     `mint_fetch_request`)."""
+    refs = [str(r).strip() for r in (referents or [query])
+            if str(r).strip()]
     return agent.s.add_node("SearchRequest", {
         "query": str(query), "status": "requested", "purpose": str(purpose or ""),
+        "referent_status": str(referent_status), "referent_count": len(refs),
+        "referents": refs,
+        "referent_evidence_path": (
+            "SearchRequest -> referent_evidence -> supported"
+            if referent_status == "supported" else
+            "SearchRequest -> referent_evidence -> unknown"),
+        "communication_event_claimed": 0.0,
     })
 
 
@@ -273,11 +283,20 @@ def scan_and_search(agent, *, http_get=None, timeout: int = 15,
         if a.get("status") != "requested":
             continue
         query = a.get("query") or ""
+        if "referent_status" not in a:
+            I.set_attr(req, "referent_status", "supported")
+            I.set_attr(req, "referent_count", 1)
+            I.set_attr(req, "referents", [str(query)])
+            I.set_attr(req, "referent_evidence_path",
+                       "SearchRequest -> referent_evidence -> supported")
+            I.set_attr(req, "communication_event_claimed", 0.0)
         I.set_attr(req, "status", "running")
         touched.append(req)
 
         if not str(query).strip():
             I.set_attr(req, "status", "failed")
+            I.set_attr(req, "epistemic_status", "unknown")
+            I.set_attr(req, "evidence_path", "SearchRequest -> empty_query")
             I.set_attr(req, "error", "empty query")
             log("search refused: empty query")
             continue
@@ -287,6 +306,9 @@ def scan_and_search(agent, *, http_get=None, timeout: int = 15,
                                                    http_get=http_get)
             if count <= 0:
                 I.set_attr(req, "status", "failed")
+                I.set_attr(req, "epistemic_status", "unknown")
+                I.set_attr(req, "evidence_path",
+                           "SearchRequest -> retrieval_attempt -> no_candidates")
                 I.set_attr(req, "error", "no candidates")
                 log(f"search miss: {query!r} (no candidates)")
                 continue
@@ -298,18 +320,29 @@ def scan_and_search(agent, *, http_get=None, timeout: int = 15,
             ans = _tg.commit_selected_search(agent, req, str(query))
         except Exception as e:  # noqa: BLE001 -- network/host failure -> failed, not a crash
             I.set_attr(req, "status", "failed")
+            I.set_attr(req, "epistemic_status", "search_failed")
+            I.set_attr(req, "evidence_path", "SearchRequest -> retrieval_attempt -> exception")
             I.set_attr(req, "error", f"{type(e).__name__}: {e}")
             log(f"search failed ({query!r}): {type(e).__name__}: {e}")
             continue
 
         if not ans:
             I.set_attr(req, "status", "failed")
+            candidates = [S.node(c)["attrs"] for c in I.neighbours(req, "has_candidate")
+                          if S.has_node(c)]
+            epistemic_status = ("contradicted" if any(
+                c.get("epistemic_status") == "contradicted" for c in candidates)
+                else "unknown")
+            I.set_attr(req, "epistemic_status", epistemic_status)
+            I.set_attr(req, "evidence_path",
+                       "SearchRequest -> has_candidate -> verification -> no_supported_candidate")
             I.set_attr(req, "error", "no verified candidate")
             log(f"search miss: {query!r} (no verified candidate)")
             continue
 
         I.set_attr(req, "answer", _cap_text(str(ans), 4000))
         I.set_attr(req, "status", "done")
+        I.set_attr(req, "epistemic_status", "supported")
         log(f"searched {query!r} -> grounded ({len(str(ans))} chars)")
     return touched
 

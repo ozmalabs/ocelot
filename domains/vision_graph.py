@@ -300,6 +300,15 @@ class RGBEye:
             task_nodes.append(task)
             shapes.append(((ph_ - kh) + 1, (pw_ - kw) + 1))
         capacity = int(self.context.get("worker_capacity", 1))
+        self.substrate._inner.add_node("NativeVisionGraphReceipt", {
+            "schema": "native_vision_graph_receipt_v1",
+            "cluster": "vision_graph.convolution_tasks",
+            "provenance": "native_cycle_readback:vision_convolution",
+            "native_rule": "vision_convolution_native_tasks",
+            "native_steps": ["mint_convolution_tasks", "run_cognitive_tasks", "readback"],
+            "outcome_source": "native_cycle_readback",
+            "python_outcome_selection": False,
+        })
         self.substrate._inner.run_cognitive_tasks(max(1, capacity))
         outputs = []
         for task, shape in zip(task_nodes, shapes):

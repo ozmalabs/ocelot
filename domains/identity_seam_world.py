@@ -149,6 +149,15 @@ class SeamWorld:
         return n_probes
 
     def run(self):
+        self.s.add_node("NativeIdentitySeamReceipt", {
+            "schema": "native_identity_seam_receipt_v1",
+            "cluster": "identity_seam_world.identity_growth",
+            "provenance": "native_rule_readback:identity_seam",
+            "native_rule": "identity_seam_native_rules",
+            "native_steps": ["present_observations", "run_rules", "readback"],
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         self.native.run_rules()
 
     # ------------------------------------------------------------ readback

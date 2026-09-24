@@ -117,6 +117,15 @@ class AchieveWorld:
         self.s.set_attr(self.gr, "now_epoch", float(now_epoch))
         for c in self.cands:                       # mechanical amp reset (like harvest republishing)
             self.s.set_attr(c, "amp", 0.0)
+        self.inner.add_node("NativeAchieveReceipt", {
+            "schema": "native_achieve_receipt_v1",
+            "cluster": "achieve_world.decide",
+            "provenance": "native_rule_readback:achieve_world",
+            "native_rule": "achieve_world_native_rules",
+            "native_steps": ["write_epoch", "run_rules", "readback"],
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         self.inner.run_rules()
         a = self.s.node(self.dec)["attrs"]
         return dict(

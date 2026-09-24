@@ -108,6 +108,43 @@ def _add_edge_unchecked(native, src, edge_type, tgt, attrs=None) -> None:
         native.add_edge_unchecked(src, edge_type, tgt)
 
 
+def _ensure_output_candidate_commit_rule(native) -> None:
+    """Install the native output-null commitment gate once.
+
+    ``scan_and_monitor`` computes self-target evidence; this rule is the only
+    authority that may turn a recoverable candidate into a ``Committed`` node.
+    It is deliberately a fixed, idempotent graph rule because the output-null
+    path has no communicative Goal from which the reflective composer could
+    derive the ordinary intent/shape monitor batch.
+    """
+    V = lambda n: {"type": "Var", "name": n}
+    L = lambda v: {"type": "Lit", "value": v}
+    Attr = lambda nd, k: {"type": "Attr", "node": nd, "key": k}
+    Nb = lambda nd, et: {"type": "Neighbours", "node": nd, "edge_type": et}
+    Exists = lambda src, var, pred: {"type": "Exists", "source": src,
+                                      "var_name": var, "predicate": pred}
+    rule = {
+        "name": "conceptualizer_output_candidate_commit",
+        "match": [["candidate", "has_verdict", "verdict"]],
+        "where": {"type": "And", "items": [
+            {"type": "Eq", "a": Attr(V("verdict"), "recoverable"), "b": L(True)},
+            {"type": "Not", "arg": Exists(Nb(V("candidate"), "has_committed"),
+                                               "_i", L(True))},
+        ]},
+        "effects": [
+            ["add_node", "committed", "Committed", {
+                "utterance": {"__term__": Attr(V("candidate"), "utterance")},
+                "recoverable": {"__term__": Attr(V("verdict"), "recoverable")},
+                "coverage": {"__term__": Attr(V("verdict"), "coverage")},
+            }],
+            ["add_edge", "candidate", "has_committed", "committed"],
+        ],
+    }
+    existing = {r.get("name") for r in native.export_rules()
+                if isinstance(r, dict)}
+    native.add_rule(rule) if rule["name"] not in existing else None
+
+
 # --------------------------------------------------------------------------- #
 #  0. seed bring-up — mechanical, idempotent (SAME guard idiom as
 #     reflective_faculty._ensure_seed_chain / substrate.boot_core.load_seeds_into).
@@ -405,6 +442,7 @@ def scan_and_monitor(agent, lexicon: list[dict], *, candidate: str | None = None
     engine branches on, the SAME justification tier `scan_and_conceptualize` already
     establishes for itself. Mechanical scan, safe every tick."""
     sub, native, ag_node = _resolve(agent)
+    _ensure_output_candidate_commit_rule(native)
     results: list[dict] = []
     for req in list(sub.nodes(_MONITOR_REQUEST_TYPE)):
         at = sub.node(req)["attrs"]
@@ -450,7 +488,8 @@ def scan_and_monitor(agent, lexicon: list[dict], *, candidate: str | None = None
         results.append({"request": req, "shape": shape, "intent": intent, "verdict": verdict,
                          "recoverable": recoverable, "missing": missing,
                          "perlocutionary_goal": iat.get("perlocutionary_goal")})
-    if candidate is not None:
+    candidate_inputs = (candidate,) if candidate is not None else ()
+    for candidate in candidate_inputs:
         # Output-null candidate gate: keep the produced string buffered until the
         # self-target monitor establishes full semantic recoverability.  This
         # uses the same Verdict/Committed graph vocabulary as the rule-driven
@@ -472,14 +511,19 @@ def scan_and_monitor(agent, lexicon: list[dict], *, candidate: str | None = None
             "mode": verdict_data["mode"],
         })
         _add_edge_unchecked(native, candidate_node, "has_verdict", verdict_node)
-        committed_node = None
-        if verdict_data["recoverable"]:
-            committed_node = sub.add_node(_COMMITTED_TYPE, {
-                "utterance": str(candidate),
-                "recoverable": True,
-                "coverage": verdict_data["coverage"],
-            })
-            _add_edge_unchecked(native, candidate_node, "has_committed", committed_node)
+        native_steps = native.run_rules(200)
+        committed_node = next(iter(native.neighbours(candidate_node, "has_committed")), None)
+        sub.add_node("NativeConceptualizerReceipt", {
+            "schema": "native_conceptualizer_receipt.v1",
+            "cluster": "conceptualizer.monitor_candidate_settlement",
+            "provenance": "native_rule_readback:conceptualizer_candidate_commit",
+            "native_rule": "conceptualizer_output_candidate_commit",
+            "native_steps": int(native_steps),
+            "candidate": candidate_node,
+            "committed": committed_node,
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         results.append({"candidate": candidate_node, "verdict": verdict_node,
                         "committed": committed_node,
                         **verdict_data})
@@ -487,7 +531,7 @@ def scan_and_monitor(agent, lexicon: list[dict], *, candidate: str | None = None
 
 
 def run_pipeline(agent, lexicon: list[dict], *, rounds: int = 4, tick_budget: int = 2000,
-                  **select_kwargs) -> None:
+                 **select_kwargs) -> None:
     """PHASE-3 ENTRY POINT: run the full conceptualizer fixpoint -- form intent -> shape ->
     formulate -> monitor -> commit (looping through revise/re-monitor as needed) -- from one
     call. Pumps `tick -> scan_and_conceptualize -> tick -> scan_and_monitor` a FIXED number of
@@ -496,12 +540,32 @@ def run_pipeline(agent, lexicon: list[dict], *, rounds: int = 4, tick_budget: in
     already relies on). Call `mint_communicative_goal` first, then this, then `read_committed`
     for the utterance cleared to emit -- nothing earlier in the pipeline is safe to emit."""
     sub, native, ag_node = _resolve(agent)
+    native_passes = 0
     for _ in range(rounds):
         native.run_rules(tick_budget)
+        native_passes += 1
         scan_and_conceptualize(agent, lexicon, **select_kwargs)
         native.run_rules(tick_budget)
+        native_passes += 1
         scan_and_monitor(agent, lexicon)
     native.run_rules(tick_budget)
+    native_passes += 1
+    # This receipt covers native rule execution only. The surrounding scans
+    # remain adapter-bound mechanical graph I/O and are not promoted to native
+    # authority by this record.
+    receipt = sub.add_node("NativeConceptualizerReceipt", {
+        "cluster": "conceptualizer.native_pipeline",
+        "provenance": "native_rule_readback:conceptualizer_pipeline",
+        "rule": "conceptualizer_authored_rule_set",
+        "rounds": int(rounds),
+        "native_passes": int(native_passes),
+        "tick_budget": int(tick_budget),
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
+    if ag_node is not None:
+        _add_edge_unchecked(native, ag_node,
+                            "has_native_conceptualizer_receipt", receipt)
 
 
 # --------------------------------------------------------------------------- #

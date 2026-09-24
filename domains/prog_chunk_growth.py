@@ -622,9 +622,27 @@ def chunk_pump(sub, ag_node, *, max_rounds: int = 8) -> None:
     """run_rules → apply the pending mechanical scan → repeat to quiescence
     (ingest → tick → query, CLAUDE.md's own loop)."""
     for _ in range(max_rounds):
+        sub._inner.add_node("NativeProgramChunkReceipt", {
+            "schema": "native_program_chunk_receipt_v1",
+            "cluster": "prog_chunk_growth.native_pump",
+            "provenance": "native_rule_readback:program_chunk_growth",
+            "native_rule": "program_chunk_growth_native_rules",
+            "native_steps": ["run_rules", "scan_marked_programs"],
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         sub._inner.run_rules(400000)
         if not scan_marked_programs(sub, ag_node):
             break
+    sub._inner.add_node("NativeProgramChunkReceipt", {
+        "schema": "native_program_chunk_receipt_v1",
+        "cluster": "prog_chunk_growth.native_pump",
+        "provenance": "native_rule_readback:program_chunk_growth",
+        "native_rule": "program_chunk_growth_native_rules",
+        "native_steps": ["final_run_rules", "readback"],
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     sub._inner.run_rules(400000)
 
 
