@@ -2979,3 +2979,16 @@ referent store, candidate ledger, or surface fallback was added.
 - Phase 7 remains open despite the clean **183/183 native authority** census;
   Phase 8 remains blocked on complete target/reference scorecards, especially
   base-human and advanced-human observations.
+
+### Gate 3 contract reconciliation — 2026-09-24
+
+- The legacy `ThoughtSegment -> Committed` label was not the live conversational
+  substrate contract. It belongs to autonomous discovery. The conversational
+  deliberation authority is the native `DeliberationExecutionTrace` plus
+  `DeliberationSettlement` chain.
+- Added `tests/test_deliberative_production.py` to establish a grounded
+  candidate for one communicative goal, settle it natively, and verify that the
+  existing monitor-cleared `Committed` release remains graph-resident for the
+  same goal.
+- Focused `.venv` verification: **1 passed in 23.27s**. This closes the
+  reconciled Gate 3 contract without adding a duplicate thought store.
