@@ -1490,3 +1490,22 @@ validation, and `git diff --check` pass.
   warm-up was added because the full-replay and total boot-plus-event budget
   remains unmeasured.
 - This refines Phase 7 attribution only; the resource exit remains open.
+
+### 2026-09-24 — Stream seed manifests during boot
+
+- `load_all_seeds()` now reads compact seed identity/dependency metadata to
+  compute the same topological order, then reads each full manifest as it is
+  installed. Generated overrides and `self_load_only` behavior are preserved.
+- Full-corpus equivalence check: **734/734** seed IDs, dependency metadata,
+  and topological order match the former full-manifest reader. Boot loaded
+  **723 seeds** and yielded **24,750 nodes / 11,088 edges**.
+- Instrumented full-boot RSS growth decreased from **1,549,680,640** to
+  **1,457,979,392 bytes** (about **91.7 MB**). Indexing used **38,842,368
+  bytes** versus **637,952,000 bytes** while parsing and retaining every full
+  manifest. Boot time was **17.89 s** in this run, about **1.16 s** above the
+  prior instrumented boot; native seed/rule installation remains the larger
+  allocation and Phase 7 remains open.
+- Verification: seed-loader **4 passed**, comprehension and conversation
+  loops **21 passed**, and Phase 7 envelope **4 passed**. The envelope now
+  reports boot RSS and total boot-plus-event growth, with opt-in WordNet
+  prewarm measurement; no production warm-up was enabled.

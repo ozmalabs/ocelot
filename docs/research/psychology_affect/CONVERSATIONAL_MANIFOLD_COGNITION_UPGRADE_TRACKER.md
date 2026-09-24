@@ -41,7 +41,7 @@
 
 1. **Phase 4 upstream cognition:** Preserve explicit `no_candidate` until an existing faculty supplies the complete live tuple. Phase 4R measured zero complete or near-match tuples in the 74-event corpus; no evidence may be inferred from adjacent faculties.
 2. **Phase 6W:** Adjudication is complete. The remaining `question_followup` mismatch lacks typed causal world evidence; add that event only if the benchmark intends to test causal learning, or revise its isolated expected disposition to `repair`/`unknown`. Do not add a conversation rule.
-3. **Phase 7 resource envelope:** Phase 7O indexed-ingress equivalence and Phase 7P selective kind-rule readback are complete, but cold RSS and latency remain over budget. New stage profiling attributes most of the cold parse allocation to WordNet's first lookup in lexical recognition, while the information-question path also materializes 11,172 graph edges. A boot warm-up shifts cost into boot but has not shown a full-envelope win; profile boot plus the complete replay before adopting it.
+3. **Phase 7 resource envelope:** Phase 7O indexed-ingress equivalence and Phase 7P selective kind-rule readback are complete, but boot and event costs remain far over budget. Streaming seed manifests reduced observed full-boot RSS by about 91.7 MB while preserving the 734-seed dependency order and graph counts; boot still grew RSS by about 1.46 GB. The rest is dominated by native seed/rule installation and needs staged attribution. WordNet prewarm shifts cost into boot and has not shown a full-envelope win; keep it opt-in in the evaluator only.
 4. **Phase 8I:** Independently adjudicate existing raw runs and collect base/advanced human references with provenance before publishing scores.
 
 No wording-only repair is permitted for these items.
@@ -3038,3 +3038,27 @@ referent store, candidate ledger, or surface fallback was added.
 - No boot/runtime policy changed. Next: measure a full replay with boot
   warm-up included in the total resource accounting, and separately attribute
   the required question/meta vocabulary backfill before any optimization.
+
+### Phase 7 boot continuation — stream seed manifests — 2026-09-24
+
+- Changed `load_all_seeds()` to retain only the 734-entry seed ID/dependency
+  index and source paths, then load each full manifest as it is installed.
+  Generated-seed override order and `self_load_only` exclusion are preserved.
+- Full-corpus comparison: all **734 IDs**, dependency metadata, and
+  topological order match `_read_seeds()` exactly. The streaming boot loaded
+  **723 seeds** and produced **24,750 nodes / 11,088 edges**, matching the
+  previous instrumented boot totals.
+- The full manifest read/index stage measured **2,049.8 ms / 38,842,368
+  bytes**, compared with the all-manifests read at **2,169.8 ms / 637,952,000
+  bytes**. Full boot RSS growth decreased from **1,549,680,640** to
+  **1,457,979,392 bytes** (about **91.7 MB**), with boot time increasing from
+  **16.74 s** to **17.89 s** in these runs. The native install stage remains
+  about **1.42 GB** after indexing; the overall resource gate remains open.
+- Focused `.venv` verification: seed-loader **4 passed**; comprehension plus
+  conversation-loop regressions **21 passed**. Full Phase 7 envelope tests
+  **4 passed in 135.23 s**. The optional one-event WordNet-prewarm profile
+  completed without runtime errors and reported boot-plus-event RSS; it did
+  not establish a full replay resource win.
+- Next resource increment: profile native seed/rule installation stages and
+  reduce retained duplication without changing native rule behavior or seed
+  graph equivalence.
