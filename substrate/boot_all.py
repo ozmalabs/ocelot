@@ -22,16 +22,20 @@ import os
 from substrate.seed_loader import SEED_DIR, engine_rules_only
 
 
-def _read_seeds(seed_dir: str) -> dict:
-    seeds: dict = {}
+def _seed_manifest_paths(seed_dir: str) -> list[str]:
     # Hand-authored seeds (seed_dir/*.json) AND the agent's OWN library (seed_dir/generated/*.json) —
     # the affordance for "the jabberwock builds its own seeds": it authors graph data into generated/
     # and the loader installs it alongside the curated seeds (generated loaded after, so it can extend).
-    paths = sorted(glob.glob(os.path.join(seed_dir, "*.json"))) \
+    return sorted(glob.glob(os.path.join(seed_dir, "*.json"))) \
         + sorted(glob.glob(os.path.join(seed_dir, "generated", "*.json")))
-    for f in paths:
+
+
+def _read_seeds(seed_dir: str) -> dict:
+    seeds: dict = {}
+    for f in _seed_manifest_paths(seed_dir):
         try:
-            d = json.load(open(f))
+            with open(f, encoding="utf-8") as stream:
+                d = json.load(stream)
         except Exception:
             continue
         if not isinstance(d, dict):
@@ -48,6 +52,28 @@ def _read_seeds(seed_dir: str) -> dict:
         sid = d.get("id") or os.path.basename(f)[:-5]
         seeds[sid] = d
     return seeds
+
+
+def _read_seed_index(seed_dir: str) -> tuple[dict, dict[str, str]]:
+    """Read seed identity/dependency metadata without retaining full manifests."""
+    index: dict = {}
+    paths: dict[str, str] = {}
+    for path in _seed_manifest_paths(seed_dir):
+        try:
+            with open(path, encoding="utf-8") as stream:
+                manifest = json.load(stream)
+        except Exception:
+            continue
+        if not isinstance(manifest, dict) or manifest.get("self_load_only"):
+            continue
+        sid = manifest.get("id") or os.path.basename(path)[:-5]
+        # Preserve generated-seed override ordering from _read_seeds.
+        index[sid] = {
+            "id": sid,
+            "depends_on": manifest.get("depends_on") or [],
+        }
+        paths[sid] = path
+    return index, paths
 
 
 def _topo_order(seeds: dict) -> list:
@@ -371,11 +397,11 @@ def load_all_seeds(agent, seed_dir=None, skip=()) -> dict:
     """
     seed_dir = str(seed_dir or SEED_DIR)
     skip, refused_skips = _enforce_skip_not_frozen(set(skip))
-    seeds = _read_seeds(seed_dir)
-    order = _topo_order(seeds)
-    rep = {"total": len(seeds), "loaded": 0, "concepts": 0, "microtheories": 0,
+    seed_index, seed_paths = _read_seed_index(seed_dir)
+    order = _topo_order(seed_index)
+    rep = {"total": len(seed_index), "loaded": 0, "concepts": 0, "microtheories": 0,
            "failed": [], "rules_skipped": [], "order": order, "refused_skips": refused_skips}
-    boot_cycle = _begin_boot_observation(agent, len(seeds))
+    boot_cycle = _begin_boot_observation(agent, len(seed_index))
     # Names of Microtheory nodes already present (from {nodes:[...]}-format
     # seeds), so the singular-{microtheory:{...}} header materialisation below
     # never duplicates an existing Mt.
@@ -411,7 +437,18 @@ def load_all_seeds(agent, seed_dir=None, skip=()) -> dict:
     for sid in order:
         if sid in skip:
             continue
-        d = seeds[sid]
+        try:
+            with open(seed_paths[sid], encoding="utf-8") as stream:
+                d = json.load(stream)
+            if not isinstance(d, dict) or d.get("self_load_only"):
+                continue
+        except Exception as e:
+            rep["failed"].append(f"{sid}:{type(e).__name__}:{e}")
+            _record_boot_anomaly(
+                agent, boot_cycle, sid, "failed",
+                f"{type(e).__name__}: {e}",
+            )
+            continue
         d_engine = engine_rules_only(d)
         primary_error = None
         try:
