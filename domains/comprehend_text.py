@@ -657,7 +657,7 @@ def _language_adapter_evidence(agent: Any, frame: Optional[dict], rel: Optional[
     # request, even when a second-person subject is present.  The subject's
     # person is not evidence that the question is about the agent.
     if (kind == "question" and frame.get("focus") == "selection"
-            and rel.get("subject", {}).get("role") == "function"
+            and (rel.get("subject") or {}).get("role") == "function"
             and rel.get("object") is None and rel.get("oblique") is None
             and frame.get("gaps")):
         focus = next((str(e.get("surface") or "").strip(".,;:?!")
@@ -694,8 +694,9 @@ def _language_adapter_evidence(agent: Any, frame: Optional[dict], rel: Optional[
             and rel.get("predicate", {}).get("role") == "content"
             and rel.get("object") is not None):
         predicate = str(rel["predicate"].get("surface") or "").strip(".,;:?!").lower()
-        for node in getattr(agent, "s", agent).nodes("Concept"):
-            attrs = getattr(agent, "s", agent).node(node)["attrs"]
+        graph = getattr(agent, "s", None)
+        for node in graph.nodes("Concept") if graph is not None else ():
+            attrs = graph.node(node)["attrs"]
             if str(attrs.get("name") or "").lower() != predicate:
                 continue
             definition = str(attrs.get("definition") or "").lower()
@@ -718,8 +719,9 @@ def _language_adapter_evidence(agent: Any, frame: Optional[dict], rel: Optional[
     if content:
         modal_name = str(content[0].get("surface") or "").strip(
             ".,;:?!").lower()
-        for node in getattr(agent, "s", agent).nodes("Concept"):
-            attrs = getattr(agent, "s", agent).node(node)["attrs"]
+        graph = getattr(agent, "s", None)
+        for node in graph.nodes("Concept") if graph is not None else ():
+            attrs = graph.node(node)["attrs"]
             if str(attrs.get("name") or "").lower() != modal_name:
                 continue
             definition = str(attrs.get("definition") or "").lower()

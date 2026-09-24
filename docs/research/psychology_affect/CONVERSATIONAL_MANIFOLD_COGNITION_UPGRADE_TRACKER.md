@@ -2992,3 +2992,15 @@ referent store, candidate ledger, or surface fallback was added.
   same goal.
 - Focused `.venv` verification: **1 passed in 23.27s**. This closes the
   reconciled Gate 3 contract without adding a duplicate thought store.
+
+### Runtime optimization rejection — 2026-09-24
+
+- A native `sak_kind_*` prefix-fixpoint prototype was measured as a possible
+  replacement for the selective rule-export boundary in `_graph_kind_for`.
+- It was rejected: the live speech-act parity corpus changed instruction
+  content and WH-question dispatch, while minimal-boot RSS still grew by about
+  **187 MB**. No semantic drift was accepted for a performance optimization.
+- The prototype API and live-path use were removed and the native extension was
+  rebuilt from the restored source. Future runtime work must preserve held-rule
+  parity and target the allocation boundary directly; it must not become a
+  language or conversation-level shortcut.
