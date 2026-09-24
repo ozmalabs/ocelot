@@ -1472,3 +1472,21 @@ validation, and `git diff --check` pass.
 - Phase 4 complete-tuple generation, Phase 7 resource envelope, and Phase 8H
   human-reference gates remain open; this routing correction does not close
   them.
+
+### 2026-09-24 — Phase 7P cold comprehension stage attribution
+
+- Split the kind bridge profile by stage. Cold `kind_signals` measured
+  **1,607.6 ms / 66,531,328 bytes**; warm `kind_signals` measured **0.37 ms / 0
+  bytes**. Native selective rule export measured **0.28 ms / 0 bytes**, and
+  isolated native scratch-rule classification measured **0.70 ms / 397,312
+  bytes**.
+- The first `WordNet.synsets` lookup measured **1,635.7 ms / 61,702,144
+  bytes**, identifying the lazy reference load as the main cold parser
+  allocation. The selective native readback is not the remaining multi-second
+  cost.
+- One diagnostic warm-up moved **1,552.5 ms / 53,657,600 bytes** into boot.
+  The first information-question event still took **13,289.3 ms**, added
+  **46,931,968 bytes**, and materialized **11,172 graph edges**. No default
+  warm-up was added because the full-replay and total boot-plus-event budget
+  remains unmeasured.
+- This refines Phase 7 attribution only; the resource exit remains open.
