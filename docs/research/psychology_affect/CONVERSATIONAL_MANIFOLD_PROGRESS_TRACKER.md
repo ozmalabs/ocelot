@@ -589,6 +589,23 @@ validation, and `git diff --check` pass.
 - Phase 6X focused exit is **green**; the broader Phase 6W audit remains open
   on the separate `question_followup` discourse-context mismatch.
 
+### 2026-09-24 — post-checkpoint state reconciliation
+
+- Reconciled this tracker with the cognition-upgrade tracker and the current
+  worktree. Phase 7O indexed referent equivalence is verified; the complete
+  native-authority inventory is **183 bound / 0 unbound / 183 total**.
+- Phase 7P is closed as a measured boundary, not as a budget pass: selective
+  `sak_kind_*` readback preserves native arbitration and replay equality, while
+  cold RSS/latency remain above the nominal envelope. A parity-breaking prefix
+  execution prototype was rejected and removed.
+- Phase 8H raw-reference integrity is measured but incomplete: ELIZA floor,
+  small LLM, and modern LLM are case-complete; base-human and advanced-human
+  references are unavailable. Comparative release therefore remains blocked.
+- The next implementation work must target cognition/resource evidence, not
+  wording: resolve or explicitly overlay the unsupported `question_followup`
+  causal context, and continue substrate-level allocation work without
+  changing native authority or introducing a turn-state machine.
+
 ### 2026-09-24 — Phase 6X correction and Phase 6W replay closure
 
 - The first full replay showed that generic `explicit_uncertainty` was too

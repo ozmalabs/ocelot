@@ -1,0 +1,66 @@
+{
+  "schema": "proposition_commitment_cases.v1",
+  "description": "Neutral proposition/uptake cases over the existing semantic ingress; independent of the 74-event corpus.",
+  "cases": [
+    {
+      "id": "accepted_drop",
+      "proposition": {
+        "schema": "neutral_proposition_evidence.v1",
+        "kind": "explicit_neutral",
+        "predicate": "drop",
+        "arguments": {"agent": "john", "theme": "glass"},
+        "polarity": "affirmed",
+        "provider": "synthetic_semantic_adapter",
+        "evidence_id": "overlay-accepted-drop",
+        "commitment_status": "proposed",
+        "uptake_signal": "accept"
+      },
+      "expected": {"commitment_status": "accepted", "consequence_supported": true}
+    },
+    {
+      "id": "challenged_drop",
+      "proposition": {
+        "schema": "neutral_proposition_evidence.v1",
+        "kind": "explicit_neutral",
+        "predicate": "drop",
+        "arguments": {"agent": "john", "theme": "glass"},
+        "polarity": "affirmed",
+        "provider": "synthetic_semantic_adapter",
+        "evidence_id": "overlay-challenged-drop",
+        "commitment_status": "proposed",
+        "uptake_signal": "challenge"
+      },
+      "expected": {"commitment_status": "challenged", "consequence_supported": false}
+    },
+    {
+      "id": "suspended_drop",
+      "proposition": {
+        "schema": "neutral_proposition_evidence.v1",
+        "kind": "explicit_neutral",
+        "predicate": "drop",
+        "arguments": {"agent": "john", "theme": "glass"},
+        "polarity": "affirmed",
+        "provider": "synthetic_semantic_adapter",
+        "evidence_id": "overlay-suspended-drop",
+        "commitment_status": "proposed",
+        "uptake_signal": "suspend"
+      },
+      "expected": {"commitment_status": "suspended", "consequence_supported": false}
+    },
+    {
+      "id": "negated_drop_fail_closed",
+      "proposition": {
+        "schema": "neutral_proposition_evidence.v1",
+        "kind": "explicit_neutral",
+        "predicate": "drop",
+        "arguments": {"agent": "john", "theme": "glass"},
+        "polarity": "negated",
+        "provider": "synthetic_semantic_adapter",
+        "evidence_id": "overlay-negated-drop",
+        "commitment_status": "proposed",
+        "uptake_signal": "accept"
+      },
+      "expected": {"commitment_status": "accepted", "consequence_supported": false}
+    }
+  ]
+}
