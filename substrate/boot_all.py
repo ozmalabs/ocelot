@@ -143,6 +143,53 @@ def _topo_order(seeds: dict) -> list:
     return order
 
 
+def _select_seed_ids(
+    seeds: dict,
+    *,
+    seed_ids=(),
+    group_keys=(),
+    content_keys=(),
+) -> tuple[list[str], dict[str, list[str]]]:
+    """Resolve a selection through the pre-pass map and dependency closure.
+
+    Exact content-key matches may have multiple providers, so all providers are
+    included rather than making a lexical or recency-based choice. Group keys
+    are explicit manifest metadata (category, microtheory, capability), not
+    inferred from seed names. This planner is not wired into full boot yet.
+    """
+    requested = set(seed_ids)
+    requested.update(
+        sid for sid, meta in seeds.items()
+        if set(meta.get("group_keys") or ()) & set(group_keys)
+    )
+    providers: dict[str, list[str]] = {}
+    for sid, meta in seeds.items():
+        for key in meta.get("content_keys") or ():
+            providers.setdefault(key, []).append(sid)
+    missing_content = []
+    for key in content_keys:
+        matches = providers.get(key, ())
+        if not matches:
+            missing_content.append(key)
+        requested.update(matches)
+
+    missing_seeds = sorted(requested - set(seeds))
+    selected = requested - set(missing_seeds)
+    closure = set(selected)
+    pending = list(selected)
+    while pending:
+        sid = pending.pop()
+        for dependency in seeds[sid].get("depends_on") or ():
+            if dependency in seeds and dependency not in closure:
+                closure.add(dependency)
+                pending.append(dependency)
+    order = [sid for sid in _topo_order(seeds) if sid in closure]
+    return order, {
+        "missing_seed_ids": missing_seeds,
+        "missing_content_keys": sorted(missing_content),
+    }
+
+
 # ---------------------------------------------------------------------------
 # MINIMAL SEED PROVENANCE — one compact SeedSummary node per loaded seed, so
 # a later agent-authored decision (e.g. reflective_faculty._compose_experiment_

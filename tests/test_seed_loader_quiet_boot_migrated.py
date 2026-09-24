@@ -12,6 +12,7 @@ sys.path.insert(0, ROOT)
 
 from substrate.seed_loader import engine_rules_only, manifest_for, normalize_declarative
 from substrate.boot_all import (
+    _select_seed_ids,
     _read_seed_index,
     _read_seeds,
     _topo_order,
@@ -85,6 +86,19 @@ def test_seed_index_preserves_dependency_order_and_generated_override(tmp_path):
     assert paths["child"] == str(generated / "child.json")
     order = _topo_order(index)
     assert order.index("base") < order.index("child")
+    selected, unresolved = _select_seed_ids(
+        index,
+        group_keys=["category:core"],
+        content_keys=["base_node", "not-present"],
+    )
+    assert selected == ["base"]
+    assert unresolved == {
+        "missing_seed_ids": [],
+        "missing_content_keys": ["not-present"],
+    }
+    selected, unresolved = _select_seed_ids(index, seed_ids=["child"])
+    assert selected == ["base", "child"]
+    assert unresolved == {"missing_seed_ids": [], "missing_content_keys": []}
 
 
 def test_load_all_seeds_emits_no_malformed_rule_warnings(capsys):
