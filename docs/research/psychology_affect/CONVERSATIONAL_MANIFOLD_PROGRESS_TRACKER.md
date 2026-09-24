@@ -1452,3 +1452,23 @@ validation, and `git diff --check` pass.
 - Authority audit now reports **183 bound / 0 unbound / 183 total** with
   status `clean`. This closes the static authority-inventory gate only; no
   overall phase or project completion is claimed.
+
+### 2026-09-24 — Existing-faculty comprehension routing correction
+
+- Routed the already-selected `satisfiable` and `honest_no_world` comprehension
+  dispatch paths through their existing conversation-action faculties. The
+  satisfiable self-report result now retains its graph-minted goal so the
+  production bridge can release the selected answer; no new cognition or
+  surface-only exception was added.
+- Replaced the stale `noted` assertion with the mandated explicit diagnostic
+  error for the still-unresolved plain statement case.
+- `.venv`: `tests/test_comprehension_robustness.py` **9 passed**;
+  `tests/test_conversation_loop.py`,
+  `tests/test_utterance_conversation_unification.py`,
+  `tests/test_output_null_gate.py`, and
+  `tests/test_phase6a_production_gate.py` **32 passed**. The handoff's named
+  `tests/test_phase6_production_gate.py` is absent from this checkout and was
+  not counted as run.
+- Phase 4 complete-tuple generation, Phase 7 resource envelope, and Phase 8H
+  human-reference gates remain open; this routing correction does not close
+  them.

@@ -2124,7 +2124,7 @@ class WorldAdapter:
             frame = {"event": "repair", "agent": "agent",
                      "patient": focus, "intent": "request"}
         elif route in {"goal_only", "self_report", "describe_scene",
-                       "concern_authored"}:
+                       "concern_authored", "satisfiable", "honest_no_world"}:
             committed = result.get("goal")
             dispatch = getattr(comp, "dispatch", None) or {}
             goal_attrs = {}
@@ -6114,7 +6114,12 @@ class WorldAdapter:
         if comp is not None and speech_act not in self._SOCIAL_ACTS:
             try:
                 from domains import conversation_action as _ca
-                if _ca.is_ask_back(comp):
+                dispatch_path = str((getattr(comp, "dispatch", None) or {}).get("path") or "")
+                if dispatch_path == "satisfiable":
+                    conversation_action_result = _ca.satisfiable_reply(self, comp, mid)
+                elif dispatch_path == "honest_no_world":
+                    conversation_action_result = _ca.honest_no_world_reply(self, comp, mid)
+                elif _ca.is_ask_back(comp):
                     conversation_action_result = _ca.ask_back(self, comp, mid)
                 elif (comp.kind == "instruction"
                       and self.s.node(mid)["attrs"].get("comp_anaphor")

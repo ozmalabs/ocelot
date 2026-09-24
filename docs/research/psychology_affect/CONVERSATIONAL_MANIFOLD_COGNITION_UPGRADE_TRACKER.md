@@ -3004,3 +3004,18 @@ referent store, candidate ledger, or surface fallback was added.
   rebuilt from the restored source. Future runtime work must preserve held-rule
   parity and target the allocation boundary directly; it must not become a
   language or conversation-level shortcut.
+
+### Existing-faculty comprehension routing correction — 2026-09-24
+
+- Routed the existing `satisfiable` and `honest_no_world` selected dispatch
+  paths through their existing faculties in the live adapter. Satisfiable
+  self-report results retain their graph-minted goal for the existing
+  production bridge. The unresolved plain-statement case continues to expose
+  the canonical explicit diagnostic error.
+- `.venv` verification: comprehension robustness **9 passed**; conversation
+  loop, utterance/conversation unification, output-null, and Phase 6A
+  production gates **32 passed**. The handoff-named
+  `test_phase6_production_gate.py` is absent in this checkout.
+- No Phase 4/6/7/8 acceptance status changes: complete live Phase 4 evidence,
+  the measured resource envelope, and base/advanced human references remain
+  open.
