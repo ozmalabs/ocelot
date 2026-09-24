@@ -18,7 +18,7 @@ from substrate.boot_all import load_all_seeds
 from substrate.world_adapter import WorldAdapter
 
 
-SCHEMA = "phase7-production-communication-envelope.v1"
+SCHEMA = "phase7-production-communication-envelope.v2"
 RSS_GROWTH_LIMIT = 100 * 1024 * 1024
 PROFILE_EVENT_IDS = (
     "information_question",
@@ -104,11 +104,28 @@ def _stable_observation(agent: WorldAdapter, event: Mapping[str, Any],
     }
 
 
-def _run(events: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+def _run(events: Sequence[Mapping[str, Any]], *,
+         prewarm_wordnet: bool = False) -> dict[str, Any]:
+    rss_before_boot = _rss_bytes()
     boot_started = time.perf_counter_ns()
     agent = WorldAdapter(seeds=())
     load_all_seeds(agent)
+    prewarm_started = time.perf_counter_ns()
+    prewarm_completed = False
+    prewarm_error = None
+    if prewarm_wordnet:
+        try:
+            from nltk.corpus import wordnet as _wn
+            _wn.ensure_loaded()
+            prewarm_completed = True
+        except Exception as exc:  # keep optional reference data non-fatal
+            prewarm_error = f"{type(exc).__name__}: {exc}"
+    prewarm_elapsed_ms = (
+        (time.perf_counter_ns() - prewarm_started) / 1_000_000.0
+        if prewarm_wordnet else 0.0
+    )
     boot_elapsed_ms = (time.perf_counter_ns() - boot_started) / 1_000_000.0
+    rss_after_boot = _rss_bytes()
     before = _graph_counts(agent)
     rss_before = _rss_bytes()
     observations: list[dict[str, Any]] = []
@@ -157,6 +174,13 @@ def _run(events: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
         "event_ids": [event["id"] for event in events],
         "event_count": len(events),
         "boot_elapsed_ms": boot_elapsed_ms,
+        "prewarm_wordnet_requested": bool(prewarm_wordnet),
+        "prewarm_wordnet_completed": prewarm_completed,
+        "prewarm_wordnet_elapsed_ms": prewarm_elapsed_ms,
+        "prewarm_wordnet_error": prewarm_error,
+        "rss_before_boot_bytes": rss_before_boot,
+        "rss_after_boot_bytes": rss_after_boot,
+        "boot_rss_growth_bytes": max(0, rss_after_boot - rss_before_boot),
         "observations": observations,
         "errors": errors,
         "rss_samples": rss_samples,
@@ -169,11 +193,15 @@ def _run(events: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
         "rss_before_bytes": rss_before,
         "rss_after_bytes": rss_after,
         "rss_growth_bytes": max(0, rss_after - rss_before),
+        "boot_and_event_rss_growth_bytes": max(
+            0, rss_after - rss_before_boot),
         "cold_start_rss_growth_bytes": cold_start_growth,
         "steady_state_rss_growth_bytes": steady_state_growth,
         "resource_assertions": {
             "rss_measured": rss_after >= 0,
             "rss_growth_bounded": (rss_after - rss_before) < RSS_GROWTH_LIMIT,
+            "boot_and_event_rss_growth_bounded": (
+                rss_after - rss_before_boot) < RSS_GROWTH_LIMIT,
             "steady_state_rss_growth_bounded": steady_state_growth < RSS_GROWTH_LIMIT,
         },
         "surface_text_used_as_semantics": False,
@@ -184,12 +212,14 @@ def _run(events: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
 def measure_production_envelope(
     corpus: Mapping[str, Any] | None = None,
     event_ids: Sequence[str] = PROFILE_EVENT_IDS,
+    *,
+    prewarm_wordnet: bool = False,
 ) -> dict[str, Any]:
     corpus = load_corpus() if corpus is None else corpus
     by_id = {str(event["id"]): event for event in corpus["events"]}
     events = [by_id[event_id] for event_id in event_ids]
-    first = _run(events)
-    replay = _run(events)
+    first = _run(events, prewarm_wordnet=prewarm_wordnet)
+    replay = _run(events, prewarm_wordnet=prewarm_wordnet)
     stable_keys = ("event_ids", "event_count", "observations", "errors",
                    "graph_growth", "surface_text_used_as_semantics",
                    "turn_boundary_required")

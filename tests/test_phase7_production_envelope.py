@@ -54,6 +54,12 @@ def test_production_envelope_replay_is_structurally_deterministic(report):
 
 def test_production_envelope_exposes_boot_and_event_cost_without_semantic_use(report):
     assert report["boot_elapsed_ms"] >= 0.0
+    assert report["boot_rss_growth_bytes"] >= 0
+    assert report["boot_and_event_rss_growth_bytes"] >= 0
+    assert isinstance(
+        report["resource_assertions"]["boot_and_event_rss_growth_bounded"],
+        bool,
+    )
     assert len(report["rss_samples"]) == len(PROFILE_EVENT_IDS)
     assert all(sample["elapsed_ms"] >= 0.0
                and sample["rss_delta_bytes"] >= 0
