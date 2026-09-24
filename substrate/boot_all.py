@@ -59,11 +59,39 @@ def _read_seed_index(seed_dir: str) -> tuple[dict, dict[str, str]]:
 
     This is deliberately a pre-pass: dependencies determine safe ordering,
     while category/microtheory/capability and declared-content keys form the
-    cached grouping map for future selective loading. The grouping is
-    descriptive only today; full boot still installs every eligible seed.
+    cached grouping map for future selective loading. Typed graph refs and
+    name-based relation endpoints are resolved against declared seed content.
+    Full boot behavior is unchanged; this remains a planning map, not a
+    selective installation policy.
     """
     index: dict = {}
     paths: dict[str, str] = {}
+    references_by_seed: dict[str, list[dict]] = {}
+    name_references_by_seed: dict[str, list[str]] = {}
+    providers_by_type: dict[str, set[str]] = {}
+    providers_by_attr: dict[tuple[str, str, str], set[str]] = {}
+    provider_keys_by_seed: dict[str, set[tuple]] = {}
+
+    def add_provider(sid, node_type, attrs):
+        keys = provider_keys_by_seed.setdefault(sid, set())
+        type_key = ("type", node_type)
+        providers_by_type.setdefault(node_type, set()).add(sid)
+        keys.add(type_key)
+        if isinstance(attrs, dict):
+            for attr in ("name", "id"):
+                if isinstance(attrs.get(attr), str):
+                    value_key = json.dumps(attrs[attr], sort_keys=True,
+                                          separators=(",", ":"))
+                    provider_key = (node_type, attr, value_key)
+                    providers_by_attr.setdefault(provider_key, set()).add(sid)
+                    keys.add(("attr",) + provider_key)
+
+    def remove_seed_providers(sid):
+        for key in provider_keys_by_seed.pop(sid, set()):
+            if key[0] == "type":
+                providers_by_type[key[1]].discard(sid)
+            else:
+                providers_by_attr[key[1:]].discard(sid)
     for path in _seed_manifest_paths(seed_dir):
         try:
             with open(path, encoding="utf-8") as stream:
@@ -73,6 +101,21 @@ def _read_seed_index(seed_dir: str) -> tuple[dict, dict[str, str]]:
         if not isinstance(manifest, dict) or manifest.get("self_load_only"):
             continue
         sid = manifest.get("id") or os.path.basename(path)[:-5]
+        # Generated manifests override hand-authored IDs; replace their
+        # provider signatures just as the boot index replaces their metadata.
+        remove_seed_providers(sid)
+        for node in manifest.get("nodes", ()):
+            if isinstance(node, dict) and node.get("type"):
+                add_provider(sid, str(node["type"]), node.get("attrs") or {})
+        for concept in manifest.get("concepts", ()):
+            if isinstance(concept, dict):
+                add_provider(sid, "Concept",
+                             {k: v for k, v in concept.items() if k != "local_id"})
+        declared_mt = manifest.get("microtheory")
+        if isinstance(declared_mt, dict) and isinstance(declared_mt.get("name"), str):
+            add_provider(sid, "Microtheory", declared_mt)
+        elif isinstance(declared_mt, str):
+            add_provider(sid, "Microtheory", {"name": declared_mt})
         microtheory = manifest.get("microtheory")
         category = manifest.get("category")
         if isinstance(microtheory, dict):
@@ -82,6 +125,14 @@ def _read_seed_index(seed_dir: str) -> tuple[dict, dict[str, str]]:
             str(node.get("type")) for node in manifest.get("nodes", ())
             if isinstance(node, dict) and node.get("type")
         })
+        references = [
+            dict(ref)
+            for edge in manifest.get("edges", ()) if isinstance(edge, dict)
+            for side in ("src", "tgt")
+            for ref in (edge.get(side),)
+            if (isinstance(ref, dict) and isinstance(ref.get("type"), str)
+                and "local" not in ref and "role" not in ref)
+        ]
         content_keys = set()
         for concept in manifest.get("concepts", ()):
             if isinstance(concept, dict) and concept.get("name"):
@@ -95,6 +146,26 @@ def _read_seed_index(seed_dir: str) -> tuple[dict, dict[str, str]]:
         for rule in manifest.get("rules", ()):
             if isinstance(rule, dict) and rule.get("name"):
                 content_keys.add(str(rule["name"]))
+        for extra_node in manifest.get("extra_nodes", ()):
+            if isinstance(extra_node, dict) and extra_node.get("name"):
+                content_keys.add(str(extra_node["name"]))
+        if microtheory:
+            content_keys.add(str(microtheory))
+        elif ("nodes" not in manifest and manifest.get("id")
+              and (manifest.get("concepts") or manifest.get("rules"))):
+            content_keys.add(str(manifest["id"]))
+        name_references = [
+            str(rel[key])
+            for rel in manifest.get("relations", ())
+            if isinstance(rel, dict)
+            for key in ("src", "tgt")
+            if isinstance(rel.get(key), str) and rel.get(key)
+        ]
+        mt = manifest.get("microtheory")
+        parent_name = ((mt.get("parent") if isinstance(mt, dict) else None)
+                       or manifest.get("parent_mt") or manifest.get("parent"))
+        if isinstance(parent_name, str) and parent_name:
+            name_references.append(parent_name)
         group_keys = set()
         if isinstance(category, str) and category:
             group_keys.add(f"category:{category}")
@@ -119,6 +190,55 @@ def _read_seed_index(seed_dir: str) -> tuple[dict, dict[str, str]]:
             "content_keys": sorted(content_keys),
         }
         paths[sid] = path
+        references_by_seed[sid] = references
+        name_references_by_seed[sid] = name_references
+
+    for sid, references in references_by_seed.items():
+        content_dependencies = set()
+        missing_references = []
+        ambiguous_references = 0
+        for reference in references:
+            node_type = reference["type"]
+            ref_attrs = {key: value for key, value in reference.items()
+                         if key != "type"}
+            if not ref_attrs:
+                providers = providers_by_type.get(node_type, set())
+            elif (len(ref_attrs) == 1
+                  and next(iter(ref_attrs)) in {"name", "id"}
+                  and isinstance(next(iter(ref_attrs.values())), str)):
+                attr, value = next(iter(ref_attrs.items()))
+                value_key = json.dumps(value, sort_keys=True, separators=(",", ":"))
+                providers = providers_by_attr.get((node_type, attr, value_key), set())
+            else:
+                # Only name/id and type-only cross-ref shapes are indexed. A
+                # richer ref is surfaced unresolved until its signature form
+                # is explicitly supported by this pre-pass.
+                providers = set()
+            ambiguous_references += len(providers) > 1
+            if not providers:
+                missing_references.append(reference)
+            content_dependencies.update(providers - {sid})
+        index[sid]["content_dependencies"] = sorted(content_dependencies)
+        index[sid]["content_load_dependencies"] = sorted(content_dependencies)
+        index[sid]["missing_content_references"] = missing_references
+        index[sid]["typed_content_reference_count"] = len(references)
+        index[sid]["ambiguous_content_reference_count"] = ambiguous_references
+    providers_by_content_key: dict[str, set[str]] = {}
+    for sid, meta in index.items():
+        for key in meta["content_keys"]:
+            providers_by_content_key.setdefault(key, set()).add(sid)
+    for sid, name_references in name_references_by_seed.items():
+        content_dependencies = set(index[sid]["content_dependencies"])
+        missing_references = list(index[sid]["missing_content_references"])
+        for name in name_references:
+            providers = providers_by_content_key.get(name, set())
+            content_dependencies.update(providers - {sid})
+            index[sid]["ambiguous_content_reference_count"] += len(providers) > 1
+            if not providers:
+                missing_references.append({"type": "name", "name": name})
+        index[sid]["content_dependencies"] = sorted(content_dependencies)
+        index[sid]["missing_content_references"] = missing_references
+        index[sid]["name_content_reference_count"] = len(name_references)
     for meta in index.values():
         meta["missing_dependencies"] = sorted({
             dependency for dependency in meta["depends_on"]
@@ -127,9 +247,12 @@ def _read_seed_index(seed_dir: str) -> tuple[dict, dict[str, str]]:
     return index, paths
 
 
-def _topo_order(seeds: dict) -> list:
+def _topo_order(seeds: dict, *, include_content_dependencies=False) -> list:
     """Topological order over the seeds' own ``depends_on`` edges (cycle-safe,
-    missing deps skipped) — deps load before dependents."""
+    missing deps skipped) — deps load before dependents. Optional typed-content
+    edges are resolved by the native loader during installation; name-based
+    legacy relations resolve after all seeds load and expand selection closure
+    without constraining install order."""
     order: list = []
     state: dict = {}  # sid -> 0 visiting / 1 done
 
@@ -137,7 +260,11 @@ def _topo_order(seeds: dict) -> list:
         if state.get(sid) is not None:
             return  # done, or currently visiting (cycle) — either way skip
         state[sid] = 0
-        for dep in (seeds.get(sid, {}).get("depends_on") or []):
+        meta = seeds.get(sid, {})
+        dependencies = list(meta.get("depends_on") or [])
+        if include_content_dependencies:
+            dependencies.extend(meta.get("content_load_dependencies") or [])
+        for dep in dependencies:
             if dep in seeds:
                 visit(dep)
         state[sid] = 1
@@ -163,9 +290,10 @@ def _select_seed_ids(
     inferred from seed names. This planner is not wired into full boot yet.
     """
     requested = set(seed_ids)
+    selected_group_keys = set(group_keys)
     requested.update(
         sid for sid, meta in seeds.items()
-        if set(meta.get("group_keys") or ()) & set(group_keys)
+        if set(meta.get("group_keys") or ()) & selected_group_keys
     )
     providers: dict[str, list[str]] = {}
     for sid, meta in seeds.items():
@@ -184,11 +312,14 @@ def _select_seed_ids(
     pending = list(selected)
     while pending:
         sid = pending.pop()
-        for dependency in seeds[sid].get("depends_on") or ():
+        dependencies = list(seeds[sid].get("depends_on") or ())
+        dependencies.extend(seeds[sid].get("content_dependencies") or ())
+        for dependency in dependencies:
             if dependency in seeds and dependency not in closure:
                 closure.add(dependency)
                 pending.append(dependency)
-    order = [sid for sid in _topo_order(seeds) if sid in closure]
+    order = [sid for sid in _topo_order(
+        seeds, include_content_dependencies=True) if sid in closure]
     missing_dependencies = sorted(
         (sid, dependency)
         for sid in closure
@@ -198,6 +329,11 @@ def _select_seed_ids(
         "missing_seed_ids": missing_seeds,
         "missing_content_keys": sorted(missing_content),
         "missing_dependencies": missing_dependencies,
+        "missing_content_references": sorted(
+            (sid, json.dumps(reference, sort_keys=True, separators=(",", ":")))
+            for sid in closure
+            for reference in seeds[sid].get("missing_content_references", ())
+        ),
     }
 
 
