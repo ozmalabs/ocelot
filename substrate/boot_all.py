@@ -16,8 +16,10 @@ written against the dead CuriousAgent interface (``mind_graph`` /
 from __future__ import annotations
 
 import glob
+import hashlib
 import json
 import os
+import tempfile
 
 from substrate.seed_loader import SEED_DIR, engine_rules_only
 
@@ -54,7 +56,7 @@ def _read_seeds(seed_dir: str) -> dict:
     return seeds
 
 
-def _read_seed_index(seed_dir: str) -> tuple[dict, dict[str, str]]:
+def _build_seed_index(seed_dir: str) -> tuple[dict, dict[str, str]]:
     """Build the compact boot plan without retaining full manifests.
 
     This is deliberately a pre-pass: dependencies determine safe ordering,
@@ -189,7 +191,7 @@ def _read_seed_index(seed_dir: str) -> tuple[dict, dict[str, str]]:
             "node_types": node_types,
             "content_keys": sorted(content_keys),
         }
-        paths[sid] = path
+        paths[sid] = os.path.realpath(path)
         references_by_seed[sid] = references
         name_references_by_seed[sid] = name_references
 
@@ -244,6 +246,111 @@ def _read_seed_index(seed_dir: str) -> tuple[dict, dict[str, str]]:
             dependency for dependency in meta["depends_on"]
             if dependency not in index
         })
+    return index, paths
+
+
+# Bump this when _build_seed_index's output semantics change; source bytes and
+# this schema jointly define the persistent derived-cache validity boundary.
+_SEED_INDEX_CACHE_SCHEMA = "ocelot-seed-connectivity-index.v1"
+
+
+def _seed_index_cache_path(seed_dir: str) -> str:
+    """Return a per-user temp-cache path; the cache is disposable and derived."""
+    root = os.path.realpath(seed_dir)
+    root_key = hashlib.sha256(root.encode("utf-8")).hexdigest()
+    user_id = getattr(os, "getuid", lambda: 0)()
+    return os.path.join(
+        tempfile.gettempdir(), f"ocelot-seed-index-v1-{user_id}",
+        f"{root_key}.json",
+    )
+
+
+def _seed_sources_digest(seed_dir: str, paths: list[str]) -> str:
+    """Hash path identity and file bytes without retaining manifest contents."""
+    root = os.path.realpath(seed_dir)
+    digest = hashlib.sha256()
+    for path in paths:
+        relative = os.path.relpath(os.path.realpath(path), root).replace(os.sep, "/")
+        digest.update(relative.encode("utf-8"))
+        digest.update(b"\0")
+        with open(path, "rb") as stream:
+            digest.update(hashlib.file_digest(stream, "sha256").digest())
+        digest.update(b"\0")
+    return digest.hexdigest()
+
+
+def _seed_index_payload_digest(index: dict, paths: dict[str, str]) -> str:
+    body = json.dumps(
+        {"index": index, "paths": paths}, sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return hashlib.sha256(body).hexdigest()
+
+
+def _read_seed_index(seed_dir: str) -> tuple[dict, dict[str, str]]:
+    """Load the cached connectivity map or build and atomically refresh it.
+
+    Every source manifest is content-hashed on lookup, so cache validity never
+    relies on timestamps or a potentially stale seed inventory. Hashing is
+    streaming and does not load the corpus into memory.
+    """
+    seed_dir = str(seed_dir)
+    manifest_paths = _seed_manifest_paths(seed_dir)
+    try:
+        source_digest = _seed_sources_digest(seed_dir, manifest_paths)
+    except OSError:
+        # Preserve the regular loader's best-effort handling of unreadable
+        # manifests; simply skip cache lookup/write for this pass.
+        return _build_seed_index(seed_dir)
+
+    cache_path = _seed_index_cache_path(seed_dir)
+    source_paths = {os.path.realpath(path) for path in manifest_paths}
+    try:
+        with open(cache_path, encoding="utf-8") as stream:
+            cached = json.load(stream)
+        index, paths = cached.get("index"), cached.get("paths")
+        if (cached.get("schema") == _SEED_INDEX_CACHE_SCHEMA
+                and cached.get("source_digest") == source_digest
+                and isinstance(index, dict) and isinstance(paths, dict)
+                and set(index) == set(paths)
+                and all(os.path.realpath(path) in source_paths
+                        for path in paths.values())
+                and cached.get("payload_digest") ==
+                    _seed_index_payload_digest(index, paths)):
+            return index, paths
+    except (OSError, ValueError, TypeError, AttributeError):
+        pass
+
+    index, paths = _build_seed_index(seed_dir)
+    envelope = {
+        "schema": _SEED_INDEX_CACHE_SCHEMA,
+        "source_digest": source_digest,
+        "payload_digest": _seed_index_payload_digest(index, paths),
+        "index": index,
+        "paths": paths,
+    }
+    temporary_path = None
+    try:
+        cache_directory = os.path.dirname(cache_path)
+        os.makedirs(cache_directory, mode=0o700, exist_ok=True)
+        with tempfile.NamedTemporaryFile(
+            "w", encoding="utf-8", dir=cache_directory,
+            prefix="seed-index-", suffix=".tmp", delete=False,
+        ) as stream:
+            temporary_path = stream.name
+            json.dump(envelope, stream, sort_keys=True, separators=(",", ":"))
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary_path, cache_path)
+    except OSError:
+        # The derived cache is an optimization, never a boot prerequisite.
+        pass
+    finally:
+        if temporary_path and os.path.exists(temporary_path):
+            try:
+                os.unlink(temporary_path)
+            except OSError:
+                pass
     return index, paths
 
 

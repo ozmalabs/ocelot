@@ -18,6 +18,7 @@ from substrate.boot_all import (
     _topo_order,
     load_all_seeds,
 )
+import substrate.boot_all as boot_all
 from substrate.world_adapter import WorldAdapter
 
 
@@ -133,6 +134,40 @@ def test_seed_index_preserves_dependency_order_and_generated_override(tmp_path):
     selected, unresolved = _select_seed_ids(index, content_keys=["base_node"])
     assert selected == ["base", "base_alt"]
     assert unresolved["missing_content_keys"] == []
+
+
+def test_seed_index_cache_reuses_map_and_hash_invalidates_same_stat_change(
+        tmp_path, monkeypatch):
+    manifest = tmp_path / "seed.json"
+    manifest.write_text(json.dumps({"id": "seed_a", "depends_on": []}),
+                        encoding="utf-8")
+    cache_dir = tmp_path / "cache"
+    cache_dir.mkdir()
+    cache_path = cache_dir / "index.json"
+    monkeypatch.setattr(boot_all, "_seed_index_cache_path",
+                        lambda _seed_dir: str(cache_path))
+
+    build_count = 0
+    real_build = boot_all._build_seed_index
+
+    def count_build(seed_dir):
+        nonlocal build_count
+        build_count += 1
+        return real_build(seed_dir)
+
+    monkeypatch.setattr(boot_all, "_build_seed_index", count_build)
+    first = boot_all._read_seed_index(str(tmp_path))
+    second = boot_all._read_seed_index(str(tmp_path))
+    assert first == second
+    assert build_count == 1
+
+    before = manifest.stat()
+    manifest.write_text(json.dumps({"id": "seed_b", "depends_on": []}),
+                        encoding="utf-8")
+    os.utime(manifest, ns=(before.st_atime_ns, before.st_mtime_ns))
+    refreshed = boot_all._read_seed_index(str(tmp_path))
+    assert set(refreshed[0]) == {"seed_b"}
+    assert build_count == 2
 
 
 def test_load_all_seeds_emits_no_malformed_rule_warnings(capsys):
