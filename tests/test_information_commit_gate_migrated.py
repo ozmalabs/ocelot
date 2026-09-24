@@ -29,7 +29,16 @@ def test_topology_only_escape_is_not_hidden_by_zero_width():
  out=assess(_fresh(),manifold=_m(),wait=_c("wait"),refine=_c("refine"),commit=_c("commit",expected_goal_work=10**18,projection=p))
  assert out["decision"]=="wait"
 def test_lower_intervention_and_ordinal_are_deterministic():
- out=assess(_fresh(),manifold=_m(),wait=_c("wait",projection=_p(intervention_magnitude=0.1)),refine=_c("refine",expected_goal_work=10**18,projection=_p(intervention_magnitude=1)),commit=_c("commit",expected_goal_work=10**19,projection=_p(intervention_magnitude=1)))
+ agent = _fresh()
+ out=assess(agent,manifold=_m(),wait=_c("wait",projection=_p(intervention_magnitude=0.1)),refine=_c("refine",expected_goal_work=10**18,projection=_p(intervention_magnitude=1)),commit=_c("commit",expected_goal_work=10**19,projection=_p(intervention_magnitude=1)))
  assert out["decision"]=="wait"
+ receipts = [agent.s.node(n)["attrs"] for n in
+             agent.s.nodes("NativeInformationCommitmentReceipt")]
+ assert len(receipts) == 1
+ assert receipts[0]["provenance"] == (
+     "native_rule_readback:information_commitment")
+ assert receipts[0]["decision"] == "wait"
+ assert receipts[0]["outcome_source"] == "native_rule_readback"
+ assert receipts[0]["python_outcome_selection"] is False
 def test_missing_projection_or_unvalidated_direct_graph_fails_closed():
  with pytest.raises(ValueError): assess(_fresh(),manifold=_m(),wait={},refine=_c("refine"),commit=_c("commit"))

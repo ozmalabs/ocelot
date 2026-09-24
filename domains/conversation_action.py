@@ -286,11 +286,35 @@ def _has_perception_cue(text: str) -> bool:
 
 # --- Goal minting (mechanical graph ingest — the "action happened" record) ----
 
-def _mint_goal(agent, kind: str, predicate, obj, **extra) -> Any:
+def _bind_goal_to_inbound(agent, goal, inbound=None) -> Any:
+    """Mechanically bind a conversation goal to its source Message.
+
+    The edge and origin field are provenance only; this helper does not select
+    an outcome.  The edge check keeps repeated wiring idempotent, while
+    ``inbound=None`` preserves callers that mint goals outside a live message.
+    """
+    if inbound is None or goal is None:
+        return goal
+    try:
+        if not agent.s.has_node(goal) or not agent.s.has_node(inbound):
+            return goal
+        if not agent.inner.has_edge(goal, "comprehends", inbound):
+            agent.inner.add_edge_unchecked(goal, "comprehends", inbound)
+        if agent.s.node(goal)["attrs"].get("origin_turn_id") is None:
+            agent.inner.set_attr(goal, "origin_turn_id", int(inbound.value))
+    except Exception:
+        # Provenance must not change the existing action bridge's compatibility
+        # behavior when a host supplies an object outside the graph.
+        pass
+    return goal
+
+
+def _mint_goal(agent, kind: str, predicate, obj, inbound=None, **extra) -> Any:
     """Mint a Goal node from the comprehended instruction and hub it to the agent
     (`has_goal`), exactly as the question driver / world_receive ingest goals.
     Mechanical translation of comprehend_text's intent into a graph node — no
-    decision. Returns the Goal id."""
+    decision. Returns the Goal id.  If ``inbound`` is supplied, the goal is
+    idempotently linked to that Message and records ``origin_turn_id``."""
     attrs = {"kind": kind, "predicate": predicate or "", "object": obj or "",
              "source": "conversation"}
     attrs.update({k: v for k, v in extra.items() if v is not None})
@@ -299,6 +323,7 @@ def _mint_goal(agent, kind: str, predicate, obj, **extra) -> Any:
         agent.s.add_edge(agent.agent, "has_goal", g)
     except Exception:
         agent.inner.add_edge_unchecked(agent.agent, "has_goal", g)
+    _bind_goal_to_inbound(agent, g, inbound)
     from domains import interlocutor_model as _im
     _im.wanted_by(agent, g)
     return g
@@ -315,7 +340,23 @@ def attach_scene(agent, percepts: list[dict]) -> Any:
     for ctx in percepts:
         agent.inner.add_edge_unchecked(scene, "has_percept", agent.s.add_node("Percept", dict(ctx)))
     agent._conv_scene = scene
-    agent.inner.run_rules()
+    native_steps = agent.inner.run_rules()
+    # The scene is materialized by the native rule engine.  Keep this receipt
+    # separate from any later describe/communicate outcome: this host helper
+    # only ingests percepts and reads the native materialization boundary back.
+    receipt = agent.s.add_node("NativeSceneMaterializationReceipt", {
+        "schema": "native_scene_materialization_receipt.v1",
+        "cluster": "conversation_action.scene_materialization",
+        "provenance": "native_rule_readback:scene_percept_materialization",
+        "native_rule": "conversation_action_scene_percept_materialization_v1",
+        "scene": scene,
+        "percept_count": len(percepts),
+        "native_steps": int(native_steps),
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
+    agent.inner.add_edge_unchecked(
+        agent.agent, "has_native_scene_materialization_receipt", receipt)
     return scene
 
 
@@ -416,6 +457,8 @@ def _act_describe_scene(agent, comp, inbound) -> dict:
     goals = [g for g in agent.s.nodes("Goal")
              if agent.inner.has_node(g)
              and agent.s.node(g)["attrs"].get("kind") == "describe_scene"]
+    if goals:
+        _bind_goal_to_inbound(agent, goals[-1], inbound)
     # CONCEPTUALIZE: form + shape + monitor + commit -> the audience-designed conveyed
     # subset of lines (mechanical map-back from the committed utterance). Falls back to
     # the full line set on any failure — never silent.
@@ -468,7 +511,8 @@ def _act_author_concern(agent, comp, inbound=None) -> dict:
     except Exception:
         sig = None
     d = comp.dispatch or {}
-    goal = _mint_goal(agent, "author_concern", d.get("predicate"), d.get("object"))
+    goal = _mint_goal(agent, "author_concern", d.get("predicate"),
+                      d.get("object"), inbound=inbound)
 
     if not sig:
         return {"acted": True, "route": "concern_authored", "goal": goal,
@@ -516,6 +560,13 @@ def act_on_instruction(agent, comp, inbound=None) -> dict:
     obj = d.get("object")
     pred_l = (pred or "").lower().strip(",.;:?!")
 
+    # The comprehension faculty has already established that this is a
+    # perception request with no attached world.  Preserve that cognition
+    # state before generic self-reference handling: the word ``you`` in a
+    # perception complement is not evidence for a self-identity report.
+    if d.get("path") == "honest_no_world":
+        return honest_no_world_reply(agent, comp, inbound)
+
     scene_attached = getattr(agent, "_conv_scene", None) is not None
 
     if pred_l in _SELF_REPORT_VERBS:
@@ -530,7 +581,8 @@ def act_on_instruction(agent, comp, inbound=None) -> dict:
         # 1. SELF-REPORT about the self -> the held reflective faculty -> prose.
         target = strong or ("self_identity" if _has_generic_self_ref(comp.raw) else None)
         if target and target in _rf._DISPATCH:
-            goal = _mint_goal(agent, "report_self", pred, obj, self_target=target)
+            goal = _mint_goal(agent, "report_self", pred, obj,
+                              inbound=inbound, self_target=target)
             try:
                 state = _rf.reflect(target, None, agent.s)
                 reply = agent._surface_self_state(state)
@@ -558,9 +610,30 @@ def act_on_instruction(agent, comp, inbound=None) -> dict:
         if out.get("reply") is not None:
             return out
 
+    action_evidence = d.get("language_evidence") or {}
+    if action_evidence.get("anaphoric_reference") \
+            and action_evidence.get("referent_status") == "unresolved":
+        # An unresolved typed reference is a cognition/grounding repair, not
+        # an action with a guessed object.  Reuse the existing clarification
+        # faculty; no surface fallback or lexical target substitution occurs.
+        return ask_back(agent, comp, inbound)
     # 3. A perception/nav/manipulation predicate with no attached world, or a
     #    general predicate: mint the Goal, report HONESTLY — no faked action.
-    goal = _mint_goal(agent, "instruction", pred, obj)
+    goal = _mint_goal(agent, "instruction", pred, obj, inbound=inbound)
+    if action_evidence.get("deferred_condition") and goal is not None:
+        # A typed condition changes lifecycle state; it does not authorize an
+        # immediate world action. Preserve the evidence on the graph-resident
+        # Goal so later cognition can resume it when the condition is observed.
+        try:
+            agent.inner.set_attr(goal, "status", "deferred")
+            agent.inner.set_attr(goal, "defer_reason",
+                                 str(action_evidence.get("condition_evidence")
+                                     or "typed_condition"))
+            agent.inner.set_attr(goal, "action_sequence",
+                                 list(action_evidence.get("action_sequence") or
+                                      [pred] if pred else []))
+        except Exception:
+            pass
     has_world = getattr(agent, "_conv_scene", None) is not None
     if pred_l in _SELF_REPORT_VERBS and not has_world:
         note = (f'I took on the goal to {pred}'
@@ -600,9 +673,16 @@ def is_ask_back(comp) -> bool:
     untyped by-position HEAD (it could not parse the utterance's head at all), or
     an honest `path=='frontier'` dispatch. A question that DID resolve to a
     faculty (meta/know/table) is NOT an ask-back — it answers."""
-    if comp is None or comp.fastpath:
+    if comp is None:
         return False
     d = comp.dispatch or {}
+    evidence = d.get("language_evidence") or {}
+    if comp.fastpath:
+        return False
+    if evidence.get("repair_evidence") in {
+            "unresolved_selection", "knowledge_deficit",
+    }:
+        return True
     head_untyped = _head_untyped_gap(comp) is not None
     if comp.kind == "question":
         # only ask back a question that is itself an honest frontier with an
@@ -617,7 +697,9 @@ def ask_back(agent, comp, inbound=None) -> dict:
     conversation seed), threaded `responds_to` the inbound, `expects_response`.
     The trouble source is the user's OWN word quoted back — other-initiated
     repair, never a fabricated answer. Returns the asked question as `reply`."""
-    focus = (_head_untyped_gap(comp) or _first_untyped_surface(comp)
+    evidence = (comp.dispatch or {}).get("language_evidence") or {}
+    focus = (evidence.get("repair_focus") or _head_untyped_gap(comp)
+             or _first_untyped_surface(comp)
              or comp.focus or (comp.dispatch or {}).get("reason") or comp.raw)
     focus = str(focus).strip(",.;:?!") or comp.raw
     # Render the repair in the interlocutor's REGISTER (the agent's voice): the
@@ -715,7 +797,7 @@ def satisfiable_reply(agent, comp, inbound=None) -> dict:
         # `_describe_rule_summary` opens with "my rule 'X' is ..."; lead with
         # "One of them —" so the named rule reads as fluent prose, no stutter.
         reply = "One of them — " + _sm._describe_rule_summary(at)
-        _mint_goal(agent, "name_rule", "name", name)
+        _mint_goal(agent, "name_rule", "name", name, inbound=inbound)
         return {"acted": True, "reply": reply, "route": "satisfiable",
                 "rule_name": name, "served_by": "self_model:rules",
                 "note": "named a real held RuleSummary from my own self-model"}
@@ -726,7 +808,7 @@ def satisfiable_reply(agent, comp, inbound=None) -> dict:
             reply = agent._surface_self_state(state)
         except Exception:
             reply = None
-        _mint_goal(agent, "report_self", "report", "organisation")
+        _mint_goal(agent, "report_self", "report", "organisation", inbound=inbound)
         return {"acted": reply is not None, "reply": reply, "route": "satisfiable",
                 "served_by": "self_model:self_organisation",
                 "note": "answered from my self_organisation faculty over real state"}
@@ -739,7 +821,7 @@ def honest_no_world_reply(agent, comp, inbound=None) -> dict:
     goal) and reports the honest action-space limit."""
     d = comp.dispatch or {}
     pred = (d.get("predicate") or "perceive")
-    goal = _mint_goal(agent, "instruction", pred, None)
+    goal = _mint_goal(agent, "instruction", pred, None, inbound=inbound)
     reply = (f"I took on the goal to {pred} what I perceive, "
              "but I have no world attached to perceive right now.")
     return {"acted": True, "reply": reply, "route": "honest_no_world",
@@ -778,6 +860,7 @@ def reference_reply(agent, comp_or_text, inbound=None) -> dict:
         try:
             node = agent.s.add_node("ReferenceRecognition",
                                     {"phrase": own["phrase"], "source": own.get("source"),
+                                     "reply": reply,
                                      "own_name": True, "source_kind": "own_name"})
             agent.inner.add_edge_unchecked(agent.agent, "recognized", node)
         except Exception:
@@ -805,6 +888,7 @@ def reference_reply(agent, comp_or_text, inbound=None) -> dict:
     try:
         node = agent.s.add_node("ReferenceRecognition",
                                 {"phrase": verdict["phrase"], "source": verdict.get("source"),
+                                 "reply": reply,
                                  "liveness": verdict.get("liveness"),
                                  "manifold_type": verdict.get("manifold_type"),
                                  "compelled": False, "source_kind": "reference"})

@@ -712,8 +712,28 @@ def _decode_order(labels: List[str], tables, *, keep_substrate: bool = False):
         s.add_edge_unchecked(ed, "dst", end)
     for p in range(0, n + 2):                       # FORWARD tick
         s.set_attr(lat, "active_pos", float(p))
+        s.add_node("NativeProgramSynthesisReceipt", {
+            "schema": "native_program_synthesis_receipt_v1",
+            "cluster": "prog_synthesis.order_decode",
+            "provenance": "native_rule_readback:program_lattice",
+            "native_rule": "program_synthesis_native_lattice_rules",
+            "native_steps": ["advance_active_pos", "run_rules", "readback"],
+            "phase": "forward",
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         s._inner.run_rules(400000)
     s.set_attr(end, "on_path", 1.0)                 # seed the backtrace
+    s.add_node("NativeProgramSynthesisReceipt", {
+        "schema": "native_program_synthesis_receipt_v1",
+        "cluster": "prog_synthesis.order_decode",
+        "provenance": "native_rule_readback:program_lattice",
+        "native_rule": "program_synthesis_native_lattice_rules",
+        "native_steps": ["seed_terminal_winner", "run_rules", "readback"],
+        "phase": "backtrace",
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     s._inner.run_rules(400000)                      # BACKTRACE (graph-native)
     seq = [(p, lb) for (p, lb), h in hyps.items()
            if s.node(h)["attrs"].get("on_path") == 1.0]
@@ -2844,6 +2864,15 @@ def pump(sub, ag_node, *, max_rounds: int = 32) -> None:
     mechanical verb for each goal status, repeat until nothing moves —
     ingest → tick → query, CLAUDE.md's own loop."""
     for _ in range(max_rounds):
+        sub._inner.add_node("NativeProgramSynthesisReceipt", {
+            "schema": "native_program_synthesis_receipt_v1",
+            "cluster": "prog_synthesis.fixpoint_pump",
+            "provenance": "native_rule_readback:program_synthesis_pump",
+            "native_rule": "program_synthesis_native_rules",
+            "native_steps": ["run_rules", "dispatch_pending_verbs"],
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         sub._inner.run_rules(400000)
         moved = False
         for g in sub.nodes("Goal"):
@@ -2856,6 +2885,15 @@ def pump(sub, ag_node, *, max_rounds: int = 32) -> None:
                     moved = bool(verb(sub, ag_node, g)) or moved
         if not moved:
             break
+    sub._inner.add_node("NativeProgramSynthesisReceipt", {
+        "schema": "native_program_synthesis_receipt_v1",
+        "cluster": "prog_synthesis.fixpoint_pump",
+        "provenance": "native_rule_readback:program_synthesis_pump",
+        "native_rule": "program_synthesis_native_rules",
+        "native_steps": ["final_run_rules", "readback"],
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     sub._inner.run_rules(400000)
 
 

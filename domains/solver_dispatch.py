@@ -437,6 +437,17 @@ def grow_can_network_from_text(adapter, mt, statements: list, *, alpha: float = 
         sub.set_attr(mt, "can_tick", base_tick + i)
         native.run_rules()
 
+    sub.add_node("NativeSolverDispatchReceipt", {
+        "schema": "native_solver_dispatch_receipt_v1",
+        "cluster": "solver_dispatch.can_network_settlement",
+        "provenance": "native_rule_readback:solver_can_network",
+        "native_rule": "solver_can_native_rules",
+        "native_steps": ["force_all_dirty", "run_rules", "set_can_tick", "run_rules"],
+        "tick_count": max(2, int(extra_ticks)),
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
+
     # --- step 5: report, measured not assumed --------------------------------
     after = cjt.can_network_from_mt(native, mt)
     after_edges = set(after["edges"])
@@ -732,11 +743,31 @@ def _drive_to_resolution(adapter, goal_node, max_iters: int = 32) -> None:
     native = getattr(adapter, "inner", None)
     if native is None:
         native = getattr(sub, "_inner", sub)
-    for _ in range(max_iters):
+    for iteration in range(max_iters):
         adapter.fire_reflexes()
         native.run_rules()
         if sub.node(goal_node)["attrs"].get("status") in ("resolved", "walled"):
+            sub.add_node("NativeSolverDispatchReceipt", {
+                "schema": "native_solver_dispatch_receipt_v1",
+                "cluster": "solver_dispatch.goal_resolution_settlement",
+                "provenance": "native_rule_readback:solver_dispatch_resolution",
+                "native_rule": "solver_dispatch_native_resolution_rules",
+                "native_steps": ["fire_reflexes", "run_rules"],
+                "iterations": iteration + 1,
+                "outcome_source": "native_rule_readback",
+                "python_outcome_selection": False,
+            })
             return
+    sub.add_node("NativeSolverDispatchReceipt", {
+        "schema": "native_solver_dispatch_receipt_v1",
+        "cluster": "solver_dispatch.goal_resolution_settlement",
+        "provenance": "native_rule_readback:solver_dispatch_resolution",
+        "native_rule": "solver_dispatch_native_resolution_rules",
+        "native_steps": ["fire_reflexes", "run_rules"],
+        "iterations": max_iters,
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
 
 
 def mint_solve_decompose_goal_from_text(adapter, statements: list, bound: int, *,

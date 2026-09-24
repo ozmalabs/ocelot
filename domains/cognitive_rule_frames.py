@@ -43,6 +43,19 @@ def _edge(native, source, kind, target):
         native.add_edge_unchecked(source, kind, target, {})
 
 
+def _native_frame_receipt(sub, *, cluster: str, native_rule: str,
+                          native_steps: int) -> None:
+    sub.add_node("NativeCognitiveRuleFrameReceipt", {
+        "schema": "native_cognitive_rule_frame_receipt.v1",
+        "cluster": cluster,
+        "provenance": "native_rule_readback:cognitive_rule_frames",
+        "native_rule": native_rule,
+        "native_steps": int(native_steps),
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
+
+
 def _json(value):
     return json.dumps(value, ensure_ascii=False, sort_keys=True, default=str)
 
@@ -237,7 +250,11 @@ def read_rule_document(agent, source_document, text, *, name="document",
             _edge(native, rule, "has_cue", _node(agent, surface))
     native.set_attr(document, "sentence_count", float(len(sentences)))
     native.set_attr(document, "cue_count", float(cue_count))
-    native.run_rules()
+    native_steps = native.run_rules()
+    _native_frame_receipt(
+        sub, cluster="cognitive_rule_frames.document_settlement",
+        native_rule="cognitive_rule_frames_document_rules",
+        native_steps=native_steps)
     return _result(agent, document, source_document, {
         "sentences": sentences, "instruction_reads": instruction_reads,
         "prose_reads": prose_reads,
@@ -274,7 +291,11 @@ def observe_situation(agent, text="", *, cues=None, kind="world_observation",
         cue = _node(agent, surface)
         cue_nodes.append(cue)
         _edge(native, observation, "has_cue", cue)
-    native.run_rules()
+    native_steps = native.run_rules()
+    _native_frame_receipt(
+        sub, cluster="cognitive_rule_frames.observation_settlement",
+        native_rule="cognitive_rule_frames_observation_rules",
+        native_steps=native_steps)
     activations = []
     for node in sub.neighbours(root, "has_rule_activation"):
         if (sub.node(node)["attrs"].get("observation_key") == observation_key
@@ -334,7 +355,11 @@ def commit_prediction(agent, prediction, *, mode="goal", meaning=None,
         _edge(native, root, "has_communication_intent", intent)
         _edge(native, commitment, "produces_communication_intent", intent)
         result["communication_intent"] = intent
-    native.run_rules()
+    native_steps = native.run_rules()
+    _native_frame_receipt(
+        sub, cluster="cognitive_rule_frames.commitment_settlement",
+        native_rule="cognitive_rule_frames_commitment_rules",
+        native_steps=native_steps)
     return result
 
 
@@ -360,7 +385,11 @@ def draft_document(agent, text, *, name="document", kind="document",
         if not sub.has_node(prediction):
             raise KeyError(f"unknown source RulePrediction {prediction}")
         _edge(native, draft, "based_on_prediction", prediction)
-    native.run_rules()
+    native_steps = native.run_rules()
+    _native_frame_receipt(
+        sub, cluster="cognitive_rule_frames.draft_settlement",
+        native_rule="cognitive_rule_frames_draft_rules",
+        native_steps=native_steps)
     return {"status": "drafted", "draft": draft, "revision": revision}
 
 

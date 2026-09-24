@@ -18,7 +18,16 @@ def pump(agent) -> None:
     # Let graph rules publish any newly perceived need before the adapter
     # serializes requested evidence. This is the ordinary ingest boundary:
     # graph decides/request -> adapter translates -> graph synthesizes.
-    native.run_rules(400000)
+    native_steps = native.run_rules(400000)
+    sub.add_node("NativeFacultyAutogenesisReceipt", {
+        "schema": "native_faculty_autogenesis_receipt.v1",
+        "cluster": "faculty_autogenesis.discovery_settlement",
+        "provenance": "native_rule_readback:faculty_autogenesis",
+        "native_rule": "faculty_autogenesis_rules",
+        "native_steps": int(native_steps),
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     for need in tuple(sub.nodes("FacultyNeed")):
         attrs = sub.node(need)["attrs"]
         if attrs.get("status") != "requested":

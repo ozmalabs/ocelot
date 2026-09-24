@@ -108,6 +108,15 @@ def observe(agent, type_: str, attrs: dict, *, run: bool = True) -> Optional[Any
         if run:
             native = getattr(s, "_inner", s)
             native.run_rules()
+            s.add_node("NativeMetaShapeReceipt", {
+                "schema": "native_meta_shape_receipt_v1",
+                "cluster": "meta_shape.observation_growth",
+                "provenance": "native_rule_readback:meta_shape_growth",
+                "native_rule": "meta_shape_growth_native_rules",
+                "native_steps": ["observe_shape", "run_rules", "readback"],
+                "outcome_source": "native_rule_readback",
+                "python_outcome_selection": False,
+            })
         return oid
     except Exception:
         return None

@@ -152,7 +152,7 @@ _COMMUNICATE_RULE_NAME = "communicate_what_i_see_" + _COMMUNICATE_TAG
 def faculty_built(agent) -> bool:
     """Mechanical name lookup -- has this agent already had the recount
     faculty composed? (Idempotency probe only; never a content decision.)"""
-    _, native = _resolve(agent)
+    sub, native = _resolve(agent)
     names = {r.get("name") for r in native.export_rules() if isinstance(r, dict)}
     return _COMPREHEND_RULE_NAME in names and _COMMUNICATE_RULE_NAME in names
 
@@ -412,7 +412,17 @@ def project_read_scene(agent, world, article_text: str, comp_result: dict) -> di
             native.add_edge_unchecked(p, "is_a", con)
             cons.append((con, tb.get("sentence"), [rel, a0, a1]))
             order_i += 1
-    native.run_rules()                        # the realization + fluency rules DECIDE here
+    native_steps = native.run_rules()        # the realization + fluency rules DECIDE here
+    receipt = sub.add_node("NativeRecountReceipt", {
+        "schema": "native_recount_receipt.v1",
+        "cluster": "recount_faculty.read_scene_settlement",
+        "provenance": "native_rule_readback:recount_realization",
+        "native_rule": "recount_realization_and_fluency_rules",
+        "event_count": len(cons),
+        "native_steps": int(native_steps),
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     # Re-expose the fixed fluency vocabulary (event words + connective/pronoun
     # surfaces) held as seed data (seeds/recount_fluency.json's
     # `RecountVocabulary` rows) -- mechanical bridging of DATA the seed
@@ -578,8 +588,17 @@ def recount_what_read(agent, world, prod, article_text: str, *,
     comp = cr.read_and_comprehend(agent, article_text)
     projection = project_read_scene(agent, world, article_text, comp)
     world_receive_recount(agent, projection["scene"], instruction)
-    _, native = _resolve(agent)
-    native.run_rules()                      # the instruction enters reasoning (comprehend -> communicate)
+    sub, native = _resolve(agent)
+    native_steps = native.run_rules()       # the instruction enters reasoning (comprehend -> communicate)
+    sub.add_node("NativeRecountReceipt", {
+        "schema": "native_recount_receipt.v1",
+        "cluster": "recount_faculty.recount_reasoning_settlement",
+        "provenance": "native_rule_readback:recount_reasoning",
+        "native_rule": "recount_faculty_reasoning_rules",
+        "native_steps": int(native_steps),
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     report = recount_report(agent, prod, scene=projection["scene"], audience=audience)
     # FLUENCY: the smoother reads the agent's OWN held connective/elision
     # decisions (seeds/recount_fluency.json's rules, read back by
@@ -752,7 +771,17 @@ def project_analysis_scene(agent, world, article_text: str) -> dict:
             phrase = sub.node(vnd)["attrs"].get("phrase")
             if phrase:
                 bridge_lexicon_entry(world, phrase, concept=phrase)
-    native.run_rules()          # seeds/recount_analysis_realization.json's rules DECIDE say_* here
+    native_steps = native.run_rules()      # rules DECIDE say_* here
+    sub.add_node("NativeRecountReceipt", {
+        "schema": "native_recount_receipt.v1",
+        "cluster": "recount_faculty.analysis_scene_settlement",
+        "provenance": "native_rule_readback:recount_analysis_scene",
+        "native_rule": "recount_analysis_realization_rules",
+        "reading_count": int(order_i),
+        "native_steps": int(native_steps),
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     return {"scene": scene, "n_readings": order_i}
 
 
@@ -787,12 +816,22 @@ def analyse_what_read(agent, world, prod, article_text: str, *,
             ag.annotate_actor_class(agent, actor, actor_class)
         ag.assess_epistemic_lean(agent)
     projection = project_analysis_scene(agent, world, article_text)
-    _, native = _resolve(agent)
+    sub, native = _resolve(agent)
     analysis_report = {"lines": [], "productions": [], "accepted": [],
                        "n_goals": 0, "n_subgoals": 0, "skipped_known_to_audience": []}
     if projection["n_readings"]:
         world_receive_recount(agent, projection["scene"], instruction)
-        native.run_rules()
+        native_steps = native.run_rules()
+        sub.add_node("NativeRecountReceipt", {
+            "schema": "native_recount_receipt.v1",
+            "cluster": "recount_faculty.analysis_reasoning_settlement",
+            "provenance": "native_rule_readback:recount_analysis_reasoning",
+            "native_rule": "recount_analysis_reasoning_rules",
+            "reading_count": int(projection["n_readings"]),
+            "native_steps": int(native_steps),
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         analysis_report = recount_report(agent, prod, scene=projection["scene"], audience=audience)
     analysis_prose = smooth_scene_prose(analysis_report["lines"], register=register)
     combined_prose = surface["prose"]

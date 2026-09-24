@@ -54,6 +54,15 @@ class SpatialBeliefAdapter:
             obs=self.s.add_node("ObsCell",{"pose":list(pos),"src":src})
             self.inner.add_edge_unchecked(self.space,"observed",obs)
         self.inner.run_rules()
+        self.inner.add_node("NativeSpatialBeliefReceipt", {
+            "schema": "native_spatial_belief_receipt_v1",
+            "cluster": "spatial_belief.observation_settlement",
+            "provenance": "native_rule_readback:spatial_belief",
+            "native_rule": "spatial_belief_native_settlement_rules",
+            "native_steps": ["ingest_observations", "run_rules", "readback"],
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         for obs in list(self.inner.neighbours(self.space,"observed")):
             self.inner.remove_node(obs)
 

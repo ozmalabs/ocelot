@@ -613,7 +613,16 @@ def record_pair_correspondence(substrate, node_a, node_b, witness):
         if ag is not None:
             sub.add_edge(ag, "observed_correspondence", cid)
         native = getattr(sub, "_inner", sub)
-        native.run_rules()
+        native_steps = native.run_rules()
+        sub.add_node("NativeAnalogicalReceipt", {
+            "schema": "native_analogical_receipt.v1",
+            "cluster": "analogical_thinking.pair_settlement",
+            "provenance": "native_rule_readback:analogical_pair",
+            "native_rule": "blob_mint_blob_recognize_blob_no_collapse",
+            "native_steps": int(native_steps),
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         return cid
     except Exception:
         return None
@@ -731,7 +740,16 @@ def record_directional_correspondence(substrate, node_a, node_b,
         if ag is not None:
             sub.add_edge(ag, "observed_directional_correspondence", cid)
         native = getattr(sub, "_inner", sub)
-        native.run_rules()
+        native_steps = native.run_rules()
+        sub.add_node("NativeAnalogicalReceipt", {
+            "schema": "native_analogical_receipt.v1",
+            "cluster": "analogical_thinking.directional_settlement",
+            "provenance": "native_rule_readback:directional_correspondence",
+            "native_rule": "directional_correspondence_rules",
+            "native_steps": int(native_steps),
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         return cid
     except Exception:
         return None
@@ -892,7 +910,16 @@ def _legacy_find_analogies(substrate, source_mt_name: str,
     native = getattr(sub, "_inner", sub)
     if hasattr(native, "run_rules"):
         try:
-            native.run_rules()
+            native_steps = native.run_rules()
+            sub.add_node("NativeAnalogicalReceipt", {
+                "schema": "native_analogical_receipt.v1",
+                "cluster": "analogical_thinking.legacy_safety_settlement",
+                "provenance": "native_rule_readback:analogical_legacy_safety",
+                "native_rule": "analogical_native_rules",
+                "native_steps": int(native_steps),
+                "outcome_source": "native_rule_readback",
+                "python_outcome_selection": False,
+            })
         except Exception:
             pass
 

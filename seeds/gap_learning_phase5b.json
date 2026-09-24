@@ -1,0 +1,91 @@
+{
+  "id": "gap_learning_phase5b",
+  "version": "1.0.0",
+  "depends_on": ["self_correction_verification_phase5a"],
+  "capability_keys": ["gap_recurrence_route_learning"],
+  "description": "PHASE 5B bounded increment: gap_identity is the graph key for recurrence and prioritisation. A verified RouteModel is promoted into the matching GapRecurrence and is applied to a later Goal. No duplicate concern is minted by this learning path.",
+  "rules": [
+    {
+      "name": "register_gap_recurrence_identity",
+      "match": [["agent", "has_self_concern", "sc"]],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "gap_identity"}, "b": {"type": "Lit", "value": ""}}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "recurrence_registered"}, "b": {"type": "Lit", "value": 1.0}}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "status"}, "b": {"type": "Lit", "value": "noted"}},
+          {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "agent"}, "edge_type": "has_gap_recurrence"}, "var_name": "rec", "predicate": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "rec"}, "key": "gap_identity"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "gap_identity"}}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "sc", "recurrence_registered", 1.0],
+        ["add_node", "rec", "GapRecurrence", {"schema": "gap_recurrence.v1", "gap_identity": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "gap_identity"}}, "recurrence_count": 1.0, "priority": 1.0, "status": "open"}],
+        ["add_edge", "agent", "has_gap_recurrence", "rec"],
+        ["add_edge", "rec", "tracks_self_concern", "sc"]
+      ]
+    },
+    {
+      "name": "register_recurrent_gap_identity",
+      "match": [
+        ["agent", "has_self_concern", "sc"],
+        ["agent", "has_gap_recurrence", "rec"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "gap_identity"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "rec"}, "key": "gap_identity"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "recurrence_counted"}, "b": {"type": "Lit", "value": 1.0}}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "status"}, "b": {"type": "Lit", "value": "noted"}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "sc", "recurrence_counted", 1.0],
+        ["set_attr", "rec", "recurrence_count", {"__term__": {"type": "Count", "source": {"type": "Filter", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "agent"}, "edge_type": "has_self_concern"}, "var_name": "other", "predicate": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "other"}, "key": "gap_identity"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "rec"}, "key": "gap_identity"}}}}}],
+        ["set_attr", "rec", "priority", {"__term__": {"type": "Count", "source": {"type": "Filter", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "agent"}, "edge_type": "has_self_concern"}, "var_name": "other", "predicate": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "other"}, "key": "gap_identity"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "rec"}, "key": "gap_identity"}}}}}]
+      ]
+    },
+    {
+      "name": "promote_verified_route_to_gap_recurrence",
+      "match": [
+        ["agent", "has_route_model", "model"],
+        ["model", "grounded_by", "record"],
+        ["record", "resolves_self_concern", "sc"],
+        ["agent", "has_gap_recurrence", "rec"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "record"}, "key": "outcome"}, "b": {"type": "Lit", "value": "verified"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "gap_identity"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "rec"}, "key": "gap_identity"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "rec"}, "key": "learned_route"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "model"}, "key": "route"}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "rec", "learned_route", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "model"}, "key": "route"}}],
+        ["set_attr", "rec", "status", "learned"],
+        ["add_edge", "rec", "learned_from", "model"]
+      ]
+    },
+    {
+      "name": "apply_learned_route_to_future_goal",
+      "match": [
+        ["agent", "has_gap_recurrence", "rec"],
+        ["agent", "has_goal", "goal"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "rec"}, "key": "status"}, "b": {"type": "Lit", "value": "learned"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "goal"}, "key": "gap_identity"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "rec"}, "key": "gap_identity"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "goal"}, "key": "route"}, "b": {"type": "Lit", "value": "unresolved_default"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "goal"}, "key": "learning_applied"}, "b": {"type": "Lit", "value": 1.0}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "goal", "route", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "rec"}, "key": "learned_route"}}],
+        ["set_attr", "goal", "learning_applied", 1.0],
+        ["add_edge", "goal", "routed_by", "rec"]
+      ]
+    }
+  ]
+}

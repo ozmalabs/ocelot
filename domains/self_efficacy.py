@@ -44,6 +44,15 @@ def record_self_efficacy_incident(inner, concept, *, success: bool,
     evidence = 1.0 if success else -1.0
     inner.concept_apply_evidence(concept, evidence, alpha)
     inner.force_all_dirty()
+    inner.add_node("NativeSelfEfficacyReceipt", {
+        "schema": "native_self_efficacy_receipt_v1",
+        "cluster": "self_efficacy.incident_settlement",
+        "provenance": "native_rule_readback:self_efficacy",
+        "native_rule": "self_efficacy_native_rules",
+        "native_steps": ["apply_incident", "run_rules", "readback"],
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     inner.run_rules(max_steps)
     return inner.node(concept)["attrs"]["external_field"]
 

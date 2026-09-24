@@ -141,6 +141,15 @@ class GraphWhisperGroundingGuard:
                 self.inner, candidate, "derived_from_grounding_prototype",
                 self.prototype_nodes[label],
             )
+        self.inner.add_node("NativeWhisperGroundingReceipt", {
+            "schema": "native_whisper_grounding_receipt_v1",
+            "cluster": "whisper_grounding_guard.inference",
+            "provenance": "native_rule_readback:whisper_grounding",
+            "native_rule": "whisper_grounding_native_rules",
+            "native_steps": ["mint_candidates", "run_rules", "readback"],
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         self.inner.run_rules()
         result = dict(self.s.node(inquiry)["attrs"])
         if result.get("status") != "decided":

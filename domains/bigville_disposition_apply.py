@@ -166,6 +166,15 @@ def apply_resident_dispositions(inner, resident, bonds_by_holder, self_priors_by
                                      self_priors_by_name[name], overrides.get("self"))
 
     inner.force_all_dirty()
+    inner.add_node("NativeBigvilleDispositionReceipt", {
+        "schema": "native_bigville_disposition_receipt_v1",
+        "cluster": "bigville_disposition_apply.settlement",
+        "provenance": "native_rule_readback:bigville_dispositions",
+        "native_rule": "bigville_dispositions_native_rules",
+        "native_steps": ["apply_dispositions", "force_all_dirty", "run_rules", "readback"],
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     inner.run_rules(max_steps)
     return {"resident_can": resident_can, "people": people, "groups": groups,
             "self": self_aspects}

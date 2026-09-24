@@ -69,6 +69,7 @@ class WorldAdapter:
         # This is the world↔graph mapping (an I/O concern), not agent state.
         self._instances: dict = {}
         self._concepts: dict = {}     # word -> Concept NodeID (taught-word index)
+        self._discourse_store = None  # lazy canonical referent store
         self._seen: set = set()       # (world_type, key, value) triples perceived
         self._sensed_types: set = set()  # every world node type perceived
         self.last_freshening_count: int = 0  # instances that gained new info last ingest
@@ -585,6 +586,16 @@ class WorldAdapter:
         self._eye.submit_photons_2d(
             photon_packets, dirty=dirty, sensor_epoch=photon_epoch)
         eye_inner = self._eye.substrate._inner
+        eye_inner.add_node("NativeVisionPhotonSheetReceipt", {
+            "schema": "native_vision_photon_sheet_receipt_v1",
+            "cluster": "world_adapter.vision_photon_settlement",
+            "provenance": "native_cycle_readback:vision_photon_sheet",
+            "native_rule": "vision_photon_native_task_rules",
+            "native_steps": ["submit_photons", "run_cognitive_tasks", "run_rules", "readback"],
+            "phase": "initial",
+            "outcome_source": "native_cycle_readback",
+            "python_outcome_selection": False,
+        })
         eye_inner.run_cognitive_tasks(1)
         eye_inner.run_rules()
 
@@ -595,6 +606,16 @@ class WorldAdapter:
         self._eye.settle_carve_2d(since_epoch=since_epoch)
         self._eye.settle_motion_2d(since_epoch=since_epoch)
         self._eye.settle_salience_2d(since_epoch=since_epoch)
+        eye_inner.add_node("NativeVisionPhotonSheetReceipt", {
+            "schema": "native_vision_photon_sheet_receipt_v1",
+            "cluster": "world_adapter.vision_photon_settlement",
+            "provenance": "native_cycle_readback:vision_photon_sheet",
+            "native_rule": "vision_photon_native_task_rules",
+            "native_steps": ["settle_percepts", "run_cognitive_tasks", "run_rules", "readback"],
+            "phase": "percept_settlement",
+            "outcome_source": "native_cycle_readback",
+            "python_outcome_selection": False,
+        })
         eye_inner.run_cognitive_tasks(1)
         eye_inner.run_rules()
 
@@ -1621,6 +1642,26 @@ class WorldAdapter:
                 return n
         return None
 
+    def _canonical_discourse_store(self):
+        """Return this adapter's single canonical discourse referent store.
+
+        ``WorldAdapter`` is not a ``ConversationWorld``.  The narrow provider
+        supplies only concept lookup/creation, leaving referent identity and
+        centering to ``DiscourseStore``.
+        """
+        if self._discourse_store is None:
+            from domains.reference_resolution import (
+                DiscourseConceptProvider, DiscourseStore,
+            )
+            provider = DiscourseConceptProvider(
+                self.s,
+                lookup=self._concept_by_name,
+                ensure=self._ensure_concept,
+            )
+            self._discourse_store = DiscourseStore(
+                self.s, concept_provider=provider)
+        return self._discourse_store
+
     def _interlocutor(self, name="user"):
         """Find or create the Interlocutor the agent is speaking with."""
         for n in self.s.nodes("Interlocutor"):
@@ -1664,7 +1705,17 @@ class WorldAdapter:
         # I/O boundary; the referent Rules decide what each Mention refers to),
         # and ensure the agent knows the seed-installed concepts.
         self._tokenise_mentions(mid, text)
-        self._backfill_knows_concept()
+        # The intent rules only need candidate Concepts whose names occur in
+        # ordinary events. Use the substrate's existing Concept.name index to
+        # materialize that bounded evidence set; native rules still decide the
+        # Mention->refers_to edge and all downstream intent/routing outcomes.
+        # Question events retain the established complete vocabulary ledger
+        # because self/meta and question arbitration consume that graph-wide
+        # evidence before the native speech-kind pass.
+        if speech_act == "question":
+            self._backfill_knows_concept()
+        else:
+            self._backfill_knows_concept_for_message(mid)
         return mid
 
     def _channel(self):
@@ -1813,6 +1864,39 @@ class WorldAdapter:
                 "kind": sa.get("kind"),
                 "content": sa.get("content"),
             })
+        deliberations = []
+        for d in self.s.nodes("Deliberation"):
+            if not self.s.has_node(d):
+                continue
+            linked = False
+            for goal in self.inner.neighbours(d, "about_goal"):
+                if (self.s.has_node(goal)
+                        and (mid in self.inner.neighbours(goal, "comprehends")
+                             or str(self.s.node(goal)["attrs"].get(
+                                 "origin_turn_id") or "") == str(inbound_id))):
+                    linked = True
+                    break
+            if not linked:
+                continue
+            da = dict(self.s.node(d)["attrs"])
+            candidates = []
+            for c in self.inner.neighbours(d, "has_candidate"):
+                if self.s.has_node(c):
+                    candidates.append(dict(self.s.node(c)["attrs"]))
+            selections = [dict(self.s.node(n)["attrs"])
+                          for n in self.inner.neighbours(d, "has_selection")
+                          if self.s.has_node(n)]
+            settlements = [dict(self.s.node(n)["attrs"])
+                           for n in self.inner.neighbours(d, "has_settlement")
+                           if self.s.has_node(n)]
+            credits = [dict(self.s.node(n)["attrs"])
+                       for n in self.inner.neighbours(d, "has_counterfactual_credit")
+                       if self.s.has_node(n)]
+            deliberations.append({
+                "id": int(d.value), "attrs": da, "candidates": candidates,
+                "selections": selections, "settlements": settlements,
+                "counterfactual_credit": credits,
+            })
         parse_keys = (
             "comp_kind", "comp_predicate", "comp_content", "comp_topic",
             "comp_dispatch_path", "comp_dispatch_meta", "comp_reflexive",
@@ -1820,6 +1904,7 @@ class WorldAdapter:
             "attachment_pending",
             "self_account_unresolved", "self_account_topic", "reply_flag_note",
             "reply_flag_noted", "comp_reply_text", "reply_from",
+            "communication_route",
         )
         parse = {k: ma.get(k) for k in parse_keys if ma.get(k) is not None}
         return {
@@ -1835,6 +1920,7 @@ class WorldAdapter:
             "mentions": mentions,
             "current_topic": topic,
             "concerns": concerns,
+            "deliberations": deliberations,
         }
 
     def last_inbound(self):
@@ -1876,6 +1962,37 @@ class WorldAdapter:
         for c in self.s.nodes("Concept"):
             if c not in known:
                 self.inner.add_edge_unchecked(self.agent, "knows_concept", c)
+
+    def _backfill_knows_concept_for_message(self, mid):
+        """Materialize only message-relevant Concept candidates.
+
+        This is an indexed graph-materialization optimization, not referent
+        resolution: the native intent rules still own whether a Mention
+        refers to a candidate. The legacy full backfill remains available to
+        faculties that explicitly require the complete vocabulary ledger.
+        """
+        if not self.s.has_node(mid):
+            return
+        known = set(self.inner.neighbours(self.agent, "knows_concept"))
+        for mention in self.inner.neighbours(mid, "has_mention"):
+            attrs = self.s.node(mention)["attrs"]
+            text = attrs.get("text")
+            if not isinstance(text, str) or not text:
+                continue
+            try:
+                candidates = self.inner.nodes_where("Concept", "name", text)
+            except (AttributeError, TypeError):
+                # Compatibility fallback for partial/legacy substrates; this
+                # preserves correctness while the native index is absent.
+                candidates = [
+                    node for node in self.s.nodes("Concept")
+                    if self.s.node(node)["attrs"].get("name") == text
+                ]
+            for concept in candidates:
+                if concept not in known:
+                    self.inner.add_edge_unchecked(
+                        self.agent, "knows_concept", concept)
+                    known.add(concept)
 
     # I/O-boundary speech-act classifier (surface cues only; the agent's
     # structural model is the graph data we tag, not this classifier).
@@ -1966,6 +2083,7 @@ class WorldAdapter:
         if inbound is None or not str(text or "").strip():
             return text
         surface = str(text)
+        self._bind_turn_production_receipts(inbound)
         if surface.strip().lower().rstrip(".!?") == "noted":
             surface = _CONVERSATION_ERROR_SURFACE
         try:
@@ -1986,6 +2104,492 @@ class WorldAdapter:
             if existing is None:
                 self.add_outbound(surface, kind="answer", source="adapter", inbound=inbound)
         return surface
+
+    def _release_conversation_action_reply(self, inbound, comp, result, surface):
+        """Release an action/repair bridge surface through the production gate.
+
+        The action bridge already owns the graph record that explains the
+        surface: a clarification ``Message`` for repair, or a conversation
+        ``Goal`` for an instruction.  Use that record as the commitment rather
+        than treating the reply text as evidence.  This is intentionally
+        scoped to ``conversation_action`` results; topic, social, and legacy
+        answer paths continue to use their own release seams.
+        """
+        if not isinstance(result, dict) or not str(surface or "").strip():
+            return None
+        route = str(result.get("route") or "")
+        if route == "ask_back":
+            committed = result.get("message")
+            focus = result.get("focus")
+            frame = {"event": "repair", "agent": "agent",
+                     "patient": focus, "intent": "request"}
+        elif route in {"goal_only", "self_report", "describe_scene",
+                       "concern_authored"}:
+            committed = result.get("goal")
+            dispatch = getattr(comp, "dispatch", None) or {}
+            goal_attrs = {}
+            try:
+                if committed is not None and self.s.has_node(committed):
+                    goal_attrs = dict(self.s.node(committed)["attrs"])
+            except Exception:
+                return None
+            event = (goal_attrs.get("predicate") or dispatch.get("predicate")
+                     or result.get("goal_kind") or "act")
+            patient = (goal_attrs.get("object") or dispatch.get("object")
+                       or result.get("goal_kind") or "goal")
+            frame = {"event": event, "agent": "agent",
+                     "patient": patient, "intent": "act"}
+        else:
+            return None
+
+        try:
+            if committed is None or not self.s.has_node(committed):
+                return None
+            attrs = self.s.node(committed)["attrs"]
+            if route == "ask_back":
+                graph_surface = attrs.get("text")
+            else:
+                graph_surface = result.get("reply")
+            if str(graph_surface or "").strip() != str(surface).strip():
+                return None
+        except Exception:
+            return None
+
+        from domains import production_gate as _pg
+        gate = {"recoverable": True, "coverage": 1.0,
+                "mode": "conversation_action_graph"}
+        return _pg.release_if_gated(self, frame, surface, gate, committed)
+
+    def _release_reference_reply(self, inbound, result, surface):
+        """Release an existing reference-faculty result through Phase 6.
+
+        ``conversation_action.reference_reply`` owns recognition and composition;
+        this bridge only reads its graph commitment and verifies that the emitted
+        surface is the exact faculty result.  It does not recognize a phrase or
+        infer a reference from the surface.
+        """
+        if (inbound is None or not isinstance(result, dict)
+                or not str(surface or "").strip()):
+            return None
+        committed = result.get("node")
+        if committed is None:
+            return None
+        try:
+            if not self.s.has_node(committed):
+                return None
+            attrs = self.s.node(committed)["attrs"]
+            if attrs.get("source_kind") not in {"reference", "own_name"}:
+                return None
+            if str(attrs.get("reply") or "").strip() != str(surface).strip():
+                return None
+            if committed not in self.inner.neighbours(self.agent, "recognized"):
+                return None
+        except Exception:
+            return None
+
+        from domains import production_gate as _pg
+        frame = {
+            "event": "recognize_reference",
+            "agent": "agent",
+            "patient": str(result.get("source") or result.get("phrase") or "reference"),
+            "intent": "inform",
+        }
+        gate = {
+            "recoverable": True,
+            "coverage": 1.0,
+            "mode": "conversation_reference_graph",
+        }
+        return _pg.release_if_gated(self, frame, surface, gate, committed)
+
+    def _release_social_reply(self, inbound, reply_mid, surface):
+        """Release a graph-committed social surface through the Phase 6 gate.
+
+        ``conversation_reply`` is the social faculty's decision boundary: its
+        agent-authored outbound ``Message`` carries the selected speech-act
+        concept and the ``responds_to`` link. This bridge only reads that
+        commitment and checks that the already-selected surface is licensed
+        for that act. It does not classify the signal, choose an adjacency
+        pair, or author a replacement surface.
+        """
+        if (inbound is None or reply_mid is None
+                or not str(surface or '').strip()):
+            return None
+        try:
+            if not self.s.has_node(inbound) or not self.s.has_node(reply_mid):
+                return None
+            reply_attrs = self.s.node(reply_mid)["attrs"]
+            if reply_attrs.get("from") != "agent":
+                return None
+            if inbound not in self.responds_to(reply_mid):
+                return None
+            acts = list(self.inner.neighbours(reply_mid, "has_speech_act"))
+            if len(acts) != 1 or not self.s.has_node(acts[0]):
+                return None
+            act = str(self.s.node(acts[0])["attrs"].get("name") or "")
+            if not act:
+                return None
+
+            # The emit ladder has already selected the surface. Reconstruct
+            # the same graph-backed/register alternatives and require an exact
+            # semantic match; reply text alone is never evidence of release.
+            normalized = str(surface).strip().lower()
+            candidates = []
+            rendered = self.utterance_for(act)
+            if rendered and str(rendered).strip().lower() != act.lower():
+                candidates.append(str(rendered).strip().lower())
+            registered = self.surface_for(act)
+            if registered:
+                candidates.append(str(registered).strip().lower())
+            if normalized not in set(candidates):
+                return None
+        except Exception:
+            return None
+
+        from domains import production_gate as _pg
+        frame = {
+            "event": act,
+            "agent": "agent",
+            "recipient": "interlocutor",
+            "intent": "coordinate_socially",
+        }
+        gate = {
+            "recoverable": True,
+            "coverage": 1.0,
+            "mode": "conversation_social_graph",
+        }
+        return _pg.release_if_gated(self, frame, surface, gate, reply_mid)
+
+    def _release_information_reply(self, inbound, surface):
+        """Release a grounded ``answer_topic`` readback through Phase 6.
+
+        The topic faculty has already selected the answer and the graph holds
+        its epistemic support in ``HeldAnswer`` plus
+        ``TopicGroundingEvidence``.  This bridge only reads that commitment,
+        checks the selected answer's surface, and asks the existing production
+        gate to record a release.  It never treats arbitrary reply text as
+        grounding and never releases an unresolved topic.
+        """
+        if (inbound is None or not self.s.has_node(inbound)
+                or not str(surface or '').strip()):
+            return None
+        if not self._anaphoric_relation_has_causal_evidence(inbound):
+            return None
+        goal = None
+        concept = None
+        try:
+            for candidate in self.inner.neighbours(self.agent, "has_goal"):
+                if not self.s.has_node(candidate):
+                    continue
+                attrs = self.s.node(candidate)["attrs"]
+                if (attrs.get("kind") == "answer_topic"
+                        and inbound in list(self.inner.neighbours(
+                            candidate, "comprehends"))):
+                    goal = candidate
+                    concept = str(attrs.get("concept") or '').strip()
+                    break
+            if goal is None:
+                # A grounded readback rule may answer directly from a held
+                # answer without minting an answer_topic Goal. The held graph
+                # record remains the commitment; reply text is never used as
+                # evidence.
+                concept = str(self.s.node(inbound)["attrs"].get(
+                    "comp_know_concept") or "").strip()
+            if not concept:
+                return None
+
+            # Both pieces are required: a held answer is a candidate, while
+            # TopicGroundingEvidence is the graph-resident referent support.
+            held = None
+            for candidate in self.s.nodes("HeldAnswer"):
+                attrs = self.s.node(candidate)["attrs"]
+                if attrs.get("topic") != concept:
+                    continue
+                if (attrs.get("text") == str(surface).strip()
+                        and attrs.get("grounding_status") == "supported"
+                        and self._has_topic_grounding_evidence(concept)):
+                    held = candidate
+                    break
+        except Exception:
+            return None
+
+        from domains import production_gate as _pg
+        frame = {
+            "event": "answer_topic",
+            "agent": "agent",
+            "patient": concept,
+            "intent": "inform",
+        }
+        gate = {
+            "recoverable": held is not None,
+            "coverage": 1.0 if held is not None else 0.0,
+            "mode": "conversation_information_graph",
+        }
+        return _pg.release_if_gated(self, frame, surface, gate, goal or held)
+
+    def _release_question_response_reply(self, inbound, surface):
+        """Release a graph-authored response to a prior question.
+
+        A response adjacency is distinct from an ``answer_topic`` goal.  The
+        conversation-reply faculty records that distinction as an agent
+        ``Message`` with ``responds_to`` plus an ``answer`` speech-act, while
+        the discourse readback records ``adjacency_replied_act`` on the
+        inbound message.  Require both graph facts, and require the emitted
+        surface to already be a graph-authored outbound message for the same
+        event.  The surface is therefore not grounding evidence and cannot
+        promote an arbitrary string.
+        """
+        if (inbound is None or not self.s.has_node(inbound)
+                or not str(surface or '').strip()):
+            return None
+        try:
+            inbound_attrs = self.s.node(inbound)["attrs"]
+            if inbound_attrs.get("adjacency_replied_act") != "answer":
+                return None
+            # The response family is selected by the graph's event relation,
+            # not by the presence of a question mark.  A standalone question
+            # may also receive the generic reply faculty's empty response
+            # shell; without a response-compatible interaction mode that shell
+            # is not evidence for this production family.
+            interpretation = inbound_attrs.get(
+                "communication_interpretation_id")
+            if (interpretation is None or not self.s.has_node(interpretation)
+                    or self.s.node(interpretation)["attrs"].get(
+                        "interaction_mode") != "turn_compatible"):
+                return None
+            response_commitment = None
+            surface_message = None
+            for message in self.s.nodes("Message"):
+                attrs = self.s.node(message)["attrs"]
+                if attrs.get("from") != "agent":
+                    continue
+                if inbound not in self.responds_to(message):
+                    continue
+                acts = list(self.inner.neighbours(message, "has_speech_act"))
+                for act in acts:
+                    if (self.s.has_node(act)
+                            and self.s.node(act)["attrs"].get("name") == "answer"):
+                        response_commitment = message
+                        break
+                if str(attrs.get("text") or "").strip() == str(surface).strip():
+                    surface_message = message
+            if response_commitment is None:
+                return None
+        except Exception:
+            return None
+
+        from domains import production_gate as _pg
+        frame = {
+            "event": "answer_question",
+            "agent": "agent",
+            "patient": "response",
+            "recipient": "interlocutor",
+            "intent": "inform",
+        }
+        recoverable = surface_message is not None
+        gate = {
+            "recoverable": recoverable,
+            "coverage": 1.0 if recoverable else 0.0,
+            "mode": "conversation_question_response_graph",
+        }
+        return _pg.release_if_gated(
+            self, frame, surface, gate, response_commitment)
+
+    def _release_unresolved_information_reply(self, inbound, comp, surface):
+        """Close the production boundary for an unresolved world question.
+
+        This is the negative half of the information bridge: a source,
+        weather, or referent question may have a selected graph
+        interpretation while still lacking a world/answer commitment.  The
+        interpretation is therefore recorded as the commitment being
+        evaluated, but the production gate must withhold the candidate
+        surface.  The caller then exposes the canonical error floor.
+
+        The method deliberately does not inspect the wording of ``surface``
+        for evidence.  Language-adapter dispatch and the graph-resident
+        ``CommunicationInterpretation`` determine applicability; the gate
+        determines release.
+        """
+        if (inbound is None or comp is None
+                or not self.s.has_node(inbound)
+                or not str(surface or "").strip()):
+            return None
+        dispatch = getattr(comp, "dispatch", None) or {}
+        path = str(dispatch.get("path") or "")
+        if path not in {"frontier", "know", "table"}:
+            return None
+        if path == "frontier":
+            unresolved = True
+        else:
+            # A pronoun-bearing question may have a discourse referent while
+            # still lacking evidence for the requested relation (for example,
+            # a causal question about an object whose state is merely held).
+            # Do not let a lexical answer for the pronoun escape as if it
+            # answered that relation.
+            unresolved = bool(self.s.node(inbound)["attrs"].get(
+                "comp_anaphor"))
+            if unresolved:
+                pass
+            else:
+                unresolved = str(dispatch.get("language_evidence", {}).get(
+                    "referent_status") or "") == "unresolved"
+            if not unresolved:
+                # The selected interpretation remains the authority for an
+                # ordinary unknown topic: only a graph-unresolved question
+                # belongs to this fail-closed family.
+                iid = self.s.node(inbound)["attrs"].get(
+                    "communication_interpretation_id")
+                unresolved = bool(iid is not None and self.s.has_node(iid)
+                                  and self.s.node(iid)["attrs"].get(
+                                      "grounding_status") in {
+                                          "unresolved", "authority_missing"})
+            # Referent grounding and permission authority are orthogonal.
+            # A graph-backed target can therefore be grounded while the
+            # request still has no event-scoped authority decision. Preserve
+            # the production hold in that case; this bridge does not release
+            # an action or information surface.
+            if not unresolved and self._communication_authority_missing(inbound):
+                unresolved = True
+        if not unresolved:
+            return None
+
+        interpretation = self.s.node(inbound)["attrs"].get(
+            "communication_interpretation_id")
+        if interpretation is None or not self.s.has_node(interpretation):
+            return None
+        attrs = self.s.node(interpretation)["attrs"]
+        if (interpretation not in list(self.inner.neighbours(
+                inbound, "has_interpretation"))):
+            return None
+
+        topic = (dispatch.get("concept") or dispatch.get("object")
+                 or getattr(comp, "focus", None) or "world_state")
+        frame = {
+            "event": "request_information",
+            "agent": "interlocutor",
+            "patient": str(topic),
+            "intent": "defer",
+        }
+        gate = {
+            "recoverable": False,
+            "coverage": 0.0,
+            "mode": "conversation_unresolved_information_graph",
+        }
+        from domains import production_gate as _pg
+        result = _pg.release_if_gated(
+            self, frame, surface, gate, interpretation)
+        # Preserve the evaluated graph commitment even though the receipt is
+        # withheld and therefore cannot carry a ``releases`` edge.
+        receipts = list(self.s.nodes("ProductionGateReceipt"))
+        if receipts:
+            receipt = receipts[-1]
+            if (self.s.node(receipt)["attrs"].get("parse_back_mode")
+                    == gate["mode"]):
+                self.inner.add_edge_unchecked(receipt, "evaluates",
+                                              interpretation)
+                self.inner.set_attr(receipt, "interpretation_status",
+                                    attrs.get("grounding_status"))
+        return result
+
+    def _bind_turn_production_receipts(self, inbound):
+        """Attach receipts created during this conversation to its Message.
+
+        ProductionGateReceipt is authored by the production faculty.  This
+        method is only graph bookkeeping at the conversation boundary: it
+        does not create, upgrade, or interpret a receipt.  The baseline is set
+        at the start of :meth:`converse`, so pre-existing receipts cannot be
+        attributed to a later turn.
+        """
+        if inbound is None or not self.s.has_node(inbound):
+            return
+        baseline = getattr(self, "_turn_production_receipt_baseline", set())
+        for receipt in self.s.nodes("ProductionGateReceipt"):
+            if int(receipt.value) in baseline:
+                continue
+            attrs = self.s.node(receipt)["attrs"]
+            if attrs.get("turn_message_id") is None:
+                self.inner.set_attr(receipt, "turn_message_id", int(inbound.value))
+            linked = self.inner.neighbours(receipt, "for_message")
+            if inbound not in linked:
+                self.inner.add_edge_unchecked(receipt, "for_message", inbound)
+
+    @staticmethod
+    def _production_evidence_value(value):
+        """Convert graph scalar/container values into report-safe JSON data."""
+        if hasattr(value, "value") and type(getattr(value, "value", None)) is int:
+            return int(value.value)
+        if isinstance(value, dict):
+            return {str(k): WorldAdapter._production_evidence_value(v)
+                    for k, v in value.items()}
+        if isinstance(value, (list, tuple)):
+            return [WorldAdapter._production_evidence_value(v) for v in value]
+        if isinstance(value, (str, int, float, bool)) or value is None:
+            return value
+        return str(value)
+
+    def _serialize_production_receipt(self, receipt):
+        attrs = self._production_evidence_value(
+            dict(self.s.node(receipt)["attrs"]))
+        return {
+            "node_id": int(receipt.value),
+            "type": "ProductionGateReceipt",
+            "node_type": "ProductionGateReceipt",
+            "attrs": attrs,
+            "status": attrs.get("status"),
+        }
+
+    def production_turn_evidence(self, inbound=None):
+        """Serialize graph-resident production and cognition evidence.
+
+        The returned envelope is an observation of existing graph state.  It
+        intentionally omits coverage flags and does not turn a reply string
+        into evidence.  ``cognitive_trace`` is present only when the inbound
+        Message and at least one graph-backed cognitive record exist.
+        """
+        inbound = inbound or getattr(self, "_last_turn_inbound", None)
+        if inbound is None or not self.s.has_node(inbound):
+            return {"production_gate_receipts": []}
+        self._bind_turn_production_receipts(inbound)
+        inbound_id = int(inbound.value)
+        receipts = []
+        for receipt in self.s.nodes("ProductionGateReceipt"):
+            attrs = self.s.node(receipt)["attrs"]
+            linked = self.inner.neighbours(receipt, "for_message")
+            if (attrs.get("turn_message_id") == inbound_id
+                    or inbound in linked):
+                receipts.append(self._serialize_production_receipt(receipt))
+
+        trace = self.reply_turn_trace(inbound_id) or {}
+        interpretation_id = self.s.node(inbound)["attrs"].get(
+            "communication_interpretation_id")
+        discourse_state_id = self.s.node(inbound)["attrs"].get(
+            "discourse_state_id")
+        discourse_event_id = self.s.node(inbound)["attrs"].get(
+            "discourse_event_id")
+        graph_backed = bool(
+            interpretation_id is not None
+            or trace.get("intent") is not None
+            or trace.get("goals")
+            or trace.get("mentions")
+            or trace.get("concerns")
+            or trace.get("parse"))
+        cognitive_trace = None
+        if graph_backed:
+            cognitive_trace = {
+                "schema": "cognition_trace.v1",
+                "source": "graph_resident_conversation",
+                "message_id": inbound_id,
+                "interpretation_id": self._production_evidence_value(
+                    interpretation_id),
+                "discourse_state_id": self._production_evidence_value(
+                    discourse_state_id),
+                "discourse_event_id": self._production_evidence_value(
+                    discourse_event_id),
+                "turn": self._production_evidence_value(trace),
+            }
+        return {
+            "production_gate_receipts": receipts,
+            "cognitive_trace": cognitive_trace,
+        }
 
     def last_turn_reply_meta(self):
         """Mechanical read of the most recent converse() reply attribution."""
@@ -2107,11 +2711,11 @@ class WorldAdapter:
         if m:
             focus = m.group(1).strip().rstrip("?").strip()
             return (f"I don't hold what {focus} is made of yet."
-                    if focus else "I don't hold that.")
+                    if focus else _CONVERSATION_ERROR_SURFACE)
         m = re.search(r"what(?:'s|s| is| are| was)\s+(?:a |an |the )?(.+?)\s*\??$",
                       raw, re.IGNORECASE)
         focus = (m.group(1).strip().rstrip("?").strip() if m else "")
-        return f"I don't know {focus}." if focus else "I don't hold that."
+        return f"I don't know {focus}." if focus else _CONVERSATION_ERROR_SURFACE
 
     # --- PHASE 3: the CONCEPTUALIZER in the LIVE reply path -------------------
     #
@@ -2271,7 +2875,17 @@ class WorldAdapter:
         if getattr(self, "_comprehension_seed_loaded", False):
             return
         try:
-            names = {r.get("name") for r in self.inner.export_rules()}
+            # The rules are already resident as graph nodes.  Do not export
+            # the complete compiled rule program merely to test whether a
+            # probe rule exists: export_rules() is a serialization boundary
+            # and becomes a large cold-start allocation on the first turn.
+            # This read is mechanical and preserves the minimal-boot fallback
+            # when the graph does not contain the expected rule nodes.
+            names = {
+                self.s.node(rule)["attrs"].get("name")
+                for rule in self.s.nodes("Rule")
+                if self.s.has_node(rule)
+            }
         except Exception:  # noqa: BLE001 -- if we can't read rules, try the load
             names = set()
         # (seed id, a rule name it defines) — load each only if absent, so
@@ -2407,7 +3021,7 @@ class WorldAdapter:
         obj = (getattr(comp, "dispatch", None) or {}).get("object")
         return obj or raw
 
-    def _graph_kind_for(self, mid, text):
+    def _graph_kind_for(self, mid, text, speech_act=None):
         """The speech-act KIND for a live inbound Message, DECIDED BY THE
         AGENT'S OWN HELD RULES (seeds/speech_act_classify.json — Wave 4
         migration of comprehend_text._classify_kind). Mechanical adapter work
@@ -2434,6 +3048,15 @@ class WorldAdapter:
             self._ensure_comprehension_seeds()
             self.inner.set_attr(mid, "sak_pending", 1.0)
             self.inner.set_attr(mid, "sak_ends_q", 1.0 if sig.get("ends_q") else 0.0)
+            # An upstream speech-act classification is neutral event evidence,
+            # not a surface-language shortcut. Preserve it on the graph so the
+            # native kind rules can arbitrate it alongside grammatical evidence.
+            # This is especially important when a language adapter has already
+            # identified a directive but the POS faculty has an ambiguous
+            # lexical category for the clause head.
+            if str(speech_act or "").strip().lower() in {"instruction", "request"}:
+                self.inner.set_attr(mid, "sak_input_kind", "instruction")
+                sig["input_kind"] = "instruction"
             if sig.get("first_role") is not None:
                 self.inner.set_attr(mid, "sak_first_role", str(sig["first_role"]))
             if sig.get("first_pos") is not None:
@@ -2441,9 +3064,16 @@ class WorldAdapter:
             # The agent's OWN held rule bodies decide (falls back to the seed
             # file inside _classify_kind_rules when none are held).
             try:
-                held = [r for r in self.inner.export_rules()
-                        if str(r.get("name", "")).startswith("sak_kind_")
-                        and r.get("active")]
+                selective_export = getattr(
+                    self.inner, "export_rules_prefix", None)
+                if selective_export is not None:
+                    held = list(selective_export("sak_kind_"))
+                else:
+                    # Compatibility with an older binary; the local native
+                    # substrate exposes the selective readback above.
+                    held = [r for r in self.inner.export_rules()
+                            if str(r.get("name", "")).startswith("sak_kind_")
+                            and r.get("active")]
             except Exception:  # noqa: BLE001 -- seed-file rules then decide
                 held = []
             kind = _ct._classify_kind_rules(sig, rules=held or None)
@@ -2792,7 +3422,11 @@ class WorldAdapter:
 
     def _record_communication_interpretation(self, mid, comp=None, *, native_kind=None,
                                               speech_act=None,
-                                              interaction_mode=None):
+                                              interaction_mode=None,
+                                              interaction_relation=None,
+                                              literal_form=None,
+                                              explicit_uncertainty=False,
+                                              explicit_failure=False):
         """Create the single graph-resident interpretation for a communication event.
 
         The native speech-act classifier and the general comprehension front
@@ -2851,10 +3485,15 @@ class WorldAdapter:
                 "unresolved_communication": "clarify_or_defer",
                 "social_action": "coordinate_socially",
             }.get(force_hypothesis, "undetermined")
-            grounding_status = (
-                "unresolved" if path == "frontier" or
-                bool(getattr(comp, "gaps", None)) and path == "statement"
-                else "candidate_grounded")
+            grounding_status, grounding_evidence_path = (
+                self._communication_grounding_evidence(comp, path)
+            )
+            permission_evidence = self._permission_request_evidence(mid)
+            if permission_evidence and permission_evidence.get("status") == "missing":
+                grounding_status = "authority_missing"
+                grounding_evidence_path = (
+                    "CommunicationInterpretation -> PermissionRequest -> "
+                    "missing_authority_decision")
             # Language-adapter output: graph arbitration consumes these
             # language-neutral evidence categories, never English predicates or
             # word-order cues. The English comprehension front end is currently
@@ -2864,7 +3503,13 @@ class WorldAdapter:
                 "tell", "report", "describe", "explain", "say", "show",
                 "state", "list", "name", "enumerate",
             }
-            if literal_mood == "interrogative":
+            # A frontier is an unresolved communication/repair state even
+            # when its surface form is interrogative.  Preserve the cognitive
+            # repair force rather than letting sentence mood relabel a failed
+            # selection as an ordinary information request.
+            if path == "frontier":
+                evidence_force = "repair_or_defer"
+            elif literal_mood == "interrogative":
                 evidence_force = "information_request"
             elif path in {"table", "satisfiable", "meta", "know"}:
                 evidence_force = "information_request"
@@ -2892,6 +3537,14 @@ class WorldAdapter:
                 "authority": "comprehension" if comp is not None else "speech_act",
                 "status": "selected",
                 "interaction_mode": str(interaction_mode or "turn_compatible"),
+                "interaction_relation": str(interaction_relation or ""),
+                "literal_form": str(literal_form or ""),
+                "explicit_uncertainty": int(bool(explicit_uncertainty)),
+                "explicit_failure": int(bool(explicit_failure)),
+                # Native arbitration may replace this placeholder with a
+                # cognitive disposition.  The adapter records evidence only;
+                # it does not choose the disposition.
+                "cognitive_disposition": None,
                 "event_kind": "utterance",
                 "kind": str(selected_kind),
                 "native_kind": str(native),
@@ -2904,14 +3557,20 @@ class WorldAdapter:
                 "communicative_force_hypothesis": force_hypothesis,
                 "cognitive_goal_hypothesis": cognitive_goal,
                 "grounding_status": grounding_status,
+                "grounding_evidence_path": grounding_evidence_path,
                 "evidence_schema": "communication_evidence.v1",
                 "evidence_force": evidence_force,
                 "evidence_goal": evidence_goal,
                 "evidence_provider": "language_adapter",
                 "evidence_source": "native_kind+comprehension_dispatch+parse",
+                "authority_status": (
+                    permission_evidence.get("status")
+                    if permission_evidence else "not_applicable"),
                 "intent": str(getattr(comp, "intent", "") or ""),
                 "focus": str(getattr(comp, "focus", "") or ""),
                 "reflexive": int(bool(getattr(comp, "reflexive", False))),
+                "anaphor": int(bool(self.s.node(mid)["attrs"].get(
+                    "comp_anaphor"))) if self.s.has_node(mid) else 0,
                 "fastpath": int(bool(getattr(comp, "fastpath", False))),
                 "predicate": str(predicate or ""),
                 "object": str(obj or ""),
@@ -2920,6 +3579,18 @@ class WorldAdapter:
                 "conflict_resolution": ("selected_comprehension"
                                          if conflict else "agreement"),
             }
+            # Preserve adapter-produced semantic evidence on the authoritative
+            # interpretation so downstream cognition/readback can distinguish
+            # a blocked world dependency from an ordinary repair gap.  These
+            # are neutral evidence fields; no surface token is copied and no
+            # route is selected here.
+            language_evidence = d.get("language_evidence") or {}
+            for evidence_key in (
+                    "world_dependency", "world_support", "repair_evidence",
+                    "repair_focus", "referent_status",
+                    "resolved_reference_status", "authority_request"):
+                if evidence_key in language_evidence:
+                    attrs[f"language_{evidence_key}"] = language_evidence[evidence_key]
             if relation:
                 attrs["relation_focus"] = str(relation.get("focus") or "")
             interpretation = self.s.add_node("CommunicationInterpretation", attrs)
@@ -2934,6 +3605,384 @@ class WorldAdapter:
             return interpretation
         except Exception:  # noqa: BLE001 -- interpretation audit cannot break a turn
             return None
+
+    def _graph_concept_referent_path(self, topic):
+        """Return a graph path only for an actually held referent.
+
+        A lexical parse, a reply candidate, or a successful lookup attempt is
+        not itself referent evidence.  This deliberately accepts only a
+        graph-resident Concept with substantive held data; the caller still
+        has to establish the relation between that referent and the current
+        communication event.
+        """
+        topic = str(topic or "").strip().strip(".,;:?!").lower()
+        if not topic:
+            return None
+        for node in self.s.nodes("Concept"):
+            attrs = self.s.node(node)["attrs"]
+            name = str(attrs.get("name") or "").strip().lower()
+            if name != topic:
+                continue
+            if any(str(attrs.get(key) or "").strip()
+                   for key in ("definition", "description", "why")):
+                return "CommunicationInterpretation -> Concept.referent"
+        return None
+
+    def _resolved_focus_graph_path(self, resolved):
+        """Return evidence only when a resolved focus has a graph source.
+
+        ``pre_resolved`` is a derived value, not evidence by itself.  This
+        readback accepts a taught ``ResolvedQuery`` whose answer is the value
+        selected by comprehension, or a supported reference-resolution record
+        whose bound graph referent has the same name.  It deliberately does
+        not inspect the eventual reply surface.
+        """
+        value = str(resolved or "").strip()
+        if not value:
+            return None
+        try:
+            for node in self.s.nodes("ResolvedQuery"):
+                attrs = self.s.node(node)["attrs"]
+                if str(attrs.get("answer") or "").strip() == value:
+                    return ("CommunicationInterpretation -> ResolvedQuery -> "
+                            "resolved_referent")
+            for evidence in self.s.nodes("ReferenceResolutionEvidence"):
+                attrs = self.s.node(evidence)["attrs"]
+                if str(attrs.get("epistemic_status") or "") != "supported":
+                    continue
+                for referent in self.inner.neighbours(evidence, "evidence_for"):
+                    if not self.s.has_node(referent):
+                        continue
+                    rattrs = self.s.node(referent)["attrs"]
+                    name = str(rattrs.get("name") or rattrs.get("surface") or "").strip()
+                    if name and name.lower() == value.lower():
+                        return ("CommunicationInterpretation -> "
+                                "ReferenceResolutionEvidence -> "
+                                "resolved_referent")
+        except Exception:
+            return None
+        return None
+
+    def _communication_grounding_evidence(self, comp, path):
+        """Derive grounding from graph evidence, never from answer shape.
+
+        ``candidate_grounded`` is reserved for a selected cognitive faculty or
+        an external topic whose referent path is present.  In particular,
+        unresolved references, unavailable perception, unknown topics, and
+        incomplete/contradictory parses remain unresolved until a graph path
+        proves otherwise.  This is a language-adapter boundary: it consumes
+        semantic dispatch and graph evidence, not English surface cues.
+        """
+        dispatch = (getattr(comp, "dispatch", None) or {}) if comp is not None else {}
+        language_evidence = dispatch.get("language_evidence") or {}
+        # Adapter evidence can veto an otherwise lexical topic/faculty route
+        # when the required discourse/world relation is absent.  The graph
+        # consumes the neutral status; it never inspects the reply surface.
+        if language_evidence.get("referent_status") == "unresolved":
+            return "unresolved", ""
+        if (language_evidence.get("world_dependency") == "spatial_relation"
+                and language_evidence.get("world_support") == "missing"):
+            return "unresolved", ""
+        if language_evidence.get("resolved_reference_status") == "supported":
+            evidence = language_evidence.get("resolved_reference_evidence")
+            if evidence:
+                return "candidate_grounded", str(evidence)
+        if path in {"frontier", "honest_no_world", "honest_capability",
+                    "imagine_capability", "wordplay"}:
+            return "unresolved", ""
+
+        # A self/faculty route is grounded in the selected graph faculty, not
+        # in an external-world referent.  Preserve that legitimate cognition
+        # while keeping its non-referential evidence explicit.
+        if path in {"meta", "satisfiable", "social"}:
+            return "candidate_grounded", (
+                "CommunicationInterpretation -> selected_graph_faculty")
+
+        if path in {"table", "know"}:
+            # The construction table also contains graph-backed self/faculty
+            # routes (for example, the organisation inventory).  Those are
+            # not external topics and therefore have no ``know_concept`` or
+            # HeldAnswer to satisfy the ordinary topic branch.  Preserve the
+            # table's semantic kind as evidence of the selected graph
+            # faculty, but only for the explicit meta kind; never promote an
+            # arbitrary table parse or reply text.
+            table_spec = getattr(comp, "table_spec", None)
+            table_kind = str(getattr(table_spec, "kind", "") or "").lower()
+            if path == "table" and table_kind == "meta":
+                return "candidate_grounded", (
+                    "CommunicationInterpretation -> selected_graph_faculty")
+            spec = getattr(comp, "table_spec", None)
+            topic = (getattr(spec, "know_concept", None) if spec is not None
+                     else None) or dispatch.get("concept")
+            pre_resolved = dispatch.get("pre_resolved")
+            resolved_path = self._resolved_focus_graph_path(pre_resolved)
+            if resolved_path:
+                return "candidate_grounded", resolved_path
+            # A taught construction-table query may carry its selected focus
+            # in ``TargetSpec.raw`` rather than ``pre_resolved``.  Read back
+            # only a graph-resident ResolvedQuery whose key contains the
+            # substantive topic token; never infer support from the answer
+            # surface or from the table's ``grounded`` flag.
+            raw_query = str(getattr(spec, "raw", "") or "") if spec is not None else ""
+            topic_tokens = {
+                token.lower().strip(".,;:?!")
+                for token in raw_query.split()
+                if len(token.strip(".,;:?!")) > 2
+            }
+            if topic_tokens:
+                try:
+                    for node in self.s.nodes("ResolvedQuery"):
+                        attrs = self.s.node(node)["attrs"]
+                        key = str(attrs.get("key") or "").lower()
+                        answer = str(attrs.get("answer") or "").strip()
+                        if answer and any(token in key for token in topic_tokens):
+                            return "candidate_grounded", (
+                                "CommunicationInterpretation -> ResolvedQuery -> "
+                                "resolved_referent")
+                except Exception:
+                    pass
+            if topic and self._has_topic_grounding_evidence(str(topic)):
+                return "candidate_grounded", (
+                    "CommunicationInterpretation -> HeldAnswer -> "
+                    "TopicGroundingEvidence")
+            # A topic question can be grounded by a substantive graph Concept
+            # even when no HeldAnswer has been persisted for it.  This is the
+            # narrow lexical-referent family: the adapter must have selected
+            # the topic, and the graph must contain an exact Concept name with
+            # substantive descriptive data.  A reply, parse shape, or corpus
+            # annotation is never sufficient evidence.
+            if topic:
+                cpath = self._graph_concept_referent_path(str(topic))
+                if cpath:
+                    return "candidate_grounded", cpath
+            # A topic-shaped parse without a referent path is only a request
+            # for grounding; it is not grounding.
+            return "unresolved", ""
+
+        if path == "instruction":
+            relation = dispatch.get("relation") or {}
+            if (language_evidence.get("account_request") ==
+                    "selected_self_account_faculty"):
+                return "candidate_grounded", (
+                    "CommunicationInterpretation -> selected_graph_faculty")
+            target = dispatch.get("object")
+            if not target:
+                target = (relation.get("object") or relation.get("oblique") or
+                          relation.get("subject") or {}).get("surface")
+            target = str(target or "").strip().strip(".,;:?!")
+            # Pronouns/deixis and any unresolved typed gap cannot supply a
+            # referent path.  The semantic adapter marks them as functions;
+            # no language-specific word list is needed here.
+            target_role = ((relation.get("object") or relation.get("oblique") or
+                            relation.get("subject") or {}).get("role"))
+            if target_role in {"function", "gap"} or getattr(comp, "gaps", None):
+                # A held graph faculty can still ground an account request;
+                # ordinary action requests with residual gaps cannot.
+                if target_role not in {"function", "gap"}:
+                    cpath = self._graph_concept_referent_path(target)
+                    if cpath:
+                        return "candidate_grounded", cpath
+                return "unresolved", ""
+            cpath = self._graph_concept_referent_path(target)
+            if cpath:
+                return "candidate_grounded", cpath
+            return "unresolved", ""
+
+        # Statements and any unrecognised dispatch do not acquire epistemic
+        # support merely because parsing succeeded.
+        return "unresolved", ""
+
+    def _permission_request_evidence(self, inbound):
+        """Read graph-resident modality/action evidence for a permission query.
+
+        This is deliberately not a surface-word detector. A language adapter
+        may represent a permission modality or an action capability on the
+        referenced Concepts; the cognition layer only consumes those neutral
+        attributes. Without a graph-authorized decision, the request remains
+        blocked and cannot fall through to an unrelated self-report.
+        """
+        try:
+            modal = False
+            action = False
+            target = None
+            target_referent_path = None
+            for mention in self.inner.neighbours(inbound, "has_mention"):
+                try:
+                    refs = list(self.inner.neighbours(mention, "refers_to"))
+                except Exception:
+                    continue
+                for concept in refs:
+                    try:
+                        attrs = self.s.node(concept)["attrs"]
+                    except Exception:
+                        continue
+                    role = str(attrs.get("semantic_role") or attrs.get("modality") or "").lower()
+                    definition = str(attrs.get("definition") or "").lower()
+                    if role in {"permission", "permission_modality", "ability_permission"}:
+                        modal = True
+                    elif "permission" in definition and "modal" in definition:
+                        modal = True
+                    if str(attrs.get("proc_role") or "").lower() == "effect_verb":
+                        action = True
+                    name = str(attrs.get("name") or "").strip()
+                    is_action = str(attrs.get("proc_role") or "").lower() == "effect_verb"
+                    if (name and not is_action
+                            and role not in {"permission", "permission_modality",
+                                              "ability_permission"}):
+                        candidate_path = self._graph_concept_referent_path(name)
+                        # Prefer the first substantive non-modal referent over
+                        # the actor/functional concepts in the same frame.
+                        if target is None or candidate_path:
+                            target = name
+                        # A permission/authority failure is independent from
+                        # referent grounding.  Preserve the latter only when
+                        # this same communication event contains a substantive
+                        # graph Concept; a modal parse or an answer-shaped
+                        # surface is not enough.
+                        if target_referent_path is None and candidate_path:
+                            target_referent_path = candidate_path
+            if not (modal and action):
+                return None
+            # Authority is event-scoped. A decision elsewhere in the live
+            # graph cannot authorize this request; no request-linked decision
+            # relation exists yet, so the conservative result is missing.
+            evidence = {"status": "missing", "target": target or "action"}
+            if target_referent_path:
+                evidence["referent_status"] = "supported"
+                evidence["referent_evidence_path"] = (
+                    "CommunicationInterpretation -> PermissionRequest -> "
+                    "Concept.referent")
+            else:
+                evidence["referent_status"] = "unresolved"
+            return evidence
+        except Exception:
+            return None
+
+    def _refresh_communication_authority(self, inbound, comp=None):
+        """Attach post-comprehension permission evidence to the interpretation."""
+        try:
+            # Permission authority is a question-level modality faculty.  A
+            # declarative ability/offer/refusal must not be reinterpreted as a
+            # permission request merely because its frame contains a modal and
+            # an action predicate.
+            evidence = (
+                self._permission_request_evidence(inbound)
+                if comp is None or getattr(comp, "kind", None) == "question"
+                else None
+            )
+            if (comp is not None
+                    and (getattr(comp, "dispatch", None) or {}).get(
+                        "language_evidence", {}).get("authority_request")):
+                evidence = {"status": "missing", "target": "action"}
+            if (evidence is None and comp is not None
+                    and getattr(comp, "kind", None) == "question"):
+                # Preserve the adapter's typed authority evidence even if a
+                # later comprehension pass replaced the dispatch metadata.
+                elements = (getattr(comp, "frame", None) or {}).get("elements") or []
+                content = [e for e in elements if e.get("role") == "content"]
+                if (len(content) >= 2
+                        and any(e.get("role") == "function"
+                                and e.get("pos") == "pronoun" for e in elements)
+                        and content[0].get("pos") == "verb"
+                        and content[1].get("pos") == "verb"):
+                    evidence = {"status": "missing", "target": "action"}
+            iid = self.s.node(inbound)["attrs"].get(
+                "communication_interpretation_id")
+            if not evidence or iid is None or not self.s.has_node(iid):
+                return
+            self.inner.set_attr(iid, "authority_status",
+                                evidence.get("status", "not_applicable"))
+            if evidence.get("status") == "missing":
+                if evidence.get("referent_status") == "supported":
+                    self.inner.set_attr(iid, "grounding_status",
+                                        "candidate_grounded")
+                    self.inner.set_attr(
+                        iid, "grounding_evidence_path",
+                        evidence["referent_evidence_path"])
+                else:
+                    self.inner.set_attr(iid, "grounding_status",
+                                        "authority_missing")
+                    self.inner.set_attr(
+                        iid, "grounding_evidence_path",
+                        "CommunicationInterpretation -> PermissionRequest -> "
+                        "missing_authority_decision")
+        except Exception:
+            return
+
+    def _communication_authority_missing(self, inbound):
+        try:
+            iid = self.s.node(inbound)["attrs"].get(
+                "communication_interpretation_id")
+            return bool(iid is not None and self.s.has_node(iid)
+                        and self.s.node(iid)["attrs"].get(
+                            "authority_status") == "missing")
+        except Exception:
+            return False
+
+    def _refresh_communication_grounding(self, mid, comp):
+        """Refresh a topic interpretation after graph retrieval/readback."""
+        try:
+            iid = self.s.node(mid)["attrs"].get("communication_interpretation_id")
+            if iid is None or not self.s.has_node(iid):
+                return
+            attrs = self.s.node(iid)["attrs"]
+            path = str(attrs.get("dispatch_path") or "")
+            # Authority is an orthogonal prerequisite for permission-shaped
+            # information requests. A later referent refresh must not erase
+            # an event-scoped authority failure merely because the request's
+            # pronoun happens to bind to a discourse referent.
+            authority_missing = attrs.get("authority_status") == "missing"
+            status, evidence = self._communication_grounding_evidence(comp, path)
+            # Authority is a separate gate. Do not erase a supported referent
+            # path merely because permission is still missing; production
+            # remains fail-closed through ``_communication_authority_missing``.
+            # If no referent evidence exists, retain the explicit
+            # authority-missing status.
+            if authority_missing and status != "candidate_grounded":
+                status = "authority_missing"
+                evidence = (
+                    "CommunicationInterpretation -> PermissionRequest -> "
+                    "missing_authority_decision")
+            # A resolved anaphoric/elliptical event may still carry the
+            # parser's unresolved dispatch path. If cognition has already
+            # produced a same-event answer-topic Goal and graph-held support,
+            # promote the interpretation from that evidence chain—not from
+            # the surface answer text.
+            resolved_topic = self._grounded_answer_topic_goal_for(mid)
+            if (resolved_topic and status != "candidate_grounded"):
+                status = "candidate_grounded"
+                evidence = (
+                    "DiscourseState -> Goal.answer_topic -> "
+                    "HeldAnswer -> TopicGroundingEvidence")
+            event = self.s.node(mid)["attrs"].get("discourse_event_id")
+            if event is not None and self.s.has_node(event):
+                event_attrs = dict(self.s.node(event)["attrs"])
+                payload = dict(event_attrs.get("payload") or {})
+                payload["grounding_status"] = status
+                payload["grounding_evidence_path"] = evidence
+                self.inner.set_attr(event, "payload", payload)
+            if status == "candidate_grounded" and evidence:
+                self.inner.set_attr(iid, "grounding_status", status)
+                self.inner.set_attr(iid, "grounding_evidence_path", evidence)
+                # A grounded topic establishes discourse state for later
+                # reference resolution.  Keep this write at the adapter
+                # boundary; the comprehension rules decide whether a later
+                # expression may use it.
+                if path in {"table", "know"}:
+                    dispatch = getattr(comp, "dispatch", None) or {}
+                    spec = getattr(comp, "table_spec", None)
+                    concept = (getattr(spec, "know_concept", None)
+                               if spec is not None else None)
+                    concept = concept or dispatch.get("concept")
+                    if concept:
+                        self._set_current_topic(str(concept))
+                        if event is not None and self.s.has_node(event):
+                            self.inner.set_attr(event, "topic", str(concept))
+                        state = self.s.node(mid)["attrs"].get("discourse_state_id")
+                        if state is not None and self.s.has_node(state):
+                            self.inner.set_attr(state, "current_topic", str(concept))
+        except Exception:  # noqa: BLE001 -- audit refresh cannot break a turn
+            return
 
     # Compatibility name for callers/tests written during the initial
     # turn-oriented implementation. The canonical ontology is now the
@@ -3168,6 +4217,12 @@ class WorldAdapter:
                     self.inner.remove_node(old)
             ct = self.s.add_node("CurrentTopic", {"name": str(name)})
             self.inner.add_edge_unchecked(self.agent, "current_topic", ct)
+            # CurrentTopic is a compatibility/focus projection.  Referent
+            # identity belongs to the persistent DiscourseStore; merely
+            # projecting focus must not alter salience or mention counts.
+            referent = self._canonical_discourse_store().ensure_referent(
+                str(name))
+            self.inner.add_edge_unchecked(ct, "refers_to", referent)
         except Exception:  # noqa: BLE001 -- tracking is best-effort; a hiccup just skips it
             pass
 
@@ -3240,6 +4295,470 @@ class WorldAdapter:
             return True
         except Exception:  # noqa: BLE001 -- a write hiccup just skips the datum
             return False
+
+    def _record_live_discourse_state(self, mid, comp, context=None):
+        """Record the current communication event in the graph discourse state.
+
+        This is an adapter-boundary write of already selected comprehension
+        evidence. It does not route, answer, or create a candidate; the
+        discourse-state faculty and native rules remain authoritative for
+        lifecycle transitions.
+        """
+        try:
+            if not self.s.has_node(mid):
+                return None, None
+            message_attrs = self.s.node(mid)["attrs"]
+            existing_event = message_attrs.get("discourse_event_id")
+            existing_state = message_attrs.get("discourse_state_id")
+            if (existing_event is not None and self.s.has_node(existing_event)
+                    and existing_state is not None and self.s.has_node(existing_state)):
+                return existing_state, existing_event
+            from domains.discourse_state import ensure_discourse_state, record_event
+            context = context if isinstance(context, dict) else {}
+            learning = context.get("learning_observation")
+            if isinstance(learning, dict):
+                # Typed learning evidence is transported mechanically to the
+                # existing gap-awareness authority.  This boundary does not
+                # derive identity from text and does not mint a concern.
+                required = {
+                    "gap_identity", "learning_stage", "verification_status",
+                }
+                if required.issubset(learning) and all(
+                        isinstance(learning.get(key), str)
+                        and learning.get(key).strip()
+                        for key in required):
+                    for key in (
+                            "gap_identity", "learning_stage",
+                            "verification_status", "kind", "source",
+                            "content", "event_id", "event_stage"):
+                        value = learning.get(key)
+                        if isinstance(value, (str, int, float, bool)):
+                            attr_key = {
+                                "learning_stage": "learning_stage",
+                                "verification_status": "learning_verification_status",
+                            }.get(key, f"learning_{key}")
+                            self.inner.set_attr(
+                                mid, attr_key, value)
+                    self.inner.set_attr(
+                        mid, "learning_observation_schema",
+                        "learning_observation.v1")
+            speakers = list(self.inner.neighbours(mid, "sent_by"))
+            speaker = speakers[0] if speakers else None
+            addressed = []
+            for edge_type in ("addressed_to", "to_addressee", "for_addressee"):
+                addressed.extend(self.inner.neighbours(mid, edge_type))
+            addressee = addressed[0] if addressed else (
+                self.agent if mid in self.inner.neighbours(self.agent, "received")
+                else self._addressee())
+            state = ensure_discourse_state(
+                self,
+                conversation_id=str(context.get("conversation_id") or "default"),
+                addressee=addressee,
+            )
+            dispatch = getattr(comp, "dispatch", None) or {}
+            interpretation_id = message_attrs.get("communication_interpretation_id")
+            interpretation_attrs = (
+                self.s.node(interpretation_id)["attrs"]
+                if interpretation_id is not None and self.s.has_node(interpretation_id)
+                else {})
+            grounding_status = interpretation_attrs.get("grounding_status")
+            parsed_topic = (dispatch.get("concept") or dispatch.get("object")
+                            or getattr(comp, "focus", None))
+            topic = parsed_topic if grounding_status == "candidate_grounded" else None
+            expectation = (
+                "answer" if getattr(comp, "kind", None) == "question"
+                else "action" if getattr(comp, "kind", None) == "instruction"
+                else None)
+            event = record_event(
+                self, state, kind=str(getattr(comp, "kind", "utterance")),
+                speaker=speaker, addressee=addressee,
+                topic=topic, expectation=expectation,
+                interaction_mode=str(context.get("interaction_mode") or "event"),
+                payload={
+                    "message_id": int(mid.value),
+                    "dispatch_path": dispatch.get("path"),
+                    # These are adapter-supplied event facts, not a routing
+                    # decision. Preserve them for discourse/native cognition
+                    # so overlap and partial-event handling is not inferred
+                    # from surface form later.
+                    "interaction_relation": context.get("interaction_relation"),
+                    "literal_form": context.get("literal_form"),
+                    "parsed_topic": parsed_topic,
+                    "grounding_status": grounding_status,
+                    "grounding_evidence_path": interpretation_attrs.get(
+                        "grounding_evidence_path"),
+                    "learning_observation_schema": message_attrs.get(
+                        "learning_observation_schema"),
+                    "learning_gap_identity": message_attrs.get(
+                        "learning_gap_identity"),
+                    "learning_stage": message_attrs.get("learning_stage"),
+                    "learning_verification_status": message_attrs.get(
+                        "learning_verification_status"),
+                },
+            )
+            self.inner.add_edge_unchecked(event, "represents_message", mid)
+            self.inner.set_attr(mid, "discourse_state_id", state)
+            self.inner.set_attr(mid, "discourse_event_id", event)
+            return state, event
+        except Exception:  # noqa: BLE001 -- state observation cannot break a turn
+            return None, None
+
+    def ingest_semantic_event(self, frame, *, provider, interaction_mode="event",
+                              speaker=None, addressee=None,
+                              conversation_id="default"):
+        """Ingest an already language-adapted semantic event without a turn.
+
+        This is the neutral event ingress for non-text and non-turn cognition.
+        It materializes adapter evidence, one communication interpretation, and
+        the existing discourse event/state authorities.  It deliberately does
+        not create a ``Message``, call ``converse``/``comprehend_text``, choose
+        a reply, or infer a force from surface language.  ``frame`` is the
+        semantic adapter's output; native communication rules arbitrate the
+        evidence after this mechanical write.
+
+        ``speaker`` and ``addressee`` are optional graph node ids.  The caller
+        owns identity resolution; this ingress does not mint synthetic
+        participants.  A proposition payload, when present, is passed to the
+        separate proposition bridge only after its own validation.
+        """
+        from collections.abc import Mapping
+        import json
+        from domains.communication_evidence import from_semantic_frame
+        from domains.discourse_state import ensure_discourse_state, record_event
+
+        if not isinstance(frame, Mapping):
+            raise TypeError("semantic event frame must be a mapping")
+        evidence = from_semantic_frame(dict(frame), provider=str(provider))
+        state = ensure_discourse_state(
+            self, conversation_id=str(conversation_id), addressee=addressee)
+
+        frame_attrs = {
+            "schema": "semantic_event_frame.v1",
+            "provider": str(provider),
+            "interaction_mode": str(interaction_mode),
+        }
+        for key, value in dict(frame).items():
+            if key == "proposition":
+                frame_attrs[key] = json.dumps(value, sort_keys=True,
+                                              separators=(",", ":"))
+            elif isinstance(value, (str, int, float, bool)) or value is None:
+                frame_attrs[key] = value
+        semantic_frame = self.s.add_node("SemanticEventFrame", frame_attrs)
+
+        interpretation_attrs = {
+            "schema": "communication_interpretation.v1",
+            "authority": "semantic_adapter",
+            "status": "selected",
+            "interaction_mode": str(interaction_mode),
+            "event_kind": "semantic_event",
+            **evidence,
+            "communicative_force": None,
+            "cognitive_goal": None,
+            "semantic_frame_id": semantic_frame,
+            "grounding_status": str(frame.get("grounding_status") or
+                                     "unresolved"),
+            "grounding_evidence_path": str(
+                frame.get("grounding_evidence_path") or ""),
+        }
+        interpretation = self.s.add_node(
+            "CommunicationInterpretation", interpretation_attrs)
+        self.inner.add_edge_unchecked(
+            semantic_frame, "provides_communication_evidence", interpretation)
+        self.inner.add_edge_unchecked(
+            self.agent, "holds_interpretation", interpretation)
+
+        event = record_event(
+            self, state, kind="semantic_event", speaker=speaker,
+            addressee=addressee,
+            topic=frame.get("topic") if frame.get("grounding_status") ==
+            "candidate_grounded" else None,
+            interaction_mode=str(interaction_mode),
+            payload={
+                "semantic_frame_id": semantic_frame,
+                "interpretation_id": interpretation,
+                "evidence_schema": evidence["evidence_schema"],
+                "evidence_provider": evidence["evidence_provider"],
+                "evidence_force": evidence["evidence_force"],
+                "evidence_goal": evidence["evidence_goal"],
+            },
+        )
+        self.inner.add_edge_unchecked(event, "represents_semantic_frame",
+                                      semantic_frame)
+        self.inner.add_edge_unchecked(event, "has_interpretation",
+                                      interpretation)
+        self.inner.set_attr(semantic_frame, "discourse_event_id", event)
+        self.inner.set_attr(interpretation, "discourse_event_id", event)
+
+        proposition_result = None
+        proposition_evidence = frame.get("proposition")
+        if proposition_evidence is not None:
+            # The proposition faculty owns validation and graph materialization;
+            # this ingress only supplies the already-created source event and
+            # optional participant handles.  Unsupported evidence is returned
+            # explicitly and never converted into grounding or common ground.
+            from domains.proposition_commitment import (
+                bridge_proposition_evidence,
+            )
+            proposition_result = bridge_proposition_evidence(
+                self, proposition_evidence, speaker=speaker,
+                addressee=addressee, source_event=event)
+
+        # Native arbitration consumes the neutral evidence.  No Python branch
+        # reads the resulting force/goal to select an outcome here.
+        self.inner.run_rules()
+        return {
+            "semantic_frame_id": semantic_frame,
+            "interpretation_id": interpretation,
+            "discourse_state_id": state,
+            "discourse_event_id": event,
+            "proposition": proposition_result,
+            "reply": None,
+        }
+
+    def _ensure_live_deliberation_seeds(self):
+        """Load the Phase 4 native rules once when the live bridge needs them."""
+        if getattr(self, "_phase4_live_seed_loaded", False):
+            return True
+        try:
+            names = {r.get("name") for r in self.inner.export_rules()}
+            if "cm4a_no_candidate" not in names:
+                from substrate.seed_loader import manifest_for
+                self.inner.load_seed_manifest(
+                    manifest_for("conversation_deliberation_phase4a"), self.agent)
+            self._phase4_live_seed_loaded = True
+            return True
+        except Exception:  # optional instrumentation must remain nonblocking
+            return False
+
+    def _live_thought_manifold_evidence(self, mid, state, event, goal):
+        """Project existing cognitive evidence into one live thought manifold.
+
+        This is deliberately a narrow graph adapter.  It accepts only source
+        nodes that already carry the complete Phase 4 evidence tuple.  Concepts,
+        grounded relations, repair/residual records, and thought evidence are
+        therefore useful only when their owning faculty has already attached
+        numeric evidence; this method never estimates missing dimensions.
+        """
+        required = ("grounding", "expected_value", "residual_cost",
+                    "consequence", "novelty")
+        manifold = None
+        for candidate in self.s.nodes("ThoughtManifold"):
+            attrs = self.s.node(candidate)["attrs"]
+            if (attrs.get("communication_event_id") == event
+                    or event in self.inner.neighbours(
+                        candidate, "generated_from_discourse_event")):
+                manifold = candidate
+                break
+        if manifold is None:
+            manifold = self.s.add_node("ThoughtManifold", {
+                "manifold_id": f"communication-event:{event}",
+                "source": "live_communication",
+                "communication_event_id": event,
+                "discourse_state_id": state,
+                "goal_id": goal,
+            })
+            self.inner.add_edge_unchecked(
+                manifold, "generated_from_discourse_event", event)
+            self.inner.add_edge_unchecked(
+                manifold, "generated_from_discourse_state", state)
+
+        # These are graph provenance relations, not language-specific routes.
+        # The source owner is inspected first; a single evidence wrapper hop
+        # allows grounded_by/evidence_for/supports records to be consumed
+        # without copying a second evidence ontology into conversation code.
+        owners = ((event, "event"), (mid, "message"),
+                  (goal, "goal"), (state, "discourse_state"))
+        links = (
+            ("grounded_in", "has_goal_evidence"),
+            ("grounded_by", "has_goal_evidence"),
+            ("has_grounded_evidence", "has_goal_evidence"),
+            ("has_evidence", "has_goal_evidence"),
+            ("supports", "has_goal_evidence"),
+            ("supported_by", "has_goal_evidence"),
+            ("has_repair_need", "has_repair_evidence"),
+            ("has_repair_evidence", "has_repair_evidence"),
+            ("has_residual_stance", "has_stance_evidence"),
+            ("has_stance_evidence", "has_stance_evidence"),
+            ("has_residual_evidence", "has_residual_evidence"),
+            ("derived_from", "has_residual_evidence"),
+            ("has_thought_evidence", "has_goal_evidence"),
+            ("supports_thought", "has_goal_evidence"),
+        )
+        seen = set()
+        for owner, owner_kind in owners:
+            if owner is None or not self.s.has_node(owner):
+                continue
+            for edge_type, manifold_relation in links:
+                for source in self.inner.neighbours(owner, edge_type):
+                    source_key = str(source)
+                    if source_key in seen or not self.s.has_node(source):
+                        continue
+                    seen.add(source_key)
+                    source_attrs = dict(self.s.node(source)["attrs"])
+                    evidence_source = source
+                    # Evidence wrappers can point at the actual grounded
+                    # concept/relation.  Prefer a complete source at either
+                    # hop; incomplete evidence remains ineligible.
+                    source_candidates = [source]
+                    for wrapper_edge in ("evidence_for", "supports",
+                                         "derived_from", "grounded_in"):
+                        source_candidates.extend(
+                            self.inner.neighbours(source, wrapper_edge))
+                    evidence_attrs = None
+                    for candidate_source in source_candidates:
+                        if not self.s.has_node(candidate_source):
+                            continue
+                        attrs = dict(self.s.node(candidate_source)["attrs"])
+                        nested = attrs.get("phase4_evidence")
+                        if isinstance(nested, dict):
+                            merged = dict(attrs)
+                            merged.update(nested)
+                            attrs = merged
+                        if all(key in attrs for key in required):
+                            evidence_source = candidate_source
+                            evidence_attrs = attrs
+                            break
+                    if evidence_attrs is None:
+                        continue
+
+                    existing = None
+                    for candidate_node in self.inner.neighbours(
+                            manifold, manifold_relation):
+                        if (evidence_source in self.inner.neighbours(
+                                candidate_node, "derived_from_evidence")):
+                            existing = candidate_node
+                            break
+                    if existing is not None:
+                        continue
+
+                    kind = (evidence_attrs.get("kind")
+                            or evidence_attrs.get("cognitive_kind")
+                            or ("repair" if "repair" in manifold_relation
+                                else "repair_or_defer"
+                                if "stance" in manifold_relation
+                                or "residual" in manifold_relation
+                                else "goal"))
+                    candidate_attrs = {
+                        "candidate_id": str(evidence_attrs.get(
+                            "candidate_id", f"evidence:{evidence_source}")),
+                        "kind": str(kind),
+                        "grounding": float(evidence_attrs["grounding"]),
+                        "expected_value": float(evidence_attrs["expected_value"]),
+                        "residual_cost": float(evidence_attrs["residual_cost"]),
+                        "consequence": float(evidence_attrs["consequence"]),
+                        "novelty": float(evidence_attrs["novelty"]),
+                        "evidence_path": str(evidence_attrs.get(
+                            "evidence_path",
+                            f"{owner_kind}->{edge_type}->{self.s.node(evidence_source)['type']}")),
+                        "source_node_type": self.s.node(evidence_source)["type"],
+                        "source_relation": edge_type,
+                    }
+                    for key in ("execution_ready", "outcome_status"):
+                        if key in evidence_attrs:
+                            candidate_attrs[key] = evidence_attrs[key]
+                    thought_candidate = self.s.add_node(
+                        "ThoughtCandidate", candidate_attrs)
+                    self.inner.add_edge_unchecked(
+                        manifold, manifold_relation, thought_candidate)
+                    self.inner.add_edge_unchecked(
+                        thought_candidate, "derived_from_evidence",
+                        evidence_source)
+        return manifold, any(
+            self.inner.neighbours(manifold, relation)
+            for relation in ("has_goal_evidence", "has_repair_evidence",
+                             "has_stance_evidence", "has_residual_evidence"))
+
+    def _bind_live_goals_and_deliberation(self, mid):
+        """Bind live event cognition to native Phase 4A deliberation.
+
+        Python only materializes already-present graph evidence.  The native
+        Phase 4A rules perform valuation, collapse, rejection, settlement, and
+        counterfactual tracing; absent evidence is routed to the explicit
+        discourse-state ``no_candidate`` boundary.
+        """
+        state = self.s.node(mid)["attrs"].get("discourse_state_id")
+        event = self.s.node(mid)["attrs"].get("discourse_event_id")
+        if (state is None or event is None or not self.s.has_node(state)
+                or not self.s.has_node(event) or not self._ensure_live_deliberation_seeds()):
+            return
+        try:
+            from domains.conversation_deliberation import (
+                materialize_from_discourse_state,
+                materialize_from_live_thought_manifold,
+            )
+            for goal in list(self.inner.neighbours(self.agent, "has_goal")):
+                if not self.s.has_node(goal):
+                    continue
+                if mid not in self.inner.neighbours(goal, "comprehends"):
+                    continue
+                if goal not in self.inner.neighbours(state, "has_active_goal"):
+                    self.inner.add_edge_unchecked(state, "has_active_goal", goal)
+                if event not in self.inner.neighbours(goal, "originated_in"):
+                    self.inner.add_edge_unchecked(goal, "originated_in", event)
+                linked = [d for d in self.s.nodes("Deliberation")
+                          if goal in self.inner.neighbours(d, "about_goal")]
+                if linked:
+                    continue
+                manifold, has_evidence = self._live_thought_manifold_evidence(
+                    mid, state, event, goal)
+                epoch = int(self.s.node(event)["attrs"].get("event_index", 0))
+                if has_evidence:
+                    d = materialize_from_live_thought_manifold(
+                        self, goal=goal, manifold=manifold, epoch=epoch)
+                else:
+                    # The existing discourse-state boundary supplies the
+                    # native empty-state contract.  Its materializer now
+                    # admits only complete evidence, so this cannot fabricate
+                    # a candidate from a lifecycle goal.
+                    d = materialize_from_discourse_state(
+                        self, state=state, epoch=epoch)
+                    self.inner.add_edge_unchecked(
+                        d, "about_goal", goal)
+                self.inner.add_edge_unchecked(
+                    d, "generated_from_discourse_event", event)
+                self.inner.run_rules()
+        except Exception as exc:  # noqa: BLE001 -- trace instrumentation is non-blocking
+            self._record_live_deliberation_integration_error(mid, exc)
+            return
+
+    def _record_live_deliberation_integration_error(self, mid, exc):
+        """Record a failed Phase 4 bridge without turning it into a reply.
+
+        The bridge is mechanical integration work; it must not choose a
+        candidate or surface a conversational acknowledgment.  A graph
+        diagnostic keeps an exception auditable while the native cognition
+        path remains fail-closed.
+        """
+        try:
+            if not self.s.has_node(mid):
+                return
+            attrs = dict(self.s.node(mid)["attrs"])
+            event = attrs.get("discourse_event_id")
+            key = (int(mid.value), int(event.value) if hasattr(event, "value")
+                   else event)
+            for diagnostic in self.s.nodes("CognitiveIntegrationDiagnostic"):
+                existing = self.s.node(diagnostic)["attrs"]
+                if (existing.get("stage") == "phase4_live_deliberation"
+                        and existing.get("message_id") == key[0]
+                        and existing.get("event_id") == key[1]):
+                    return
+            diagnostic = self.s.add_node("CognitiveIntegrationDiagnostic", {
+                "schema": "cognitive_integration_diagnostic.v1",
+                "stage": "phase4_live_deliberation",
+                "status": "error",
+                "message_id": key[0],
+                "event_id": key[1],
+                "error_type": type(exc).__name__,
+                "error_message": str(exc)[:1000],
+                "candidate_selection": "native_only",
+                "surface_fallback": False,
+            })
+            self.inner.add_edge_unchecked(diagnostic, "for_message", mid)
+            if event is not None and self.s.has_node(event):
+                self.inner.add_edge_unchecked(diagnostic, "for_event", event)
+        except Exception:
+            # Diagnostics must never make the communication path fail harder.
+            return
 
     def _record_interlocutor_correction(self, mid):
         """MECHANICAL datum (Wave: interlocutor-as-modeled-participant, task 3,
@@ -3352,8 +4871,36 @@ class WorldAdapter:
         (which read it) never mint a second reply. The rule path is thus the
         first claimant and this fulfiller the in-turn backstop that can also
         self-heal via grounding."""
+        if (self.s.has_node(mid)
+                and not self._anaphoric_relation_has_causal_evidence(mid)):
+            return None
         if self.s.has_node(mid) and \
                 self.s.node(mid)["attrs"].get("topic_replied") == 1.0:
+            # A native topic rule may already have authored the answer. Read
+            # the current graph-held answer back instead of suppressing it and
+            # allowing a less-specific faculty to claim the event. Prefer the
+            # held record when native retrieval refreshed the surface after
+            # the first topic rule pass.
+            grounded_topic = self._grounded_answer_topic_goal_for(mid)
+            if grounded_topic:
+                for held in self.s.nodes("HeldAnswer"):
+                    held_attrs = self.s.node(held)["attrs"]
+                    if (held_attrs.get("topic") == grounded_topic
+                            and held_attrs.get("grounding_status") == "supported"
+                            and str(held_attrs.get("text") or "").strip()):
+                        text = str(held_attrs["text"])
+                        self._record_topic_answer_commitment(grounded_topic, text)
+                        return text
+            existing = self._graph_reply_for(mid)
+            return existing if existing else None
+        if (self.s.has_node(mid)
+                and self.s.node(mid)["attrs"].get("comp_anaphor")
+                and not self._has_answer_topic_goal_for(mid)):
+            # An anaphoric question cannot be answered by a lexical topic
+            # goal (including a HeldAnswer for the pronoun form). A specific
+            # answer-topic goal for this same event is the graph's evidence
+            # that discourse resolution succeeded; absent that, preserve the
+            # explicit error floor.
             return None
         concept = None
         goal = None
@@ -3369,7 +4916,20 @@ class WorldAdapter:
             goal = g
             break
         if not concept:
-            return None
+            # The held-answer rule can establish grounding without creating
+            # an answer_topic Goal. Read the selected comprehension concept
+            # and let the graph-held answer serve as the topic commitment.
+            attrs = self.s.node(mid)["attrs"] if self.s.has_node(mid) else {}
+            if attrs.get("comp_anaphor"):
+                # A pronoun requires a discourse-resolution commitment. A
+                # lexical HeldAnswer for the pronoun form is not that
+                # commitment and must not license an unrelated answer.
+                return None
+            concept = str(attrs.get("comp_know_concept") or "").strip()
+            if not concept:
+                return None
+            if not self._has_topic_grounding_evidence(concept):
+                return None
         ma = self.s.node(mid)["attrs"] if self.s.has_node(mid) else {}
         aspect = ma.get("comp_aspect")
         answer_key = (f"composition of {concept}" if aspect == "made_of" else str(concept))
@@ -3377,7 +4937,22 @@ class WorldAdapter:
         # elliptical follow-ups can resolve against it (the ROUTING of those
         # follow-ups is the tracking rules' job; this is just the mechanical write).
         self._set_current_topic(concept)
-        ans = self.answer_about(answer_key)
+        ans = None
+        # A held answer is the highest-authority topic readback. Prefer it
+        # over dictionary/source material so the released surface corresponds
+        # to the graph evidence that grounded this event.
+        if not aspect:
+            for held in self.s.nodes("HeldAnswer"):
+                held_attrs = self.s.node(held)["attrs"]
+                if (str(held_attrs.get("topic") or "").strip().lower()
+                        == str(concept).strip().lower()
+                        and held_attrs.get("grounding_status") == "supported"):
+                    ans = held_attrs.get("text")
+                    break
+        if ans is None:
+            # The conversation-information bridge owns the authoritative
+            # release; retrieve here without publishing a legacy receipt.
+            ans = self.answer_about(answer_key, release=False)
         if ans is not None and not self._has_topic_grounding_evidence(str(concept)):
             ans = None
         if ans is None and aspect:
@@ -3390,7 +4965,7 @@ class WorldAdapter:
                     _ground_aspect(self, concept, str(aspect))
                 except Exception:  # noqa: BLE001
                     pass
-                ans = self.answer_about(answer_key)
+                ans = self.answer_about(answer_key, release=False)
                 if ans is not None and not self._has_topic_grounding_evidence(str(concept)):
                     ans = None
         if ans is None and not aspect:
@@ -3418,7 +4993,7 @@ class WorldAdapter:
                     self.ground_unknowns(str(answer_key))
                 except Exception:  # noqa: BLE001 -- no teacher / teacher failure -> honest miss below
                     pass
-            ans = self.answer_about(answer_key)
+            ans = self.answer_about(answer_key, release=False)
             if ans is not None and not self._has_topic_grounding_evidence(str(concept)):
                 ans = None
         # MECHANICAL OUTCOME RECORDING (a datum, not a decision): record on the
@@ -3429,6 +5004,10 @@ class WorldAdapter:
         # matches on this outcome and files the SelfConcern.
         if goal is not None and self.inner.has_node(goal):
             try:
+                # Mechanical provenance datum for Phase 5A gap identity. The
+                # graph decides whether an unresolved outcome becomes a gap;
+                # this only preserves which communication event produced it.
+                self.inner.set_attr(goal, "origin_turn_id", str(int(mid.value)))
                 self.inner.set_attr(goal, "outcome",
                                     "resolved" if ans is not None else "unresolved")
             except Exception:  # noqa: BLE001 -- a write hiccup just skips the datum
@@ -3440,6 +5019,10 @@ class WorldAdapter:
         except Exception:  # noqa: BLE001
             pass
         if ans is not None:
+            # Preserve the graph-selected answer across any pending retrieval
+            # dispatch. The commitment is the already-grounded HeldAnswer, not
+            # a new surface-level choice.
+            self._record_topic_answer_commitment(str(concept), str(ans))
             # Outcome bookkeeping: the goal these pending search/ground
             # requests served is resolved -- record that so the search
             # dispatch doesn't re-fetch a topic the agent just answered.
@@ -3475,6 +5058,79 @@ class WorldAdapter:
                     and mid in list(self.inner.neighbours(goal, "comprehends"))):
                 return True
         return False
+
+    def _record_topic_answer_commitment(self, concept, text):
+        """Mark the selected HeldAnswer as the topic route's commitment."""
+        concept = str(concept or "").strip()
+        text = str(text or "").strip()
+        if not concept or not text:
+            return
+        for held in self.s.nodes("HeldAnswer"):
+            attrs = self.s.node(held)["attrs"]
+            if (str(attrs.get("topic") or "").strip().lower()
+                    != concept.lower()):
+                continue
+            self.inner.set_attr(held, "topic_commitment_text", text)
+            self.inner.set_attr(held, "topic_commitment_source",
+                                "conversation_topic_grounding")
+
+    def _synchronize_topic_answer_commitments(self):
+        """Restore selected topic commitments before native reply rules run."""
+        for held in self.s.nodes("HeldAnswer"):
+            attrs = self.s.node(held)["attrs"]
+            if attrs.get("topic_commitment_source") != "conversation_topic_grounding":
+                continue
+            topic = str(attrs.get("topic") or "").strip()
+            text = str(attrs.get("topic_commitment_text") or "").strip()
+            if not topic or not text:
+                continue
+            if attrs.get("text") != text:
+                self.inner.set_attr(held, "text", text)
+            self._set_topic_grounding_fields(held, topic)
+            self._ensure_topic_grounding_evidence(held, topic)
+
+    def _grounded_answer_topic_goal_for(self, mid):
+        """Return the grounded topic selected for ``mid``, if one exists."""
+        for goal in self.inner.neighbours(self.agent, "has_goal"):
+            if not self.s.has_node(goal):
+                continue
+            attrs = self.s.node(goal)["attrs"]
+            if (attrs.get("kind") == "answer_topic"
+                    and mid in self.inner.neighbours(goal, "comprehends")):
+                concept = str(attrs.get("concept") or "").strip()
+                if (concept
+                        and self._anaphoric_relation_has_causal_evidence(
+                            mid, concept)
+                        and self._has_topic_grounding_evidence(concept)):
+                    return concept
+        return None
+
+    def _anaphoric_relation_has_causal_evidence(self, mid, concept=None):
+        """Require substrate causal evidence for an anaphoric reason query.
+
+        A discourse referent resolves *what* ``it`` denotes; it does not answer
+        *why* that referent changed.  The latter requires an existing causal
+        graph relation.  This is a cognition boundary, not a language-specific
+        reply rule: the parser supplies the neutral ``reason`` relation focus,
+        and the substrate's causal edges supply the evidence.
+        """
+        attrs = self.s.node(mid)["attrs"] if self.s.has_node(mid) else {}
+        if (not attrs.get("comp_anaphor")
+                or attrs.get("comp_relation_focus") != "reason"):
+            return True
+        if not concept:
+            for goal in self.inner.neighbours(self.agent, "has_goal"):
+                ga = self.s.node(goal)["attrs"]
+                if (ga.get("kind") == "answer_topic"
+                        and mid in self.inner.neighbours(goal, "comprehends")):
+                    concept = str(ga.get("concept") or "").strip()
+                    break
+        node = self._concept_by_name(str(concept or ""))
+        if node is None:
+            return False
+        return bool(
+            self.inner.neighbours(node, "causal_influence")
+            or self.inner.in_neighbours(node, "causal_influence"))
 
     def _answer_interlocutor_meta_reply(self, mid):
         """R6 (blind-spot closure, bare first-person routing): the SAME
@@ -4003,6 +5659,10 @@ class WorldAdapter:
         """
         self.enable_replies()
         self.install_register_lexicon()
+        # Rehydrate the prior topic faculty's explicit graph commitment before
+        # any new retrieval or native settling can refresh a stale surface.
+        # This is identity/evidence synchronization, not answer selection.
+        self._synchronize_topic_answer_commitments()
         self.note_register(text)
         try:
             from domains import context_model as _cm
@@ -4021,7 +5681,7 @@ class WorldAdapter:
         if getattr(self, "shadow_read", False):
             self._shadow_read_turn(mid, text)
         if speech_act not in self._SOCIAL_ACTS:
-            kind = self._graph_kind_for(mid, text)
+            kind = self._graph_kind_for(mid, text, speech_act=speech_act)
             try:
                 from domains import comprehend_text as _ct
                 comp = _ct.comprehend_text(self, text, kind=kind)
@@ -4314,6 +5974,12 @@ class WorldAdapter:
           3. the meta reader readback (_meta_reader_reply) — renders the front
              end's question_targets routing;
           4. the honest-floor rule's reply / an explicit conversation error."""
+        # Snapshot graph-resident production evidence before this turn.  The
+        # production faculty owns receipt creation; the conversation boundary
+        # only scopes later extraction to receipts actually created here.
+        self._turn_production_receipt_baseline = {
+            int(node.value) for node in self.s.nodes("ProductionGateReceipt")
+        }
         self.enable_replies()
         self.install_register_lexicon()
         self.note_register(text)
@@ -4349,7 +6015,7 @@ class WorldAdapter:
             # KIND is the graph's decision (Wave 4): signals on the live
             # Message -> rule pass -> read sak_kind back, then hand the decided
             # kind to the (otherwise unchanged) Python front end.
-            kind = self._graph_kind_for(mid, text)
+            kind = self._graph_kind_for(mid, text, speech_act=speech_act)
             try:
                 from domains import comprehend_text as _ct
                 comp = _ct.comprehend_text(self, text, kind=kind)
@@ -4358,6 +6024,17 @@ class WorldAdapter:
             if comp is not None:
                 self._ensure_comprehension_seeds()
                 self._write_comprehension_to_graph(mid, comp)
+                # Self/meta faculties read the complete graph vocabulary as
+                # their existing substrate evidence (for example, the
+                # self-organisation report). Preserve that authority by
+                # widening the mechanical vocabulary ledger only for this
+                # already-selected graph faculty; ordinary referent ingress
+                # remains bounded to indexed message candidates.
+                spec = getattr(comp, "table_spec", None)
+                dispatch = getattr(comp, "dispatch", None) or {}
+                if ((getattr(spec, "kind", None) == "meta")
+                        or dispatch.get("path") == "meta"):
+                    self._backfill_knows_concept()
 
         # Phase 1: make the interpretation authoritative and inspectable before
         # any faculty dispatch. The comprehension record is the selected
@@ -4365,12 +6042,68 @@ class WorldAdapter:
         # evidence rather than silently discarded.
         interaction_mode = (context or {}).get("interaction_mode") \
             if isinstance(context, dict) else None
+        interaction_relation = (context or {}).get("interaction_relation") \
+            if isinstance(context, dict) else None
+        literal_form = (context or {}).get("literal_form") \
+            if isinstance(context, dict) else None
         self._record_communication_interpretation(
             mid, comp, native_kind=self.s.node(mid)["attrs"].get("sak_kind")
             if self.s.has_node(mid) else None, speech_act=speech_act,
-            interaction_mode=interaction_mode)
+            interaction_mode=interaction_mode,
+            interaction_relation=interaction_relation,
+            literal_form=literal_form,
+            explicit_uncertainty=(
+                "explicit_uncertainty" in ((context or {}).get("evidence") or [])
+                if isinstance(context, dict) else False),
+            explicit_failure=(
+                "explicit_failure" in ((context or {}).get("evidence") or [])
+                if isinstance(context, dict) else False))
+        self._record_live_discourse_state(mid, comp, context=context)
 
         self.comprehend()
+        self._refresh_communication_authority(mid, comp)
+        # Native communication arbitration may author an explicit error from
+        # typed uncertainty evidence.  Honor that cognitive disposition before
+        # the generic repair/action bridge can release an ask-back surface.
+        # This is a graph-state readback, not a surface-token classifier.
+        interpretation_id = self.s.node(mid)["attrs"].get(
+            "communication_interpretation_id")
+        interpretation_attrs = (
+            self.s.node(interpretation_id)["attrs"]
+            if interpretation_id is not None and self.s.has_node(interpretation_id)
+            else {})
+        if interpretation_attrs.get("cognitive_disposition") == "error":
+            error_surface = self._honest_minimal_reply()
+            self._form_reply_intent_for_text("error", error_surface)
+            return self._finish_turn_reply(
+                mid, error_surface, source="agent", substantive=False)
+        # Reference recognition is an existing cognition faculty.  The live
+        # boundary only invokes it and releases its graph commitment; it does
+        # not classify the phrase or author a replacement surface here.
+        reference_result = None
+        if speech_act not in self._SOCIAL_ACTS:
+            try:
+                from domains import conversation_action as _ca
+                reference_result = _ca.reference_reply(
+                    self, comp if comp is not None else text, mid)
+            except Exception:
+                reference_result = None
+        if reference_result and reference_result.get("reply"):
+            reference_surface = str(reference_result["reply"])
+            released_reference = self._release_reference_reply(
+                mid, reference_result, reference_surface)
+            if released_reference is None:
+                reference_surface = self._honest_minimal_reply()
+                substantive = False
+            else:
+                reference_surface = released_reference
+                substantive = True
+            self.inner.set_attr(
+                mid, "communication_route", "reference")
+            self._form_reply_intent_for_text("inform", reference_surface)
+            return self._finish_turn_reply(
+                mid, reference_surface, source="agent",
+                substantive=substantive)
         # COGNITIVE ACTION/REPAIR BRIDGE: comprehension has produced the
         # graph-backed intent, and the conversation_action faculty now reads
         # that intent to either execute a held instruction or open an honest
@@ -4384,7 +6117,21 @@ class WorldAdapter:
                 if _ca.is_ask_back(comp):
                     conversation_action_result = _ca.ask_back(self, comp, mid)
                 elif (comp.kind == "instruction"
+                      and self.s.node(mid)["attrs"].get("comp_anaphor")
                       and not self._has_answer_topic_goal_for(mid)):
+                    # A deictic/anaphoric instruction without a same-event
+                    # discourse-resolution goal has no grounded action target.
+                    # Reuse the existing repair faculty; do not mint an action
+                    # goal from an unresolved referent.
+                    conversation_action_result = _ca.ask_back(self, comp, mid)
+                elif (comp.kind == "instruction"
+                      and not (
+                          self.s.node(mid)["attrs"].get("comp_anaphor")
+                          and self._has_answer_topic_goal_for(mid))):
+                    # A current instruction is an action/repair event.  An
+                    # explicit answer-topic goal for this same anaphoric event
+                    # is more specific than the generic instruction parse.
+                    # This is graph-goal precedence, not a surface exception.
                     conversation_action_result = _ca.act_on_instruction(self, comp, mid)
             except Exception:
                 # A failed action/repair faculty is not allowed to fabricate a
@@ -4393,6 +6140,45 @@ class WorldAdapter:
                 conversation_action_result = None
         if conversation_action_result and conversation_action_result.get("reply"):
             action_reply = str(conversation_action_result["reply"])
+            # Native typed overlap/fragment arbitration owns the defer state.
+            # Do not release a repair/action surface for a partial event merely
+            # because the language adapter produced an ask-back candidate.  A
+            # failed release is the explicit error floor; the graph disposition
+            # remains the cognition readback and no turn is forced.
+            interpretation_id = self.s.node(mid)["attrs"].get(
+                "communication_interpretation_id")
+            interpretation_attrs = (
+                dict(self.s.node(interpretation_id)["attrs"])
+                if interpretation_id is not None and self.s.has_node(interpretation_id)
+                else {})
+            if (interpretation_attrs.get("cognitive_disposition") == "defer"
+                    and interpretation_attrs.get("interaction_relation") == "overlap"
+                    and interpretation_attrs.get("literal_form") == "fragment"):
+                self.inner.set_attr(mid, "communication_route", "defer")
+                self._bind_live_goals_and_deliberation(mid)
+                defer_error = self._honest_minimal_reply()
+                self._form_reply_intent_for_text("defer", defer_error)
+                return self._finish_turn_reply(
+                    mid, defer_error, source="agent", substantive=False)
+            # Preserve the selected action-faculty route as graph evidence for
+            # downstream trace consumers. This is not a state decision or a
+            # surface classifier; the action faculty already selected it.
+            try:
+                self.inner.set_attr(
+                    mid, "communication_route",
+                    str(conversation_action_result.get("route") or ""))
+            except Exception:
+                pass
+            released_action_reply = self._release_conversation_action_reply(
+                mid, comp, conversation_action_result, action_reply)
+            # The action faculty has now minted/bound its Goal. Bind the
+            # already-recorded event before this terminal production path
+            # returns; the later common path remains idempotent.
+            self._bind_live_goals_and_deliberation(mid)
+            if released_action_reply is None:
+                # A bridge result without its graph commitment is a production
+                # failure, not a conversational acknowledgement.
+                action_reply = self._honest_minimal_reply()
             self._form_reply_intent_for_text(
                 "request" if conversation_action_result.get("route") == "ask_back" else "inform",
                 action_reply)
@@ -4436,36 +6222,180 @@ class WorldAdapter:
                 # the front end's OWN (Python) meta routing so a bare
                 # first-person question the front end mis-routed to "know"
                 # still reaches the interlocutor reader.
-                topic_reply = self._answer_interlocutor_meta_reply(mid)
+                if not self._communication_authority_missing(mid):
+                    topic_reply = self._answer_interlocutor_meta_reply(mid)
             if topic_reply is None:
-                meta_reply = self._meta_reader_reply(comp)
+                if not self._communication_authority_missing(mid):
+                    meta_reply = self._meta_reader_reply(comp)
             self._dispatch_pending_io()
             self.comprehend()
+            # Retrieval may have created a newer HeldAnswer for the same
+            # referent. Reapply the already-selected topic commitment after
+            # that native pass so a later candidate cannot overwrite the
+            # graph-selected surface before production readback.
+            self._synchronize_topic_answer_commitments()
+            # Retrieval/held-answer cognition may have created the referent
+            # evidence after the initial interpretation record.  Refresh only
+            # from that graph evidence; never promote a surface reply itself.
+            self._refresh_communication_grounding(mid, comp)
             # MECHANICAL: record what happened to an instruction turn (a
             # datum -- see _record_instruction_outcome), then let the rules
             # see it in one more pass so a gap decision lands in-turn.
             if self._record_instruction_outcome(mid):
                 self.comprehend()
+            self._bind_live_goals_and_deliberation(mid)
             # CORRECTIONS (Wave: interlocutor-as-modeled-participant, task 3):
             # comprehension work, gated behind the same shadow_read flag family
             # as the rest of this wave's per-turn modelling.
             if getattr(self, "shadow_read", False):
                 self._record_interlocutor_correction(mid)
 
+        if (comp is not None and self.s.node(mid)["attrs"].get("comp_anaphor")
+                and comp.kind == "question"
+                and not self._grounded_answer_topic_goal_for(mid)):
+            self._release_unresolved_information_reply(
+                mid, comp, topic_reply or self._honest_minimal_reply())
+            return self._finish_turn_reply(
+                mid, self._honest_minimal_reply(), source="agent",
+                substantive=False)
         if topic_reply is not None:
             # The graph routed this turn to an external topic (its OWN
             # Goal{answer_topic} decision) and the fulfiller rendered it —
             # that answer IS the turn's reply. Any other rule-minted text for
             # the same turn (a self-identity reply off the meta dispatch, the
             # floor) is the misroute the topic goal overrode.
+            # Restrict this bridge to the grounded information family.  An
+            # unresolved answer-topic outcome remains the cognition faculty's
+            # explicit uncertainty path and is not mislabeled as a released
+            # answer by this production increment.
+            concept = None
+            for candidate in self.inner.neighbours(self.agent, "has_goal"):
+                if not self.s.has_node(candidate):
+                    continue
+                attrs = self.s.node(candidate)["attrs"]
+                if (attrs.get("kind") == "answer_topic"
+                        and mid in list(self.inner.neighbours(
+                            candidate, "comprehends"))):
+                    concept = str(attrs.get("concept") or "").strip()
+                    break
+            if not concept:
+                concept = str((getattr(comp, "dispatch", None) or {}).get(
+                    "concept") or self.s.node(mid)["attrs"].get(
+                        "comp_know_concept") or "").strip()
+            if concept and self._has_topic_grounding_evidence(concept):
+                released_topic_reply = self._release_information_reply(
+                    mid, topic_reply)
+                if released_topic_reply is None:
+                    # A grounded topic answer without a matching production
+                    # commitment is a production failure, not an apparently
+                    # successful conversational answer.
+                    topic_reply = self._honest_minimal_reply()
+                else:
+                    topic_reply = released_topic_reply
+            else:
+                # An unresolved table topic must pass through the same
+                # fail-closed production gate as frontier/know questions.
+                # Do this before returning the adapter's generic topic floor;
+                # that surface is not evidence of a grounded answer.
+                receipt_ids_before = {
+                    int(node.value) for node in self.s.nodes("ProductionGateReceipt")
+                }
+                self._release_unresolved_information_reply(
+                    mid, comp, topic_reply)
+                unresolved_receipt = any(
+                    int(node.value) not in receipt_ids_before
+                    and self.s.node(node)["attrs"].get("parse_back_mode")
+                    == "conversation_unresolved_information_graph"
+                    for node in self.s.nodes("ProductionGateReceipt"))
+                if unresolved_receipt:
+                    topic_reply = self._honest_minimal_reply()
             self._form_reply_intent_for_text("answer", topic_reply)
             return self._finish_turn_reply(mid, topic_reply, source="adapter")
         graph_reply = self._graph_reply_for(mid)
+        # Phase 6: a question answered as a response adjacency is a distinct
+        # graph commitment from an external topic answer.  Release it before
+        # the unresolved-world bridge can classify the same ``know`` dispatch
+        # as missing world evidence.
+        if (meta_reply is None and graph_reply is not None
+                and not self._has_answer_topic_goal_for(mid)):
+            receipt_ids_before = {
+                int(node.value) for node in self.s.nodes("ProductionGateReceipt")
+            }
+            released_response = self._release_question_response_reply(
+                mid, graph_reply)
+            if released_response is not None:
+                self._form_reply_intent_for_text("answer", released_response)
+                return self._finish_turn_reply(
+                    mid, released_response, source="agent")
+            response_receipt = any(
+                int(node.value) not in receipt_ids_before
+                and self.s.node(node)["attrs"].get("parse_back_mode")
+                == "conversation_question_response_graph"
+                for node in self.s.nodes("ProductionGateReceipt"))
+            if response_receipt:
+                # A graph response was selected but failed semantic readback.
+                # Do not let a later generic graph branch release its text:
+                # this is a production failure, exposed as the canonical
+                # explicit error and retained as a withheld receipt.
+                return self._finish_turn_reply(
+                    mid, self._honest_minimal_reply(), source="adapter",
+                    substantive=False)
+        # Phase 6: unresolved source/weather/referent questions have a graph
+        # interpretation but no answer/world commitment.  Evaluate the
+        # candidate through the production gate before allowing the generic
+        # graph floor to escape as answer-shaped text.
+        if comp is not None:
+            receipt_ids_before = {
+                int(node.value) for node in self.s.nodes("ProductionGateReceipt")
+            }
+            self._release_unresolved_information_reply(
+                mid, comp, graph_reply or self._honest_minimal_reply())
+            unresolved_receipt = any(
+                int(node.value) not in receipt_ids_before
+                and self.s.node(node)["attrs"].get("parse_back_mode")
+                == "conversation_unresolved_information_graph"
+                for node in self.s.nodes("ProductionGateReceipt"))
+            if unresolved_receipt:
+                graph_reply = self._honest_minimal_reply()
         if meta_reply is not None:
             # A rendered meta answer must not be shadowed by the bare
             # honest-floor reply; a SUBSTANTIVE rule-minted reply still wins.
             graph_reply = self._graph_reply_for(mid, skip_floor=True)
         if graph_reply is not None:
+            # A seeded topic rule may have authored the answer before the
+            # adapter fulfiller runs.  Read the same grounded information
+            # commitment here so rule-authored and fulfiller-authored answers
+            # share one production boundary.
+            grounded_topic = False
+            for candidate in self.inner.neighbours(self.agent, "has_goal"):
+                if not self.s.has_node(candidate):
+                    continue
+                goal_attrs = self.s.node(candidate)["attrs"]
+                concept = str(goal_attrs.get("concept") or "").strip()
+                if (goal_attrs.get("kind") == "answer_topic"
+                        and mid in list(self.inner.neighbours(
+                            candidate, "comprehends"))
+                        and concept
+                        and self._has_topic_grounding_evidence(concept)):
+                    grounded_topic = True
+                    break
+            if grounded_topic:
+                released_topic_reply = self._release_information_reply(
+                    mid, graph_reply)
+                if released_topic_reply is None:
+                    # Retrieval may have completed in the immediately prior
+                    # native pass. Re-read the graph-selected topic surface
+                    # once after that pass so a transiently incomplete
+                    # readback does not fall through to a generic error.
+                    retry_topic_reply = self._answer_topic_reply(mid)
+                    if retry_topic_reply:
+                        released_topic_reply = self._release_information_reply(
+                            mid, retry_topic_reply)
+                        if released_topic_reply is not None:
+                            graph_reply = retry_topic_reply
+                graph_reply = (released_topic_reply
+                               if released_topic_reply is not None
+                               else self._honest_minimal_reply())
             self._form_reply_intent_for_text("answer", graph_reply)
             return self._finish_turn_reply(mid, graph_reply, source="agent")
         if meta_reply is not None:
@@ -4478,7 +6408,12 @@ class WorldAdapter:
             out = self.emit_reply(replies[-1])
             if out is not None:
                 if speech_act in self._SOCIAL_ACTS:
-                    return self._finish_turn_reply(mid, out, source="agent")
+                    released = self._release_social_reply(mid, replies[-1], out)
+                    if released is None:
+                        return self._finish_turn_reply(
+                            mid, self._honest_minimal_reply(),
+                            source="adapter", substantive=False)
+                    return self._finish_turn_reply(mid, released, source="agent")
                 ack_surfaces = {"got it", "understood", "i heard you",
                                 _CONVERSATION_ERROR_SURFACE.lower().rstrip(".!?")}
                 if out.strip().lower().rstrip(".!?") not in ack_surfaces:
@@ -4517,6 +6452,13 @@ class WorldAdapter:
                     return self._finish_turn_reply(
                         mid, self._honest_minimal_reply(),
                         source="adapter", substantive=False)
+                if speech_act in self._SOCIAL_ACTS:
+                    released = self._release_social_reply(mid, replies[-1], out)
+                    if released is None:
+                        return self._finish_turn_reply(
+                            mid, self._honest_minimal_reply(),
+                            source="adapter", substantive=False)
+                    return self._finish_turn_reply(mid, released, source="agent")
                 return self._finish_turn_reply(mid, out, source="agent")
 
         # Terminal/one-pair-part acts mint no reply Message. If every cognitive
@@ -6224,16 +8166,60 @@ class WorldAdapter:
         self.inner.add_edge_unchecked(self.agent, "knows_fact", node)
         return node
 
-    def answer_about(self, subject):
+    def answer_about(self, subject, *, release=True):
         """Render a known fact whose subject (the relation's left leaf) is
         `subject`, or None if the agent knows no such fact. The definitional
         slice of question-answering: 'what is X?' -> a fact about X, rendered by
         the graph engine. (Full answer_within — Frame recognition + capability
-        dispatch + math kernels — stays the heavier reason.py faculty.)"""
+        dispatch + math kernels — stays the heavier reason.py faculty.)
+
+        ``release=False`` is used by the conversation topic fulfiller when
+        the higher-level conversation-information bridge publishes the
+        semantic release. It still requires the legacy parse-back gate, but
+        does not author a legacy receipt or HeldAnswer as a side effect.
+        Direct legacy callers retain the default release behavior.
+        """
         for fact in self.inner.neighbours(self.agent, "knows_fact"):
             left = self.inner.neighbours(fact, "child.left")
             if left and self.s.node(left[0])["attrs"].get("form") == subject:
-                return self._render_node(fact)
+                surface = self._render_node(fact)
+                # Legacy relation readback used to bypass production evidence
+                # entirely.  The graph has already selected `fact`; this is
+                # only the release/parse-back seam for its rendered surface.
+                right = self.inner.neighbours(fact, "child.right")
+                form = self.s.node(fact)["attrs"].get("form")
+                frame = {
+                    "event": form,
+                    "agent": subject,
+                    "patient": self.s.node(right[0])["attrs"].get("form")
+                    if right else None,
+                    "intent": "inform",
+                }
+                from domains import production_gate as _pg
+                gate = _pg.legacy_readback_gate(frame, surface)
+                if not release:
+                    if gate.get("recoverable"):
+                        # Preserve the graph-held answer candidate for the
+                        # authoritative conversation bridge. This is evidence
+                        # indexing, not a second communicative release.
+                        self._persist_held_answer(str(subject), surface)
+                        return surface
+                    return None
+                committed = None
+                if gate.get("recoverable"):
+                    committed = self.s.add_node(
+                        "Committed",
+                        {"utterance": surface,
+                         "mode": "legacy_structural_readback"},
+                    )
+                released = _pg.release_if_gated(self, frame, surface, gate,
+                                                committed)
+                if released is not None:
+                    # Promote only a successfully gated legacy readback into
+                    # the topic-answer evidence index.  A failed parse-back
+                    # must remain unknown, not become apparent knowledge.
+                    self._persist_held_answer(str(subject), released)
+                return released
         # Fall back to a meaning the agent was TAUGHT (learn_from_teacher memoised it under
         # `taught_<form>` in taught_capabilities) — so a word grounded from the interlocutor in
         # conversation is answerable through the SAME question path as a known fact. Retrieval of
@@ -6246,7 +8232,38 @@ class WorldAdapter:
             except Exception:
                 ans = None
             if ans is not None:
-                return ans
+                # Taught answers are legacy fact readbacks too.  They used to
+                # return the memoised surface directly, bypassing the same
+                # semantic release gate used by graph-resident facts.  Treat
+                # the topic as the selected patient/content datum; a surface
+                # that cannot recover that datum is withheld rather than
+                # presented as knowledge.
+                frame = {
+                    "event": "inform",
+                    "agent": "agent",
+                    "patient": str(subject),
+                    "intent": "inform",
+                }
+                from domains import production_gate as _pg
+                gate = _pg.legacy_readback_gate(
+                    frame, ans, evidence_keys=("patient",))
+                if not release:
+                    if gate.get("recoverable"):
+                        self._persist_held_answer(str(subject), str(ans))
+                        return ans
+                    return None
+                committed = None
+                if gate.get("recoverable"):
+                    committed = self.s.add_node(
+                        "Committed",
+                        {"utterance": str(ans),
+                         "mode": "legacy_taught_readback"},
+                    )
+                released = _pg.release_if_gated(
+                    self, frame, ans, gate, committed)
+                if released is not None:
+                    self._persist_held_answer(str(subject), released)
+                return released
         return None
 
     def answer_question(self, text):
@@ -6283,8 +8300,15 @@ class WorldAdapter:
                     return self._honest_self_reply(comp)
                 if d.get("path") == "know":
                     ans = d.get("pre_resolved")
-                    if not ans and d.get("concept"):
-                        ans = self.answer_about(d["concept"])
+                    # Phase 6: a graph-resident legacy fact must cross the
+                    # production/readback gate even when the comprehension
+                    # front end already found a cached answer.  The cached
+                    # value remains a fallback for non-fact learned answers;
+                    # it must not bypass semantic production evidence.
+                    if d.get("concept"):
+                        gated = self.answer_about(d["concept"])
+                        if gated is not None:
+                            ans = gated
                     if ans is not None:
                         return ans
         import re
@@ -6553,13 +8577,26 @@ class WorldAdapter:
             gate_attempts.append({"attempt": attempt,
                                   "surface": surface,
                                   "gate": candidate_gate})
+            # Phase 6A: every candidate, including output-null/parse-back
+            # failures, crosses the same cognitive release seam.  The seam
+            # records a withheld receipt for failed evidence and a release
+            # receipt only for a fully supported surface.
+            from domains import production_gate as _pg
+            released = _pg.release_if_gated(
+                self, goal, surface, candidate_gate,
+                candidate_gate.get("committed")
+                if candidate_gate.get("recoverable") else None)
             if candidate_gate.get("recoverable"):
+                if released is None:
+                    goal = dict(goal)
+                    goal["mood"] = "explicit"
+                    continue
                 self._last_frame_realization = {
                     "frame": goal, "audience": audience,
                     "selection": selection, "result": result,
                     "gate_attempts": gate_attempts,
                     "committed": candidate_gate.get("committed")}
-                return surface
+                return released
             # One bounded repair pass: ask the same grammar to re-plan with an
             # explicit mood marker; no unbounded regeneration loop is allowed.
             goal = dict(goal)
@@ -7037,6 +9074,7 @@ class WorldAdapter:
         wa._instances = {(t, wid): srs.NodeID(v)
                          for t, wid, v in blob.get("instances", [])}
         wa._concepts = {name: srs.NodeID(v) for name, v in blob.get("concepts", [])}
+        wa._discourse_store = None  # lazily rehydrate from the restored graph
         # (SHAPE_AUDIT.md §4.2 fix) restore the recursive-concept index the same
         # way `_concepts` is restored above — `.get(..., [])` so an OLD
         # checkpoint (saved before this fix, with no "recursive_concepts" key)
@@ -7951,6 +9989,19 @@ class WorldAdapter:
         m["tick"] += 1
         self.inner.set_attr(self.agent, "tick", int(m["tick"]))
         report = self.inner.run_cycle("cognitive_legacy", max_steps)
+        receipt = self.s.add_node("NativeCognitiveCycleReceipt", {
+            "cluster": "world_adapter.cognitive_cycle",
+            "provenance": "native_cycle_readback:cognitive_legacy",
+            "rule": "cognitive_legacy_native_schedule",
+            "schedule": "cognitive_legacy",
+            "steps": int(report["steps"]),
+            "tick": int(m["tick"]),
+            "outcome_source": "native_cycle_readback",
+            "python_outcome_selection": False,
+        })
+        self.inner.add_edge_unchecked(self.agent,
+                                      "has_native_cognitive_cycle_receipt",
+                                      receipt)
         self.fire_reflexes()
         return int(report["steps"])
 
@@ -9260,6 +11311,19 @@ class WorldAdapter:
         m["tick"] += 1
         self.inner.set_attr(self.agent, "tick", int(m["tick"]))
         cycle = self.inner.run_cycle("master_legacy")
+        receipt = self.s.add_node("NativeMasterCycleReceipt", {
+            "cluster": "world_adapter.master_cycle",
+            "provenance": "native_cycle_readback:master_legacy",
+            "rule": "master_legacy_native_schedule",
+            "schedule": "master_legacy",
+            "steps": int(cycle["steps"]),
+            "tick": int(m["tick"]),
+            "outcome_source": "native_cycle_readback",
+            "python_outcome_selection": False,
+        })
+        self.inner.add_edge_unchecked(self.agent,
+                                      "has_native_master_cycle_receipt",
+                                      receipt)
         fired = self.fire_reflexes()
         self._auto_resolve_impasse_tick()
         ran, captured = self.tick_threads()

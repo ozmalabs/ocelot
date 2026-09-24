@@ -1,0 +1,53 @@
+{
+  "schema": "conversational_manifold_substrate_integration_audit.v1",
+  "date": "2026-09-24",
+  "scope": "pre-continuation audit of cognition, communication, discourse, grounding, deliberation, and production substrate",
+  "result": "integration_required_no_parallel_conversation_subsystem",
+  "verification": {
+    "focused_tests": 7,
+    "focused_tests_status": "passed",
+    "native_authority_bound": 11,
+    "native_authority_unbound": 171,
+    "native_authority_total": 182,
+    "phase4_complete_candidate_tuples": 0,
+    "phase4_near_match_tuples": 0
+  },
+  "reuse_authorities": [
+    {"need": "referent_identity", "authority": "domains.reference_resolution.DiscourseStore and native Concept/name index", "decision": "reuse; no new referent store"},
+    {"need": "discourse continuity", "authority": "DiscourseState, DiscourseEvent, CommonGround, topic/coreference rules", "decision": "reuse; event-compatible rather than inherently turn-based"},
+    {"need": "intent and disposition", "authority": "CommunicationInterpretation and communication_intent_arbitration seed", "decision": "reuse native arbitration; adapter transports evidence"},
+    {"need": "goals and lifecycle", "authority": "Goal, comprehends/originated_in relations, existing goal faculties", "decision": "reuse; do not mint a parallel lifecycle goal"},
+    {"need": "deliberation", "authority": "ThoughtManifold, residual/gap faculties, conversation_deliberation, native Phase 4A rules", "decision": "reuse only complete evidence tuples; no inferred defaults"},
+    {"need": "learning from gaps", "authority": "gap identity, recurrence, acquisition, prioritization, and learning faculties", "decision": "reuse; no conversation-only learning ledger"},
+    {"need": "surface release", "authority": "LanguageProduction, parse-back, ProductionGateReceipt", "decision": "reuse as release gate; failed release is explicit error/withheld"},
+    {"need": "native execution", "authority": "Substrate native rule execution and selective rule readback", "decision": "reuse; Python remains a mechanical boundary"}
+  ],
+  "reinvention_prohibitions": [
+    "new referent/common-ground identity store",
+    "new surface speech-act classifier",
+    "inherently turn-based state machine",
+    "Python candidate scorer or fallback deliberation selector",
+    "parallel production receipt or release ledger",
+    "fixed conversational fallback standing in for cognition"
+  ],
+  "open_integration_debt": [
+    "171 native-authority audit calls remain unbound and require incremental classification or binding",
+    "cold runtime allocation remains above the Phase 7P resource envelope",
+    "question_followup expects continuation antecedent context that its fixture does not provide"
+  ],
+  "question_followup_finding": {
+    "fixture_index": 15,
+    "label": "learn",
+    "relation": "continuation",
+    "signal": "Why did it close?",
+    "provided_antecedent": true,
+    "antecedent_event": "question_referent",
+    "antecedent_topic": "gate",
+    "antecedent_fact": "The gate is open.",
+    "previous_fixture_event": "question_unavailable",
+    "previous_fixture_signal": "What is beyond the wall?",
+    "causal_closure_event_provided": false,
+    "classification": "world_model_causal_evidence_gap_or_overstrong_fixture_label",
+    "required_next_action": "add a typed closure/causal event only if the benchmark intends to test causal learning; otherwise revise the expected disposition to repair/unknown; do not add a lexical follow-up rule"
+  }
+}

@@ -219,6 +219,15 @@ class TraitAnxietyWorld:
         # we tick once ourselves below after the context is fully asserted).
         tmb.sync_traits_to_modulator(self, run=False)
         # (5) the graph produces securing + the emotion label.
+        native.add_node("NativeTraitAnxietyReceipt", {
+            "schema": "native_trait_anxiety_receipt_v1",
+            "cluster": "trait_anxiety.classification",
+            "provenance": "native_rule_readback:trait_anxiety",
+            "native_rule": "trait_anxiety_native_rules",
+            "native_steps": ["assert_trait_context", "run_rules", "readback"],
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         native.run_rules()
         # (6) READ the produced state off the graph.
         a = self._attrs(self.ms)

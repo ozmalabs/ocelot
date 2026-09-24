@@ -164,7 +164,6 @@ _CONVERSATIONAL_SIGNS = (
     # standalone affirmation / negation / acknowledgment
     ("yes",        "yes",        []),
     ("no",         "no",         []),
-    ("noted",      "noted",      []),
     ("hello",      "hello",      []),
     # CONJUNCTIONS — chain multiple concepts in a meaning Term.
     # "and" is the basic additive coordinator; nested produces

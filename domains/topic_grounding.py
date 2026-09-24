@@ -216,6 +216,18 @@ def ingest_search_candidates(agent, req, query: str, *, timeout: int = 8,
     titles = _opensearch_titles(query, timeout, getter, limit=5)
     count = 0
     native.set_attr(req, "min_overlap", float(min_overlap))
+    req_attrs = sub.node(req)["attrs"]
+    ref_status = str(req_attrs.get("referent_status") or "supported")
+    raw_refs = req_attrs.get("referents") or [query]
+    if isinstance(raw_refs, str):
+        raw_refs = [raw_refs]
+    referents = [str(r).strip() for r in raw_refs if str(r).strip()]
+
+    def ref_covered(ref: str, title_: str, extract_: str) -> bool:
+        terms = [t for t in _tokens(ref) if len(t) > 1]
+        hay = (str(title_) + " " + str(extract_)).lower()
+        return bool(terms) and all(t in hay for t in terms)
+
     for title in titles:
         summary = _summary_data(title, timeout, getter)
         extract = (summary or {}).get("extract")
@@ -223,11 +235,32 @@ def ingest_search_candidates(agent, req, query: str, *, timeout: int = 8,
             continue
         ratio = _overlap_ratio(query, title)
         disamb = 1.0 if _is_disambiguation_extract(str(extract), summary) else 0.0
+        # A source may explicitly contradict the query.  Preserve that state
+        # as epistemic data; verification must not silently turn it into a
+        # supported answer.  Unknown/missing evidence is handled by the
+        # request-level outcome in fetch_dispatch.
+        source_type = str((summary or {}).get("type") or "").lower()
+        epistemic_status = ("contradicted" if source_type == "contradiction"
+                            else "candidate")
+        coverage = [ref_covered(ref, title, extract) for ref in referents]
+        coverage_complete = (ref_status == "supported" and bool(referents)
+                             and all(coverage))
         cn = sub.add_node("SearchCandidate", {
             "title": str(title),
             "extract": _cap_answer(str(extract).strip()),
             "overlap_ratio": float(ratio),
             "is_disambiguation": disamb,
+            "provenance_source": "wikipedia",
+            "provenance_query": str(query),
+            "evidence_path": "SearchRequest -> has_candidate -> SearchCandidate",
+            "epistemic_status": epistemic_status,
+            "referent_status": ref_status,
+            "referent_coverage": coverage,
+            "referent_coverage_complete": 1.0 if coverage_complete else 0.0,
+            "referent_evidence_path": str(
+                req_attrs.get("referent_evidence_path") or
+                "SearchRequest -> referent_evidence -> unknown"),
+            "communication_event_claimed": 0.0,
         })
         native.add_edge_unchecked(req, "has_candidate", cn)
         count += 1
@@ -235,30 +268,52 @@ def ingest_search_candidates(agent, req, query: str, *, timeout: int = 8,
 
 
 def commit_selected_search(agent, req, query: str) -> str | None:
-    """Mechanical read-back: persist the graph-selected candidate only."""
+    """Mechanical read-back: persist only a selected, evidenced candidate."""
     sub, native = agent.s, agent.inner
-    chosen = sub.node(req)["attrs"].get("chosen_extract")
-    if chosen:
-        answer = _cap_answer(str(chosen))
-        try:
-            agent.learn_from_teacher(
-                query, {"answer": answer,
-                         "learn": [{"phrase": query, "answer": answer}]})
-        except Exception:  # noqa: BLE001
-            return None
-        return answer
     for c in native.neighbours(req, "has_candidate"):
         if not sub.has_node(c):
             continue
         ca = sub.node(c)["attrs"]
-        if ca.get("selected") == 1.0 and ca.get("extract"):
+        if (ca.get("selected") == 1.0 and ca.get("extract")
+                and ca.get("epistemic_status") == "candidate"
+                and ca.get("referent_status") == "supported"
+                and ca.get("referent_coverage_complete") == 1.0
+                and ca.get("provenance_source")
+                and ca.get("provenance_query") == str(query)
+                and ca.get("evidence_path")):
             answer = _cap_answer(str(ca["extract"]))
+            evidence = sub.add_node("RetrievalEvidence", {
+                "schema": "retrieval_evidence.v1",
+                "query": str(query),
+                "referent": str(query),
+                "title": str(ca.get("title") or ""),
+                "source": str(ca.get("provenance_source")),
+                "epistemic_status": "supported",
+                "referent_status": "supported",
+                "referent_coverage": ca.get("referent_coverage"),
+                "evidence_path": (
+                    "SearchRequest -> has_candidate -> SearchCandidate -> "
+                    "RetrievalEvidence"),
+            })
+            native.add_edge_unchecked(c, "supported_by", evidence)
+            native.set_attr(req, "selected_candidate_id", c)
+            native.set_attr(req, "epistemic_status", "supported")
+            native.set_attr(req, "referent_status", "supported")
+            native.set_attr(req, "communication_event_claimed", 0.0)
+            native.set_attr(req, "evidence_path",
+                            "SearchRequest -> has_candidate -> SearchCandidate")
             try:
                 agent.learn_from_teacher(
                     query, {"answer": answer,
                              "learn": [{"phrase": query, "answer": answer}]})
             except Exception:  # noqa: BLE001
                 return None
+            for ha in sub.nodes("HeldAnswer"):
+                if sub.node(ha)["attrs"].get("topic") == str(query):
+                    native.add_edge_unchecked(ha, "derived_from", evidence)
+                    native.set_attr(ha, "grounding_source", "retrieval")
+                    native.set_attr(ha, "grounding_evidence_path",
+                                    "SearchRequest -> SearchCandidate -> RetrievalEvidence -> HeldAnswer")
             return answer
     return None
 

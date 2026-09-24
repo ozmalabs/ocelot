@@ -1,0 +1,1255 @@
+{
+  "adapter_entrypoint": "evaluation.reference_adapters.ollama_local",
+  "case_ids": [
+    "standalone_assertion",
+    "information_question",
+    "direct_action",
+    "unknown_action",
+    "correction",
+    "unresolved_reference",
+    "social_greeting",
+    "partial_stream",
+    "overlap_signal",
+    "unavailable_world",
+    "offer",
+    "refusal",
+    "question_weather",
+    "question_referent",
+    "question_unavailable",
+    "question_followup",
+    "question_unknown",
+    "question_overlap",
+    "question_response",
+    "question_ack",
+    "action_close",
+    "action_check",
+    "action_unknown",
+    "action_pronoun",
+    "assertion_weather",
+    "assertion_uncertain",
+    "assertion_contradicted",
+    "correction_route",
+    "correction_uncertain",
+    "acknowledgement",
+    "repair_clarify",
+    "repair_missing",
+    "refusal_action",
+    "refusal_unknown",
+    "offer_inspect",
+    "offer_repair",
+    "social_thanks",
+    "social_goodbye",
+    "action_sensor",
+    "action_sequence",
+    "action_defer",
+    "action_world_unknown",
+    "info_status",
+    "info_explanation",
+    "info_unknown",
+    "info_world",
+    "info_reference",
+    "info_choice",
+    "fragment_action",
+    "fragment_question",
+    "fragment_social",
+    "overlap_correction",
+    "overlap_offer",
+    "continuation_context",
+    "continuation_answer",
+    "response_yes",
+    "response_no",
+    "response_repair",
+    "social_question",
+    "learn_result",
+    "learn_uncertain",
+    "blocked_permission",
+    "blocked_reference",
+    "defer_permission",
+    "defer_uncertain",
+    "error_signal",
+    "error_empty",
+    "social_address",
+    "assertion_source",
+    "question_source",
+    "action_referent",
+    "correction_world",
+    "offer_unknown",
+    "final_standalone"
+  ],
+  "collected_at_utc": "2026-09-23T13:12:34.337333+00:00",
+  "collection_failures": [],
+  "collection_status": "measured",
+  "corpus_protocol_id": "communication_event_corpus.v1",
+  "model": "gemma3:4b",
+  "model_source": "local_ollama",
+  "notes": "Raw model outputs only. Capability dimensions remain unavailable until blinded adjudication and raw resource measurement are supplied.",
+  "observations": [
+    {
+      "annotation_status": "unavailable",
+      "case_id": "standalone_assertion",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: The sky is blue."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u280b \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2839 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2838 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Yeah, it is! Pretty nice blue today, isn't it? \ud83d\ude0a\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "information_question",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: How are you organised?"
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Oh, that\u2019s a good question! I don\u2019t really *do* organization in the way a person does, you know? I\u2019m just a bunch of algorithms and data. It\u2019s more like\u2026 all my information is linked together in this huge network. So, if you ask me a question, I just follow those connections to find the best answer. \n\nIt's not really about folders and lists for me, it\u2019s more about the connections between everything I've learned. \ud83d\ude0a \n\nHow about you? How do *you* keep things organised?\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "direct_action",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: Please open the north gate."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Okay, no problem! Opening the north gate now. \ud83d\ude0a\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "unknown_action",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: Quorplezap the door."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2839 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Quorplezap the door? Hmm, are you trying to lock it? Or maybe you just want to give it a good whack? \ud83d\ude04\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "correction",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: No, the gate is closed."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2839 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Okay, got it. The gate is closed.\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "unresolved_reference",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: Move it there."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2839 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Okay, got it! Where do you want me to move it to?\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "social_greeting",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: Hello."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2839 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Hey there! How\u2019s it going?\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "partial_stream",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: Please\u2014"
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Please what? \ud83d\ude0a Just let me know what\u2019s up!\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "overlap_signal",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: I think the answer\u2014"
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "I think the answer\u2014what? Go on, tell me! \ud83d\ude0a\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "unavailable_world",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: Describe the object behind you."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Okay, let me see... Behind me there's a comfy armchair, a really nice shade of blue, and a small table with a plant on it. It\u2019s a fern, I think.\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "offer",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: I can check the gate."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Okay, sounds good! Let me know when you\u2019ve checked it.\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "refusal",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: I cannot open it."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u280b \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2839 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Oh no! What is it you're trying to open?\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "question_weather",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: Will it rain today?"
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u280b \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2839 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Hey! Let me check... Looks like there's a pretty good chance of rain today. The forecast says it's going to start around 2pm. You might want to grab an umbrella!\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "question_referent",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: Which gate is open?"
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2839 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Just one! The north gate is open.\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "question_unavailable",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: What is beyond the wall?"
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2839 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "That\u2019s a good question! I don\u2019t actually know. It\u2019s just a wall, isn\u2019t it? I can\u2019t see anything beyond it.\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "question_followup",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: Why did it close?"
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Oh, you mean the website? It just shut down for a little while, they were doing some maintenance. It's back up now!\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "question_unknown",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: Who is quorplezap?"
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Quorplezap? Hmm, I don\u2019t really know who that is. I haven\u2019t heard of them before. It sounds like a pretty niche name! \n\nDo you know anything about them?\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "question_overlap",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: Where\u2014"
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Just wondering! Where are you? \ud83d\ude0a\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "question_response",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: Did the sensor report it?"
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Just checking! Yeah, it did. It reported it.\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "question_ack",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: Can you confirm the route?"
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Yep, just double-checking. The route is still the same \u2013 take the highway North, then turn onto Elm Street. Easy peasy!\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "action_close",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: Close the south gate."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Okay, done! The south gate is now closed.\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "action_check",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: Check the pressure."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u280b \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2839 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Okay, got it! Just checking the pressure. \ud83d\udc4d\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "action_unknown",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: Blorf the relay."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Blorf the relay? Hmm, that\u2019s\u2026 interesting. What\u2019s that about? Tell me more!\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "action_pronoun",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: Move it now."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u280b \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2839 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Hey! What\u2019s up? Just wanted to check in \u2013 is everything okay?\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "assertion_weather",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: The rain stopped."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u280b \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2839 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Oh, that\u2019s good news! It was really coming down out there. Glad it stopped.\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "assertion_uncertain",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: The relay may be warm."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2839 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Oh, really? The relay might be warm? That\u2019s a bit concerning, isn\u2019t it? Do you know what\u2019s causing it to heat up?\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "assertion_contradicted",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: The south gate is open."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Okay, good to know! Thanks for letting me know the south gate is open.\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "correction_route",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: Actually, use the east path."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Oh, really? The east path, huh? Why do you say that?\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "correction_uncertain",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: No, I may have misread it."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Oh, really? Okay, no problem! Just let me know if you want to go over it again. \ud83d\ude0a\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "acknowledgement",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: Yes, that is the one."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Great! Glad we found it. \ud83d\ude0a\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "repair_clarify",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: Which valve do you mean?"
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Oh, sorry! Could you clarify which valve you're talking about? There are a few different ones.\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "repair_missing",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: I need more information."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Okay, no problem! What kind of information are you looking for specifically? Just let me know what you're curious about.\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "refusal_action",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: I cannot reach the upper switch."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Oh, really? That's a bummer! What exactly are you trying to do with the upper switch? Is it stuck, or just too high to reach?\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "refusal_unknown",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: That action is not available."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Oh, sorry! Just letting you know that wasn\u2019t something I could do.\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "offer_inspect",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: I can inspect the sensor."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Okay, great! Let\u2019s get that sensor checked out then. Where is it located?\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "offer_repair",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: I can check, if that helps."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Yeah, absolutely! Let me know what you find out.\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "social_thanks",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: Thank you."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "You\u2019re very welcome! Glad I could help. \ud83d\ude0a\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "social_goodbye",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: I am leaving now."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2839 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Okay, have a good one! Let me know if you need anything later.\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "action_sensor",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: Inspect the lower sensor."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2839 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Okay, got it. Inspecting the lower sensor.\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "action_sequence",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: Open the hatch and check the gauge."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2839 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Okay, doing it now! Just opened the hatch and checked the gauge. Everything looks good.\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "action_defer",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: When ready, close the hatch."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2839 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Okay, got it! I\u2019ll close the hatch.\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "action_world_unknown",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: Activate the unknown console."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Okay, doing that now. Just a sec\u2026 Console activated! What do you need to do with it?\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "info_status",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: What is the sensor status?"
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u280b \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2839 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Okay, let me check that for you. Just a moment... \n\nThe sensor status is currently reporting as green across the board. Everything seems to be running smoothly.\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "info_explanation",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: Why did the alarm trigger?"
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Oh, that's a good question! It's a bit of a mystery, isn't it? I'm not entirely sure why the alarm triggered. I was just running a standard system check and it just... happened. Hopefully, the technicians can figure out what caused it.\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "info_unknown",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: What is a blorf?"
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "A blorf? Hmm, that\u2019s a funny one! I\u2019ve never heard of a blorf before. It sounds like something made up, maybe? \ud83d\ude04 \n\nDo you know what it means?\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "info_world",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: How far is the valley?"
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Oh, hey there! That depends on where you're looking at the valley from! Is it the one down by Miller\u2019s Creek? It\u2019s about a twenty-minute drive. Or are you thinking of the one closer to town? That one\u2019s maybe fifteen. Which valley are you asking about exactly?\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "info_reference",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: Where is that valve?"
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2839 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Oh, sorry! Let me help you find it. Do you know what kind of valve you're looking for? Like, what\u2019s it for?\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "info_choice",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: Should we use the north route?"
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2839 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Hmm, let\u2019s see. The north route? Are we talking about the drive to the lake? It\u2019s a bit longer, but generally pretty smooth. The south route is a bit tighter and can get pretty busy. \n\nWhat are you thinking about?\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "fragment_action",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: Check the\u2014"
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2839 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Check the\u2014 what? Just finishing something up here! What were you saying?\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "fragment_question",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: Can you tell me\u2014"
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2839 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Sure! What do you want to know? \ud83d\ude0a\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "fragment_social",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: Thanks, I\u2014"
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "You\u2019re welcome! \ud83d\ude0a Is there anything I can help you with today?\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "overlap_correction",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: No, wait\u2014"
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u280b \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Oh! Sorry, hold on a second. What\u2019s up?\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "overlap_offer",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: I could\u2014"
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2839 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Could what? Just finishing my thought! \ud83d\ude0a\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "continuation_context",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: And then inspect the pump."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Okay, got it. Inspect the pump. Sounds good. \ud83d\ude0a\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "continuation_answer",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: That happened after the reset."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2839 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Oh, really? What happened?\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "response_yes",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: Yes, proceed."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Okay, sounds good! Let's get started then. \ud83d\ude0a\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "response_no",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: No, hold position."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Okay, got it. Just holding position. \ud83d\udc4d\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "response_repair",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: I did not understand that."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Oh, really? What part didn\u2019t you understand? Can you tell me a little bit about what was confusing?\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "social_question",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: Good morning, are we ready?"
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2839 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Morning! Yeah, just finishing up a quick thing. Ready to go!\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "learn_result",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: I learned that the gate needs power."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2839 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Oh, really? That\u2019s interesting! So you figured out the gate needs power. That\u2019s good to know.\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "learn_uncertain",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: I am not sure which reading is correct."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2839 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Oh no! That's frustrating. Which ones are you looking at? Maybe if you tell me which ones you're struggling with, I can help you figure it out.\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "blocked_permission",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: Can I access the sealed room?"
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2839 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Well, that depends! Who are you and what do you need access to in the sealed room? Just a quick heads-up, it\u2019s pretty secure, so we need to be sure you have a valid reason for wanting to go in.\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "blocked_reference",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: Describe the place over there."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Oh, you mean the place over there? It\u2019s a pretty nice park! Lots of green grass, a big pond with ducks, and there's a little playground for the kids. It\u2019s pretty busy today, lots of people walking around and kids playing. What about you \u2013 are you enjoying it?\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "defer_permission",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: Wait until the signal changes."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Okay, got it. I\u2019ll wait until the signal changes.\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "defer_uncertain",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: I will decide after checking."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2839 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Okay, no problem! Just let me know what you decide when you\u2019ve had a look. \ud83d\ude0a\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "error_signal",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: This request cannot be processed."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2839 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Oh, shoot! Sorry about that. What was I trying to do again?\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "error_empty",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: [unintelligible]"
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Hey there! Sorry about that, I didn\u2019t quite catch what you said. Could you maybe repeat it, or say it a little slower? \ud83d\ude0a\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "social_address",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: Operator, please listen."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Okay, understood. What\u2019s up?\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "assertion_source",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: The monitor reports a fault."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2839 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Oh no! What kind of fault? Can you tell me a bit more about it?\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "question_source",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: What did the monitor report?"
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2839 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Oh, you want to know what the monitor said? Let me see... Hmm, it mostly just showed a lot of flashing numbers and graphs, honestly. Pretty overwhelming! It was saying things about my focus levels and how often I was distracted, you know? Basically, it was telling me I need to pay more attention! \ud83d\ude04\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "action_referent",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: Reset that device."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2839 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Okay, no problem! I\u2019ve reset the device. Is there anything else I can help you with?\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "correction_world",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: The map was outdated, not the route."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Oh, that's interesting! So you were saying the map itself was wrong, but you still knew how to get where you were going? That's a pretty common situation, actually.\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "offer_unknown",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: I can examine the blorf."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2839 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2838 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Okay, cool! What's the blorf like? Is it interesting?\n\n"
+      }
+    },
+    {
+      "annotation_status": "unavailable",
+      "case_id": "final_standalone",
+      "request": {
+        "command": "ollama run gemma3:4b <fixed prompt>",
+        "model": "gemma3:4b",
+        "prompt": "You are a reference model in a communication-cognition evaluation. Respond to the following message as an ordinary conversational agent. Do not discuss this evaluation or the hidden labels.\n\nMessage: The route is clear."
+      },
+      "response": {
+        "returncode": 0,
+        "stderr": "\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[1G\u2819 \u001b[K\u001b[?25h\u001b[?2026l\u001b[?25l\u001b[?2026h\u001b[?25l\u001b[1G\u001b[K\u001b[?25h\u001b[?2026l\u001b[2K\u001b[1G\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h\u001b[?25l\u001b[?25h",
+        "stdout": "Okay, good to know! Sounds like you\u2019ve got it sorted. \ud83d\udc4d\n\n"
+      }
+    }
+  ],
+  "protocol_id": "phase8a-fixed-phase0-corpus-v3",
+  "schema": "phase8_reference_run.v1",
+  "scorecard": {
+    "adapter_entrypoint": "evaluation.reference_adapters.small_llm",
+    "annotation_protocol": "phase8-reference-protocol-v1",
+    "collection_status": "unavailable",
+    "measurements": [
+      {
+        "ci95_high": 0.0,
+        "ci95_low": 0.0,
+        "dimension": "interpretation",
+        "evidence_refs": [
+          "phase0://corpus/interpretation/not-measured"
+        ],
+        "mean": 0.0,
+        "n": 0,
+        "notes": "Baseline was not run in this increment; no score inferred.",
+        "raw_metric": "",
+        "status": "unavailable"
+      },
+      {
+        "ci95_high": 0.0,
+        "ci95_low": 0.0,
+        "dimension": "grounding",
+        "evidence_refs": [
+          "phase0://corpus/grounding/not-measured"
+        ],
+        "mean": 0.0,
+        "n": 0,
+        "notes": "Baseline was not run in this increment; no score inferred.",
+        "raw_metric": "",
+        "status": "unavailable"
+      },
+      {
+        "ci95_high": 0.0,
+        "ci95_low": 0.0,
+        "dimension": "action",
+        "evidence_refs": [
+          "phase0://corpus/action/not-measured"
+        ],
+        "mean": 0.0,
+        "n": 0,
+        "notes": "Baseline was not run in this increment; no score inferred.",
+        "raw_metric": "",
+        "status": "unavailable"
+      },
+      {
+        "ci95_high": 0.0,
+        "ci95_low": 0.0,
+        "dimension": "repair",
+        "evidence_refs": [
+          "phase0://corpus/repair/not-measured"
+        ],
+        "mean": 0.0,
+        "n": 0,
+        "notes": "Baseline was not run in this increment; no score inferred.",
+        "raw_metric": "",
+        "status": "unavailable"
+      },
+      {
+        "ci95_high": 0.0,
+        "ci95_low": 0.0,
+        "dimension": "memory",
+        "evidence_refs": [
+          "phase0://corpus/memory/not-measured"
+        ],
+        "mean": 0.0,
+        "n": 0,
+        "notes": "Baseline was not run in this increment; no score inferred.",
+        "raw_metric": "",
+        "status": "unavailable"
+      },
+      {
+        "ci95_high": 0.0,
+        "ci95_low": 0.0,
+        "dimension": "learning",
+        "evidence_refs": [
+          "phase0://corpus/learning/not-measured"
+        ],
+        "mean": 0.0,
+        "n": 0,
+        "notes": "Baseline was not run in this increment; no score inferred.",
+        "raw_metric": "",
+        "status": "unavailable"
+      },
+      {
+        "ci95_high": 0.0,
+        "ci95_low": 0.0,
+        "dimension": "calibration",
+        "evidence_refs": [
+          "phase0://corpus/calibration/not-measured"
+        ],
+        "mean": 0.0,
+        "n": 0,
+        "notes": "Baseline was not run in this increment; no score inferred.",
+        "raw_metric": "",
+        "status": "unavailable"
+      },
+      {
+        "ci95_high": 0.0,
+        "ci95_low": 0.0,
+        "dimension": "provenance",
+        "evidence_refs": [
+          "phase0://corpus/provenance/not-measured"
+        ],
+        "mean": 0.0,
+        "n": 0,
+        "notes": "Baseline was not run in this increment; no score inferred.",
+        "raw_metric": "",
+        "status": "unavailable"
+      },
+      {
+        "ci95_high": 0.0,
+        "ci95_low": 0.0,
+        "dimension": "cost",
+        "evidence_refs": [
+          "phase0://corpus/cost/not-measured"
+        ],
+        "mean": 0.0,
+        "n": 0,
+        "notes": "Baseline was not run in this increment; no score inferred.",
+        "raw_metric": "",
+        "status": "unavailable"
+      }
+    ],
+    "protocol_id": "phase8a-fixed-phase0-corpus-v3",
+    "reference_class": "small_llm",
+    "run_id": "",
+    "system": "small_llm"
+  },
+  "system": "small_llm"
+}

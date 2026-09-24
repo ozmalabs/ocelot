@@ -570,7 +570,17 @@ def _referent_crosscheck(agent, text: str, vocab: dict) -> dict:
                 continue
             mn = sub.add_node("Mention", {"text": w})
             native.add_edge_unchecked(mid, "has_mention", mn)
-        native.run_rules(10000)
+        native_steps = native.run_rules(10000)
+        sub.add_node("NativeProceduralReaderReceipt", {
+            "schema": "native_procedural_reader_receipt.v1",
+            "cluster": "procedural_reader.referent_crosscheck",
+            "provenance": "native_rule_readback:procedural_referent",
+            "native_rule": "procedural_referent_rules",
+            "native_steps": int(native_steps),
+            "stage": "resolve",
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         resolved = 0
         total_proc = 0
         for mn in native.neighbours(mid, "has_mention"):
@@ -589,7 +599,17 @@ def _referent_crosscheck(agent, text: str, vocab: dict) -> dict:
         # decision. Gated on proc_done so the rule never fires during the resolve
         # tick above (proc_done unset there).
         sub.set_attr(mid, "proc_done", 1.0)
-        native.run_rules(10000)
+        native_steps = native.run_rules(10000)
+        sub.add_node("NativeProceduralReaderReceipt", {
+            "schema": "native_procedural_reader_receipt.v1",
+            "cluster": "procedural_reader.referent_crosscheck",
+            "provenance": "native_rule_readback:procedural_referent",
+            "native_rule": "procedural_referent_rules",
+            "native_steps": int(native_steps),
+            "stage": "retire",
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         return {"proc_tokens": total_proc, "resolved_by_referent_rule": resolved}
     except Exception as e:
         return {"error": "%s: %s" % (type(e).__name__, e)}

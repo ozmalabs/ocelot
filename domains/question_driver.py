@@ -649,11 +649,41 @@ def _wire_orphan_goals_to_agent(adapter) -> None:
             adapter.s.add_edge(adapter.agent, "has_goal", g)
 
 
+def _native_deliberation_cycle(adapter, *, max_steps: int = 100_000) -> dict:
+    """Settle one deliberation event through the native cycle.
+
+    Reflex dispatch remains the boundary action immediately before this call;
+    the choice of resolver and the rule outcome remain graph-authored.  This
+    function records the native trace as graph evidence so the Python driver
+    cannot be mistaken for the source of the deliberative result.  The receipt
+    is event-scoped, not turn-scoped: callers may invoke it for any residual
+    goal event.
+    """
+    report = dict(adapter.inner.run_cycle("default", max_steps, trace=True))
+    trace = list(report.get("trace") or ())
+    rule_ids = sorted({str(item[3]) for item in trace if len(item) > 3})
+    receipt = adapter.s.add_node("NativeDeliberationReceipt", {
+        "cluster": "question_driver.deliberation_pump",
+        "provenance": "native_trace:question_driver_deliberation",
+        "schedule": "default",
+        "steps": int(report.get("steps", 0)),
+        "trace_count": len(trace),
+        "rule_ids": rule_ids,
+        "outcome_source": "native_trace",
+    })
+    # The receipt edge is audit metadata, not a semantic vocabulary edge used
+    # by the question-driving productions; keep it out of the ontology while
+    # retaining it in the native graph export.
+    adapter.inner.add_edge_unchecked(
+        adapter.agent, "has_native_deliberation_receipt", receipt)
+    return report
+
+
 def _pump(adapter, root_goal, max_iters: int = 64) -> None:
     for _ in range(max_iters):
         _wire_orphan_goals_to_agent(adapter)
         adapter.fire_reflexes()
-        adapter.inner.run_rules()
+        _native_deliberation_cycle(adapter)
         status = adapter.s.node(root_goal)["attrs"].get("status")
         if status in ("resolved", "walled"):
             break

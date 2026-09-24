@@ -48,6 +48,12 @@ def test_rulebook_is_read_as_private_cognition_and_activates_on_observation():
     assert not list(resident.s.nodes("PhysicalAction"))
     assert not list(resident.s.nodes("WorldFact"))
     assert not list(resident.s.nodes("MonopolyState"))
+    receipts = list(resident.s.nodes("NativeCognitiveRuleFrameReceipt"))
+    assert len(receipts) == 2
+    assert {resident.s.node(n)["attrs"]["cluster"] for n in receipts} == {
+        "cognitive_rule_frames.document_settlement",
+        "cognitive_rule_frames.observation_settlement",
+    }
 
 
 def test_different_residents_can_hold_different_interpretations():

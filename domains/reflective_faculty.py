@@ -1349,7 +1349,16 @@ def induce_concern(agent, observation, *, name_hint=None) -> dict[str, Any]:
     obs_node = sub.add_node("Observation", {"signature": obs, "key": [key], "status": "pending"})
     if ag_node is not None:
         sub.add_edge(ag_node, "observed", obs_node)
-    native.run_rules()
+    native_steps = native.run_rules()
+    sub.add_node("NativeReflectiveFacultyReceipt", {
+        "schema": "native_reflective_faculty_receipt.v1",
+        "cluster": "reflective_faculty.concern_decode_settlement",
+        "provenance": "native_rule_readback:shape_decode_loop",
+        "native_rule": "shape_decode_loop",
+        "native_steps": int(native_steps),
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
 
     at = sub.node(obs_node)["attrs"]
     status = at.get("status")
@@ -7510,7 +7519,17 @@ def check_new_relation_cue_roles(substrate, cue_node_id) -> dict[str, Any]:
             rc = sub.add_node("RoleUseCheck", {"status": "pending", "token": tok})
             sub.add_edge(cue_node_id, "has_role_use", rc)
             checks[tok] = rc
-        native.run_rules()
+        native_steps = native.run_rules()
+        sub.add_node("NativeReflectiveFacultyReceipt", {
+            "schema": "native_reflective_faculty_receipt.v1",
+            "cluster": "reflective_faculty.relation_cue_settlement",
+            "provenance": "native_rule_readback:argument_role_vocabulary",
+            "native_rule": "argument_role_vocabulary",
+            "native_steps": int(native_steps),
+            "token_count": len(tokens),
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
     except Exception as exc:
         out["error"] = str(exc)
         return out
@@ -7750,7 +7769,16 @@ def record_correspondence(substrate, node_a, sig_a, node_b, sig_b):
         if ag is not None:
             sub.add_edge(ag, "observed_correspondence", cid)
         native = getattr(sub, "_inner", sub)
-        native.run_rules()
+        native_steps = native.run_rules()
+        sub.add_node("NativeReflectiveFacultyReceipt", {
+            "schema": "native_reflective_faculty_receipt.v1",
+            "cluster": "reflective_faculty.correspondence_settlement",
+            "provenance": "native_rule_readback:blob_edge_correspondence",
+            "native_rule": "blob_edge_correspondence",
+            "native_steps": int(native_steps),
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         status = sub.node(cid)["attrs"].get("status")
         out.update({"persisted": True, "node": cid, "transform_key": key, "status": status})
     except Exception as exc:

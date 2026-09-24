@@ -155,6 +155,13 @@ def test_mint_fresh_token_is_safe_and_wires_immediately(agent):
     assert "WIDGET" in role_idx and "GEAR" in role_idx
     assert agent.s.has_edge(t["node"], "uses_role", role_idx["WIDGET"])
     assert agent.s.has_edge(t["node"], "uses_role", role_idx["GEAR"])
+    receipts = [agent.s.node(n)["attrs"] for n in
+                agent.s.nodes("NativeReflectiveFacultyReceipt")
+                if agent.s.node(n)["attrs"].get("cluster") ==
+                "reflective_faculty.relation_cue_settlement"]
+    assert len(receipts) == 1
+    assert receipts[0]["outcome_source"] == "native_rule_readback"
+    assert receipts[0]["python_outcome_selection"] is False
     collisions = [n for n in agent.s.nodes("SelfConcern")
                   if agent.s.node(n)["attrs"].get("kind") == "argument_role_collision"]
     assert collisions == []

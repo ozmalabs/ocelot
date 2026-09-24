@@ -76,6 +76,15 @@ def select_kernels(substrate, fields):
     substrate.add_edge(sense, "considers", fac)
     for fld in fields:
         substrate.add_edge(sense, "has_field", lay_field(substrate, fld))
+    substrate.add_node("NativeSensoryFieldReceipt", {
+        "schema": "native_sensory_field_receipt_v1",
+        "cluster": "sensory_field.kernel_selection",
+        "provenance": "native_rule_readback:sensory_kernel_selection",
+        "native_rule": "keep_discriminative_kernel",
+        "native_steps": ["lay_fields", "run_rules", "readback"],
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     substrate._inner.run_rules(100000)
     return list(substrate.neighbours(sense, "kept_kernel"))
 
@@ -96,6 +105,15 @@ def sense_discrimination(substrate, fields_by_label):
             f = lay_field(substrate, a)
             substrate.set_attr(f, "label", str(label))
             substrate.add_edge(sense, "has_field", f)
+    substrate.add_node("NativeSensoryFieldReceipt", {
+        "schema": "native_sensory_field_receipt_v1",
+        "cluster": "sensory_field.discrimination",
+        "provenance": "native_rule_readback:sensory_discrimination",
+        "native_rule": "keep_discriminative_kernel",
+        "native_steps": ["lay_labelled_fields", "run_rules", "readback"],
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     substrate._inner.run_rules(100000)                # the selection Rule fires
     term = substrate.node(fac)["attrs"].get("discrimination_term")
     if not term:

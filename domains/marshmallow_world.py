@@ -131,6 +131,15 @@ class MarshmallowWorld:
         own chosen_action (1=wait, 0=take). MECHANICAL: set data, run_rules, read."""
         for d in self.decs:
             self.s.set_attr(d, "elapsed", float(t))
+        self.inner.add_node("NativeMarshmallowReceipt", {
+            "schema": "native_marshmallow_receipt_v1",
+            "cluster": "marshmallow_world.delay_decision",
+            "provenance": "native_rule_readback:marshmallow_delay",
+            "native_rule": "marshmallow_delay_native_rules",
+            "native_steps": ["write_elapsed", "run_rules", "readback"],
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         self.inner.run_rules()
         return [int(self.s.node(d)["attrs"]["chosen_action"]) for d in self.decs]
 

@@ -77,6 +77,14 @@ def test_asking_to_recount_fires_the_faculty_not_a_gap():
     assert result["n_subgoals"] >= 1
     assert len(result["lines"]) >= 1
     assert donkey["n"] == 0
+    receipts = [a.s.node(n)["attrs"] for n in a.s.nodes("NativeRecountReceipt")
+                if a.s.node(n)["attrs"].get("cluster") ==
+                "recount_faculty.recount_reasoning_settlement"]
+    assert len(receipts) == 1
+    assert receipts[0]["provenance"] == (
+        "native_rule_readback:recount_reasoning")
+    assert receipts[0]["outcome_source"] == "native_rule_readback"
+    assert receipts[0]["python_outcome_selection"] is False
 
 
 def test_summarize_phrasing_also_fires_it():

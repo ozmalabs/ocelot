@@ -1061,7 +1061,16 @@ def extend_on_residual(agent, text_a: str, text_b: str, *, label_a: str = "",
     # the sd loop's verdict is MINT -> realize the axis as graph data + close loop.
     dim_node = _mint_style_dimension(agent, winner)
     epoch = _grow_style_codebook(agent, key)
-    native.run_rules()                       # sd_redecode re-arms -> re-decode
+    native_steps = native.run_rules()        # sd_redecode re-arms -> re-decode
+    sub.add_node("NativeCrossTextPriorReceipt", {
+        "schema": "native_cross_text_prior_receipt.v1",
+        "cluster": "cross_text_prior.residual_redecode_settlement",
+        "provenance": "native_rule_readback:cross_text_prior",
+        "native_rule": "sd_redecode",
+        "native_steps": int(native_steps),
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     reobserved = None
     for o in sub.nodes("Observation"):
         oa = sub.node(o)["attrs"]

@@ -309,6 +309,21 @@ REGISTRY.register(Seed(
                 "+ responds_to). The reply DECISION as graph data.",
 ))
 
+REGISTRY.register(Seed(
+    id="conversation_discourse_state", version="1.0.0",
+    depends_on=("conversation",),
+    installer=_installer_from_manifest("conversation_discourse_state"),
+    description="Graph-native discourse-state goal lifecycle transitions.",
+))
+
+REGISTRY.register(Seed(
+    id="conversation_deliberation_phase4a", version="1.0.0",
+    depends_on=("conversation_discourse_state",),
+    installer=_installer_from_manifest("conversation_deliberation_phase4a"),
+    description="Native Phase 4A deliberation valuation, collapse, rejection, "
+                "execution, settlement, and counterfactual traces.",
+))
+
 
 # --- audio + speech ----------------------------------------------------
 

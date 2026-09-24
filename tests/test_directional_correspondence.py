@@ -147,6 +147,13 @@ def test_richer_side_wins_regardless_of_about_a_about_b_write_order(agent):
 
     # Swap argument order -- the SAME two concepts, opposite about_a/about_b.
     cid2 = at.record_directional_correspondence(sub, sparse, rich, vec_sparse, vec_rich, witness)
+    receipts = [sub.node(n)["attrs"] for n in
+                sub.nodes("NativeAnalogicalReceipt")
+                if sub.node(n)["attrs"].get("cluster") ==
+                "analogical_thinking.directional_settlement"]
+    assert len(receipts) == 2
+    assert all(r["outcome_source"] == "native_rule_readback" and
+               r["python_outcome_selection"] is False for r in receipts)
     d2 = at.directional_hypothesis_for(sub, cid2)
     assert d2["direction"] == "b_source"
     assert d2["source_concept"] == "dc_swap_rich", (

@@ -92,6 +92,15 @@ def graph_crib_admissibility(problem: EnigmaProblem, candidates, *, mode: str = 
     scan_edge = "run_bombe_scan" if mode == "bombe" else "run_crib_scan"
     scan = substrate.add_node(scan_type, {})
     substrate._inner.add_edge_unchecked(problem_node, scan_edge, scan)
+    substrate.add_node("NativeEnigmaScanReceipt", {
+        "schema": "native_enigma_scan_receipt_v1",
+        "cluster": "enigma_solver.crib_admissibility",
+        "provenance": "native_rule_readback:enigma_scan",
+        "native_rule": "enigma_crib_admissibility_native_rules",
+        "native_steps": ["mint_candidates", "run_rules", "readback"],
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     rule_steps = substrate._inner.run_rules()
     problem_attrs = substrate.node(problem_node)["attrs"]
     if mode == "bombe":

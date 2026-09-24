@@ -113,11 +113,6 @@
           {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "kind"}, "b": {"type": "Lit", "value": "answer_topic"}},
           {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "topic_replied"}, "b": {"type": "Lit", "value": 1.0}}},
           {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Filter",
-            "source": {"type": "Neighbours", "node": {"type": "Var", "name": "agent"}, "edge_type": "holds_answer"},
-            "var_name": "ha2",
-            "predicate": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ha2"}, "key": "topic"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "concept"}}},
-            "var_name": "ha2", "predicate": {"type": "Lit", "value": true}}},
-          {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Filter",
             "source": {"type": "NodesOfType", "node_type": "SearchRequest"},
             "var_name": "sr",
             "predicate": {"type": "And", "items": [

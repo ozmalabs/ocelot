@@ -86,6 +86,15 @@ class RegisterDecisionEngine:
             "status": "pending",
         })
         self._inner.add_edge(prof, "observed_band", obs, {})
+        self._inner.add_node("NativeBigvilleRegisterReceipt", {
+            "schema": "native_bigville_register_receipt_v1",
+            "cluster": "bigville_register.decode_band",
+            "provenance": "native_rule_readback:bigville_register",
+            "native_rule": "bigville_register_native_rules",
+            "native_steps": ["mint_register_observation", "run_rules", "readback"],
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         self._inner.run_rules(200)
         result = dict(self._inner.node(obs)["attrs"])
         self._inner.remove_node(obs)

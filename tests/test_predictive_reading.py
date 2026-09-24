@@ -106,6 +106,13 @@ def test_beat_predicts_arc3_high_hit_rate(built):
     assert res, "no PredictiveRead minted (tick-driven read produced nothing)"
     # the beat's recurring words materialise in arc 3 — a high prediction hit-rate.
     assert res["hit_rate"] >= 0.8, "the recurring beat failed to predict arc 3"
+    from evaluation.native_authority_audit import audit_python_cognitive_branches
+    audit = audit_python_cognitive_branches(".")
+    bound = [item for item in audit["bound_calls"]
+             if item["cluster"] ==
+             "predictive_reading.predictive_cycle_delegation"]
+    assert len(bound) == 1
+    assert bound[0]["boundary"] == "delegation_to_bound_native_cycle_only"
 
 
 def test_confirm_vs_deep_split_residual_is_the_specifics(built):

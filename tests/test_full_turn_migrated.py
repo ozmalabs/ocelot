@@ -34,17 +34,17 @@ def test_greeting_round_trip():
     assert _agent().converse("hello", "greeting") == "hello"
 
 
-def test_statement_is_acknowledged_in_words():
-    """A statement -> spoken acknowledgment 'noted'."""
-    assert _agent().converse("the sky is blue", "statement") == "noted"
+def test_unsupported_statement_exposes_explicit_error():
+    """A statement without a selected meaning cannot emit a fixed acknowledgement."""
+    assert _agent().converse("the sky is blue", "statement") == \
+        "ERROR: no communicative response could be generated."
 
 
 def test_terminal_act_gets_no_reply():
     """A received answer has no second-pair-part, but the conversational surface
-    never falls silent: it acknowledges honestly (register-matched), never None."""
+    never hides failure behind a fixed acknowledgement, never None."""
     reply = _agent().converse("it is blue", "answer")
-    assert isinstance(reply, str) and reply.strip().lower() in ("noted", "got it",
-                                                                "understood")
+    assert reply == "ERROR: no communicative response could be generated."
 
 
 def test_turn_spine_recorded_in_the_graph():
@@ -62,7 +62,8 @@ def test_turn_spine_recorded_in_the_graph():
 def test_multiple_turns_each_get_their_own_reply():
     wa = _agent()
     assert wa.converse("hello", "greeting") == "hello"
-    assert wa.converse("the sky is blue", "statement") == "noted"
+    assert wa.converse("the sky is blue", "statement") == \
+        "ERROR: no communicative response could be generated."
     # two inbound, two outbound replies
     assert len([m for m in wa.s.nodes("Message")
                 if wa.s.node(m)["attrs"].get("from") == "interlocutor"]) == 2

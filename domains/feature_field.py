@@ -75,6 +75,15 @@ def select_cues(substrate, cue_feats_by_label):
                 if cue in d:
                     e = substrate.add_node("Exemplar", {"feat": _l2(d[cue]), "label": str(label)})
                     substrate.add_edge(probe, "has_exemplar", e)
+    substrate.add_node("NativeFeatureFieldReceipt", {
+        "schema": "native_feature_field_receipt_v1",
+        "cluster": "feature_field.cue_selection",
+        "provenance": "native_rule_readback:feature_cue_selection",
+        "native_rule": "keep_discriminative_cue",
+        "native_steps": ["lay_cue_exemplars", "run_rules", "readback"],
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     substrate._inner.run_rules(100000)               # keep_discriminative_cue fires
     kept_probes = set(substrate.neighbours(gate, "kept_cue"))
     return [cue for cue, pr in probe_of.items() if pr in kept_probes]

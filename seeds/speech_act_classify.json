@@ -56,6 +56,24 @@
       }
      },
      {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "m"
+        },
+        "key": "sak_input_kind"
+       },
+       "b": {
+        "type": "Lit",
+        "value": "instruction"
+       }
+      }
+     },
+     {
       "type": "Or",
       "items": [
        {
@@ -137,6 +155,74 @@
      "m",
      "sak_kind",
      "question"
+    ]
+   ]
+  },
+  {
+   "name": "sak_kind_instruction_from_input_evidence",
+   "match": [
+    [
+     "agent",
+     "received",
+     "m"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "key": "sak_pending"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "key": "sak_kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "key": "sak_input_kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "instruction"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "m",
+     "sak_kind",
+     "instruction"
     ]
    ]
   },

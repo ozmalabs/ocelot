@@ -126,6 +126,13 @@ def test_reader_reads_classify_join_clause():
     assert trig["codebook_type"] == "tag" and trig["codebook_key"] == "kind"
     assert main["kind"] == "action" and main["effect"] == "classify"
     assert main["patient"] == "hit"          # the classification type
+    receipts = [a.s.node(n)["attrs"] for n in
+                a.s.nodes("NativeProceduralReaderReceipt")]
+    assert len(receipts) == 2
+    assert all(r["provenance"] ==
+               "native_rule_readback:procedural_referent" for r in receipts)
+    assert all(r["outcome_source"] == "native_rule_readback" and
+               r["python_outcome_selection"] is False for r in receipts)
 
 
 # --------------------------------------------------------------------------- #

@@ -121,6 +121,15 @@ def mint_report(s, agent=None) -> dict[str, Any]:
     # in the engine's live tally, not retroactively in the report. That keeps
     # the reader from measuring itself.
     s._inner.run_rules()
+    s.add_node("NativeFallbackReadoutReceipt", {
+        "schema": "native_fallback_readout_receipt_v1",
+        "cluster": "fallback_readout.report_classification",
+        "provenance": "native_rule_readback:fallback_vocabulary",
+        "native_rule": "fallback_vocabulary_native_classification",
+        "native_steps": ["transcribe_tallies", "run_rules"],
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
 
     return {
         "report_node": rep,

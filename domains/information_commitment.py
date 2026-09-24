@@ -90,7 +90,7 @@ def assess(agent, *, manifold, commit, wait, refine, approver=None, retain_trace
         "maximum_information_loss": checked.maximum_information_loss})
     nodes = {kind: _candidate(substrate, native, context, kind, attrs, checked)
              for kind, attrs in (("wait", wait), ("refine", refine), ("commit", commit))}
-    native.run_rules()
+    native_steps = native.run_rules()
     decisions = list(native.neighbours(context, "has_commit_decision"))
     if not decisions:
         return {"decision": None, "authorized": False, "reason": "no_unique_decision",
@@ -99,6 +99,18 @@ def assess(agent, *, manifold, commit, wait, refine, approver=None, retain_trace
     selected = list(native.neighbours(record, "selected"))
     candidate = selected[0] if selected else None
     decision = substrate.node(record)["attrs"].get("decision_kind")
+    receipt = substrate.add_node("NativeInformationCommitmentReceipt", {
+        "schema": "native_information_commitment_receipt.v1",
+        "cluster": "information_commitment.native_decision_settlement",
+        "provenance": "native_rule_readback:information_commitment",
+        "native_rule": "ic_gate_manifold_projection",
+        "native_steps": int(native_steps),
+        "decision": decision,
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
+    native.add_edge_unchecked(
+        context, "has_native_information_commitment_receipt", receipt)
     requires = bool(candidate and substrate.node(candidate)["attrs"].get("requires_approval"))
     authorized = decision != "commit" or not requires or bool(approver)
     native.set_attr(record, "status", "authorized" if authorized else "awaiting_approval")

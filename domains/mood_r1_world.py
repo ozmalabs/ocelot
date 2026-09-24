@@ -77,6 +77,15 @@ class MoodR1World:
         self._epoch += 1
         self.s.set_attr(self.mt, "r", float(r))
         self.s.set_attr(self.mt, "input_epoch", float(self._epoch))
+        self.inner.add_node("NativeMoodR1Receipt", {
+            "schema": "native_mood_r1_receipt_v1",
+            "cluster": "mood_r1.step",
+            "provenance": "native_rule_readback:mood_r1",
+            "native_rule": "mood_r1_native_rules",
+            "native_steps": ["write_reward", "run_rules", "readback"],
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         self.inner.run_rules()
         a = self.s.node(self.mt)["attrs"]
         return dict(decision=int(a["decision"]), reward_got=float(a["reward_got"]),

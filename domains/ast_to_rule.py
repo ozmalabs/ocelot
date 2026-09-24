@@ -215,7 +215,16 @@ class Migrator:
             ingest_ast(self.s, "def _():\n    return " + ast.unparse(expr), root_label=lbl)
         except Exception:
             return None
-        self.nat.run_rules(2500)
+        native_steps = self.nat.run_rules(2500)
+        self.s.add_node("NativeASTToRuleReceipt", {
+            "schema": "native_ast_to_rule_receipt.v1",
+            "cluster": "ast_to_rule.expression_settlement",
+            "provenance": "native_rule_readback:ast_to_term",
+            "native_rule": "ast_to_term_rules",
+            "native_steps": int(native_steps),
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         fd = next((n for n in self.s.nodes("AstNode")
                    if self.s.node(n)["attrs"].get("ast_type") == "FunctionDef"
                    and self.s.node(n)["attrs"].get("module") == lbl), None)
@@ -244,7 +253,16 @@ class Migrator:
             ingest_ast(self.s, ast.unparse(fn), root_label=lbl)
         except Exception:
             return None
-        self.nat.run_rules(4000)
+        native_steps = self.nat.run_rules(4000)
+        self.s.add_node("NativeASTToRuleReceipt", {
+            "schema": "native_ast_to_rule_receipt.v1",
+            "cluster": "ast_to_rule.body_settlement",
+            "provenance": "native_rule_readback:ast_to_term",
+            "native_rule": "ast_to_term_rules",
+            "native_steps": int(native_steps),
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         fd = next((n for n in self.s.nodes("AstNode")
                    if self.s.node(n)["attrs"].get("ast_type") == "FunctionDef"
                    and self.s.node(n)["attrs"].get("module") == lbl), None)

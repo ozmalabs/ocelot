@@ -142,6 +142,15 @@ def solve_for(lhs, rhs, unknown: str = "x"):
     for rule in _solve_rules():
         g.add_rule(rule)
     g.run_rules(100000)
+    g.add_node("NativeEquationSolveReceipt", {
+        "schema": "native_equation_solve_receipt_v1",
+        "cluster": "equation.solve_for",
+        "provenance": "native_rule_readback:equation_isolation",
+        "native_rule": "equation_isolation_native_rules",
+        "native_steps": ["build_equation", "run_rules", "readback"],
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     lhs_node = g.neighbours(E, "lhs")[0]
     if g.node(lhs_node)["type"] != "Unknown":
         return None                                         # couldn't isolate

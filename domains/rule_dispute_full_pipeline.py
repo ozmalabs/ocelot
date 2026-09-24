@@ -129,6 +129,15 @@ def run_rule_dispute(inner, *, claimant: dict, claim_pred, truth_pred, domain: s
     inner.add_edge(bd, "has_self_pattern", pattern, {})
 
     inner.run_rules(50)
+    inner.add_node("NativeRuleDisputeReceipt", {
+        "schema": "native_rule_dispute_receipt_v1",
+        "cluster": "rule_dispute_full_pipeline.dispute_settlement",
+        "provenance": "native_rule_readback:rule_dispute_pipeline",
+        "native_rule": "rule_dispute_full_pipeline_native_rules",
+        "native_steps": ["mint_dispute_evidence", "run_rules", "readback"],
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
 
     bridged = inner.neighbours(bd, "bridged_to")
     if not bridged:

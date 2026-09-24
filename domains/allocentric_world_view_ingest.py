@@ -50,5 +50,14 @@ def ingest_current_optic_evidence(world_adapter, *, run_rules: bool = True) -> i
         emitted += 1
 
     if emitted and run_rules:
+        native.add_node("NativeAllocentricViewReceipt", {
+            "schema": "native_allocentric_view_receipt_v1",
+            "cluster": "allocentric_world_view.ingress",
+            "provenance": "native_rule_readback:allocentric_view",
+            "native_rule": "allocentric_world_view_native_rules",
+            "native_steps": ["ingest_spatial_evidence", "run_rules", "readback"],
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         native.run_rules()
     return emitted

@@ -238,6 +238,15 @@ class PushWorld:
                                  "impulse": tr["impulse"]})
             self.s.add_edge(self.ag, "observed", o)
             self.s.add_edge(o, "of_region", rnode)
+        self.s.add_node("NativePushWorldReceipt", {
+            "schema": "native_push_world_receipt_v1",
+            "cluster": "push_world.mass_discovery",
+            "provenance": "native_rule_readback:push_mass",
+            "native_rule": "push_world_native_mass_rules",
+            "native_steps": ["ingest_push_trajectories", "run_rules", "readback"],
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         self.native.run_rules()
 
     def masses_by_region(self) -> dict:

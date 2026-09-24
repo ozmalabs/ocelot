@@ -183,6 +183,15 @@ class HarvestSpiteWorld:
             self.s.set_attr(bc, "collective_success", float(self.R))
             self.s.set_attr(bc, "collective_success_prev", float(self.coll_prev))
         # ---- TICK: the agents decide, in-graph
+        self.inner.add_node("NativeHarvestSpiteReceipt", {
+            "schema": "native_harvest_spite_receipt_v1",
+            "cluster": "harvest_spite.decision_settlement",
+            "provenance": "native_rule_readback:harvest_spite",
+            "native_rule": "harvest_spite_native_rules",
+            "native_steps": ["write_world_state", "run_rules", "readback"],
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         self.inner.run_rules()
         # ---- EMIT: read each agent's own decision (self-take + burn)
         demands = [max(0, int(self.s.node(d)["attrs"]["chosen_harvest2"])) for d in self.decs]

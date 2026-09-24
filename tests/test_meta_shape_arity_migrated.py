@@ -206,3 +206,10 @@ def test_induce_concern_still_keys_a_plain_observation_the_same_way():
 
     res = rf.induce_concern(s, [["zzzalpha", "X"], ["zzzbeta", "Y"]])
     assert res["capability_key"] == "induced_zzzalpha_zzzbeta", res["capability_key"]
+    receipts = [s.node(n)["attrs"] for n in
+                s.nodes("NativeReflectiveFacultyReceipt")]
+    assert len(receipts) == 1
+    assert receipts[0]["provenance"] == (
+        "native_rule_readback:shape_decode_loop")
+    assert receipts[0]["outcome_source"] == "native_rule_readback"
+    assert receipts[0]["python_outcome_selection"] is False

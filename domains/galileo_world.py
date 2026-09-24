@@ -157,6 +157,15 @@ class GalileoWorld:
             # fires on a fall (a fall carries no impulse; of_region would mint a
             # spurious mass 0). Grouping stays perceived; masses stay push-only.
             self.s.add_edge(o, "fall_of_region", rnode)
+        self.s.add_node("NativeGalileoReceipt", {
+            "schema": "native_galileo_receipt_v1",
+            "cluster": "galileo_world.fall_discovery",
+            "provenance": "native_rule_readback:galileo_falls",
+            "native_rule": "galileo_fall_native_rules",
+            "native_steps": ["ingest_fall_trajectories", "run_rules", "readback"],
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         self.native.run_rules()
 
     # ── readers (mechanical; read minted graph nodes back out) ────────────────

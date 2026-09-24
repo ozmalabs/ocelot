@@ -4788,6 +4788,32 @@ impl PySubstrate {
         json_to_pyobj(py, &J::Array(arr))
     }
 
+    /// Serialise only active rules whose name starts with `prefix`.
+    ///
+    /// This is the selective counterpart to `export_rules`: callers that need
+    /// a small, live rule family for native readback must not serialise the
+    /// complete checkpoint-sized rule store.  The returned entries use the
+    /// same dialect and provenance fields as `export_rules`; this is a read
+    /// optimisation, not a second rule authority.
+    #[pyo3(name = "export_rules_prefix")]
+    fn export_rules_prefix<'py>(
+        &self,
+        py: Python<'py>,
+        prefix: &str,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
+        let inner = &mut *__substrate_guard;
+        let arr: Vec<J> = inner
+            .rules
+            .iter()
+            .filter(|rule| {
+                rule.active && inner.interner.resolve(rule.name).starts_with(prefix)
+            })
+            .map(|rule| rule_to_json(rule, &inner.terms, &inner.interner))
+            .collect();
+        json_to_pyobj(py, &J::Array(arr))
+    }
+
     /// Inverse of `export_rules`: reinstall a rule store captured by it,
     /// replaying `add_rule` in list order so `RuleIdx(i)` for entry `i`
     /// matches the exported index exactly, then calling `remove_rule` on

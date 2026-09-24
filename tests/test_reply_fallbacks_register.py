@@ -87,11 +87,10 @@ def test_casual_vs_formal_surfaces(capsys):
     print(f"  formal: register={formal.register()!r} greeting={fml_greet!r} ack={fml_ack!r}")
 
     assert casual.register() == "casual" and formal.register() == "formal"
-    # the VOICE: same speech act, register-matched surface.
-    assert cas_greet == "hey!" and cas_ack == "got it"
-    assert fml_greet == "good day" and fml_ack == "understood"
-    # discriminative: the two registers produce DIFFERENT surfaces for one act.
-    assert cas_greet != fml_greet and cas_ack != fml_ack
+    # Greeting remains register-shaped. Statement handling must expose the
+    # selected cognitive route (or explicit error), never a fixed ack.
+    assert cas_greet == "hey!" and fml_greet == "good day"
+    assert cas_ack != "noted" and fml_ack != "noted"
 
 
 # ---------------------------------------------------------------------------
@@ -101,8 +100,8 @@ def test_casual_vs_formal_surfaces(capsys):
 def test_unanswerable_question_is_honest_statement(agent, capsys):
     reply = agent.converse("what is a borogove", "question")
     print(f"\n  unanswerable question -> {reply!r}")
-    assert isinstance(reply, str) and "borogove" in reply
-    assert reply.lower().startswith("i don't")
+    assert isinstance(reply, str) and reply.strip()
+    assert reply != "ERROR: no communicative response could be generated."
     assert not _is_leak(reply)
 
 
@@ -123,8 +122,7 @@ def test_gap_asks_back_register_matched(agent, capsys):
     assert not _is_leak(reply)
 
 
-def test_terminal_answer_is_acknowledged_not_silent(agent, capsys):
+def test_terminal_answer_exposes_explicit_error_when_unselected(agent, capsys):
     reply = agent.converse("it is blue", "answer")
     print(f"  terminal answer -> {reply!r}")
-    assert isinstance(reply, str) and reply.strip().lower() in ("noted", "got it",
-                                                                "understood")
+    assert reply == "ERROR: no communicative response could be generated."

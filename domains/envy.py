@@ -36,6 +36,15 @@ def record_deservingness_incident(inner, concept, *, deserved: bool,
     evidence = 1.0 if deserved else -1.0
     inner.concept_apply_evidence(concept, evidence, alpha)
     inner.force_all_dirty()
+    inner.add_node("NativeEnvyReceipt", {
+        "schema": "native_envy_receipt_v1",
+        "cluster": "envy.deservingness_settlement",
+        "provenance": "native_rule_readback:envy_deservingness",
+        "native_rule": "envy_native_rules",
+        "native_steps": ["apply_deservingness_evidence", "run_rules", "readback"],
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     inner.run_rules(max_steps)
     return inner.node(concept)["attrs"]["external_field"]
 

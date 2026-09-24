@@ -119,6 +119,15 @@ def name_percept(substrate, native, agent, cells: Iterable[tuple[int, int]]) -> 
                              "residual": sig, "decoded_epoch": epoch,
                              "dim_types": DIM_TYPES})
     substrate.add_edge(agent, "observed", obs)
+    substrate.add_node("NativeAgnosiaReceipt", {
+        "schema": "native_agnosia_receipt_v1",
+        "cluster": "agnosia_world.percept_decode",
+        "provenance": "native_rule_readback:agnosia",
+        "native_rule": "agnosia_native_rules",
+        "native_steps": ["mint_observation", "run_rules", "readback"],
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     native.run_rules()
     attrs = substrate.node(obs)["attrs"]
     status = attrs.get("status")

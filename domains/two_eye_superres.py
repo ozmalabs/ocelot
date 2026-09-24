@@ -58,6 +58,15 @@ def sample_eye(texture_fn, *, n_az, offset, exposure=1.0, adapt_rate=0.0):
         count = int(round(max(0.0, float(exposure) * float(texture_fn(x)))))
         packets.append({"column": i, "wavelength_nm": ROD_CENTER_NM, "count": count})
     eye.submit_photons(packets)
+    eye.substrate._inner.add_node("NativeTwoEyeSuperresReceipt", {
+        "schema": "native_two_eye_superres_receipt_v1",
+        "cluster": "two_eye_superres.sample_settlement",
+        "provenance": "native_cycle_readback:two_eye_superres",
+        "native_rule": "two_eye_superres_native_sampling_rules",
+        "native_steps": ["submit_photons", "run_cognitive_tasks", "run_rules", "readback"],
+        "outcome_source": "native_cycle_readback",
+        "python_outcome_selection": False,
+    })
     eye.substrate._inner.run_cognitive_tasks(1)
     eye.substrate._inner.run_rules()
     activations = []
@@ -100,6 +109,15 @@ class SuperResFuser:
             "payload": payload, "input_epoch": 1, "logical_time": 0,
             "area": "retina", "order": 3, "salience": 1.0})
         _add_edge(self.substrate._inner, self.retina, "has_superres_task", task)
+        self.substrate._inner.add_node("NativeTwoEyeSuperresReceipt", {
+            "schema": "native_two_eye_superres_receipt_v1",
+            "cluster": "two_eye_superres.fusion_settlement",
+            "provenance": "native_rule_readback:two_eye_superres_fusion",
+            "native_rule": "two_eye_superres_native_fusion_rules",
+            "native_steps": ["mint_fusion_task", "run_cognitive_tasks", "run_rules", "readback"],
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         self.substrate._inner.run_cognitive_tasks(1)
         self.substrate._inner.run_rules()
         return self.read_field()

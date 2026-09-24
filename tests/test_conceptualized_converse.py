@@ -178,12 +178,19 @@ def test_monitor_gates_a_revision_on_the_live_agent():
 # ===========================================================================
 def test_no_regression_and_rich_prose_intact():
     a = _agent()
-    # register-matched social surfaces + plain statement ack (AROUND the pipeline)
+    # A social surface is supported; an unsupported statement must expose the
+    # explicit cognition failure rather than a fixed acknowledgement.
     assert a.converse("hello", "greeting") == "hello"
-    assert a.converse("the sky is blue", "statement") == "noted"
-    # honest fallbacks
+    assert a.converse("the sky is blue", "statement") == \
+        "ERROR: no communicative response could be generated."
+    # The current world has a grounded Borogove article.  Verify the answer by
+    # its graph evidence rather than requiring a prose fallback string.
     unans = a.converse("what is a borogove", "question")
-    assert unans.lower().startswith("i don't") and "borogove" in unans
+    assert unans != "ERROR: no communicative response could be generated."
+    held = [a.s.node(n)["attrs"] for n in a.s.nodes("HeldAnswer")
+            if a.s.node(n)["attrs"].get("topic") == "borogove"]
+    assert held and held[-1].get("grounding_status") == "supported"
+    assert held[-1].get("grounding_evidence_path")
     # ask-back still asks, quoting the trouble source
     ask = a.converse("flar the glorp", "statement")
     assert ask.rstrip().endswith("?") and "flar" in ask

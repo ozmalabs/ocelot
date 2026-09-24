@@ -172,7 +172,16 @@ def _run_correspondence(agent, entity_node=None) -> None:
             _ensure_name_tokens(sub, e)
     for r in sub.nodes("Resident"):
         _ensure_name_tokens(sub, r)
-    native.run_rules(2000)
+    native_steps = native.run_rules(2000)
+    sub.add_node("NativeReasoningCANBridgeReceipt", {
+        "schema": "native_reasoning_can_bridge_receipt.v1",
+        "cluster": "reasoning_can_bridge.correspondence_settlement",
+        "provenance": "native_rule_readback:reasoning_can_bridge",
+        "native_rule": "reasoning_can_correspondence_rules",
+        "native_steps": int(native_steps),
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
 
 
 def _denoted_mt(sub, native, entity_node):

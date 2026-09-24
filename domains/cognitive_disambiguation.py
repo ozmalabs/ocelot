@@ -701,7 +701,16 @@ def coherence_check(agent, text: str = "") -> dict:
             if not _violates_theme_expectation(tat, expect):
                 continue                          # a COHERENT theme is not a residual
             pre.append((ev, str(verb), tat.get("name")))
-    ext.run_rules(sub)                            # THE RE-BIND FIRES (coerce_role)
+    native_steps = ext.run_rules(sub)             # THE RE-BIND FIRES (coerce_role)
+    sub.add_node("NativeDisambiguationReceipt", {
+        "schema": "native_disambiguation_receipt.v1",
+        "cluster": "cognitive_disambiguation.coherence_settlement",
+        "provenance": "native_rule_readback:coherence_check",
+        "native_rule": "coerce_role_named_after",
+        "native_steps": int(native_steps),
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     # read the verdict back off the graph — a rebind left `ev -coerced_role_from->
     # person`; its absence is a held-open. Mechanical readback, not a decision.
     for ev, verb, pname in pre:
@@ -973,7 +982,16 @@ def metonymic_redecode(agent, text: str = "") -> dict:
                 pre.append((ev, surface, str(verb), role,
                             sub.node(arg)["attrs"].get("name"), _cat_of(sub, arg), frame))
     _prep_frames(agent)                           # frames_theme/frames_agent (WordNet), ingest
-    ext.run_rules(sub)                            # THE SHIFT FIRES (coerce_theme / coerce_agent)
+    native_steps = ext.run_rules(sub)             # THE SHIFT FIRES (coerce_theme / coerce_agent)
+    sub.add_node("NativeDisambiguationReceipt", {
+        "schema": "native_disambiguation_receipt.v1",
+        "cluster": "cognitive_disambiguation.metonymic_settlement",
+        "provenance": "native_rule_readback:metonymic_redecode",
+        "native_rule": "coerce_theme_and_agent",
+        "native_steps": int(native_steps),
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
     # read the ledger back off the graph — a shift left a minted metonym on the slot.
     shifts, coherent, held = [], [], []
     for ev, surface, verb, role, aname, cat, frame in pre:

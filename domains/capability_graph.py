@@ -131,7 +131,16 @@ def like_but(s, root, name, analogue, novel_prof, *, shape_cap):
 def settle(s):
     """Run the graph to fixpoint — leverage propagates up composes_on, effective
     capability multiplies down it, sufficiency + stage follow leverage."""
-    s.run_rules()
+    native_steps = s.run_rules()
+    s.add_node("NativeCapabilityGraphReceipt", {
+        "schema": "native_capability_graph_receipt.v1",
+        "cluster": "capability_graph.fixpoint_settlement",
+        "provenance": "native_rule_readback:capability_graph",
+        "native_rule": "capability_graph_native_fixpoint",
+        "native_steps": int(native_steps),
+        "outcome_source": "native_rule_readback",
+        "python_outcome_selection": False,
+    })
 
 
 # --- mechanical readers of the computed self-model ---

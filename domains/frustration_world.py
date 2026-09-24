@@ -78,6 +78,15 @@ class FrustrationWorld:
             "d_state": float(d_state), "s_drop": float(s_drop), "futile": 0.0})
         self.inner.add_edge_unchecked(self.m, "has_step", st)
         self.inner.set_attr(self.m, "now_epoch", float(self.epoch))
+        self.inner.add_node("NativeFrustrationReceipt", {
+            "schema": "native_frustration_receipt_v1",
+            "cluster": "frustration_world.observe",
+            "provenance": "native_rule_readback:frustration",
+            "native_rule": "frustration_native_rules",
+            "native_steps": ["observe_step", "run_rules", "readback"],
+            "outcome_source": "native_rule_readback",
+            "python_outcome_selection": False,
+        })
         self.inner.run_rules()
         self.epoch += 1
         a = self.s.node(self.m)["attrs"]

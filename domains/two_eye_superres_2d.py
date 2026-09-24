@@ -63,6 +63,15 @@ def sample_eye_2d(texture_fn, *, n_az, n_el, offset, exposure=1.0,
             packets.append({"col": col, "row": row,
                             "wavelength_nm": ROD_CENTER_NM, "count": count})
     eye.submit_photons_2d(packets)
+    eye.substrate._inner.add_node("NativeTwoEyeSuperres2DReceipt", {
+        "schema": "native_two_eye_superres_2d_receipt_v1",
+        "cluster": "two_eye_superres_2d.sample_settlement",
+        "provenance": "native_cycle_readback:two_eye_superres_2d",
+        "native_rule": "two_eye_superres_2d_native_sampling_rules",
+        "native_steps": ["submit_photons_2d", "run_cognitive_tasks", "run_rules", "readback"],
+        "outcome_source": "native_cycle_readback",
+        "python_outcome_selection": False,
+    })
     eye.substrate._inner.run_cognitive_tasks(1)
     eye.substrate._inner.run_rules()
     activations = []

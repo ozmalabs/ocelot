@@ -42,6 +42,13 @@ def _run(case_name: str):
     state = submit_preregistered_case(substrate, agent, case_name=case_name, fixture=FIXTURE)
     initial = graph_snapshot(substrate)
     settle_native(substrate)
+    receipts = list(substrate.nodes("NativeAutonomousDiscoveryReceipt"))
+    assert receipts
+    attrs = substrate.node(receipts[-1])["attrs"]
+    assert attrs["provenance"] == (
+        "native_rule_readback:autonomous_discovery")
+    assert attrs["outcome_source"] == "native_rule_readback"
+    assert attrs["python_outcome_selection"] is False
     settled = graph_snapshot(substrate)
     held_out = submit_held_out_operation(substrate, agent, state)
     settle_native(substrate)
