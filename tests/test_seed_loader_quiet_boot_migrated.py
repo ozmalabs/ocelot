@@ -1,6 +1,7 @@
 """Seed boot: declarative principles must not warn the Rust engine loader."""
 from __future__ import annotations
 
+import json
 import os
 import sys
 
@@ -10,7 +11,12 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
 from substrate.seed_loader import engine_rules_only, manifest_for, normalize_declarative
-from substrate.boot_all import load_all_seeds
+from substrate.boot_all import (
+    _read_seed_index,
+    _read_seeds,
+    _topo_order,
+    load_all_seeds,
+)
 from substrate.world_adapter import WorldAdapter
 
 
@@ -37,6 +43,39 @@ def test_normalize_declarative_shares_principle_detection():
     types = [x["type"] for x in n["nodes"]]
     assert "Concept" in types
     assert "Principle" in types
+
+
+def test_seed_index_preserves_dependency_order_and_generated_override(tmp_path):
+    generated = tmp_path / "generated"
+    generated.mkdir()
+    manifests = {
+        tmp_path / "base.json": {
+            "id": "base", "depends_on": [], "nodes": [{"type": "Base"}],
+        },
+        tmp_path / "child.json": {
+            "id": "child", "depends_on": ["base"],
+            "rules": [{"name": "child_rule"}],
+        },
+        tmp_path / "self_load.json": {
+            "id": "self_load", "self_load_only": True,
+        },
+        generated / "child.json": {
+            "id": "child", "depends_on": ["base"],
+            "nodes": [{"type": "GeneratedChild"}],
+        },
+    }
+    for path, payload in manifests.items():
+        path.write_text(json.dumps(payload), encoding="utf-8")
+
+    full = _read_seeds(str(tmp_path))
+    index, paths = _read_seed_index(str(tmp_path))
+
+    assert set(index) == set(full) == {"base", "child"}
+    assert all(set(meta) == {"id", "depends_on"}
+               for meta in index.values())
+    assert paths["child"] == str(generated / "child.json")
+    order = _topo_order(index)
+    assert order.index("base") < order.index("child")
 
 
 def test_load_all_seeds_emits_no_malformed_rule_warnings(capsys):
