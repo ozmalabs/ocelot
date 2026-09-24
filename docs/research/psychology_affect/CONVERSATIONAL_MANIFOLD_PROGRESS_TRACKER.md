@@ -1533,3 +1533,9 @@ validation, and `git diff --check` pass.
   584 ambiguous) and **485 grouping keys** across 432 seeds. Ambiguous content
   resolves conservatively to every provider. Focused seed-loader tests remain
   **4 passed**; no production load policy changed.
+- Tightened the selector's completeness report: the pre-pass records absent
+  dependency IDs and selection results list missing dependencies inside the
+  chosen closure. The full corpus has **23** such references, which the legacy
+  full-boot topo loader skips; selective loading now makes them visible for
+  audit instead of silently implying closure completeness. Seed-loader suite
+  passed after the change: **4 passed**.

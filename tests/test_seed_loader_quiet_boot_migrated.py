@@ -56,14 +56,14 @@ def test_seed_index_preserves_dependency_order_and_generated_override(tmp_path):
             "nodes": [{"type": "Base", "attrs": {"name": "base_node"}}],
         },
         tmp_path / "child.json": {
-            "id": "child", "depends_on": ["base"],
+            "id": "child", "depends_on": ["base", "absent_dependency"],
             "rules": [{"name": "child_rule"}],
         },
         tmp_path / "self_load.json": {
             "id": "self_load", "self_load_only": True,
         },
         generated / "child.json": {
-            "id": "child", "depends_on": ["base"],
+            "id": "child", "depends_on": ["base", "absent_dependency"],
             "nodes": [{"type": "GeneratedChild"}],
         },
     }
@@ -76,7 +76,7 @@ def test_seed_index_preserves_dependency_order_and_generated_override(tmp_path):
     assert set(index) == set(full) == {"base", "child"}
     assert set(index["base"]) == {
         "id", "depends_on", "category", "microtheory", "capability_keys",
-        "group_keys", "node_types", "content_keys",
+        "group_keys", "node_types", "content_keys", "missing_dependencies",
     }
     assert index["base"]["group_keys"] == [
         "capability:base_cap", "category:core",
@@ -95,10 +95,18 @@ def test_seed_index_preserves_dependency_order_and_generated_override(tmp_path):
     assert unresolved == {
         "missing_seed_ids": [],
         "missing_content_keys": ["not-present"],
+        "missing_dependencies": [],
     }
     selected, unresolved = _select_seed_ids(index, seed_ids=["child"])
     assert selected == ["base", "child"]
-    assert unresolved == {"missing_seed_ids": [], "missing_content_keys": []}
+    assert unresolved == {
+        "missing_seed_ids": [],
+        "missing_content_keys": [],
+        "missing_dependencies": [("child", "absent_dependency")],
+    }
+    selected, unresolved = _select_seed_ids(index, seed_ids=["unknown"])
+    assert selected == []
+    assert unresolved["missing_seed_ids"] == ["unknown"]
 
 
 def test_load_all_seeds_emits_no_malformed_rule_warnings(capsys):
