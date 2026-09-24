@@ -39,9 +39,9 @@
 
 ## 3. Immediate execution queue
 
-1. **Phase 4 upstream cognition:** Identify an existing cognitive faculty that can author complete live Phase 4 tuples; preserve explicit `no_candidate` when unavailable. Phase 4R measurement found none in the 74-event corpus.
-2. **Phase 6W:** Resolve the remaining graph-owned runtime-state mismatch only if its required evidence is present; `error_empty` now has explicit uncertainty evidence and matches. Do not change cognition to satisfy unsupported isolated corpus labels.
-3. **Phase 7N:** Optimize or replace the existing substrate concept-index materialization only after preserving referent-resolution semantics; current evidence isolates the first-event `knows_concept` fan-out as the dominant cost.
+1. **Phase 4 upstream cognition:** Preserve explicit `no_candidate` until an existing faculty supplies the complete live tuple. Phase 4R measured zero complete or near-match tuples in the 74-event corpus; no evidence may be inferred from adjacent faculties.
+2. **Phase 6W:** Adjudication is complete. The remaining `question_followup` mismatch lacks typed causal world evidence; add that event only if the benchmark intends to test causal learning, or revise its isolated expected disposition to `repair`/`unknown`. Do not add a conversation rule.
+3. **Phase 7 resource envelope:** Phase 7O indexed-ingress equivalence and Phase 7P selective kind-rule readback are complete, but cold RSS and latency remain over budget. The `run_rules_prefix` optimization was rejected for semantic drift and memory cost; a further change needs a substrate/runtime target and held-rule parity evidence.
 4. **Phase 8I:** Independently adjudicate existing raw runs and collect base/advanced human references with provenance before publishing scores.
 
 No wording-only repair is permitted for these items.
