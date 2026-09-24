@@ -1,0 +1,166 @@
+{
+  "schema": "proposition_event_commitment_cases.v1",
+  "description": "Independent Phase 2T overlay keyed by existing Phase 0 event IDs; it does not alter the 74-event corpus.",
+  "cases": [
+    {
+      "id": "accepted_supported",
+      "category": "accepted",
+      "steps": [
+        {
+          "event_id": "standalone_assertion",
+          "proposition": {
+            "schema": "neutral_proposition_evidence.v1",
+            "kind": "explicit_neutral",
+            "predicate": "drop",
+            "arguments": {"agent": "john", "theme": "glass"},
+            "polarity": "affirmed",
+            "provider": "phase2t_neutral_adapter",
+            "evidence_id": "phase2t-accepted-drop",
+            "commitment_status": "proposed",
+            "uptake_signal": "accept"
+          }
+        }
+      ],
+      "expected": {"materialized": true, "commitment_status": "accepted", "consequence_supported": true}
+    },
+    {
+      "id": "challenged_no_consequence",
+      "category": "challenged",
+      "steps": [
+        {
+          "event_id": "correction",
+          "proposition": {
+            "schema": "neutral_proposition_evidence.v1",
+            "kind": "explicit_neutral",
+            "predicate": "drop",
+            "arguments": {"agent": "john", "theme": "glass"},
+            "polarity": "affirmed",
+            "provider": "phase2t_neutral_adapter",
+            "evidence_id": "phase2t-challenged-drop",
+            "commitment_status": "proposed",
+            "uptake_signal": "challenge"
+          }
+        }
+      ],
+      "expected": {"materialized": true, "commitment_status": "challenged", "consequence_supported": false}
+    },
+    {
+      "id": "accepted_then_retracted",
+      "category": "retracted",
+      "steps": [
+        {
+          "event_id": "assertion_weather",
+          "proposition": {
+            "schema": "neutral_proposition_evidence.v1",
+            "kind": "explicit_neutral",
+            "predicate": "drop",
+            "arguments": {"agent": "john", "theme": "glass"},
+            "polarity": "affirmed",
+            "provider": "phase2t_neutral_adapter",
+            "evidence_id": "phase2t-retracted-drop",
+            "commitment_status": "proposed"
+          },
+          "native_uptake": ["accept"]
+        },
+        {"event_id": "correction_route", "native_uptake": ["retract"]}
+      ],
+      "expected": {"materialized": true, "commitment_status": "retracted", "consequence_supported": false}
+    },
+    {
+      "id": "unsupported_surface_evidence",
+      "category": "unsupported",
+      "steps": [
+        {
+          "event_id": "unknown_action",
+          "proposition": {
+            "schema": "neutral_proposition_evidence.v1",
+            "kind": "explicit_neutral",
+            "text": "the glass fell",
+            "predicate": "drop",
+            "arguments": {"agent": "john", "theme": "glass"},
+            "polarity": "affirmed",
+            "provider": "phase2t_neutral_adapter",
+            "evidence_id": "phase2t-unsupported-surface",
+            "commitment_status": "proposed",
+            "uptake_signal": "accept"
+          }
+        }
+      ],
+      "expected": {"materialized": false, "commitment_status": null, "consequence_supported": false}
+    },
+    {
+      "id": "ambiguous_missing_predicate",
+      "category": "ambiguous",
+      "steps": [
+        {
+          "event_id": "unresolved_reference",
+          "proposition": {
+            "schema": "neutral_proposition_evidence.v1",
+            "kind": "explicit_neutral",
+            "predicate": "",
+            "arguments": {"agent": "john", "theme": "unknown"},
+            "polarity": "affirmed",
+            "provider": "phase2t_neutral_adapter",
+            "evidence_id": "phase2t-ambiguous",
+            "commitment_status": "proposed"
+          }
+        }
+      ],
+      "expected": {"materialized": false, "commitment_status": null, "consequence_supported": false}
+    },
+    {
+      "id": "no_world_uncommitted",
+      "category": "no_world",
+      "steps": [
+        {
+          "event_id": "unavailable_world",
+          "grounding_status": "unavailable_world",
+          "proposition": {
+            "schema": "neutral_proposition_evidence.v1",
+            "kind": "explicit_neutral",
+            "predicate": "drop",
+            "arguments": {"agent": "john", "theme": "glass"},
+            "polarity": "affirmed",
+            "provider": "phase2t_neutral_adapter",
+            "evidence_id": "phase2t-no-world",
+            "commitment_status": "proposed"
+          }
+        }
+      ],
+      "expected": {"materialized": true, "commitment_status": "proposed", "consequence_supported": false}
+    },
+    {
+      "id": "conflicting_evidence_id",
+      "category": "contradiction",
+      "steps": [
+        {
+          "event_id": "assertion_source",
+          "proposition": {
+            "schema": "neutral_proposition_evidence.v1",
+            "kind": "explicit_neutral",
+            "predicate": "drop",
+            "arguments": {"agent": "john", "theme": "glass"},
+            "polarity": "affirmed",
+            "provider": "phase2t_neutral_adapter",
+            "evidence_id": "phase2t-conflict",
+            "commitment_status": "proposed"
+          }
+        },
+        {
+          "event_id": "correction_uncertain",
+          "proposition": {
+            "schema": "neutral_proposition_evidence.v1",
+            "kind": "explicit_neutral",
+            "predicate": "break",
+            "arguments": {"agent": "john", "theme": "glass"},
+            "polarity": "affirmed",
+            "provider": "phase2t_neutral_adapter",
+            "evidence_id": "phase2t-conflict",
+            "commitment_status": "proposed"
+          }
+        }
+      ],
+      "expected": {"materialized": true, "commitment_status": "proposed", "consequence_supported": false}
+    }
+  ]
+}
