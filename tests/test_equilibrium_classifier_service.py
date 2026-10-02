@@ -207,7 +207,7 @@ def test_info_contract(server):
     st, doc, _ = _req(server, "GET", "/v1/info")
     assert st == 200 and doc["ok"] is True
     assert doc["mode"] == "fork_per_batch" and doc["no_llm"] is True
-    assert doc["taxonomy_version"] == "eq-tax-0.1.0"
+    assert doc["taxonomy_version"] == "eq-tax-0.2.0" and doc["seed_pack_version"] == "0.2.0"
     assert doc["seed_pack_sha256"] == doc["seed_pack_digest"] == srv.seed_pack_sha256()
     assert doc["seed_pack_files"] == [p.name for p in sorted((ROOT / "seeds").glob("equilibrium_*.json"))]
     head = subprocess.run(["git", "-C", str(ROOT), "rev-parse", "HEAD"], capture_output=True,
@@ -216,7 +216,8 @@ def test_info_contract(server):
     for k in ("ocelot_commit", "seed_pack_digest", "taxonomy_version"):  # client describe()
         assert _VERSIONISH.fullmatch(doc[k])
     assert doc["labels"]["msg.speech_act"] == "shadow"
-    assert doc["labels"]["msg.deescalation"] == "shadow"
+    for lab in ("deescalation", "concession", "status_claim", "hostility", "domain"):
+        assert doc["labels"][f"msg.{lab}"] == "shadow", lab
     assert all(doc["labels"][k] == "disabled" for k in doc["labels"] if k.startswith("pat."))
     assert doc["limits"]["max_messages"] == 100
 
@@ -236,10 +237,42 @@ def test_classify_contract(server):
     assert labels[0]["deescalation"] == 0.0
     assert labels[1]["deescalation"] == 1.0
     assert {"code", "link"} <= set(labels[1]["substantive_markers"])
-    assert "eq.msg.speech_act.sak_question:0.1.0" in labels[0]["rule_ids"]
+    assert "eq.msg.speech_act.sak_question:0.2.0" in labels[0]["rule_ids"]
     # taxonomy_version optional; when present it must match
-    st, _, _ = _req(server, "POST", "/v1/classify", {"taxonomy_version": "eq-tax-0.1.0", "messages": msgs[:1]})
+    st, _, _ = _req(server, "POST", "/v1/classify", {"taxonomy_version": "eq-tax-0.2.0", "messages": msgs[:1]})
     assert st == 200
+
+
+_CUE_FIELDS = ("deescalation", "concession", "status_claim", "hostility")
+
+
+def test_classify_v2_cue_fields(server):
+    """0.2.0: concession / status_claim / hostility are 0.0/1.0 floats like
+    deescalation; domains carries "technical" when the technical cue fires.
+    Cues inside code spans do not count."""
+    msgs = [{"id": "v1", "text": "Good catch, I stand corrected."},
+            {"id": "v2", "text": "In my 20 years as the architect, trust me."},
+            {"id": "v3", "text": "This is ridiculous, you don't understand."},
+            {"id": "v4", "text": "The p99 latency spikes when the connection pool drains."},
+            {"id": "v5", "text": "Let's step back and hear from member_042."},
+            {"id": "v6", "text": "Run `ridiculous --trust-me --cache` on the box."},
+            {"id": "v7", "text": "the build is green"}]
+    st, doc, _ = _req(server, "POST", "/v1/classify", {"messages": msgs})
+    assert st == 200
+    lab = {x["id"]: x for x in doc["labels"]}
+    for item in doc["labels"]:
+        _client_parse(item)
+        for f in _CUE_FIELDS:
+            assert type(item[f]) is float and item[f] in (0.0, 1.0), (item["id"], f)
+        assert isinstance(item["domains"], list)
+    fired = {i: {f for f in _CUE_FIELDS if lab[i][f] == 1.0} for i in lab}
+    assert fired == {"v1": {"concession"}, "v2": {"status_claim"}, "v3": {"hostility"},
+                     "v4": set(), "v5": {"deescalation"}, "v6": set(), "v7": set()}
+    assert {i: lab[i]["domains"] for i in lab} == {
+        "v1": [], "v2": [], "v3": [], "v4": ["technical"], "v5": [], "v6": [], "v7": []}
+    assert "eq.msg.status_claim.cue_4gram:0.2.0" in lab["v2"]["rule_ids"]
+    assert "eq.msg.domain.technical_cue_bigram:0.2.0" in lab["v4"]["rule_ids"]
+    assert all(r.endswith(":0.2.0") for x in doc["labels"] for r in x["rule_ids"])
 
 
 def test_classify_deterministic_across_requests(server):
@@ -261,7 +294,7 @@ def test_classify_errors_closed_and_no_echo(server, case):
         "not_object": ([SECRET], 400, "schema_violation"),
         "unknown_top": ({"messages": [ok], SECRET: 1}, 400, "schema_violation"),
         "unknown_msg_key": ({"messages": [{**ok, SECRET: 1}]}, 400, "schema_violation"),
-        "missing_messages": ({"taxonomy_version": "eq-tax-0.1.0"}, 400, "schema_violation"),
+        "missing_messages": ({"taxonomy_version": "eq-tax-0.2.0"}, 400, "schema_violation"),
         "empty": ({"messages": []}, 400, "schema_violation"),
         "too_many": ({"messages": [{"id": f"x{i}", "text": SECRET} for i in range(101)]}, 413, "too_large"),
         "id_type": ({"messages": [{"id": 5, "text": SECRET}]}, 400, "schema_violation"),
@@ -363,6 +396,7 @@ def test_to_wire_never_chooses_between_speech_acts():
     two = {"id": "x", "rule_ids": ["a@0.1.0"], "labels": {"msg.speech_act": {"values": ["question", "assertion"]}}}
     w = srv.to_wire(two)
     assert "speech_act" not in w and w["rule_ids"] == ["a:0.1.0"] and w["deescalation"] == 0.0
+    assert all(w[f] == 0.0 for f in _CUE_FIELDS) and w["domains"] == []
 
 
 # --------------------------------------------------------- Phase 9 exit ---

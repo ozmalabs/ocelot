@@ -1,6 +1,7 @@
 """Equilibrium classifier sidecar v0 (T3): seed pack subset + thin adapter.
 
 Synthetic golden set only (pseudonyms actor_a / expert_e). OZMA_NO_LLM=1.
+Pack 0.2.0 adds cue labels concession / status_claim / hostility / domain(technical).
 Run: OZMA_NO_LLM=1 python3 -m pytest tests/test_equilibrium_classify.py -q
 """
 import importlib.util
@@ -38,9 +39,9 @@ GOLDEN = [
     ("actor_a_03", "Sorry, I misread your answer.",
      {"msg.speech_act": ["assertion"], "msg.deescalation": [True]},
      {"speech_act.sak_statement", "deescalation.cue_unigram"}),
-    ("actor_a_04", "Fair point, that works.",
-     {"msg.speech_act": ["assertion"], "msg.deescalation": [True]},
-     {"speech_act.sak_statement", "deescalation.cue_bigram"}),
+    ("actor_a_04", "Fair point, that works.",  # 0.2.0: also a concession cue
+     {"msg.speech_act": ["assertion"], "msg.deescalation": [True], "msg.concession": [True]},
+     {"speech_act.sak_statement", "deescalation.cue_bigram", "concession.cue_bigram"}),
     ("expert_e_04", "No worries!",
      {"msg.speech_act": ["assertion"], "msg.deescalation": [True]},
      {"speech_act.sak_statement", "deescalation.cue_bigram"}),
@@ -58,8 +59,8 @@ GOLDEN = [
      {"msg.speech_act": ["assertion"], "msg.substantive_markers": ["citation"]},
      {"speech_act.sak_statement", "substantive_markers.citation_cue_unigram"}),
     ("actor_a_07", "My bad, you\u2019re right.",  # two bigram cues, one rule fire
-     {"msg.speech_act": ["assertion"], "msg.deescalation": [True]},
-     {"speech_act.sak_statement", "deescalation.cue_bigram"}),
+     {"msg.speech_act": ["assertion"], "msg.deescalation": [True], "msg.concession": [True]},
+     {"speech_act.sak_statement", "deescalation.cue_bigram", "concession.cue_bigram"}),
     ("expert_e_08", "Here is a fix: `sorted(xs, reverse=True)` and more at https://example.org/sorting",
      {"msg.speech_act": ["assertion"], "msg.substantive_markers": ["code", "link"]},
      {"speech_act.sak_statement", "substantive_markers.code_inline", "substantive_markers.link_url"}),
@@ -68,7 +69,7 @@ GOLDEN = [
      {"speech_act.sak_question", "substantive_markers.code_inline", "substantive_markers.question_act"}),
     ("actor_a_09", "Thanks, it works now.",  # gratitude is NOT supported in this slice
      {"msg.speech_act": ["assertion"]}, {"speech_act.sak_statement"}),
-    ("expert_e_09", "That is wrong and you know it.",  # hostility NOT supported in this slice
+    ("expert_e_09", "That is wrong and you know it.",  # hostile in tone, but no seeded cue
      {"msg.speech_act": ["assertion"]}, {"speech_act.sak_statement"}),
     ("actor_a_10", "Run `echo sorry` again.",  # cue inside code is not a cue
      {"msg.speech_act": ["assertion"], "msg.substantive_markers": ["code"]},
@@ -80,6 +81,69 @@ GOLDEN = [
       "substantive_markers.citation_cue_bigram"}),
     ("actor_a_11", "", {"msg.speech_act": ["assertion"]}, {"speech_act.sak_statement"}),
 ]
+
+# ---- 0.2.0 cue labels: positives + near-miss negatives (synthetic, pseudonyms) --
+A_ = "assertion"
+GOLDEN_V2 = [
+    # concession
+    ("actor_a_12", "Good catch, I stand corrected.", A_, {"msg.concession": [True]},
+     {"concession.cue_bigram", "concession.cue_trigram"}),
+    ("expert_e_11", "That makes sense to me.", A_, {"msg.concession": [True]},
+     {"concession.cue_trigram"}),
+    ("actor_a_13", "I hadn\u2019t considered that edge case.", A_, {"msg.concession": [True]},
+     {"concession.cue_4gram"}),
+    ("expert_e_12", "Fair enough.", A_, {"msg.concession": [True]}, {"concession.cue_bigram"}),
+    ("actor_a_14", "That makes no sense.", A_, {}, set()),                     # near miss
+    ("expert_e_13", "Good points were raised on the right side.", A_, {}, set()),  # near miss
+    # status_claim (incl. the <num> token-class slot)
+    ("expert_e_14", "In my 15 years of doing this it never failed.", A_,
+     {"msg.status_claim": [True]}, {"status_claim.cue_4gram"}),
+    ("expert_e_15", "As the lead on this, trust me.", A_, {"msg.status_claim": [True]},
+     {"status_claim.cue_trigram", "status_claim.cue_bigram"}),
+    ("expert_e_16", "I know what I'm doing here.", A_, {"msg.status_claim": [True]},
+     {"status_claim.cue_5gram"}),
+    ("expert_e_17", "Decades of experience say otherwise.", A_, {"msg.status_claim": [True]},
+     {"status_claim.cue_trigram"}),
+    ("expert_e_18", "I have 12 years of experience with this.", A_, {"msg.status_claim": [True]},
+     {"status_claim.cue_4gram"}),
+    ("actor_a_15", "In my years here nothing changed.", A_, {}, set()),        # near miss: no number
+    ("actor_a_16", "In my fifteen years here nothing changed.", A_, {}, set()),  # limit: number word
+    ("actor_a_17", "As the deadline nears we ship.", A_, {}, set()),            # near miss
+    # hostility (cue-level only)
+    ("actor_a_18", "This is ridiculous.", A_, {"msg.hostility": [True]}, {"hostility.cue_unigram"}),
+    ("expert_e_19", "You don't understand the problem.", A_, {"msg.hostility": [True]},
+     {"hostility.cue_trigram"}),
+    ("actor_a_19", "That was a waste of time and a bad idea.", A_, {"msg.hostility": [True]},
+     {"hostility.cue_trigram", "hostility.cue_bigram"}),
+    ("actor_a_20", "I am serious about the deadline.", A_, {}, set()),         # near miss
+    ("expert_e_20", "Set `stupid_mode=false` in the config.", None,
+     {"msg.substantive_markers": ["code"]}, {"substantive_markers.code_inline"}),  # cue in code
+    ("actor_a_21", "That is not obviously correct.", A_, {}, set()),           # near miss
+    # domain: technical
+    ("expert_e_21", "The p99 latency doubled after the deploy.", A_, {"msg.domain": ["technical"]},
+     {"domain.technical_cue_unigram"}),
+    ("expert_e_22", "We found a memory leak in the connection pool.", A_,
+     {"msg.domain": ["technical"]}, {"domain.technical_cue_bigram"}),
+    ("actor_a_22", "The indexes look fine to me.", A_, {}, set()),             # exact class: no stemming
+    ("actor_a_23", "Read `tcp_dump.txt` and the socketed notes.", None,
+     {"msg.substantive_markers": ["code"]}, {"substantive_markers.code_inline"}),  # code + near miss
+    # de-escalation: meeting facilitation
+    ("expert_e_23", "Let\u2019s step back for a moment.", None, {"msg.deescalation": [True]},
+     {"deescalation.cue_trigram"}),
+    ("actor_a_24", "Both points are valid.", A_, {"msg.deescalation": [True]},
+     {"deescalation.cue_4gram"}),
+    ("expert_e_24", "Let's focus on the data.", None, {"msg.deescalation": [True]},
+     {"deescalation.cue_5gram"}),
+    ("actor_a_25", "To synthesize, we ship on Friday.", A_, {"msg.deescalation": [True]},
+     {"deescalation.cue_bigram"}),
+    ("expert_e_25", "Let's hear from everyone first.", None, {"msg.deescalation": [True]},
+     {"deescalation.cue_4gram"}),
+    ("actor_a_26", "Let's step forward.", None, {}, set()),                    # near miss
+    ("expert_e_26", "Run `let's pause` in the shell.", None,
+     {"msg.substantive_markers": ["code"]}, {"substantive_markers.code_inline"}),  # cue in code
+]
+CUE_LABELS = {"msg.concession", "msg.status_claim", "msg.hostility", "msg.domain",
+              "msg.deescalation", "msg.substantive_markers"}
 
 
 @pytest.fixture(scope="module")
@@ -136,7 +200,51 @@ def test_pattern_labels_are_disabled_stubs(base):
     pats = {k: v for k, v in st.items() if k.startswith("pat.")}
     assert len(pats) == 7 and all(v["status"] == "disabled" for v in pats.values())
     assert {k for k, v in st.items() if v["status"] == "shadow"} == {
-        "msg.speech_act", "msg.substantive_markers", "msg.deescalation"}
+        "msg.speech_act", "msg.substantive_markers", "msg.deescalation",
+        "msg.concession", "msg.status_claim", "msg.hostility", "msg.domain"}
+    assert all(st[k]["match_class"] == "exact" for k in CUE_LABELS)
+    assert {k for k, v in st.items() if v["since_pack"] == "0.2.0"} == {
+        "msg.concession", "msg.status_claim", "msg.hostility", "msg.domain"}
+
+
+def test_v2_cue_labels_golden(base):
+    """0.2.0 cue labels: positives fire the expected n-gram rule; near misses and
+    cues inside code spans fire nothing. Speech act checked only where given."""
+    _, root, snap = base
+    out = eq.classify(snap.fork(), root, [{"id": g[0], "text": g[1]} for g in GOLDEN_V2])
+    assert [o["id"] for o in out] == [g[0] for g in GOLDEN_V2]
+    for o, (mid, _text, act, labels, rules) in zip(out, GOLDEN_V2):
+        got = {k: sorted(v["values"], key=str) for k, v in o["labels"].items() if k in CUE_LABELS}
+        assert got == labels, mid
+        cue_rids = {r for r in o["rule_ids"] if not r.startswith("eq.msg.speech_act.")}
+        assert cue_rids == {f"eq.msg.{r}@{eq.PACK_VERSION}" for r in rules}, mid
+        if act is not None:
+            assert o["labels"]["msg.speech_act"]["values"] == [act], mid
+        for lab in got:
+            assert o["labels"][lab]["status"] == "shadow", (mid, lab)
+
+
+def test_lexicon_cues_are_contiguous_and_num_slot_is_scoped():
+    lex = next(m for m in eq.pack_manifests() if m["id"] == "equilibrium_lexicon")
+    cues = [n["attrs"] for n in lex["nodes"]]
+    assert all(n["type"] == "EqCue" for n in lex["nodes"])
+    by_tgt: dict = {}
+    for e in lex["edges"]:
+        by_tgt.setdefault(e["tgt"]["local"], []).append(e["type"])
+    for n in lex["nodes"]:  # one reachability edge + exactly its own (cue, length) bucket edge
+        a = n["attrs"]
+        size = sum(f"w{k}" in a for k in range(1, 6))
+        assert sorted(by_tgt[n["local_id"]]) == sorted(
+            ["eq_has_cue", f"eq_cue_{a['cue']}_n{size}"]), a
+    for c in cues:
+        slots = [k for k in ("w1", "w2", "w3", "w4", "w5") if k in c]
+        assert slots == ["w1", "w2", "w3", "w4", "w5"][:len(slots)] and slots, c
+        assert set(c) <= {"cue", "variant", *slots}, c
+        assert all(re.fullmatch(r"[a-z0-9]+(?:'[a-z]+)?|<num>", c[k]) for k in slots), c
+        if any(c[k] == eq.NUM_CLASS for k in slots):
+            assert c["cue"] == "status_claim", c
+    assert {c["cue"] for c in cues} == {"deescalation", "citation", "concession",
+                                        "status_claim", "hostility", "domain_technical"}
 
 
 def test_builder_reproduces_checked_in_seeds():

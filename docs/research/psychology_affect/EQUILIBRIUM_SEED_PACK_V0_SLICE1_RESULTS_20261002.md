@@ -89,3 +89,44 @@ Fix found during the run: the first HTTP measurement was **983 msgs/s**, with p5
 * This document.
 
 Run: `OZMA_NO_LLM=1 python3 services/equilibrium_classifier/server.py`. Tests: `OZMA_NO_LLM=1 python3 -m pytest tests/test_equilibrium_classifier_service.py -q -s -p no:cacheprovider`.
+
+## 8. Slice 2 — pack 0.2.0 / `eq-tax-0.2.0`: cue labels for meeting transcripts (2026-10-03)
+
+**What changed** (all uncommitted, same worktree):
+* **New shadow labels** (`match_class: exact`, `since_pack: 0.2.0`): `msg.concession`, `msg.status_claim`, `msg.hostility` (cue-level only, NOT person-targeting), and `msg.domain` = `technical`. The v0 labels keep `since_pack: 0.1.0`.
+* De-escalation gains 9 meeting-facilitation phrases (`let's step back`, `both points are valid`, `to synthesize`, …).
+* **Lexicon:** 15 → 87 taught `EqCue` nodes (deescalation 20, citation 4, concession 11, status_claim 13, hostility 11, domain_technical 28). They are still minted via `domains.teach` by `scripts/build_equilibrium_seed_pack.py`, and the builder reproduces the checked-in seeds (test).
+* **Cue length:** cues now span 1–5 tokens (`w1..w5`). Rules are `cue_unigram`, `cue_bigram`, `cue_trigram`, `cue_4gram` and `cue_5gram`, emitted only for lengths the lexicon has. Each rule matches a run of `eq_next` tokens. There are 27 rules in total, up from 11.
+* **Token class slot:** one class exists, `<num>`. The adapter's tokeniser stamps `eq_class="<num>"` on all-digit prose tokens. That is lexing, not a label. A cue slot matches on `form` OR `eq_class`, and the `Or` is emitted only for slot positions whose bucket contains a class. Used by `in my <num> years` and `<num> years of experience`.
+* **Limit:** number words (`fifteen years`) do not match. There is a golden test for this.
+* **Wire:** `/v1/classify` now emits `concession`, `status_claim` and `hostility` as `1.0` or `0.0`. The encoding and caveat match `deescalation`: `0.0` means "no cue matched", not "measured absent". It also emits `domains: ["technical"]` (or `[]`). Rule ids end in `:0.2.0`. `/v1/info` lists the 4 new labels as `shadow`.
+* Cues inside code spans still never count, because code is removed from the prose before tokenising.
+
+**Perf fix (found during the run).** The first 0.2.0 build cut HTTP throughput from 1,659 to **201 msgs/s**. `run_rules` took 447 ms per 100 messages, because every cue rule joined every token against all 87 cues.
+* The fix is graph structure, not Python. The builder wires each cue to the root by a bucket edge `eq_cue_<cue>_n<len>`, alongside the v0 `eq_has_cue` edge. Each rule matches only its own bucket.
+* Same-machine A/B, in-process, per 100 msgs (warm):
+
+| Pack | Ingest | `run_rules` |
+|---|---|---|
+| v0 (HEAD seeds) | 36.8 ms | 19.5 ms |
+| 0.2.0 after the bucket fix | 37.6 ms | 59 ms |
+| 0.2.0 after also dropping unneeded `Or` | 37.6 ms | **45.9 ms** |
+
+* Ablation: the 28-cue technical domain set costs about 15 ms of that.
+
+**Measured (actual runs, synthetic msgs, same host):**
+
+| Measurement | Result |
+|---|---|
+| Phase 9: 10k msgs / 100 batches | Passed. `source_revision` `[1154, 98, 41]` before and after. Strong digest `36e30df38864a771…` at boot and after. strace: no writes outside tmp. Tree-state diff: empty. |
+| Throughput, HTTP, c=1, batch 100 (3 runs) | **1,168 / 1,166 / 1,158 msgs/s**. Batch p50 about 84 ms, p95 99–107 ms. Down from 1,659 in v0, and still below the 4,000 msgs/s pool target. |
+| Peak RSS (`VmHWM`) | 44–45 MiB at boot, **82.9–83.7 MiB** after 11k msgs. Target is 384 MB. |
+| Tests | `tests/test_equilibrium_classify.py` + `tests/test_equilibrium_classifier_service.py`: **46 passed**. Seed tests (`test_seeds_migrated`, `seed_guard`, `seed_accounting`, `seed_signature_structural_fallback`, `seed_loader_quiet_boot`): 43 passed. |
+| Equilibrium client cross-check | `OcelotClassifier` (main, read-only, `uv run --frozen`): `healthy()` True. `describe()` returned `eq-tax-0.2.0`. 7 synthetic messages parsed without `invalid_reply`. `hostility` and `domains` reach `MessageLabels`. `concession` and `status_claim` are ignored by the current client, which is expected; another stage adds them. |
+
+**Limits and open items:**
+* Matching is exact, with no stemming (`indexes` ≠ `index`) and no negation (`not a good point` still fires `concession`).
+* Some cues are common words that will false-positive in shadow mode: technical `cache`, `index` and `query`; status `i run` and `my team`.
+* `hostility` here is a lexical cue score, not a person-targeting judgement.
+* A deployment with `EQ_OCELOT_TAXONOMY=eq-tax-0.1.0` will now be flagged as a taxonomy mismatch and drop to structure-only until it is updated.
+* The strong digest covers graph nodes and edges, but **not the rule set**. A rules-only edit (the `Or` change) left the digest unchanged. `seed_pack_sha256` does cover the rules.

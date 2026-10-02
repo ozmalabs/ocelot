@@ -9,7 +9,8 @@ worker client (equilibrium_worker/classify.py, OcelotClassifier):
                         ocelot_commit, label statuses, mode="fork_per_batch", no_llm=true
   POST /v1/classify  -> {"messages":[{"id","text","reply_to"?}]} (1..100)
                         -> {"ok":true,"provenance":{...},"labels":[{"id","speech_act"?,
-                           "substantive_markers":[],"deescalation"?,"rule_ids":[]}]}
+                           "substantive_markers":[],"deescalation","concession",
+                           "status_claim","hostility" (0.0/1.0),"domains":[],"rule_ids":[]}]}
   POST /v1/discourse -> 501 in v0
 
 Frozen fork-per-batch: the base substrate + pack is booted ONCE, snap =
@@ -52,6 +53,7 @@ STRONG_CHECK_EVERY = 1_000
 MSG_KEYS = frozenset({"id", "text", "reply_to"})
 REQ_KEYS = frozenset({"messages", "taxonomy_version"})
 SERVICE_NAME = "ocelot-equilibrium-classifier"
+BOOL_CUE_FIELDS = ("deescalation", "concession", "status_claim", "hostility")
 
 
 class RefuseStart(SystemExit):
@@ -140,9 +142,13 @@ def to_wire(result: dict) -> dict:
     if len(acts) == 1:
         out["speech_act"] = acts[0]
     out["substantive_markers"] = list(labels.get("msg.substantive_markers", {}).get("values", []))
-    # deescalation is a shadow boolean label (values [true] when a cue rule
-    # fired); the client wants a float in [0, 1] and rejects bools.
-    out["deescalation"] = 1.0 if True in labels.get("msg.deescalation", {}).get("values", []) else 0.0
+    # deescalation / concession / status_claim / hostility are shadow boolean cue
+    # labels (values [true] when a cue rule fired); the client wants a float in
+    # [0, 1] and rejects bools, so each is emitted as 1.0 (fired) / 0.0 (no rule
+    # fired). 0.0 means "no cue matched", not "measured absent".
+    for field in BOOL_CUE_FIELDS:
+        out[field] = 1.0 if True in labels.get(f"msg.{field}", {}).get("values", []) else 0.0
+    out["domains"] = list(labels.get("msg.domain", {}).get("values", []))
     out["rule_ids"] = [wire_rule_id(r) for r in result["rule_ids"]]
     return out
 

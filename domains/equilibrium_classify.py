@@ -3,7 +3,8 @@
 CLAUDE.md "the agent is a graph in Rust": this module does only
   * INGEST  — each message becomes Message/Token/CodeSpan/LinkSpan nodes + edges
               (I/O-boundary tokenisers: code fences/backticks, URLs, lowercase
-              word tokens; plus the speech-act SIGNALS the existing parse layer
+              word tokens + a digit-token shape class `eq_class`; plus the
+              speech-act SIGNALS the existing parse layer
               already computes via comprehend_text.kind_signals);
   * TICK    — run_rules: the seeded rules (seeds/speech_act_classify.json +
               seeds/equilibrium_*.json) decide every label;
@@ -26,8 +27,8 @@ from typing import Any, Iterable
 from substrate.boot_core import boot_core
 from substrate.seed_loader import manifest_for
 
-PACK_VERSION = "0.1.0"
-TAXONOMY_VERSION = "eq-tax-0.1.0"
+PACK_VERSION = "0.2.0"
+TAXONOMY_VERSION = "eq-tax-0.2.0"
 PACK_IDS = ("equilibrium_tokens", "equilibrium_lexicon", "equilibrium_msg",
             "equilibrium_pattern", "equilibrium_label_status")
 FIRE_PREFIX = "eqfire:"
@@ -38,6 +39,9 @@ _FENCE = re.compile(r"```.*?(?:```|$)", re.S)
 _INLINE = re.compile(r"`[^`\n]+`")
 _URL = re.compile(r"\b(https?)://\S+", re.I)
 _WORD = re.compile(r"[a-z0-9]+(?:'[a-z]+)?")
+# Token shape class (I/O-boundary lexing, not a label): seeded cue slots such as
+# "<num>" match it; "<" can never occur in a `form`, so classes and forms never collide.
+NUM_CLASS = "<num>"
 
 
 def _native(s):
@@ -92,7 +96,10 @@ def _ingest(s, root, msg: dict) -> Any:
         n.add_edge(m, "eq_has_span", n.add_node(typ, sattrs))
     prev = None
     for i, w in enumerate(_WORD.findall(prose.replace("\u2019", "'").lower())):
-        t = n.add_node("Token", {"form": w, "eq_pos": i})
+        tattrs = {"form": w, "eq_pos": i}
+        if w.isdigit():
+            tattrs["eq_class"] = NUM_CLASS
+        t = n.add_node("Token", tattrs)
         n.add_edge(m, "eq_has_token", t)
         if prev is not None:
             n.add_edge(prev, "eq_next", t)
