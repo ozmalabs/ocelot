@@ -236,9 +236,64 @@ def apply_rule_once(substrate: _PySubstrate | Any, rule_idx: int) -> bool:
 def run_rules(substrate: _PySubstrate | Any, max_steps: int = 100_000) -> int:
     """Apply every registered rule to a fixed point. Returns the number
     of rewrite steps taken before no rule matched anymore (or
-    `max_steps` was reached)."""
+    `max_steps` was reached). This legacy integer result does not identify
+    which termination condition occurred; use `run_rules_report` when that
+    distinction matters."""
     inner = substrate._inner if isinstance(substrate, _PySubstrate) else substrate
     return inner.run_rules(max_steps)
+
+
+def run_rules_report(
+    substrate: _PySubstrate | Any,
+    max_steps: int = 100_000,
+    detect_cycles: bool = False,
+) -> dict[str, Any]:
+    """Run the native rules and report fixed point, repeated graph state, or
+    progress-budget exit, along with pass count and any pass-granularity
+    overshoot. The progress budget is not a wall-time or hard CPU cap."""
+    inner = substrate._inner if isinstance(substrate, _PySubstrate) else substrate
+    return inner.run_rules_report(max_steps, detect_cycles)
+
+
+def run_rules_delta_report(
+    substrate: _PySubstrate | Any,
+    max_steps: int = 100_000,
+    detect_cycles: bool = False,
+) -> dict[str, Any]:
+    """Run closure and return conservative native graph mutation targets.
+
+    The observer includes graph effects drained during settlement and may
+    report no-op mutable accesses. It does not derive frame IDs; callers must
+    map the affected nodes using their current ownership/dependency data.
+    """
+    inner = substrate._inner if isinstance(substrate, _PySubstrate) else substrate
+    return inner.run_rules_delta_report(max_steps, detect_cycles)
+
+
+def run_rules_snapshot_delta_report(
+    substrate: _PySubstrate | Any,
+    max_steps: int = 100_000,
+    detect_cycles: bool = False,
+) -> dict[str, Any]:
+    """Exact O(V+E) graph-state oracle for auditing mutation notifications."""
+    inner = substrate._inner if isinstance(substrate, _PySubstrate) else substrate
+    return inner.run_rules_snapshot_delta_report(max_steps, detect_cycles)
+
+
+def run_rules_scoped_delta_report(
+    substrate: _PySubstrate | Any,
+    scope_mt: Any,
+    max_steps: int = 100_000,
+    detect_cycles: bool = False,
+) -> dict[str, Any]:
+    """Settle one Microtheory and return conservative native write targets.
+
+    The result includes affected owner Microtheories for event-queue seeding.
+    Inspect `deferred_effects_pending`; scoped settlement does not yet drain
+    those queues between passes.
+    """
+    inner = substrate._inner if isinstance(substrate, _PySubstrate) else substrate
+    return inner.run_rules_scoped_delta_report(scope_mt, max_steps, detect_cycles)
 
 
 def rule_count(substrate: _PySubstrate | Any) -> int:

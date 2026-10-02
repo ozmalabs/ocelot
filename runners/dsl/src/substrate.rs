@@ -15,7 +15,7 @@ use crate::graph::{EdgeIdx, EdgeKey, NodeID, TypedGraph};
 use crate::sym::{Interner, Sym};
 use crate::term::{free_vars, ConceptResolver, TermArena, TermIdx};
 use crate::value::Value;
-use rustc_hash::FxHashMap;
+use rustc_hash::{FxHashMap, FxHashSet};
 use smallvec::SmallVec;
 
 /// Raised when C rejects a proposed edge. Carries the discriminated
@@ -39,10 +39,10 @@ pub enum InadmissibleEdge {
 /// uses Holds-shaped recursion).
 pub struct Substrate {
     pub graph: TypedGraph,
-    pub interner: Interner,
-    pub checker: ConsistencyChecker,
-    pub terms: TermArena,
-    pub concepts: ConceptResolver,
+    pub(crate) interner: Interner,
+    pub(crate) checker: ConsistencyChecker,
+    pub(crate) terms: TermArena,
+    pub(crate) concepts: ConceptResolver,
     /// Phase 7 observability — incremented on every mutation /
     /// admissibility check / eval, queryable via `counters()`.
     pub counters: Counters,
@@ -51,10 +51,18 @@ pub struct Substrate {
     /// through `graph_to_dict` yet — that's an explicit choice, since
     /// rules can reference TermIdx in `self.terms`, and round-tripping
     /// the arena is a Phase-8 concern.
-    pub rules: Vec<crate::rewrite::RewriteRule>,
+    pub(crate) rules: Vec<crate::rewrite::RewriteRule>,
     /// Monotonic allocator for stable `RuleUid`s. UIDs are checkpointed on
     /// rules; import advances this past the largest restored identity.
     next_rule_uid: u64,
+    /// Turn-bounded capture of native rule progress. The adapter opens and
+    /// closes this window at conversation boundaries; the committed receipt
+    /// itself lives in the graph, not in this transient accumulator.
+    rule_firing_capture_active: bool,
+    pending_turn_last_progress_rule: Option<Sym>,
+    rule_state_trace_config: Option<RuleStateTraceConfig>,
+    rule_state_trace_events: Vec<RuleStateTraceEvent>,
+    rule_state_trace_dropped: usize,
 
     /// **Differential rule firing** (Phase: "graph engine acceleration").
     /// Per-rule cached set of edge_types its `match_edges` read. Used to
@@ -151,7 +159,7 @@ pub struct Substrate {
     /// skipped without firing. None = no filter; every rule fires.
     /// Rules without a where-clause always pass the filter (they
     /// have no candidate function to disqualify).
-    pub active_shape_target: Option<crate::shape::Shape>,
+    pub(crate) active_shape_target: Option<crate::shape::Shape>,
 
     /// Count of rule firings skipped because the active_shape_target
     /// filter pruned them. Resets at the start of run_rules. Reports
@@ -320,6 +328,69 @@ pub struct Substrate {
     pub next_fb_id: u32,
 }
 
+/// Storage strategy selected when an immutable experiment snapshot is captured.
+/// Consumers depend on `ExperimentSnapshot::fork`, not on the backing layout.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ExperimentSnapshotBackend {
+    FullCopy,
+    SharedSlabs,
+    SharedGraphPages,
+}
+
+/// O(1) optimistic concurrency token. Semantic stores are exposed read-only;
+/// mutations go through APIs that advance the graph revision or Γ epoch.
+pub type ExperimentRevision = (u64, u64, usize);
+
+impl ExperimentSnapshotBackend {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::FullCopy => "full_copy",
+            Self::SharedSlabs => "shared_slabs",
+            Self::SharedGraphPages => "shared_graph_pages",
+        }
+    }
+
+    fn fork(self, base: &Substrate) -> Result<Substrate, &'static str> {
+        match self {
+            Self::FullCopy => base.fork_full_copy_experiment(),
+            Self::SharedSlabs => base.fork_shared_slab_experiment(),
+            Self::SharedGraphPages => base.fork_shared_graph_pages_experiment(),
+        }
+    }
+}
+
+/// Immutable reusable base for isolated substrate branches.
+///
+/// The snapshot owns a detached semantic base and exposes no mutation API.
+/// Forked branches retain their own mutable execution state; dropping a branch
+/// or the snapshot releases its storage through ordinary Rust ownership.
+pub struct ExperimentSnapshot {
+    id: u64,
+    source_revision: ExperimentRevision,
+    backend: ExperimentSnapshotBackend,
+    base: Substrate,
+}
+
+impl ExperimentSnapshot {
+    pub fn id(&self) -> u64 {
+        self.id
+    }
+
+    /// Semantic graph/rule revision observed at capture time.
+    pub fn source_revision(&self) -> ExperimentRevision {
+        self.source_revision.clone()
+    }
+
+    pub(crate) fn backend(&self) -> ExperimentSnapshotBackend {
+        self.backend
+    }
+
+    /// Create an isolated mutable branch from this immutable base.
+    pub fn fork(&self) -> Result<Substrate, &'static str> {
+        self.backend.fork(&self.base)
+    }
+}
+
 /// A carved connected-component of grid cells — the unit the eye's
 /// cross-frame tracker (`track_comps`) turns into / matches to a `Region`.
 /// Hoisted to module scope (it was a local struct in `segment_and_track`)
@@ -433,6 +504,157 @@ pub struct SettleReport {
     pub hit_max_rounds: bool,
 }
 
+/// Result of ownership-aware cleanup for a reflected Term child-edge tree.
+/// `removed` includes each deleted node and its former type for adapter hooks;
+/// `protected` contains owned nodes preserved because they are externally
+/// referenced, including their Term descendants.
+#[derive(Clone, Debug, Default)]
+pub struct TermSubgraphRemoval {
+    pub removed: Vec<(NodeID, Sym)>,
+    pub protected: Vec<NodeID>,
+}
+
+/// Why a global rule-run call returned. This describes the existing
+/// pass-boundary progress budget; it is not a wall-time or hard work cap.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum RuleRunStatus {
+    /// The runner observed a pass with no progress or no eligible dirty rules.
+    FixedPoint,
+    /// Opt-in graph-state fingerprinting found a previously visited state.
+    /// This is not the same as a fixed point.
+    RepeatedGraphState,
+    /// The progress budget prevented another outer pass from starting.
+    ProgressBudgetReached,
+}
+
+/// Structured result for callers that must distinguish settlement from an
+/// early return. Legacy runner methods continue returning `progress_steps`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct RuleRunReport {
+    pub status: RuleRunStatus,
+    /// Number of progress-producing rule applications; can exceed the
+    /// requested budget when several rules progress in the final pass.
+    pub progress_steps: usize,
+    pub requested_progress_budget: usize,
+    pub budget_overshoot: usize,
+    /// Number of complete outer passes entered, including a final no-progress
+    /// pass when one was needed to establish a fixed point.
+    pub passes_completed: usize,
+    pub cycle_detection_enabled: bool,
+    /// Name of the last rule that produced progress during this settlement
+    /// call. This is call-local evidence, not a durable history record.
+    pub last_progress_rule: Option<Sym>,
+}
+
+/// Snapshot recorded after one successful invocation of a watched rule.
+/// This is an opt-in diagnostic trace and is never serialized into graph state.
+#[derive(Clone, Debug)]
+pub struct RuleStateTraceEvent {
+    pub pass_index: usize,
+    pub progress_step: usize,
+    pub rule_name: String,
+    pub node_ids: Vec<u32>,
+    pub attr_names: Vec<String>,
+    pub values: Vec<Vec<Option<f64>>>,
+}
+
+#[derive(Clone, Debug)]
+struct RuleStateTraceConfig {
+    rule_names: FxHashSet<Sym>,
+    node_ids: Vec<NodeID>,
+    attr_keys: Vec<Sym>,
+    attr_names: Vec<String>,
+    max_events: usize,
+}
+
+/// Opt-in graph-state delta around a rule settlement call. This is an audit
+/// surface: it compares live graph contents before and after settlement, so
+/// it includes writes performed by deferred effects that drain during the
+/// call. It reports changed node IDs and changed edge keys (including their
+/// endpoints); it does not infer frame ownership or cover non-graph state
+/// such as rule clauses and concept definitions.
+#[derive(Clone, Debug)]
+pub struct RuleGraphDeltaReport {
+    pub run: RuleRunReport,
+    /// Conservative set of node targets that may require dependent-frame
+    /// reconsideration. Mutation logging may include no-op mutable accesses.
+    pub affected_nodes: Vec<NodeID>,
+    /// Conservative set of edge keys touched by graph mutation methods.
+    pub affected_edges: Vec<EdgeKey>,
+    /// Runtime Microtheories whose currently owned nodes, ownership links,
+    /// or roots were touched. These are stable seed IDs, not dependency
+    /// connected components; callers may group them into larger frames.
+    pub affected_microtheories: Vec<NodeID>,
+    /// True only for the full before/after graph-content oracle.
+    pub exact_graph_state_diff: bool,
+}
+
+/// Write-target report for one Microtheory-scoped settlement. Scoped closure
+/// currently shares the existing runner's limitation around deferred effect
+/// queues, so callers must inspect `deferred_effects_pending` before treating
+/// the scope as fully settled.
+#[derive(Clone, Debug)]
+pub struct ScopedRuleGraphDeltaReport {
+    pub progress_steps: usize,
+    pub requested_progress_budget: usize,
+    pub hit_progress_budget: bool,
+    pub affected_nodes: Vec<NodeID>,
+    pub affected_edges: Vec<EdgeKey>,
+    pub affected_microtheories: Vec<NodeID>,
+    pub deferred_effects_pending: bool,
+}
+
+type GraphNodeSnapshot = FxHashMap<NodeID, (Sym, Vec<(Sym, Value)>)>;
+type GraphEdgeSnapshot = FxHashMap<EdgeKey, Vec<(Sym, Value)>>;
+
+fn snapshot_graph_content(graph: &TypedGraph) -> (GraphNodeSnapshot, GraphEdgeSnapshot) {
+    let mut nodes = FxHashMap::default();
+    for (nid, data) in graph.iter_nodes() {
+        let mut attrs = data.attrs.0.clone();
+        attrs.sort_by_key(|(key, _)| *key);
+        nodes.insert(nid, (data.type_, attrs));
+    }
+    let mut edges = FxHashMap::default();
+    for (idx, data) in graph.iter_edges() {
+        let mut attrs = graph.edge_attrs(idx).0.clone();
+        attrs.sort_by_key(|(key, _)| *key);
+        edges.insert(data.key(), attrs);
+    }
+    (nodes, edges)
+}
+
+fn map_affected_microtheories(
+    graph: &TypedGraph,
+    mt_type: Sym,
+    has_concept: Sym,
+    nodes: &[NodeID],
+    edges: &[EdgeKey],
+    prior_types: &FxHashMap<NodeID, Sym>,
+) -> Vec<NodeID> {
+    let mut affected = rustc_hash::FxHashSet::default();
+    for &nid in nodes {
+        let prior_is_mt = prior_types.get(&nid) == Some(&mt_type);
+        let live_is_mt = graph.has_node(nid) && graph.node(nid).type_ == mt_type;
+        if prior_is_mt || live_is_mt {
+            affected.insert(nid);
+        }
+        if graph.has_node(nid) {
+            affected.extend(graph.in_neighbours(nid, Some(has_concept)));
+        }
+    }
+    // The source of a has_concept edge is the owner. Keeping this path covers
+    // ownership insertion/retraction and deleted owned nodes after their live
+    // membership edge has disappeared.
+    for key in edges {
+        if key.edge_type == has_concept {
+            affected.insert(key.src);
+        }
+    }
+    let mut out: Vec<NodeID> = affected.into_iter().collect();
+    out.sort_unstable();
+    out
+}
+
 /// Clause selected by a transactional rule patch.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum RulePatchField {
@@ -513,6 +735,11 @@ impl Substrate {
             counters: Counters::new(),
             rules: Vec::new(),
             next_rule_uid: 1,
+            rule_firing_capture_active: false,
+            pending_turn_last_progress_rule: None,
+            rule_state_trace_config: None,
+            rule_state_trace_events: Vec::new(),
+            rule_state_trace_dropped: 0,
             rule_edge_type_deps: Vec::new(),
             rule_readers_by_key: rustc_hash::FxHashMap::default(),
             rule_reads_any: Vec::new(),
@@ -554,12 +781,261 @@ impl Substrate {
         }
     }
 
+    /// Capture an immutable, reusable base. The backend is selected at capture
+    /// time; branch consumers use the same backend-independent `fork` method.
+    pub fn snapshot(&self) -> Result<ExperimentSnapshot, &'static str> {
+        self.experiment_snapshot_with_backend(ExperimentSnapshotBackend::SharedGraphPages)
+    }
+
+    /// Backend-selecting hook for controlled engine measurements. Application
+    /// consumers should use `snapshot()` and depend only on `fork()`.
+    pub(crate) fn experiment_snapshot_with_backend(
+        &self,
+        backend: ExperimentSnapshotBackend,
+    ) -> Result<ExperimentSnapshot, &'static str> {
+        use std::sync::atomic::{AtomicU64, Ordering};
+        static NEXT_SNAPSHOT_ID: AtomicU64 = AtomicU64::new(1);
+
+        let source_revision = self.experiment_graph_rule_revision();
+        let base = backend.fork(self)?;
+        let id = NEXT_SNAPSHOT_ID.fetch_add(1, Ordering::Relaxed);
+        Ok(ExperimentSnapshot { id, source_revision, backend, base })
+    }
+
+    /// Build a deep-copy experiment control with isolated mutable execution
+    /// state. This is intentionally not CoW: it is the semantic control arm
+    /// for later fork implementations. External framebuffer handles and
+    /// pending graph effects make the source state ineligible for this API.
+    pub fn fork_full_copy_experiment(&self) -> Result<Self, &'static str> {
+        self.fork_experiment_with_graph_storage(false, false)
+    }
+
+    /// Build a branch that shares node/edge slab pages but eagerly clones all
+    /// query indexes and the rest of Substrate state. This deliberately partial
+    /// CoW route isolates the slab contribution; it is not the final graph COW.
+    pub fn fork_shared_slab_experiment(&self) -> Result<Self, &'static str> {
+        self.fork_experiment_with_graph_storage(true, false)
+    }
+
+    /// Branch with shared record slabs and top-level adjacency pages. Hash
+    /// query indexes and other Substrate state are still copied eagerly.
+    pub fn fork_shared_graph_pages_experiment(&self) -> Result<Self, &'static str> {
+        self.fork_experiment_with_graph_storage(true, true)
+    }
+
+    fn fork_experiment_with_graph_storage(
+        &self,
+        share_slabs: bool,
+        share_adjacency: bool,
+    ) -> Result<Self, &'static str> {
+        self.validate_experiment_fork()?;
+        let graph_has_pending_effects = !self.graph.pending_rule_edits.is_empty()
+            || !self.graph.pending_rule_patches.is_empty()
+            || !self.graph.pending_fb_samples.is_empty()
+            || !self.graph.pending_track_identity.is_empty()
+            || !self.graph.pending_net_collapses.is_empty();
+        if graph_has_pending_effects {
+            return Err("cannot fork experiment with pending graph effects");
+        }
+        if !self.graph.attr_write_log.is_empty() {
+            return Err("cannot fork experiment with pending attribute-write observations");
+        }
+        if !self.framebuffers.is_empty() {
+            return Err("cannot fork experiment with attached framebuffer handles");
+        }
+        if self.rule_firing_capture_active {
+            return Err("cannot fork experiment during rule-state capture");
+        }
+
+        let mut fork = Self::new(self.checker.clone());
+        fork.graph = if share_adjacency {
+            self.graph.clone_sharing_graph_pages()
+        } else if share_slabs {
+            self.graph.clone_sharing_slabs()
+        } else {
+            self.graph.clone_eager()
+        };
+        fork.graph.clear_experiment_observers();
+        fork.interner = self.interner.clone();
+        fork.terms = self.terms.clone();
+        fork.concepts = self.concepts.clone();
+        fork.rules = self.rules.clone();
+        fork.next_rule_uid = self.next_rule_uid;
+        fork.rule_state_trace_config = self.rule_state_trace_config.clone();
+
+        // Preserve the current matching configuration and valid rule indexes,
+        // while keeping observations, evaluator caches, and compiled artifacts
+        // branch-local. Candidate writes will dirty/rebuild those as usual.
+        fork.rule_edge_type_deps = self.rule_edge_type_deps.clone();
+        fork.rule_readers_by_key = self.rule_readers_by_key.clone();
+        fork.rule_reads_any = self.rule_reads_any.clone();
+        fork.rule_has_where = self.rule_has_where.clone();
+        fork.rule_dirty = self.rule_dirty.clone();
+        fork.rule_cursors = self.rule_cursors.clone();
+        fork.edge_delete_version = self.edge_delete_version;
+        fork.gamma_epoch = self.gamma_epoch.detached();
+        fork.gamma_graph_root = self.gamma_graph_root;
+        fork.active_shape_target = self.active_shape_target.clone();
+
+        fork.precise_dirty = self.precise_dirty;
+        fork.dirty_telemetry = self.dirty_telemetry;
+        fork.dirty_overaggressive = self.dirty_overaggressive;
+        fork.binding_projection = self.binding_projection;
+        fork.projection_overaggressive = self.projection_overaggressive;
+        fork.empty_match_proof = self.empty_match_proof;
+        fork.empty_match_proof_unsound = self.empty_match_proof_unsound;
+        fork.incremental_match = self.incremental_match;
+        fork.incremental_match_unsound = self.incremental_match_unsound;
+        fork.predicate_retraction = self.predicate_retraction;
+        fork.predicate_retraction_unsound = self.predicate_retraction_unsound;
+        fork.gamma_residual_capture = self.gamma_residual_capture;
+        fork.gamma_residual_root = self.gamma_residual_root;
+        fork.next_fb_id = self.next_fb_id;
+
+        // Rebuild and trace state is deliberately local to the branch.
+        fork.rule_firing_capture_active = false;
+        fork.pending_turn_last_progress_rule = None;
+        fork.rule_state_trace_events.clear();
+        fork.rule_state_trace_dropped = 0;
+        fork.rule_cost_micros = vec![0; self.rules.len()];
+        fork.rule_cost_count = vec![0; self.rules.len()];
+        fork.rule_cost_progress = vec![0; self.rules.len()];
+        fork.any_mutation = false;
+        fork.eval_cache = crate::term::EvalCache::default();
+        fork.shape_cache = crate::shape::ShapeCache::new();
+        fork.shape_pruned_count = 0;
+        fork.dirty_marks = [0; 9];
+        fork.empty_match_skips.clear();
+        fork.rule_dirty_nodes = self.rule_dirty_nodes.clone();
+        fork.rule_pred_retract_ok = self.rule_pred_retract_ok.clone();
+        #[cfg(all(target_arch = "x86_64", target_os = "linux"))]
+        {
+            fork.rule_where_jit = std::iter::repeat_with(|| None)
+                .take(self.rules.len())
+                .collect();
+        }
+        Ok(fork)
+    }
+
+    /// Check that native state is eligible for a fork-based experiment.
+    /// This does not inspect Python process threads or wrapper-owned hooks;
+    /// callers must apply those guards separately.
+    pub fn validate_experiment_fork(&self) -> Result<(), &'static str> {
+        if !self.graph.pending_rule_edits.is_empty()
+            || !self.graph.pending_rule_patches.is_empty()
+            || !self.graph.pending_fb_samples.is_empty()
+            || !self.graph.pending_track_identity.is_empty()
+            || !self.graph.pending_net_collapses.is_empty()
+        {
+            return Err("cannot fork experiment with pending graph effects");
+        }
+        if !self.graph.attr_write_log.is_empty() {
+            return Err("cannot fork experiment with pending attribute-write observations");
+        }
+        if !self.framebuffers.is_empty() {
+            return Err("cannot fork experiment with attached framebuffer handles");
+        }
+        if self.rule_firing_capture_active {
+            return Err("cannot fork experiment during rule-state capture");
+        }
+        if self.rules.iter().any(|rule| rule.reads_external) {
+            return Err("cannot fork experiment with native rules that read external state");
+        }
+        Ok(())
+    }
+
+    fn configure_rule_state_trace(
+        &mut self,
+        rule_names: &[String],
+        node_ids: &[u32],
+        attr_names: &[String],
+        max_events: usize,
+    ) {
+        let rule_names = rule_names.iter().map(|name| self.interner.intern(name)).collect();
+        let attr_keys: Vec<Sym> = attr_names.iter().map(|name| self.interner.intern(name)).collect();
+        self.rule_state_trace_events.clear();
+        self.rule_state_trace_dropped = 0;
+        self.rule_state_trace_config = Some(RuleStateTraceConfig {
+            rule_names,
+            node_ids: node_ids.iter().copied().map(NodeID).collect(),
+            attr_keys,
+            attr_names: attr_names.to_vec(),
+            max_events: max_events.min(100_000),
+        });
+    }
+
+    fn record_rule_state_trace(&mut self, rule_name: Sym, pass_index: usize, progress_step: usize) {
+        let Some(config) = self.rule_state_trace_config.as_ref() else { return; };
+        if !config.rule_names.contains(&rule_name) { return; }
+        if self.rule_state_trace_events.len() >= config.max_events {
+            self.rule_state_trace_dropped = self.rule_state_trace_dropped.saturating_add(1);
+            return;
+        }
+        let node_ids = config.node_ids.clone();
+        let attr_keys = config.attr_keys.clone();
+        let attr_names = config.attr_names.clone();
+        let values = node_ids.iter().map(|&node_id| {
+            if !self.graph.has_node(node_id) { return vec![None; attr_keys.len()]; }
+            let attrs = &self.graph.node(node_id).attrs;
+            attr_keys.iter().map(|key| match attrs.get(key) {
+                Some(Value::Float(value)) => Some(*value),
+                Some(Value::Int(value)) => Some(*value as f64),
+                Some(Value::Rational(numerator, denominator)) if *denominator != 0 => {
+                    Some(*numerator as f64 / *denominator as f64)
+                }
+                Some(Value::Bool(value)) => Some(if *value { 1.0 } else { 0.0 }),
+                _ => None,
+            }).collect::<Vec<_>>()
+        }).collect();
+        self.rule_state_trace_events.push(RuleStateTraceEvent {
+            pass_index,
+            progress_step,
+            rule_name: self.interner.resolve(rule_name).to_owned(),
+            node_ids: node_ids.iter().map(|node_id| node_id.0).collect(),
+            attr_names,
+            values,
+        });
+    }
+
+    /// Run the exact native `tick` cycle path with an opt-in post-rule observer.
+    /// The observer reads selected graph attributes after each successful
+    /// invocation of a named rule; normal ticks do not enable this path.
+    pub fn tick_with_rule_state_trace(
+        &mut self,
+        max_steps: usize,
+        detect_cycles: bool,
+        rule_names: &[String],
+        node_ids: &[u32],
+        attr_names: &[String],
+        max_events: usize,
+    ) -> (usize, Vec<RuleStateTraceEvent>, usize) {
+        self.configure_rule_state_trace(rule_names, node_ids, attr_names, max_events);
+        crate::scale_audit::ffi(1, 0);
+        crate::scale_audit::begin_epoch();
+        crate::cognitive_cycle::advance_cognitive_epoch(self);
+        let steps = crate::cognitive_cycle::execute(
+            self,
+            crate::cognitive_cycle::CyclePlan::Default,
+            max_steps,
+            detect_cycles,
+            false,
+            1,
+        ).steps;
+        self.rule_state_trace_config = None;
+        let events = std::mem::take(&mut self.rule_state_trace_events);
+        let dropped = std::mem::take(&mut self.rule_state_trace_dropped);
+        (steps, events, dropped)
+    }
+
     /// Set the active shape target. Rule firings whose where-clause
     /// Shape is incompatible with `target` will be skipped (counted in
     /// `shape_pruned_count`). Pass None to clear and let every rule
     /// fire.
     pub fn set_shape_target(&mut self, target: Option<crate::shape::Shape>) {
-        self.active_shape_target = target;
+        if self.active_shape_target != target {
+            self.active_shape_target = target;
+            self.gamma_epoch.bump();
+        }
     }
 
     /// `negative_problem_space_pruning_combines_cousot_lattice_with_
@@ -853,6 +1329,112 @@ impl Substrate {
     /// on Γ changes the substrate emits. Cheap (Arc<AtomicU64>).
     pub fn gamma_epoch(&self) -> crate::l2_adaptive::Epoch {
         self.gamma_epoch.clone()
+    }
+
+    /// Cheap revision token for experiment isolation checks over semantic
+    /// graph facts and the installed rule/grammar store. Every TypedGraph
+    /// writer advances its content version; rule and grammar edits advance
+    /// the Γ epoch. This deliberately does not claim to fingerprint caches,
+    /// telemetry, or other derived execution state.
+    pub fn experiment_graph_rule_revision(&self) -> ExperimentRevision {
+        (self.graph.mutation_version(), self.gamma_epoch.current(), self.rules.len())
+    }
+
+    /// Read-only views of semantic stores. Mutation goes through tracked APIs
+    /// so experiment revisions remain constant-time without content hashing.
+    pub fn rules(&self) -> &[crate::rewrite::RewriteRule] { &self.rules }
+    pub fn term_arena(&self) -> &TermArena { &self.terms }
+    pub fn concept_resolver(&self) -> &ConceptResolver { &self.concepts }
+    pub fn consistency_checker(&self) -> &ConsistencyChecker { &self.checker }
+    pub fn interner(&self) -> &Interner { &self.interner }
+    pub fn intern_symbol(&mut self, text: &str) -> Sym { self.interner.intern(text) }
+    pub fn resolve_symbol(&self, sym: Sym) -> &str { self.interner.resolve(sym) }
+    pub fn active_shape_target(&self) -> Option<crate::shape::Shape> { self.active_shape_target }
+
+    /// Append one Term node through the revision-tracked substrate owner.
+    pub fn add_term_node(&mut self, node: crate::term::TermNode) -> TermIdx {
+        let idx = self.terms.add(node);
+        self.gamma_epoch.bump();
+        idx
+    }
+
+    /// Add a production without creating a graph mirror. Persistence replay
+    /// uses this when the graph already contains the mirrored representation.
+    pub fn add_production_no_mirror(&mut self, production: crate::grammar::Production) -> ProdIdx {
+        let idx = self.checker.grammar.add(production);
+        self.gamma_epoch.bump();
+        idx
+    }
+
+    /// Atomically apply an experiment graph-diff receipt to the primary graph.
+    /// The receipt must target the exact semantic graph/rule revision from
+    /// which its branch was forked. Graph and interner updates are staged by
+    /// `persist::apply_graph_delta`; stale or malformed receipts leave primary
+    /// state untouched.
+    ///
+    /// This is a structural merge primitive: it does not classify hypothesis
+    /// assumptions, reground conclusions, or invoke `commit_gate`. Callers
+    /// must apply their epistemic/authorization policy before using it against
+    /// an authoritative graph; speculative graphs may use it directly.
+    pub fn apply_experiment_graph_delta(
+        &mut self,
+        expected_revision: ExperimentRevision,
+        delta: &serde_json::Value,
+    ) -> Result<(), String> {
+        let actual = self.experiment_graph_rule_revision();
+        if actual != expected_revision {
+            return Err(format!("stale experiment revision: expected {expected_revision:?}, current {actual:?}"));
+        }
+
+        let node_mutated = ["nodes_added", "nodes_removed", "nodes_changed"]
+            .iter().any(|key| delta.get(*key).and_then(serde_json::Value::as_array)
+                .is_some_and(|items| !items.is_empty()));
+        let type_changed = delta.get("nodes_changed").and_then(serde_json::Value::as_array)
+            .is_some_and(|items| items.iter().any(|item| item.get("type_after").is_some()));
+        let mut deleted_edge_types: Vec<String> = Vec::new();
+        if let Some(removed) = delta.get("edges_removed").and_then(serde_json::Value::as_array) {
+            deleted_edge_types.extend(removed.iter().filter_map(|e|
+                e.get("type").and_then(serde_json::Value::as_str).map(str::to_owned)));
+        }
+        if let Some(removed_nodes) = delta.get("nodes_removed").and_then(serde_json::Value::as_array) {
+            for raw in removed_nodes.iter().filter_map(serde_json::Value::as_u64) {
+                if let Ok(raw) = u32::try_from(raw) {
+                    let nid = NodeID(raw);
+                    if self.graph.has_node(nid) {
+                        for idx in self.graph.out_edges_slice(nid, None).iter()
+                            .chain(self.graph.in_edges_slice(nid, None).iter()) {
+                            let name = self.interner.resolve(self.graph.edge(*idx).edge_type).to_owned();
+                            if !deleted_edge_types.contains(&name) { deleted_edge_types.push(name); }
+                        }
+                    }
+                }
+            }
+        }
+
+        let impacts = crate::persist::apply_graph_delta(
+            &mut self.graph, &mut self.interner, delta)?;
+        if node_mutated { self.mark_node_mutation(); }
+        if type_changed {
+            // A node retype can change the matchability of every existing
+            // incident edge, including rules without where-clauses. Force a
+            // complete rematch rather than relying on attr-write invalidation.
+            for i in 0..self.rule_dirty.len() {
+                self.rule_dirty[i] = true;
+                if i < self.rule_cursors.len() { self.rule_cursors[i].clear(); }
+            }
+        }
+        for edge_type in impacts {
+            self.mark_edge_type_dirty(edge_type);
+        }
+        if !deleted_edge_types.is_empty() {
+            self.edge_delete_version = self.edge_delete_version.wrapping_add(deleted_edge_types.len() as u64);
+            for name in deleted_edge_types {
+                let edge_type = self.interner.intern(&name);
+                self.mark_edge_type_dirty(edge_type);
+                self.invalidate_readers_of_deleted_edge_type(edge_type);
+            }
+        }
+        Ok(())
     }
 
     /// The `GammaGrammar` root node `add_production`'s graph mirror hangs
@@ -1188,6 +1770,22 @@ impl Substrate {
     }
     pub fn set_incremental_match_unsound(&mut self, on: bool) {
         self.incremental_match_unsound = on;
+    }
+
+    /// Experimental same-graph memoization for repeated ReachableFrom Terms.
+    /// Default off until the source-locked parity/cost panel is complete.
+    pub fn set_reachable_cache(&mut self, on: bool) {
+        self.eval_cache.set_reachable_enabled(on);
+    }
+
+    /// Snapshot experimental ReachableFrom cache activity and live retained
+    /// payload accounting. See EvalCache::reachable_stats for byte limits.
+    pub fn reachable_cache_stats(&self) -> (u64, u64, u64, u64, u64, u64, u64, u64, u64) {
+        self.eval_cache.reachable_stats()
+    }
+
+    pub fn reachable_cache_stats_reset(&mut self) {
+        self.eval_cache.reset_reachable_stats();
     }
 
     /// Block 194000 controls (ladder rung B). Both DEFAULT FALSE — see the
@@ -1542,9 +2140,9 @@ impl Substrate {
             // compute an emitted value), never a match determinant — re-firing its unchanged
             // bindings on an attr write only DUPLICATES effects (the 300-patch bug). So an
             // Attr-key intersection dirties consumer `j` only when it has a where-clause (or
-            // reads_any). Edge/Type writes are STRUCTURAL and dirty unconditionally: a new
-            // edge or a type change can make an existing binding newly match, and the
-            // semi-naive cursor only re-scans new edges, so it can miss a Type flip.
+            // reads_any). Edge/Type writes are STRUCTURAL and dirty unconditionally. A new edge
+            // used as a match-edge driver can advance the semi-naive cursor; an edge read by a
+            // term may also change outputs for EXISTING bindings, so that cursor must be cleared.
             let has_where = self.rule_has_where[j];
             let rj = &self.rules[j];
             let hits_structural = wset.iter().any(|k| {
@@ -1557,19 +2155,23 @@ impl Substrate {
             let hits_attr = wset
                 .iter()
                 .any(|k| rj.read_set.contains(k) && matches!(k, crate::rewrite::RuleKey::Attr(_)));
+            let hits_term_edge = wset.iter().any(|k| match k {
+                crate::rewrite::RuleKey::Edge(edge_type) => {
+                    rj.term_edge_reads.contains(edge_type)
+                }
+                crate::rewrite::RuleKey::Attr(_) | crate::rewrite::RuleKey::Type(_) => false,
+            });
             if rj.reads_any || hits_structural || (hits_attr && has_where) {
-                // An ATTR/TYPE write a consumer reads can flip its where on an ALREADY-matched edge
-                // (e.g. probe_action 0→Select makes a release-rule fire on an existing has_feature edge).
-                // The NEW-edges-only incremental cursor silently misses that, so clear this consumer's
-                // cursor -> it falls back to a full re-match. An EDGE-only write is handled by the cursor
-                // itself (it re-scans the new edges), so it keeps the fast incremental path — hot
-                // fixpoints with edge churn pay nothing. A where-LESS Attr-only hit gets neither
-                // re-dirtied nor cursor-cleared (its bindings can't change from an attr value).
-                // Mirrors mark_node_mutation for rule effects.
+                // Attr/type changes can flip a where-clause on a stable match;
+                // typed edge terms can change computed outputs or predicates on
+                // stable bindings even without a where-clause. Those paths need
+                // a full rematch. A new edge used ONLY as a match-edge driver is
+                // handled incrementally by the cursor and keeps the fast path.
                 let type_hit = wset.iter().any(|k| {
                     rj.read_set.contains(k) && matches!(k, crate::rewrite::RuleKey::Type(_))
                 });
-                let attr_flip = rj.reads_any || type_hit || (hits_attr && has_where);
+                let invalidate_cursor =
+                    rj.reads_any || type_hit || (hits_attr && has_where) || hits_term_edge;
                 if self.dirty_telemetry {
                     self.dirty_marks[0] += 1;
                     if !self.rule_dirty[j] {
@@ -1577,7 +2179,7 @@ impl Substrate {
                     }
                 }
                 self.rule_dirty[j] = true;
-                if attr_flip {
+                if invalidate_cursor {
                     // block 292000: a PURE attr flip (no structural/type/reads_any change)
                     // on a predicate-retraction-eligible consumer seeds the rung-B frontier
                     // from the rule-effect attr writes (Edit A's log) and KEEPS the cursor —
@@ -1585,7 +2187,11 @@ impl Substrate {
                     // try_predicate_retraction re-evaluates only the frontier. Everything else
                     // (structural/type/reads_any/ineligible/flag-off) keeps the committed
                     // cursor-clear ⇒ byte-identical on the default path.
-                    let pure_attr_flip = hits_attr && has_where && !type_hit && !rj.reads_any;
+                    let pure_attr_flip = hits_attr
+                        && has_where
+                        && !type_hit
+                        && !rj.reads_any
+                        && !hits_term_edge;
                     let covered = self.predicate_retraction
                         && pure_attr_flip
                         && self.rule_pred_retract_ok.get(j).copied().unwrap_or(false);
@@ -1713,19 +2319,46 @@ impl Substrate {
         }
     }
 
+    /// Remove several edges while compacting each affected graph index once.
+    /// Result positions correspond to input keys; duplicate keys therefore
+    /// report true only for their first occurrence, matching sequential
+    /// `remove_edge` calls.
+    pub fn remove_edges_batch(&mut self, keys: &[EdgeKey]) -> Vec<bool> {
+        let mut removed_once = FxHashSet::default();
+        let mut indices = Vec::with_capacity(keys.len());
+        let mut outcomes = vec![false; keys.len()];
+        for (position, key) in keys.iter().enumerate() {
+            if let Some(idx) = self.graph.edge_idx(key.src, key.edge_type, key.tgt) {
+                if removed_once.insert(idx) {
+                    outcomes[position] = true;
+                    indices.push(idx);
+                }
+            }
+        }
+        let removed = self.graph.delete_edges_batch(&indices);
+        if removed.is_empty() {
+            return outcomes;
+        }
+        self.edge_delete_version += removed.len() as u64;
+        let mut affected_types = FxHashSet::default();
+        for edge in removed {
+            affected_types.insert(edge.edge_type);
+        }
+        for edge_type in affected_types {
+            self.mark_edge_type_dirty(edge_type);
+            self.invalidate_readers_of_deleted_edge_type(edge_type);
+        }
+        outcomes
+    }
+
     pub fn remove_node(&mut self, nid: NodeID) -> bool {
         let had_edges = !self.graph.out_edges_slice(nid, None).is_empty()
             || !self.graph.in_edges_slice(nid, None).is_empty();
         // 187000: a DELETION must never be under-approximated. Snapshot the
-        // node's type, attr keys and INCIDENT EDGE TYPES before it is gone, so
-        // the precise path can wake the readers of each — the edge types via the
-        // committed `mark_edge_type_dirty`, exactly as `remove_edge` does.
-        let (ty, keys, edge_types): (
-            Option<Sym>,
-            smallvec::SmallVec<[Sym; 16]>,
-            smallvec::SmallVec<[Sym; 8]>,
-        ) = if self.precise_dirty && self.graph.has_node(nid) {
-            let n = self.graph.node(nid);
+        // incident edge types in every mode so deleting a node has the same
+        // edge-reader invalidation contract as deleting those edges one by
+        // one. Precise mode additionally snapshots node type/attribute keys.
+        let edge_types: smallvec::SmallVec<[Sym; 8]> = if self.graph.has_node(nid) {
             let mut ets: smallvec::SmallVec<[Sym; 8]> = smallvec::SmallVec::new();
             for idx in self
                 .graph
@@ -1738,13 +2371,16 @@ impl Substrate {
                     ets.push(et);
                 }
             }
-            (
-                Some(n.type_),
-                n.attrs.iter().map(|(k, _)| *k).collect(),
-                ets,
-            )
+            ets
         } else {
-            (None, smallvec::SmallVec::new(), smallvec::SmallVec::new())
+            smallvec::SmallVec::new()
+        };
+        let (ty, keys): (Option<Sym>, smallvec::SmallVec<[Sym; 16]>) =
+            if self.precise_dirty && self.graph.has_node(nid) {
+            let n = self.graph.node(nid);
+            (Some(n.type_), n.attrs.iter().map(|(k, _)| *k).collect())
+        } else {
+            (None, smallvec::SmallVec::new())
         };
         let precise = self.precise_dirty;
         let ok = self.graph.delete_node(nid).is_some();
@@ -1752,16 +2388,116 @@ impl Substrate {
             if had_edges {
                 self.edge_delete_version += 1;
             }
+            for et in edge_types {
+                self.mark_edge_type_dirty(et);
+                self.invalidate_readers_of_deleted_edge_type(et);
+            }
             if precise {
-                for et in edge_types {
-                    self.mark_edge_type_dirty(et);
-                }
                 self.mark_external_write(ty, &keys);
             } else {
                 self.mark_node_mutation();
             }
         }
         ok
+    }
+
+    /// Remove a reflected Term tree while preserving descendants that have
+    /// incoming references from outside that tree. Ordinary `remove_node`
+    /// remains node-only. Traversal and cycle/type validation complete before
+    /// mutation, so malformed child structure fails without partial deletion.
+    pub fn remove_term_subgraph(
+        &mut self,
+        root: NodeID,
+    ) -> Result<TermSubgraphRemoval, String> {
+        const TERM_PREFIX: &str = "Term.";
+        const CHILD_PREFIX: &str = "child.";
+
+        if !self.graph.has_node(root) {
+            return Err("term_subgraph_root_missing".to_string());
+        }
+
+        let is_term = |this: &Self, nid: NodeID| {
+            this.interner
+                .resolve(this.graph.node(nid).type_)
+                .starts_with(TERM_PREFIX)
+        };
+        if !is_term(self, root) {
+            return Err("term_subgraph_root_not_term".to_string());
+        }
+
+        // Iterative DFS builds a post-order deletion list and rejects cycles
+        // or child edges that escape the reflected Term vocabulary before any
+        // graph mutation occurs.
+        let mut color: rustc_hash::FxHashMap<NodeID, u8> = Default::default();
+        let mut children: rustc_hash::FxHashMap<NodeID, Vec<NodeID>> = Default::default();
+        let mut postorder = Vec::new();
+        let mut stack = vec![(root, false)];
+        while let Some((nid, expanded)) = stack.pop() {
+            if expanded {
+                color.insert(nid, 2);
+                postorder.push(nid);
+                continue;
+            }
+            match color.get(&nid).copied() {
+                Some(1) => return Err("term_subgraph_child_cycle".to_string()),
+                Some(2) => continue,
+                _ => {}
+            }
+            if !self.graph.has_node(nid) || !is_term(self, nid) {
+                return Err("term_subgraph_child_not_term".to_string());
+            }
+            color.insert(nid, 1);
+            stack.push((nid, true));
+            let edge_ids = self.graph.out_edges_slice(nid, None).to_vec();
+            for edge_idx in edge_ids.into_iter().rev() {
+                let edge = self.graph.edge(edge_idx);
+                if self.interner.resolve(edge.edge_type).starts_with(CHILD_PREFIX) {
+                    if !self.graph.has_node(edge.tgt) || !is_term(self, edge.tgt) {
+                        return Err("term_subgraph_child_not_term".to_string());
+                    }
+                    children.entry(nid).or_default().push(edge.tgt);
+                    stack.push((edge.tgt, false));
+                }
+            }
+        }
+
+        let owned: rustc_hash::FxHashSet<NodeID> = color.keys().copied().collect();
+        let mut protected: rustc_hash::FxHashSet<NodeID> = Default::default();
+        let mut protect_stack = Vec::new();
+        for nid in owned.iter().copied() {
+            for edge_idx in self.graph.in_edges_slice(nid, None) {
+                let source = self.graph.edge(*edge_idx).src;
+                if !owned.contains(&source) {
+                    protect_stack.push(nid);
+                    break;
+                }
+            }
+        }
+        while let Some(nid) = protect_stack.pop() {
+            if !protected.insert(nid) {
+                continue;
+            }
+            if let Some(descendants) = children.get(&nid) {
+                protect_stack.extend(descendants.iter().copied());
+            }
+        }
+
+        let mut report = TermSubgraphRemoval::default();
+        report.protected = postorder
+            .iter()
+            .copied()
+            .filter(|nid| protected.contains(nid))
+            .collect();
+        for nid in postorder {
+            if protected.contains(&nid) {
+                continue;
+            }
+            let former_type = self.graph.node(nid).type_;
+            if self.remove_node(nid) {
+                report.removed.push((nid, former_type));
+            }
+        }
+        Ok(report)
     }
 
     pub fn set_attr(&mut self, nid: NodeID, key: Sym, value: Value) {
@@ -2069,7 +2805,10 @@ impl Substrate {
     /// resolve. Maps directly to the Python `env['_resolve_concept']`
     /// callback.
     pub fn define_concept(&mut self, name: Sym, def: TermIdx) {
-        self.concepts.insert(name, def);
+        if self.concepts.get(&name).copied() != Some(def) {
+            self.concepts.insert(name, def);
+            self.gamma_epoch.bump();
+        }
     }
 
     /// Phase 7b: declare a secondary index on `(node_type, attr_key)`.
@@ -2737,7 +3476,26 @@ impl Substrate {
     /// Store a rewrite rule. Returns its [`RuleIdx`] for `apply_rule`
     /// / `run_rules`. Rules are kept in insertion order; `run_rules`
     /// scans them in that order to pick the first match per step.
-    pub fn add_rule(&mut self, mut rule: crate::rewrite::RewriteRule) -> crate::rewrite::RuleIdx {
+    pub fn add_rule(&mut self, rule: crate::rewrite::RewriteRule) -> crate::rewrite::RuleIdx {
+        self.add_rule_with_match_order_policy(rule, true)
+    }
+
+    /// Install a rule while preserving the caller's clause sequence. This is
+    /// an explicit control surface for source-authored ordering and benchmark
+    /// comparisons; production callers should use `add_rule`, which keeps the
+    /// default selectivity heuristic.
+    pub fn add_rule_preserving_match_order(
+        &mut self,
+        rule: crate::rewrite::RewriteRule,
+    ) -> crate::rewrite::RuleIdx {
+        self.add_rule_with_match_order_policy(rule, false)
+    }
+
+    fn add_rule_with_match_order_policy(
+        &mut self,
+        mut rule: crate::rewrite::RewriteRule,
+        auto_reorder_match_edges: bool,
+    ) -> crate::rewrite::RuleIdx {
         if rule.uid.0 == 0 || self.rules.iter().any(|installed| installed.uid == rule.uid) {
             while self
                 .rules
@@ -2764,11 +3522,13 @@ impl Substrate {
         // that this proxy beats fixed authoring order. Rule semantics
         // are unchanged; only matcher traversal cost differs.
         let g = &self.graph;
-        rule.match_edges = crate::rewrite::reorder_match_edges_with_hints(
-            &rule.match_edges,
-            &rule.index_hints,
-            |et| g.edges_by_type(et).len(),
-        );
+        if auto_reorder_match_edges {
+            rule.match_edges = crate::rewrite::reorder_match_edges_with_hints(
+                &rule.match_edges,
+                &rule.index_hints,
+                |et| g.edges_by_type(et).len(),
+            );
+        }
         // R10 (join-index wave): a rule that ships an `IndexJoinHint` is
         // declaring its own dependency on a live attr index. Auto-provision
         // it here so the hint is self-contained — no separate world-adapter
@@ -2963,6 +3723,8 @@ impl Substrate {
     /// substrate's pruning path lives here — Cousot abstract domain
     /// admissibility + Ashby variety match at the rule dispatch level.
     pub fn apply_rule_once(&mut self, idx: crate::rewrite::RuleIdx) -> bool {
+        let work_scope = &self.graph as *const crate::graph::TypedGraph as usize;
+        let _work_operation = crate::access_trace::begin_work_operation_kind(work_scope, 2);
         if (idx.0 as usize) >= self.rules.len() || !self.rules[idx.0 as usize].active {
             return false;
         }
@@ -2972,6 +3734,7 @@ impl Substrate {
         }
         crate::scale_audit::begin_rule_enumeration(idx.0);
         let rule = self.rules[idx.0 as usize].clone();
+        crate::scale_audit::register_rule_audit_metadata(idx.0, rule.name.0, self.interner.resolve(rule.name), rule.match_edges.len());
         let Some(b) = crate::rewrite::match_rule(
             &rule,
             &self.terms,
@@ -2980,6 +3743,7 @@ impl Substrate {
             Some(&self.concepts),
             Some(&self.framebuffers),
         ) else {
+            crate::scale_audit::end_rule_enumeration();
             return false;
         };
         crate::rewrite::apply_rule(
@@ -2997,6 +3761,7 @@ impl Substrate {
         // fired via apply_rule_once (not just the run_rules/tick
         // fixpoint) still sees its fb_sample take effect immediately.
         self.apply_pending_fb_samples();
+        crate::scale_audit::end_rule_enumeration();
         true
     }
 
@@ -3030,12 +3795,15 @@ impl Substrate {
         if !self.rules[idx.0 as usize].batch {
             return self.apply_rule_once(idx);
         }
+        let work_scope = &self.graph as *const crate::graph::TypedGraph as usize;
+        let _work_operation = crate::access_trace::begin_work_operation_kind(work_scope, 3);
         if self.rule_in_negative_space(idx) {
             self.shape_pruned_count = self.shape_pruned_count.saturating_add(1);
             return false;
         }
         crate::scale_audit::begin_rule_enumeration(idx.0);
         let rule = self.rules[idx.0 as usize].clone();
+        crate::scale_audit::register_rule_audit_metadata(idx.0, rule.name.0, self.interner.resolve(rule.name), rule.match_edges.len());
         // CLEAR ON THE WAY IN AS WELL AS OUT. The fallback path
         // (`apply_rule_once`) passes no cache at all, so it can neither
         // populate nor read one — but `run_rules` / `tick` CAN leave entries
@@ -3061,6 +3829,7 @@ impl Substrate {
         // Same reason `apply_rule_once` drains here: a one-shot apply has no
         // fixpoint loop to drain the perception-as-action queue from.
         self.apply_pending_fb_samples();
+        crate::scale_audit::end_rule_enumeration();
         progressed
     }
 
@@ -3204,6 +3973,9 @@ impl Substrate {
                     ..Default::default()
                 };
                 for (e_src, e_tgt) in seeds {
+                    // Rule matching requires distinct bound variables to
+                    // resolve to distinct nodes. Match the full check here,
+                    // before seeding the incremental matcher.
                     if e_src == e_tgt && drive_me.src_var != drive_me.tgt_var {
                         continue;
                     }
@@ -3449,6 +4221,9 @@ impl Substrate {
                     let e = self.graph.edge(edge_idx);
                     (e.src, e.tgt)
                 };
+                // Distinct match variables must bind distinct nodes, as
+                // enforced by the full matcher. Avoid seeding a binding that
+                // the full matcher would immediately reject.
                 if e_src == e_tgt && drive_me.src_var != drive_me.tgt_var {
                     continue;
                 }
@@ -3578,7 +4353,9 @@ impl Substrate {
     /// the agent can inspect a stable refusal code or the committed revision,
     /// content hash and exact inverse clause without host interpretation.
     fn apply_pending_rule_patches(&mut self) {
+        let drain_started = crate::scale_audit::enabled().then(std::time::Instant::now);
         let pending = std::mem::take(&mut self.graph.pending_rule_patches);
+        let drained_items = pending.len();
         let target_uid_key = self.interner.intern("target_uid");
         let expected_revision_key = self.interner.intern("expected_revision");
         let expected_hash_key = self.interner.intern("expected_content_hash");
@@ -3676,6 +4453,12 @@ impl Substrate {
                 }
             }
         }
+        if let Some(started) = drain_started {
+            crate::scale_audit::deferred_queue_drained(
+                "rule_patches", drained_items,
+                started.elapsed().as_nanos().min(u64::MAX as u128) as u64,
+            );
+        }
     }
 
     /// INTRINSIC SELF-REPAIR: drain + apply the rule-clause rewrites queued by `SetRuleClause`
@@ -3685,7 +4468,9 @@ impl Substrate {
     /// compiled-where JIT + incremental cursor, and mark it dirty so it re-matches its NEW body.
     /// A rule editing a rule — graph-native self-modification of the live engine.
     fn apply_pending_rule_edits(&mut self) {
+        let drain_started = crate::scale_audit::enabled().then(std::time::Instant::now);
         let pending = std::mem::take(&mut self.graph.pending_rule_edits);
+        let drained_items = pending.len();
         for (name, field, val) in pending {
             // SELF-BUILD: MINT a brand-new live struct rule from a Rule NODE the agent composed (the
             // create-twin of the clause rewrite, riding the SAME pending queue — the jabberwock's choice:
@@ -3776,6 +4561,12 @@ impl Substrate {
                 }
             }
         }
+        if let Some(started) = drain_started {
+            crate::scale_audit::deferred_queue_drained(
+                "rule_edits", drained_items,
+                started.elapsed().as_nanos().min(u64::MAX as u128) as u64,
+            );
+        }
     }
 
     /// PERCEPTION-AS-ACTION: drain `graph.pending_fb_samples` — the queue
@@ -3793,11 +4584,19 @@ impl Substrate {
     /// downstream rules reading the fresh Region/Cell state wake
     /// normally on the next pass.
     pub(crate) fn apply_pending_fb_samples(&mut self) {
+        let drain_started = crate::scale_audit::enabled().then(std::time::Instant::now);
         let pending = std::mem::take(&mut self.graph.pending_fb_samples);
+        let drained_items = pending.len();
         for (fb_id, game, grid_w, grid_h) in pending {
             if let Err(e) = self.fb_sample(fb_id, game, grid_w, grid_h) {
                 eprintln!("[perception] rule-queued fb_sample(fb_id={fb_id}) failed: {e}");
             }
+        }
+        if let Some(started) = drain_started {
+            crate::scale_audit::deferred_queue_drained(
+                "fb_samples", drained_items,
+                started.elapsed().as_nanos().min(u64::MAX as u128) as u64,
+            );
         }
     }
 
@@ -3811,7 +4610,9 @@ impl Substrate {
     /// `reflex_self_train_converged` rule reads. This is how "collapse and
     /// surprise within the net" runs as part of the engine's run_rules loop.
     pub(crate) fn apply_pending_net_collapses(&mut self) {
+        let drain_started = crate::scale_audit::enabled().then(std::time::Instant::now);
         let pending = std::mem::take(&mut self.graph.pending_net_collapses);
+        let drained_items = pending.len();
         let na_edge = self.interner.intern("net_assemblage");
         let surprise_key = self.interner.intern("surprise");
         for (rn, input, target, eta) in pending {
@@ -3840,6 +4641,12 @@ impl Substrate {
             self.graph
                 .set_node_attr(rn, surprise_key, crate::value::Value::Float(ema));
         }
+        if let Some(started) = drain_started {
+            crate::scale_audit::deferred_queue_drained(
+                "net_collapses", drained_items,
+                started.elapsed().as_nanos().min(u64::MAX as u128) as u64,
+            );
+        }
     }
 
     /// ONE rule attempt, with every piece of the committed bookkeeping that
@@ -3859,6 +4666,8 @@ impl Substrate {
         // twin hook in `rewrite::run_rules_opts` covers the graph-Rule
         // store, which the vision seeds do not use.
         crate::scale_audit::begin_rule_enumeration(rule_idx as u32);
+        let audit_rule = &self.rules[rule_idx];
+        crate::scale_audit::register_rule_audit_metadata(rule_idx as u32, audit_rule.name.0, self.interner.resolve(audit_rule.name), audit_rule.match_edges.len());
         let __cost_t0 = std::time::Instant::now();
         // FALLBACK TRACE: bind the running rule by NAME so defaulted
         // reads and absence-branch firings are attributed to it. Name,
@@ -4044,6 +4853,26 @@ impl Substrate {
                     },
                 );
             }
+            // Snapshot every matched edge population BEFORE applying the
+            // cold-drain bindings. A recursive rule can write one of its own
+            // match edge types (e.g. reach(x,y) + link(y,z) -> reach(x,z)).
+            // Advancing its cursor to the post-drain length below would mark
+            // those newly-created edges as already consumed; dirty_by_writeset
+            // correctly wakes the rule, but its next incremental visit would
+            // then see zero new drivers and falsely settle before closure.
+            // Keep the pre-apply frontier so self-produced edges are examined
+            // on the next visit. For non-recursive rules this equals the old
+            // cursor position and preserves the ordinary incremental path.
+            let mut cursor_frontier_before_apply: FxHashMap<Sym, (usize, u64)> =
+                FxHashMap::default();
+            for me in &self.rules[rule_idx].match_edges {
+                cursor_frontier_before_apply
+                    .entry(me.edge_type)
+                    .or_insert_with(|| {
+                        (self.graph.edges_by_type(me.edge_type).len(),
+                         self.cursor_version(me.edge_type))
+                    });
+            }
             if self.dbg_traced(rule_idx) {
                 eprintln!("[TRACE-FULL] {}: FULL re-match (cold/invalidated cursor); bindings found = {} {}",
                     self.interner.resolve(rule.name), bindings.len(),
@@ -4226,20 +5055,23 @@ impl Substrate {
                 let name = self.interner.resolve(rule.name).to_string();
                 crate::effect_audit::record_multi_binding_drain(&name, progressed_here);
             }
-            // After draining, re-establish cursors for any
-            // edge_type this rule reads so the next visit
-            // takes the incremental fast path.
+            // Re-establish each cursor at the pre-apply frontier captured
+            // above. This is normally the full-rescan length; if the rule
+            // wrote a matched edge type, retaining the earlier position is
+            // required for recursive closure. Deletes change the version and
+            // intentionally invalidate this cursor on the next visit.
             let edge_types: Vec<Sym> = self.rules[rule_idx]
                 .match_edges
                 .iter()
                 .map(|me| me.edge_type)
                 .collect();
             for et in edge_types {
-                let len = self.graph.edges_by_type(et).len();
-                // Block 192000: store the per-type version under ON (global under
-                // OFF — byte-identical), so this freshly-established cursor is
-                // validated against its own edge type's deletes next visit.
-                let ver = self.cursor_version(et);
+                let (len, ver) = cursor_frontier_before_apply
+                    .get(&et)
+                    .copied()
+                    .unwrap_or_else(|| {
+                        (self.graph.edges_by_type(et).len(), self.cursor_version(et))
+                    });
                 self.rule_cursors[rule_idx].insert(et, (len, ver));
             }
             res
@@ -4300,9 +5132,17 @@ impl Substrate {
                         c.clear();
                     }
                 }
-                self.eval_cache.clear_graph_dependent();
             }
+            // This rule has completed all of its binding evaluations. Its
+            // effects may have changed a typed edge read by a later rule in
+            // the same pass, so waiting for the next pass boundary leaves
+            // graph-dependent Terms (including ReachableFrom) stale for that
+            // later rule. Drop the memo now; the next rule must see the graph
+            // state it is scheduled against. The per-pass clear remains as a
+            // conservative guard for mutations outside this attempt path.
+            self.eval_cache.clear_graph_dependent();
         }
+        crate::scale_audit::end_rule_enumeration();
         progressed
     }
 
@@ -4547,13 +5387,18 @@ impl Substrate {
     /// editing committed seed data. Returns whether a rule was found.
     pub fn set_rule_area(&mut self, name: Sym, area: Sym) -> bool {
         let mut found = false;
+        let mut changed = false;
         for r in self.rules.iter_mut() {
             if r.name == name && r.active {
+                changed |= r.area != area || !r.schedule_explicit;
                 r.area = area;
                 r.schedule_explicit = true;
                 found = true;
             }
         }
+        // Area assignment affects `run_rules_settle` scheduling, so it is a
+        // semantic rule-store edit for experiment revision/conflict checks.
+        if changed { self.gamma_epoch.bump(); }
         found
     }
 
@@ -4563,6 +5408,187 @@ impl Substrate {
     /// default, so every committed result reproduces byte-identically.
     pub fn run_rules(&mut self, max_steps: usize) -> usize {
         self.run_rules_opts(max_steps, false)
+    }
+
+    /// Structured, additive variant of [`Substrate::run_rules`]. Unlike the
+    /// legacy integer result, this distinguishes an observed fixed point, an
+    /// opt-in repeated graph state, and a pass-boundary progress-budget exit.
+    pub fn run_rules_report(
+        &mut self,
+        max_steps: usize,
+        detect_cycles: bool,
+    ) -> RuleRunReport {
+        self.run_rules_opts_report_filtered(max_steps, detect_cycles, None)
+    }
+
+    /// Begin a conversation-scoped capture of the last rule that progresses.
+    /// Reopening intentionally discards an uncommitted prior window.
+    pub fn begin_turn_rule_firing_capture(&mut self) {
+        self.rule_firing_capture_active = true;
+        self.pending_turn_last_progress_rule = None;
+    }
+
+    fn capture_turn_rule_progress(&mut self, rule: Option<Sym>) {
+        if self.rule_firing_capture_active {
+            if let Some(rule) = rule {
+                self.pending_turn_last_progress_rule = Some(rule);
+            }
+        }
+    }
+
+    /// Commit the last native rule-progress fact from the open conversation
+    /// into a bounded, graph-resident latest-event ledger. This direct
+    /// telemetry write deliberately does not schedule another cognition pass:
+    /// the next inbound utterance is the event that makes query rules eligible.
+    pub fn commit_turn_rule_firing_capture(
+        &mut self,
+        inbound: NodeID,
+        agent: NodeID,
+    ) -> Option<NodeID> {
+        self.rule_firing_capture_active = false;
+        let rule = self.pending_turn_last_progress_rule.take()?;
+        let ledger_type = self.interner.intern("RuleFiringHistory");
+        let nodes = self.graph.nodes_of_type(ledger_type);
+        let ledger = nodes.first().copied().unwrap_or_else(|| {
+            self.graph
+                .insert_node(ledger_type, FxHashMap::default())
+        });
+        let name_key = self.interner.intern("last_rule_name");
+        let turn_key = self.interner.intern("last_inbound_message_id");
+        let seq_key = self.interner.intern("settlement_sequence");
+        let schema_key = self.interner.intern("schema");
+        let last_rule_name = self.interner.resolve(rule).to_owned();
+        let last_rule_name = self.interner.intern(&last_rule_name);
+        let schema_value = self.interner.intern("rule_firing_history.v1");
+        let sequence = match self.graph.node(ledger).attrs.get(&seq_key) {
+            Some(Value::Int(value)) => value.saturating_add(1),
+            _ => 1,
+        };
+        self.graph.set_node_attr(
+            ledger,
+            schema_key,
+            Value::Str(schema_value),
+        );
+        self.graph.set_node_attr(
+            ledger,
+            name_key,
+            Value::Str(last_rule_name),
+        );
+        self.graph
+            .set_node_attr(ledger, turn_key, Value::Int(inbound.0 as i64));
+        self.graph
+            .set_node_attr(ledger, seq_key, Value::Int(sequence));
+        if self.graph.has_node(agent) {
+            let history_edge = self.interner.intern("has_rule_firing_history");
+            if !self.graph.has_edge(agent, history_edge, ledger) {
+                let _ = self.graph.insert_edge(
+                    agent,
+                    history_edge,
+                    ledger,
+                    FxHashMap::default(),
+                );
+            }
+        }
+        Some(ledger)
+    }
+
+    /// Collect conservative graph write targets at mutation sites. This
+    /// observer covers graph mutations performed directly and by deferred
+    /// effects drained inside settlement. Mutable accessors may over-report
+    /// no-op writes; all reported IDs are safe candidates for notification.
+    pub fn run_rules_delta_report(
+        &mut self,
+        max_steps: usize,
+        detect_cycles: bool,
+    ) -> RuleGraphDeltaReport {
+        self.graph.begin_mutation_log();
+        let run = self.run_rules_report(max_steps, detect_cycles);
+        let log = self.graph.finish_mutation_log();
+        let prior_types = log.node_types;
+        let mut affected_nodes: Vec<NodeID> = log.changed_nodes.into_iter().collect();
+        affected_nodes.sort_unstable();
+        let mut affected_edges: Vec<EdgeKey> = log.changed_edges.into_iter().collect();
+        affected_edges.sort_unstable_by_key(|key| (key.src, key.edge_type, key.tgt));
+        let mt_type = self.interner.intern("Microtheory");
+        let has_concept = self.interner.intern("has_concept");
+        let affected_microtheories = map_affected_microtheories(
+            &self.graph,
+            mt_type,
+            has_concept,
+            &affected_nodes,
+            &affected_edges,
+            &prior_types,
+        );
+        RuleGraphDeltaReport {
+            run,
+            affected_nodes,
+            affected_edges,
+            affected_microtheories,
+            exact_graph_state_diff: false,
+        }
+    }
+
+    /// Exact graph-content diff oracle for validating the mutation-site
+    /// observer. This is O(V+E) and intentionally separate from the report
+    /// method used to collect candidate notifications.
+    pub fn run_rules_snapshot_delta_report(
+        &mut self,
+        max_steps: usize,
+        detect_cycles: bool,
+    ) -> RuleGraphDeltaReport {
+        let (before_nodes, before_edges) = snapshot_graph_content(&self.graph);
+        let run = self.run_rules_report(max_steps, detect_cycles);
+        let (after_nodes, after_edges) = snapshot_graph_content(&self.graph);
+
+        let mut changed_nodes = rustc_hash::FxHashSet::default();
+        let node_ids: rustc_hash::FxHashSet<NodeID> = before_nodes
+            .keys()
+            .chain(after_nodes.keys())
+            .copied()
+            .collect();
+        for nid in node_ids {
+            if before_nodes.get(&nid) != after_nodes.get(&nid) {
+                changed_nodes.insert(nid);
+            }
+        }
+
+        let edge_keys: rustc_hash::FxHashSet<EdgeKey> = before_edges
+            .keys()
+            .chain(after_edges.keys())
+            .copied()
+            .collect();
+        let mut changed_edges = Vec::new();
+        for key in edge_keys {
+            if before_edges.get(&key) != after_edges.get(&key) {
+                changed_nodes.insert(key.src);
+                changed_nodes.insert(key.tgt);
+                changed_edges.push(key);
+            }
+        }
+        let mut affected_nodes: Vec<NodeID> = changed_nodes.into_iter().collect();
+        affected_nodes.sort_unstable();
+        changed_edges.sort_unstable_by_key(|key| (key.src, key.edge_type, key.tgt));
+        let prior_types: FxHashMap<NodeID, Sym> = before_nodes
+            .iter()
+            .map(|(&nid, (node_type, _))| (nid, *node_type))
+            .collect();
+        let mt_type = self.interner.intern("Microtheory");
+        let has_concept = self.interner.intern("has_concept");
+        let affected_microtheories = map_affected_microtheories(
+            &self.graph,
+            mt_type,
+            has_concept,
+            &affected_nodes,
+            &changed_edges,
+            &prior_types,
+        );
+        RuleGraphDeltaReport {
+            run,
+            affected_nodes,
+            affected_edges: changed_edges,
+            affected_microtheories,
+            exact_graph_state_diff: true,
+        }
     }
 
     /// Apply one graph-resident, integer trajectory-control feedback step.
@@ -4716,6 +5742,18 @@ impl Substrate {
         detect_cycles: bool,
         latency_filter: Option<Sym>,
     ) -> usize {
+        self.run_rules_opts_report_filtered(max_steps, detect_cycles, latency_filter)
+            .progress_steps
+    }
+
+    fn run_rules_opts_report_filtered(
+        &mut self,
+        max_steps: usize,
+        detect_cycles: bool,
+        latency_filter: Option<Sym>,
+    ) -> RuleRunReport {
+        let work_scope = &self.graph as *const crate::graph::TypedGraph as usize;
+        let _work_operation = crate::access_trace::begin_work_operation(work_scope);
         // Per-tick Shape-pruning counters: cleared at run_rules start
         // so callers can read the savings earned during this tick rather
         // than cumulative. Vocabulary: every tick is the
@@ -4739,7 +5777,11 @@ impl Substrate {
         }
 
         let mut steps = 0;
+        let mut passes_completed = 0;
+        let mut last_progress_rule = None;
         while steps < max_steps {
+            passes_completed += 1;
+            crate::scale_audit::scheduler_pass_started();
             // INTRINSIC SELF-REPAIR: apply any rule-clause rewrites a SetRuleClause effect queued
             // last pass. Done HERE, between passes, where &mut self.rules is freely borrowable; a
             // rewritten rule is marked dirty so it runs its NEW body this iteration.
@@ -4767,6 +5809,11 @@ impl Substrate {
             if !self.graph.pending_net_collapses.is_empty() {
                 self.apply_pending_net_collapses();
             }
+            let scheduler_audit_on = crate::scale_audit::enabled();
+            let scheduler_work_trace_on =
+                crate::access_trace::work_capture_enabled_for_scope(work_scope);
+            let scheduler_started = scheduler_audit_on.then(std::time::Instant::now);
+            let count_fixedpoint_probe = scheduler_audit_on || scheduler_work_trace_on;
             // PERCEPTION-AS-ACTION: force-dirty every rule whose where-clause
             // reads FbFrameSeq. Every OTHER dirty bit here is graph-reactive
             // (set because something the rule reads got WRITTEN); an
@@ -4795,13 +5842,50 @@ impl Substrate {
             // mark_node_mutation / a writes_any rule firing) doesn't know
             // about removal and can set it again — guard with `active`
             // here too so a removed rule can never stall this exit.
-            if !self.rule_dirty.iter().enumerate().any(|(i, &d)| {
-                d && self.rules[i].active
-                    && latency_filter
-                        .map(|class| self.rules[i].latency_class == class)
-                        .unwrap_or(true)
-            }) {
-                return steps;
+            let mut fixedpoint_probe_slots = 0usize;
+            let has_active_dirty = if count_fixedpoint_probe {
+                let mut found = false;
+                for (i, &dirty) in self.rule_dirty.iter().enumerate() {
+                    fixedpoint_probe_slots += 1;
+                    if dirty
+                        && self.rules[i].active
+                        && latency_filter
+                            .map(|class| self.rules[i].latency_class == class)
+                            .unwrap_or(true)
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+                found
+            } else {
+                self.rule_dirty.iter().enumerate().any(|(i, &d)| {
+                    d && self.rules[i].active
+                        && latency_filter
+                            .map(|class| self.rules[i].latency_class == class)
+                            .unwrap_or(true)
+                })
+            };
+            if !has_active_dirty {
+                if scheduler_started.is_some() || scheduler_work_trace_on {
+                    let elapsed_ns = scheduler_started.map(|started| {
+                        started.elapsed().as_nanos().min(u64::MAX as u128) as u64
+                    }).unwrap_or(0);
+                    crate::scale_audit::scheduler_plan_completed(
+                        self.rules.len(), fixedpoint_probe_slots, 0, 0,
+                        elapsed_ns,
+                    );
+                }
+                self.capture_turn_rule_progress(last_progress_rule);
+                return RuleRunReport {
+                    status: RuleRunStatus::FixedPoint,
+                    progress_steps: steps,
+                    requested_progress_budget: max_steps,
+                    budget_overshoot: steps.saturating_sub(max_steps),
+                    passes_completed,
+                    cycle_detection_enabled: detect_cycles,
+                    last_progress_rule,
+                };
             }
             // If any mutation was recorded since the last clean pass,
             // the eval_cache (Filter/Neighbours/Holds memoisation) is
@@ -4829,6 +5913,18 @@ impl Substrate {
                     }
                 })
                 .collect();
+            if scheduler_started.is_some() || scheduler_work_trace_on {
+                let elapsed_ns = scheduler_started.map(|started| {
+                    started.elapsed().as_nanos().min(u64::MAX as u128) as u64
+                }).unwrap_or(0);
+                crate::scale_audit::scheduler_plan_completed(
+                    self.rules.len(),
+                    fixedpoint_probe_slots,
+                    self.rule_dirty.len(),
+                    to_try.len(),
+                    elapsed_ns,
+                );
+            }
             // TRACE: is the watched rule even DIRTY this pass? (if it never appears, it's never tried —
             // its read-set didn't see the mutation; if it appears but doesn't progress, the match/where fails.)
             if std::env::var("SUBSTRATE_TRACE_RULE").is_ok() {
@@ -4858,12 +5954,24 @@ impl Substrate {
                 if self.attempt_one_rule(rule_idx) {
                     steps += 1;
                     any_progress = true;
+                    let rule_name = self.rules[rule_idx].name;
+                    last_progress_rule = Some(rule_name);
+                    self.record_rule_state_trace(rule_name, passes_completed, steps);
                 }
             }
             if !any_progress {
                 // No dirty rule progressed; further iterations would
                 // re-check the same clean state. Exit.
-                return steps;
+                self.capture_turn_rule_progress(last_progress_rule);
+                return RuleRunReport {
+                    status: RuleRunStatus::FixedPoint,
+                    progress_steps: steps,
+                    requested_progress_budget: max_steps,
+                    budget_overshoot: steps.saturating_sub(max_steps),
+                    passes_completed,
+                    cycle_detection_enabled: detect_cycles,
+                    last_progress_rule,
+                };
             }
             // CYCLE DETECTION (opt-in). This pass progressed, so the
             // committed loop would iterate again. If the state it landed on
@@ -4874,11 +5982,29 @@ impl Substrate {
             // still returns by the committed path, byte-identically.
             if let Some(s) = seen.as_mut() {
                 if !s.insert(self.graph.state_fingerprint()) {
-                    return steps;
+                    self.capture_turn_rule_progress(last_progress_rule);
+                    return RuleRunReport {
+                        status: RuleRunStatus::RepeatedGraphState,
+                        progress_steps: steps,
+                        requested_progress_budget: max_steps,
+                        budget_overshoot: steps.saturating_sub(max_steps),
+                        passes_completed,
+                        cycle_detection_enabled: detect_cycles,
+                        last_progress_rule,
+                    };
                 }
             }
         }
-        steps
+        self.capture_turn_rule_progress(last_progress_rule);
+        RuleRunReport {
+            status: RuleRunStatus::ProgressBudgetReached,
+            progress_steps: steps,
+            requested_progress_budget: max_steps,
+            budget_overshoot: steps.saturating_sub(max_steps),
+            passes_completed,
+            cycle_detection_enabled: detect_cycles,
+            last_progress_rule,
+        }
     }
 
     /// PER-MT SCOPED fixpoint (CAN_MT_SCOPED_RULES_PREREG/RESULTS.md).
@@ -4908,11 +6034,10 @@ impl Substrate {
     ///
     /// Active rules only (tombstoned rules are excluded, matching
     /// `run_rules_opts_filtered`'s own `self.rules[i].active` guard).
-    /// Rules are CLONED into a local owned Vec before the call — the same
-    /// idiom `attempt_one_rule`'s own cold path already uses
-    /// (`let rule = self.rules[rule_idx].clone();`) to avoid borrowing
-    /// `self.rules` across the mutable borrows of `self.graph`/`self.terms`/
-    /// etc. the scoped runner also needs.
+    /// The scoped runner receives borrowed rule references while disjoint
+    /// graph/Term/concept fields are mutably borrowed. This avoids cloning
+    /// every active rule on every scoped call without retaining a cache whose
+    /// invalidation would be unsound while `rules` is publicly mutable.
     pub fn run_rules_scoped(
         &mut self,
         max_steps: usize,
@@ -4925,9 +6050,14 @@ impl Substrate {
         };
         let has_concept = self.interner.intern("has_concept");
         let owned = crate::rewrite::mt_owned_nodes(&self.graph, mt, has_concept);
-        let cloned_rules: Vec<crate::rewrite::RewriteRule> =
-            self.rules.iter().filter(|r| r.active).cloned().collect();
-        let rule_refs: Vec<&crate::rewrite::RewriteRule> = cloned_rules.iter().collect();
+        let rule_refs: Vec<(u32, &crate::rewrite::RewriteRule)> = self
+            .rules
+            .iter()
+            .enumerate()
+            .filter(|(_, r)| r.active)
+            .map(|(i, rule)| (i as u32, rule))
+            .collect();
+        let has_concept = self.interner.intern("has_concept");
         crate::rewrite::run_rules_opts_scoped(
             &rule_refs,
             &mut self.terms,
@@ -4938,8 +6068,97 @@ impl Substrate {
             Some(&mut self.eval_cache),
             max_steps,
             detect_cycles,
+            mt,
+            has_concept,
             &owned,
         )
+    }
+
+    /// Diagnostic microbenchmark for the former active-rule snapshot used by
+    /// scoped closure. It performs the same enumerate/filter/clone collection
+    /// and drops each result; timing therefore includes allocation/destruction
+    /// with cloning. The scoped runner now borrows live rules and does not call
+    /// this counterfactual profiler. It neither executes rules nor changes state.
+    pub fn profile_scoped_rule_snapshot(&self, iterations: usize) -> (usize, usize, u128) {
+        let active_count = self.rules.iter().filter(|rule| rule.active).count();
+        let started = std::time::Instant::now();
+        let mut copied_total = 0usize;
+        for _ in 0..iterations {
+            let cloned_rules: Vec<(u32, crate::rewrite::RewriteRule)> = self
+                .rules.iter().enumerate().filter(|(_, rule)| rule.active)
+                .map(|(index, rule)| (index as u32, rule.clone())).collect();
+            copied_total += cloned_rules.len();
+            std::hint::black_box(&cloned_rules);
+        }
+        (active_count, copied_total, started.elapsed().as_nanos())
+    }
+
+    /// Opt-in Microtheory-scoped closure with native graph write-target
+    /// reporting. This shares `run_rules_scoped`'s matching semantics and
+    /// current deferred-queue limitation; a nonempty deferred queue is
+    /// surfaced explicitly so callers cannot treat it as a settled frame.
+    pub fn run_rules_scoped_delta_report(
+        &mut self,
+        max_steps: usize,
+        detect_cycles: bool,
+        scope_mt: NodeID,
+    ) -> ScopedRuleGraphDeltaReport {
+        let work_scope = &self.graph as *const crate::graph::TypedGraph as usize;
+        let _work_operation = crate::access_trace::begin_work_operation(work_scope);
+        self.graph.begin_mutation_log();
+        let has_concept = self.interner.intern("has_concept");
+        let owned = crate::rewrite::mt_owned_nodes(&self.graph, scope_mt, has_concept);
+        let rule_refs: Vec<(u32, &crate::rewrite::RewriteRule)> = self
+            .rules
+            .iter()
+            .enumerate()
+            .filter(|(_, r)| r.active)
+            .map(|(i, rule)| (i as u32, rule))
+            .collect();
+        let progress_steps = crate::rewrite::run_rules_opts_scoped(
+            &rule_refs,
+            &mut self.terms,
+            &mut self.graph,
+            &mut self.interner,
+            Some(&mut self.concepts),
+            Some(&self.framebuffers),
+            Some(&mut self.eval_cache),
+            max_steps,
+            detect_cycles,
+            scope_mt,
+            has_concept,
+            &owned,
+        );
+        let log = self.graph.finish_mutation_log();
+        let prior_types = log.node_types;
+        let mut affected_nodes: Vec<NodeID> = log.changed_nodes.into_iter().collect();
+        affected_nodes.sort_unstable();
+        let mut affected_edges: Vec<EdgeKey> = log.changed_edges.into_iter().collect();
+        affected_edges.sort_unstable_by_key(|key| (key.src, key.edge_type, key.tgt));
+        let mt_type = self.interner.intern("Microtheory");
+        let has_concept = self.interner.intern("has_concept");
+        let affected_microtheories = map_affected_microtheories(
+            &self.graph,
+            mt_type,
+            has_concept,
+            &affected_nodes,
+            &affected_edges,
+            &prior_types,
+        );
+        let deferred_effects_pending = !self.graph.pending_fb_samples.is_empty()
+            || !self.graph.pending_track_identity.is_empty()
+            || !self.graph.pending_net_collapses.is_empty()
+            || !self.graph.pending_rule_edits.is_empty()
+            || !self.graph.pending_rule_patches.is_empty();
+        ScopedRuleGraphDeltaReport {
+            progress_steps,
+            requested_progress_budget: max_steps,
+            hit_progress_budget: progress_steps >= max_steps,
+            affected_nodes,
+            affected_edges,
+            affected_microtheories,
+            deferred_effects_pending,
+        }
     }
 
     // --- native EYE: segmentation + cross-frame identity tracking ------
@@ -5650,7 +6869,9 @@ impl Substrate {
     /// "queue + drain between passes" pattern `apply_pending_fb_samples`
     /// established for `Effect::FbSample`.
     pub(crate) fn apply_pending_track_identity(&mut self) {
+        let drain_started = crate::scale_audit::enabled().then(std::time::Instant::now);
         let pending = std::mem::take(&mut self.graph.pending_track_identity);
+        let drained_items = pending.len();
         for (prev_ids, cur_ids, feature_key, category_key, extent_key, identity_key, radius) in
             pending
         {
@@ -5662,6 +6883,12 @@ impl Substrate {
                 extent_key,
                 identity_key,
                 radius,
+            );
+        }
+        if let Some(started) = drain_started {
+            crate::scale_audit::deferred_queue_drained(
+                "track_identity", drained_items,
+                started.elapsed().as_nanos().min(u64::MAX as u128) as u64,
             );
         }
     }

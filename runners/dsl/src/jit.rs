@@ -634,7 +634,9 @@ unsafe extern "sysv64" fn thunk_type_of(ctx: *const JitCtx, node: i64) -> i64 {
     if !(*graph).has_node(nid) {
         return 0;
     }
-    (*graph).node(nid).type_.0 as i64
+    let type_sym = (*graph).node(nid).type_;
+    crate::access_trace::note(13, nid.0, type_sym.0, crate::access_trace::NO_ID);
+    type_sym.0 as i64
 }
 
 unsafe extern "sysv64" fn thunk_attr_int(ctx: *const JitCtx, node: i64, key_sym: i64) -> i64 {
@@ -650,6 +652,7 @@ unsafe extern "sysv64" fn thunk_attr_int(ctx: *const JitCtx, node: i64, key_sym:
         return 0;
     }
     let key = Sym(key_sym as u32);
+    crate::access_trace::note(12, nid.0, key.0, crate::access_trace::NO_ID);
     match (*graph).node(nid).attrs.get(&key) {
         Some(Value::Int(n)) => *n,
         Some(Value::Bool(b)) => {
@@ -693,7 +696,9 @@ unsafe extern "sysv64" fn thunk_neighbour_count(
     } else {
         Some(Sym(edge_type_sym as u32))
     };
-    (*graph).out_edges_slice(nid, et).len() as i64
+    let edges = (*graph).out_edges_slice(nid, et);
+    crate::access_trace::note_out_edges(&*graph, nid, et);
+    edges.len() as i64
 }
 
 // --- tests ---------------------------------------------------------------

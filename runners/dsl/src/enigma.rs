@@ -168,6 +168,7 @@ fn attr<'a>(
     interner: &'a Interner,
 ) -> Option<&'a Value> {
     let sym = interner.lookup(key)?;
+    crate::access_trace::note(2, node.0, sym.0, crate::access_trace::NO_ID);
     graph.node(node).attrs.get(&sym)
 }
 

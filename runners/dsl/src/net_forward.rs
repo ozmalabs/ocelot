@@ -120,14 +120,21 @@ fn load_steps(
     let role_k = interner.lookup("role");
     let loss_sym = interner.lookup("loss");
 
+    crate::access_trace::note_out_edges(graph, nid, Some(has_step));
     let mut step_nodes = graph.neighbours(nid, Some(has_step));
     step_nodes.sort_by(|&sa, &sb| {
         let oa = order_k
-            .and_then(|k| graph.node(sa).attrs.get(&k))
+            .and_then(|k| {
+                crate::access_trace::note(2, sa.0, k.0, crate::access_trace::NO_ID);
+                graph.node(sa).attrs.get(&k)
+            })
             .map(val_f64)
             .unwrap_or(0.0);
         let ob = order_k
-            .and_then(|k| graph.node(sb).attrs.get(&k))
+            .and_then(|k| {
+                crate::access_trace::note(2, sb.0, k.0, crate::access_trace::NO_ID);
+                graph.node(sb).attrs.get(&k)
+            })
             .map(val_f64)
             .unwrap_or(0.0);
         oa.partial_cmp(&ob).unwrap_or(std::cmp::Ordering::Equal)
@@ -139,6 +146,7 @@ fn load_steps(
     for step in step_nodes {
         if skip_loss {
             if let (Some(dk), Some(ls)) = (dimb_k, loss_sym) {
+                crate::access_trace::note(2, step.0, dk.0, crate::access_trace::NO_ID);
                 if graph.node(step).attrs.get(&dk) == Some(&Value::Str(ls)) {
                     continue;
                 }
@@ -147,8 +155,13 @@ fn load_steps(
 
         let (mut w1, mut b1, mut w2, mut b2) = (None, None, None, None);
         let (mut w2_node, mut b2_node) = (None, None);
+        crate::access_trace::note_out_edges(graph, step, Some(has_weight));
         for weight in graph.neighbours(step, Some(has_weight)) {
             let attrs = &graph.node(weight).attrs;
+            if let Some(k) = role_k {
+                crate::access_trace::note(2, weight.0, k.0, crate::access_trace::NO_ID);
+            }
+            crate::access_trace::note(2, weight.0, data_k.0, crate::access_trace::NO_ID);
             let role = role_k.and_then(|k| attrs.get(&k));
             let data = attrs.get(&data_k);
             let (Some(Value::Str(rsym)), Some(dv)) = (role, data) else {

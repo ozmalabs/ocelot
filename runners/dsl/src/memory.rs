@@ -671,6 +671,22 @@ impl ShapeIndex {
         cid
     }
 
+    /// Remove a key from all shape clusters. Used when disk recovery detects
+    /// an ambiguous duplicate key and must refuse arbitrary recall.
+    pub fn remove_key(&mut self, key: &str) {
+        let mut empty = Vec::new();
+        for (cid, cluster) in self.clusters.iter_mut() {
+            cluster.paths.remove(key);
+            cluster.node_ids.remove(key);
+            if cluster.paths.is_empty() {
+                empty.push(cid.clone());
+            }
+        }
+        for cid in empty {
+            self.clusters.remove(&cid);
+        }
+    }
+
     /// The order-N shape descent: tier-1 match the CATEGORY shape, then
     /// within the nearest category tier-2 match the LEAF shape. Returns the
     /// matched cluster id. Not a literal key map — a shape match.
@@ -1124,6 +1140,32 @@ impl MemoryFaculty {
         Ok(cid)
     }
 
+    /// Rebuild one non-resident ShapeIndex entry from an existing durable
+    /// record. The host adapter validates/decodes the record header and
+    /// supplies its already-projected shape vectors; this method owns the
+    /// index insertion and rejects paths which no longer exist.
+    pub fn index_disk_record(
+        &mut self,
+        key: &str,
+        path: &str,
+        round: i64,
+        cat_vec: &[f64],
+        leaf_vec: &[f64],
+    ) -> std::io::Result<String> {
+        if !std::path::Path::new(path).is_file() {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::NotFound,
+                format!("memory record not found: {}", path),
+            ));
+        }
+        Ok(self.index.put(key, cat_vec, leaf_vec, path, round, None))
+    }
+
+    /// Remove an ambiguous disk key from the native index during recovery.
+    pub fn unindex_disk_record(&mut self, key: &str) {
+        self.index.remove_key(key);
+    }
+
     /// SHUFFLE: evict cold CLUSTERS from RAM (disk copy persists). A cluster
     /// not accessed within hot_window rounds is cold -> page the drawer out
     /// as a unit. Returns the evicted cluster ids.
@@ -1211,6 +1253,30 @@ impl MemoryFaculty {
         self.hot.record(cid_sym);
         let paged = self.page_in_cluster(s, &cid, round);
         Some((cid, paged))
+    }
+
+    /// Exact-key recall after the host adapter has rebuilt disk index entries.
+    /// Pages the matched cluster using the same whole-drawer policy as shape
+    /// recall, then returns the resident NodeID for the requested key.
+    pub fn recall_by_key(
+        &mut self,
+        s: &mut Substrate,
+        key: &str,
+        round: i64,
+    ) -> Option<NodeID> {
+        let cid = self
+            .index
+            .clusters
+            .values()
+            .find(|cluster| cluster.paths.contains_key(key))
+            .map(|cluster| cluster.cluster_id.clone())?;
+        let cid_sym = s.interner.intern(&cid);
+        self.hot.record(cid_sym);
+        self.page_in_cluster(s, &cid, round);
+        self.index
+            .clusters
+            .get(&cid)
+            .and_then(|cluster| cluster.node_ids.get(key).copied())
     }
 
     pub fn findable_clusters(&self) -> usize {

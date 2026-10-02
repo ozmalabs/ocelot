@@ -2,11 +2,11 @@
 //!
 //! Memory layout (the "custom efficient" part of the project brief):
 //!
-//! * Nodes live in a single `Vec<Option<NodeData>>` slab with a freelist —
+//! * Nodes live in a paged `CowPagedVec<Option<NodeData>>` slab with a freelist —
 //!   O(1) deref by `NodeID`, no per-node allocation, deletes leave a
 //!   tombstone (Option::None) so existing NodeID handles stay valid until
 //!   their slot is recycled by the freelist.
-//! * Edges live in a parallel `Vec<Option<EdgeData>>` slab + freelist.
+//! * Edges live in a parallel paged `CowPagedVec<Option<EdgeData>>` slab + freelist.
 //! * Adjacency lives in `SmallVec`, not `HashSet`. Typical out-degrees in
 //!   the substrate's actual workloads are 1–8 (Conway cells, chess
 //!   squares, Doom percepts), so an inline SmallVec dominates a hash
@@ -14,10 +14,9 @@
 //!   SmallVec<[EdgeIdx; 4]> is 36 bytes) and on iteration speed
 //!   (linear scan of contiguous u32s beats pointer-chasing).
 //! * The `(node, edge_type)` index uses a finer SmallVec (cap 4) since
-//!   per-edge-type degrees are even smaller.
-//! * The `_edges` global is the slab itself; an `_edge_index` map gives
-//!   `has_edge(src, edge_type, tgt)` an O(1) answer when needed but is
-//!   skipped for the iteration-heavy hot paths.
+//!   per-edge-type degrees are usually even smaller. High-degree buckets
+//!   acquire a target lookup map once scans become more expensive than
+//!   the extra index memory.
 //!
 //! Snapshot iterators: the Python version `tuple()`-copies the key set
 //! at iter start so concurrent mutation doesn't blow up the iterator.
@@ -26,9 +25,17 @@
 
 use crate::sym::Sym;
 use crate::value::Value;
+use crate::cow_paged_vec::CowPagedVec;
+use crate::cow_sharded_map::{CowShardKey, CowShardedMap};
 use roaring::RoaringBitmap;
-use rustc_hash::FxHashMap;
+use rustc_hash::{FxHashMap, FxHashSet};
 use smallvec::SmallVec;
+
+/// Keep the compact linear lookup for ordinary low-degree adjacency
+/// buckets; switch to a target hash map for buckets whose scans would be
+/// costly. This threshold is intentionally a small constant and is
+/// measured by the high-fanout construction probe.
+const OUT_BY_TYPE_HASH_THRESHOLD: usize = 16;
 
 /// Dense node index. 4 bytes — fits next to `Sym` in EdgeKey without
 /// growing the struct, and 4G nodes is plenty for any plausible
@@ -40,6 +47,13 @@ impl NodeID {
     #[inline]
     pub fn value(self) -> u32 {
         self.0
+    }
+}
+
+impl CowShardKey for (NodeID, Sym) {
+    #[inline]
+    fn cow_shard(&self) -> usize {
+        (self.0.0 as usize).wrapping_mul(0x9E37_79B1) ^ self.1.0 as usize
     }
 }
 
@@ -56,6 +70,77 @@ pub struct EdgeKey {
     pub src: NodeID,
     pub edge_type: Sym,
     pub tgt: NodeID,
+}
+
+/// Opt-in set of graph locations touched through TypedGraph mutation APIs.
+/// It intentionally over-approximates no-op mutable accesses, while keeping
+/// node and edge identities deduplicated during one observed operation.
+#[derive(Clone, Debug, Default)]
+pub struct GraphMutationLog {
+    pub changed_nodes: FxHashSet<NodeID>,
+    pub changed_edges: FxHashSet<EdgeKey>,
+    /// Type observed before the first mutation access in this log. Retained
+    /// across deletion/retyping so callers can route nodes that no longer
+    /// have a live graph record (for example a deleted Microtheory root).
+    pub node_types: FxHashMap<NodeID, Sym>,
+    /// Optional first-seen semantic state for exact thoughtexperiment deltas.
+    /// `None` means the ordinary notification-only logger is active.
+    pub before_nodes: Option<FxHashMap<NodeID, Option<NodeData>>>,
+    pub before_edges: Option<FxHashMap<EdgeKey, Option<Attrs>>>,
+    /// State at the injection/collapse boundary and first writes after it.
+    pub phase_before_nodes: Option<FxHashMap<NodeID, Option<NodeData>>>,
+    pub phase_before_edges: Option<FxHashMap<EdgeKey, Option<Attrs>>>,
+    phase_active: bool,
+}
+
+/// Branch-local edge aperture used by thoughtexperiments. The base graph and
+/// its indexes stay intact; reads route through these sparse, frame-local
+/// indexes. New branch edges are inserted into the scope indexes as they are
+/// created, matching the semantics of physically pruning the base edges once.
+#[derive(Clone, Debug, Default)]
+struct EdgeReadScope {
+    nodes: FxHashSet<NodeID>,
+    visible_edge_set: FxHashSet<EdgeIdx>,
+    visible_edges: Vec<EdgeIdx>,
+    out: FxHashMap<NodeID, SmallVec<[EdgeIdx; 4]>>,
+    in_: FxHashMap<NodeID, SmallVec<[EdgeIdx; 4]>>,
+    out_by_type: FxHashMap<(NodeID, Sym), SmallVec<[EdgeIdx; 4]>>,
+    in_by_type: FxHashMap<(NodeID, Sym), SmallVec<[EdgeIdx; 4]>>,
+    edges_by_type: FxHashMap<Sym, Vec<EdgeIdx>>,
+}
+
+impl EdgeReadScope {
+    fn insert(&mut self, idx: EdgeIdx, edge: EdgeKey) {
+        if !self.visible_edge_set.insert(idx) {
+            return;
+        }
+        // Persistence iteration follows the edge slab order. Query indexes
+        // retain adjacency insertion order independently.
+        let at = self.visible_edges.binary_search(&idx).unwrap_or_else(|i| i);
+        self.visible_edges.insert(at, idx);
+        self.out.entry(edge.src).or_default().push(idx);
+        self.in_.entry(edge.tgt).or_default().push(idx);
+        self.out_by_type.entry((edge.src, edge.edge_type)).or_default().push(idx);
+        self.in_by_type.entry((edge.tgt, edge.edge_type)).or_default().push(idx);
+        self.edges_by_type.entry(edge.edge_type).or_default().push(idx);
+    }
+
+    fn remove(&mut self, idx: EdgeIdx, edge: EdgeKey) {
+        if !self.visible_edge_set.remove(&idx) {
+            return;
+        }
+        self.visible_edges.retain(|item| *item != idx);
+        for bucket in [self.out.get_mut(&edge.src), self.in_.get_mut(&edge.tgt),
+                       self.out_by_type.get_mut(&(edge.src, edge.edge_type)),
+                       self.in_by_type.get_mut(&(edge.tgt, edge.edge_type))] {
+            if let Some(bucket) = bucket {
+                bucket.retain(|item| *item != idx);
+            }
+        }
+        if let Some(bucket) = self.edges_by_type.get_mut(&edge.edge_type) {
+            bucket.retain(|item| *item != idx);
+        }
+    }
 }
 
 /// Attribute store — `Vec`-backed, linear-scan lookup. Replaces the
@@ -186,6 +271,7 @@ fn empty_attrs_ref() -> &'static Attrs {
 /// The typed graph itself. All mutation goes through `_insert_node` /
 /// `_insert_edge` / `_delete_*`; public mutation flows through
 /// `Substrate` (Π) so the admissibility check fires.
+#[derive(Clone)]
 pub struct TypedGraph {
     /// Monotonic content revision. Every mutable graph access or successful
     /// structural mutation advances this counter, allowing pure native
@@ -193,16 +279,26 @@ pub struct TypedGraph {
     /// deliberately conservative: a mutation outside an analysis' read set
     /// may cause a miss, but no mutation can leave a stale hit.
     mutation_version: u64,
+    /// Allocated only for an explicitly observed operation. Mutation methods
+    /// append their targets here; the normal graph path retains `None`.
+    mutation_log: Option<GraphMutationLog>,
+    /// Optional branch-local read view. `None` is the production graph path
+    /// and carries no per-query filtering cost.
+    edge_read_scope: Option<EdgeReadScope>,
     /// Slab of nodes — Option so freed slots can be reused without
     /// invalidating existing NodeID handles that nobody holds anymore.
-    nodes: Vec<Option<NodeData>>,
+    nodes: CowPagedVec<Option<NodeData>>,
     /// Reusable NodeID indices. LIFO so the most-recently-freed slot
     /// is the next to be reused — keeps the arena dense.
     node_freelist: Vec<u32>,
 
     /// Edge slab + freelist, same structure.
-    edges: Vec<Option<EdgeData>>,
+    edges: CowPagedVec<Option<EdgeData>>,
     edge_freelist: Vec<u32>,
+    /// Monotone generation for any edge deletion. Scoped local-candidate
+    /// ordering uses EdgeIdx as insertion order only while this is zero; the
+    /// freelist can otherwise reuse an index across edge types.
+    edge_delete_generation: u64,
 
     /// Sparse edge attributes — only populated entries cost memory.
     /// Typical substrate edges have zero attrs (Conway, chess, Doom),
@@ -215,15 +311,19 @@ pub struct TypedGraph {
     by_type: FxHashMap<Sym, Vec<NodeID>>,
 
     /// Per-node full out-edge list (any edge_type).
-    out: Vec<SmallVec<[EdgeIdx; 4]>>,
+    out: CowPagedVec<SmallVec<[EdgeIdx; 4]>>,
     /// Per-node full in-edge list.
-    in_: Vec<SmallVec<[EdgeIdx; 4]>>,
+    in_: CowPagedVec<SmallVec<[EdgeIdx; 4]>>,
     /// Per-(node, edge_type) out-edges. The hot path:
     /// `Neighbours(node, edge_type="adjacent_to")` resolves here in
     /// one hash lookup.
-    out_by_type: FxHashMap<(NodeID, Sym), SmallVec<[EdgeIdx; 4]>>,
+    out_by_type: CowShardedMap<(NodeID, Sym), SmallVec<[EdgeIdx; 4]>>,
+    /// Target-to-edge lookup for only high-degree `(source, edge type)`
+    /// buckets. Keeps duplicate detection expected O(1) for hubs without
+    /// paying a global per-edge index on sparse graphs.
+    out_by_type_target_index: FxHashMap<(NodeID, Sym), FxHashMap<NodeID, EdgeIdx>>,
     /// Same for in-edges; powers `InNeighbours`.
-    in_by_type: FxHashMap<(NodeID, Sym), SmallVec<[EdgeIdx; 4]>>,
+    in_by_type: CowShardedMap<(NodeID, Sym), SmallVec<[EdgeIdx; 4]>>,
 
     /// Edge-type → all EdgeIdx of that type. The rule engine's
     /// double-unbound match clause `[a, edge_type, b]` reads this to
@@ -328,20 +428,44 @@ pub struct TypedGraph {
     pub log_attr_writes: bool,
 }
 
+/// Per-index clone profile used by the source-locked CoW representation probe.
+#[doc(hidden)]
+#[derive(Clone, Debug)]
+pub struct GraphIndexCloneCost {
+    pub component: &'static str,
+    pub entries: usize,
+    pub median_shared_fork_ns: u128,
+    pub median_eager_clone_ns: u128,
+}
+
+#[doc(hidden)]
+#[derive(Clone, Debug)]
+pub struct GraphIndexReadCost {
+    pub component: &'static str,
+    pub lookups: usize,
+    pub cow_sharded_median_ns_per_lookup: f64,
+    pub fx_hash_median_ns_per_lookup: f64,
+    pub checksums_match: bool,
+}
+
 impl TypedGraph {
     pub fn new() -> Self {
         Self {
             mutation_version: 0,
-            nodes: Vec::with_capacity(256),
+            mutation_log: None,
+            edge_read_scope: None,
+            nodes: CowPagedVec::new(),
             node_freelist: Vec::new(),
-            edges: Vec::with_capacity(512),
+            edges: CowPagedVec::new(),
             edge_freelist: Vec::new(),
+            edge_delete_generation: 0,
             edge_attrs: FxHashMap::default(),
             by_type: FxHashMap::default(),
-            out: Vec::with_capacity(256),
-            in_: Vec::with_capacity(256),
-            out_by_type: FxHashMap::default(),
-            in_by_type: FxHashMap::default(),
+            out: CowPagedVec::new(),
+            in_: CowPagedVec::new(),
+            out_by_type: CowShardedMap::default(),
+            out_by_type_target_index: FxHashMap::default(),
+            in_by_type: CowShardedMap::default(),
             edges_by_type: FxHashMap::default(),
             edge_delete_version_by_type: FxHashMap::default(),
             attr_indices: FxHashMap::default(),
@@ -353,6 +477,184 @@ impl TypedGraph {
             attr_write_log: Vec::new(),
             log_attr_writes: false,
         }
+    }
+
+    /// Eagerly materialize node, edge, and adjacency pages and clone every
+    /// query index. This remains the semantic/performance control branch.
+    pub fn clone_eager(&self) -> Self {
+        let mut clone = self.clone();
+        clone.nodes = self.nodes.deep_copy();
+        clone.edges = self.edges.deep_copy();
+        clone.out = self.out.deep_copy();
+        clone.in_ = self.in_.deep_copy();
+        clone.out_by_type = self.out_by_type.deep_copy();
+        clone.in_by_type = self.in_by_type.deep_copy();
+        clone
+    }
+
+    /// Clone the indexes while sharing immutable node/edge slab pages until a
+    /// branch writes. The top-level per-node adjacency pages and all hash
+    /// query indexes are still copied eagerly on this control route.
+    pub fn clone_sharing_slabs(&self) -> Self {
+        let mut clone = self.clone();
+        clone.out = self.out.deep_copy();
+        clone.in_ = self.in_.deep_copy();
+        clone.out_by_type = self.out_by_type.deep_copy();
+        clone.in_by_type = self.in_by_type.deep_copy();
+        clone
+    }
+
+    /// Share node/edge records, per-node adjacency pages, and the two
+    /// high-cardinality typed-adjacency indexes. Other hash-based query
+    /// indexes and remaining graph state are still eager copies.
+    pub fn clone_sharing_graph_pages(&self) -> Self {
+        self.clone()
+    }
+
+    /// Measure independent eager clones of each hash-backed graph index.
+    /// This is diagnostic instrumentation for choosing the next persistent
+    /// storage surface; it neither mutates the graph nor profiles the total
+    /// clone path. Callers must report it as one-host microbenchmark evidence.
+    #[doc(hidden)]
+    pub fn profile_index_clone_cost(&self, repeats: usize) -> Vec<GraphIndexCloneCost> {
+        use std::hint::black_box;
+        use std::time::Instant;
+
+        fn median(samples: &mut [u128]) -> u128 {
+            samples.sort_unstable();
+            let n = samples.len();
+            if n % 2 == 0 {
+                (samples[n / 2 - 1] + samples[n / 2]) / 2
+            } else {
+                samples[n / 2]
+            }
+        }
+
+        let repeats = repeats.max(1);
+        let mut rows = Vec::new();
+        macro_rules! profile {
+            ($name:literal, $entries:expr, $shared:expr, $eager:expr) => {{
+                let mut shared_samples = Vec::with_capacity(repeats);
+                let mut eager_samples = Vec::with_capacity(repeats);
+                for _ in 0..repeats {
+                    let started = Instant::now();
+                    let shared_copy = $shared;
+                    black_box(&shared_copy);
+                    shared_samples.push(started.elapsed().as_nanos());
+                    drop(shared_copy);
+
+                    let started = Instant::now();
+                    let eager_copy = $eager;
+                    black_box(&eager_copy);
+                    eager_samples.push(started.elapsed().as_nanos());
+                    drop(eager_copy);
+                }
+                rows.push(GraphIndexCloneCost {
+                    component: $name,
+                    entries: $entries,
+                    median_shared_fork_ns: median(&mut shared_samples),
+                    median_eager_clone_ns: median(&mut eager_samples),
+                });
+            }};
+        }
+
+        profile!("edge_attrs", self.edge_attrs.len(), self.edge_attrs.clone(), self.edge_attrs.clone());
+        profile!("by_type", self.by_type.values().map(Vec::len).sum(), self.by_type.clone(), self.by_type.clone());
+        profile!("out_by_type", self.out_by_type.values().map(SmallVec::len).sum(), self.out_by_type.clone(), self.out_by_type.deep_copy());
+        profile!(
+            "out_by_type_target_index",
+            self.out_by_type_target_index.values().map(FxHashMap::len).sum(),
+            self.out_by_type_target_index.clone(),
+            self.out_by_type_target_index.clone()
+        );
+        profile!("in_by_type", self.in_by_type.values().map(SmallVec::len).sum(), self.in_by_type.clone(), self.in_by_type.deep_copy());
+        profile!("edges_by_type", self.edges_by_type.values().map(Vec::len).sum(), self.edges_by_type.clone(), self.edges_by_type.clone());
+        profile!("edge_delete_version_by_type", self.edge_delete_version_by_type.len(), self.edge_delete_version_by_type.clone(), self.edge_delete_version_by_type.clone());
+        profile!(
+            "attr_indices",
+            self.attr_indices.values().map(|values| values.values().map(RoaringBitmap::len).sum::<u64>() as usize).sum(),
+            self.attr_indices.clone(),
+            self.attr_indices.clone()
+        );
+        rows
+    }
+
+    /// Compare typed-adjacency lookup cost with ordinary FxHashMap lookup.
+    /// Uses a fixed 50/50 hit/miss stream, built outside the timed region.
+    #[doc(hidden)]
+    pub fn profile_typed_adjacency_read_cost(
+        &self,
+        lookups: usize,
+        repeats: usize,
+    ) -> Vec<GraphIndexReadCost> {
+        use std::hint::black_box;
+        use std::time::Instant;
+
+        fn median(samples: &mut [f64]) -> f64 {
+            samples.sort_by(f64::total_cmp);
+            let n = samples.len();
+            if n % 2 == 0 { (samples[n / 2 - 1] + samples[n / 2]) / 2.0 }
+            else { samples[n / 2] }
+        }
+        fn measure<F>(keys: &[(NodeID, Sym)], repeats: usize, mut lookup: F) -> (f64, usize)
+        where F: FnMut(&(NodeID, Sym)) -> usize {
+            let mut samples = Vec::with_capacity(repeats);
+            let mut checksum = 0usize;
+            for _ in 0..repeats {
+                let started = Instant::now();
+                let mut subtotal = 0usize;
+                for key in keys { subtotal = subtotal.wrapping_add(lookup(key)); }
+                samples.push(started.elapsed().as_nanos() as f64 / keys.len().max(1) as f64);
+                checksum ^= black_box(subtotal);
+            }
+            (median(&mut samples), checksum)
+        }
+
+        let repeats = repeats.max(1);
+        let lookups = lookups.max(2);
+        let mut rows = Vec::new();
+        macro_rules! compare {
+            ($name:literal, $sharded:expr) => {{
+                let flat: FxHashMap<(NodeID, Sym), SmallVec<[EdgeIdx; 4]>> =
+                    $sharded.iter().map(|(key, value)| (*key, value.clone())).collect();
+                let hits: Vec<(NodeID, Sym)> = flat.keys().copied().collect();
+                let keys: Vec<(NodeID, Sym)> = (0..lookups).map(|i| {
+                    if i % 2 == 0 {
+                        hits[i / 2 % hits.len()]
+                    } else {
+                        (NodeID(u32::MAX.wrapping_sub(i as u32)), Sym(u32::MAX))
+                    }
+                }).collect();
+                let (sharded_ns, sharded_sum) = measure(&keys, repeats, |key| {
+                    $sharded.get(key).map(SmallVec::len).unwrap_or(0)
+                });
+                let (flat_ns, flat_sum) = measure(&keys, repeats, |key| {
+                    flat.get(key).map(SmallVec::len).unwrap_or(0)
+                });
+                rows.push(GraphIndexReadCost {
+                    component: $name,
+                    lookups,
+                    cow_sharded_median_ns_per_lookup: sharded_ns,
+                    fx_hash_median_ns_per_lookup: flat_ns,
+                    checksums_match: sharded_sum == flat_sum,
+                });
+            }};
+        }
+        if !self.out_by_type.is_empty() {
+            compare!("out_by_type", self.out_by_type);
+        }
+        if !self.in_by_type.is_empty() {
+            compare!("in_by_type", self.in_by_type);
+        }
+        rows
+    }
+
+    /// Remove branch-external observation bookkeeping from a detached
+    /// experiment copy. Deferred work must be checked by the owning
+    /// Substrate before this is called; this helper does not discard it.
+    pub(crate) fn clear_experiment_observers(&mut self) {
+        self.mutation_log = None;
+        self.attr_write_log.clear();
     }
 
     /// Edge IDs of `edge_type`. O(1) hash lookup. Used by the rule
@@ -369,7 +671,14 @@ impl TypedGraph {
             .unwrap_or(0)
     }
 
+    /// Global edge-deletion generation, used by algorithms whose ordering
+    /// proof depends on the edge freelist never having been used.
+    pub fn edge_delete_generation(&self) -> u64 { self.edge_delete_generation }
+
     pub fn edges_by_type(&self, edge_type: Sym) -> &[EdgeIdx] {
+        if let Some(scope) = &self.edge_read_scope {
+            return scope.edges_by_type.get(&edge_type).map(Vec::as_slice).unwrap_or(&[]);
+        }
         self.edges_by_type
             .get(&edge_type)
             .map(|v| v.as_slice())
@@ -517,6 +826,199 @@ impl TypedGraph {
         self.mutation_version = self.mutation_version.wrapping_add(1);
     }
 
+    /// Begin opt-in write-target collection. Nested collection is a caller
+    /// error because each report must have one unambiguous closure boundary.
+    pub fn begin_mutation_log(&mut self) {
+        assert!(self.mutation_log.is_none(), "graph mutation log already active");
+        self.mutation_log = Some(GraphMutationLog::default());
+    }
+
+    /// Begin an opt-in semantic before-image journal for branch residuals.
+    /// Unlike the notification-only logger, this retains only the first state
+    /// of touched nodes/edges and scales with the branch write set.
+    pub fn begin_experiment_delta_log(&mut self) {
+        assert!(self.mutation_log.is_none(), "graph mutation log already active");
+        self.mutation_log = Some(GraphMutationLog {
+            before_nodes: Some(FxHashMap::default()),
+            before_edges: Some(FxHashMap::default()),
+            phase_before_nodes: Some(FxHashMap::default()),
+            phase_before_edges: Some(FxHashMap::default()),
+            ..GraphMutationLog::default()
+        });
+    }
+
+    /// Mark the post-hypothesis state as the baseline for `derived_only`.
+    /// Existing touched objects are sampled locally; future first writes are
+    /// captured by the mutation hooks without a whole-graph traversal.
+    pub fn checkpoint_experiment_delta_log(&mut self) {
+        let nodes: Vec<NodeID> = self.mutation_log.as_ref()
+            .and_then(|log| log.before_nodes.as_ref())
+            .expect("experiment delta journal is not active")
+            .keys().copied().collect();
+        let edges: Vec<EdgeKey> = self.mutation_log.as_ref()
+            .and_then(|log| log.before_edges.as_ref())
+            .expect("experiment delta journal is not active")
+            .keys().copied().collect();
+        let node_snapshots: Vec<(NodeID, Option<NodeData>)> = nodes.into_iter()
+            .map(|nid| (nid, self.nodes.get(nid.0 as usize)
+                .and_then(Option::as_ref).cloned()))
+            .collect();
+        let edge_snapshots: Vec<(EdgeKey, Option<Attrs>)> = edges.into_iter()
+            .map(|key| (key, self.edge_idx(key.src, key.edge_type, key.tgt)
+                .map(|idx| self.edge_attrs(idx).clone())))
+            .collect();
+        let log = self.mutation_log.as_mut().expect("experiment delta journal is not active");
+        assert!(!log.phase_active, "experiment delta checkpoint already set");
+        let phase_nodes = log.phase_before_nodes.as_mut().expect("detailed journal required");
+        for (nid, state) in node_snapshots { phase_nodes.entry(nid).or_insert(state); }
+        let phase_edges = log.phase_before_edges.as_mut().expect("detailed journal required");
+        for (key, state) in edge_snapshots { phase_edges.entry(key).or_insert(state); }
+        log.phase_active = true;
+    }
+
+    /// Finish collection and return the deduplicated targets. Returns an
+    /// empty log when collection was not active.
+    pub fn finish_mutation_log(&mut self) -> GraphMutationLog {
+        self.mutation_log.take().unwrap_or_default()
+    }
+
+    /// Install a sparse edge-read aperture around `focus_nodes`. All node
+    /// identities remain visible; only edges whose endpoints are both in the
+    /// `hops`-closure are visible from the inherited graph revision. Future
+    /// branch-local edges are visible and are added to these indexes.
+    pub fn set_focus_edge_scope(&mut self, focus_nodes: &[NodeID], hops: usize) -> usize {
+        if focus_nodes.is_empty() {
+            self.edge_read_scope = None;
+            return self.edge_count();
+        }
+        let mut nodes: FxHashSet<NodeID> = focus_nodes.iter().copied()
+            .filter(|nid| self.has_node(*nid)).collect();
+        let mut frontier: Vec<NodeID> = nodes.iter().copied().collect();
+        for _ in 0..hops {
+            let mut next = Vec::new();
+            for nid in frontier {
+                for idx in self.out_edges_idx(nid, None)
+                    .into_iter().chain(self.in_edges_idx(nid, None))
+                {
+                    let edge = self.edge(idx);
+                    let other = if edge.src == nid { edge.tgt } else { edge.src };
+                    if nodes.insert(other) {
+                        next.push(other);
+                    }
+                }
+            }
+            if next.is_empty() {
+                break;
+            }
+            frontier = next;
+        }
+
+        let mut scope = EdgeReadScope { nodes, ..EdgeReadScope::default() };
+        let scope_nodes: Vec<NodeID> = scope.nodes.iter().copied().collect();
+        for src in scope_nodes {
+            for idx in self.out_edges_idx(src, None) {
+                let edge = self.edge(idx);
+                if scope.nodes.contains(&edge.tgt) {
+                    scope.insert(idx, edge.key());
+                }
+            }
+        }
+        scope.visible_edges.sort_unstable();
+
+        // Hash-set iteration above is only used to discover source buckets;
+        // rebuild incoming buckets in their original per-target order so a
+        // scoped read is observationally equivalent to physical edge deletion.
+        scope.in_.clear();
+        scope.in_by_type.clear();
+        let targets: Vec<NodeID> = scope.nodes.iter().copied().collect();
+        for tgt in targets {
+            for idx in self.in_edges_idx(tgt, None) {
+                if !scope.visible_edge_set.contains(&idx) {
+                    continue;
+                }
+                let edge = self.edge(idx);
+                scope.in_.entry(tgt).or_default().push(idx);
+                scope.in_by_type.entry((tgt, edge.edge_type)).or_default().push(idx);
+            }
+        }
+
+        // Preserve the substrate's established per-type matching order.
+        let edge_types: FxHashSet<Sym> = scope.visible_edge_set.iter()
+            .map(|idx| self.edge(*idx).edge_type).collect();
+        for edge_type in edge_types {
+            let ordered: Vec<EdgeIdx> = self.edges_by_type(edge_type).iter().copied()
+                .filter(|idx| scope.visible_edge_set.contains(idx)).collect();
+            if !ordered.is_empty() {
+                scope.edges_by_type.insert(edge_type, ordered);
+            }
+        }
+        // A read aperture changes which edge facts a matcher can observe.
+        // Invalidate graph and semi-naive cursors as a scope transition.
+        self.bump_mutation_version();
+        self.edge_delete_generation = self.edge_delete_generation.saturating_add(1);
+        for version in self.edge_delete_version_by_type.values_mut() {
+            *version = version.saturating_add(1);
+        }
+        self.edge_read_scope = Some(scope);
+        self.edge_count()
+    }
+
+    fn log_node_mutation(&mut self, nid: NodeID) {
+        let node_type = self
+            .nodes
+            .get(nid.0 as usize)
+            .and_then(|slot| slot.as_ref())
+            .map(|node| node.type_);
+        let needs_before = self.mutation_log.as_ref()
+            .is_some_and(|log| log.before_nodes.is_some() || log.phase_active);
+        let node = needs_before.then(|| self.nodes.get(nid.0 as usize)
+            .and_then(|slot| slot.as_ref()).cloned()).flatten();
+        if let Some(log) = self.mutation_log.as_mut() {
+            log.changed_nodes.insert(nid);
+            if let Some(node_type) = node_type {
+                log.node_types.entry(nid).or_insert(node_type);
+            }
+            if let (Some(before), Some(node)) = (log.before_nodes.as_mut(), node.as_ref()) {
+                before.entry(nid).or_insert_with(|| Some(node.clone()));
+            }
+            if log.phase_active {
+                if let Some(phase) = log.phase_before_nodes.as_mut() {
+                    phase.entry(nid).or_insert_with(|| node.clone());
+                }
+            }
+        }
+    }
+
+    fn log_node_added(&mut self, nid: NodeID) {
+        let node_type = self.nodes.get(nid.0 as usize)
+            .and_then(|slot| slot.as_ref()).map(|node| node.type_);
+        if let Some(log) = self.mutation_log.as_mut() {
+            log.changed_nodes.insert(nid);
+            if let Some(node_type) = node_type { log.node_types.entry(nid).or_insert(node_type); }
+            if let Some(before) = log.before_nodes.as_mut() { before.entry(nid).or_insert(None); }
+            if log.phase_active {
+                if let Some(phase) = log.phase_before_nodes.as_mut() { phase.entry(nid).or_insert(None); }
+            }
+        }
+    }
+
+    fn log_edge_before(&mut self, key: EdgeKey, before_state: Option<Attrs>) {
+        if let Some(log) = self.mutation_log.as_mut() {
+            if let Some(before) = log.before_edges.as_mut() { before.entry(key).or_insert_with(|| before_state.clone()); }
+            if log.phase_active {
+                if let Some(phase) = log.phase_before_edges.as_mut() { phase.entry(key).or_insert(before_state); }
+            }
+        }
+    }
+
+    fn log_edge_mutation(&mut self, key: EdgeKey) {
+        if let Some(log) = self.mutation_log.as_mut() {
+            log.changed_edges.insert(key);
+            log.changed_nodes.insert(key.src);
+            log.changed_nodes.insert(key.tgt);
+        }
+    }
+
     pub fn node(&self, nid: NodeID) -> &NodeData {
         self.nodes[nid.0 as usize]
             .as_ref()
@@ -525,6 +1027,7 @@ impl TypedGraph {
 
     pub fn node_mut(&mut self, nid: NodeID) -> &mut NodeData {
         self.bump_mutation_version();
+        self.log_node_mutation(nid);
         self.nodes[nid.0 as usize]
             .as_mut()
             .expect("node id refers to a freed slot")
@@ -538,6 +1041,9 @@ impl TypedGraph {
     }
 
     pub fn edge(&self, idx: EdgeIdx) -> &EdgeData {
+        assert!(self.edge_read_scope.as_ref()
+            .map_or(true, |scope| scope.visible_edge_set.contains(&idx)),
+            "edge idx is outside the active experiment read scope");
         self.edges[idx.0 as usize]
             .as_ref()
             .expect("edge idx refers to a freed slot")
@@ -547,11 +1053,24 @@ impl TypedGraph {
         self.edge_idx(src, edge_type, tgt).is_some()
     }
 
-    /// O(out_by_type[(src,et)].len()) scan — typically 0-4 entries on
-    /// substrate workloads, so faster than a hashmap probe + key hash.
-    /// The previous `edge_index: FxHashMap<EdgeKey, EdgeIdx>` cost
-    /// ~32 bytes/edge for an O(1) answer this path replaces.
+    /// Low-degree buckets use a contiguous scan; high-degree buckets use
+    /// their target index. This preserves the sparse-graph memory profile
+    /// while avoiding quadratic duplicate checks on hubs.
     pub fn edge_idx(&self, src: NodeID, edge_type: Sym, tgt: NodeID) -> Option<EdgeIdx> {
+        if let Some(scope) = &self.edge_read_scope {
+            let candidates = scope.out_by_type.get(&(src, edge_type))?;
+            return candidates.iter().find_map(|idx| {
+                self.edges.get(idx.0 as usize).and_then(Option::as_ref)
+                    .filter(|edge| edge.tgt == tgt).map(|_| *idx)
+            });
+        }
+        self.edge_idx_unscoped(src, edge_type, tgt)
+    }
+
+    fn edge_idx_unscoped(&self, src: NodeID, edge_type: Sym, tgt: NodeID) -> Option<EdgeIdx> {
+        if let Some(index) = self.out_by_type_target_index.get(&(src, edge_type)) {
+            return index.get(&tgt).copied();
+        }
         let candidates = self.out_by_type.get(&(src, edge_type))?;
         for idx in candidates {
             if let Some(ed) = self.edges.get(idx.0 as usize).and_then(|s| s.as_ref()) {
@@ -601,6 +1120,12 @@ impl TypedGraph {
     /// that don't mutate the graph between read and use take the
     /// slice; paths that may mutate (rule effects) take the owned Vec.
     pub fn out_edges_slice(&self, nid: NodeID, edge_type: Option<Sym>) -> &[EdgeIdx] {
+        if let Some(scope) = &self.edge_read_scope {
+            return match edge_type {
+                Some(et) => scope.out_by_type.get(&(nid, et)).map(|v| v.as_slice()).unwrap_or(&[]),
+                None => scope.out.get(&nid).map(|v| v.as_slice()).unwrap_or(&[]),
+            };
+        }
         match edge_type {
             Some(et) => self
                 .out_by_type
@@ -616,6 +1141,12 @@ impl TypedGraph {
     }
 
     pub fn in_edges_slice(&self, nid: NodeID, edge_type: Option<Sym>) -> &[EdgeIdx] {
+        if let Some(scope) = &self.edge_read_scope {
+            return match edge_type {
+                Some(et) => scope.in_by_type.get(&(nid, et)).map(|v| v.as_slice()).unwrap_or(&[]),
+                None => scope.in_.get(&nid).map(|v| v.as_slice()).unwrap_or(&[]),
+            };
+        }
         match edge_type {
             Some(et) => self
                 .in_by_type
@@ -678,6 +1209,7 @@ impl TypedGraph {
         if !self.attr_indices.is_empty() {
             self.index_node(nid, type_, &attrs_for_index);
         }
+        self.log_node_added(nid);
         nid
     }
 
@@ -695,6 +1227,12 @@ impl TypedGraph {
         if !self.has_node(tgt) {
             return Err(EdgeInsertError::MissingTgt(tgt));
         }
+        let key = EdgeKey { src, edge_type, tgt };
+        if self.mutation_log.as_ref().is_some_and(|log| log.before_edges.is_some()) {
+            let before_state = self.edge_idx(src, edge_type, tgt)
+                .map(|idx| self.edge_attrs(idx).clone());
+            self.log_edge_before(key, before_state);
+        }
         self.bump_mutation_version();
         let store_attrs = |idx: EdgeIdx, this: &mut Self, attrs: Attrs| {
             if attrs.is_empty() {
@@ -711,7 +1249,22 @@ impl TypedGraph {
                 tgt,
             });
             store_attrs(existing, self, attrs);
+            self.log_edge_mutation(EdgeKey { src, edge_type, tgt });
             return Ok(existing);
+        }
+        // An edge hidden by the inherited aperture can be recreated by a
+        // branch rule. Reuse its underlying slot/index instead of storing a
+        // duplicate triple, but make it visible in the branch-local view.
+        if self.edge_read_scope.is_some() {
+            if let Some(existing) = self.edge_idx_unscoped(src, edge_type, tgt) {
+                self.bump_mutation_version();
+                self.edges[existing.0 as usize] = Some(EdgeData { src, edge_type, tgt });
+                store_attrs(existing, self, attrs);
+                self.edge_read_scope.as_mut().expect("scope checked")
+                    .insert(existing, EdgeKey { src, edge_type, tgt });
+                self.log_edge_mutation(EdgeKey { src, edge_type, tgt });
+                return Ok(existing);
+            }
         }
         let data = EdgeData {
             src,
@@ -728,24 +1281,57 @@ impl TypedGraph {
         };
         self.out[src.0 as usize].push(idx);
         self.in_[tgt.0 as usize].push(idx);
-        self.out_by_type
-            .entry((src, edge_type))
-            .or_default()
-            .push(idx);
-        self.in_by_type
-            .entry((tgt, edge_type))
-            .or_default()
-            .push(idx);
+        self.out_by_type.get_or_default_mut((src, edge_type)).push(idx);
+        let bucket_key = (src, edge_type);
+        let bucket = self
+            .out_by_type
+            .get(&bucket_key)
+            .expect("inserted out-by-type bucket");
+        if bucket.len() == OUT_BY_TYPE_HASH_THRESHOLD {
+            let targets: Vec<(NodeID, EdgeIdx)> = bucket
+                .iter()
+                .filter_map(|edge_idx| {
+                    self.edges
+                        .get(edge_idx.0 as usize)
+                        .and_then(Option::as_ref)
+                        .map(|edge| (edge.tgt, *edge_idx))
+                })
+                .collect();
+            self.out_by_type_target_index
+                .insert(bucket_key, targets.into_iter().collect());
+        } else if bucket.len() > OUT_BY_TYPE_HASH_THRESHOLD {
+            self.out_by_type_target_index
+                .get_mut(&bucket_key)
+                .expect("high-degree bucket has target index")
+                .insert(tgt, idx);
+        }
+        self.in_by_type.get_or_default_mut((tgt, edge_type)).push(idx);
         self.edges_by_type.entry(edge_type).or_default().push(idx);
+        if let Some(scope) = self.edge_read_scope.as_mut() {
+            scope.insert(idx, EdgeKey { src, edge_type, tgt });
+        }
         store_attrs(idx, self, attrs);
+        self.log_edge_mutation(EdgeKey { src, edge_type, tgt });
         Ok(idx)
     }
 
     pub fn delete_edge(&mut self, idx: EdgeIdx) -> Option<EdgeData> {
+        if self.mutation_log.as_ref().is_some_and(|log| log.before_edges.is_some()) {
+          if let Some(data) = self.edges.get(idx.0 as usize).and_then(Option::as_ref) {
+            let visible = self.edge_read_scope.as_ref()
+                .map_or(true, |scope| scope.visible_edge_set.contains(&idx));
+            let before_state = if visible { self.edge_attrs(idx).clone().into() } else { None };
+            self.log_edge_before(data.key(), before_state);
+          }
+        }
         let slot = self.edges.get_mut(idx.0 as usize)?;
         let data = slot.take()?;
         self.bump_mutation_version();
         let key = data.key();
+        if let Some(scope) = self.edge_read_scope.as_mut() {
+            scope.remove(idx, key);
+        }
+        self.log_edge_mutation(key);
         // Remove from every index. SmallVec.retain is O(n) but n is tiny;
         // for the giant-adjacency edge case a swap_remove pattern would
         // help, but profile first.
@@ -755,8 +1341,17 @@ impl TypedGraph {
         if let Some(v) = self.in_.get_mut(key.tgt.0 as usize) {
             v.retain(|e| *e != idx);
         }
-        if let Some(v) = self.out_by_type.get_mut(&(key.src, key.edge_type)) {
+        let out_bucket_key = (key.src, key.edge_type);
+        if let Some(index) = self.out_by_type_target_index.get_mut(&out_bucket_key) {
+            index.remove(&key.tgt);
+        }
+        let mut out_bucket_len = None;
+        if let Some(v) = self.out_by_type.get_mut(&out_bucket_key) {
             v.retain(|e| *e != idx);
+            out_bucket_len = Some(v.len());
+        }
+        if out_bucket_len.is_some_and(|len| len < OUT_BY_TYPE_HASH_THRESHOLD) {
+            self.out_by_type_target_index.remove(&out_bucket_key);
         }
         if let Some(v) = self.in_by_type.get_mut(&(key.tgt, key.edge_type)) {
             v.retain(|e| *e != idx);
@@ -771,9 +1366,109 @@ impl TypedGraph {
             .edge_delete_version_by_type
             .entry(key.edge_type)
             .or_insert(0) += 1;
+        self.edge_delete_generation = self.edge_delete_generation.saturating_add(1);
         self.edge_attrs.remove(&idx);
         self.edge_freelist.push(idx.0);
         Some(data)
+    }
+
+    /// Delete a batch of edges while preserving the stable order of every
+    /// adjacency vector. Each touched vector is compacted once, rather than
+    /// once per edge. This is intended for bulk teardown (for example, node
+    /// deletion or a caller-supplied edge batch); single-edge mutation keeps
+    /// using `delete_edge`.
+    pub fn delete_edges_batch(&mut self, indices: &[EdgeIdx]) -> Vec<EdgeData> {
+        let mut visited = FxHashSet::default();
+        let mut removed_ids = FxHashSet::default();
+        let mut removed = Vec::with_capacity(indices.len());
+        for &idx in indices {
+            if !visited.insert(idx) {
+                continue;
+            }
+            if self.mutation_log.as_ref().is_some_and(|log| log.before_edges.is_some()) {
+                if let Some(data_ref) = self.edges.get(idx.0 as usize).and_then(Option::as_ref) {
+                    let key = data_ref.key();
+                    let visible = self.edge_read_scope.as_ref()
+                        .map_or(true, |scope| scope.visible_edge_set.contains(&idx));
+                    let before_state = if visible { self.edge_attrs(idx).clone().into() } else { None };
+                    self.log_edge_before(key, before_state);
+                }
+            }
+            let Some(data) = self.edges.get_mut(idx.0 as usize).and_then(Option::take) else {
+                continue;
+            };
+            self.bump_mutation_version();
+            if let Some(scope) = self.edge_read_scope.as_mut() {
+                scope.remove(idx, data.key());
+            }
+            self.log_edge_mutation(data.key());
+            self.edge_attrs.remove(&idx);
+            self.edge_freelist.push(idx.0);
+            removed_ids.insert(idx);
+            removed.push((idx, data));
+        }
+        if removed.is_empty() {
+            return Vec::new();
+        }
+
+        let mut out_nodes = FxHashSet::default();
+        let mut in_nodes = FxHashSet::default();
+        let mut out_buckets = FxHashSet::default();
+        let mut in_buckets = FxHashSet::default();
+        let mut edge_types = FxHashSet::default();
+        for (_, edge) in &removed {
+            out_nodes.insert(edge.src);
+            in_nodes.insert(edge.tgt);
+            out_buckets.insert((edge.src, edge.edge_type));
+            in_buckets.insert((edge.tgt, edge.edge_type));
+            edge_types.insert(edge.edge_type);
+            if let Some(index) = self.out_by_type_target_index.get_mut(&(edge.src, edge.edge_type)) {
+                index.remove(&edge.tgt);
+            }
+        }
+
+        for node in out_nodes {
+            if let Some(edges) = self.out.get_mut(node.0 as usize) {
+                edges.retain(|edge| !removed_ids.contains(edge));
+            }
+        }
+        for node in in_nodes {
+            if let Some(edges) = self.in_.get_mut(node.0 as usize) {
+                edges.retain(|edge| !removed_ids.contains(edge));
+            }
+        }
+        for bucket_key in out_buckets {
+            let remaining = if let Some(edges) = self.out_by_type.get_mut(&bucket_key) {
+                edges.retain(|edge| !removed_ids.contains(edge));
+                Some(edges.len())
+            } else {
+                None
+            };
+            if remaining.is_some_and(|len| len < OUT_BY_TYPE_HASH_THRESHOLD) {
+                self.out_by_type_target_index.remove(&bucket_key);
+            }
+        }
+        for bucket_key in in_buckets {
+            if let Some(edges) = self.in_by_type.get_mut(&bucket_key) {
+                edges.retain(|edge| !removed_ids.contains(edge));
+            }
+        }
+        for edge_type in edge_types {
+            if let Some(edges) = self.edges_by_type.get_mut(&edge_type) {
+                edges.retain(|edge| !removed_ids.contains(edge));
+            }
+        }
+
+        for (_, edge) in &removed {
+            *self
+                .edge_delete_version_by_type
+                .entry(edge.edge_type)
+                .or_insert(0) += 1;
+        }
+        self.edge_delete_generation = self
+            .edge_delete_generation
+            .saturating_add(removed.len() as u64);
+        removed.into_iter().map(|(_, edge)| edge).collect()
     }
 
     /// Read-only view of an edge's attributes. Returns a reference to a
@@ -790,7 +1485,15 @@ impl TypedGraph {
     /// entry if none exists yet — call `set_edge_attr_clear` after
     /// removing all attrs if you want to free the entry.
     pub fn edge_attrs_mut(&mut self, idx: EdgeIdx) -> &mut Attrs {
+        assert!(self.edge_read_scope.as_ref()
+            .map_or(true, |scope| scope.visible_edge_set.contains(&idx)),
+            "edge idx is outside the active experiment read scope");
         self.bump_mutation_version();
+        if let Some(edge) = self.edges.get(idx.0 as usize).and_then(|slot| slot.as_ref()) {
+            let key = edge.key();
+            self.log_edge_before(key, Some(self.edge_attrs(idx).clone()));
+            self.log_edge_mutation(key);
+        }
         self.edge_attrs.entry(idx).or_default()
     }
 
@@ -798,16 +1501,12 @@ impl TypedGraph {
         if !self.has_node(nid) {
             return None;
         }
+        self.log_node_mutation(nid);
         // Cascade: delete every adjacent edge first so the indices stay
         // consistent.
-        let outs: Vec<EdgeIdx> = self.out[nid.0 as usize].iter().copied().collect();
-        for e in outs {
-            self.delete_edge(e);
-        }
-        let ins: Vec<EdgeIdx> = self.in_[nid.0 as usize].iter().copied().collect();
-        for e in ins {
-            self.delete_edge(e);
-        }
+        let mut incident: Vec<EdgeIdx> = self.out[nid.0 as usize].iter().copied().collect();
+        incident.extend(self.in_[nid.0 as usize].iter().copied());
+        self.delete_edges_batch(&incident);
         let data = self.nodes[nid.0 as usize].take()?;
         self.bump_mutation_version();
         // Remove from the by_type index. Same retain rationale.
@@ -910,7 +1609,17 @@ impl TypedGraph {
         self.nodes.iter().filter(|s| s.is_some()).count()
     }
 
+    /// Next identifier under experiment adoption's current allocation policy:
+    /// one greater than the greatest live NodeID (zero for an empty graph).
+    /// This scans node slots without serializing attributes or any edges.
+    pub fn next_live_node_id(&self) -> u64 {
+        self.iter_nodes().map(|(nid, _)| u64::from(nid.0) + 1).max().unwrap_or(0)
+    }
+
     pub fn edge_count(&self) -> usize {
+        if let Some(scope) = &self.edge_read_scope {
+            return scope.visible_edge_set.len();
+        }
         self.edges.iter().filter(|s| s.is_some()).count()
     }
 
@@ -923,11 +1632,17 @@ impl TypedGraph {
             .filter_map(|(i, slot)| slot.as_ref().map(|d| (NodeID(i as u32), d)))
     }
 
-    pub fn iter_edges(&self) -> impl Iterator<Item = (EdgeIdx, &EdgeData)> {
-        self.edges
-            .iter()
-            .enumerate()
-            .filter_map(|(i, slot)| slot.as_ref().map(|d| (EdgeIdx(i as u32), d)))
+    pub fn iter_edges(&self) -> Box<dyn Iterator<Item = (EdgeIdx, &EdgeData)> + '_> {
+        if let Some(scope) = &self.edge_read_scope {
+            Box::new(scope.visible_edges.iter().filter_map(|idx| {
+                self.edges.get(idx.0 as usize).and_then(Option::as_ref)
+                    .map(|edge| (*idx, edge))
+            }))
+        } else {
+            Box::new(self.edges.iter().enumerate().filter_map(|(i, slot)| {
+                slot.as_ref().map(|edge| (EdgeIdx(i as u32), edge))
+            }))
+        }
     }
 
     /// A hash of the graph's ENTIRE mutable state — every live node
@@ -1003,16 +1718,36 @@ impl TypedGraph {
     pub fn restore_node(&mut self, nid: NodeID, type_: Sym, attrs: impl Into<Attrs>) {
         self.bump_mutation_version();
         let idx = nid.0 as usize;
+        let attrs: Attrs = attrs.into();
+        // A restored identity may have been deleted earlier in this graph
+        // lifetime. Remove it from the reuse stack before making the slot live,
+        // otherwise the next insert_node could pop the same ID and overwrite
+        // the restored node. Persistence restores into a fresh graph today, but
+        // residual adoption restores into a live graph and needs this invariant.
+        self.node_freelist.retain(|slot| *slot != nid.0);
         while self.nodes.len() <= idx {
             self.nodes.push(None);
             self.out.push(SmallVec::new());
             self.in_.push(SmallVec::new());
         }
+        if let Some(old) = self.nodes[idx].take() {
+            if let Some(ids) = self.by_type.get_mut(&old.type_) {
+                ids.retain(|existing| *existing != nid);
+            }
+            if !self.attr_indices.is_empty() {
+                self.unindex_node(nid, old.type_);
+            }
+        }
+        let attrs_for_index = attrs.clone();
         self.nodes[idx] = Some(NodeData {
             type_,
-            attrs: attrs.into(),
+            attrs,
         });
         self.by_type.entry(type_).or_default().push(nid);
+        if !self.attr_indices.is_empty() {
+            self.index_node(nid, type_, &attrs_for_index);
+        }
+        self.log_node_added(nid);
     }
 
     pub fn restore_edge(
@@ -1507,7 +2242,7 @@ mod tests {
         // bucket slot, ~0.75 load factor → 1.33 slots per entry).
         let attr_heap_estimate =
             (total_node_attrs + total_edge_attrs) * (size_of::<(Sym, Value)>() + 8);
-        // out + in_ contiguous Vec<SmallVec> — only count spilled lists'
+        // out + in_ CowPagedVec<SmallVec> — only count spilled lists'
         // heap (inline lists are already in node_slab_bytes-adjacent
         // memory via the Vec itself).
         let out_vec_bytes = g.out.len() * size_of::<SmallVec<[EdgeIdx; 4]>>();
@@ -1516,8 +2251,8 @@ mod tests {
         eprintln!("node slab           {:>10} bytes", node_slab_bytes);
         eprintln!("edge slab           {:>10} bytes", edge_slab_bytes);
         eprintln!("attr heap (est)     {:>10} bytes", attr_heap_estimate);
-        eprintln!("out Vec<SmallVec>   {:>10} bytes", out_vec_bytes);
-        eprintln!("in_ Vec<SmallVec>   {:>10} bytes", in_vec_bytes);
+        eprintln!("out adjacency slots {:>10} bytes", out_vec_bytes);
+        eprintln!("in_ adjacency slots {:>10} bytes", in_vec_bytes);
         eprintln!("------");
         let total =
             node_slab_bytes + edge_slab_bytes + attr_heap_estimate + out_vec_bytes + in_vec_bytes;
@@ -1595,8 +2330,8 @@ mod tests {
         eprintln!("node slab           {:>10} bytes", node_slab2);
         eprintln!("edge slab           {:>10} bytes", edge_slab2);
         eprintln!("attr heap (est)     {:>10} bytes", attr_heap2);
-        eprintln!("out Vec<SmallVec>   {:>10} bytes", out_vec2);
-        eprintln!("in_ Vec<SmallVec>   {:>10} bytes", in_vec2);
+        eprintln!("out adjacency slots {:>10} bytes", out_vec2);
+        eprintln!("in_ adjacency slots {:>10} bytes", in_vec2);
         eprintln!(
             "out/in_by_type maps {:>10} bytes (estimate)",
             hashmap_overhead2

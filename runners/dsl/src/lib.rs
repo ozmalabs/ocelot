@@ -46,6 +46,8 @@
 
 /// Semantic areas plus dependency-derived scheduling components.
 pub mod area_scheduler;
+/// Default-off concrete graph access tracing for bounded measurements.
+pub mod access_trace;
 pub mod argmin_tie;
 /// Bounded code cache with LRU eviction + Arc-based safe concurrent
 /// reclamation. Realises the implementable components of the
@@ -56,6 +58,11 @@ pub mod code_cache;
 pub mod cognitive_cycle;
 /// Pure native workers for graph-requested epoch-stamped cognitive tasks.
 pub mod cognitive_tasks;
+/// Experimental persistent paged storage for isolated substrate branches.
+/// Used by `TypedGraph` node/edge slabs; graph indexes and most Substrate
+/// state still use eager clone semantics (see the thoughtexperiment CoW gates).
+pub mod cow_paged_vec;
+pub mod cow_sharded_map;
 /// `effect_audit` — the failed-effect instrument. `apply_rule_full` discarded
 /// the result of `insert_edge`, so an insert that failed on a missing endpoint
 /// was silent AND credited false progress to the fixpoint. Counting is
@@ -328,6 +335,8 @@ pub mod vision_primitives;
 pub mod wave_stencil;
 
 mod py;
+// Shared rule JSON decoder used by the Python binding and other Rust callers.
+pub use py::parse_rule_json_pub;
 
 use pyo3::prelude::*;
 
