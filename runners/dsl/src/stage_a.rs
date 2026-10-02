@@ -459,6 +459,18 @@ pub fn capture(
                     attrs,
                 });
             }
+            UndoStep::EdgeAttrsSet { key, .. } => {
+                let attrs = graph
+                    .edge_idx(key.src, key.edge_type, key.tgt)
+                    .map(|idx| graph.edge_attrs(idx).clone())
+                    .unwrap_or_default();
+                writes.push(Write::AddEdge {
+                    src: as_ref(key.src, &slots),
+                    edge_type: key.edge_type,
+                    tgt: as_ref(key.tgt, &slots),
+                    attrs,
+                });
+            }
             UndoStep::DeletedEdge {
                 src,
                 edge_type,

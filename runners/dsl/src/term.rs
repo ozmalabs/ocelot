@@ -3259,6 +3259,7 @@ pub enum TermNode {
 /// goes through `add`, evaluation through `evaluate`. One arena per
 /// substrate is the typical pattern; multiple arenas are fine as long
 /// as Sym handles aren't crossed.
+#[derive(Clone)]
 pub struct TermArena {
     pub nodes: Vec<TermNode>,
 }
@@ -3307,16 +3308,36 @@ pub fn env_get(env: &Env, name: Sym) -> Option<&Value> {
 
 // --- Evaluation context ---
 
-/// Optional per-step cache for `Neighbours` / `InNeighbours` / `Filter`.
+/// Optional per-step cache for `Neighbours` / `InNeighbours` / `Filter` and
+/// opt-in `ReachableFrom` query reuse.
 /// The Python version flips `_eval_cache` on the graph; we keep it
 /// scoped to the EvalCtx so an evaluation that opens a cache can't
 /// affect concurrent unrelated evaluations.
 #[derive(Default)]
 pub struct EvalCache {
+    /// Experimental query reuse. Default off until the parity/cost panel lands.
+    pub reachable_enabled: bool,
+    /// Cumulative query-level hit/miss counters for the enabled experimental
+    /// cache. Mutation clears do not reset these counters.
+    pub reachable_hits: u64,
+    pub reachable_misses: u64,
+    /// Estimated retained key/value/result/footprint payload, excluding map
+    /// buckets and allocator overhead; maintained incrementally.
+    pub reachable_payload_bytes: u64,
+    pub reachable_peak_payload_bytes: u64,
+    pub reachable_peak_entries: u64,
+    /// `(start, edge_type, any_type)` -> shared transitive result and every
+    /// node whose outgoing adjacency was inspected. Sharing the entry avoids
+    /// copying a potentially large footprint on each cache hit.
+    pub reachable: FxHashMap<(NodeID, Sym, bool), Arc<(Value, SmallVec<[NodeID; 16]>)>>,
     /// (node, edge_type, "in" or "out") -> set Value (FrozenSet).
     pub neighbours: FxHashMap<(NodeID, Sym, bool), Value>,
     /// (term_idx, free-var bindings) -> set Value, for Filter.
     pub filter: FxHashMap<(TermIdx, SmallVec<[(Sym, Value); 4]>), Value>,
+    /// (term_idx, free-var bindings) -> winner for pure graph-read Argmax
+    /// expressions. Repeated outer bindings often ask for the same winner;
+    /// graph mutations clear this alongside Filter results.
+    pub argmax: FxHashMap<(TermIdx, SmallVec<[(Sym, Value); 4]>), Value>,
     /// `Holds(concept, node, node2)` -> Value. Same key shape as the
     /// Holds variant; Some(node) / Some(node2) participate in the key.
     /// Cleared by the substrate on any mutation (the substrate's
@@ -3340,8 +3361,10 @@ struct SdCacheKey {
 
 impl EvalCache {
     pub fn clear_traversal(&mut self) {
+        self.clear_reachable();
         self.neighbours.clear();
         self.filter.clear();
+        self.argmax.clear();
         self.holds.clear();
     }
 
@@ -3352,6 +3375,99 @@ impl EvalCache {
 
     pub(crate) fn clear_sd_ops(&mut self) {
         self.sd_ops.clear();
+    }
+
+    pub fn set_reachable_enabled(&mut self, on: bool) {
+        self.reachable_enabled = on;
+        self.clear_reachable();
+    }
+
+    fn clear_reachable(&mut self) {
+        self.reachable.clear();
+        self.reachable_payload_bytes = 0;
+    }
+
+    fn reachable_entry_payload_bytes(
+        key: &(NodeID, Sym, bool),
+        value: &Value,
+        footprint: &SmallVec<[NodeID; 16]>,
+    ) -> u64 {
+        let len = value.len();
+        let result_bytes = if len > 0 {
+            (len as u64)
+                .saturating_mul(std::mem::size_of::<Value>() as u64)
+                .saturating_add((2 * std::mem::size_of::<usize>()) as u64)
+        } else {
+            0
+        };
+        let footprint_bytes = if footprint.spilled() {
+            (footprint.capacity() as u64).saturating_mul(std::mem::size_of::<NodeID>() as u64)
+        } else {
+            0
+        };
+        ((std::mem::size_of_val(key)
+            + std::mem::size_of::<Arc<(Value, SmallVec<[NodeID; 16]>)>>()
+            + std::mem::size_of::<(Value, SmallVec<[NodeID; 16]>)>()
+            + 2 * std::mem::size_of::<usize>()) as u64)
+            .saturating_add(result_bytes)
+            .saturating_add(footprint_bytes)
+    }
+
+    fn insert_reachable(
+        &mut self,
+        key: (NodeID, Sym, bool),
+        entry: Arc<(Value, SmallVec<[NodeID; 16]>)>,
+    ) {
+        let bytes = Self::reachable_entry_payload_bytes(&key, &entry.0, &entry.1);
+        if let Some(old_entry) = self.reachable.remove(&key) {
+            self.reachable_payload_bytes =
+                self.reachable_payload_bytes
+                    .saturating_sub(Self::reachable_entry_payload_bytes(
+                        &key,
+                        &old_entry.0,
+                        &old_entry.1,
+                    ));
+        }
+        self.reachable.insert(key, entry);
+        self.reachable_payload_bytes = self.reachable_payload_bytes.saturating_add(bytes);
+        self.reachable_peak_payload_bytes = self
+            .reachable_peak_payload_bytes
+            .max(self.reachable_payload_bytes);
+        self.reachable_peak_entries = self.reachable_peak_entries.max(self.reachable.len() as u64);
+    }
+
+    /// Live cache entries and payload accounting. `estimated_payload_bytes`
+    /// includes the map key/value structs, retained result-slice contents and
+    /// Arc headers, plus spilled adjacency-footprint storage. It excludes
+    /// hash-table bucket/control bytes and allocator metadata/capacity slack.
+    pub fn reachable_stats(&self) -> (u64, u64, u64, u64, u64, u64, u64, u64, u64) {
+        let mut result_values = 0u64;
+        let mut footprint_nodes = 0u64;
+        let mut estimated_payload_bytes = 0u64;
+        for (key, entry) in &self.reachable {
+            let (value, footprint) = entry.as_ref();
+            let len = value.len();
+            result_values = result_values.saturating_add(len as u64);
+            footprint_nodes = footprint_nodes.saturating_add(footprint.len() as u64);
+            estimated_payload_bytes = estimated_payload_bytes
+                .saturating_add(Self::reachable_entry_payload_bytes(key, value, footprint));
+        }
+        (
+            self.reachable_hits,
+            self.reachable_misses,
+            self.reachable.len() as u64,
+            result_values,
+            footprint_nodes,
+            self.reachable.capacity() as u64,
+            estimated_payload_bytes,
+            self.reachable_peak_entries,
+            self.reachable_peak_payload_bytes,
+        )
+    }
+
+    pub fn reset_reachable_stats(&mut self) {
+        self.reachable_hits = 0;
+        self.reachable_misses = 0;
     }
 }
 
@@ -3367,12 +3483,25 @@ fn sd_cache_key(
     let typed_fingerprints = syms
         .iter()
         .map(|sym| {
+            // The cache key itself reads the complete typed population and
+            // every attribute. Keep that dependency visible on both cache
+            // hits and misses; downstream shape-decode scans are not a
+            // substitute because those only run on a miss. The query marker
+            // also represents an empty population.
+            crate::access_trace::note(
+                34,
+                crate::access_trace::NO_ID,
+                sym.0,
+                crate::access_trace::NO_ID,
+            );
             // SD's implicit graph dependency is precisely the typed codebook
             // read by load_parts/load_generators. Hash that projection, not
             // the whole graph: unrelated cognitive writes do not invalidate
             // sibling field projections, while any codebook mutation does.
             let mut hasher = rustc_hash::FxHasher::default();
             for nid in graph.nodes_of_type(*sym) {
+                crate::access_trace::note(35, nid.0, sym.0, crate::access_trace::NO_ID);
+                crate::access_trace::note_node_type_and_attrs(graph, nid);
                 nid.hash(&mut hasher);
                 let node = graph.node(nid);
                 for (key, value) in &node.attrs {
@@ -5964,6 +6093,7 @@ fn lookahead_value(
     score_key: Sym,
     depth: i64,
 ) -> f64 {
+    crate::access_trace::note(2, node.0, score_key.0, crate::access_trace::NO_ID);
     let score = graph
         .node(node)
         .attrs
@@ -5973,6 +6103,7 @@ fn lookahead_value(
     if depth <= 1 {
         return score;
     }
+    crate::access_trace::note_out_edges(graph, node, Some(child_edge));
     let children = graph.neighbours(node, Some(child_edge));
     if children.is_empty() {
         return score;
@@ -6491,6 +6622,7 @@ fn read_track_feature(
     extent_key: Option<Sym>,
 ) -> TrackFeature {
     let attrs = &graph.node(nid).attrs;
+    crate::access_trace::note(2, nid.0, feature_key.0, crate::access_trace::NO_ID);
     let features: Vec<f64> = match attrs.get(&feature_key) {
         Some(v @ (Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_))) => {
             v.iter().map(|x| x.as_f64()).collect()
@@ -6499,9 +6631,15 @@ fn read_track_feature(
         None => Vec::new(),
     };
     let category = category_key
-        .and_then(|k| attrs.get(&k).cloned())
+        .and_then(|k| {
+            crate::access_trace::note(2, nid.0, k.0, crate::access_trace::NO_ID);
+            attrs.get(&k).cloned()
+        })
         .unwrap_or(Value::None);
-    let (extent, has_extent) = match extent_key.and_then(|k| attrs.get(&k)) {
+    let (extent, has_extent) = match extent_key.and_then(|k| {
+        crate::access_trace::note(2, nid.0, k.0, crate::access_trace::NO_ID);
+        attrs.get(&k)
+    }) {
         Some(v @ (Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_))) => {
             (v.iter().cloned().collect(), true)
         }
@@ -6803,6 +6941,75 @@ fn eval_pareto_dominates(
     strictly_better
 }
 
+/// Recognize the deterministic graph-query subset eligible for same-step
+/// Argmax memoization. Unknown Terms may consult tools, clocks, or mutable
+/// external state, so they deliberately stay on the uncached path.
+fn is_stable_graph_query(arena: &TermArena, idx: TermIdx) -> bool {
+    match arena.get(idx) {
+        TermNode::Var { .. } | TermNode::Lit { .. } => true,
+        TermNode::Attr { node, .. }
+        | TermNode::Not { arg: node }
+        | TermNode::Abs { arg: node }
+        | TermNode::Count { source: node } => is_stable_graph_query(arena, *node),
+        TermNode::Neighbours { node, .. } | TermNode::InNeighbours { node, .. } => {
+            is_stable_graph_query(arena, *node)
+        }
+        TermNode::Eq { a, b }
+        | TermNode::Lt { a, b }
+        | TermNode::Lte { a, b }
+        | TermNode::Gt { a, b }
+        | TermNode::Gte { a, b }
+        | TermNode::Minus { a, b } => {
+            is_stable_graph_query(arena, *a) && is_stable_graph_query(arena, *b)
+        }
+        TermNode::Plus { items } | TermNode::Times { items } => {
+            items.iter().all(|item| is_stable_graph_query(arena, *item))
+        }
+        TermNode::And { items } | TermNode::Or { items } => {
+            items.iter().all(|item| is_stable_graph_query(arena, *item))
+        }
+        TermNode::Filter {
+            source, predicate, ..
+        }
+        | TermNode::FilterList {
+            source, predicate, ..
+        }
+        | TermNode::Exists {
+            source, predicate, ..
+        } => is_stable_graph_query(arena, *source) && is_stable_graph_query(arena, *predicate),
+        _ => false,
+    }
+}
+
+fn cached_argmax_key(
+    arena: &TermArena,
+    source: TermIdx,
+    var_name: Sym,
+    value: TermIdx,
+    default: Option<TermIdx>,
+    env: &Env,
+) -> Option<SmallVec<[(Sym, Value); 4]>> {
+    if !is_stable_graph_query(arena, source)
+        || !is_stable_graph_query(arena, value)
+        || default.is_some_and(|term| !is_stable_graph_query(arena, term))
+    {
+        return None;
+    }
+    let mut free = free_vars(arena, source, None);
+    free.extend(free_vars(arena, value, Some(var_name)));
+    if let Some(term) = default {
+        free.extend(free_vars(arena, term, None));
+    }
+    free.sort();
+    free.dedup();
+
+    let mut key: SmallVec<[(Sym, Value); 4]> = SmallVec::new();
+    for name in free {
+        key.push((name, env_get(env, name)?.clone()));
+    }
+    Some(key)
+}
+
 pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCtx) -> Value {
     // Macro to read a SmallVec cache key for Filter. Built once per call.
     macro_rules! cache_key {
@@ -6847,7 +7054,9 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
             let v = evaluate(arena, *node, env, ctx);
             match v {
                 Value::Node(nid) if ctx.graph.has_node(nid) => {
-                    Value::Str(ctx.graph.node(nid).type_)
+                    let type_sym = ctx.graph.node(nid).type_;
+                    crate::access_trace::note(3, nid.0, type_sym.0, crate::access_trace::NO_ID);
+                    Value::Str(type_sym)
                 }
                 _ => Value::None,
             }
@@ -6857,6 +7066,7 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
             let v = evaluate(arena, *node, env, ctx);
             match v {
                 Value::Node(nid) if ctx.graph.has_node(nid) => {
+                    crate::access_trace::note(2, nid.0, key.0, crate::access_trace::NO_ID);
                     // FALLBACK TRACE (§ VISION_FALLBACK_VOCAB_PREREG). The
                     // `unwrap_or(Value::None)` this replaces is `.get('Name','')`
                     // in the engine core: a rule reading an attribute NO RULE
@@ -6886,6 +7096,12 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
             // never panics the evaluator.
             let arg_vals: Vec<Value> = args.iter().map(|a| evaluate(arena, *a, env, ctx)).collect();
             let name = ctx.interner.resolve(*tool);
+            crate::access_trace::note(
+                18,
+                crate::access_trace::NO_ID,
+                tool.0,
+                crate::access_trace::NO_ID,
+            );
             crate::tools::call_tool(name, &arg_vals, ctx.interner)
         }
 
@@ -8087,6 +8303,31 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
                 return Value::make_frozenset(vec![]);
             };
             let et = if *any_type { None } else { Some(*edge_type) };
+            let cache_key = (start, *edge_type, *any_type);
+            if let Some(entry) = ctx.cache.as_deref_mut().and_then(|cache| {
+                if cache.reachable_enabled {
+                    cache.reachable.get(&cache_key).cloned()
+                } else {
+                    None
+                }
+            }) {
+                if let Some(cache) = ctx.cache.as_deref_mut() {
+                    if cache.reachable_enabled {
+                        cache.reachable_hits = cache.reachable_hits.saturating_add(1);
+                    }
+                }
+                if crate::access_trace::is_enabled() {
+                    for &cur in &entry.1 {
+                        crate::access_trace::note_out_edges(ctx.graph, cur, et);
+                    }
+                }
+                return entry.0.clone();
+            }
+            if let Some(cache) = ctx.cache.as_deref_mut() {
+                if cache.reachable_enabled {
+                    cache.reachable_misses = cache.reachable_misses.saturating_add(1);
+                }
+            }
             // Transitive closure: BFS to fixpoint over the SAME
             // ctx.graph.neighbours() Neighbours calls for one hop --
             // composition of the existing graph primitive; only the
@@ -8094,16 +8335,30 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
             // finite Term-tree can express an unbounded walk.
             let mut visited: rustc_hash::FxHashSet<NodeID> = rustc_hash::FxHashSet::default();
             let mut frontier: Vec<NodeID> = vec![start];
+            let mut footprint: SmallVec<[NodeID; 16]> = SmallVec::new();
+            let mut traversal_units = 0u64;
             visited.insert(start);
             while let Some(cur) = frontier.pop() {
-                for nb in ctx.graph.neighbours(cur, et) {
+                crate::access_trace::note_out_edges(ctx.graph, cur, et);
+                footprint.push(cur);
+                let neighbours = ctx.graph.neighbours(cur, et);
+                traversal_units = traversal_units.saturating_add(neighbours.len() as u64);
+                for nb in neighbours {
                     if visited.insert(nb) {
                         frontier.push(nb);
                     }
                 }
             }
+            crate::scale_audit::term_units(traversal_units);
             visited.remove(&start);
-            Value::make_frozenset(visited.into_iter().map(Value::Node).collect::<Vec<_>>())
+            let value =
+                Value::make_frozenset(visited.into_iter().map(Value::Node).collect::<Vec<_>>());
+            if let Some(cache) = ctx.cache.as_deref_mut() {
+                if cache.reachable_enabled {
+                    cache.insert_reachable(cache_key, Arc::new((value.clone(), footprint)));
+                }
+            }
+            value
         }
 
         TermNode::Neighbours {
@@ -8116,13 +8371,15 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
                 return Value::make_frozenset(vec![]);
             };
             let et = if *any_type { None } else { Some(*edge_type) };
-            cached_neighbours(ctx, nid, *edge_type, *any_type, false, || {
+            let result = cached_neighbours(ctx, nid, *edge_type, *any_type, false, || {
                 ctx.graph
                     .neighbours(nid, et)
                     .into_iter()
                     .map(Value::Node)
                     .collect::<Vec<_>>()
-            })
+            });
+            crate::access_trace::note_out_edges(ctx.graph, nid, et);
+            result
         }
 
         TermNode::SlideNeighbours {
@@ -8162,12 +8419,14 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
             };
             let read_rc = |n| -> Option<(i64, i64)> {
                 let node = ctx.graph.node(n);
+                crate::access_trace::note(2, n.0, row_sym.0, crate::access_trace::NO_ID);
                 let r = as_i64(node.attrs.get(&row_sym)?)?;
+                crate::access_trace::note(2, n.0, col_sym.0, crate::access_trace::NO_ID);
                 let c = as_i64(node.attrs.get(&col_sym)?)?;
                 Some((r, c))
             };
 
-            cached_neighbours(ctx, nid, value_sym, false, false, || {
+            let result = cached_neighbours(ctx, nid, value_sym, false, false, || {
                 let mut results: Vec<Value> = Vec::new();
                 for (dr, dc) in [(1i64, 0i64), (-1, 0), (0, 1), (0, -1)] {
                     let mut cur = nid;
@@ -8182,6 +8441,7 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
                         };
                         let target = (cr + dr, cc + dc);
                         let mut next = None;
+                        crate::access_trace::note_out_edges(ctx.graph, cur, Some(neighbour_sym));
                         for nb in ctx.graph.neighbours(cur, Some(neighbour_sym)) {
                             if read_rc(nb) == Some(target) {
                                 next = Some(nb);
@@ -8195,6 +8455,7 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
                                 break;
                             }
                         };
+                        crate::access_trace::note(2, nb.0, value_sym.0, crate::access_trace::NO_ID);
                         let val = match ctx
                             .graph
                             .node(nb)
@@ -8219,7 +8480,8 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
                     }
                 }
                 results
-            })
+            });
+            result
         }
 
         TermNode::InNeighbours {
@@ -8232,13 +8494,15 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
                 return Value::make_frozenset(vec![]);
             };
             let et = if *any_type { None } else { Some(*edge_type) };
-            cached_neighbours(ctx, nid, *edge_type, *any_type, true, || {
+            let result = cached_neighbours(ctx, nid, *edge_type, *any_type, true, || {
                 ctx.graph
                     .in_neighbours(nid, et)
                     .into_iter()
                     .map(Value::Node)
                     .collect::<Vec<_>>()
-            })
+            });
+            crate::access_trace::note_in_edges(ctx.graph, nid, et);
+            result
         }
 
         TermNode::MapNeighbours {
@@ -8251,6 +8515,7 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
             let mut out = Vec::new();
             for v in s.iter() {
                 if let Value::Node(nid) = v {
+                    crate::access_trace::note_out_edges(ctx.graph, *nid, et);
                     for n in ctx.graph.neighbours(*nid, et) {
                         out.push(Value::Node(n));
                     }
@@ -8363,14 +8628,18 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
             // absent" (an absence-branch) from "passed because the predicate
             // never matched" (an ordinary negative).
             crate::fallback_trace::set_last_exists_empty(snap.is_empty());
+            let mut examined = 0u64;
             for it_ref in snap.iter() {
+                examined += 1;
                 env.push((*var_name, it_ref.clone()));
                 let ok = evaluate(arena, *predicate, env, ctx).truthy();
                 env.pop();
                 if ok {
+                    crate::scale_audit::term_units(examined);
                     return Value::Bool(true);
                 }
             }
+            crate::scale_audit::term_units(examined);
             Value::Bool(false)
         }
 
@@ -8523,9 +8792,31 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
             var_name,
             value,
             default,
-        } => argmin_or_argmax_over(
-            arena, *source, *var_name, *value, *default, env, ctx, false, false, None,
-        ),
+        } => {
+            // Argmax is commonly embedded under an outer match binding that
+            // does not occur in its source or ranking expression. Cache only
+            // stable graph-query trees, keyed by their true free bindings;
+            // graph mutations invalidate this cache with Filter results.
+            // Selection/tie audit modes bypass memoization so their per-call
+            // observations retain their original meaning.
+            let key = if selector_audit::enabled() || argmin_tie::enabled() {
+                None
+            } else {
+                cached_argmax_key(arena, *source, *var_name, *value, *default, env)
+            };
+            if let (Some(cache), Some(key)) = (ctx.cache.as_deref_mut(), key.as_ref()) {
+                if let Some(hit) = cache.argmax.get(&(idx, key.clone())) {
+                    return hit.clone();
+                }
+            }
+            let result = argmin_or_argmax_over(
+                arena, *source, *var_name, *value, *default, env, ctx, false, false, None,
+            );
+            if let (Some(cache), Some(key)) = (ctx.cache.as_deref_mut(), key) {
+                cache.argmax.insert((idx, key), result.clone());
+            }
+            result
+        }
         TermNode::Argmin {
             source,
             var_name,
@@ -8928,6 +9219,10 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
             let hlens_sym = ctx.interner.lookup("hlens").unwrap_or(Sym::default());
             let linbits_sym = ctx.interner.lookup("linbits").unwrap_or(Sym::default());
             let xlen_sym = ctx.interner.lookup("xlen").unwrap_or(Sym::default());
+            crate::access_trace::note(2, table_nid.0, codes_sym.0, crate::access_trace::NO_ID);
+            crate::access_trace::note(2, table_nid.0, hlens_sym.0, crate::access_trace::NO_ID);
+            crate::access_trace::note(2, table_nid.0, linbits_sym.0, crate::access_trace::NO_ID);
+            crate::access_trace::note(2, table_nid.0, xlen_sym.0, crate::access_trace::NO_ID);
             let Some(Value::Surface(_, codes_bytes)) = node.attrs.get(&codes_sym).cloned() else {
                 return Value::None;
             };
@@ -9195,6 +9490,9 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
             let codes_sym = ctx.interner.lookup("codes").unwrap_or(Sym::default());
             let hlens_sym = ctx.interner.lookup("hlens").unwrap_or(Sym::default());
             let linbits_sym = ctx.interner.lookup("linbits").unwrap_or(Sym::default());
+            crate::access_trace::note(2, table_nid.0, codes_sym.0, crate::access_trace::NO_ID);
+            crate::access_trace::note(2, table_nid.0, hlens_sym.0, crate::access_trace::NO_ID);
+            crate::access_trace::note(2, table_nid.0, linbits_sym.0, crate::access_trace::NO_ID);
             let Some(Value::Surface(_, codes_bytes)) = node.attrs.get(&codes_sym).cloned() else {
                 return Value::None;
             };
@@ -9468,7 +9766,10 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
             // tuple. Tuple-shaped so EdgeAttr / Nth see it as a
             // structured handle, not an opaque integer.
             let mut out: Vec<Value> = Vec::new();
-            for idx in ctx.graph.out_edges_slice(nid, et) {
+            let edges = ctx.graph.out_edges_slice(nid, et);
+            crate::access_trace::note_out_edges(ctx.graph, nid, et);
+            crate::scale_audit::term_units(edges.len() as u64);
+            for idx in edges {
                 let edge = ctx.graph.edge(*idx);
                 let tup: SmallVec<[Value; 4]> = smallvec![
                     Value::Node(edge.src),
@@ -9489,18 +9790,36 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
             // declared, fall back to a linear scan so the Term is
             // always correct.
             if ctx.graph.has_attr_index(*node_type, *attr_key) {
+                crate::access_trace::note(32, crate::access_trace::NO_ID, attr_key.0, node_type.0);
                 let nodes: Vec<Value> = ctx
                     .graph
                     .nodes_where(*node_type, *attr_key, &v)
                     .into_iter()
                     .map(Value::Node)
                     .collect();
+                for value in &nodes {
+                    if let Value::Node(nid) = value {
+                        crate::access_trace::note(31, nid.0, node_type.0, crate::access_trace::NO_ID);
+                        crate::access_trace::note(
+                            3,
+                            nid.0,
+                            node_type.0,
+                            crate::access_trace::NO_ID,
+                        );
+                        crate::access_trace::note(2, nid.0, attr_key.0, crate::access_trace::NO_ID);
+                    }
+                }
                 return Value::make_frozenset(nodes);
             }
+            crate::access_trace::note(33, crate::access_trace::NO_ID, attr_key.0, node_type.0);
             let mut out: Vec<Value> = Vec::new();
             for nid in ctx.graph.nodes_of_type(*node_type) {
+                crate::access_trace::note(30, nid.0, node_type.0, crate::access_trace::NO_ID);
+                crate::access_trace::note(3, nid.0, node_type.0, crate::access_trace::NO_ID);
+                crate::access_trace::note(2, nid.0, attr_key.0, crate::access_trace::NO_ID);
                 if let Some(node_attr) = ctx.graph.node(nid).attrs.get(attr_key) {
                     if *node_attr == v {
+                        crate::access_trace::note(31, nid.0, node_type.0, crate::access_trace::NO_ID);
                         out.push(Value::Node(nid));
                     }
                 }
@@ -9514,6 +9833,15 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
                 .into_iter()
                 .map(Value::Node)
                 .collect();
+            for value in &nodes {
+                if let Value::Node(nid) = value {
+                    crate::access_trace::note(3, nid.0, node_type.0, crate::access_trace::NO_ID);
+                }
+            }
+            // A single NodesOfType invocation can scan and materialize an
+            // arbitrarily large population. Count its interior cardinality so
+            // term-evaluation totals do not hide aggregate work.
+            crate::scale_audit::term_units(nodes.len() as u64);
             Value::make_frozenset(nodes)
         }
         TermNode::AntiUnify { values, wild } => {
@@ -10213,11 +10541,13 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
             let prefix = ctx.interner.resolve(*skip_prefix).to_string();
             let skip = !prefix.is_empty();
             let mut out: SmallVec<[Value; 4]> = smallvec![];
-            for (_nid, nd) in ctx.graph.iter_nodes() {
+            for (nid, nd) in ctx.graph.iter_nodes() {
+                crate::access_trace::note(3, nid.0, nd.type_.0, crate::access_trace::NO_ID);
                 if skip && ctx.interner.resolve(nd.type_).starts_with(&prefix) {
                     continue;
                 }
                 for (k, v) in nd.attrs.iter() {
+                    crate::access_trace::note(2, nid.0, k.0, crate::access_trace::NO_ID);
                     if matches!(v, Value::Bool(_) | Value::Int(_) | Value::Str(_)) {
                         out.push(Value::Tuple(Arc::new(smallvec![
                             Value::Str(nd.type_),
@@ -10246,7 +10576,14 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
                     .attrs
                     .get(&key_sym)
                     .cloned()
-                    .unwrap_or(Value::None),
+                    .map(|value| {
+                        crate::access_trace::note(2, nid.0, key_sym.0, crate::access_trace::NO_ID);
+                        value
+                    })
+                    .unwrap_or_else(|| {
+                        crate::access_trace::note(2, nid.0, key_sym.0, crate::access_trace::NO_ID);
+                        Value::None
+                    }),
                 _ => Value::None,
             }
         }
@@ -10272,6 +10609,7 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
             let Some(idx) = ctx.graph.edge_idx(src, et, tgt) else {
                 return Value::None;
             };
+            crate::access_trace::note(15, src.0, key.0, tgt.0);
             ctx.graph
                 .edge_attrs(idx)
                 .get(key)
@@ -11130,6 +11468,11 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
                 .nth(*index as usize)
                 .cloned()
                 .unwrap_or(Value::None);
+            // `nth(i)` walks at most i+1 items, or the full sequence when i
+            // is out of range. Count the required traversal without changing
+            // the selected value or iterator path.
+            let traversed = (*index as usize).saturating_add(1).min(seq.len()) as u64;
+            crate::scale_audit::term_units(traversed);
             picked
         }
         TermNode::Render { term, lang } => {
@@ -11268,7 +11611,9 @@ fn render_source_node(
         return Value::None;
     }
     // head = source node type with the "Term." prefix stripped.
-    let ty_str = ctx.interner.resolve(ctx.graph.node(src_nid).type_);
+    let source_type = ctx.graph.node(src_nid).type_;
+    crate::access_trace::note(3, src_nid.0, source_type.0, crate::access_trace::NO_ID);
+    let ty_str = ctx.interner.resolve(source_type);
     let head = ty_str.strip_prefix("Term.").unwrap_or(ty_str).to_string();
     let (Some(has_rule), Some(head_key)) =
         (ctx.interner.lookup("has_rule"), ctx.interner.lookup("head"))
@@ -11276,7 +11621,9 @@ fn render_source_node(
         return Value::None;
     };
     let mut rule_nid: Option<NodeID> = None;
+    crate::access_trace::note_out_edges(ctx.graph, lang_nid, Some(has_rule));
     for r in ctx.graph.neighbours(lang_nid, Some(has_rule)) {
+        crate::access_trace::note(2, r.0, head_key.0, crate::access_trace::NO_ID);
         if let Some(Value::Str(h)) = ctx.graph.node(r).attrs.get(&head_key) {
             if ctx.interner.resolve(*h) == head.as_str() {
                 rule_nid = Some(r);
@@ -11290,6 +11637,7 @@ fn render_source_node(
     // Bind binding_pattern slots to the source's child.<name> children.
     let mut pushed = 0usize;
     if let Some(bp_key) = ctx.interner.lookup("binding_pattern") {
+        crate::access_trace::note(2, rule_nid.0, bp_key.0, crate::access_trace::NO_ID);
         if let Some(bp) = ctx.graph.node(rule_nid).attrs.get(&bp_key).cloned() {
             let names: Vec<Value> = match bp {
                 Value::Tuple(t) | Value::List(t) => t.iter().cloned().collect(),
@@ -11313,10 +11661,14 @@ fn render_source_node(
                     .interner
                     .lookup(&edge_name)
                     .and_then(|esym| {
+                        crate::access_trace::note_out_edges(ctx.graph, src_nid, Some(esym));
                         let mut children: Vec<(i64, NodeID)> = Vec::new();
                         let mut any_indexed = false;
                         for eidx in ctx.graph.out_edges_idx(src_nid, Some(esym)) {
                             let tgt = ctx.graph.edge(eidx).tgt;
+                            if let Some(ik) = index_key {
+                                crate::access_trace::note(15, src_nid.0, ik.0, tgt.0);
+                            }
                             let idx = index_key
                                 .and_then(|ik| ctx.graph.edge_attrs(eidx).get(&ik))
                                 .map(|v| {
@@ -11343,6 +11695,12 @@ fn render_source_node(
                     })
                     .or_else(|| {
                         // Scalar field: a node attr bound directly.
+                        crate::access_trace::note(
+                            2,
+                            src_nid.0,
+                            name_sym.0,
+                            crate::access_trace::NO_ID,
+                        );
                         ctx.graph.node(src_nid).attrs.get(&name_sym).cloned()
                     });
                 if let Some(v) = bound {
@@ -11355,6 +11713,7 @@ fn render_source_node(
     // Evaluate the template subgraph under the slot env.
     let mut result = Value::None;
     if let Some(tmpl_key) = ctx.interner.lookup("template") {
+        crate::access_trace::note_out_edges(ctx.graph, rule_nid, Some(tmpl_key));
         let tmpls = ctx.graph.neighbours(rule_nid, Some(tmpl_key));
         if let Some(&tmpl_nid) = tmpls.first() {
             let mut tmp = TermArena::new();
@@ -13481,6 +13840,24 @@ fn collect_into(
             var_name,
             value,
             default,
+        }
+        | TermNode::Argmin {
+            source,
+            var_name,
+            value,
+            default,
+        }
+        | TermNode::ArgminUnique {
+            source,
+            var_name,
+            value,
+            default,
+        }
+        | TermNode::Argmax {
+            source,
+            var_name,
+            value,
+            default,
         } => {
             collect_into(arena, *source, out, excluded);
             collect_into(arena, *value, out, Some(*var_name));
@@ -15483,6 +15860,124 @@ mod tests {
         assert_eq!(from_a, Value::make_frozenset(vec![Value::Node(cand_a)]));
         assert_eq!(from_b, Value::make_frozenset(vec![Value::Node(cand_b)]));
         assert_eq!(eval.cache.as_ref().unwrap().filter.len(), 2);
+    }
+
+    #[test]
+    fn argmax_cache_keys_free_vars_and_invalidates_on_graph_change() {
+        let mut arena = TermArena::new();
+        let mut interner = Interner::new();
+        let mut graph = TypedGraph::new();
+        let agent_type = interner.intern("Agent");
+        let episode_type = interner.intern("Episode");
+        let recorded_episode = interner.intern("recorded_episode");
+        let consolidated_key = interner.intern("consolidated");
+        let weight_key = interner.intern("episode_weight");
+        let agent_var = interner.intern("agent");
+        let source_var = interner.intern("source");
+        let candidate_var = interner.intern("candidate_source");
+
+        let agent_a = graph.insert_node(agent_type, FxHashMap::default());
+        let agent_b = graph.insert_node(agent_type, FxHashMap::default());
+        let (a_first, a_winner, b_winner) = {
+            let mut add_episode = |agent, weight: f64| {
+                let mut attrs = FxHashMap::default();
+                attrs.insert(consolidated_key, Value::Bool(true));
+                attrs.insert(weight_key, Value::Float(weight));
+                let episode = graph.insert_node(episode_type, attrs);
+                graph
+                    .insert_edge(agent, recorded_episode, episode, FxHashMap::default())
+                    .unwrap();
+                episode
+            };
+            let a_first = add_episode(agent_a, 1.0);
+            let a_winner = add_episode(agent_a, 4.0);
+            let _b_first = add_episode(agent_b, 2.0);
+            let b_winner = add_episode(agent_b, 3.0);
+            (a_first, a_winner, b_winner)
+        };
+
+        let agent_term = arena.add(TermNode::Var { name: agent_var });
+        let source_nodes = arena.add(TermNode::Neighbours {
+            node: agent_term,
+            edge_type: recorded_episode,
+            any_type: false,
+        });
+        let candidate_term = arena.add(TermNode::Var {
+            name: candidate_var,
+        });
+        let consolidated = arena.add(TermNode::Attr {
+            node: candidate_term,
+            key: consolidated_key,
+        });
+        let yes = arena.add(TermNode::Lit {
+            value: Value::Bool(true),
+        });
+        let is_consolidated = arena.add(TermNode::Eq {
+            a: consolidated,
+            b: yes,
+        });
+        let consolidated_sources = arena.add(TermNode::Filter {
+            source: source_nodes,
+            var_name: candidate_var,
+            predicate: is_consolidated,
+        });
+        let weight = arena.add(TermNode::Attr {
+            node: candidate_term,
+            key: weight_key,
+        });
+        let argmax = arena.add(TermNode::Argmax {
+            source: consolidated_sources,
+            var_name: candidate_var,
+            value: weight,
+            default: None,
+        });
+
+        let mut cache = EvalCache::default();
+        let mut env: Env = smallvec![
+            (agent_var, Value::Node(agent_a)),
+            (source_var, Value::Node(a_first)),
+        ];
+        {
+            let mut ctx = EvalCtx::new(&graph, &interner).with_cache(&mut cache);
+            assert_eq!(
+                evaluate(&arena, argmax, &mut env, &mut ctx),
+                Value::Node(a_winner)
+            );
+            *env.last_mut().unwrap() = (source_var, Value::Node(a_winner));
+            assert_eq!(
+                evaluate(&arena, argmax, &mut env, &mut ctx),
+                Value::Node(a_winner)
+            );
+            assert_eq!(ctx.cache.as_ref().unwrap().argmax.len(), 1);
+
+            *env.first_mut().unwrap() = (agent_var, Value::Node(agent_b));
+            assert_eq!(
+                evaluate(&arena, argmax, &mut env, &mut ctx),
+                Value::Node(b_winner)
+            );
+            assert_eq!(ctx.cache.as_ref().unwrap().argmax.len(), 2);
+        }
+
+        let mut attrs = FxHashMap::default();
+        attrs.insert(consolidated_key, Value::Bool(true));
+        attrs.insert(weight_key, Value::Float(8.0));
+        let a_new_winner = graph.insert_node(episode_type, attrs);
+        graph
+            .insert_edge(
+                agent_a,
+                recorded_episode,
+                a_new_winner,
+                FxHashMap::default(),
+            )
+            .unwrap();
+        cache.clear_graph_dependent();
+        *env.first_mut().unwrap() = (agent_var, Value::Node(agent_a));
+        let mut ctx = EvalCtx::new(&graph, &interner).with_cache(&mut cache);
+        assert_eq!(
+            evaluate(&arena, argmax, &mut env, &mut ctx),
+            Value::Node(a_new_winner)
+        );
+        assert_eq!(ctx.cache.as_ref().unwrap().argmax.len(), 1);
     }
 
     #[test]

@@ -40,6 +40,7 @@ EffortDial = _native.EffortDial
 #: surface (mostly the `with substrate.transform()` context manager
 #: that the native side doesn't expose).
 _NativeSubstrate = _native.Substrate
+_NativeSubstrateSnapshot = _native.SubstrateSnapshot
 
 
 def version() -> str:
@@ -680,6 +681,28 @@ class _TransactionCtx:
             self._s.remove_node(nid)
 
 
+class SubstrateSnapshot:
+    """Immutable reusable base with storage-independent branch creation."""
+
+    def __init__(self, inner: _NativeSubstrateSnapshot, measurement_backend: str | None = None) -> None:
+        self._inner = inner
+        self._measurement_backend = measurement_backend
+
+    @property
+    def id(self) -> int:
+        return self._inner.id
+
+    @property
+    def source_revision(self) -> tuple[int, int, int]:
+        return self._inner.source_revision
+
+    def fork(self) -> "Substrate":
+        """Create an isolated mutable branch from this immutable base."""
+        branch = Substrate()
+        branch._inner = self._inner.fork()
+        return branch
+
+
 class Substrate:
     """Python wrapper around the native Substrate.
 
@@ -690,6 +713,96 @@ class Substrate:
 
     def __init__(self) -> None:
         self._inner = _NativeSubstrate()
+
+    def snapshot(self) -> SubstrateSnapshot:
+        """Capture an immutable base for storage-independent branch consumers."""
+        return SubstrateSnapshot(self._inner.snapshot())
+
+    def _snapshot_with_backend(self, backend: str) -> SubstrateSnapshot:
+        """Backend-selecting hook for controlled measurements and diagnostics.
+
+        Application consumers should use :meth:`snapshot`; keeping backend
+        choice out of that API lets the implementation evolve independently.
+        """
+        return SubstrateSnapshot(self._inner._experiment_snapshot_with_backend(backend), backend)
+
+    def fork_full_copy_experiment(self) -> "Substrate":
+        """Return an isolated native deep-copy control for a thoughtexperiment.
+
+        This is deliberately a full copy, not CoW. It refuses external or
+        wrapper-owned state that cannot be copied safely.
+        """
+        branch = Substrate()
+        branch._inner = self._inner.fork_full_copy_experiment()
+        return branch
+
+    def fork_shared_slab_experiment(self) -> "Substrate":
+        """Return an isolated branch sharing only node/edge slab pages.
+
+        All graph indexes and other substrate state remain eager copies; this
+        backend measures the slab contribution independently of full CoW.
+        """
+        branch = Substrate()
+        branch._inner = self._inner.fork_shared_slab_experiment()
+        return branch
+
+    def fork_shared_graph_pages_experiment(self) -> "Substrate":
+        """Return an isolated branch sharing graph record and adjacency pages.
+
+        Hash query indexes and other substrate state remain eager copies.
+        """
+        branch = Substrate()
+        branch._inner = self._inner.fork_shared_graph_pages_experiment()
+        return branch
+
+    def set_experiment_edge_scope(self, node_ids: list[int], hops: int) -> int:
+        """Filter branch edge reads through a sparse focus aperture.
+
+        The inherited graph storage remains intact; future branch edges are
+        visible through the same read view. This is intended for isolated
+        thoughtexperiment branches only.
+        """
+        return self._inner.set_experiment_edge_scope(node_ids, hops)
+
+    def replace_active_rule_by_name(self, name: str, variant: dict[str, Any] | None) -> bool:
+        """Patch one active rule in an isolated branch without exporting all rules."""
+        return self._inner.replace_active_rule_by_name(name, variant)
+
+    def begin_experiment_delta_journal(self) -> None:
+        """Begin sparse graph-delta capture for an isolated experiment."""
+        self._inner.begin_experiment_delta_journal()
+
+    def checkpoint_experiment_delta_journal(self) -> None:
+        """Mark the injected-hypothesis state for derived-only readout."""
+        self._inner.checkpoint_experiment_delta_journal()
+
+    def finish_experiment_delta_journal(self) -> dict[str, Any]:
+        """Return exact total and derived-only diffs from touched graph state."""
+        return self._inner.finish_experiment_delta_journal()
+
+    def assert_experiment_fork_safe(self) -> None:
+        """Raise if wrapper/native state is unsafe to inherit across OS fork."""
+        self._inner.assert_experiment_fork_safe()
+
+    def experiment_graph_rule_revision(self) -> tuple[int, int, int]:
+        """Return the O(1) tracked graph/Γ revision and rule-slot count."""
+        return self._inner.experiment_graph_rule_revision()
+
+    def rayon_current_num_threads(self) -> int:
+        """Return the active global Rayon pool size for diagnostics."""
+        return self._inner.rayon_current_num_threads()
+
+    def apply_experiment_graph_delta(
+        self, expected_revision: tuple[int, int, int], delta: dict[str, Any]
+    ) -> None:
+        """Atomically adopt a graph-diff residual against its exact base revision.
+
+        Raises RuntimeError when the primary revision is stale or when the
+        receipt conflicts with current graph contents. This is a structural
+        merge primitive; callers must reground and authorize hypothetical
+        conclusions before using it to change an authoritative live graph.
+        """
+        self._inner.apply_experiment_graph_delta(expected_revision, delta)
 
     # --- mutation ---
 
@@ -708,8 +821,10 @@ class Substrate:
 
     def load_seed_manifest(self, manifest: dict,
                              root_node: NodeID | None = None) -> dict:
-        """Apply a seed manifest (JSON-shaped dict — id, version,
-        depends_on, nodes, edges, productions) to this substrate.
+        """Apply a JSON-shaped seed manifest to this substrate. Native loader
+        semantics use nodes, edges, productions, rules, reflexes, id,
+        self_modification_patchable_rules, area, order, and latency_class;
+        other top-level keys are ignored by the native loader.
 
         Allocates fresh global NodeIDs for the seed's nodes, resolves
         cross-references against the live graph, and registers the
@@ -768,6 +883,15 @@ class Substrate:
     def has_edge(self, src: NodeID, edge_type: str, tgt: NodeID) -> bool:
         return self._inner.has_edge(src, edge_type, tgt)
 
+    def edge_attrs(self, src: NodeID, edge_type: str, tgt: NodeID) -> dict[str, Any] | None:
+        """Return a copy of one edge's attributes, or None if the edge is absent."""
+        result = self._inner.edge_attrs(src, edge_type, tgt)
+        return None if result is None else dict(result)
+
+    def incident_edges(self, nid: NodeID) -> list[dict[str, Any]]:
+        """Return exact incoming/outgoing edge facts in O(degree(nid))."""
+        return self._inner.incident_edges(nid)
+
     def nodes(self, type: str | None = None) -> list[NodeID]:
         return self._inner.nodes(type)
 
@@ -779,6 +903,10 @@ class Substrate:
 
     def node_count(self) -> int:
         return self._inner.node_count()
+
+    def next_live_node_id(self) -> int:
+        """Return max live NodeID plus one for sparse experiment writeback."""
+        return self._inner.next_live_node_id()
 
     def edge_count(self) -> int:
         return self._inner.edge_count()
@@ -849,6 +977,36 @@ class Substrate:
         # reproduces byte-identically. Mechanical pass-through; the decision
         # to enable it lives in the caller's params, never here.
         return self._inner.tick(max_steps, detect_cycles)
+
+    def tick_graph_then_struct(self, max_steps: int = 100_000,
+                               detect_cycles: bool = False) -> int:
+        """Run graph-resident Rules, then the structural rewrite-rule store.
+
+        This explicit plan is used by detached thoughtexperiments, where both
+        rule stores must see the same counterfactual graph. Ordinary ``tick``
+        retains its configured Default plan.
+        """
+        return self._inner.tick_graph_then_struct(max_steps, detect_cycles)
+
+    def tick_with_rule_state_trace(
+        self,
+        watch_rule_names: list[str],
+        watch_node_ids: list[int],
+        watch_attrs: list[str],
+        max_events: int = 10_000,
+        max_steps: int = 100_000,
+        detect_cycles: bool = False,
+    ) -> dict[str, Any]:
+        """Run the same native tick plan with bounded post-rule state samples.
+
+        This is explicit diagnostic instrumentation. The observer records
+        selected numeric graph attributes after each successful invocation of
+        one of `watch_rule_names`; the ordinary `tick` path is unchanged.
+        """
+        return self._inner.tick_with_rule_state_trace(
+            watch_rule_names, watch_node_ids, watch_attrs, max_events,
+            max_steps, detect_cycles,
+        )
 
     def wave_stencil_tick(self, max_steps: int = 200_000,
                           run_rest: bool = True) -> bool:
@@ -1016,6 +1174,17 @@ class Substrate:
                            cat_vec, leaf_vec) -> str:
         return self._inner.memory_consolidate(store_dir, key, nid, round_no,
                                               list(cat_vec), list(leaf_vec))
+
+    def memory_index_disk_record(self, key: str, path: str, round_no: int,
+                                 cat_vec, leaf_vec) -> str:
+        return self._inner.memory_index_disk_record(key, path, round_no,
+                                                    list(cat_vec), list(leaf_vec))
+
+    def memory_unindex_disk_record(self, key: str) -> None:
+        self._inner.memory_unindex_disk_record(key)
+
+    def memory_recall_by_key(self, key: str, round_no: int):
+        return self._inner.memory_recall_by_key(key, round_no)
 
     def memory_shuffle(self, round_no: int) -> list[str]:
         return self._inner.memory_shuffle(round_no)
@@ -1203,7 +1372,7 @@ def decode(value: Any) -> Any:
 __all__ = [
     "humanoid_cost_terms",
     # core
-    "NodeID", "Substrate", "Term", "Production", "NodePattern",
+    "NodeID", "Substrate", "SubstrateSnapshot", "Term", "Production", "NodePattern",
     "InadmissibleEdge", "version", "encode", "decode",
     # Term factories
     "Var", "Lit", "TypeOf", "Attr", "SetT", "In",

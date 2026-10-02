@@ -1,0 +1,5 @@
+# Concurrent branch lifecycle v1 amendment (2026-10-01)
+
+The initial native diagnostic run passed branch semantics and showed falling live bytes after cancellation, but the global allocator counter ended each wave **24 bytes per worker below** its starting value in both shared-snapshot and eager-copy arms. The repeatable fanout-proportional offset indicates worker/runtime lifecycle accounting affects the raw baseline; exact zero drift cannot be attributed to branch reclamation without a control.
+
+Before confirmatory capture, add a matched no-op thread wave for every fanout. It uses the same number of workers and ready/cancel/release barriers, but creates no graph branches. The reclamation gate is amended to require the branch wave's post-join live-byte delta to equal the paired thread-only delta (adjusted branch residual exactly zero). Preserve and report raw deltas for both waves. All semantic, paired backend, and live/after-cancellation gates remain unchanged. This amendment is made before retaining any confirmatory result; the initial run is diagnostic only.

@@ -471,11 +471,15 @@ pub fn run_graph_rules_opts(
     let rule_ids: Vec<NodeID> = substrate.graph.nodes_of_type(rule_type_sym);
 
     let mut rules: Vec<RewriteRule> = Vec::with_capacity(rule_ids.len());
+    let mut audit_ids: Vec<u32> = Vec::with_capacity(rule_ids.len());
     for nid in rule_ids {
         if let Some(rule) =
             rule_from_node(&substrate.graph, nid, &mut arena, &mut substrate.interner)
         {
             rules.push(rule);
+            // Graph Rule nodes use a separate audit namespace from the
+            // substrate's positional RuleIdx values (high-bit tagged NodeID).
+            audit_ids.push(0x8000_0000 | (nid.0 & 0x7fff_ffff));
         }
         // Rules that fail to parse are silently skipped — they
         // remain in the graph and can be inspected for diagnostics.
@@ -483,8 +487,9 @@ pub fn run_graph_rules_opts(
 
     let rule_refs: Vec<&RewriteRule> = rules.iter().collect();
     let no_jits: Vec<Option<&crate::jit::CompiledWhere>> = vec![None; rule_refs.len()];
-    let steps = crate::rewrite::run_rules_opts(
+    let steps = crate::rewrite::run_rules_opts_with_audit_ids(
         &rule_refs,
+        Some(&audit_ids),
         &mut arena,
         &mut substrate.graph,
         &mut substrate.interner,

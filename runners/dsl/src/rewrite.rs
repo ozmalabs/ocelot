@@ -48,18 +48,22 @@ pub struct MatchEdge {
 /// This is `rule_mention_resolves_to_concept`'s measured cost (Wave 3:
 /// ~36ms of a 39ms rule budget, growing with conversation length).
 ///
-/// `IndexJoinHint { for_var: "c", via_var: "mention", via_key: "text",
-/// node_type: "Concept", this_key: "name" }` tells the matcher: "once
-/// `via_var` is bound, and an attr index is declared on
+/// `IndexJoinHint { for_var: "c", probe: BoundAttr { via_var: "mention",
+/// via_key: "text" }, node_type: "Concept", this_key: "name" }` tells the
+/// matcher to look up `for_var`'s candidates through the declared index once
+/// the dynamic `via_var` probe is bound. `Literal(value)` probes are ready
+/// immediately. For either probe, when an attr index is declared on
 /// `(node_type, this_key)`, look up `for_var`'s candidates via
-/// `graph.nodes_where(node_type, this_key, <via_var's via_key attr>)`
-/// instead of scanning every edge of `for_var`'s match-edge type."
+/// `graph.nodes_where(node_type, this_key, <probe value>)`
+/// instead of scanning every edge of `for_var`'s match-edge type. If the
+/// source is already bound, indexed target hits are checked using direct
+/// edge lookup; the index still prunes the neighbor list without weakening
+/// the graph-edge correctness check.
 ///
-/// CORRECTNESS: index-THEN-verify, never index-and-trust. A candidate
-/// returned by the index is only accepted after independently confirming
-/// the real graph edge exists (`neighbours`/`in_neighbours`) — so a stale,
-/// absent, or wrong index can only make the search WIDER (falls back to the
-/// unindexed scan), never produce an incorrect match. Keyed by variable
+/// CORRECTNESS: the index is maintained by TypedGraph and is back-filled on
+/// declaration; each hit is checked against the requested attr value and
+/// real graph edge before matching. An absent index falls back to adjacency.
+/// Completeness relies on TypedGraph's index-maintenance invariant. Keyed by variable
 /// NAME (not match-edge position), so it survives `reorder_match_edges`
 /// unchanged and is authoring-order-independent.
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
@@ -67,15 +71,22 @@ pub struct IndexJoinHint {
     /// The match-edge variable this hint accelerates (must be the src_var
     /// or tgt_var of exactly one of the rule's match_edges).
     pub for_var: Sym,
-    /// The already-bound variable supplying the probe value.
-    pub via_var: Sym,
-    /// The attr key read off `via_var`'s bound node.
-    pub via_key: Sym,
+/// Source of the exact value to probe in the declared attribute index.
+    pub probe: IndexProbe,
     /// The node type `for_var` ranges over — must match the type the
     /// attr index is declared against.
     pub node_type: Sym,
     /// The attr key on `for_var`'s nodes the index is declared on.
     pub this_key: Sym,
+}
+
+/// Value source for an indexed join hint. Literal probes let the matcher
+/// apply an exact positive equality already present in a rule's `where`
+/// clause before constructing broad match-edge products.
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub enum IndexProbe {
+    BoundAttr { via_var: Sym, via_key: Sym },
+    LiteralString(Sym),
 }
 
 /// An effect argument — either a literal stored at rule-construction
@@ -425,6 +436,10 @@ pub struct RewriteRule {
     // --- access analysis (slice b: batch-apply + write-set dirtying) ---
     /// Over-approx superset of graph keys this rule READS to decide bindings.
     pub read_set: rustc_hash::FxHashSet<RuleKey>,
+    /// Typed edge resources read by where/effect terms, distinct from the
+    /// match-edge drivers. A write to one of these can change an existing
+    /// binding's term result, so its semi-naive cursor must be invalidated.
+    pub term_edge_reads: rustc_hash::FxHashSet<Sym>,
     /// Over-approx superset of graph keys this rule WRITES.
     pub write_set: rustc_hash::FxHashSet<RuleKey>,
     /// Conservative "reads something opaque" — forces always-dirty.
@@ -475,6 +490,7 @@ impl RewriteRule {
     /// Does NOT set `batch` — the caller applies explicit-attr-else-safe.
     pub fn derive_access(&mut self, arena: &TermArena) {
         self.read_set.clear();
+        self.term_edge_reads.clear();
         self.write_set.clear();
         self.reads_any = false;
         self.writes_any = false;
@@ -498,6 +514,35 @@ impl RewriteRule {
                 &mut writes_any,
             );
         }
+        // Retain the origin of typed edge reads. The ordinary read_set is a
+        // union of pattern drivers and term dependencies; the scheduler needs
+        // this narrower distinction to know when a new edge cannot advance a
+        // reader's existing match cursor. This second walk runs only when a
+        // rule is installed/re-derived, not on the execution hot path.
+        let mut term_reads = rustc_hash::FxHashSet::default();
+        let mut term_reads_any = false;
+        if let Some(w) = self.where_ {
+            collect_term_reads(arena, w, &mut term_reads, &mut term_reads_any);
+        }
+        let mut ignored_writes = rustc_hash::FxHashSet::default();
+        let mut ignored_writes_any = false;
+        for eff in &self.effects {
+            collect_effect_access(
+                eff,
+                arena,
+                &mut term_reads,
+                &mut ignored_writes,
+                &mut term_reads_any,
+                &mut ignored_writes_any,
+            );
+        }
+        self.term_edge_reads = term_reads
+            .into_iter()
+            .filter_map(|key| match key {
+                RuleKey::Edge(edge_type) => Some(edge_type),
+                RuleKey::Attr(_) | RuleKey::Type(_) => None,
+            })
+            .collect();
         self.read_set = reads;
         self.write_set = writes;
         self.reads_any = reads_any;
@@ -775,7 +820,12 @@ fn collect_term_reads(
             collect_term_reads(arena, *ground, reads, reads_any);
             *reads_any = true;
         }
-        T::Neighbours {
+        T::ReachableFrom {
+            node,
+            edge_type,
+            any_type,
+        }
+        | T::Neighbours {
             node,
             edge_type,
             any_type,
@@ -791,6 +841,25 @@ fn collect_term_reads(
                 reads.insert(RuleKey::Edge(*edge_type));
             }
             collect_term_reads(arena, *node, reads, reads_any);
+        }
+        T::Edges {
+            node,
+            edge_type,
+            any_type,
+        } => {
+            if *any_type {
+                *reads_any = true;
+            } else {
+                reads.insert(RuleKey::Edge(*edge_type));
+            }
+            collect_term_reads(arena, *node, reads, reads_any);
+        }
+        T::EdgeAttr { edge, .. } => {
+            // RuleKey::Attr denotes node attributes. Edge attributes have a
+            // separate storage domain and no access-set key yet, so fail
+            // closed until that distinction is represented explicitly.
+            *reads_any = true;
+            collect_term_reads(arena, *edge, reads, reads_any);
         }
         T::MapNeighbours {
             source,
@@ -812,6 +881,104 @@ fn collect_term_reads(
             *reads_any = true;
             collect_term_reads(arena, *node, reads, reads_any);
             collect_term_reads(arena, *name, reads, reads_any);
+        }
+        // This aggregate scans every live node and inspects each scalar attr
+        // key. No finite static resource set can describe its footprint.
+        T::ScalarAttrTriples { .. } => {
+            *reads_any = true;
+        }
+        T::HuffmanDecodeStream { .. } | T::HuffmanEncodeStream { .. } | T::Render { .. } => {
+            // These terms resolve graph-resident table/render structures at
+            // runtime; the actual graph traversal is data-dependent.
+            *reads_any = true;
+            for child in crate::term::children(arena.get(idx)) {
+                collect_term_reads(arena, child, reads, reads_any);
+            }
+        }
+        // These helpers enumerate graph-resident codebooks, registries,
+        // mechanisms, cues, or observation populations. Until each helper
+        // reports a precise footprint, they are conservative wildcard readers.
+        T::ShapeDecode { .. }
+        | T::TransformDecode { .. }
+        | T::DimInfer { .. }
+        | T::GenInfer { .. }
+        | T::RatioInduce { .. }
+        | T::TimeInfer { .. }
+        | T::DepthInfer { .. }
+        | T::BlinkBridge { .. }
+        | T::GapAbduce { .. }
+        | T::GapVerify { .. }
+        | T::SupportInfer { .. }
+        | T::TransferDecode { .. }
+        | T::RecogniseShape { .. }
+        | T::MetaShapeMint { .. } => {
+            *reads_any = true;
+            for child in crate::term::children(arena.get(idx)) {
+                collect_term_reads(arena, child, reads, reads_any);
+            }
+        }
+        // These operators can cross the explicit Term-child boundary: Join
+        // may invoke graph-backed rendering, ProgEval may decode a program
+        // subgraph, Call resolves a derived body dynamically, Holds resolves
+        // a concept body dynamically, and UseTool enters an arbitrary
+        // reentrant handler. Their complete dependencies are not recoverable
+        // from this Term node alone.
+        T::Join { .. }
+        | T::ProgEval { .. }
+        | T::Call { .. }
+        | T::Holds { .. }
+        | T::UseTool { .. } => {
+            *reads_any = true;
+            for child in crate::term::children(arena.get(idx)) {
+                collect_term_reads(arena, child, reads, reads_any);
+            }
+        }
+        T::MotorCompose { .. }
+        | T::FutureManifoldProjection { .. }
+        | T::FutureManifoldSelection { .. }
+        | T::NetForward { .. }
+        | T::EnigmaCrib { .. }
+        | T::EnigmaBombe { .. }
+        | T::EnigmaBombeWitness { .. }
+        | T::TrackIdentityCorrespondence { .. } => {
+            // These high-level Terms delegate their graph reads to domain
+            // helpers. Their dependencies are dynamic (often edge and
+            // attribute scans), so until those helpers report a precise
+            // footprint, rule invalidation and frame partitioning must treat
+            // them as wildcard readers. Recurse as well: inputs can contain
+            // additional explicit Term reads.
+            *reads_any = true;
+            for child in crate::term::children(arena.get(idx)) {
+                collect_term_reads(arena, child, reads, reads_any);
+            }
+        }
+        T::LookaheadValue {
+            node,
+            child_edge,
+            score_key,
+            depth,
+        } => {
+            reads.insert(RuleKey::Edge(*child_edge));
+            reads.insert(RuleKey::Attr(*score_key));
+            collect_term_reads(arena, *node, reads, reads_any);
+            collect_term_reads(arena, *depth, reads, reads_any);
+        }
+        T::ParetoDominates {
+            value_edge,
+            measure_edge,
+            dimension_key,
+            verified_key,
+            signed_value_key,
+            ..
+        } => {
+            reads.insert(RuleKey::Edge(*value_edge));
+            reads.insert(RuleKey::Edge(*measure_edge));
+            reads.insert(RuleKey::Attr(*dimension_key));
+            reads.insert(RuleKey::Attr(*verified_key));
+            reads.insert(RuleKey::Attr(*signed_value_key));
+            for child in crate::term::children(arena.get(idx)) {
+                collect_term_reads(arena, child, reads, reads_any);
+            }
         }
         T::EvalSubgraph { node } => {
             *reads_any = true;
@@ -845,12 +1012,14 @@ fn collect_effect_access(
         Effect::AddEdge {
             edge_type, attrs, ..
         } => {
+            reads.insert(RuleKey::Edge(*edge_type));
             writes.insert(RuleKey::Edge(*edge_type));
             for (_, a) in attrs {
                 read_arg(a, reads, reads_any);
             }
         }
         Effect::DelEdge { edge_type, .. } => {
+            reads.insert(RuleKey::Edge(*edge_type));
             writes.insert(RuleKey::Edge(*edge_type));
         }
         Effect::AddNode { type_, attrs, .. } => {
@@ -864,15 +1033,25 @@ fn collect_effect_access(
             writes.insert(RuleKey::Type(*type_));
             reads.insert(RuleKey::Type(*type_));
             for (k, a) in attrs {
+                reads.insert(RuleKey::Attr(*k));
                 writes.insert(RuleKey::Attr(*k));
                 read_arg(a, reads, reads_any);
             }
         }
-        Effect::SetAttr { key, value, .. } | Effect::SetAttrIfDifferent { key, value, .. } => {
+        Effect::SetAttr { key, value, .. } => {
+            reads.insert(RuleKey::Attr(*key));
+            writes.insert(RuleKey::Attr(*key));
+            read_arg(value, reads, reads_any);
+        }
+        Effect::SetAttrIfDifferent { key, value, .. } => {
+            // The effect compares the existing value before deciding whether
+            // to write, so this key is both a dependency and a mutation.
+            reads.insert(RuleKey::Attr(*key));
             writes.insert(RuleKey::Attr(*key));
             read_arg(value, reads, reads_any);
         }
         Effect::DelNode { .. } | Effect::ReplaceValue { .. } => {
+            *reads_any = true;
             *writes_any = true;
         }
         Effect::DefineConcept { name, term } => {
@@ -886,6 +1065,7 @@ fn collect_effect_access(
             term,
         } => {
             // mutates the rule list (not the graph) — be conservative for dirtying.
+            *reads_any = true;
             *writes_any = true;
             read_arg(rule_name, reads, reads_any);
             read_arg(field, reads, reads_any);
@@ -953,6 +1133,11 @@ pub type Binding = FxHashMap<Sym, NodeID>;
 pub enum UndoStep {
     /// `apply_rule` added this edge — undo deletes it.
     AddedEdge(EdgeKey),
+    /// `apply_rule` replaced attrs on an existing edge — undo restores them.
+    EdgeAttrsSet {
+        key: EdgeKey,
+        old: crate::graph::Attrs,
+    },
     /// `apply_rule` deleted an edge — undo re-inserts it with the
     /// original attrs. Used by search algorithms that need to roll
     /// back tentative deletes.
@@ -1060,9 +1245,9 @@ pub fn reorder_match_edges(
 /// none of which carries a hint, gets byte-identical ordering — this
 /// function changes NOTHING for them). When a hint is present, the greedy
 /// selection is restricted to "unblocked" edges first: an edge is BLOCKED
-/// while it is the `for_var` side of a hint whose `via_var` isn't bound
-/// yet. This guarantees the edge that binds `via_var` is scheduled before
-/// the edge `hinted_candidates` would accelerate — the ordering
+/// while it is the `for_var` side of a `BoundAttr` hint whose `via_var` isn't
+/// bound yet. This guarantees the edge that binds `via_var` is scheduled
+/// before the edge `hinted_candidates` would accelerate — the ordering
 /// `IndexJoinHint`'s var-name keying (rather than match-edge position)
 /// depends on to actually fire, regardless of authoring order or
 /// install-time edge-type cardinality ties. If every remaining edge is
@@ -1082,7 +1267,8 @@ pub fn reorder_match_edges_with_hints(
     let is_blocked = |idx: usize, bound: &rustc_hash::FxHashSet<Sym>| -> bool {
         let e = &edges[idx];
         hints.iter().any(|h| {
-            (h.for_var == e.src_var || h.for_var == e.tgt_var) && !bound.contains(&h.via_var)
+            (h.for_var == e.src_var || h.for_var == e.tgt_var)
+                && matches!(&h.probe, IndexProbe::BoundAttr { via_var, .. } if !bound.contains(via_var))
         })
     };
 
@@ -1177,6 +1363,7 @@ pub fn match_rule_each<F>(
 ) where
     F: FnMut(&Binding) -> bool,
 {
+    let _access_rule = crate::access_trace::enter_rule(rule.uid.0, graph as *const TypedGraph as usize);
     let mut binding: Binding = FxHashMap::default();
     extend_each(
         rule,
@@ -1215,6 +1402,7 @@ pub fn match_rule_each_with_initial<F>(
 ) where
     F: FnMut(&Binding) -> bool,
 {
+    let _access_rule = crate::access_trace::enter_rule(rule.uid.0, graph as *const TypedGraph as usize);
     let mut binding: Binding = initial.clone();
     extend_each(
         rule,
@@ -1232,19 +1420,20 @@ pub fn match_rule_each_with_initial<F>(
     );
 }
 
-/// R10 join-index fast path for the both-unbound match-edge case: if this
-/// edge's `src_var`/`tgt_var` is the `for_var` of one of the rule's
-/// `index_hints`, and that hint's `via_var` is already bound, probe the
-/// declared attr index for candidates instead of scanning every edge of
-/// `edge_type`. Returns `None` (caller falls back to the full scan) unless
-/// EVERY precondition holds: a matching hint exists, `via_var` is bound,
-/// and the attr index is actually declared — so a rule whose hint hasn't
-/// been "activated" yet (index never declared) is byte-identical to before.
+/// Join-index fast path for a match edge: if this edge's `src_var` or
+/// `tgt_var` is the `for_var` of an index hint and its probe value is
+/// available (literal or bound attribute), probe the declared attr index for
+/// candidates instead of scanning the full edge neighborhood or edge type.
+/// Returns `None` (caller falls back to the full scan) unless
+/// EVERY precondition holds: a matching hint exists, a dynamic probe's
+/// source node and attribute are available, and the attr index is declared.
+/// A rule without an activated index falls back to its ordinary scan.
 ///
-/// CORRECTNESS: the index only narrows which nodes are considered — every
-/// returned pair is independently verified to be a REAL `edge_type` edge
-/// via `neighbours`/`in_neighbours` (index-then-verify). A stale or absent
-/// index can only widen the fallback path, never fabricate a match.
+/// CORRECTNESS: every hit is checked for the indexed attr value and every
+/// returned pair is verified as a REAL `edge_type` edge via adjacency for
+/// unbound endpoints or O(1) `has_edge` for a bound endpoint. A missing
+/// index takes the ordinary path; index completeness relies on TypedGraph's
+/// insert/update/delete maintenance invariant.
 fn hinted_candidates(
     rule: &RewriteRule,
     src_var: Sym,
@@ -1257,23 +1446,50 @@ fn hinted_candidates(
         .index_hints
         .iter()
         .find(|h| h.for_var == tgt_var || h.for_var == src_var)?;
-    let via_nid = *binding.get(&hint.via_var)?;
     if !graph.has_attr_index(hint.node_type, hint.this_key) {
         return None;
     }
-    let probe_value = graph.node(via_nid).attrs.get(&hint.via_key)?.clone();
+    let probe_value = match &hint.probe {
+        IndexProbe::BoundAttr { via_var, via_key } => {
+            let via_nid = *binding.get(via_var)?;
+            graph.node(via_nid).attrs.get(via_key)?.clone()
+        }
+        IndexProbe::LiteralString(value) => Value::Str(*value),
+    };
     let hits = graph.nodes_where(hint.node_type, hint.this_key, &probe_value);
     let mut out = Vec::with_capacity(hits.len());
     if hint.for_var == tgt_var {
         for t in hits {
-            for s in graph.in_neighbours(t, Some(edge_type)) {
-                out.push((s, t));
+            if graph.node(t).type_ != hint.node_type
+                || graph.node(t).attrs.get(&hint.this_key) != Some(&probe_value)
+            {
+                continue;
+            }
+            if let Some(s) = binding.get(&src_var).copied() {
+                if graph.has_edge(s, edge_type, t) {
+                    out.push((s, t));
+                }
+            } else {
+                for s in graph.in_neighbours(t, Some(edge_type)) {
+                    out.push((s, t));
+                }
             }
         }
     } else {
         for s in hits {
-            for t in graph.neighbours(s, Some(edge_type)) {
-                out.push((s, t));
+            if graph.node(s).type_ != hint.node_type
+                || graph.node(s).attrs.get(&hint.this_key) != Some(&probe_value)
+            {
+                continue;
+            }
+            if let Some(t) = binding.get(&tgt_var).copied() {
+                if graph.has_edge(s, edge_type, t) {
+                    out.push((s, t));
+                }
+            } else {
+                for t in graph.neighbours(s, Some(edge_type)) {
+                    out.push((s, t));
+                }
             }
         }
     }
@@ -1366,6 +1582,15 @@ where
                 }
             }
         }
+        // Concrete successful pattern footprint. This is a logical binding
+        // trace, separate from the candidate-enumeration counters above.
+        for edge in &rule.match_edges {
+            if let (Some(&src), Some(&tgt)) =
+                (binding.get(&edge.src_var), binding.get(&edge.tgt_var))
+            {
+                crate::access_trace::note(1, src.0, edge.edge_type.0, tgt.0);
+            }
+        }
         crate::scale_audit::leaf_visit();
         return visit(binding);
     }
@@ -1414,29 +1639,44 @@ where
     let bound_src = binding.get(src_var).copied();
     let bound_tgt = binding.get(tgt_var).copied();
 
-    // SCALE AUDIT (`scale_audit.rs`): which of the three paths reached this
-    // candidate set decides hypothesis (a) — is the O(N²) a symptom of
-    // CENTRALIZATION (a global scan) or of genuine comparison (local traversal)?
-    // The path is recorded here, at the only place that knows it.
+    // SCALE AUDIT (`scale_audit.rs`): record whether candidates came from
+    // local adjacency, an index hint, or a global edge-type scan.
     let mut cand_path = crate::scale_audit::CandPath::Local;
     let candidates: Vec<(NodeID, NodeID)> = match (bound_src, bound_tgt) {
-        (Some(s), _) => graph
+        (Some(s), None) => {
+            match hinted_candidates(rule, *src_var, *edge_type, *tgt_var, binding, graph) {
+                Some(c) => {
+                    cand_path = crate::scale_audit::CandPath::Hinted;
+                    c
+                }
+                None => graph
+                    .neighbours(s, Some(*edge_type))
+                    .into_iter()
+                    .map(|t| (s, t))
+                    .collect(),
+            }
+        }
+        (None, Some(t)) => {
+            match hinted_candidates(rule, *src_var, *edge_type, *tgt_var, binding, graph) {
+                Some(c) => {
+                    cand_path = crate::scale_audit::CandPath::Hinted;
+                    c
+                }
+                None => graph
+                    .in_neighbours(t, Some(*edge_type))
+                    .into_iter()
+                    .map(|s| (s, t))
+                    .collect(),
+            }
+        }
+        (Some(s), Some(_)) => graph
             .neighbours(s, Some(*edge_type))
             .into_iter()
             .map(|t| (s, t))
             .collect(),
-        (None, Some(t)) => graph
-            .in_neighbours(t, Some(*edge_type))
-            .into_iter()
-            .map(|s| (s, t))
-            .collect(),
-        // R10: both-unbound is the expensive case a disjoint 2-edge join
-        // degrades to (no shared var with any prior edge, so the ONLY
-        // filter left is a full `edges_by_type` scan + later where-clause
-        // Eq check). If this edge carries an `IndexJoinHint` whose
-        // `via_var` is already bound, probe the declared attr index
-        // instead — index-then-verify (see `IndexJoinHint` doc), so
-        // correctness never depends on the index being present or fresh.
+        // R10: for a both-unbound edge, an active hint avoids the
+        // edge-type scan; index-then-verify keeps correctness independent
+        // of the index contents.
         (None, None) => {
             match hinted_candidates(rule, *src_var, *edge_type, *tgt_var, binding, graph) {
                 Some(c) => {
@@ -1463,7 +1703,7 @@ where
     crate::scale_audit::candidates(candidates.len() as u64, cand_path);
 
     for (s, t) in candidates {
-        crate::scale_audit::cand_tested();
+        crate::scale_audit::cand_tested(i, rule.name.0, rule.match_edges.len());
         if let Some(bs) = bound_src {
             if bs != s {
                 crate::scale_audit::cand_reject_bound();
@@ -1518,8 +1758,8 @@ where
 // --- applier --------------------------------------------------------------
 
 /// Outcome of applying a rule — `progressed` is true iff at least one
-/// effect actually changed the graph (an `AddEdge` that wasn't a
-/// duplicate, a `SetAttr` that changed the value, an `AddNode` or
+/// effect actually changed the graph (an `AddEdge` insertion or attribute
+/// replacement, a `SetAttr` that changed the value, an `AddNode` or
 /// `DelEdge` or `DelNode`). `run_rules` uses this to terminate the
 /// fixed-point loop when a rule keeps matching but is no longer
 /// producing change — the canonical termination test for
@@ -1609,6 +1849,7 @@ pub fn apply_rule_full(
     cache: Option<&mut crate::term::EvalCache>,
     record_undo: bool,
 ) -> ApplyOutcome {
+    let _access_rule = crate::access_trace::enter_rule(rule.uid.0, graph as *const TypedGraph as usize);
     // Effect values in one rule firing form one atomic explanatory frame.
     // Keep expensive SD reports across sibling field projections, while
     // clearing traversal memo before every effect so ordinary graph reads see
@@ -1674,12 +1915,23 @@ pub fn apply_rule_full(
                     edge_type: *edge_type,
                     tgt: t,
                 };
-                let pre_exists = graph.has_edge(s, *edge_type, t);
+                crate::access_trace::note(5, s.0, edge_type.0, t.0);
+                crate::access_trace::note(28, s.0, edge_type.0, t.0);
+                let existing_idx = graph.edge_idx(s, *edge_type, t);
+                let pre_exists = existing_idx.is_some();
+                let old_attrs = existing_idx.map(|idx| graph.edge_attrs(idx).clone());
+                let attrs_changed = old_attrs.as_ref().map_or(true, |old| {
+                    old.len() != attr_map.len()
+                        || attr_map
+                            .iter()
+                            .any(|(key, value)| old.get(key) != Some(value))
+                });
                 // The Result was previously discarded. `insert_edge` fails when
                 // an endpoint is absent, which is reachable inside one firing
                 // (an earlier effect may have deleted the node this one binds).
                 // Discarding it credited `progressed` and pushed an undo step
                 // for a mutation that never happened — see `effect_audit.rs`.
+                crate::scale_audit::rule_effect_edge_insert_attempt();
                 let inserted = graph.insert_edge(s, *edge_type, t, attr_map);
                 let failed = inserted.is_err();
                 if failed {
@@ -1699,6 +1951,14 @@ pub fn apply_rule_full(
                     if record_undo {
                         undo.push(UndoStep::AddedEdge(key));
                     }
+                } else if pre_exists && attrs_changed {
+                    progressed = true;
+                    if record_undo {
+                        undo.push(UndoStep::EdgeAttrsSet {
+                            key,
+                            old: old_attrs.expect("pre-existing edge must have attrs snapshot"),
+                        });
+                    }
                 }
             }
             Effect::DelEdge {
@@ -1709,14 +1969,17 @@ pub fn apply_rule_full(
                 let (Some(&s), Some(&t)) = (b.get(src_var), b.get(tgt_var)) else {
                     continue;
                 };
+                crate::access_trace::note(28, s.0, edge_type.0, t.0);
                 let Some(idx) = graph.edge_idx(s, *edge_type, t) else {
                     continue;
                 };
+                crate::access_trace::note(6, s.0, edge_type.0, t.0);
                 let pre_attrs = if record_undo {
                     graph.edge_attrs(idx).clone()
                 } else {
                     crate::graph::Attrs::new()
                 };
+                crate::scale_audit::rule_effect_edge_delete();
                 graph.delete_edge(idx);
                 progressed = true;
                 if record_undo {
@@ -1776,6 +2039,7 @@ pub fn apply_rule_full(
                 ) {
                     (Some(name_s), Some(field_s)) => {
                         graph.pending_rule_edits.push((name_s, field_s, term_v));
+                        crate::scale_audit::deferred_queue_enqueued("rule_edits");
                         progressed = true;
                     }
                     _ => {
@@ -1802,6 +2066,7 @@ pub fn apply_rule_full(
                 if let Some(&patch) = b.get(patch_var) {
                     if !graph.pending_rule_patches.contains(&patch) {
                         graph.pending_rule_patches.push(patch);
+                        crate::scale_audit::deferred_queue_enqueued("rule_patches");
                     }
                     progressed = true;
                 } else {
@@ -1885,6 +2150,7 @@ pub fn apply_rule_full(
                 let tgv = to_vec(&tg_v);
                 if !inv.is_empty() && !tgv.is_empty() && eta_f > 0.0 {
                     graph.pending_net_collapses.push((rn, inv, tgv, eta_f));
+                    crate::scale_audit::deferred_queue_enqueued("net_collapses");
                     progressed = true;
                 }
             }
@@ -1951,6 +2217,7 @@ pub fn apply_rule_full(
                 };
                 if let (Some(fb_id), Some(gw), Some(gh)) = (fb_id, gw, gh) {
                     graph.pending_fb_samples.push((fb_id, game, gw, gh));
+                    crate::scale_audit::deferred_queue_enqueued("fb_samples");
                     progressed = true;
                 }
             }
@@ -2022,6 +2289,7 @@ pub fn apply_rule_full(
                         *identity_key,
                         radius_v.as_f64(),
                     ));
+                    crate::scale_audit::deferred_queue_enqueued("track_identity");
                     progressed = true;
                 }
             }
@@ -2044,7 +2312,9 @@ pub fn apply_rule_full(
                     );
                     attr_map.insert(*k, v);
                 }
+                crate::scale_audit::rule_effect_node_insert();
                 let nid = graph.insert_node(*type_, attr_map);
+                crate::access_trace::note(7, nid.0, type_.0, crate::access_trace::NO_ID);
                 b.insert(*new_var, nid);
                 progressed = true;
                 if record_undo {
@@ -2072,6 +2342,12 @@ pub fn apply_rule_full(
                     );
                     attr_pairs.push((*k, v));
                 }
+                crate::access_trace::note(
+                    9,
+                    crate::access_trace::NO_ID,
+                    type_.0,
+                    crate::access_trace::NO_ID,
+                );
                 // Scan the typed-node index for the first existing node
                 // whose attrs include EVERY (k, v) pair we're about to
                 // insert. Subset semantics: existing nodes may carry
@@ -2079,9 +2355,11 @@ pub fn apply_rule_full(
                 // mention; the author's attrs ARE the dedup key.
                 let mut found: Option<NodeID> = None;
                 for cand in graph.nodes_of_type(*type_) {
+                    crate::access_trace::note(10, cand.0, type_.0, crate::access_trace::NO_ID);
                     let cand_attrs = &graph.node(cand).attrs;
                     let mut all_match = true;
                     for (k, v) in &attr_pairs {
+                        crate::access_trace::note(17, cand.0, k.0, crate::access_trace::NO_ID);
                         match cand_attrs.get(k) {
                             Some(existing) if existing == v => {}
                             _ => {
@@ -2109,7 +2387,9 @@ pub fn apply_rule_full(
                         for (k, v) in attr_pairs {
                             attr_map.insert(k, v);
                         }
+                        crate::scale_audit::rule_effect_node_insert();
                         let nid = graph.insert_node(*type_, attr_map);
+                        crate::access_trace::note(7, nid.0, type_.0, crate::access_trace::NO_ID);
                         b.insert(*new_var, nid);
                         progressed = true;
                         if record_undo {
@@ -2122,6 +2402,13 @@ pub fn apply_rule_full(
                 let Some(&nid) = b.get(var) else {
                     continue;
                 };
+                crate::scale_audit::rule_effect_node_delete_attempt();
+                crate::access_trace::note(
+                    8,
+                    nid.0,
+                    crate::access_trace::NO_ID,
+                    crate::access_trace::NO_ID,
+                );
                 graph.delete_node(nid);
                 progressed = true;
                 if record_undo {
@@ -2145,8 +2432,11 @@ pub fn apply_rule_full(
                     framebuffers,
                     cache.as_deref_mut(),
                 );
+                crate::access_trace::note(17, nid.0, key.0, crate::access_trace::NO_ID);
                 let old = graph.node(nid).attrs.get(key).cloned();
                 let changed = old.as_ref() != Some(&v);
+                crate::access_trace::note(4, nid.0, key.0, crate::access_trace::NO_ID);
+                crate::scale_audit::rule_effect_attr_set_attempt();
                 graph.set_node_attr(nid, *key, v);
                 if changed {
                     progressed = true;
@@ -2174,12 +2464,15 @@ pub fn apply_rule_full(
                     cache.as_deref_mut(),
                 );
                 let old = graph.node(nid).attrs.get(key).cloned();
+                crate::access_trace::note(17, nid.0, key.0, crate::access_trace::NO_ID);
                 // Difference from SetAttr: when equal we SKIP THE WRITE
                 // entirely (don't pump set_node_attr's bookkeeping),
                 // not just suppress the progress flag. Rules using this
                 // variant get exact one-shot semantics even when paired
                 // with progressing effects elsewhere in the rule.
                 if old.as_ref() != Some(&v) {
+                    crate::access_trace::note(4, nid.0, key.0, crate::access_trace::NO_ID);
+                    crate::scale_audit::rule_effect_attr_set_attempt();
                     graph.set_node_attr(nid, *key, v);
                     progressed = true;
                     if record_undo {
@@ -2218,6 +2511,7 @@ pub fn apply_rule_full(
                     let Some(old_idx) = graph.edge_idx(src, edge_type, old_nid) else {
                         continue;
                     };
+                    crate::access_trace::note(11, src.0, edge_type.0, old_nid.0);
                     if record_undo {
                         undo.push(UndoStep::DeletedEdge {
                             src,
@@ -2226,18 +2520,32 @@ pub fn apply_rule_full(
                             attrs: attrs.clone(),
                         });
                     }
+                    crate::scale_audit::rule_effect_replace_edge_delete();
                     graph.delete_edge(old_idx);
-                    // Skip insert when (src, et, new_nid) already exists —
-                    // insert_edge would overwrite attrs (silent), which is
-                    // usually fine but not what we want to record undo for.
-                    let was_new = !graph.has_edge(src, edge_type, new_nid);
+                    // Rewiring onto an existing destination edge replaces its
+                    // attrs through insert_edge. Preserve those attrs in the
+                    // undo log before the overwrite so rollback is exact.
+                    let destination_key = EdgeKey {
+                        src,
+                        edge_type,
+                        tgt: new_nid,
+                    };
+                    let destination_old = graph
+                        .edge_idx(src, edge_type, new_nid)
+                        .map(|idx| graph.edge_attrs(idx).clone());
+                    let was_new = destination_old.is_none();
+                    if record_undo {
+                        if let Some(old) = destination_old {
+                            undo.push(UndoStep::EdgeAttrsSet {
+                                key: destination_key,
+                                old,
+                            });
+                        }
+                    }
+                    crate::scale_audit::rule_effect_replace_edge_insert_attempt();
                     if graph.insert_edge(src, edge_type, new_nid, attrs).is_ok() {
                         if record_undo && was_new {
-                            undo.push(UndoStep::AddedEdge(EdgeKey {
-                                src,
-                                edge_type,
-                                tgt: new_nid,
-                            }));
+                            undo.push(UndoStep::AddedEdge(destination_key));
                         }
                         rewired += 1;
                     }
@@ -2369,6 +2677,9 @@ pub fn undo_apply(undo: Vec<UndoStep>, graph: &mut TypedGraph) {
                 if let Some(idx) = graph.edge_idx(key.src, key.edge_type, key.tgt) {
                     graph.delete_edge(idx);
                 }
+            }
+            UndoStep::EdgeAttrsSet { key, old } => {
+                let _ = graph.insert_edge(key.src, key.edge_type, key.tgt, old);
             }
             UndoStep::DeletedEdge {
                 src,
@@ -2574,6 +2885,28 @@ pub fn run_rules_opts(
     max_steps: usize,
     detect_cycles: bool,
 ) -> usize {
+    run_rules_opts_with_audit_ids(
+        rules, None, arena, graph, interner, concepts, framebuffers, cache,
+        where_jits, max_steps, detect_cycles,
+    )
+}
+
+/// Runner variant for a caller that owns a distinct stable rule identity
+/// space (for example graph-resident rules). Audit IDs must be unique within
+/// that caller and disjoint from substrate RuleIdx values.
+pub fn run_rules_opts_with_audit_ids(
+    rules: &[&RewriteRule],
+    audit_rule_ids: Option<&[u32]>,
+    arena: &mut TermArena,
+    graph: &mut TypedGraph,
+    interner: &mut Interner,
+    mut concepts: Option<&mut ConceptResolver>,
+    framebuffers: Option<&crate::framebuffer::FbRegistry>,
+    mut cache: Option<&mut crate::term::EvalCache>,
+    where_jits: &[Option<&crate::jit::CompiledWhere>],
+    max_steps: usize,
+    detect_cycles: bool,
+) -> usize {
     let mut seen: Option<rustc_hash::FxHashSet<u64>> = if detect_cycles {
         Some(Default::default())
     } else {
@@ -2586,6 +2919,7 @@ pub fn run_rules_opts(
     while steps < max_steps {
         let mut any_progress = false;
         for (rule_i, rule) in rules.iter().enumerate() {
+            let audit_rule_i = audit_rule_ids.and_then(|ids| ids.get(rule_i).copied()).unwrap_or(rule_i as u32);
             let this_jit = where_jits.get(rule_i).copied().unwrap_or(None);
             // slice (b): batch-safe rules apply EVERY binding this pass (no
             // undo probe, no one-per-pass throttle). `continue` (not break)
@@ -2597,7 +2931,10 @@ pub fn run_rules_opts(
             // re-derives a binding set the first pass already had (R). That is
             // exactly what the cold path below does — enumerate every binding,
             // apply ONE, `break`, and re-enumerate from scratch.
-            crate::scale_audit::begin_rule_enumeration(rule_i as u32);
+            crate::scale_audit::begin_rule_enumeration(audit_rule_i);
+            crate::scale_audit::register_rule_audit_metadata(
+                audit_rule_i, rule.name.0, interner.resolve(rule.name), rule.match_edges.len()
+            );
             if rule.batch {
                 if batch_apply_rule(
                     rule,
@@ -2612,6 +2949,7 @@ pub fn run_rules_opts(
                     steps += 1;
                     any_progress = true;
                 }
+                crate::scale_audit::end_rule_enumeration();
                 continue;
             }
             // --- cold path: one progressing binding per pass ---
@@ -2680,8 +3018,10 @@ pub fn run_rules_opts(
             if found_progressing.is_some() {
                 steps += 1;
                 any_progress = true;
+                crate::scale_audit::end_rule_enumeration();
                 break;
             }
+            crate::scale_audit::end_rule_enumeration();
         }
         if !any_progress {
             return steps;
@@ -2725,10 +3065,9 @@ pub fn mt_owned_nodes(
 }
 
 /// A binding "touches" the scope iff AT LEAST ONE of its bound NodeIDs is a
-/// member of `owned`. POST-match filter (see PREREG §1 for the pre- vs.
-/// post-match decision and its justification) — safe regardless of which
-/// pattern variable carries the Mt reference, at the cost of not pruning
-/// the match search itself. Every real CAN rule today binds a single `mt`
+/// member of `owned`. This remains the generic post-match filter and fallback;
+/// `scoped_mt_seed` prunes matching only for the structurally proven
+/// one-edge membership pattern. Every real CAN rule today binds a single `mt`
 /// var consistently across the whole pattern, so in practice this reduces
 /// to an exact `binding["mt"] == target` check; the more general "touches
 /// ANY" form is a documented, deliberate generalisation, not an untested
@@ -2739,6 +3078,134 @@ fn binding_touches_scope(binding: &Binding, owned: &rustc_hash::FxHashSet<NodeID
     binding.values().any(|nid| owned.contains(nid))
 }
 
+fn canonical_binding_key(binding: &Binding) -> smallvec::SmallVec<[(Sym, NodeID); 8]> {
+    let mut key: smallvec::SmallVec<[(Sym, NodeID); 8]> =
+        binding.iter().map(|(sym, node)| (*sym, *node)).collect();
+    key.sort_by_key(|(sym, _)| *sym);
+    key
+}
+
+/// Prove the common one-edge Microtheory case has an exact scope driver.
+/// Binding a rule's `has_concept` source to `scope_mt` is equivalent to the
+/// general post-match `touches owned` filter only when no other has_concept
+/// edge can touch an owned node and owned member nodes do not themselves act
+/// as has_concept sources. Otherwise return None and retain the generic
+/// full-match/filter path.
+fn scoped_mt_seed(
+    rule: &RewriteRule,
+    scope_mt: NodeID,
+    has_concept: Sym,
+    graph: &TypedGraph,
+    owned: &rustc_hash::FxHashSet<NodeID>,
+) -> Option<Binding> {
+    if rule.match_edges.len() != 1 || !owned.contains(&scope_mt) {
+        return None;
+    }
+    let edge = &rule.match_edges[0];
+    if edge.edge_type != has_concept || edge.src_var == edge.tgt_var {
+        return None;
+    }
+    for &node in owned {
+        if node != scope_mt && !graph.neighbours(node, Some(has_concept)).is_empty() {
+            return None;
+        }
+        if graph
+            .in_neighbours(node, Some(has_concept))
+            .into_iter()
+            .any(|src| src != scope_mt)
+        {
+            return None;
+        }
+    }
+    let mut seed = Binding::default();
+    seed.insert(edge.src_var, scope_mt);
+    Some(seed)
+}
+
+#[allow(clippy::too_many_arguments)]
+fn match_rule_each_for_scope<F>(
+    rule: &RewriteRule,
+    seed: Option<&Binding>,
+    owned: &rustc_hash::FxHashSet<NodeID>,
+    arena: &TermArena,
+    graph: &TypedGraph,
+    interner: &Interner,
+    concepts: Option<&ConceptResolver>,
+    framebuffers: Option<&crate::framebuffer::FbRegistry>,
+    cache: Option<&mut crate::term::EvalCache>,
+    mut visit: F,
+) where
+    F: FnMut(&Binding) -> bool,
+{
+    if let Some(seed) = seed {
+        crate::scale_audit::scoped_match_path(crate::scale_audit::ScopedMatchPath::MicrotheorySeed);
+        match_rule_each_with_initial(
+            rule,
+            seed,
+            arena,
+            graph,
+            interner,
+            concepts,
+            framebuffers,
+            cache,
+            None,
+            visit,
+        );
+        return;
+    }
+
+    // Exact order-preserving local path for one-edge patterns. EdgeIdx order
+    // equals edges_by_type insertion order only before any deletion/reuse of
+    // this edge type; the monotone global deletion generation makes that precondition
+    // explicit. Gather every match that touches ownership by seeding either
+    // endpoint from the owned set, deduplicate bindings, then restore the
+    // original global edge order before visiting/effect application.
+    let single_edge = rule.match_edges.first();
+    if let Some(edge) = single_edge.filter(|edge| {
+        rule.match_edges.len() == 1
+            && edge.src_var != edge.tgt_var
+            && graph.edge_delete_generation() == 0
+    }) {
+        crate::scale_audit::scoped_match_path(crate::scale_audit::ScopedMatchPath::LocalOwnedEdge);
+        let mut scope_nodes: Vec<NodeID> = owned.iter().copied().collect();
+        scope_nodes.sort_unstable();
+        let mut collected: Vec<(crate::graph::EdgeIdx, Binding)> = Vec::new();
+        let mut seen: rustc_hash::FxHashSet<smallvec::SmallVec<[(Sym, NodeID); 8]>> = Default::default();
+        let mut cache = cache;
+        for node in scope_nodes {
+            let outgoing = !graph.out_edges_slice(node, Some(edge.edge_type)).is_empty();
+            let incoming = !graph.in_edges_slice(node, Some(edge.edge_type)).is_empty();
+            for (var, has_candidates) in [(edge.src_var, outgoing), (edge.tgt_var, incoming)] {
+                if !has_candidates { continue; }
+                let mut initial = Binding::default();
+                initial.insert(var, node);
+                match_rule_each_with_initial(
+                    rule, &initial, arena, graph, interner, concepts, framebuffers,
+                    cache.as_deref_mut(), None, |binding| {
+                        if !binding_touches_scope(binding, owned) { return true; }
+                        let key = canonical_binding_key(binding);
+                        if !seen.insert(key) { return true; }
+                        let Some(&src) = binding.get(&edge.src_var) else { return true; };
+                        let Some(&tgt) = binding.get(&edge.tgt_var) else { return true; };
+                        if let Some(edge_idx) = graph.edge_idx(src, edge.edge_type, tgt) {
+                            collected.push((edge_idx, binding.clone()));
+                        }
+                        true
+                    },
+                );
+            }
+        }
+        collected.sort_unstable_by_key(|(edge_idx, _)| *edge_idx);
+        for (_, binding) in collected {
+            if !visit(&binding) { break; }
+        }
+        return;
+    }
+
+    crate::scale_audit::scoped_match_path(crate::scale_audit::ScopedMatchPath::FullFallback);
+    match_rule_each(rule, arena, graph, interner, concepts, framebuffers, cache, None, visit);
+}
+
 /// SCOPED twin of `run_rules_opts`. Reached ONLY via
 /// `Substrate::run_rules_scoped(..., Some(mt))` — that method's `None` arm
 /// calls the EXISTING, UNCHANGED `run_rules_opts` directly (never this
@@ -2746,20 +3213,21 @@ fn binding_touches_scope(binding: &Binding, owned: &rustc_hash::FxHashSet<NodeID
 /// caller by construction, not merely by intent.
 ///
 /// Deliberately reimplements (rather than calls) the cold-path and
-/// batch-path binding collection: `batch_apply_rule`'s type-driver / rayon
-/// fast paths apply their bindings immediately with no seam to insert a
-/// scope filter between collection and application, so this function
-/// always full-matches via `match_rule_each`, then filters the resulting
-/// binding SET with `binding_touches_scope` before applying. This is an
-/// unoptimised, opt-in code path: no incremental cursor reuse (that
+/// batch-path binding collection. It uses a proven `has_concept` source
+/// prebinding for the common one-edge Microtheory rule and an ordered,
+/// ownership-seeded candidate path for eligible one-edge rules. Unsupported
+/// shapes or any prior edge deletion use full matching and filter bindings
+/// with `binding_touches_scope` before applying. This is an opt-in path: no
+/// incremental cursor reuse (that
 /// machinery lives in `Substrate::attempt_one_rule` and is keyed on
 /// per-rule state with no per-Mt dimension — retrofitting one is out of
 /// scope for this rung, see PREREG §0's blast-radius framing), no JIT
-/// where-clause, no rayon parallel collection. Correct, not fast — the
-/// right tradeoff for a handful of per-Mt CAN consumer call sites, not a
-/// scheduler-level feature.
+/// where-clause, no rayon parallel collection. The bounded one-edge local
+/// candidate path is used only when its order proof holds; unsupported shapes
+/// retain full matching. This remains an opt-in path, not a scheduler-level
+/// feature.
 pub fn run_rules_opts_scoped(
-    rules: &[&RewriteRule],
+    rules: &[(u32, &RewriteRule)],
     arena: &mut TermArena,
     graph: &mut TypedGraph,
     interner: &mut Interner,
@@ -2768,6 +3236,8 @@ pub fn run_rules_opts_scoped(
     mut cache: Option<&mut crate::term::EvalCache>,
     max_steps: usize,
     detect_cycles: bool,
+    scope_mt: NodeID,
+    has_concept: Sym,
     owned: &rustc_hash::FxHashSet<NodeID>,
 ) -> usize {
     let mut seen: Option<rustc_hash::FxHashSet<u64>> = if detect_cycles {
@@ -2781,7 +3251,16 @@ pub fn run_rules_opts_scoped(
     let mut steps = 0;
     while steps < max_steps {
         let mut any_progress = false;
-        for rule in rules.iter().copied() {
+        for (rule_i, rule) in rules.iter().copied() {
+            // Keep optional per-rule scale counters attributable on the
+            // scoped path too. `rule_i` is preserved by Substrate as the
+            // original stable vector position, including gaps from inactive
+            // rules; compacting the active slice here would mislabel audits.
+            crate::scale_audit::begin_rule_enumeration(rule_i);
+            crate::scale_audit::register_rule_audit_metadata(
+                rule_i, rule.name.0, interner.resolve(rule.name), rule.match_edges.len()
+            );
+            let scope_seed = scoped_mt_seed(rule, scope_mt, has_concept, graph, owned);
             if rule.batch {
                 // Batch-safe: collect every binding via a full match,
                 // filter to scope, apply each distinct surviving binding
@@ -2790,15 +3269,16 @@ pub fn run_rules_opts_scoped(
                 // reproduced here because it needs a filter seam between
                 // collect and apply that the shared function doesn't have.
                 let mut bindings: Vec<Binding> = Vec::new();
-                match_rule_each(
+                match_rule_each_for_scope(
                     rule,
+                    scope_seed.as_ref(),
+                    owned,
                     arena,
                     graph,
                     interner,
                     concepts.as_deref(),
                     framebuffers,
                     cache.as_deref_mut(),
-                    None,
                     |b| {
                         bindings.push(b.clone());
                         true
@@ -2834,30 +3314,39 @@ pub fn run_rules_opts_scoped(
                     steps += 1;
                     any_progress = true;
                 }
+                crate::scale_audit::end_rule_enumeration();
                 continue;
             }
-            // Cold path: full match, filter to scope, apply the first
-            // scoped binding that actually progresses (probe + undo on
-            // no-op bindings), same semantics as `run_rules_opts`'s own
-            // cold path, scoped.
+            // Cold path: the live Substrate scheduler snapshots every
+            // binding for a rule before mutation, then applies each distinct
+            // binding once in order. Preserve that drain semantics after
+            // scope filtering. Stopping at the first progressing binding
+            // changes multi-binding rules (including non-idempotent effects)
+            // relative to `Substrate::attempt_one_rule`.
             let mut bindings: Vec<Binding> = Vec::new();
-            match_rule_each(
+            match_rule_each_for_scope(
                 rule,
+                scope_seed.as_ref(),
+                owned,
                 arena,
                 graph,
                 interner,
                 concepts.as_deref(),
                 framebuffers,
                 cache.as_deref_mut(),
-                None,
                 |b| {
                     bindings.push(b.clone());
                     true
                 },
             );
             bindings.retain(|b| binding_touches_scope(b, owned));
-            let mut found_progressing = false;
+            let mut seen_b: rustc_hash::FxHashSet<smallvec::SmallVec<[(Sym, NodeID); 8]>> =
+                Default::default();
+            let mut progressed_any = false;
             for b in bindings {
+                if !seen_b.insert(canonical_binding_key(&b)) {
+                    continue;
+                }
                 let outcome = apply_rule_full(
                     rule,
                     &b,
@@ -2866,21 +3355,25 @@ pub fn run_rules_opts_scoped(
                     interner,
                     concepts.as_deref_mut(),
                     framebuffers,
-                    cache.as_deref_mut(),
+                    // Matching above observed one pre-mutation snapshot;
+                    // graph-dependent cache entries cannot be reused while
+                    // folding effects over the binding snapshot.
+                    None,
                     true,
                 );
                 if outcome.progressed {
-                    found_progressing = true;
-                    break;
+                    progressed_any = true;
                 } else {
                     undo_apply(outcome.undo, graph);
                 }
             }
-            if found_progressing {
+            if progressed_any {
                 steps += 1;
                 any_progress = true;
+                crate::scale_audit::end_rule_enumeration();
                 break;
             }
+            crate::scale_audit::end_rule_enumeration();
         }
         if !any_progress {
             return steps;
@@ -3056,7 +3549,7 @@ fn collect_batch_bindings_parallel(
             first_candidates
                 .into_iter()
                 .map(|(src, tgt)| {
-                    crate::scale_audit::cand_tested();
+                    crate::scale_audit::cand_tested(0, rule.name.0, rule.match_edges.len());
                     let mut binding = Binding::default();
                     binding.insert(first.src_var, src);
                     binding.insert(first.tgt_var, tgt);
@@ -3106,33 +3599,41 @@ fn collect_batch_bindings_parallel(
     let (frontier, frontier_depth) = frontier?;
     let roots_per_partition = frontier.len().saturating_add(worker_capacity - 1) / worker_capacity;
     let traced_rule = crate::fallback_trace::current_rule();
+    let audit_rule = crate::scale_audit::current_rule_index();
     let partitions: Vec<(Vec<Binding>, crate::fallback_trace::LocalCounts)> = frontier
         .par_chunks(roots_per_partition)
         .map(|roots| {
-            crate::fallback_trace::reset();
-            crate::fallback_trace::set_current_rule(traced_rule);
-            let mut local = Vec::new();
-            for initial in roots {
-                let mut binding = initial.clone();
-                extend_each(
-                    rule,
-                    frontier_depth,
-                    &mut binding,
-                    arena,
-                    graph,
-                    interner,
-                    concepts,
-                    framebuffers,
-                    None,
-                    None,
-                    0,
-                    &mut |binding| {
-                        local.push(binding.clone());
-                        true
-                    },
-                );
+            let collect_partition = || {
+                crate::fallback_trace::reset();
+                crate::fallback_trace::set_current_rule(traced_rule);
+                let mut local = Vec::new();
+                for initial in roots {
+                    let mut binding = initial.clone();
+                    extend_each(
+                        rule,
+                        frontier_depth,
+                        &mut binding,
+                        arena,
+                        graph,
+                        interner,
+                        concepts,
+                        framebuffers,
+                        None,
+                        None,
+                        0,
+                        &mut |binding| {
+                            local.push(binding.clone());
+                            true
+                        },
+                    );
+                }
+                (local, crate::fallback_trace::take_local_counts())
+            };
+            if let Some(rule_i) = audit_rule {
+                crate::scale_audit::with_rule_index(rule_i, collect_partition)
+            } else {
+                collect_partition()
             }
-            (local, crate::fallback_trace::take_local_counts())
         })
         .collect();
     let mut bindings = Vec::new();
@@ -3748,8 +4249,7 @@ mod tests {
             index_hints: if with_hint {
                 vec![IndexJoinHint {
                     for_var: c_v,
-                    via_var: mention_v,
-                    via_key: text_key,
+                    probe: IndexProbe::BoundAttr { via_var: mention_v, via_key: text_key },
                     node_type: i.intern("Concept"),
                     this_key: name_key,
                 }]
@@ -3804,6 +4304,114 @@ mod tests {
         // Both find the SAME concept (moon, not mars) -- correctness parity.
         assert_eq!(b_plain[&c_v], moon_c);
         assert_eq!(b_hinted[&c_v], moon_c);
+    }
+
+    #[test]
+    fn hinted_join_prunes_bound_source_candidates() {
+        let (mut g, mut i, _) = setup_graph();
+        let agent_v = i.intern("agent");
+        let request_v = i.intern("request");
+        let episode_v = i.intern("episode");
+        let agent_t = i.intern("Agent");
+        let request_t = i.intern("MemoryRetrievalRequest");
+        let episode_t = i.intern("Episode");
+        let cue_key = i.intern("cue_key");
+        let recorded = i.intern("recorded_episode");
+        let cue = i.intern("target-cue");
+        let agent = g.insert_node(agent_t, FxHashMap::default());
+        let request = g.insert_node(request_t, {
+            let mut attrs = FxHashMap::default();
+            attrs.insert(cue_key, Value::Str(cue));
+            attrs
+        });
+        let mut expected = None;
+        for n in 0..128 {
+            let mut attrs = FxHashMap::default();
+            let value = if n == 73 {
+                cue
+            } else {
+                i.intern(&format!("cue-{n}"))
+            };
+            attrs.insert(cue_key, Value::Str(value));
+            let episode = g.insert_node(episode_t, attrs);
+            g.insert_edge(agent, recorded, episode, FxHashMap::default())
+                .unwrap();
+            if n == 73 {
+                expected = Some(episode);
+            }
+        }
+        g.declare_attr_index(episode_t, cue_key);
+        let hint = IndexJoinHint {
+            for_var: episode_v,
+            probe: IndexProbe::BoundAttr { via_var: request_v, via_key: cue_key },
+            node_type: episode_t,
+            this_key: cue_key,
+        };
+        let rule = RewriteRule {
+            match_edges: vec![MatchEdge {
+                src_var: agent_v,
+                edge_type: recorded,
+                tgt_var: episode_v,
+            }],
+            index_hints: vec![hint],
+            ..Default::default()
+        };
+        let mut binding = Binding::default();
+        binding.insert(agent_v, agent);
+        binding.insert(request_v, request);
+        let candidates = hinted_candidates(&rule, agent_v, recorded, episode_v, &binding, &g)
+            .expect("declared cue index and bound request enable the hint");
+        assert_eq!(candidates, vec![(agent, expected.unwrap())]);
+
+        // Index maintenance on an attribute update must immediately move the
+        // episode out of the requested cue bucket.
+        g.set_node_attr(expected.unwrap(), cue_key, Value::Str(i.intern("changed")));
+        assert!(
+            hinted_candidates(&rule, agent_v, recorded, episode_v, &binding, &g,)
+                .unwrap()
+                .is_empty()
+        );
+    }
+
+    #[test]
+    fn literal_index_probe_prunes_exact_attribute_value() {
+        let (mut g, mut i, _) = setup_graph();
+        let agent_v = i.intern("agent");
+        let message_v = i.intern("m");
+        let agent_t = i.intern("Agent");
+        let message_t = i.intern("Message");
+        let from_key = i.intern("from");
+        let received = i.intern("received");
+        let interlocutor = i.intern("interlocutor");
+        let agent = g.insert_node(agent_t, FxHashMap::default());
+        let mut expected = None;
+        for value in [interlocutor, i.intern("system"), interlocutor] {
+            let message = g.insert_node(message_t, {
+                let mut attrs = FxHashMap::default();
+                attrs.insert(from_key, Value::Str(value));
+                attrs
+            });
+            g.insert_edge(agent, received, message, FxHashMap::default()).unwrap();
+            if value == interlocutor { expected = Some(message); }
+        }
+        g.declare_attr_index(message_t, from_key);
+        let rule = RewriteRule {
+            match_edges: vec![MatchEdge { src_var: agent_v, edge_type: received, tgt_var: message_v }],
+            index_hints: vec![IndexJoinHint {
+                for_var: message_v,
+                probe: IndexProbe::LiteralString(interlocutor),
+                node_type: message_t,
+                this_key: from_key,
+            }],
+            ..Default::default()
+        };
+        let mut binding = Binding::default();
+        binding.insert(agent_v, agent);
+        let candidates = hinted_candidates(&rule, agent_v, received, message_v, &binding, &g)
+            .expect("declared literal index enables pruning");
+        assert_eq!(candidates.len(), 2);
+        assert!(candidates.iter().all(|(_, m)| g.node(*m).attrs.get(&from_key) == Some(&Value::Str(interlocutor))));
+        assert!(candidates.iter().any(|(_, m)| *m == expected.unwrap()));
     }
 
     #[test]
@@ -3899,8 +4507,7 @@ mod tests {
         ];
         let hints = vec![IndexJoinHint {
             for_var: c_v,
-            via_var: mention_v,
-            via_key: i.intern("text"),
+            probe: IndexProbe::BoundAttr { via_var: mention_v, via_key: i.intern("text") },
             node_type: i.intern("Concept"),
             this_key: i.intern("name"),
         }];

@@ -45,6 +45,7 @@
 use crate::term_variants::{NUM_TERM_VARIANTS, TERM_VARIANT_NAMES};
 use std::cell::Cell;
 use std::sync::atomic::{AtomicBool, AtomicU64, AtomicU8, Ordering};
+use std::collections::BTreeMap;
 use std::sync::{Mutex, OnceLock};
 
 const MODE_OFF: u8 = 0;
@@ -52,6 +53,79 @@ const MODE_ON: u8 = 1;
 
 static MODE: AtomicU8 = AtomicU8::new(MODE_OFF);
 static ENV_READ: OnceLock<()> = OnceLock::new();
+static PER_RULE_MODE: AtomicBool = AtomicBool::new(false);
+static PER_RULE_COUNTS: Mutex<BTreeMap<(u32, &'static str), u64>> = Mutex::new(BTreeMap::new());
+static RULE_AUDIT_METADATA: Mutex<BTreeMap<u32, (u32, String, usize)>> = Mutex::new(BTreeMap::new());
+static AMBIGUOUS_RULE_AUDIT_IDS: Mutex<std::collections::BTreeSet<u32>> = Mutex::new(std::collections::BTreeSet::new());
+/// Candidate tests keyed by `(native rule index, match-edge position)`. Kept
+/// separate from the compact static-metric table because clause positions are
+/// dynamic and this readout is only enabled for targeted matcher attribution.
+static MATCH_CLAUSE_CANDIDATES: Mutex<BTreeMap<(u32, usize), u64>> = Mutex::new(BTreeMap::new());
+const NO_RULE: u32 = u32::MAX;
+thread_local! {
+    /// Rule index currently being enumerated. Valid only inside a rule attempt.
+    static CURRENT_RULE: Cell<u32> = const { Cell::new(NO_RULE) };
+}
+
+#[inline]
+fn per_rule_bump(metric: &'static str, n: u64) {
+    if n == 0 || !PER_RULE_MODE.load(Ordering::Relaxed) {
+        return;
+    }
+    let rule = CURRENT_RULE.with(Cell::get);
+    if rule == NO_RULE {
+        return;
+    }
+    if AMBIGUOUS_RULE_AUDIT_IDS
+        .lock()
+        .map(|ids| ids.contains(&rule))
+        .unwrap_or(true)
+    {
+        return;
+    }
+    if let Ok(mut counts) = PER_RULE_COUNTS.lock() {
+        *counts.entry((rule, metric)).or_insert(0) += n;
+    }
+}
+
+/// Enable attribution keyed by the native rule index. This is opt-in on top of
+/// the ordinary scale audit because the exact per-event map updates add cost.
+pub fn set_per_rule_enabled(on: bool) {
+    PER_RULE_MODE.store(on, Ordering::Relaxed);
+}
+
+/// `(rule_index, metric, count)` rows, sorted by rule index and metric.
+pub fn per_rule_snapshot() -> Vec<(u32, String, u64)> {
+    PER_RULE_COUNTS
+        .lock()
+        .map(|counts| counts.iter().map(|(&(rule, metric), &n)| (rule, metric.to_string(), n)).collect())
+        .unwrap_or_default()
+}
+
+/// Clear only the opt-in per-rule attribution table.
+pub fn per_rule_reset() {
+    if let Ok(mut counts) = PER_RULE_COUNTS.lock() {
+        counts.clear();
+    }
+    CURRENT_RULE.with(|rule| rule.set(NO_RULE));
+    if let Ok(mut counts) = MATCH_CLAUSE_CANDIDATES.lock() {
+        counts.clear();
+    }
+    if let Ok(mut metadata) = RULE_AUDIT_METADATA.lock() {
+        metadata.clear();
+    }
+    if let Ok(mut ambiguous) = AMBIGUOUS_RULE_AUDIT_IDS.lock() {
+        ambiguous.clear();
+    }
+}
+
+/// `(rule_index, zero_based_match_edge_position, candidate_tests)` rows.
+pub fn match_clause_candidate_snapshot() -> Vec<(u32, usize, u64)> {
+    MATCH_CLAUSE_CANDIDATES
+        .lock()
+        .map(|counts| counts.iter().map(|(&(rule, clause), &n)| (rule, clause, n)).collect())
+        .unwrap_or_default()
+}
 
 // ---------------------------------------------------------------------------
 // F — FFI / PyO3 BOUNDARY
@@ -98,9 +172,16 @@ static CAND_ENUM_REPEAT: AtomicU64 = AtomicU64::new(0);
 
 /// Candidate pairs actually tested in the `extend_each` loop.
 static CAND_TESTED: AtomicU64 = AtomicU64::new(0);
+/// Matcher candidate tests with no verified active rule identity.
+static CAND_TESTED_UNATTRIBUTED: AtomicU64 = AtomicU64::new(0);
 /// Candidates discarded by the bound-src/bound-tgt equality filter — enumerated
 /// and then thrown away without any substantive test.
 static CAND_REJECT_BOUND: AtomicU64 = AtomicU64::new(0);
+/// Scoped matcher invocations routed through ownership-seeded one-edge
+/// candidate enumeration, versus the exact fallback paths.
+static SCOPED_LOCAL_RULE_MATCHES: AtomicU64 = AtomicU64::new(0);
+static SCOPED_MT_SEEDED_RULE_MATCHES: AtomicU64 = AtomicU64::new(0);
+static SCOPED_FULL_FALLBACK_RULE_MATCHES: AtomicU64 = AtomicU64::new(0);
 
 /// Where-clause evaluations at the leaf (the substantive per-candidate test).
 static WHERE_EVALS: AtomicU64 = AtomicU64::new(0);
@@ -141,6 +222,169 @@ static RULE_ENUMERATIONS_REPEAT: AtomicU64 = AtomicU64::new(0);
 
 /// Graph attribute writes performed via the Python boundary.
 static GRAPH_WRITES: AtomicU64 = AtomicU64::new(0);
+/// AddEdge effect insertion attempts inside the native rule executor. Kept
+/// separate from GRAPH_WRITES, whose scope is graph mutations via the Python
+/// boundary. Attempts include idempotent duplicate insertions.
+static RULE_EFFECT_EDGE_INSERT_ATTEMPTS: AtomicU64 = AtomicU64::new(0);
+static RULE_EFFECT_EDGE_DELETES: AtomicU64 = AtomicU64::new(0);
+static RULE_EFFECT_NODE_INSERTS: AtomicU64 = AtomicU64::new(0);
+static RULE_EFFECT_NODE_DELETE_ATTEMPTS: AtomicU64 = AtomicU64::new(0);
+static RULE_EFFECT_ATTR_SET_ATTEMPTS: AtomicU64 = AtomicU64::new(0);
+static RULE_EFFECT_REPLACE_EDGE_DELETES: AtomicU64 = AtomicU64::new(0);
+static RULE_EFFECT_REPLACE_EDGE_INSERT_ATTEMPTS: AtomicU64 = AtomicU64::new(0);
+static SCHEDULER_PASSES: AtomicU64 = AtomicU64::new(0);
+static SCHEDULER_EXTERNAL_POLL_SLOTS: AtomicU64 = AtomicU64::new(0);
+static SCHEDULER_FIXEDPOINT_PROBE_SLOTS: AtomicU64 = AtomicU64::new(0);
+static SCHEDULER_DIRTY_VECTOR_SLOTS: AtomicU64 = AtomicU64::new(0);
+static SCHEDULER_SELECTED_RULES: AtomicU64 = AtomicU64::new(0);
+static SCHEDULER_PLAN_NS: AtomicU64 = AtomicU64::new(0);
+
+/// Graph-scoped scheduler/deferred totals captured inside active run_rules
+/// operations. Process-global audit counters remain available unchanged.
+static SCOPED_WORK_AUDIT: Mutex<BTreeMap<(usize, &'static str), u64>> = Mutex::new(BTreeMap::new());
+
+fn scoped_work_bump(name: &'static str, count: u64) {
+    if count == 0 || !enabled() {
+        return;
+    }
+    let scope = crate::access_trace::current_work_scope();
+    if scope == 0 {
+        return;
+    }
+    if let Ok(mut rows) = SCOPED_WORK_AUDIT.lock() {
+        *rows.entry((scope, name)).or_insert(0) += count;
+    }
+}
+
+pub fn scoped_work_snapshot(scope: usize) -> Vec<(String, u64)> {
+    SCOPED_WORK_AUDIT.lock().map(|rows| {
+        rows.iter().filter(|((row_scope, _), _)| *row_scope == scope)
+            .map(|((_, name), count)| ((*name).to_string(), *count)).collect()
+    }).unwrap_or_default()
+}
+
+pub fn scoped_work_snapshot_all() -> Vec<(usize, String, u64)> {
+    SCOPED_WORK_AUDIT.lock().map(|rows| rows.iter()
+        .map(|((scope, name), count)| (*scope, (*name).to_string(), *count)).collect()
+    ).unwrap_or_default()
+}
+
+/// Record one entered monolithic fixpoint pass when the scale audit is on.
+#[inline]
+pub fn scheduler_pass_started() {
+    crate::access_trace::note_work(19, crate::access_trace::NO_ID, 1);
+    scoped_work_bump("scheduler_passes", 1);
+    if enabled() {
+        bump(&SCHEDULER_PASSES, 1);
+    }
+}
+
+/// Record exact rule-slot inspections and dirty-rule selection work for one
+/// monolithic scheduler decision. External polling scans the full live rule
+/// vector; the fixed-point probe short-circuits; the dirty vector scan visits
+/// every slot when the probe finds work.
+#[inline]
+pub fn scheduler_plan_completed(
+    external_poll_slots: usize,
+    fixedpoint_probe_slots: usize,
+    dirty_vector_slots: usize,
+    selected_rules: usize,
+    elapsed_ns: u64,
+) {
+    crate::access_trace::note_work(20, crate::access_trace::NO_ID, external_poll_slots as u64);
+    crate::access_trace::note_work(21, crate::access_trace::NO_ID, fixedpoint_probe_slots as u64);
+    crate::access_trace::note_work(22, crate::access_trace::NO_ID, dirty_vector_slots as u64);
+    crate::access_trace::note_work(23, crate::access_trace::NO_ID, selected_rules as u64);
+    scoped_work_bump("scheduler_external_poll_slots", external_poll_slots as u64);
+    scoped_work_bump("scheduler_fixedpoint_probe_slots", fixedpoint_probe_slots as u64);
+    scoped_work_bump("scheduler_dirty_vector_slots", dirty_vector_slots as u64);
+    scoped_work_bump("scheduler_selected_rules", selected_rules as u64);
+    if !enabled() {
+        return;
+    }
+    bump(&SCHEDULER_EXTERNAL_POLL_SLOTS, external_poll_slots as u64);
+    bump(&SCHEDULER_FIXEDPOINT_PROBE_SLOTS, fixedpoint_probe_slots as u64);
+    bump(&SCHEDULER_DIRTY_VECTOR_SLOTS, dirty_vector_slots as u64);
+    bump(&SCHEDULER_SELECTED_RULES, selected_rules as u64);
+    bump(&SCHEDULER_PLAN_NS, elapsed_ns);
+}
+
+/// Family/action counters for work deferred from a rule firing and drained
+/// between fixpoint passes. These are populated only while the scale audit is
+/// enabled; family-level drain timing is separate from per-rule enqueue counts.
+static DEFERRED_QUEUE_AUDIT: Mutex<BTreeMap<&'static str, u64>> = Mutex::new(BTreeMap::new());
+
+fn deferred_bump(name: &'static str, count: u64) {
+    if count == 0 || !enabled() {
+        return;
+    }
+    if let Ok(mut rows) = DEFERRED_QUEUE_AUDIT.lock() {
+        *rows.entry(name).or_insert(0) += count;
+    }
+}
+
+/// Count one item enqueued by the currently enumerated rule, with a global
+/// family total as well. Rule identity applies only to the producer; queue
+/// drains are reported separately because current entries carry no origin UID.
+pub fn deferred_queue_enqueued(family: &'static str) {
+    crate::access_trace::note_work(24, deferred_family_id(family), 1);
+    if !enabled() {
+        return;
+    }
+    let name = match family {
+        "rule_edits" => "deferred_queue:rule_edits:enqueued_items",
+        "rule_patches" => "deferred_queue:rule_patches:enqueued_items",
+        "fb_samples" => "deferred_queue:fb_samples:enqueued_items",
+        "track_identity" => "deferred_queue:track_identity:enqueued_items",
+        "net_collapses" => "deferred_queue:net_collapses:enqueued_items",
+        _ => "deferred_queue:unknown:enqueued_items",
+    };
+    scoped_work_bump(name, 1);
+    deferred_bump(name, 1);
+    match family {
+        "rule_edits" => per_rule_bump("deferred_queue_enqueued:rule_edits", 1),
+        "rule_patches" => per_rule_bump("deferred_queue_enqueued:rule_patches", 1),
+        "fb_samples" => per_rule_bump("deferred_queue_enqueued:fb_samples", 1),
+        "track_identity" => per_rule_bump("deferred_queue_enqueued:track_identity", 1),
+        "net_collapses" => per_rule_bump("deferred_queue_enqueued:net_collapses", 1),
+        _ => per_rule_bump("deferred_queue_enqueued:unknown", 1),
+    }
+}
+
+/// Record a completed between-pass drain. `items` counts dequeued records,
+/// including records that are stale or rejected during application.
+pub fn deferred_queue_drained(family: &'static str, items: usize, elapsed_ns: u64) {
+    crate::access_trace::note_work(25, deferred_family_id(family), 1);
+    crate::access_trace::note_work(26, deferred_family_id(family), items as u64);
+    if !enabled() {
+        return;
+    }
+    let (batches, drained, nanos) = match family {
+        "rule_edits" => ("deferred_queue:rule_edits:drain_batches", "deferred_queue:rule_edits:drained_items", "deferred_queue:rule_edits:drain_ns"),
+        "rule_patches" => ("deferred_queue:rule_patches:drain_batches", "deferred_queue:rule_patches:drained_items", "deferred_queue:rule_patches:drain_ns"),
+        "fb_samples" => ("deferred_queue:fb_samples:drain_batches", "deferred_queue:fb_samples:drained_items", "deferred_queue:fb_samples:drain_ns"),
+        "track_identity" => ("deferred_queue:track_identity:drain_batches", "deferred_queue:track_identity:drained_items", "deferred_queue:track_identity:drain_ns"),
+        "net_collapses" => ("deferred_queue:net_collapses:drain_batches", "deferred_queue:net_collapses:drained_items", "deferred_queue:net_collapses:drain_ns"),
+        _ => ("deferred_queue:unknown:drain_batches", "deferred_queue:unknown:drained_items", "deferred_queue:unknown:drain_ns"),
+    };
+    scoped_work_bump(batches, 1);
+    scoped_work_bump(drained, items as u64);
+    deferred_bump(batches, 1);
+    deferred_bump(drained, items as u64);
+    deferred_bump(nanos, elapsed_ns);
+}
+
+#[inline]
+fn deferred_family_id(family: &'static str) -> u32 {
+    match family {
+        "rule_edits" => 1,
+        "rule_patches" => 2,
+        "fb_samples" => 3,
+        "track_identity" => 4,
+        "net_collapses" => 5,
+        _ => u32::MAX,
+    }
+}
 
 // ---------------------------------------------------------------------------
 // T — TERM EVALUATION  (VISION_TERM_EVAL_COUNTER_PREREG.md §2)
@@ -160,9 +404,11 @@ static GRAPH_WRITES: AtomicU64 = AtomicU64::new(0);
 //                        dispatch point, so coverage is structural for all 175
 //                        variants rather than dependent on per-variant opt-in.
 //
-//   term_unit:<Variant>  INTERIOR COMPARISON UNITS. Charged by the interior
-//                        loops of variants that loop, attributed to the
-//                        INNERMOST variant currently evaluating.
+//   term_unit:<Variant>  INTERIOR WORK UNITS. Sites define a unit locally
+//                        (comparison, inspected neighbour/edge, predicate
+//                        item, or sequence item) and attribute it to the
+//                        INNERMOST variant currently evaluating. Compare a
+//                        unit only within the same variant/site semantics.
 //
 // Why both: for a leaf (`Plus`, `Attr`) interior work is O(1), so invocations
 // ARE the cost and `term_unit` is legitimately zero. For an aggregate
@@ -177,7 +423,10 @@ static GRAPH_WRITES: AtomicU64 = AtomicU64::new(0);
 /// arity (`term_variants.rs`, generated) — not a chosen constant.
 static TERM_EVALS: [AtomicU64; NUM_TERM_VARIANTS] =
     [const { AtomicU64::new(0) }; NUM_TERM_VARIANTS];
-/// Per-variant interior comparison units.
+/// Term evaluations that could not be assigned to one verified rule identity.
+/// Meaningful when per-rule auditing is enabled; otherwise zero by design.
+static TERM_EVALS_UNATTRIBUTED: AtomicU64 = AtomicU64::new(0);
+/// Per-variant interior work units, with site-defined units.
 static TERM_UNITS: [AtomicU64; NUM_TERM_VARIANTS] =
     [const { AtomicU64::new(0) }; NUM_TERM_VARIANTS];
 
@@ -220,9 +469,22 @@ pub fn term_eval(variant: u16) -> Option<VariantGuard> {
     if !enabled() {
         return None;
     }
+    if PER_RULE_MODE.load(Ordering::Relaxed) {
+        let rule = CURRENT_RULE.with(Cell::get);
+        let ambiguous = rule == NO_RULE
+            || AMBIGUOUS_RULE_AUDIT_IDS
+                .lock()
+                .map(|ids| ids.contains(&rule))
+                .unwrap_or(true);
+        if ambiguous {
+            bump(&TERM_EVALS_UNATTRIBUTED, 1);
+        }
+    }
+    per_rule_bump("term_evaluations", 1);
     let i = variant as usize;
     if i < NUM_TERM_VARIANTS {
         bump(&TERM_EVALS[i], 1);
+        per_rule_bump(TERM_VARIANT_NAMES[i], 1);
     }
     let prev = CURRENT_VARIANT.with(|c| {
         let p = c.get();
@@ -232,15 +494,16 @@ pub fn term_eval(variant: u16) -> Option<VariantGuard> {
     Some(VariantGuard(prev))
 }
 
-/// Charge `n` interior comparison units to the innermost variant currently
-/// evaluating. Call from inside an interior loop, ONCE per loop with the count,
-/// not once per iteration — an atomic per iteration would dominate the very work
-/// it is measuring.
+/// Charge `n` site-defined interior work units to the innermost variant currently
+/// evaluating. Call once per loop with the count, not once per iteration — an
+/// atomic per iteration would dominate the very work it is measuring. Unit
+/// meanings are site-specific and should only be compared within that site.
 #[inline]
 pub fn term_units(n: u64) {
     if !enabled() || n == 0 {
         return;
     }
+    per_rule_bump("term_units", n);
     let v = CURRENT_VARIANT.with(|c| c.get());
     if v == NO_VARIANT {
         bump(&TERM_UNITS_UNATTRIBUTED, n);
@@ -504,6 +767,46 @@ pub fn graph_writes(n: u64) {
     }
 }
 
+#[inline]
+pub fn scoped_match_path(path: ScopedMatchPath) {
+    if !enabled() { return; }
+    match path {
+        ScopedMatchPath::LocalOwnedEdge => bump(&SCOPED_LOCAL_RULE_MATCHES, 1),
+        ScopedMatchPath::MicrotheorySeed => bump(&SCOPED_MT_SEEDED_RULE_MATCHES, 1),
+        ScopedMatchPath::FullFallback => bump(&SCOPED_FULL_FALLBACK_RULE_MATCHES, 1),
+    }
+}
+
+#[derive(Copy, Clone)]
+pub enum ScopedMatchPath { LocalOwnedEdge, MicrotheorySeed, FullFallback }
+
+#[inline]
+pub fn rule_effect_edge_insert_attempt() {
+    if enabled() {
+        bump(&RULE_EFFECT_EDGE_INSERT_ATTEMPTS, 1);
+        per_rule_bump("effect_edge_insert_attempts", 1);
+    }
+}
+
+#[inline]
+pub fn rule_effect_edge_delete() { if enabled() { bump(&RULE_EFFECT_EDGE_DELETES, 1); per_rule_bump("effect_edge_deletes", 1); } }
+#[inline]
+pub fn rule_effect_node_insert() { if enabled() { bump(&RULE_EFFECT_NODE_INSERTS, 1); per_rule_bump("effect_node_inserts", 1); } }
+#[inline]
+pub fn rule_effect_node_delete_attempt() {
+    if enabled() { bump(&RULE_EFFECT_NODE_DELETE_ATTEMPTS, 1); per_rule_bump("effect_node_delete_attempts", 1); }
+}
+#[inline]
+pub fn rule_effect_attr_set_attempt() { if enabled() { bump(&RULE_EFFECT_ATTR_SET_ATTEMPTS, 1); per_rule_bump("effect_attr_set_attempts", 1); } }
+#[inline]
+pub fn rule_effect_replace_edge_delete() {
+    if enabled() { bump(&RULE_EFFECT_REPLACE_EDGE_DELETES, 1); per_rule_bump("effect_replace_edge_deletes", 1); }
+}
+#[inline]
+pub fn rule_effect_replace_edge_insert_attempt() {
+    if enabled() { bump(&RULE_EFFECT_REPLACE_EDGE_INSERT_ATTEMPTS, 1); per_rule_bump("effect_replace_edge_insert_attempts", 1); }
+}
+
 // --- epochs ----------------------------------------------------------------
 
 /// Open a new epoch: a Python→Rust call into a rule-running method.
@@ -533,7 +836,9 @@ pub fn begin_rule_enumeration(rule_i: u32) {
     if !enabled() {
         return;
     }
+    CURRENT_RULE.with(|current| current.set(rule_i));
     bump(&RULE_ENUMERATIONS, 1);
+    per_rule_bump("rule_enumerations", 1);
     let repeat = match EPOCH_RULES.lock() {
         Ok(mut s) => {
             if s.contains(&rule_i) {
@@ -551,6 +856,102 @@ pub fn begin_rule_enumeration(rule_i: u32) {
         bump(&RULE_ENUMERATIONS_REPEAT, 1);
     }
     CURRENT_IS_REPEAT.store(repeat, Ordering::Relaxed);
+}
+
+/// Register the stable identity and pattern shape for the active matcher.
+/// Identity is supplied by its owning rule store; callers must namespace IDs
+/// when multiple stores share the process-global audit counters.
+pub fn register_rule_audit_metadata(rule_i: u32, name_sym: u32, name: &str, match_arity: usize) {
+    if !PER_RULE_MODE.load(Ordering::Relaxed) {
+        return;
+    }
+    if let Ok(mut metadata) = RULE_AUDIT_METADATA.lock() {
+        let next = (name_sym, name.to_owned(), match_arity);
+        if let Some(previous) = metadata.get(&rule_i) {
+            if previous != &next {
+                if let Ok(mut ambiguous) = AMBIGUOUS_RULE_AUDIT_IDS.lock() {
+                    ambiguous.insert(rule_i);
+                }
+                let mut invalidated = 0u64;
+                if let Ok(mut clauses) = MATCH_CLAUSE_CANDIDATES.lock() {
+                    let keys: Vec<_> = clauses.keys().filter(|(id, _)| *id == rule_i).copied().collect();
+                    for key in keys {
+                        invalidated = invalidated.saturating_add(clauses.remove(&key).unwrap_or(0));
+                    }
+                }
+                if let Ok(mut counts) = PER_RULE_COUNTS.lock() {
+                    let keys: Vec<_> = counts
+                        .keys()
+                        .filter(|(id, _)| *id == rule_i)
+                        .copied()
+                        .collect();
+                    let mut invalidated_terms = 0u64;
+                    for key in keys {
+                        let value = counts.remove(&key).unwrap_or(0);
+                        if key.1 == "term_evaluations" {
+                            invalidated_terms = invalidated_terms.saturating_add(value);
+                        }
+                    }
+                    if invalidated_terms > 0 {
+                        bump(&TERM_EVALS_UNATTRIBUTED, invalidated_terms);
+                    }
+                }
+                if invalidated > 0 {
+                    bump(&CAND_TESTED_UNATTRIBUTED, invalidated);
+                }
+            }
+        } else {
+            metadata.insert(rule_i, next);
+        }
+    }
+}
+
+/// Read metadata for the identities represented in the current audit window.
+pub fn rule_audit_metadata_snapshot() -> Vec<(u32, u32, String, usize, bool)> {
+    RULE_AUDIT_METADATA
+        .lock()
+        .map(|rows| rows.iter().map(|(&id, (name_sym, name, arity))| {
+            let ambiguous = AMBIGUOUS_RULE_AUDIT_IDS.lock().map(|set| set.contains(&id)).unwrap_or(true);
+            (id, *name_sym, name.clone(), *arity, ambiguous)
+        }).collect())
+        .unwrap_or_default()
+}
+
+/// Return the rule context on this thread, if per-rule auditing is active.
+/// Parallel matcher workers capture this before Rayon dispatch and rebind it
+/// while evaluating their partition; reading a coordinator's thread-local
+/// value from a worker would otherwise return that worker's stale context.
+#[inline]
+pub fn current_rule_index() -> Option<u32> {
+    if !PER_RULE_MODE.load(Ordering::Relaxed) {
+        return None;
+    }
+    CURRENT_RULE.with(|current| {
+        let rule = current.get();
+        (rule != NO_RULE).then_some(rule)
+    })
+}
+
+/// Run work with an explicit native rule attribution on the current thread,
+/// restoring the worker's prior context even when the callback unwinds.
+#[inline]
+pub fn with_rule_index<R>(rule_i: u32, f: impl FnOnce() -> R) -> R {
+    struct RestoreRule(u32);
+    impl Drop for RestoreRule {
+        fn drop(&mut self) {
+            CURRENT_RULE.with(|current| current.set(self.0));
+        }
+    }
+    let previous = CURRENT_RULE.with(|current| current.replace(rule_i));
+    let _restore = RestoreRule(previous);
+    f()
+}
+
+/// Stop attributing work to the most recently enumerated rule. Call at the
+/// end of each rule attempt so unrelated term evaluation cannot leak in.
+#[inline]
+pub fn end_rule_enumeration() {
+    CURRENT_RULE.with(|current| current.set(NO_RULE));
 }
 
 #[inline(always)]
@@ -577,6 +978,7 @@ pub fn candidates(n: u64, path: CandPath) {
         return;
     }
     bump(&CAND_ENUM, n);
+    per_rule_bump("candidate_pairs", n);
     match path {
         CandPath::Local => bump(&CAND_ENUM_LOCAL, n),
         CandPath::Hinted => bump(&CAND_ENUM_HINTED, n),
@@ -593,9 +995,27 @@ pub fn candidates(n: u64, path: CandPath) {
 }
 
 #[inline]
-pub fn cand_tested() {
+pub fn cand_tested(match_edge_position: usize, name_sym: u32, match_arity: usize) {
     if enabled() {
         bump(&CAND_TESTED, 1);
+        if PER_RULE_MODE.load(Ordering::Relaxed) {
+            let rule = CURRENT_RULE.with(Cell::get);
+            let registered_identity = RULE_AUDIT_METADATA.lock().ok().and_then(|metadata| {
+                metadata.get(&rule).map(|(expected_name, _, expected_arity)| {
+                    *expected_name == name_sym && *expected_arity == match_arity
+                })
+            }).unwrap_or(false);
+            let ambiguous = AMBIGUOUS_RULE_AUDIT_IDS.lock().map(|set| set.contains(&rule)).unwrap_or(true);
+            let valid_identity = registered_identity && !ambiguous;
+            if rule != NO_RULE && valid_identity && match_edge_position < match_arity {
+                per_rule_bump("candidate_tests", 1);
+                if let Ok(mut counts) = MATCH_CLAUSE_CANDIDATES.lock() {
+                    *counts.entry((rule, match_edge_position)).or_insert(0) += 1;
+                }
+            } else {
+                bump(&CAND_TESTED_UNATTRIBUTED, 1);
+            }
+        }
     }
 }
 
@@ -612,6 +1032,7 @@ pub fn where_eval(passed: bool) {
         return;
     }
     bump(&WHERE_EVALS, 1);
+    per_rule_bump("where_evaluations", 1);
     if is_repeat() {
         bump(&WHERE_EVALS_REPEAT, 1);
     } else {
@@ -619,6 +1040,7 @@ pub fn where_eval(passed: bool) {
     }
     if !passed {
         bump(&WHERE_REJECTS, 1);
+        per_rule_bump("where_rejections", 1);
     }
 }
 
@@ -628,8 +1050,10 @@ pub fn pushdown_eval(pruned: bool) {
         return;
     }
     bump(&PUSHDOWN_EVALS, 1);
+    per_rule_bump("pushdown_evaluations", 1);
     if pruned {
         bump(&PUSHDOWN_PRUNES, 1);
+        per_rule_bump("pushdown_prunes", 1);
     }
 }
 
@@ -637,6 +1061,7 @@ pub fn pushdown_eval(pruned: bool) {
 pub fn leaf_visit() {
     if enabled() {
         bump(&LEAF_VISITS, 1);
+        per_rule_bump("binding_leaves", 1);
     }
 }
 
@@ -651,6 +1076,7 @@ pub fn var_collision() {
 pub fn binding_cloned() {
     if enabled() {
         bump(&BINDINGS_CLONED, 1);
+        per_rule_bump("binding_clones", 1);
     }
 }
 
@@ -676,7 +1102,12 @@ macro_rules! all_counters {
             cand_enum_first => CAND_ENUM_FIRST,
             cand_enum_repeat => CAND_ENUM_REPEAT,
             cand_tested => CAND_TESTED,
+            cand_tested_unattributed => CAND_TESTED_UNATTRIBUTED,
+            term_evals_unattributed => TERM_EVALS_UNATTRIBUTED,
             cand_reject_bound => CAND_REJECT_BOUND,
+            scoped_local_rule_matches => SCOPED_LOCAL_RULE_MATCHES,
+            scoped_mt_seeded_rule_matches => SCOPED_MT_SEEDED_RULE_MATCHES,
+            scoped_full_fallback_rule_matches => SCOPED_FULL_FALLBACK_RULE_MATCHES,
             where_evals => WHERE_EVALS,
             where_evals_first => WHERE_EVALS_FIRST,
             where_evals_repeat => WHERE_EVALS_REPEAT,
@@ -690,6 +1121,19 @@ macro_rules! all_counters {
             rule_enumerations => RULE_ENUMERATIONS,
             rule_enumerations_repeat => RULE_ENUMERATIONS_REPEAT,
             graph_writes => GRAPH_WRITES,
+            rule_effect_edge_insert_attempts => RULE_EFFECT_EDGE_INSERT_ATTEMPTS,
+            rule_effect_edge_deletes => RULE_EFFECT_EDGE_DELETES,
+            rule_effect_node_inserts => RULE_EFFECT_NODE_INSERTS,
+            rule_effect_node_delete_attempts => RULE_EFFECT_NODE_DELETE_ATTEMPTS,
+            rule_effect_attr_set_attempts => RULE_EFFECT_ATTR_SET_ATTEMPTS,
+            rule_effect_replace_edge_deletes => RULE_EFFECT_REPLACE_EDGE_DELETES,
+            rule_effect_replace_edge_insert_attempts => RULE_EFFECT_REPLACE_EDGE_INSERT_ATTEMPTS,
+            scheduler_passes => SCHEDULER_PASSES,
+            scheduler_external_poll_slots => SCHEDULER_EXTERNAL_POLL_SLOTS,
+            scheduler_fixedpoint_probe_slots => SCHEDULER_FIXEDPOINT_PROBE_SLOTS,
+            scheduler_dirty_vector_slots => SCHEDULER_DIRTY_VECTOR_SLOTS,
+            scheduler_selected_rules => SCHEDULER_SELECTED_RULES,
+            scheduler_plan_ns => SCHEDULER_PLAN_NS,
             epochs => EPOCHS,
             epochs_apply_once => EPOCHS_APPLY_ONCE,
             cand_enum_apply_once => CAND_ENUM_APPLY_ONCE,
@@ -751,6 +1195,9 @@ pub fn snapshot() -> Vec<(String, u64)> {
             ];
             term_rows(&mut v);
             dim_infer_arg_rows(&mut v);
+            if let Ok(rows) = DEFERRED_QUEUE_AUDIT.lock() {
+                v.extend(rows.iter().map(|(name, count)| ((*name).to_string(), *count)));
+            }
             v.sort_by(|a, b| a.0.cmp(&b.0));
             v
         }};
@@ -775,6 +1222,13 @@ pub fn reset() {
         s.clear();
     }
     CURRENT_IS_REPEAT.store(false, Ordering::Relaxed);
+    per_rule_reset();
+    if let Ok(mut rows) = DEFERRED_QUEUE_AUDIT.lock() {
+        rows.clear();
+    }
+    if let Ok(mut rows) = SCOPED_WORK_AUDIT.lock() {
+        rows.clear();
+    }
     IN_APPLY_ONCE.store(false, Ordering::Relaxed);
     if let Ok(mut s) = DIM_INFER_ARGS_ORDERED.lock() {
         s.clear();

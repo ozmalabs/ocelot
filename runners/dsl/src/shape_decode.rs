@@ -51,6 +51,11 @@ use crate::term::{
 };
 use crate::value::{cmp_value, SurfaceKind, Value};
 
+#[inline]
+fn trace_scanned_node(ctx: &EvalCtx, node: crate::graph::NodeID) {
+    crate::access_trace::note_node_type_and_attrs(ctx.graph, node);
+}
+
 /// Build a `Value::Surface(Text, ..)` from a `&str` — the output-key /
 /// output-text constructor that needs no interner access at all.
 fn surf(s: &str) -> Value {
@@ -259,6 +264,7 @@ fn load_parts(
     let mut by_name: FxHashMap<String, Part> = FxHashMap::default();
 
     for nid in ctx.graph.nodes_of_type(codebook_type) {
+        trace_scanned_node(ctx, nid);
         let node = ctx.graph.node(nid);
         let mut name_val: Option<Value> = None;
         let mut sig_val: Option<Value> = None;
@@ -504,6 +510,7 @@ fn load_generators(ctx: &EvalCtx, generator_type: Sym) -> Vec<Generator> {
     let mut by_name: FxHashMap<String, Generator> = FxHashMap::default();
 
     for nid in ctx.graph.nodes_of_type(generator_type) {
+        trace_scanned_node(ctx, nid);
         let node = ctx.graph.node(nid);
         let mut name_val: Option<Value> = None;
         let mut kind_val: Option<Value> = None;
@@ -1171,6 +1178,7 @@ fn load_relation_cue_index(ctx: &EvalCtx) -> FxHashMap<Vec<String>, String> {
         return idx;
     };
     for nid in ctx.graph.nodes_of_type(cue_type) {
+        trace_scanned_node(ctx, nid);
         let node = ctx.graph.node(nid);
         let mut name: Option<String> = None;
         let mut rel: Option<Value> = None;
@@ -7021,6 +7029,7 @@ fn td_transfer_one(
 fn load_mechanisms(ctx: &EvalCtx, mechanism_type: Sym) -> Vec<Value> {
     let mut out: Vec<Value> = Vec::new();
     for nid in ctx.graph.nodes_of_type(mechanism_type) {
+        trace_scanned_node(ctx, nid);
         let node = ctx.graph.node(nid);
         let mut name_val: Option<Value> = None;
         let mut meta_shape_val: Option<Value> = None;
@@ -7080,6 +7089,7 @@ const MECHANISM_TRANSFER_ROLE: &str = "mechanism_transfer";
 fn codebook_type_from_registry(ctx: &EvalCtx) -> Option<Sym> {
     let registry_type = ctx.interner.lookup(CODEBOOK_REGISTRY_TYPE)?;
     for nid in ctx.graph.nodes_of_type(registry_type) {
+        trace_scanned_node(ctx, nid);
         let node = ctx.graph.node(nid);
         let mut role: Option<String> = None;
         let mut node_type: Option<String> = None;
@@ -7230,7 +7240,9 @@ fn ms_score_shapes(ctx: &EvalCtx, rels: &[MsRel]) -> Vec<(MsEvidence, String, Va
     };
 
     for shape_id in ctx.graph.nodes_of_type(metashape_sym) {
+        trace_scanned_node(ctx, shape_id);
         // A MetaShape with no truthy `name` is skipped (Python `if name:`).
+        crate::access_trace::note(2, shape_id.0, name_key.0, crate::access_trace::NO_ID);
         let name_val = match ctx.graph.node(shape_id).attrs.get(&name_key) {
             Some(v) => v.clone(),
             None => continue,
@@ -7241,7 +7253,9 @@ fn ms_score_shapes(ctx: &EvalCtx, rels: &[MsRel]) -> Vec<(MsEvidence, String, Va
         };
         let mut ev = MsEvidence::default();
         let mut kw_seen: std::collections::BTreeSet<String> = Default::default();
+        crate::access_trace::note_out_edges(ctx.graph, shape_id, Some(has_principle));
         for p_id in ctx.graph.neighbours(shape_id, Some(has_principle)) {
+            crate::access_trace::note(2, p_id.0, keywords_key.0, crate::access_trace::NO_ID);
             let kws = match ctx.graph.node(p_id).attrs.get(&keywords_key) {
                 Some(Value::Tuple(items) | Value::List(items)) => items,
                 _ => continue,
@@ -7471,6 +7485,7 @@ pub(crate) fn eval_meta_shape_mint(
     ) else {
         return empty(ctx);
     };
+    crate::access_trace::note(2, obs_id.0, sig_key.0, crate::access_trace::NO_ID);
     let Some(my_sig) = ctx.graph.node(obs_id).attrs.get(&sig_key).cloned() else {
         return empty(ctx);
     };
@@ -7485,6 +7500,7 @@ pub(crate) fn eval_meta_shape_mint(
     let mut group_sigs: Vec<Value> = Vec::new();
     let mut leader = true;
     for nid in ctx.graph.nodes_of_type(obs_type) {
+        trace_scanned_node(ctx, nid);
         let node = ctx.graph.node(nid);
         let ok_status = node
             .attrs
@@ -7537,6 +7553,7 @@ pub(crate) fn eval_meta_shape_mint(
     let mut all_obs = 0usize;
     let mut pred_doc_count: std::collections::BTreeMap<String, usize> = Default::default();
     for nid in ctx.graph.nodes_of_type(obs_type) {
+        trace_scanned_node(ctx, nid);
         let Some(sig) = ctx.graph.node(nid).attrs.get(&sig_key) else {
             continue;
         };

@@ -129,6 +129,8 @@ pub fn term_from_subgraph(
     root: NodeID,
     arena: &mut TermArena,
 ) -> Result<TermIdx, ReflectError> {
+    crate::access_trace::note_node_type_and_attrs(graph, root);
+    crate::access_trace::note_out_edges(graph, root, None);
     let node = graph.node(root);
     let type_name = interner.resolve(node.type_);
     let Some(variant) = type_name.strip_prefix(TERM_NODE_PREFIX) else {
@@ -146,6 +148,10 @@ pub fn term_from_subgraph(
         let Some(field) = et.strip_prefix(CHILD_EDGE_PREFIX) else {
             continue;
         };
+        let index_sym = interner.lookup("index");
+        if let Some(index_sym) = index_sym {
+            crate::access_trace::note(15, edge.src.0, index_sym.0, edge.tgt.0);
+        }
         let idx_attr = graph
             .edge_attrs(edge_idx)
             .iter()
