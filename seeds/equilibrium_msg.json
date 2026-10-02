@@ -1,0 +1,874 @@
+{
+ "depends_on": [
+  "equilibrium_lexicon",
+  "speech_act_classify"
+ ],
+ "description": "msg-layer rules: speech_act (from sak_kind), substantive_markers, deescalation.",
+ "edges": [],
+ "id": "equilibrium_msg",
+ "nodes": [],
+ "productions": [],
+ "rules": [
+  {
+   "effects": [
+    [
+     "set_attr",
+     "m",
+     "eqfire:eq.msg.speech_act.sak_question",
+     "question"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "received",
+     "m"
+    ]
+   ],
+   "name": "eq.msg.speech_act.sak_question",
+   "where": {
+    "items": [
+     {
+      "a": {
+       "key": "eqfire:eq.msg.speech_act.sak_question",
+       "node": {
+        "name": "m",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      },
+      "type": "Eq"
+     },
+     {
+      "a": {
+       "key": "sak_kind",
+       "node": {
+        "name": "m",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "question"
+      },
+      "type": "Eq"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "effects": [
+    [
+     "set_attr",
+     "m",
+     "eqfire:eq.msg.speech_act.sak_statement",
+     "assertion"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "received",
+     "m"
+    ]
+   ],
+   "name": "eq.msg.speech_act.sak_statement",
+   "where": {
+    "items": [
+     {
+      "a": {
+       "key": "eqfire:eq.msg.speech_act.sak_statement",
+       "node": {
+        "name": "m",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      },
+      "type": "Eq"
+     },
+     {
+      "a": {
+       "key": "sak_kind",
+       "node": {
+        "name": "m",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "statement"
+      },
+      "type": "Eq"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "effects": [
+    [
+     "set_attr",
+     "m",
+     "eqfire:eq.msg.speech_act.sak_instruction",
+     "directive"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "received",
+     "m"
+    ]
+   ],
+   "name": "eq.msg.speech_act.sak_instruction",
+   "where": {
+    "items": [
+     {
+      "a": {
+       "key": "eqfire:eq.msg.speech_act.sak_instruction",
+       "node": {
+        "name": "m",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      },
+      "type": "Eq"
+     },
+     {
+      "a": {
+       "key": "sak_kind",
+       "node": {
+        "name": "m",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "instruction"
+      },
+      "type": "Eq"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "effects": [
+    [
+     "set_attr",
+     "m",
+     "eqfire:eq.msg.substantive_markers.question_act",
+     "question"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "received",
+     "m"
+    ]
+   ],
+   "name": "eq.msg.substantive_markers.question_act",
+   "where": {
+    "items": [
+     {
+      "a": {
+       "key": "eqfire:eq.msg.substantive_markers.question_act",
+       "node": {
+        "name": "m",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      },
+      "type": "Eq"
+     },
+     {
+      "a": {
+       "key": "eqfire:eq.msg.speech_act.sak_question",
+       "node": {
+        "name": "m",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "question"
+      },
+      "type": "Eq"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "effects": [
+    [
+     "set_attr",
+     "m",
+     "eqfire:eq.msg.substantive_markers.code_fence",
+     "code"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "received",
+     "m"
+    ],
+    [
+     "m",
+     "eq_has_span",
+     "sp"
+    ]
+   ],
+   "name": "eq.msg.substantive_markers.code_fence",
+   "where": {
+    "items": [
+     {
+      "a": {
+       "key": "eqfire:eq.msg.substantive_markers.code_fence",
+       "node": {
+        "name": "m",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      },
+      "type": "Eq"
+     },
+     {
+      "a": {
+       "key": "eq_span",
+       "node": {
+        "name": "sp",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "code"
+      },
+      "type": "Eq"
+     },
+     {
+      "a": {
+       "key": "form",
+       "node": {
+        "name": "sp",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "fence"
+      },
+      "type": "Eq"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "effects": [
+    [
+     "set_attr",
+     "m",
+     "eqfire:eq.msg.substantive_markers.code_inline",
+     "code"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "received",
+     "m"
+    ],
+    [
+     "m",
+     "eq_has_span",
+     "sp"
+    ]
+   ],
+   "name": "eq.msg.substantive_markers.code_inline",
+   "where": {
+    "items": [
+     {
+      "a": {
+       "key": "eqfire:eq.msg.substantive_markers.code_inline",
+       "node": {
+        "name": "m",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      },
+      "type": "Eq"
+     },
+     {
+      "a": {
+       "key": "eq_span",
+       "node": {
+        "name": "sp",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "code"
+      },
+      "type": "Eq"
+     },
+     {
+      "a": {
+       "key": "form",
+       "node": {
+        "name": "sp",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "inline"
+      },
+      "type": "Eq"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "effects": [
+    [
+     "set_attr",
+     "m",
+     "eqfire:eq.msg.substantive_markers.link_url",
+     "link"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "received",
+     "m"
+    ],
+    [
+     "m",
+     "eq_has_span",
+     "sp"
+    ]
+   ],
+   "name": "eq.msg.substantive_markers.link_url",
+   "where": {
+    "items": [
+     {
+      "a": {
+       "key": "eqfire:eq.msg.substantive_markers.link_url",
+       "node": {
+        "name": "m",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      },
+      "type": "Eq"
+     },
+     {
+      "a": {
+       "key": "eq_span",
+       "node": {
+        "name": "sp",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "link"
+      },
+      "type": "Eq"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "effects": [
+    [
+     "set_attr",
+     "m",
+     "eqfire:eq.msg.substantive_markers.citation_cue_unigram",
+     "citation"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "received",
+     "m"
+    ],
+    [
+     "m",
+     "eq_has_token",
+     "t"
+    ],
+    [
+     "agent",
+     "eq_has_cue",
+     "c"
+    ]
+   ],
+   "name": "eq.msg.substantive_markers.citation_cue_unigram",
+   "where": {
+    "items": [
+     {
+      "a": {
+       "key": "eqfire:eq.msg.substantive_markers.citation_cue_unigram",
+       "node": {
+        "name": "m",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      },
+      "type": "Eq"
+     },
+     {
+      "a": {
+       "key": "cue",
+       "node": {
+        "name": "c",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "citation"
+      },
+      "type": "Eq"
+     },
+     {
+      "a": {
+       "key": "form",
+       "node": {
+        "name": "t",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "key": "w1",
+       "node": {
+        "name": "c",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "type": "Eq"
+     },
+     {
+      "a": {
+       "key": "w2",
+       "node": {
+        "name": "c",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      },
+      "type": "Eq"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "effects": [
+    [
+     "set_attr",
+     "m",
+     "eqfire:eq.msg.substantive_markers.citation_cue_bigram",
+     "citation"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "received",
+     "m"
+    ],
+    [
+     "m",
+     "eq_has_token",
+     "t"
+    ],
+    [
+     "agent",
+     "eq_has_cue",
+     "c"
+    ],
+    [
+     "t",
+     "eq_next",
+     "u"
+    ]
+   ],
+   "name": "eq.msg.substantive_markers.citation_cue_bigram",
+   "where": {
+    "items": [
+     {
+      "a": {
+       "key": "eqfire:eq.msg.substantive_markers.citation_cue_bigram",
+       "node": {
+        "name": "m",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      },
+      "type": "Eq"
+     },
+     {
+      "a": {
+       "key": "cue",
+       "node": {
+        "name": "c",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "citation"
+      },
+      "type": "Eq"
+     },
+     {
+      "a": {
+       "key": "form",
+       "node": {
+        "name": "t",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "key": "w1",
+       "node": {
+        "name": "c",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "type": "Eq"
+     },
+     {
+      "arg": {
+       "a": {
+        "key": "w2",
+        "node": {
+         "name": "c",
+         "type": "Var"
+        },
+        "type": "Attr"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       },
+       "type": "Eq"
+      },
+      "type": "Not"
+     },
+     {
+      "a": {
+       "key": "form",
+       "node": {
+        "name": "u",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "key": "w2",
+       "node": {
+        "name": "c",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "type": "Eq"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "effects": [
+    [
+     "set_attr",
+     "m",
+     "eqfire:eq.msg.deescalation.cue_unigram",
+     true
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "received",
+     "m"
+    ],
+    [
+     "m",
+     "eq_has_token",
+     "t"
+    ],
+    [
+     "agent",
+     "eq_has_cue",
+     "c"
+    ]
+   ],
+   "name": "eq.msg.deescalation.cue_unigram",
+   "where": {
+    "items": [
+     {
+      "a": {
+       "key": "eqfire:eq.msg.deescalation.cue_unigram",
+       "node": {
+        "name": "m",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      },
+      "type": "Eq"
+     },
+     {
+      "a": {
+       "key": "cue",
+       "node": {
+        "name": "c",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "deescalation"
+      },
+      "type": "Eq"
+     },
+     {
+      "a": {
+       "key": "form",
+       "node": {
+        "name": "t",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "key": "w1",
+       "node": {
+        "name": "c",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "type": "Eq"
+     },
+     {
+      "a": {
+       "key": "w2",
+       "node": {
+        "name": "c",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      },
+      "type": "Eq"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "effects": [
+    [
+     "set_attr",
+     "m",
+     "eqfire:eq.msg.deescalation.cue_bigram",
+     true
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "received",
+     "m"
+    ],
+    [
+     "m",
+     "eq_has_token",
+     "t"
+    ],
+    [
+     "agent",
+     "eq_has_cue",
+     "c"
+    ],
+    [
+     "t",
+     "eq_next",
+     "u"
+    ]
+   ],
+   "name": "eq.msg.deescalation.cue_bigram",
+   "where": {
+    "items": [
+     {
+      "a": {
+       "key": "eqfire:eq.msg.deescalation.cue_bigram",
+       "node": {
+        "name": "m",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      },
+      "type": "Eq"
+     },
+     {
+      "a": {
+       "key": "cue",
+       "node": {
+        "name": "c",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "deescalation"
+      },
+      "type": "Eq"
+     },
+     {
+      "a": {
+       "key": "form",
+       "node": {
+        "name": "t",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "key": "w1",
+       "node": {
+        "name": "c",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "type": "Eq"
+     },
+     {
+      "arg": {
+       "a": {
+        "key": "w2",
+        "node": {
+         "name": "c",
+         "type": "Var"
+        },
+        "type": "Attr"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       },
+       "type": "Eq"
+      },
+      "type": "Not"
+     },
+     {
+      "a": {
+       "key": "form",
+       "node": {
+        "name": "u",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "key": "w2",
+       "node": {
+        "name": "c",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "type": "Eq"
+     }
+    ],
+    "type": "And"
+   }
+  }
+ ],
+ "self_load_only": true,
+ "taxonomy_version": "eq-tax-0.1.0",
+ "version": "0.1.0"
+}
