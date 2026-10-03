@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Build the Equilibrium seed pack (0.3.0, tracks T3 + T3b) as flat seed manifests.
+"""Build the Equilibrium seed pack (0.4.0, tracks T3 + T3b) as flat seed manifests.
 
     PYTHONPATH=.:runners/dsl/python OZMA_NO_LLM=1 python3 scripts/build_equilibrium_seed_pack.py
 
 Writes seeds/equilibrium_{tokens,window,lexicon,scope,msg,pattern,traits,quanta,
-competence,episode,label_status}.json.
+competence,episode,climate,label_status}.json.
 BUILD-TIME ONLY: this script authors graph data; it is not on the request path.
 
 * Codebook nodes (EqCue, EqScopeOp/EqScopeBoundary/EqCohMarker, EqStratum,
@@ -37,8 +37,8 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 SEEDS = ROOT / "seeds"
-PACK_VERSION = "0.3.0"
-TAXONOMY_VERSION = "eq-tax-0.3.0"
+PACK_VERSION = "0.4.0"
+TAXONOMY_VERSION = "eq-tax-0.4.0"
 NUM = "<num>"            # token class slot: any all-digit prose token
 PERSON = "<noun.person>"  # token class slot: first-sense WordNet noun lexname
 GROUP = "<noun.group>"
@@ -99,6 +99,11 @@ CUE_SETS = {
     "dismissal": ("dismissal", True, "direct", "form"),
     "tribal": ("tribal", True, "direct", "form"),
     "procedural": ("procedural", True, "direct", "form"),
+    # 0.4.0 (space climate)
+    "disagreement": ("disagreement", True, "scoped", "form"),
+    "error_admission": ("error_admission", True, "scoped", "form"),
+    "evidence_request": ("evidence_request", True, "scoped", "form"),
+    "error_denial": ("error_admission_negated", True, "direct", "form"),
 }
 SCOPED_LABELS = [lbl for lbl, _v, mode, _m in CUE_SETS.values() if mode == "scoped"]
 
@@ -221,6 +226,32 @@ LEXICON += [("tribal", "outgroup_address", *p.split()) for p in (
 LEXICON += [("procedural", "procedure", *p.split()) for p in (
     "point of order", "back to the agenda", "per the agenda", "out of scope", "time check",
     "for the record", "follow the process")]
+# ---- 0.4.0 additions (space climate): disagreement / error admission / evidence request
+# All scoped (negation / hedge aware on the head token) except error_denial, which
+# names the negated constructions a contiguous cue cannot reach ("i was not wrong").
+LEXICON += [("disagreement", "disagreement", *p.split()) for p in (
+    "disagree", "that's wrong",
+    "that is wrong", "that's incorrect", "that is incorrect", "that's not true", "that is not true",
+    "that isn't true", "that's not right", "that isn't right", "i don't agree", "i do not agree",
+    "i'm not convinced", "i am not convinced", "not convinced", "i don't buy it", "i don't buy that",
+    "that's not the case", "that is not the case", "i'd push back", "i would push back",
+    "push back on that", "i object")]
+LEXICON += [("error_admission", "admission", *p.split()) for p in (
+    "i was wrong", "i was mistaken", "i was incorrect", "my mistake", "my bad", "my error",
+    "my fault", "i stand corrected", "i got that wrong", "i got it wrong", "i misread",
+    "i misspoke", "i made a mistake", "i messed up", "that's on me", "i retract that",
+    "i take that back", "i take it back")]
+LEXICON += [("error_denial", "denial", *p.split()) for p in (
+    "i was not wrong", "i wasn't wrong", "i was never wrong", "i'm not wrong", "i am not wrong",
+    "i was not mistaken", "i wasn't mistaken", "i didn't make a mistake")]
+LEXICON += [("evidence_request", "request", *p.split()) for p in (
+    "what's the evidence", "what is the evidence", "where's the evidence", "where is the evidence",
+    "any evidence", "what evidence", "evidence for that", "evidence for this", "is there data",
+    "what data", "can you back that up", "can you back this up", "back that up",
+    "how do you know", "what makes you think", "why do you think", "says who", "how so",
+    "prove it", "any proof", "what proof", "citation needed", "do you have a source",
+    "any source", "any sources", "your source", "source please", "sources please",
+    "need a source")]
 assert all(3 <= len(e) <= 2 + MAX_N for e in LEXICON), "cue length must be 1..MAX_N tokens"
 assert {c for c, *_ in LEXICON} == set(CUE_SETS)
 
@@ -240,11 +271,13 @@ def normalised_lexicon():
 # ---- cue rules (only for cue lengths the lexicon actually has) --------------
 for _cue in ("citation", "deescalation", "concession", "status_claim", "hostility",
              "domain_technical", "credential", "credential_denial", "deference", "booster",
-             "withdrawal", "dismissal", "tribal", "procedural"):
+             "withdrawal", "dismissal", "tribal", "procedural", "disagreement", "error_admission",
+             "error_denial", "evidence_request"):
     RULES += cue_rules(_cue)
 for _lbl in SCOPED_LABELS:
     RULES += qr.scope_label_rules(_lbl, next(c for c, v in CUE_SETS.items() if v[0] == _lbl))
 RULES += qr.MSG_STRUCT_RULES
+RULES += qr.CLIMATE_MSG_RULES
 
 
 # ---- label status (design §9) ----------------------------------------------
@@ -257,15 +290,21 @@ SUPPORTED = [  # (label, values, match_class, since_pack)
     ("msg.hostility", [True], "exact", "0.2.0"),
     ("msg.domain", ["technical"], "exact", "0.2.0"),
 ]
+_V4_SCOPED = ("disagreement", "error_admission", "evidence_request")
 _v3 = [f"msg.{lbl}" for lbl in ("credential", "deference", "booster", "withdrawal")]
-_v3 += [f"msg.{lbl}{sfx}" for lbl in SCOPED_LABELS for sfx in ("_negated", "_hedged")]
+_v3 += [f"msg.{lbl}{sfx}" for lbl in SCOPED_LABELS if lbl not in _V4_SCOPED
+        for sfx in ("_negated", "_hedged")]
 _v3 += ["msg.dismissal", "msg.tribal", "msg.procedural", "msg.hedge", "msg.reply_contrast"]
 SUPPORTED += [(lbl, [True], "exact", "0.3.0") for lbl in dict.fromkeys(_v3)]
+_v4 = [f"msg.{lbl}{sfx}" for lbl in _V4_SCOPED for sfx in ("", "_negated", "_hedged")]
+_v4 += ["msg.dissent", "msg.dissent_hedged", "msg.challenge", "msg.challenge_hedged"]
+SUPPORTED += [(lbl, [True], "exact", "0.4.0") for lbl in _v4]
 
 EDGE_TYPES = [("Agent", "received", "Message"), ("Message", "eq_has_token", "Token"),
               ("Token", "eq_next", "Token"), ("Message", "eq_has_span", "CodeSpan"),
               ("Message", "eq_has_span", "LinkSpan"), ("Agent", "eq_has_cue", "EqCue"),
-              ("Agent", "eq_has_label_status", "LabelStatus")]
+              ("Agent", "eq_has_label_status", "LabelStatus"),
+              ("Message", "eq_neg_next", "Token")]  # 0.4.0: content token right after a negator
 EDGE_TYPES += sorted({("Agent", cue_edge(c, len(w)), "EqCue") for c, _v, *w in LEXICON})
 EDGE_TYPES += [("Message", f"eq_hit_{c}", "Token") for c, v in CUE_SETS.items() if v[2] == "scoped"]
 
@@ -330,7 +369,8 @@ def label_status_rows():
     rows = [{"label": lbl, "kind": "msg", "values": vals, "status": "shadow", "since_pack": since,
              "match_class": mc} for lbl, vals, mc, since in SUPPORTED]
     rows += [{"label": t, "kind": "trait", "values": list(p), "status": "shadow",
-              "since_pack": "0.3.0", "match_class": None} for t, p, _tg, _n in qr.TRAITS]
+              "since_pack": "0.4.0" if t in qr.CLIMATE_TRAIT_NAMES else "0.3.0", "match_class": None}
+             for t, p, _tg, _n in qr.TRAITS]
     rows += [{"label": p, "kind": "trait", "values": ["+"], "status": "disabled",
               "since_pack": "0.3.0", "match_class": None} for p in qr.PATTERNS]
     rows += [{"label": f"episode.{k}", "kind": "episode_kind", "values": [], "status": "shadow",
@@ -357,13 +397,15 @@ def build() -> dict[str, dict]:
     out["equilibrium_scope"] = codebook(
         "equilibrium_scope", ["equilibrium_tokens"],
         "Closed-class scope codebook (LEXICAL by design §5.4): negators / hedges (EqScopeOp), "
-        "clause-boundary words (EqScopeBoundary), reply-leading contrast connectives (EqCohMarker).",
+        "clause-boundary words (EqScopeBoundary), reply-leading contrast connectives (EqCohMarker), "
+        "function words (EqClosedClass, 0.4.0: negated-echo dissent).",
         qr.SCOPE_ITEMS, qr.SCOPE_EDGE, qr.SCOPE_EDGE_TYPES)
     out["equilibrium_msg"] = dict(
         header("equilibrium_msg", ["equilibrium_lexicon", "equilibrium_scope", "equilibrium_window",
                                    "speech_act_classify"],
                "msg-layer rules: speech_act (from sak_kind), substantive_markers, cue hits, "
-               "negation/hedge-scoped cue labels, domain (technical, lemma), hedge, reply_contrast."),
+               "negation/hedge-scoped cue labels, domain (technical, lemma), hedge, reply_contrast, "
+               "0.4.0 dissent / challenge (reply-pair shapes)."),
         nodes=[], edges=[], productions=[], rules=RULES)
     out["equilibrium_pattern"] = dict(
         header("equilibrium_pattern", ["equilibrium_msg"],
@@ -371,7 +413,7 @@ def build() -> dict[str, dict]:
         nodes=[], edges=[], productions=[], rules=[])
     out["equilibrium_traits"] = codebook(
         "equilibrium_traits", ["equilibrium_msg"],
-        "Open trait vocabulary v0.3.0: EqTrait{trait,poles,targetable} + EqTraitCue{trait,pole,"
+        "Open trait vocabulary v0.4.0: EqTrait{trait,poles,targetable} + EqTraitCue{trait,pole,"
         "lab_key,role,owner}; generic eq.quanta.* rules read these rows (new trait = new rows).",
         qr.trait_items(), qr.TRAIT_EDGE, qr.TRAIT_EDGE_TYPES)
     out["equilibrium_quanta"] = dict(
@@ -390,10 +432,17 @@ def build() -> dict[str, dict]:
                   qr.episode_items(), qr.EPISODE_EDGE, qr.EPISODE_EDGE_TYPES)
     ep["rules"] = qr.EPISODE_RULES
     out["equilibrium_episode"] = ep
+    cl = codebook("equilibrium_climate", ["equilibrium_quanta"],
+                  "Space-climate relational traits (0.4.0): EqClimateCue{role,lab_key} reply codebook "
+                  "(stimulus / dismiss / status / ground / engage / nonanswer) and the S1/S2 rules for "
+                  "response.dismissal, response.engagement, inquiry.answered, inquiry.unanswered.",
+                  qr.climate_items(), qr.CLIMATE_EDGE, qr.CLIMATE_EDGE_TYPES)
+    cl["rules"] = qr.CLIMATE_RULES
+    out["equilibrium_climate"] = cl
     nodes = [{"local_id": i, "type": "LabelStatus", "attrs": a} for i, a in enumerate(label_status_rows())]
     out["equilibrium_label_status"] = dict(
         header("equilibrium_label_status", ["equilibrium_msg", "equilibrium_pattern", "equilibrium_traits",
-                                            "equilibrium_episode"],
+                                            "equilibrium_episode", "equilibrium_climate"],
                "One LabelStatus{label,kind,values,status,since_pack,match_class} per msg label, "
                "trait, episode kind and facet."),
         nodes=nodes, edges=root_edges(nodes, "eq_has_label_status"), productions=[], rules=[])
