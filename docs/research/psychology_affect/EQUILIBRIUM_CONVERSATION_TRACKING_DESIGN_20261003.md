@@ -195,3 +195,77 @@ Always null. No graph-native lexical-overlap topic shape was built in this stage
 - **Rule order.** Within-pass phase order relies on the manifest's rule order.
   The goldens and the incremental==one-shot tests guard it; no engine-level
   phase primitive is used.
+
+## T3d. Scaling: concurrency, batching, frontier-driven evaluation (pack 0.5.1)
+
+Results and predictions: EQUILIBRIUM_CONVERSATION_SCALING_RESULTS_20261004.md. The wire
+is unchanged apart from the version strings (`0.5.1` / `eq-tax-0.5.1`). One endpoint
+is new: `POST /v1/conversations/_batch`, which follows the shared batch contract.
+
+**Concurrency** (services/equilibrium_classifier/server.py)
+
+- The global lock is gone. Each conversation has its own lock, so its batches are
+  serialised.
+- `_meta` guards only the session map, the tombstones and the counters, and is never
+  held across engine work.
+- All engine work goes through `workers` slots (`--workers` / `EQ_WORKERS`, default
+  min(8, cpus)). `/_batch` items run on a thread pool of the same size.
+- Threads work because `run_rules` releases the GIL and every fork has its own engine
+  mutex. A pre-change probe measured 2.4× at 8 threads. Process pools were not needed.
+- A busy session is never evicted: eviction only try-locks.
+- The base revision is checked after every request, and the strong digest every N
+  requests.
+
+**Engine** (runners/dsl, all flags default OFF, so the committed engine is
+byte-identical when they are off)
+
+- `set_batch_incremental`: a `batch` rule takes the semi-naive cursor path. It falls
+  back to the full batch pass only on a cold or invalidated cursor, and then installs
+  its cursors at the pre-apply frontier. It also admits repeated match edge types,
+  deduplicated by the canonical binding key.
+- `set_fresh_node_exempt` (the isolated-node exemption):
+  - An external `add_node`, or a `set_attr` on a node with no edges, dirties only the
+    rules that can see such a node: a Type read, or a non-local opaque read. The
+    new `RewriteRule.reads_any_nonlocal` is `reads_any` minus `TypeOf`/`AttrByName`.
+  - An external `add_edge` clears the cursors of that edge type's term readers.
+- The adapter also turns on `incremental_match`, `precise_dirty` and
+  `empty_match_proof`, and keeps per-conversation bookkeeping on an edge-less
+  `EqLedger` node.
+
+**Pack** (scripts/_equilibrium_quanta_rules.py `LIVE_L1`/`LIVE_L2`/`apply_live`)
+
+- The monotone strata rules run live on the retained fork, driven by per-batch
+  frontier marks:
+  - L1: `w -eq_l1-> m`, plus `agent -eq_l1_open-> w` for `eq.ep.extend`. A root turn
+    enrols the older turn it answers, so extension must see old turns.
+  - L2: `agent -eq_l2_open-> w` + `w -eq_l2-> m` + `w -eq_qnew-> q`. Here `q` is a
+    quantum first minted in this batch, found by a ledger set difference. The cue
+    counter's `.newq` twin pairs a new quantum with every turn of its author.
+- The marks are removed once the layer's fixpoint is reached. A full re-match of a
+  live rule therefore sees only the frontier, and a closed layer is skipped by the
+  empty-match proof.
+- The per-turn window and tracking rules bind the S0 frontier `w -eq_l0-> m`, which
+  is removed after the tracking fixpoint. These rules are `eq.win.responds_to.reply`,
+  `eq.win.thread.platform`, `eq.trk.materialise` and `eq.trk.continues`.
+- `eq.ep.facet` is gated by `eq_l1_open`.
+- The non-monotone rules stay on the per-batch scratch fork, unchanged: floor,
+  selective non-response, unanswered, claim grounding, generative outcome, match
+  shapes, compose.
+- Exactness check: all 26 golden runs (351 per-batch responses) captured from the T3c
+  code are byte-identical, after normalising 0.5.0 → 0.5.1.
+
+**What remains O(prefix) per batch.** Measured: the 100-turn batch latency
+exponent is 1.02 over prefixes of 1k–10k, so per-batch cost is NOT yet sub-linear. It
+is about 2× below T3c (see RESULTS). The O(prefix) parts are:
+
+- The S0 msg rules over `agent -received-> m` whenever their cursors are cleared.
+  The cause was not established; `neg_op` is one example.
+- The scratch tier: its rules bind over all actors, questions, quanta and episodes,
+  and the unanswered/responsiveness rules scan later turns.
+- `AttrByName` rules: any attr write clears their cursors (per-node predicate
+  retraction does not cover dynamic-key reads), e.g. `eq.ep.facet`.
+- The read-out: quanta, episodes and open questions are re-read every batch, and
+  each emitted row is re-signed.
+
+The next step is retraction rules for the six non-monotone families, so that they
+can also run live.

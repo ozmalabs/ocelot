@@ -317,6 +317,78 @@
     "type": "Message",
     "var": "b"
    }
+  },
+  {
+   "edge_type": "eq_l0",
+   "provenance": "equilibrium_tracking:EqWindow_eq_l0_Message",
+   "src": {
+    "type": "EqWindow",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "Message",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_l1",
+   "provenance": "equilibrium_tracking:EqWindow_eq_l1_Message",
+   "src": {
+    "type": "EqWindow",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "Message",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_l2",
+   "provenance": "equilibrium_tracking:EqWindow_eq_l2_Message",
+   "src": {
+    "type": "EqWindow",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "Message",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_l1_open",
+   "provenance": "equilibrium_tracking:Agent_eq_l1_open_EqWindow",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqWindow",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_l2_open",
+   "provenance": "equilibrium_tracking:Agent_eq_l2_open_EqWindow",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqWindow",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_qnew",
+   "provenance": "equilibrium_tracking:EqWindow_eq_qnew_EqQuantum",
+   "src": {
+    "type": "EqWindow",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqQuantum",
+    "var": "b"
+   }
   }
  ],
  "rules": [
@@ -338,7 +410,7 @@
     ],
     [
      "w",
-     "eq_has_turn",
+     "eq_l0",
      "m"
     ],
     [
@@ -3659,7 +3731,7 @@
     ],
     [
      "w",
-     "eq_has_turn",
+     "eq_l0",
      "m"
     ],
     [
@@ -3715,6 +3787,6 @@
   }
  ],
  "self_load_only": true,
- "taxonomy_version": "eq-tax-0.5.0",
- "version": "0.5.0"
+ "taxonomy_version": "eq-tax-0.5.1",
+ "version": "0.5.1"
 }

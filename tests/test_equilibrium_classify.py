@@ -23,7 +23,7 @@ from domains import equilibrium_classify as eq  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 RULE_NAME = re.compile(r"^eq\.((msg|rel|emo|pat)\.[a-z_]+\.[a-z0-9_]+"
-                       r"|(win|quanta|competence|ep)(\.[a-z_]+){1,3})$")
+                       r"|(win|quanta|competence|ep|trk)(\.[a-z_]+){1,3})$")
 SCOPED = {"deescalation", "concession", "status_claim", "hostility"}
 
 

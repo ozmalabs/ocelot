@@ -337,6 +337,12 @@ pub enum RuleKey {
     Edge(Sym),
 }
 
+thread_local! {
+    /// Set only inside `derive_access`'s third walk: `TypeOf` / `AttrByName`
+    /// do not count as opaque there (see `RewriteRule::reads_any_nonlocal`).
+    static LOCAL_OPAQUE_OK: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
+
 /// One rewrite rule. Has a name for diagnostics, a pattern (match
 /// edges + optional where-clause Term), and an ordered effect list.
 #[derive(Clone, Debug, Default)]
@@ -444,6 +450,11 @@ pub struct RewriteRule {
     pub write_set: rustc_hash::FxHashSet<RuleKey>,
     /// Conservative "reads something opaque" — forces always-dirty.
     pub reads_any: bool,
+    /// `reads_any` WITHOUT the bound-node-local opaque reads (`TypeOf`,
+    /// `AttrByName`: the type / a dynamically-named attr of a node the rule
+    /// already reached). Only consulted by the isolated-node write exemption
+    /// (`Substrate::fresh_node_exempt`); every default path uses `reads_any`.
+    pub reads_any_nonlocal: bool,
     /// Conservative "writes something opaque" — forces a blanket dirty.
     pub writes_any: bool,
     /// THE gate read by both run-rules paths. When true, the runner uses
@@ -543,6 +554,22 @@ impl RewriteRule {
                 RuleKey::Attr(_) | RuleKey::Type(_) => None,
             })
             .collect();
+        // Third walk (install-time only): reads_any minus the bound-node-local
+        // opaque reads, for the isolated-node write exemption.
+        {
+            LOCAL_OPAQUE_OK.with(|c| c.set(true));
+            let mut r2 = rustc_hash::FxHashSet::default();
+            let mut w2 = rustc_hash::FxHashSet::default();
+            let (mut ra2, mut wa2) = (false, false);
+            if let Some(w) = self.where_ {
+                collect_term_reads(arena, w, &mut r2, &mut ra2);
+            }
+            for eff in &self.effects {
+                collect_effect_access(eff, arena, &mut r2, &mut w2, &mut ra2, &mut wa2);
+            }
+            LOCAL_OPAQUE_OK.with(|c| c.set(false));
+            self.reads_any_nonlocal = ra2;
+        }
         self.read_set = reads;
         self.write_set = writes;
         self.reads_any = reads_any;
@@ -874,11 +901,15 @@ fn collect_term_reads(
             collect_term_reads(arena, *source, reads, reads_any);
         }
         T::TypeOf { node } => {
-            *reads_any = true;
+            if !LOCAL_OPAQUE_OK.with(|c| c.get()) {
+                *reads_any = true;
+            }
             collect_term_reads(arena, *node, reads, reads_any);
         }
         T::AttrByName { node, name } => {
-            *reads_any = true;
+            if !LOCAL_OPAQUE_OK.with(|c| c.get()) {
+                *reads_any = true;
+            }
             collect_term_reads(arena, *node, reads, reads_any);
             collect_term_reads(arena, *name, reads, reads_any);
         }

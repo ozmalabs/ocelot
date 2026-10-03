@@ -1001,3 +1001,100 @@ TRACKING_EDGE_TYPES = [
     ("EqWindow", "eq_qud", "Message"), ("EqActor", "eq_pending", "Message"),
     ("EqActor", "eq_last_addressed_by", "Message"), ("EqActor", "eq_last_claim", "Message"),
 ]
+
+
+# ---- 0.5.1 (T3d, scaling): the MONOTONE strata rules run LIVE on the retained fork -----
+# A rule is monotone over an append-only conversation when every fact it reads is
+# either frozen once its turn is tracked (S0 labels, eq_addresses / eq_responds_to /
+# eq_answers / eq_continues, the static codebooks) or itself only ever grows (quanta,
+# evidence, episode membership) and its absence tests read only frozen facts. Such
+# a rule derives the same facts whether the turns arrive at once or in batches, so it
+# needs no scratch fork: it runs on the retained fork, driven semi-naively by
+# per-turn layer marks the adapter adds after the tracking fixpoint and removes
+# again once the layer's fixpoint is reached (the marks are the batch FRONTIER, so a
+# full re-match of a live rule only ever sees the batch's own turns):
+#   L1  `w -eq_l1-> m`  (turn m is tracked): the per-turn S1 rules. Episode
+#       extension is the exception: a root turn also enrols the OLDER turn it
+#       responds to, so a reply to that older turn may join later -- eq.ep.extend
+#       binds every turn, gated by `agent -eq_l1_open-> w` (open only during L1);
+#   L2  `agent -eq_l2_open-> w` plus `w -eq_l2-> m` (m's L1 facts are final):
+#       rules whose absence test reads an L1 fact of m (`m not evidence of q`). A cue
+#       counter pairs a turn with a quantum of its author, and the quantum can first
+#       appear AFTER the turn, so each counter rule has a `.newq` twin driven by
+#       `w -eq_qnew-> q` (the quanta first minted in this batch) over all turns of
+#       that author. Both twins carry the original rule's provenance.
+# Rules that read ABSENCE over facts later turns can still change (floor, selective
+# non-response, unanswered, grounding, generative outcome, match shapes) stay on the
+# per-batch scratch fork, opened stratum by stratum exactly as before.
+LIVE_L1 = ("eq.quanta.evidence.untargeted", "eq.quanta.evidence.targeted",
+           "eq.quanta.hedged.untargeted", "eq.quanta.hedged.targeted", "eq.quanta.evidence.addressee",
+           "eq.quanta.interaction.run", "eq.quanta.epistemic.question_demand",
+           "eq.quanta.response.dismissal", "eq.quanta.response.engagement",
+           "eq.quanta.inquiry.answered", "eq.ep.root", "eq.ep.extend", "eq.ep.facet",
+           "eq.competence.corroborated", "eq.competence.contested")
+LIVE_L2 = ("eq.quanta.counter.untargeted", "eq.quanta.counter.targeted",
+           "eq.quanta.interaction.withdrawal.counter")
+LIVE_ANCHOR = {"eq.competence.corroborated": "m2",
+               "eq.competence.contested": "m2", "eq.quanta.interaction.withdrawal.counter": "m2"}
+L1_OPEN, L2_OPEN = ["agent", "eq_l1_open", "w"], ["agent", "eq_l2_open", "w"]
+LIVE_EDGE_TYPES = [("EqWindow", "eq_l0", "Message"), ("EqWindow", "eq_l1", "Message"), ("EqWindow", "eq_l2", "Message"),
+                   ("Agent", "eq_l1_open", "EqWindow"), ("Agent", "eq_l2_open", "EqWindow"),
+                   ("EqWindow", "eq_qnew", "EqQuantum")]
+NEWQ = (".untargeted", ".targeted")
+
+
+def _live(r):
+    """Drop the stratum anchor. L1: the turn edge `w -eq_has_turn-> X` becomes the
+    frontier mark `w -eq_l1-> X` (or the mark is added on the rule's turn variable).
+    L2: gated by `agent -eq_l2_open-> w` (first, so a closed layer matches nothing);
+    withdrawal.counter's later turn is the L2 frontier mark."""
+    match = [e for e in r["match"] if not (e[0] == "agent" and e[1].startswith("eq_stratum_"))]
+    if r["name"] in LIVE_L2:
+        match = [L2_OPEN] + [e for e in match if e != WIN]
+        if r["name"] in LIVE_ANCHOR:
+            match.append(["w", "eq_l2", LIVE_ANCHOR[r["name"]]])
+        return dict(r, match=match)
+    if r["name"] == "eq.ep.extend":
+        return dict(r, match=[L1_OPEN, ["w", "eq_has_turn", "x"]] + match)
+    if r["name"] == "eq.ep.facet":  # driven by new membership; full re-match only in L1
+        return dict(r, match=[L1_OPEN] + match)
+    turn = [i for i, e in enumerate(match) if e[0] == "w" and e[1] == "eq_has_turn"]
+    if turn:
+        match[turn[0]] = ["w", "eq_l1", match[turn[0]][2]]
+    elif r["name"] in LIVE_ANCHOR:
+        match = ([] if WIN in match else [WIN]) + match + [["w", "eq_l1", LIVE_ANCHOR[r["name"]]]]
+    return dict(r, match=match)
+
+
+def _newq(r):
+    """The `.newq` twin of a live cue counter: the quantum is new in this batch, the
+    turn is any turn of its author (not only the frontier)."""
+    match = [e for e in r["match"] if e != ["w", "eq_l2", "m"]]
+    i = match.index(["a", "eq_has_quantum", "q"])
+    match = [match[0], ["w", "eq_qnew", "q"], match.pop(i)] + match[1:]
+    return dict(r, name=r["name"] + ".newq", match=match)
+
+
+# Per-turn S0 / tracking rules bind the batch FRONTIER `w -eq_l0-> m` (added with
+# the turn, removed after the batch's tracking fixpoint), so a full re-match of
+# these rules sees the batch's turns, not the whole conversation.
+FRONTIER_TURN = ("eq.win.responds_to.reply", "eq.win.thread.platform", "eq.trk.materialise",
+                 "eq.trk.continues")
+
+
+def apply_frontier(rules):
+    return [dict(r, match=[e if e != TURN else ["w", "eq_l0", "m"] for e in r["match"]])
+            if r["name"] in FRONTIER_TURN else r for r in rules]
+
+
+def apply_live(rules):
+    out = []
+    for r in rules:
+        if r["name"] in LIVE_L1 + LIVE_L2:
+            r = _live(r)
+            if r["name"].startswith("eq.quanta.counter."):
+                r["match"] = [e if e != TURN else ["w", "eq_l2", "m"] for e in r["match"]]
+                out += [r, _newq(r)]
+                continue
+        out.append(r)
+    return out
