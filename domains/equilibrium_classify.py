@@ -1,4 +1,4 @@
-"""Equilibrium classifier sidecar — the THIN world adapter (tracks T3 / T3b, pack 0.4.0).
+"""Equilibrium classifier sidecar — the THIN world adapter (tracks T3 / T3b / T3c, pack 0.5.0).
 
 CLAUDE.md "the agent is a graph in Rust": this module does only
   * INGEST  — each message becomes Message/Token/CodeSpan/LinkSpan nodes + edges
@@ -8,9 +8,11 @@ CLAUDE.md "the agent is a graph in Rust": this module does only
               token -> "<num>", else first-sense WordNet noun lexname, e.g.
               "<noun.person>"); plus the speech-act SIGNALS the existing parse
               layer already computes via comprehend_text.kind_signals).
-              `discourse` additionally ingests the WINDOW mechanically:
-              EqWindow / EqActor nodes, authorship, reply, adjacency edges and an
-              integer turn position (array order).
+              Conversations (T3c) additionally ingest turns INCREMENTALLY onto a
+              retained fork: one EqWindow conversation node, EqActor authorship,
+              declared reply edges to earlier turns, integer turn position / ts
+              (no adjacency edge: turn order is not structure since 0.5.0).
+              `discourse` = open + one ingest + close.
   * TICK    — run_rules: the seeded rules (seeds/speech_act_classify.json +
               seeds/equilibrium_*.json) decide every label, quantum and episode.
               Discourse ticks the rule fixpoint once per seeded STRATUM: the
@@ -30,6 +32,9 @@ Usage (caller owns isolation — run on a FORK, never the frozen base):
     labels = classify(branch, root, [{"id": "m1", "text": "how?"}])
     out = discourse(snap.fork(), root, {"window_id": "w1", "kind": "thread"},
                     [{"id": "t1", "actor_ref": "actor_a", "text": "..."}])
+    conv = snap.fork(); st = conversation_open(conv, root, "c1", "meeting")
+    conversation_ingest(conv, root, st, turns)   # per batch (caller ran conversation_check)
+    conversation_close(conv, root, st)           # complete final quanta / episodes
 """
 from __future__ import annotations
 
@@ -42,12 +47,13 @@ from typing import Any, Iterable
 from substrate.boot_core import boot_core
 from substrate.seed_loader import manifest_for
 
-PACK_VERSION = "0.4.0"
-TAXONOMY_VERSION = "eq-tax-0.4.0"
+PACK_VERSION = "0.5.0"
+TAXONOMY_VERSION = "eq-tax-0.5.0"
 PACK_IDS = ("equilibrium_tokens", "equilibrium_window", "equilibrium_lexicon",
             "equilibrium_scope", "equilibrium_msg", "equilibrium_pattern",
             "equilibrium_traits", "equilibrium_quanta", "equilibrium_competence",
-            "equilibrium_episode", "equilibrium_climate", "equilibrium_label_status")
+            "equilibrium_episode", "equilibrium_climate", "equilibrium_tracking",
+            "equilibrium_label_status")
 FIRE_PREFIX = "eqfire:"   # label-deciding rule fired on a Message
 CUE_PREFIX = "eqcue:"     # cue-recognition rule fired on a Message (provenance only)
 RULE_PREFIX = "eqrule:"   # quanta/episode rule contributed to a node (provenance)
@@ -217,39 +223,149 @@ def classify(substrate, agent_root, messages: Iterable[dict]) -> list[dict]:
     return [_read(substrate, m, status) for m in nodes]
 
 
-# ---- discourse windows -------------------------------------------------------
-def ingest_window(substrate, agent_root, window: dict, turns: list[dict]) -> tuple[Any, list]:
-    """Mechanical window ingest (design §4). Turns are taken in array order;
-    `reply_to` naming an id outside the window is kept as an attr only."""
+# ---- conversations (track T3c, pack 0.5.0) -----------------------------------
+# One conversation = one RETAINED fork of the frozen base (the caller owns it).
+#   * INGEST is incremental: each batch adds its turns to the retained fork
+#     (Message/Token nodes, EqActor authorship, declared `eq_reply_to` to an
+#     EARLIER turn of the conversation, integer `eq_turn_pos` / `eq_ts_ms`;
+#     no adjacency edge), then ticks S0 there (the positive msg / cue / declared
+#     structure layer), so every turn is tokenised and labelled exactly once.
+#   * The strata S1..S5 read ABSENCE over the conversation so far (unanswered,
+#     floor, match shapes, generative, ...). Ticked in place they would leave
+#     stale facts behind as turns arrive (the rules mint, never retract), so each
+#     batch ticks them on a SCRATCH fork of the retained fork, reads out, and
+#     drops it: the read-out after every batch equals a one-shot run over the
+#     same prefix.
+#   * EMIT reads per-turn structure for the batch's turns, the quanta/episodes
+#     that are new or changed since they were last emitted (emitted marks are
+#     `eqemit:` attrs on the conversation node, compared mechanically), and the
+#     open questions. close() emits the complete final set.
+# Turn / actor lookup is the substrate's attr index (Message.eq_ref,
+# EqActor.actor_ref) on the retained fork; the handle below holds only the
+# conversation node id.
+CONVERSATION_KINDS = ("meeting", "thread", "channel")
+QUESTION_KEY = "eqlab:msg.speech_act=question"
+EMIT_PREFIX = "eqemit:"
+
+
+class Conversation:
+    """Adapter handle for one retained conversation fork: the EqWindow node id."""
+    __slots__ = ("w",)
+
+    def __init__(self, w) -> None:
+        self.w = w
+
+
+def _lookup(n, typ: str, key: str, value: str):
+    hit = n.nodes_where(typ, key, value)
+    return hit[0] if hit else None
+
+
+def conversation_open(substrate, agent_root, conversation_id: str, kind: str) -> Conversation:
     n = _native(substrate)
-    w = n.add_node("EqWindow", {"window_id": str(window["window_id"]),
-                                "eq_kind": str(window["kind"])})
+    for typ, key in (("Message", "eq_ref"), ("EqActor", "actor_ref")):
+        if not n.has_attr_index(typ, key):
+            n.declare_attr_index(typ, key)
+    w = n.add_node("EqWindow", {"window_id": str(conversation_id),
+                                "conversation_id": str(conversation_id),
+                                "eq_kind": str(kind), "eq_seq": 0})
     n.add_edge(agent_root, "eq_window", w)
-    actors: dict[str, Any] = {}  # mechanical id map (string key -> node)
-    by_id: dict[str, Any] = {}
+    return Conversation(w)
+
+
+def conversation_info(substrate, state: Conversation) -> dict:
+    a = _native(substrate).node(state.w)["attrs"]
+    return {"conversation_id": a["conversation_id"], "seq": a["eq_seq"], "kind": a["eq_kind"]}
+
+
+def conversation_check(substrate, state: Conversation, turns: list[dict]) -> str | None:
+    """Ordering preconditions of a batch (no mutation): 'duplicate_turn' if an id
+    repeats in the batch or already exists in the conversation, 'out_of_order'
+    if a ts_ms is earlier than the latest ts_ms seen (ties keep array order)."""
+    n = _native(substrate)
+    last = n.node(state.w)["attrs"].get("eq_last_ts")
+    seen: set[str] = set()
+    for t in turns:
+        tid = str(t["id"])
+        if tid in seen or _lookup(n, "Message", "eq_ref", tid) is not None:
+            return "duplicate_turn"
+        seen.add(tid)
+        ts = t.get("ts_ms")
+        if ts is not None:
+            if last is not None and int(ts) < last:
+                return "out_of_order"
+            last = int(ts)
+    return None
+
+
+def conversation_ingest(substrate, agent_root, state: Conversation, turns: list[dict]) -> dict:
+    """Append one batch to the retained conversation fork and read it out.
+    The caller has run conversation_check. Returns
+      {"conversation_id", "seq", "turns": [...], "quanta": [new/changed],
+       "episodes": [new/changed], "open_questions": [...], "steps": [...]}"""
+    n = _native(substrate)
+    w = state.w
+    pos = len(n.neighbours(w, "eq_has_turn"))
+    last_ref = n.node(w)["attrs"].get("eq_last_ref")
+    prev = _lookup(n, "Message", "eq_ref", last_ref) if last_ref is not None else None
     nodes = []
-    for i, t in enumerate(turns):
-        extra = {"eq_turn_pos": i}
+    for t in turns:
+        rt = t.get("reply_to")
+        tgt = _lookup(n, "Message", "eq_ref", str(rt)) if rt is not None else None
+        extra: dict = {"eq_turn_pos": pos}
+        pos += 1
         if t.get("ts_ms") is not None:
             extra["eq_ts_ms"] = int(t["ts_ms"])
-        if t.get("reply_to") is not None:
-            extra["eq_reply_to_ref"] = str(t["reply_to"])
+        if rt is not None:
+            extra["eq_reply_to_ref"] = str(rt)  # kept even when it names no earlier turn
+        if t.get("platform_thread") is not None:
+            extra["eq_platform_thread"] = str(t["platform_thread"])
         m = _ingest(substrate, agent_root, t, extra)
         ref = str(t["actor_ref"])
-        if ref not in actors:
-            actors[ref] = n.add_node("EqActor", {"actor_ref": ref})
-            n.add_edge(w, "eq_has_actor", actors[ref])
+        actor = _lookup(n, "EqActor", "actor_ref", ref)
+        if actor is None:
+            # eq_name_form: the actor_ref under the SAME token normaliser (a token
+            # equal to it is an explicit mention); eq_first_pos: ordering stamp so
+            # a mention only resolves to an actor who has already spoken
+            name = ref.replace("\u2019", "'").lower()
+            aattrs = {"actor_ref": ref, "eq_first_pos": extra["eq_turn_pos"]}
+            if _WORD.fullmatch(name):
+                aattrs["eq_name_form"] = name
+            actor = n.add_node("EqActor", aattrs)
+            n.add_edge(w, "eq_has_actor", actor)
         n.add_edge(w, "eq_has_turn", m)
-        n.add_edge(m, "eq_authored_by", actors[ref])
-        if nodes:
-            n.add_edge(nodes[-1], "eq_turn_next", m)
-        by_id[str(t["id"])] = m
-        nodes.append(m)
-    for t, m in zip(turns, nodes):
-        tgt = by_id.get(str(t.get("reply_to"))) if t.get("reply_to") is not None else None
+        n.add_edge(m, "eq_authored_by", actor)
+        if prev is not None:
+            n.add_edge(m, "eq_prev_turn", prev)  # turn ORDER (cursor + continuation only)
+        prev = m
         if tgt is not None:
             n.add_edge(m, "eq_reply_to", tgt)
-    return w, nodes
+        if t.get("ts_ms") is not None:
+            n.set_attr(w, "eq_last_ts", int(t["ts_ms"]))
+        nodes.append(m)
+    if turns:
+        n.set_attr(w, "eq_last_ref", str(turns[-1]["id"]))
+    s0 = n.run_rules(DISCOURSE_FUEL)  # S0 on the retained fork
+    if s0 >= DISCOURSE_FUEL:
+        raise BudgetExhausted("rule fuel exhausted")
+    # S0 is at fixpoint for the new turns: queue them for the seeded turn cursor
+    # (equilibrium_tracking) and tick again on the retained fork
+    for m in nodes:
+        n.add_edge(w, "eq_trk_pending", m)
+    trk = n.run_rules(DISCOURSE_FUEL)
+    if trk >= DISCOURSE_FUEL:
+        raise BudgetExhausted("rule fuel exhausted")
+    seq = n.node(w)["attrs"]["eq_seq"] + 1
+    n.set_attr(w, "eq_seq", seq)
+    out = _emit(substrate, agent_root, state, nodes, full=False)
+    out["steps"] = [s0, trk] + out["steps"]
+    return out
+
+
+def conversation_close(substrate, agent_root, state: Conversation) -> dict:
+    """Final read-out: every quantum / episode of the conversation, no turns.
+    The caller drops the retained fork afterwards."""
+    return _emit(substrate, agent_root, state, [], full=True)
 
 
 def run_strata(substrate, agent_root) -> list[int]:
@@ -272,11 +388,19 @@ def _refs(n, nodes) -> list[str]:
     return [r["eq_ref"] for r in sorted(rows, key=lambda r: r["eq_turn_pos"])]
 
 
-def read_discourse(substrate, agent_root, w, nodes) -> dict:
-    """Pure query over what the rules wrote (design §7)."""
-    n = _native(substrate)
-    status = _label_status(substrate, agent_root)
-    messages = [_read(substrate, m, status) for m in nodes]
+def _read_turn(f, m, status) -> dict:
+    n = _native(f)
+    a = n.node(m)["attrs"]
+    responds = _refs(n, n.neighbours(m, "eq_responds_to"))
+    return {"id": a["eq_ref"], "read": _read(f, m, status), "responds_to": responds,
+            "basis": a.get("eq_basis") if responds else "none",
+            "addressees": sorted({n.node(x)["attrs"]["actor_ref"]
+                                  for x in n.neighbours(m, "eq_addresses")}),
+            "thread_id": a.get("eq_thread"), "topic_id": a.get("eq_topic"),
+            "answers": _refs(n, n.neighbours(m, "eq_answers"))}
+
+
+def _read_quanta(n, w) -> list[dict]:
     quanta = []
     for a in n.neighbours(w, "eq_has_actor"):
         for q in n.neighbours(a, "eq_has_quantum"):
@@ -294,6 +418,10 @@ def read_discourse(substrate, agent_root, w, nodes) -> dict:
                 row["target_ref"] = qa["q_target"]
             quanta.append(row)
     quanta.sort(key=lambda r: (r["actor_ref"], r["trait"], r["polarity"], r.get("target_ref", "")))
+    return quanta
+
+
+def _read_episodes(n, w) -> list[dict]:
     episodes = []
     for e in n.neighbours(w, "eq_has_episode"):
         ea = n.node(e)["attrs"]
@@ -310,16 +438,67 @@ def read_discourse(substrate, agent_root, w, nodes) -> dict:
                          "rule_ids": _rule_ids(ea, RULE_PREFIX),
                          "_first_pos": members[0]["eq_turn_pos"] if members else -1})
     episodes.sort(key=lambda r: (r.pop("_first_pos"), r["episode_id"]))
-    return {"window_id": n.node(w)["attrs"]["window_id"], "messages": messages,
-            "quanta": quanta, "episodes": episodes}
+    return episodes
+
+
+def _open_questions(n, w) -> list[str]:
+    qs = [x for x in n.neighbours(w, "eq_has_turn")
+          if n.node(x)["attrs"].get(QUESTION_KEY) is True and not n.in_neighbours(x, "eq_answers")]
+    return _refs(n, qs)
+
+
+def _sig(row: dict) -> str:
+    blob = json.dumps(row, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    return hashlib.sha256(blob.encode("utf-8")).hexdigest()[:32]
+
+
+def _delta(n, w, kind: str, rows: list[dict], key, seq: int, full: bool) -> list[dict]:
+    """Mechanical emitted-mark comparison: a row is emitted when its signature
+    differs from the `eqemit:` mark on the conversation node (or when `full`)."""
+    out = []
+    marks = n.node(w)["attrs"]
+    for r in rows:
+        k = f"{EMIT_PREFIX}{kind}:{json.dumps(key(r), separators=(',', ':'))}"
+        sig = _sig(r)
+        prev = marks.get(k)
+        if full or prev is None or prev.split(":", 1)[1] != sig:
+            out.append(r)
+        if prev is None or prev.split(":", 1)[1] != sig:
+            n.set_attr(w, k, f"{seq}:{sig}")
+    return out
+
+
+def _emit(substrate, agent_root, state: Conversation, nodes: list, full: bool) -> dict:
+    n = _native(substrate)
+    w = state.w
+    snap = substrate.snapshot()
+    scratch = snap.fork()  # strata run here; dropped below
+    del snap
+    try:
+        steps = run_strata(scratch, agent_root)[1:]
+        f = _native(scratch)
+        status = _label_status(scratch, agent_root)
+        turns = [_read_turn(scratch, m, status) for m in nodes]
+        quanta, episodes = _read_quanta(f, w), _read_episodes(f, w)
+        open_q = _open_questions(f, w)
+    finally:
+        del scratch
+    seq = n.node(w)["attrs"]["eq_seq"]
+    qkey = lambda r: [r["actor_ref"], r["trait"], r["polarity"], r.get("target_ref", "")]  # noqa: E731
+    return {"conversation_id": n.node(w)["attrs"]["conversation_id"], "seq": seq,
+            "turns": turns,
+            "quanta": _delta(n, w, "q", quanta, qkey, seq, full),
+            "episodes": _delta(n, w, "e", episodes, lambda r: [r["episode_id"]], seq, full),
+            "open_questions": open_q, "steps": steps}
 
 
 def discourse(substrate, agent_root, window: dict, turns: Iterable[dict]) -> dict:
-    """Ingest the window -> stratified run_rules -> read. Mutates `substrate`
-    (pass a fork). Returns {"window_id", "messages", "quanta", "episodes", "steps"}."""
+    """/v1/discourse = open + one ingest + close on `substrate` (pass a fork).
+    Returns {"window_id", "messages", "quanta", "episodes", "steps"}."""
     turns = list(turns)
-    w, nodes = ingest_window(substrate, agent_root, window, turns)
-    steps = run_strata(substrate, agent_root)
-    out = read_discourse(substrate, agent_root, w, nodes)
-    out["steps"] = steps
-    return out
+    st = conversation_open(substrate, agent_root, window["window_id"], window["kind"])
+    got = conversation_ingest(substrate, agent_root, st, turns)
+    fin = conversation_close(substrate, agent_root, st)
+    return {"window_id": str(window["window_id"]), "messages": [t["read"] for t in got["turns"]],
+            "turns": got["turns"], "quanta": fin["quanta"], "episodes": fin["episodes"],
+            "open_questions": fin["open_questions"], "steps": got["steps"]}

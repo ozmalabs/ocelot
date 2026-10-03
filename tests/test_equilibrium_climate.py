@@ -1,4 +1,4 @@
-"""Equilibrium space-climate traits (stream T3b slice 2, pack 0.4.0): adapter-level goldens.
+"""Equilibrium space-climate traits (stream T3b slice 2; pack 0.5.0): adapter-level goldens.
 
 voice.dissent, voice.error_admission, inquiry.challenge, inquiry.answered,
 inquiry.unanswered, response.dismissal, response.engagement -- all `shadow`.
@@ -29,7 +29,7 @@ CLIMATE = [
     ("c06", "member_m", "What's the evidence for the cold cache?", "c01"),       # challenge (evidence req.)
     ("c07", "expert_e", "The p95 latency spike lines up with the deploy.", "c06"),  # answer + engagement
     ("c08", "member_n", "Who owns the warmup job?", "c01"),                      # never answered
-    ("c09", "lead_l", "I was not wrong about the deploy order.", None),          # negated admission
+    ("c09", "lead_l", "I was not wrong about the deploy order.", "c05"),         # negated admission (declared self-continuation: O2 tracking would else read it as the answer to c08)
     ("c10", "member_p", "Perhaps that's not the case for every deploy.", "c07"),  # hedged dissent
 ]
 
@@ -46,7 +46,7 @@ def base():
 
 def _disc(base, rows, kind="thread"):
     _, root, snap = base
-    turns = _turns(rows) if kind == "thread" else [{"id": i, "actor_ref": a, "text": t} for i, a, t in rows]
+    turns = _turns(rows) if len(rows[0]) == 4 else [{"id": i, "actor_ref": a, "text": t} for i, a, t in rows]
     out = eq.discourse(snap.fork(), root, {"window_id": "w_climate", "kind": kind}, turns)
     _check_wire_invariants(out, turns)
     return out
@@ -77,8 +77,8 @@ def test_golden_climate_window(base):
     }
     msgs = {m["id"]: m for m in out["messages"]}
     # which dissent shape fired is auditable per turn
-    assert msgs["c02"]["labels"]["msg.dissent"]["rule_ids"] == ["eq.msg.dissent.disagreement_cue@0.4.0"]
-    assert msgs["c04"]["labels"]["msg.dissent"]["rule_ids"] == ["eq.msg.dissent.negated_echo@0.4.0"]
+    assert msgs["c02"]["labels"]["msg.dissent"]["rule_ids"] == ["eq.msg.dissent.disagreement_cue@0.5.0"]
+    assert msgs["c04"]["labels"]["msg.dissent"]["rule_ids"] == ["eq.msg.dissent.negated_echo@0.5.0"]
     assert "msg.dissent_hedged" in msgs["c10"]["labels"]
     assert "msg.error_admission_negated" in msgs["c09"]["labels"]
     assert "msg.error_admission" not in msgs["c09"]["labels"]
@@ -147,13 +147,25 @@ def test_trailing_question_is_not_unanswered(base):
     assert not any(k[1] == "inquiry.unanswered" for k in _climate(_disc(base, rows)))
 
 
-def test_meeting_adjacent_answer(base):
+def test_meeting_answer_is_tracked_not_adjacent(base):
+    """0.5.0 (T3c O2): no declared replies, so the turn cursor TRACKS them: m2
+    answers the open room question m1; m3 (a new question) responds to the address
+    m2 made to its author; the withdrawal m5 responds to the most recent open
+    question m4 but does NOT close it. The tracked meeting reproduces the
+    declared-reply result exactly."""
     rows = [("m1", "member_a", "Did the deploy finish?"), ("m2", "member_b", "Yes, at noon."),
             ("m3", "member_a", "Who has the rollback plan?"), ("m4", "member_a", "Anyone?"),
             ("m5", "member_c", "Never mind, let's pause.")]  # withdrawal: not an answer
-    q = _climate(_disc(base, rows, kind="meeting"))
+    out = _disc(base, rows, kind="meeting")
+    assert {t["id"]: (t["responds_to"], t["basis"], t["answers"]) for t in out["turns"]} == {
+        "m1": ([], "none", []), "m2": (["m1"], "tracked", ["m1"]), "m3": (["m2"], "tracked", []),
+        "m4": ([], "none", []), "m5": (["m4"], "tracked", [])}
+    assert out["open_questions"] == ["m3", "m4"]
+    q = _climate(out)
     assert q[("member_b", "inquiry.answered", "+", "member_a")] == ("partial", ["m1", "m2"], [])
     assert q[("member_a", "inquiry.unanswered", "+", None)] == ("partial", ["m3", "m4"], ["m1"])
+    decl = [r + (p,) for r, p in zip(rows, (None, "m1", None, None, "m4"))]
+    assert _climate(_disc(base, decl, kind="meeting")) == q
 
 
 # ---- response: dismissal vs engagement of dissent --------------------------
@@ -210,7 +222,7 @@ def test_climate_traits_are_shadow_and_versioned(base):
     st = eq._label_status(snap.fork(), root)
     for t in CLIMATE_TRAITS:
         assert st[t]["status"] == "shadow" and st[t]["kind"] == "trait" and st[t]["since_pack"] == "0.4.0", t
-    assert eq.PACK_VERSION == "0.4.0" and eq.TAXONOMY_VERSION == "eq-tax-0.4.0"
+    assert eq.PACK_VERSION == "0.5.0" and eq.TAXONOMY_VERSION == "eq-tax-0.5.0"
     climate = next(m for m in eq.pack_manifests() if m["id"] == "equilibrium_climate")
     assert {n["type"] for n in climate["nodes"]} == {"EqClimateCue"}
     assert {r["name"] for r in climate["rules"]} == {

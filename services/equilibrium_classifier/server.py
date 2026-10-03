@@ -17,7 +17,29 @@ worker client (equilibrium_worker/classify.py, OcelotClassifier):
                            "quanta":[{actor_ref,trait,polarity,match,evidence,counter_evidence,
                            target_ref?,rule_ids}],"episodes":[{episode_id,kind,actor_refs,turns,
                            facets:[{code,match}],generative,rule_ids}]}
-                        (shared contract; one window = one fork)
+                        (shared contract; one window = one fork; internally open +
+                         turns in chunks of 100 + close, exactly as below)
+  POST /v1/conversations/{id}/turns   (track T3c; id matches [A-Za-z0-9_.:~-]{1,200})
+                     -> {"taxonomy_version"?, "kind": meeting|thread|channel,
+                         "turns":[{"id","actor_ref","text","ts_ms"?,"reply_to"?,"platform_thread"?}]}
+                         (0..100 per call, ts_ms non-decreasing, ids unique in the conversation)
+                     -> {"ok","taxonomy_version","conversation_id","seq",
+                         "turns":[{"id","labels"(as /v1/classify),"responds_to","basis",
+                                   "addressees","thread_id","topic_id","answers"}],
+                         "quanta":[new/changed],"episodes":[new/changed],"open_questions"}
+  POST /v1/conversations/{id}/close  -> same shape, "turns":[], COMPLETE final quanta/episodes;
+                                        frees the retained fork
+  GET  /v1/conversations/{id}        -> {"ok","conversation_id","seq","idle_ttl_s","kind"}
+     errors: 404 unknown_conversation; 409 conversation_evicted | out_of_order | duplicate_turn;
+             413 too_large; 400 bad_request -- {ok:false,error:{code,message,retryable}}, no input echo
+
+Conversations: the first turns call opens a conversation as a RETAINED fork of the
+frozen base snapshot (incremental ingest; see domains/equilibrium_classify.py).
+Idle TTL (default 900 s, --conversation-idle-ttl-s / EQ_CONV_IDLE_TTL_S) and an LRU
+cap (default 64, --max-conversations / EQ_CONV_MAX) evict retained forks; an evicted
+id answers 409 conversation_evicted (the last 4,096 evicted ids are remembered).
+Every request holds ONE global lock (per-conversation locking is not verified safe
+over sibling copy-on-write forks).
 
 Frozen fork-per-batch: the base substrate + pack is booted ONCE, snap =
 base.snapshot(); every request classifies on branch = snap.fork(), which is
@@ -39,10 +61,12 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import subprocess
 import sys
 import threading
 import time
+from collections import OrderedDict
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
@@ -64,7 +88,17 @@ MAX_DISCOURSE_BODY_BYTES = 16_777_216  # 500 turns x 4000 chars, worst-case JSON
 DISCOURSE_KEYS = frozenset({"taxonomy_version", "window", "turns"})
 WINDOW_KEYS = frozenset({"window_id", "kind"})
 TURN_KEYS = frozenset({"id", "actor_ref", "text", "reply_to", "ts_ms"})
-WINDOW_KINDS = frozenset({"meeting", "thread"})
+WINDOW_KINDS = frozenset({"meeting", "thread", "channel"})
+# /v1/conversations (track T3c shared contract): one retained fork per conversation
+CONV_ID_RE = re.compile(r"[A-Za-z0-9_.:~-]{1,200}")
+CONV_KEYS = frozenset({"taxonomy_version", "kind", "turns"})
+CONV_TURN_KEYS = frozenset({"id", "actor_ref", "text", "ts_ms", "reply_to", "platform_thread"})
+MAX_CONV_TURNS = 100
+MAX_CONV_BODY_BYTES = 4_194_304  # 100 turns x 4000 chars, worst-case JSON escaping
+DEFAULT_IDLE_TTL_S = 900
+DEFAULT_MAX_CONVERSATIONS = 64
+MAX_TOMBSTONES = 4096  # evicted ids remembered (-> 409 conversation_evicted), LRU-capped
+BASES = frozenset({"declared", "tracked", "none"})
 # The client's contract ID pattern (^[A-Za-z0-9_.:@!+=-]{1,255}$). Turn ids are
 # capped 3 shorter so the derived episode id "ep:<root turn id>" still fits it.
 ID_CHARS = frozenset("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.:@!+=-")
@@ -215,6 +249,71 @@ def _is_ref(v: Any, max_len: int = MAX_REF_LEN) -> bool:
     return isinstance(v, str) and 1 <= len(v) <= max_len and set(v) <= ID_CHARS
 
 
+def _validate_turns(turns: list, keys: frozenset, bad) -> list[dict]:
+    """Closed per-turn validation shared by /v1/discourse and /v1/conversations.
+    Duplicate ids inside one array are a schema error here (400); a /v1/conversations
+    batch is re-checked against the conversation (409 duplicate_turn) by the service."""
+    seen: set[str] = set()
+    out = []
+    for i, t in enumerate(turns):
+        p = f"$.turns[{i}]"
+        if not isinstance(t, dict):
+            raise bad(p, "must be an object")
+        if set(t) - keys:
+            raise bad(p, "unknown field")
+        tid, actor, text = t.get("id"), t.get("actor_ref"), t.get("text")
+        rt, ts, pt = t.get("reply_to"), t.get("ts_ms"), t.get("platform_thread")
+        if not _is_ref(tid, MAX_TURN_ID_LEN):
+            raise bad(p + ".id", f"must be an id string of 1..{MAX_TURN_ID_LEN} chars")
+        if tid in seen and keys is TURN_KEYS:
+            raise bad(p + ".id", "duplicate id in window")
+        seen.add(tid)
+        if not _is_ref(actor):
+            raise bad(p + ".actor_ref", f"must be an id string of 1..{MAX_REF_LEN} chars")
+        if not isinstance(text, str) or len(text) > MAX_TEXT_LEN:
+            raise bad(p + ".text", f"must be a string of at most {MAX_TEXT_LEN} chars")
+        if rt is not None and not _is_ref(rt):
+            raise bad(p + ".reply_to", f"must be null or an id string of 1..{MAX_REF_LEN} chars")
+        if ts is not None and (isinstance(ts, bool) or not isinstance(ts, int) or ts < 0):
+            raise bad(p + ".ts_ms", "must be a non-negative integer")
+        if "platform_thread" in t and not _is_ref(pt):
+            raise bad(p + ".platform_thread", f"must be an id string of 1..{MAX_REF_LEN} chars")
+        item = {"id": tid, "actor_ref": actor, "text": text, "reply_to": rt}
+        if ts is not None:
+            item["ts_ms"] = ts
+        if pt is not None:
+            item["platform_thread"] = pt
+        out.append(item)
+    return out
+
+
+def valid_conversation_id(cid: str) -> bool:
+    return CONV_ID_RE.fullmatch(cid) is not None
+
+
+def validate_conversation(doc: Any, taxonomy_version: str) -> tuple[str, list[dict]]:
+    """Closed validation of a POST /v1/conversations/{id}/turns body.
+    Error messages carry field paths only, never input."""
+    def bad(path: str, why: str) -> ApiError:
+        return ApiError(400, "bad_request", f"{path}: {why}")
+    if not isinstance(doc, dict):
+        raise bad("$", "must be an object")
+    if set(doc) - CONV_KEYS:
+        raise bad("$", "unknown field")
+    tv = doc.get("taxonomy_version")
+    if tv is not None and tv != taxonomy_version:
+        raise ApiError(409, "taxonomy_mismatch", "taxonomy_version does not match the served pack")
+    kind = doc.get("kind")
+    if kind not in WINDOW_KINDS:
+        raise bad("$.kind", "must be 'meeting', 'thread' or 'channel'")
+    turns = doc.get("turns")
+    if not isinstance(turns, list):
+        raise bad("$.turns", "must be an array")
+    if len(turns) > MAX_CONV_TURNS:
+        raise ApiError(413, "too_large", f"at most {MAX_CONV_TURNS} turns per call")
+    return kind, _validate_turns(turns, CONV_TURN_KEYS, bad)
+
+
 def validate_discourse(doc: Any, taxonomy_version: str) -> tuple[dict, list[dict]]:
     """Closed validation of a /v1/discourse request (shared contract, design §3).
     Mechanical schema checks only; error messages carry field paths, never input."""
@@ -233,7 +332,7 @@ def validate_discourse(doc: Any, taxonomy_version: str) -> tuple[dict, list[dict
     if not _is_ref(win["window_id"]):
         raise bad("$.window.window_id", f"must be an id string of 1..{MAX_REF_LEN} chars")
     if win["kind"] not in WINDOW_KINDS:
-        raise bad("$.window.kind", "must be 'meeting' or 'thread'")
+        raise bad("$.window.kind", "must be 'meeting', 'thread' or 'channel'")
     turns = doc.get("turns")
     if not isinstance(turns, list):
         raise bad("$.turns", "must be an array")
@@ -241,41 +340,14 @@ def validate_discourse(doc: Any, taxonomy_version: str) -> tuple[dict, list[dict
         raise ApiError(413, "too_large", f"at most {MAX_TURNS} turns per window")
     if not turns:
         raise bad("$.turns", "must not be empty")
-    seen: set[str] = set()
-    out = []
-    for i, t in enumerate(turns):
-        p = f"$.turns[{i}]"
-        if not isinstance(t, dict):
-            raise bad(p, "must be an object")
-        if set(t) - TURN_KEYS:
-            raise bad(p, "unknown field")
-        tid, actor, text = t.get("id"), t.get("actor_ref"), t.get("text")
-        rt, ts = t.get("reply_to"), t.get("ts_ms")
-        if not _is_ref(tid, MAX_TURN_ID_LEN):
-            raise bad(p + ".id", f"must be an id string of 1..{MAX_TURN_ID_LEN} chars")
-        if tid in seen:
-            raise bad(p + ".id", "duplicate id in window")
-        seen.add(tid)
-        if not _is_ref(actor):
-            raise bad(p + ".actor_ref", f"must be an id string of 1..{MAX_REF_LEN} chars")
-        if not isinstance(text, str) or len(text) > MAX_TEXT_LEN:
-            raise bad(p + ".text", f"must be a string of at most {MAX_TEXT_LEN} chars")
-        if rt is not None and not _is_ref(rt):
-            raise bad(p + ".reply_to", f"must be null or an id string of 1..{MAX_REF_LEN} chars")
-        if ts is not None and (isinstance(ts, bool) or not isinstance(ts, int) or ts < 0):
-            raise bad(p + ".ts_ms", "must be a non-negative integer")
-        item = {"id": tid, "actor_ref": actor, "text": text, "reply_to": rt}
-        if ts is not None:
-            item["ts_ms"] = ts
-        out.append(item)
+    out = _validate_turns(turns, TURN_KEYS, bad)
     return {"window_id": win["window_id"], "kind": win["kind"]}, out
 
 
-def discourse_to_wire(result: dict, taxonomy_version: str) -> dict:
-    """Re-shape the adapter read-out into the shared /v1/discourse response.
-    Type conversion only: every quantum / episode / facet is a rule's output."""
-    quanta = []
-    for q in result["quanta"]:
+def quanta_to_wire(quanta: list[dict]) -> list[dict]:
+    """Type conversion only: every quantum is a rule's output."""
+    out = []
+    for q in quanta:
         if q["match"] not in ("exact", "partial", "weak"):
             raise RuntimeError("quantum without a match shape")  # -> 500, never a guess
         row = {k: q[k] for k in ("actor_ref", "trait", "polarity", "match", "evidence",
@@ -283,19 +355,47 @@ def discourse_to_wire(result: dict, taxonomy_version: str) -> dict:
         if "target_ref" in q:
             row["target_ref"] = q["target_ref"]
         row["rule_ids"] = [wire_rule_id(r) for r in q["rule_ids"]]
-        quanta.append(row)
-    episodes = []
-    for e in result["episodes"]:
+        out.append(row)
+    return out
+
+
+def episodes_to_wire(episodes: list[dict]) -> list[dict]:
+    out = []
+    for e in episodes:
         if any(f["match"] not in ("exact", "partial", "weak") for f in e["facets"]):
             raise RuntimeError("facet without a match shape")
-        episodes.append({"episode_id": e["episode_id"], "kind": e["kind"],
-                         "actor_refs": list(e["actor_refs"]), "turns": list(e["turns"]),
-                         "facets": [{"code": f["code"], "match": f["match"]} for f in e["facets"]],
-                         "generative": e["generative"],
-                         "rule_ids": [wire_rule_id(r) for r in e["rule_ids"]]})
+        out.append({"episode_id": e["episode_id"], "kind": e["kind"],
+                    "actor_refs": list(e["actor_refs"]), "turns": list(e["turns"]),
+                    "facets": [{"code": f["code"], "match": f["match"]} for f in e["facets"]],
+                    "generative": e["generative"],
+                    "rule_ids": [wire_rule_id(r) for r in e["rule_ids"]]})
+    return out
+
+
+def discourse_to_wire(result: dict, taxonomy_version: str) -> dict:
+    """Re-shape the adapter read-out into the shared /v1/discourse response."""
     return {"ok": True, "taxonomy_version": taxonomy_version, "window_id": result["window_id"],
             "messages": [to_wire(m) for m in result["messages"]],
-            "quanta": quanta, "episodes": episodes}
+            "quanta": quanta_to_wire(result["quanta"]),
+            "episodes": episodes_to_wire(result["episodes"])}
+
+
+def conversation_to_wire(result: dict, taxonomy_version: str) -> dict:
+    """Re-shape one conversation read-out (turns batch or close) into the shared
+    /v1/conversations response. Per-turn `labels` is the /v1/classify object."""
+    turns = []
+    for t in result["turns"]:
+        if t["basis"] not in BASES or not isinstance(t["thread_id"], str):
+            raise RuntimeError("turn without a structure basis / thread")
+        turns.append({"id": t["id"], "labels": to_wire(t["read"]),
+                      "responds_to": list(t["responds_to"]), "basis": t["basis"],
+                      "addressees": list(t["addressees"]), "thread_id": t["thread_id"],
+                      "topic_id": t["topic_id"], "answers": list(t["answers"])})
+    return {"ok": True, "taxonomy_version": taxonomy_version,
+            "conversation_id": result["conversation_id"], "seq": result["seq"], "turns": turns,
+            "quanta": quanta_to_wire(result["quanta"]),
+            "episodes": episodes_to_wire(result["episodes"]),
+            "open_questions": list(result["open_questions"])}
 
 
 def _no_dupes(pairs):
@@ -319,10 +419,28 @@ def parse_json(raw: bytes) -> Any:
         raise ApiError(400, "bad_json", "body is not valid UTF-8 JSON") from None
 
 
-class ClassifierService:
-    """Boots the frozen base once and serves fork-per-batch classification."""
+class Session:
+    """One retained conversation: its fork of the frozen base + the adapter handle
+    (the conversation node id). Turns, actors, seq and order marks live in the fork."""
+    __slots__ = ("branch", "state", "kind", "last_used")
 
-    def __init__(self, strong_every: int = STRONG_CHECK_EVERY) -> None:
+    def __init__(self, branch, state, kind: str, now: float) -> None:
+        self.branch, self.state, self.kind, self.last_used = branch, state, kind, now
+
+
+class ClassifierService:
+    """Boots the frozen base once; serves fork-per-batch classification and
+    retained-fork conversations.
+
+    Concurrency: ONE global lock serialises every request (classify, discourse,
+    conversations). Per-conversation locks were not adopted: forks share
+    copy-on-write pages with the base and with each other, and concurrent mutation
+    of sibling forks plus the base revision / strong-digest checks has not been
+    verified safe, so the global lock stays."""
+
+    def __init__(self, strong_every: int = STRONG_CHECK_EVERY,
+                 idle_ttl_s: float = DEFAULT_IDLE_TTL_S,
+                 max_conversations: int = DEFAULT_MAX_CONVERSATIONS, clock=time.monotonic) -> None:
         from domains import equilibrium_classify as ec
         self._ec = ec
         self._lock = threading.Lock()
@@ -332,6 +450,14 @@ class ClassifierService:
         self.rev0 = tuple(self.snap.source_revision)
         self.digest0 = strong_digest(self.base)
         self.last_strong = {"batch": 0, "digest": self.digest0, "ok": True}
+        self.idle_ttl_s = idle_ttl_s
+        self.max_conversations = max_conversations
+        self._clock = clock
+        self.sessions: OrderedDict[str, Session] = OrderedDict()  # LRU order
+        self.tombstones: OrderedDict[str, str] = OrderedDict()   # evicted id -> reason
+        self.conversations_opened = 0
+        self.conversations_closed = 0
+        self.conversations_evicted = {"idle_ttl": 0, "lru": 0}
         self.batches = 0
         self.messages = 0
         self.windows = 0
@@ -377,28 +503,137 @@ class ClassifierService:
                 raise BaseDrift()
             return [to_wire(r) for r in results]
 
+    def _after_batch(self) -> None:
+        """Base checks after every batch: source revision always, strong digest
+        every `strong_every` batches (both under the global lock)."""
+        self.batches += 1
+        if tuple(self.snap.source_revision) != self.rev0:
+            self.healthy = False
+            raise BaseDrift()
+        if self.batches % self.strong_every == 0 and not self._strong_check():
+            raise BaseDrift()
+
+    def _budget(self, fn, *args):
+        try:
+            return fn(*args)
+        except self._ec.BudgetExhausted:
+            raise ApiError(422, "budget_exhausted", "rule fuel exhausted before the fixpoint") from None
+
+    def _check_order(self, branch, state, turns: list[dict]) -> None:
+        why = self._ec.conversation_check(branch, state, turns)
+        if why == "duplicate_turn":
+            raise ApiError(409, "duplicate_turn", "a turn id repeats or already exists in the conversation")
+        if why == "out_of_order":
+            raise ApiError(409, "out_of_order", "turns must be time-ordered (ts_ms non-decreasing)")
+
     def discourse(self, window: dict, turns: list[dict]) -> dict:
-        """One window = one fork (design §2). The fork is dropped afterwards."""
+        """/v1/discourse = open + turns (chunks of MAX_CONV_TURNS) + close on one
+        fork that is dropped afterwards; quanta/episodes are the close read-out."""
         with self._lock:
             if not self.healthy:
                 raise BaseDrift()
+            ec = self._ec
             branch = self.snap.fork()
             try:
-                result = self._ec.discourse(branch, self.root, window, turns)
-            except self._ec.BudgetExhausted:
-                raise ApiError(422, "budget_exhausted",
-                               "rule fuel exhausted before the fixpoint") from None
+                st = ec.conversation_open(branch, self.root, window["window_id"], window["kind"])
+                self._check_order(branch, st, turns)
+                got = []
+                for i in range(0, len(turns), MAX_CONV_TURNS):
+                    got += self._budget(ec.conversation_ingest, branch, self.root, st,
+                                        turns[i:i + MAX_CONV_TURNS])["turns"]
+                fin = self._budget(ec.conversation_close, branch, self.root, st)
             finally:
                 del branch
-            self.batches += 1
             self.windows += 1
             self.turns += len(turns)
-            if tuple(self.snap.source_revision) != self.rev0:
-                self.healthy = False
+            self._after_batch()
+            result = {"window_id": window["window_id"], "messages": [t["read"] for t in got],
+                      "quanta": fin["quanta"], "episodes": fin["episodes"]}
+            return discourse_to_wire(result, ec.TAXONOMY_VERSION)
+
+    # ---- /v1/conversations ----------------------------------------------------
+    def _evict(self, cid: str, reason: str) -> None:
+        sess = self.sessions.pop(cid)
+        sess.branch = sess.state = None  # drop the retained fork
+        self.tombstones[cid] = reason
+        self.tombstones.move_to_end(cid)
+        while len(self.tombstones) > MAX_TOMBSTONES:
+            self.tombstones.popitem(last=False)
+        self.conversations_evicted[reason] += 1
+
+    def _sweep(self, now: float) -> None:
+        for cid in [c for c, x in self.sessions.items() if now - x.last_used > self.idle_ttl_s]:
+            self._evict(cid, "idle_ttl")
+
+    def _get(self, cid: str, now: float) -> Session:
+        self._sweep(now)
+        sess = self.sessions.get(cid)
+        if sess is None:
+            if cid in self.tombstones:
+                raise ApiError(409, "conversation_evicted",
+                               "conversation state was evicted (idle TTL or capacity); "
+                               "resubmit it under a new conversation id")
+            raise ApiError(404, "unknown_conversation", "no such open conversation")
+        return sess
+
+    def conversation_turns(self, cid: str, kind: str, turns: list[dict]) -> dict:
+        with self._lock:
+            if not self.healthy:
                 raise BaseDrift()
-            if self.batches % self.strong_every == 0 and not self._strong_check():
+            ec = self._ec
+            now = self._clock()
+            try:
+                sess = self._get(cid, now)
+            except ApiError as e:
+                if e.code != "unknown_conversation":
+                    raise
+                sess = None
+            if sess is not None and sess.kind != kind:
+                raise ApiError(400, "bad_request", "$.kind: does not match the conversation")
+            fresh = sess is None
+            if fresh:
+                branch = self.snap.fork()
+                sess = Session(branch, ec.conversation_open(branch, self.root, cid, kind), kind, now)
+            self._check_order(sess.branch, sess.state, turns)  # atomic: nothing ingested on 409
+            if fresh:
+                while len(self.sessions) >= self.max_conversations:
+                    self._evict(next(iter(self.sessions)), "lru")
+                self.sessions[cid] = sess
+                self.conversations_opened += 1
+            try:
+                result = ec.conversation_ingest(sess.branch, self.root, sess.state, turns)
+            except ec.BudgetExhausted:
+                self.sessions.pop(cid, None)  # state is partial: drop it
+                sess.branch = sess.state = None
+                raise ApiError(422, "budget_exhausted",
+                               "rule fuel exhausted before the fixpoint; conversation dropped") from None
+            sess.last_used = now
+            self.sessions.move_to_end(cid)
+            self.turns += len(turns)
+            self._after_batch()
+            return conversation_to_wire(result, ec.TAXONOMY_VERSION)
+
+    def conversation_close(self, cid: str) -> dict:
+        with self._lock:
+            if not self.healthy:
                 raise BaseDrift()
-            return discourse_to_wire(result, self._ec.TAXONOMY_VERSION)
+            ec = self._ec
+            sess = self._get(cid, self._clock())
+            try:
+                result = self._budget(ec.conversation_close, sess.branch, self.root, sess.state)
+            finally:
+                self.sessions.pop(cid, None)
+                sess.branch = sess.state = None
+            self.conversations_closed += 1
+            self._after_batch()
+            return conversation_to_wire(result, ec.TAXONOMY_VERSION)
+
+    def conversation_get(self, cid: str) -> dict:
+        with self._lock:
+            sess = self._get(cid, self._clock())
+            info = self._ec.conversation_info(sess.branch, sess.state)
+            return {"ok": True, "conversation_id": info["conversation_id"], "seq": info["seq"],
+                    "idle_ttl_s": int(self.idle_ttl_s), "kind": info["kind"]}
 
     def health(self) -> bool:
         with self._lock:
@@ -436,8 +671,19 @@ class ClassifierService:
                            "max_text_chars": MAX_TEXT_LEN,
                            "max_turns": MAX_TURNS, "max_discourse_body_bytes": MAX_DISCOURSE_BODY_BYTES,
                            "discourse_fuel_per_stratum": self._ec.DISCOURSE_FUEL,
-                           "strong_check_every_batches": self.strong_every},
-                "endpoints": {"/v1/classify": "ok", "/v1/discourse": "ok"},
+                           "strong_check_every_batches": self.strong_every,
+                           "max_conversation_turns_per_call": MAX_CONV_TURNS,
+                           "max_conversation_body_bytes": MAX_CONV_BODY_BYTES,
+                           "conversation_idle_ttl_s": self.idle_ttl_s,
+                           "max_conversations": self.max_conversations},
+                "conversations": {"open": len(self.sessions), "opened": self.conversations_opened,
+                                  "closed": self.conversations_closed,
+                                  "evicted": dict(self.conversations_evicted),
+                                  "concurrency": "global_lock"},
+                "endpoints": {"/v1/classify": "ok", "/v1/discourse": "ok",
+                              "/v1/conversations/{id}/turns": "ok",
+                              "/v1/conversations/{id}/close": "ok",
+                              "GET /v1/conversations/{id}": "ok"},
             }
 
 
@@ -483,9 +729,31 @@ def make_handler(service: ClassifierService):
                                f"Content-Length required and at most {cap} bytes")
             return self.rfile.read(n)
 
+        def _conv_path(self) -> tuple[str, str] | None:
+            """('/v1/conversations/{id}[/<action>]') -> (id, action) or None.
+            A malformed id is a 400 that never echoes the id."""
+            parts = self._path().split("/")
+            if len(parts) not in (4, 5) or parts[:3] != ["", "v1", "conversations"]:
+                return None
+            if not valid_conversation_id(parts[3]):
+                self.close_connection = True  # any body stays unread
+                raise ApiError(400, "bad_request", "conversation_id: must match [A-Za-z0-9_.:~-]{1,200}")
+            return parts[3], (parts[4] if len(parts) == 5 else "")
+
         def do_GET(self):
             p = self._path()
-            if p == "/healthz":
+            if p.startswith("/v1/conversations/"):
+                try:
+                    cp = self._conv_path()
+                    if cp is None or cp[1] != "":
+                        raise ApiError(404, "not_found", "unknown path")
+                    self._send(200, service.conversation_get(cp[0]))
+                except ApiError as e:
+                    self._err(e)
+                except Exception:
+                    self.close_connection = True
+                    self._err(ApiError(500, "internal", "internal error"))
+            elif p == "/healthz":
                 ok = service.health()
                 self._send(200 if ok else 503, {"ok": ok})
             elif p == "/v1/info":
@@ -496,6 +764,17 @@ def make_handler(service: ClassifierService):
         def do_POST(self):
             p = self._path()
             try:
+                cp = self._conv_path() if p.startswith("/v1/conversations/") else None
+                if cp is not None and cp[1] == "turns":
+                    tax = service.provenance["taxonomy_version"]
+                    kind, turns = validate_conversation(parse_json(self._body(MAX_CONV_BODY_BYTES)), tax)
+                    self._send(200, service.conversation_turns(cp[0], kind, turns))
+                    return
+                if cp is not None and cp[1] == "close":
+                    if self.headers.get("Content-Length") is not None or self.headers.get("Transfer-Encoding"):
+                        self._body(MAX_BODY_BYTES)  # an (ignored) body is drained, never parsed
+                    self._send(200, service.conversation_close(cp[0]))
+                    return
                 if p == "/v1/discourse":
                     tax = service.provenance["taxonomy_version"]
                     window, turns = validate_discourse(
@@ -529,12 +808,13 @@ def make_handler(service: ClassifierService):
     return Handler
 
 
-def serve(host: str, port: int) -> None:
+def serve(host: str, port: int, idle_ttl_s: float = DEFAULT_IDLE_TTL_S,
+          max_conversations: int = DEFAULT_MAX_CONVERSATIONS) -> None:
     require_no_llm()
     require_loopback(host)
     _setup_engine()
     t0 = time.perf_counter()
-    service = ClassifierService()
+    service = ClassifierService(idle_ttl_s=idle_ttl_s, max_conversations=max_conversations)
     httpd = ThreadingHTTPServer((BIND_HOST, port), make_handler(service))
     httpd.daemon_threads = True
     if httpd.server_address[0] != BIND_HOST:
@@ -554,8 +834,14 @@ def main(argv: list[str] | None = None) -> None:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--host", default=BIND_HOST, help="must be 127.0.0.1 (anything else is refused)")
     ap.add_argument("--port", type=int, default=int(os.environ.get("EQ_SIDECAR_PORT", DEFAULT_PORT)))
+    ap.add_argument("--conversation-idle-ttl-s", type=float,
+                    default=float(os.environ.get("EQ_CONV_IDLE_TTL_S", DEFAULT_IDLE_TTL_S)))
+    ap.add_argument("--max-conversations", type=int,
+                    default=int(os.environ.get("EQ_CONV_MAX", DEFAULT_MAX_CONVERSATIONS)))
     a = ap.parse_args(argv)
-    serve(a.host, a.port)
+    if a.conversation_idle_ttl_s <= 0 or a.max_conversations < 1:
+        raise RefuseStart("conversation TTL must be > 0 and max conversations >= 1")
+    serve(a.host, a.port, a.conversation_idle_ttl_s, a.max_conversations)
 
 
 if __name__ == "__main__":
