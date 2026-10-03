@@ -150,11 +150,6 @@
    "match": [
     [
      "agent",
-     "eq_stratum_1",
-     "st"
-    ],
-    [
-     "agent",
      "eq_has_trait_cue",
      "c"
     ],
@@ -165,7 +160,7 @@
     ],
     [
      "w",
-     "eq_has_turn",
+     "eq_l1",
      "m"
     ],
     [
@@ -398,11 +393,6 @@
    "match": [
     [
      "agent",
-     "eq_stratum_1",
-     "st"
-    ],
-    [
-     "agent",
      "eq_has_trait_cue",
      "c"
     ],
@@ -413,7 +403,7 @@
     ],
     [
      "w",
-     "eq_has_turn",
+     "eq_l1",
      "m"
     ],
     [
@@ -623,11 +613,6 @@
    "match": [
     [
      "agent",
-     "eq_stratum_1",
-     "st"
-    ],
-    [
-     "agent",
      "eq_has_trait_cue",
      "c"
     ],
@@ -638,7 +623,7 @@
     ],
     [
      "w",
-     "eq_has_turn",
+     "eq_l1",
      "m"
     ],
     [
@@ -871,11 +856,6 @@
    "match": [
     [
      "agent",
-     "eq_stratum_1",
-     "st"
-    ],
-    [
-     "agent",
      "eq_has_trait_cue",
      "c"
     ],
@@ -886,7 +866,7 @@
     ],
     [
      "w",
-     "eq_has_turn",
+     "eq_l1",
      "m"
     ],
     [
@@ -1122,11 +1102,6 @@
    "match": [
     [
      "agent",
-     "eq_stratum_1",
-     "st"
-    ],
-    [
-     "agent",
      "eq_has_trait_cue",
      "c"
     ],
@@ -1137,7 +1112,7 @@
     ],
     [
      "w",
-     "eq_has_turn",
+     "eq_l1",
      "m"
     ],
     [
@@ -1283,8 +1258,8 @@
    "match": [
     [
      "agent",
-     "eq_stratum_2",
-     "st"
+     "eq_l2_open",
+     "w"
     ],
     [
      "agent",
@@ -1292,13 +1267,8 @@
      "c"
     ],
     [
-     "agent",
-     "eq_window",
-     "w"
-    ],
-    [
      "w",
-     "eq_has_turn",
+     "eq_l2",
      "m"
     ],
     [
@@ -1508,15 +1478,25 @@
     [
      "set_attr",
      "q",
-     "eqrule:eq.quanta.counter.targeted",
+     "eqrule:eq.quanta.counter.untargeted",
      true
     ]
    ],
    "match": [
     [
      "agent",
-     "eq_stratum_2",
-     "st"
+     "eq_l2_open",
+     "w"
+    ],
+    [
+     "w",
+     "eq_qnew",
+     "q"
+    ],
+    [
+     "a",
+     "eq_has_quantum",
+     "q"
     ],
     [
      "agent",
@@ -1524,13 +1504,225 @@
      "c"
     ],
     [
+     "m",
+     "eq_authored_by",
+     "a"
+    ]
+   ],
+   "name": "eq.quanta.counter.untargeted.newq",
+   "where": {
+    "items": [
+     {
+      "a": {
+       "key": "role",
+       "node": {
+        "name": "c",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "counter"
+      },
+      "type": "Eq"
+     },
+     {
+      "a": {
+       "key": "owner",
+       "node": {
+        "name": "c",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "author"
+      },
+      "type": "Eq"
+     },
+     {
+      "a": {
+       "name": {
+        "key": "lab_key",
+        "node": {
+         "name": "c",
+         "type": "Var"
+        },
+        "type": "Attr"
+       },
+       "node": {
+        "name": "m",
+        "type": "Var"
+       },
+       "type": "AttrByName"
+      },
+      "b": {
+       "type": "Lit",
+       "value": true
+      },
+      "type": "Eq"
+     },
+     {
+      "arg": {
+       "predicate": {
+        "items": [
+         {
+          "a": {
+           "key": "label",
+           "node": {
+            "name": "ls",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "key": "trait",
+           "node": {
+            "name": "c",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "type": "Eq"
+         },
+         {
+          "a": {
+           "key": "status",
+           "node": {
+            "name": "ls",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "disabled"
+          },
+          "type": "Eq"
+         }
+        ],
+        "type": "And"
+       },
+       "source": {
+        "edge_type": "eq_has_label_status",
+        "node": {
+         "name": "agent",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "ls"
+      },
+      "type": "Not"
+     },
+     {
+      "a": {
+       "key": "q_trait",
+       "node": {
+        "name": "q",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "key": "trait",
+       "node": {
+        "name": "c",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "type": "Eq"
+     },
+     {
+      "a": {
+       "key": "q_pole",
+       "node": {
+        "name": "q",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "key": "pole",
+       "node": {
+        "name": "c",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "type": "Eq"
+     },
+     {
+      "a": {
+       "key": "q_target",
+       "node": {
+        "name": "q",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": ""
+      },
+      "type": "Eq"
+     },
+     {
+      "arg": {
+       "container": {
+        "edge_type": "eq_evidence",
+        "node": {
+         "name": "q",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "member": {
+        "name": "m",
+        "type": "Var"
+       },
+       "type": "In"
+      },
+      "type": "Not"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "add_edge",
+     "q",
+     "eq_counter",
+     "m"
+    ],
+    [
+     "set_attr",
+     "q",
+     "eqrule:eq.quanta.counter.targeted",
+     true
+    ]
+   ],
+   "match": [
+    [
      "agent",
-     "eq_window",
+     "eq_l2_open",
      "w"
     ],
     [
+     "agent",
+     "eq_has_trait_cue",
+     "c"
+    ],
+    [
      "w",
-     "eq_has_turn",
+     "eq_l2",
      "m"
     ],
     [
@@ -1550,6 +1742,242 @@
     ]
    ],
    "name": "eq.quanta.counter.targeted",
+   "where": {
+    "items": [
+     {
+      "a": {
+       "key": "role",
+       "node": {
+        "name": "c",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "counter"
+      },
+      "type": "Eq"
+     },
+     {
+      "a": {
+       "key": "owner",
+       "node": {
+        "name": "c",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "author"
+      },
+      "type": "Eq"
+     },
+     {
+      "a": {
+       "name": {
+        "key": "lab_key",
+        "node": {
+         "name": "c",
+         "type": "Var"
+        },
+        "type": "Attr"
+       },
+       "node": {
+        "name": "m",
+        "type": "Var"
+       },
+       "type": "AttrByName"
+      },
+      "b": {
+       "type": "Lit",
+       "value": true
+      },
+      "type": "Eq"
+     },
+     {
+      "arg": {
+       "predicate": {
+        "items": [
+         {
+          "a": {
+           "key": "label",
+           "node": {
+            "name": "ls",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "key": "trait",
+           "node": {
+            "name": "c",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "type": "Eq"
+         },
+         {
+          "a": {
+           "key": "status",
+           "node": {
+            "name": "ls",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "disabled"
+          },
+          "type": "Eq"
+         }
+        ],
+        "type": "And"
+       },
+       "source": {
+        "edge_type": "eq_has_label_status",
+        "node": {
+         "name": "agent",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "ls"
+      },
+      "type": "Not"
+     },
+     {
+      "a": {
+       "key": "q_trait",
+       "node": {
+        "name": "q",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "key": "trait",
+       "node": {
+        "name": "c",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "type": "Eq"
+     },
+     {
+      "a": {
+       "key": "q_pole",
+       "node": {
+        "name": "q",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "key": "pole",
+       "node": {
+        "name": "c",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "type": "Eq"
+     },
+     {
+      "a": {
+       "key": "q_target",
+       "node": {
+        "name": "q",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "key": "actor_ref",
+       "node": {
+        "name": "b",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "type": "Eq"
+     },
+     {
+      "arg": {
+       "container": {
+        "edge_type": "eq_evidence",
+        "node": {
+         "name": "q",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "member": {
+        "name": "m",
+        "type": "Var"
+       },
+       "type": "In"
+      },
+      "type": "Not"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "add_edge",
+     "q",
+     "eq_counter",
+     "m"
+    ],
+    [
+     "set_attr",
+     "q",
+     "eqrule:eq.quanta.counter.targeted",
+     true
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_l2_open",
+     "w"
+    ],
+    [
+     "w",
+     "eq_qnew",
+     "q"
+    ],
+    [
+     "a",
+     "eq_has_quantum",
+     "q"
+    ],
+    [
+     "agent",
+     "eq_has_trait_cue",
+     "c"
+    ],
+    [
+     "m",
+     "eq_authored_by",
+     "a"
+    ],
+    [
+     "m",
+     "eq_addresses",
+     "b"
+    ]
+   ],
+   "name": "eq.quanta.counter.targeted.newq",
    "where": {
     "items": [
      {
@@ -2200,17 +2628,12 @@
    "match": [
     [
      "agent",
-     "eq_stratum_1",
-     "st"
-    ],
-    [
-     "agent",
      "eq_window",
      "w"
     ],
     [
      "w",
-     "eq_has_turn",
+     "eq_l1",
      "m"
     ],
     [
@@ -2700,8 +3123,8 @@
    "match": [
     [
      "agent",
-     "eq_stratum_2",
-     "st"
+     "eq_l2_open",
+     "w"
     ],
     [
      "a",
@@ -2717,6 +3140,11 @@
      "m2",
      "eq_authored_by",
      "a"
+    ],
+    [
+     "w",
+     "eq_l2",
+     "m2"
     ]
    ],
    "name": "eq.quanta.interaction.withdrawal.counter",
@@ -2842,17 +3270,12 @@
    "match": [
     [
      "agent",
-     "eq_stratum_1",
-     "st"
-    ],
-    [
-     "agent",
      "eq_window",
      "w"
     ],
     [
      "w",
-     "eq_has_turn",
+     "eq_l1",
      "qt"
     ],
     [
@@ -4276,6 +4699,6 @@
   }
  ],
  "self_load_only": true,
- "taxonomy_version": "eq-tax-0.5.0",
- "version": "0.5.0"
+ "taxonomy_version": "eq-tax-0.5.1",
+ "version": "0.5.1"
 }

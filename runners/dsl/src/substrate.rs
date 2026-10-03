@@ -262,6 +262,39 @@ pub struct Substrate {
     /// byte-identical, and the honest coverage boundary. That shape is ladder
     /// rung B's target (per-binding predicate retraction), not this rung.
     pub(crate) incremental_match: bool,
+    /// ISOLATED-NODE WRITE EXEMPTION (equilibrium scaling), **DEFAULT FALSE**;
+    /// takes effect together with `precise_dirty`. An EXTERNAL `add_node` (and
+    /// an external `set_attr` on a node with NO edges) normally dirties and
+    /// cursor-clears every where-rule reading one of the written attr keys, and
+    /// every `reads_any` rule. A node with no edges is in no existing binding and
+    /// no term path reaches it, so with this flag such a write dirties only the
+    /// rules that can see it: a `Type` read of its type (`NodesOfType`,
+    /// `NodesWhere`, `AddNodeIfAbsent`) or a NON-LOCAL opaque read
+    /// (`reads_any_nonlocal`; `TypeOf`/`AttrByName` read nodes already bound).
+    /// Its attrs become observable only through an edge added later, so an
+    /// external `add_edge` additionally clears the cursor of every rule whose
+    /// where/effect terms read that edge type (`term_edge_reads`, the same
+    /// invalidation the rule-effect path applies) or that reads non-locally; a
+    /// pure match-edge driver keeps its cursor and is handled semi-naively.
+    /// Net: an append-only ingest of fresh subgraphs keeps rules on the
+    /// incremental path. OFF ⇒ the committed engine, byte-identical.
+    pub(crate) fresh_node_exempt: bool,
+    /// SEMI-NAIVE FOR BATCH RULES (equilibrium scaling), **DEFAULT FALSE**.
+    /// A `batch` rule normally re-enumerates its WHOLE binding set on every
+    /// visit (`batch_apply_rule`). With this on, a batch rule first tries the
+    /// semi-naive cursor path (`try_incremental_match`: delta-driven, every
+    /// distinct new binding evaluated against the pre-apply graph and applied
+    /// once — the same snapshot semantics), and only when that bails (cold or
+    /// invalidated cursor, repeated match edge type, k==0, reads_external) runs
+    /// the committed full batch pass and then installs its cursors at the
+    /// pre-apply frontier, exactly as the cold path does for non-batch rules.
+    /// Re-firing an old binding is a no-op for idempotent effects, which is
+    /// the only case where the two paths can differ; where-flips on stable
+    /// bindings are covered by the same cursor invalidation every non-batch
+    /// rule relies on. Under this flag the semi-naive path also admits rules
+    /// whose match repeats an edge type (dedup by canonical binding key).
+    /// OFF ⇒ the committed engine, byte-identical.
+    pub(crate) batch_incremental: bool,
     /// FALSIFIER for `incremental_match`, **DEFAULT FALSE**. Makes cursor
     /// validation MISS a retraction: a cursor is treated as valid w.r.t. deletes
     /// regardless of its edge type's delete version, so a delete of a rule's OWN
@@ -771,6 +804,8 @@ impl Substrate {
             empty_match_proof_unsound: false,
             empty_match_skips: Vec::new(),
             incremental_match: false,
+            fresh_node_exempt: false,
+            batch_incremental: false,
             incremental_match_unsound: false,
             predicate_retraction: false,
             predicate_retraction_unsound: false,
@@ -885,6 +920,8 @@ impl Substrate {
         fork.empty_match_proof = self.empty_match_proof;
         fork.empty_match_proof_unsound = self.empty_match_proof_unsound;
         fork.incremental_match = self.incremental_match;
+        fork.fresh_node_exempt = self.fresh_node_exempt;
+        fork.batch_incremental = self.batch_incremental;
         fork.incremental_match_unsound = self.incremental_match_unsound;
         fork.predicate_retraction = self.predicate_retraction;
         fork.predicate_retraction_unsound = self.predicate_retraction_unsound;
@@ -1631,6 +1668,34 @@ impl Substrate {
         }
     }
 
+    /// Fresh-node exemption: an EXTERNAL insert of `edge_type` clears the cursor
+    /// of every rule whose where/effect terms read that type (a new edge can
+    /// change a term's value on a STABLE binding; a pure match-edge driver keeps
+    /// its cursor). Mirrors the rule-effect path's `hits_term_edge`.
+    fn invalidate_term_readers_of_edge_type(&mut self, edge_type: Sym) {
+        for j in 0..self.rules.len().min(self.rule_cursors.len()) {
+            if self.rules[j].reads_any_nonlocal || self.rules[j].term_edge_reads.contains(&edge_type) {
+                self.rule_dirty[j] = true;
+                self.rule_cursors[j].clear();
+            }
+        }
+    }
+
+    /// Isolated-node write exemption: a write (insert / attr) to a node with NO
+    /// edges is observable only by type enumeration (`Type` read key) or by an
+    /// opaque non-local read; attrs / type of a bound node are unreachable
+    /// because no binding or term path reaches an isolated node.
+    fn mark_isolated_write(&mut self, ty: Sym) {
+        self.any_mutation = true;
+        let key = crate::rewrite::RuleKey::Type(ty);
+        for j in 0..self.rules.len().min(self.rule_cursors.len()) {
+            if self.rules[j].reads_any_nonlocal || self.rules[j].read_set.contains(&key) {
+                self.rule_dirty[j] = true;
+                self.rule_cursors[j].clear();
+            }
+        }
+    }
+
     /// Mark every rule with a where-clause dirty. Called on node mutations
     /// (insert / delete / attr / type change) because where-clauses may
     /// read those via TypeOf/Attr without us tracking the read tightly.
@@ -1767,6 +1832,14 @@ impl Substrate {
     /// Block 192000 controls. Both DEFAULT FALSE — see the field docs.
     pub fn set_incremental_match(&mut self, on: bool) {
         self.incremental_match = on;
+    }
+    /// Fresh-node exemption control. DEFAULT FALSE — see the field doc.
+    pub fn set_fresh_node_exempt(&mut self, on: bool) {
+        self.fresh_node_exempt = on;
+    }
+    /// Semi-naive for batch rules. DEFAULT FALSE — see the field doc.
+    pub fn set_batch_incremental(&mut self, on: bool) {
+        self.batch_incremental = on;
     }
     pub fn set_incremental_match_unsound(&mut self, on: bool) {
         self.incremental_match_unsound = on;
@@ -2228,7 +2301,11 @@ impl Substrate {
             smallvec::SmallVec::new()
         };
         let nid = self.graph.insert_node(type_, attrs);
-        if self.precise_dirty {
+        if self.precise_dirty && self.fresh_node_exempt {
+            // fresh node: no edges, so its attrs are unobservable to any existing
+            // binding; only a type enumeration can see it (see the field doc)
+            self.mark_isolated_write(type_);
+        } else if self.precise_dirty {
             self.mark_external_write(Some(type_), &keys);
         } else {
             self.mark_node_mutation();
@@ -2263,6 +2340,9 @@ impl Substrate {
                     .insert_edge(src, edge_type, tgt, attrs)
                     .expect("admitted edge must connect existing nodes");
                 self.mark_edge_type_dirty(edge_type);
+                if self.fresh_node_exempt {
+                    self.invalidate_term_readers_of_edge_type(edge_type);
+                }
                 Ok(result)
             }
             CheckOutcome::Type1NoProduction {
@@ -2532,6 +2612,15 @@ impl Substrate {
             if unchanged && self.precise_dirty {
                 return;
             }
+        }
+        if self.precise_dirty && self.fresh_node_exempt && self.graph.has_node(nid)
+            && self.graph.out_edges_slice(nid, None).is_empty()
+            && self.graph.in_edges_slice(nid, None).is_empty()
+        {
+            let ty = self.graph.node(nid).type_;
+            self.graph.set_node_attr(nid, key, value);
+            self.mark_isolated_write(ty);
+            return;
         }
         self.graph.set_node_attr(nid, key, value);
         // PREDICATE RETRACTION (block 194000): an external attr write records
@@ -4086,9 +4175,14 @@ impl Substrate {
         // Defer rules whose match-edges repeat an edge_type — would need
         // lex-order semi-naive to avoid double-counting bindings.
         {
+            // A repeated match edge type makes two driving positions find the
+            // same binding; `seen_bindings` below dedups by the canonical binding
+            // key across ALL positions, so under `batch_incremental` the repeat
+            // costs duplicates only (each binding with >= 1 new edge is found by
+            // driving from that edge's slot against the full other slots).
             let mut seen: FxHashSet<Sym> = Default::default();
             for me in &rule_clone.match_edges {
-                if !seen.insert(me.edge_type) {
+                if !seen.insert(me.edge_type) && !self.batch_incremental {
                     return None;
                 }
             }
@@ -4681,7 +4775,39 @@ impl Substrate {
         // process only edges new since last visit. Falls back to
         // full re-match for k-edge rules and for rules whose
         // cursor was invalidated by an intervening delete.
-        let progressed = if self.rules[rule_idx].batch {
+        let progressed = if self.rules[rule_idx].batch && self.batch_incremental {
+            if let Some(p) = self.try_incremental_match(rule_idx) {
+                p
+            } else {
+                let rule = self.rules[rule_idx].clone();
+                let mut frontier: FxHashMap<Sym, (usize, u64)> = FxHashMap::default();
+                for me in &rule.match_edges {
+                    frontier.entry(me.edge_type).or_insert_with(|| {
+                        (self.graph.edges_by_type(me.edge_type).len(), self.cursor_version(me.edge_type))
+                    });
+                }
+                let p = if self.match_set_provably_empty(&rule) {
+                    self.note_empty_match_skip(rule_idx);
+                    false
+                } else {
+                    crate::rewrite::batch_apply_rule(
+                        &rule,
+                        &mut self.terms,
+                        &mut self.graph,
+                        &mut self.interner,
+                        Some(&mut self.concepts),
+                        Some(&self.framebuffers),
+                        Some(&mut self.eval_cache),
+                        None,
+                    )
+                };
+                self.eval_cache.clear_graph_dependent();
+                for (et, lv) in frontier {
+                    self.rule_cursors[rule_idx].insert(et, lv);
+                }
+                p
+            }
+        } else if self.rules[rule_idx].batch {
             // slice (b): batch-safe rule — apply EVERY binding this pass
             // (no per-binding undo/clone/restart). Collapses per-cell
             // perception rules from O(cells^2) passes to O(cells).

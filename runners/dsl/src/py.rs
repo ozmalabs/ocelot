@@ -4607,6 +4607,21 @@ impl PySubstrate {
             .set_incremental_match(on);
     }
 
+    /// Fresh-node exemption (equilibrium scaling), DEFAULT OFF: an external
+    /// `add_node` dirties by type only, an external `add_edge` clears the cursors
+    /// of the rules whose terms read that edge type (see `Substrate`). Needs
+    /// `set_precise_dirty(True)` to take effect on `add_node`.
+    fn set_fresh_node_exempt(&mut self, on: bool) {
+        self.inner.lock().expect("substrate mutex poisoned").set_fresh_node_exempt(on);
+    }
+
+    /// Semi-naive for `batch` rules (equilibrium scaling), DEFAULT OFF: a batch
+    /// rule takes the delta-driven cursor path when its cursor is valid, else the
+    /// committed full batch pass, after which its cursors are installed.
+    fn set_batch_incremental(&mut self, on: bool) {
+        self.inner.lock().expect("substrate mutex poisoned").set_batch_incremental(on);
+    }
+
     /// **THE UNSOUND-RETRACTION FALSIFIER** (block 192000). Accepts a stale
     /// cursor regardless of its edge type's delete version, so a delete of a
     /// rule's own match type is NOT retracted — the graph diverges from the full
