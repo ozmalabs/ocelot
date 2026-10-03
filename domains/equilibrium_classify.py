@@ -1,4 +1,4 @@
-"""Equilibrium classifier sidecar — the THIN world adapter (tracks T3 / T3b).
+"""Equilibrium classifier sidecar — the THIN world adapter (tracks T3 / T3b, pack 0.4.0).
 
 CLAUDE.md "the agent is a graph in Rust": this module does only
   * INGEST  — each message becomes Message/Token/CodeSpan/LinkSpan nodes + edges
@@ -42,12 +42,12 @@ from typing import Any, Iterable
 from substrate.boot_core import boot_core
 from substrate.seed_loader import manifest_for
 
-PACK_VERSION = "0.3.0"
-TAXONOMY_VERSION = "eq-tax-0.3.0"
+PACK_VERSION = "0.4.0"
+TAXONOMY_VERSION = "eq-tax-0.4.0"
 PACK_IDS = ("equilibrium_tokens", "equilibrium_window", "equilibrium_lexicon",
             "equilibrium_scope", "equilibrium_msg", "equilibrium_pattern",
             "equilibrium_traits", "equilibrium_quanta", "equilibrium_competence",
-            "equilibrium_episode", "equilibrium_label_status")
+            "equilibrium_episode", "equilibrium_climate", "equilibrium_label_status")
 FIRE_PREFIX = "eqfire:"   # label-deciding rule fired on a Message
 CUE_PREFIX = "eqcue:"     # cue-recognition rule fired on a Message (provenance only)
 RULE_PREFIX = "eqrule:"   # quanta/episode rule contributed to a node (provenance)
@@ -281,7 +281,11 @@ def read_discourse(substrate, agent_root, w, nodes) -> dict:
     for a in n.neighbours(w, "eq_has_actor"):
         for q in n.neighbours(a, "eq_has_quantum"):
             qa = n.node(q)["attrs"]
-            ev = set(n.neighbours(q, "eq_evidence")) | set(n.neighbours(q, "eq_hedged"))
+            # eq_context (0.4.0): the turn a relational quantum replies to (e.g. the
+            # question of inquiry.answered) -- evidence on the wire, not counted by
+            # the seeded match shapes
+            ev = (set(n.neighbours(q, "eq_evidence")) | set(n.neighbours(q, "eq_hedged"))
+                  | set(n.neighbours(q, "eq_context")))
             row = {"actor_ref": qa["q_actor"], "trait": qa["q_trait"], "polarity": qa["q_pole"],
                    "match": qa.get("eq_match"), "evidence": _refs(n, ev),
                    "counter_evidence": _refs(n, n.neighbours(q, "eq_counter")),

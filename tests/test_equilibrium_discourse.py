@@ -1,4 +1,8 @@
-"""Equilibrium behavioural quanta (stream T3b, pack 0.3.0): adapter-level goldens.
+"""Equilibrium behavioural quanta (stream T3b, pack 0.4.0): adapter-level goldens.
+
+Slice-2 note: the sealed slice-1 golden windows are compared on their 0.3.0
+trait vocabulary unchanged; the 0.4.0 space-climate traits they now also carry
+are asserted separately (tests/test_equilibrium_climate.py has the climate goldens).
 
 Synthetic windows only (pseudonyms actor_a / expert_e / member_###); no corpus,
 no LLM (OZMA_NO_LLM=1). Every expectation below is a rule output; the adapter
@@ -64,6 +68,20 @@ def _q(out):
     return {(q["actor_ref"], q["trait"], q["polarity"], q.get("target_ref")): q for q in out["quanta"]}
 
 
+CLIMATE_TRAITS = {"voice.dissent", "voice.error_admission", "inquiry.challenge", "inquiry.answered",
+                  "inquiry.unanswered", "response.dismissal", "response.engagement"}
+
+
+def _slice1(keys):
+    """Quanta keys in the slice-1 (0.3.0) trait vocabulary."""
+    return {k for k in keys if k[1] not in CLIMATE_TRAITS}
+
+
+def _climate(q):
+    return {k: (v["match"], v["evidence"], v["counter_evidence"]) for k, v in q.items()
+            if k[1] in CLIMATE_TRAITS}
+
+
 def _check_wire_invariants(out, turns):
     ids = {t["id"] for t in turns}
     actors = {t["actor_ref"] for t in turns}
@@ -87,7 +105,7 @@ def test_golden_meeting_window(base):
     out = _disc(base, turns, kind="meeting", window_id="w_meet_1")
     _check_wire_invariants(out, turns)
     q = _q(out)
-    assert set(q) == {
+    assert _slice1(q) == {
         ("actor_a", "competence.claim_grounding", "-", None),
         ("actor_a", "competence.claimed", "+", None),
         ("actor_a", "competence.contested", "+", "expert_e"),
@@ -136,6 +154,15 @@ def test_golden_meeting_window(base):
     assert e2["turns"] == ["t05", "t06", "t07", "t08"] and e2["generative"] is True
     assert e2["actor_refs"] == ["actor_a", "expert_e", "member_002"]
     assert [e["episode_id"] for e in out["episodes"]] == ["ep:t02", "ep:t05"]  # by first turn
+    # 0.4.0 climate quanta on the same window: the question t02 met by a hostile
+    # status reply (dismissal, so t02 stays unanswered); the contrast t06 against
+    # actor_a's claim is dissent, met by a concession (engagement)
+    assert _climate(q) == {
+        ("actor_a", "response.dismissal", "+", "member_003"): ("partial", ["t02", "t03"], []),
+        ("actor_a", "response.engagement", "+", "expert_e"): ("partial", ["t06", "t07"], []),
+        ("expert_e", "voice.dissent", "+", "actor_a"): ("partial", ["t06"], []),
+        ("member_003", "inquiry.unanswered", "+", None): ("partial", ["t02"], []),
+    }
 
 
 def test_withdrawal_with_return_is_contested(base):
@@ -151,7 +178,7 @@ def test_golden_thread_window(base):
     out = _disc(base, turns, kind="thread", window_id="w_thr_1")
     _check_wire_invariants(out, turns)
     q = _q(out)
-    assert set(q) == {
+    assert _slice1(q) == {
         ("actor_a", "competence.acknowledged", "+", "member_101"),
         ("actor_a", "competence.claim_grounding", "+", None),
         ("actor_a", "competence.claimed", "+", None),
@@ -175,6 +202,13 @@ def test_golden_thread_window(base):
     assert qd["evidence"] == ["p6", "p7"] and qd["match"] == "exact"
     assert [e["episode_id"] for e in out["episodes"]] == ["ep:p5"]
     assert out["episodes"][0]["generative"] is False
+    # 0.4.0: p3 answered (with a link) by expert_e; p6 contests with a leading "but".
+    # p6/p7 are not unanswered: nobody else posted after them (absence is relative)
+    assert _climate(q) == {
+        ("expert_e", "inquiry.answered", "+", "member_102"): ("partial", ["p3", "p5"], []),
+        ("expert_e", "response.engagement", "+", "member_102"): ("partial", ["p3", "p5"], []),
+        ("member_102", "inquiry.challenge", "+", "expert_e"): ("partial", ["p6"], []),
+    }
 
 
 def test_responsiveness_counter_and_absent_actor_not_marked(base):
