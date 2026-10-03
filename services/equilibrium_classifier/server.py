@@ -11,7 +11,13 @@ worker client (equilibrium_worker/classify.py, OcelotClassifier):
                         -> {"ok":true,"provenance":{...},"labels":[{"id","speech_act"?,
                            "substantive_markers":[],"deescalation","concession",
                            "status_claim","hostility" (0.0/1.0),"domains":[],"rule_ids":[]}]}
-  POST /v1/discourse -> 501 in v0
+  POST /v1/discourse -> {"taxonomy_version"?, "window":{"window_id","kind"},
+                         "turns":[{"id","actor_ref","text","reply_to"?,"ts_ms"?}]} (1..500)
+                        -> {"ok":true,"taxonomy_version","window_id","messages":[as /v1/classify],
+                           "quanta":[{actor_ref,trait,polarity,match,evidence,counter_evidence,
+                           target_ref?,rule_ids}],"episodes":[{episode_id,kind,actor_refs,turns,
+                           facets:[{code,match}],generative,rule_ids}]}
+                        (shared contract; one window = one fork)
 
 Frozen fork-per-batch: the base substrate + pack is booted ONCE, snap =
 base.snapshot(); every request classifies on branch = snap.fork(), which is
@@ -52,6 +58,18 @@ MAX_TEXT_LEN = 4000
 STRONG_CHECK_EVERY = 1_000
 MSG_KEYS = frozenset({"id", "text", "reply_to"})
 REQ_KEYS = frozenset({"messages", "taxonomy_version"})
+# /v1/discourse (shared contract, design §3)
+MAX_TURNS = 500
+MAX_DISCOURSE_BODY_BYTES = 16_777_216  # 500 turns x 4000 chars, worst-case JSON escaping
+DISCOURSE_KEYS = frozenset({"taxonomy_version", "window", "turns"})
+WINDOW_KEYS = frozenset({"window_id", "kind"})
+TURN_KEYS = frozenset({"id", "actor_ref", "text", "reply_to", "ts_ms"})
+WINDOW_KINDS = frozenset({"meeting", "thread"})
+# The client's contract ID pattern (^[A-Za-z0-9_.:@!+=-]{1,255}$). Turn ids are
+# capped 3 shorter so the derived episode id "ep:<root turn id>" still fits it.
+ID_CHARS = frozenset("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.:@!+=-")
+MAX_REF_LEN = 255
+MAX_TURN_ID_LEN = 252
 SERVICE_NAME = "ocelot-equilibrium-classifier"
 BOOL_CUE_FIELDS = ("deescalation", "concession", "status_claim", "hostility")
 
@@ -193,6 +211,93 @@ def validate_request(doc: Any, taxonomy_version: str) -> list[dict]:
     return out
 
 
+def _is_ref(v: Any, max_len: int = MAX_REF_LEN) -> bool:
+    return isinstance(v, str) and 1 <= len(v) <= max_len and set(v) <= ID_CHARS
+
+
+def validate_discourse(doc: Any, taxonomy_version: str) -> tuple[dict, list[dict]]:
+    """Closed validation of a /v1/discourse request (shared contract, design §3).
+    Mechanical schema checks only; error messages carry field paths, never input."""
+    def bad(path: str, why: str) -> ApiError:
+        return ApiError(400, "bad_request", f"{path}: {why}")
+    if not isinstance(doc, dict):
+        raise bad("$", "must be an object")
+    if set(doc) - DISCOURSE_KEYS:
+        raise bad("$", "unknown field")
+    tv = doc.get("taxonomy_version")
+    if tv is not None and tv != taxonomy_version:
+        raise ApiError(409, "taxonomy_mismatch", "taxonomy_version does not match the served pack")
+    win = doc.get("window")
+    if not isinstance(win, dict) or set(win) != WINDOW_KEYS:
+        raise bad("$.window", "must be an object with exactly window_id and kind")
+    if not _is_ref(win["window_id"]):
+        raise bad("$.window.window_id", f"must be an id string of 1..{MAX_REF_LEN} chars")
+    if win["kind"] not in WINDOW_KINDS:
+        raise bad("$.window.kind", "must be 'meeting' or 'thread'")
+    turns = doc.get("turns")
+    if not isinstance(turns, list):
+        raise bad("$.turns", "must be an array")
+    if len(turns) > MAX_TURNS:
+        raise ApiError(413, "too_large", f"at most {MAX_TURNS} turns per window")
+    if not turns:
+        raise bad("$.turns", "must not be empty")
+    seen: set[str] = set()
+    out = []
+    for i, t in enumerate(turns):
+        p = f"$.turns[{i}]"
+        if not isinstance(t, dict):
+            raise bad(p, "must be an object")
+        if set(t) - TURN_KEYS:
+            raise bad(p, "unknown field")
+        tid, actor, text = t.get("id"), t.get("actor_ref"), t.get("text")
+        rt, ts = t.get("reply_to"), t.get("ts_ms")
+        if not _is_ref(tid, MAX_TURN_ID_LEN):
+            raise bad(p + ".id", f"must be an id string of 1..{MAX_TURN_ID_LEN} chars")
+        if tid in seen:
+            raise bad(p + ".id", "duplicate id in window")
+        seen.add(tid)
+        if not _is_ref(actor):
+            raise bad(p + ".actor_ref", f"must be an id string of 1..{MAX_REF_LEN} chars")
+        if not isinstance(text, str) or len(text) > MAX_TEXT_LEN:
+            raise bad(p + ".text", f"must be a string of at most {MAX_TEXT_LEN} chars")
+        if rt is not None and not _is_ref(rt):
+            raise bad(p + ".reply_to", f"must be null or an id string of 1..{MAX_REF_LEN} chars")
+        if ts is not None and (isinstance(ts, bool) or not isinstance(ts, int) or ts < 0):
+            raise bad(p + ".ts_ms", "must be a non-negative integer")
+        item = {"id": tid, "actor_ref": actor, "text": text, "reply_to": rt}
+        if ts is not None:
+            item["ts_ms"] = ts
+        out.append(item)
+    return {"window_id": win["window_id"], "kind": win["kind"]}, out
+
+
+def discourse_to_wire(result: dict, taxonomy_version: str) -> dict:
+    """Re-shape the adapter read-out into the shared /v1/discourse response.
+    Type conversion only: every quantum / episode / facet is a rule's output."""
+    quanta = []
+    for q in result["quanta"]:
+        if q["match"] not in ("exact", "partial", "weak"):
+            raise RuntimeError("quantum without a match shape")  # -> 500, never a guess
+        row = {k: q[k] for k in ("actor_ref", "trait", "polarity", "match", "evidence",
+                                 "counter_evidence")}
+        if "target_ref" in q:
+            row["target_ref"] = q["target_ref"]
+        row["rule_ids"] = [wire_rule_id(r) for r in q["rule_ids"]]
+        quanta.append(row)
+    episodes = []
+    for e in result["episodes"]:
+        if any(f["match"] not in ("exact", "partial", "weak") for f in e["facets"]):
+            raise RuntimeError("facet without a match shape")
+        episodes.append({"episode_id": e["episode_id"], "kind": e["kind"],
+                         "actor_refs": list(e["actor_refs"]), "turns": list(e["turns"]),
+                         "facets": [{"code": f["code"], "match": f["match"]} for f in e["facets"]],
+                         "generative": e["generative"],
+                         "rule_ids": [wire_rule_id(r) for r in e["rule_ids"]]})
+    return {"ok": True, "taxonomy_version": taxonomy_version, "window_id": result["window_id"],
+            "messages": [to_wire(m) for m in result["messages"]],
+            "quanta": quanta, "episodes": episodes}
+
+
 def _no_dupes(pairs):
     d = {}
     for k, v in pairs:
@@ -229,9 +334,16 @@ class ClassifierService:
         self.last_strong = {"batch": 0, "digest": self.digest0, "ok": True}
         self.batches = 0
         self.messages = 0
+        self.windows = 0
+        self.turns = 0
         self.healthy = True
-        self.label_status = {k: v.get("status") for k, v in
-                             sorted(ec._label_status(self.base, self.root).items())}
+        rows = ec._label_status(self.base, self.root)
+        self.label_status = {k: v.get("status") for k, v in sorted(rows.items())}
+        self.trait_status = {k: v["status"] for k, v in sorted(rows.items()) if v.get("kind") == "trait"}
+        self.episode_kind_status = {k.split(".", 1)[1]: v["status"] for k, v in sorted(rows.items())
+                                    if v.get("kind") == "episode_kind"}
+        self.facet_status = {k.split(".", 1)[1]: v["status"] for k, v in sorted(rows.items())
+                             if v.get("kind") == "facet"}
         self.commit, self.dirty = ocelot_commit()
         self.pack_sha256 = seed_pack_sha256()
         self.provenance = {"taxonomy_version": ec.TAXONOMY_VERSION,
@@ -265,6 +377,29 @@ class ClassifierService:
                 raise BaseDrift()
             return [to_wire(r) for r in results]
 
+    def discourse(self, window: dict, turns: list[dict]) -> dict:
+        """One window = one fork (design §2). The fork is dropped afterwards."""
+        with self._lock:
+            if not self.healthy:
+                raise BaseDrift()
+            branch = self.snap.fork()
+            try:
+                result = self._ec.discourse(branch, self.root, window, turns)
+            except self._ec.BudgetExhausted:
+                raise ApiError(422, "budget_exhausted",
+                               "rule fuel exhausted before the fixpoint") from None
+            finally:
+                del branch
+            self.batches += 1
+            self.windows += 1
+            self.turns += len(turns)
+            if tuple(self.snap.source_revision) != self.rev0:
+                self.healthy = False
+                raise BaseDrift()
+            if self.batches % self.strong_every == 0 and not self._strong_check():
+                raise BaseDrift()
+            return discourse_to_wire(result, self._ec.TAXONOMY_VERSION)
+
     def health(self) -> bool:
         with self._lock:
             if self.healthy and tuple(self.snap.source_revision) != self.rev0:
@@ -285,16 +420,24 @@ class ClassifierService:
                 "ocelot_commit": self.commit, "ocelot_tree_dirty": self.dirty,
                 "mode": MODE, "no_llm": True, "ozma_no_llm": True,
                 "labels": dict(self.label_status),
+                "trait_status": dict(self.trait_status),
+                "episode_kind_status": dict(self.episode_kind_status),
+                "facet_codes": dict(self.facet_status),
+                "boundary_tokens": {"lemma": "wordnet.morphy(v,n)|form",
+                                    "eq_class": "<num>|first-sense wordnet noun lexname"},
                 "base": {"source_revision": list(self.snap.source_revision),
                          "boot_source_revision": list(self.rev0),
                          "strong_digest_boot": self.digest0,
                          "strong_digest_last": dict(self.last_strong),
                          "batches_served": self.batches, "messages_served": self.messages,
+                         "windows_served": self.windows, "turns_served": self.turns,
                          "healthy": self.healthy},
                 "limits": {"max_messages": MAX_MESSAGES, "max_body_bytes": MAX_BODY_BYTES,
                            "max_text_chars": MAX_TEXT_LEN,
+                           "max_turns": MAX_TURNS, "max_discourse_body_bytes": MAX_DISCOURSE_BODY_BYTES,
+                           "discourse_fuel_per_stratum": self._ec.DISCOURSE_FUEL,
                            "strong_check_every_batches": self.strong_every},
-                "endpoints": {"/v1/discourse": "not_implemented"},
+                "endpoints": {"/v1/classify": "ok", "/v1/discourse": "ok"},
             }
 
 
@@ -326,7 +469,7 @@ def make_handler(service: ClassifierService):
         def _path(self) -> str:
             return self.path.split("?", 1)[0]
 
-        def _body(self) -> bytes:
+        def _body(self, cap: int = MAX_BODY_BYTES) -> bytes:
             if self.headers.get("Transfer-Encoding"):
                 self.close_connection = True
                 raise ApiError(413, "too_large", "chunked bodies are not accepted")
@@ -334,10 +477,10 @@ def make_handler(service: ClassifierService):
                 n = int(self.headers.get("Content-Length", ""))
             except ValueError:
                 n = -1
-            if n < 0 or n > MAX_BODY_BYTES:
+            if n < 0 or n > cap:
                 self.close_connection = True  # unread body: do not reuse the socket
                 raise ApiError(413, "too_large",
-                               f"Content-Length required and at most {MAX_BODY_BYTES} bytes")
+                               f"Content-Length required and at most {cap} bytes")
             return self.rfile.read(n)
 
         def do_GET(self):
@@ -354,8 +497,11 @@ def make_handler(service: ClassifierService):
             p = self._path()
             try:
                 if p == "/v1/discourse":
-                    self.close_connection = True
-                    raise ApiError(501, "not_implemented", "/v1/discourse is not served in v0")
+                    tax = service.provenance["taxonomy_version"]
+                    window, turns = validate_discourse(
+                        parse_json(self._body(MAX_DISCOURSE_BODY_BYTES)), tax)
+                    self._send(200, service.discourse(window, turns))
+                    return
                 if p != "/v1/classify":
                     self.close_connection = True
                     raise ApiError(404, "not_found", "unknown path")

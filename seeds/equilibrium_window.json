@@ -1,0 +1,433 @@
+{
+ "depends_on": [
+  "equilibrium_tokens"
+ ],
+ "description": "Window ingest vocabulary (EqWindow/EqActor, authorship, reply, adjacency, turn position), the EqStratum clock the adapter opens in order, and the S0 rules deriving responds_to / addresses.",
+ "edges": [
+  {
+   "attrs": {},
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 0
+   },
+   "type": "eq_has_stratum"
+  },
+  {
+   "attrs": {},
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 1
+   },
+   "type": "eq_has_stratum"
+  },
+  {
+   "attrs": {},
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 2
+   },
+   "type": "eq_has_stratum"
+  },
+  {
+   "attrs": {},
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 3
+   },
+   "type": "eq_has_stratum"
+  },
+  {
+   "attrs": {},
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 4
+   },
+   "type": "eq_has_stratum"
+  }
+ ],
+ "id": "equilibrium_window",
+ "nodes": [
+  {
+   "attrs": {
+    "eq_open_edge": "eq_stratum_1",
+    "eq_stratum": 1
+   },
+   "local_id": 0,
+   "type": "EqStratum"
+  },
+  {
+   "attrs": {
+    "eq_open_edge": "eq_stratum_2",
+    "eq_stratum": 2
+   },
+   "local_id": 1,
+   "type": "EqStratum"
+  },
+  {
+   "attrs": {
+    "eq_open_edge": "eq_stratum_3",
+    "eq_stratum": 3
+   },
+   "local_id": 2,
+   "type": "EqStratum"
+  },
+  {
+   "attrs": {
+    "eq_open_edge": "eq_stratum_4",
+    "eq_stratum": 4
+   },
+   "local_id": 3,
+   "type": "EqStratum"
+  },
+  {
+   "attrs": {
+    "eq_open_edge": "eq_stratum_5",
+    "eq_stratum": 5
+   },
+   "local_id": 4,
+   "type": "EqStratum"
+  }
+ ],
+ "productions": [
+  {
+   "edge_type": "eq_window",
+   "provenance": "equilibrium_window:Agent_eq_window_EqWindow",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqWindow",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_has_actor",
+   "provenance": "equilibrium_window:EqWindow_eq_has_actor_EqActor",
+   "src": {
+    "type": "EqWindow",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqActor",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_has_turn",
+   "provenance": "equilibrium_window:EqWindow_eq_has_turn_Message",
+   "src": {
+    "type": "EqWindow",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "Message",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_authored_by",
+   "provenance": "equilibrium_window:Message_eq_authored_by_EqActor",
+   "src": {
+    "type": "Message",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqActor",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_reply_to",
+   "provenance": "equilibrium_window:Message_eq_reply_to_Message",
+   "src": {
+    "type": "Message",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "Message",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_turn_next",
+   "provenance": "equilibrium_window:Message_eq_turn_next_Message",
+   "src": {
+    "type": "Message",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "Message",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_responds_to",
+   "provenance": "equilibrium_window:Message_eq_responds_to_Message",
+   "src": {
+    "type": "Message",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "Message",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_addresses",
+   "provenance": "equilibrium_window:Message_eq_addresses_EqActor",
+   "src": {
+    "type": "Message",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqActor",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_has_stratum",
+   "provenance": "equilibrium_window:Agent_eq_has_stratum_EqStratum",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqStratum",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_stratum_1",
+   "provenance": "equilibrium_window:Agent_eq_stratum_1_EqStratum",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqStratum",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_stratum_2",
+   "provenance": "equilibrium_window:Agent_eq_stratum_2_EqStratum",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqStratum",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_stratum_3",
+   "provenance": "equilibrium_window:Agent_eq_stratum_3_EqStratum",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqStratum",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_stratum_4",
+   "provenance": "equilibrium_window:Agent_eq_stratum_4_EqStratum",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqStratum",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_stratum_5",
+   "provenance": "equilibrium_window:Agent_eq_stratum_5_EqStratum",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqStratum",
+    "var": "b"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "batch": true,
+   "effects": [
+    [
+     "add_edge",
+     "m",
+     "eq_responds_to",
+     "p"
+    ],
+    [
+     "add_edge",
+     "m",
+     "eq_addresses",
+     "b"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_has_turn",
+     "m"
+    ],
+    [
+     "m",
+     "eq_reply_to",
+     "p"
+    ],
+    [
+     "m",
+     "eq_authored_by",
+     "a"
+    ],
+    [
+     "p",
+     "eq_authored_by",
+     "b"
+    ]
+   ],
+   "name": "eq.win.responds_to.reply",
+   "where": {
+    "arg": {
+     "a": {
+      "name": "a",
+      "type": "Var"
+     },
+     "b": {
+      "name": "b",
+      "type": "Var"
+     },
+     "type": "Eq"
+    },
+    "type": "Not"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "add_edge",
+     "m",
+     "eq_responds_to",
+     "p"
+    ],
+    [
+     "add_edge",
+     "m",
+     "eq_addresses",
+     "b"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_has_turn",
+     "m"
+    ],
+    [
+     "p",
+     "eq_turn_next",
+     "m"
+    ],
+    [
+     "m",
+     "eq_authored_by",
+     "a"
+    ],
+    [
+     "p",
+     "eq_authored_by",
+     "b"
+    ]
+   ],
+   "name": "eq.win.responds_to.adjacent",
+   "where": {
+    "items": [
+     {
+      "a": {
+       "key": "eq_kind",
+       "node": {
+        "name": "w",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "meeting"
+      },
+      "type": "Eq"
+     },
+     {
+      "arg": {
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       },
+       "source": {
+        "edge_type": "eq_reply_to",
+        "node": {
+         "name": "m",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "x"
+      },
+      "type": "Not"
+     },
+     {
+      "arg": {
+       "a": {
+        "name": "a",
+        "type": "Var"
+       },
+       "b": {
+        "name": "b",
+        "type": "Var"
+       },
+       "type": "Eq"
+      },
+      "type": "Not"
+     }
+    ],
+    "type": "And"
+   }
+  }
+ ],
+ "self_load_only": true,
+ "taxonomy_version": "eq-tax-0.3.0",
+ "version": "0.3.0"
+}
