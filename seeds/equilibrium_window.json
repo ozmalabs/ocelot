@@ -2,7 +2,7 @@
  "depends_on": [
   "equilibrium_tokens"
  ],
- "description": "Window ingest vocabulary (EqWindow/EqActor, authorship, reply, adjacency, turn position), the EqStratum clock the adapter opens in order, and the S0 rules deriving responds_to / addresses.",
+ "description": "Window / conversation ingest vocabulary (EqWindow/EqActor, authorship, declared reply, turn position; no adjacency edge since 0.5.0), the EqStratum clock the adapter opens in order, and the rules deriving responds_to / addresses (basis declared) and thread structure.",
  "edges": [
   {
    "attrs": {},
@@ -160,8 +160,20 @@
    }
   },
   {
-   "edge_type": "eq_turn_next",
-   "provenance": "equilibrium_window:Message_eq_turn_next_Message",
+   "edge_type": "eq_thread_parent",
+   "provenance": "equilibrium_window:Message_eq_thread_parent_Message",
+   "src": {
+    "type": "Message",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "Message",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_answers",
+   "provenance": "equilibrium_window:Message_eq_answers_Message",
    "src": {
     "type": "Message",
     "var": "a"
@@ -283,6 +295,12 @@
      "m",
      "eq_addresses",
      "b"
+    ],
+    [
+     "set_attr",
+     "m",
+     "eq_basis",
+     "declared"
     ]
    ],
    "match": [
@@ -332,16 +350,19 @@
    "batch": true,
    "effects": [
     [
-     "add_edge",
+     "set_attr",
      "m",
-     "eq_responds_to",
-     "p"
-    ],
-    [
-     "add_edge",
-     "m",
-     "eq_addresses",
-     "b"
+     "eq_thread",
+     {
+      "__term__": {
+       "key": "eq_platform_thread",
+       "node": {
+        "name": "m",
+        "type": "Var"
+       },
+       "type": "Attr"
+      }
+     }
     ]
    ],
    "match": [
@@ -354,69 +375,39 @@
      "w",
      "eq_has_turn",
      "m"
-    ],
-    [
-     "p",
-     "eq_turn_next",
-     "m"
-    ],
-    [
-     "m",
-     "eq_authored_by",
-     "a"
-    ],
-    [
-     "p",
-     "eq_authored_by",
-     "b"
     ]
    ],
-   "name": "eq.win.responds_to.adjacent",
+   "name": "eq.win.thread.platform",
    "where": {
     "items": [
      {
       "a": {
-       "key": "eq_kind",
+       "key": "eq_thread",
        "node": {
-        "name": "w",
+        "name": "m",
         "type": "Var"
        },
        "type": "Attr"
       },
       "b": {
        "type": "Lit",
-       "value": "meeting"
+       "value": null
       },
       "type": "Eq"
      },
      {
       "arg": {
-       "predicate": {
-        "type": "Lit",
-        "value": true
-       },
-       "source": {
-        "edge_type": "eq_reply_to",
+       "a": {
+        "key": "eq_platform_thread",
         "node": {
          "name": "m",
          "type": "Var"
         },
-        "type": "Neighbours"
-       },
-       "type": "Exists",
-       "var_name": "x"
-      },
-      "type": "Not"
-     },
-     {
-      "arg": {
-       "a": {
-        "name": "a",
-        "type": "Var"
+        "type": "Attr"
        },
        "b": {
-        "name": "b",
-        "type": "Var"
+        "type": "Lit",
+        "value": null
        },
        "type": "Eq"
       },
@@ -428,6 +419,6 @@
   }
  ],
  "self_load_only": true,
- "taxonomy_version": "eq-tax-0.4.0",
- "version": "0.4.0"
+ "taxonomy_version": "eq-tax-0.5.0",
+ "version": "0.5.0"
 }

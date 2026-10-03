@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the Equilibrium seed pack (0.4.0, tracks T3 + T3b) as flat seed manifests.
+"""Build the Equilibrium seed pack (0.5.0, tracks T3 + T3b + T3c) as flat seed manifests.
 
     PYTHONPATH=.:runners/dsl/python OZMA_NO_LLM=1 python3 scripts/build_equilibrium_seed_pack.py
 
@@ -37,8 +37,8 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 SEEDS = ROOT / "seeds"
-PACK_VERSION = "0.4.0"
-TAXONOMY_VERSION = "eq-tax-0.4.0"
+PACK_VERSION = "0.5.0"
+TAXONOMY_VERSION = "eq-tax-0.5.0"
 NUM = "<num>"            # token class slot: any all-digit prose token
 PERSON = "<noun.person>"  # token class slot: first-sense WordNet noun lexname
 GROUP = "<noun.group>"
@@ -387,9 +387,10 @@ def build() -> dict[str, dict]:
                "Ingest vocabulary: Message/Token/CodeSpan/LinkSpan tokens the adapter mints."),
         nodes=[], edges=[], rules=[], productions=productions("equilibrium_tokens", EDGE_TYPES))
     win = codebook("equilibrium_window", ["equilibrium_tokens"],
-                   "Window ingest vocabulary (EqWindow/EqActor, authorship, reply, adjacency, turn "
-                   "position), the EqStratum clock the adapter opens in order, and the S0 rules "
-                   "deriving responds_to / addresses.",
+                   "Window / conversation ingest vocabulary (EqWindow/EqActor, authorship, declared reply, "
+                   "turn position; no adjacency edge since 0.5.0), the EqStratum clock the adapter "
+                   "opens in order, and the rules deriving responds_to / addresses (basis declared) "
+                   "and thread structure.",
                    qr.STRATUM_ITEMS, {"EqStratum": "eq_has_stratum"}, qr.WINDOW_EDGE_TYPES)
     win["rules"] = qr.WINDOW_RULES
     out["equilibrium_window"] = win
@@ -439,10 +440,20 @@ def build() -> dict[str, dict]:
                   qr.climate_items(), qr.CLIMATE_EDGE, qr.CLIMATE_EDGE_TYPES)
     cl["rules"] = qr.CLIMATE_RULES
     out["equilibrium_climate"] = cl
+    trk = codebook("equilibrium_tracking", ["equilibrium_climate", "equilibrium_window", "equilibrium_scope"],
+                   "Conversation tracking (T3c O2): a seeded turn cursor over the retained conversation "
+                   "fork derives addressees (name mention of a known actor_ref, second person to the last "
+                   "addresser), tracked responds_to (most recent compatible open question / pending "
+                   "address / contrasted claim), eq_answers, the open-question set (eq_qud) and "
+                   "same-actor continuation. EqSecondPerson closed-class codebook.",
+                   qr.TRACKING_ITEMS, qr.TRACKING_EDGE, qr.TRACKING_EDGE_TYPES)
+    trk["rules"] = qr.TRACKING_RULES
+    out["equilibrium_tracking"] = trk
     nodes = [{"local_id": i, "type": "LabelStatus", "attrs": a} for i, a in enumerate(label_status_rows())]
     out["equilibrium_label_status"] = dict(
         header("equilibrium_label_status", ["equilibrium_msg", "equilibrium_pattern", "equilibrium_traits",
-                                            "equilibrium_episode", "equilibrium_climate"],
+                                            "equilibrium_episode", "equilibrium_climate",
+                                            "equilibrium_tracking"],
                "One LabelStatus{label,kind,values,status,since_pack,match_class} per msg label, "
                "trait, episode kind and facet."),
         nodes=nodes, edges=root_edges(nodes, "eq_has_label_status"), productions=[], rules=[])

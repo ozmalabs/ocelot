@@ -21,7 +21,7 @@ from test_equilibrium_classifier_service import (  # shared harness (same direct
     ROOT, SECRET, _CODE, _client_parse, _free_port, _req, _start, _stop, _strace_ok,
     _strace_writes, _tree_state, synthetic_messages)
 
-TAX = "eq-tax-0.4.0"
+TAX = "eq-tax-0.5.0"
 # The Equilibrium worker client's reply checks (equilibrium_worker/classify.py parse_discourse).
 _ID = re.compile(r"^[A-Za-z0-9_.:@!+=-]{1,255}$")
 _TRAIT = re.compile(r"^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*){0,7}$")
@@ -76,7 +76,10 @@ MEETING = [
     ("t09", "actor_a", "Agreed, let's look at it."),
 ]
 WINDOW = {"window_id": "w_meet_1", "kind": "meeting"}
-TURNS = [{"id": i, "actor_ref": a, "text": t} for i, a, t in MEETING]
+# 0.5.0: adjacency is not structure, so the golden meeting DECLARES the replies the
+# pre-0.5.0 adjacency rule inferred (each turn replies to the previous one)
+TURNS = [{"id": i, "actor_ref": a, "text": t, **({"reply_to": MEETING[k - 1][0]} if k else {})}
+         for k, (i, a, t) in enumerate(MEETING)]
 
 _CUE_LINES = [
     "That's not a fair point.", "Fair point, I hadn't considered that.", "Trust me, I know what I'm doing.",
@@ -127,7 +130,7 @@ def _post(port, body, **kw):
 
 def test_info_lists_trait_vocabulary(server):
     st, doc, _ = _req(server, "GET", "/v1/info")
-    assert st == 200 and doc["taxonomy_version"] == TAX and doc["seed_pack_version"] == "0.4.0"
+    assert st == 200 and doc["taxonomy_version"] == TAX and doc["seed_pack_version"] == "0.5.0"
     assert doc["endpoints"]["/v1/discourse"] == "ok"
     ts = doc["trait_status"]
     assert ts["competence.claimed"] == "shadow" and ts["interaction.floor"] == "shadow"
@@ -150,7 +153,7 @@ def test_discourse_contract_golden_meeting(server):
     assert ("actor_a", "interaction.floor", "+", None) in keys
     assert ("actor_a", "competence.claim_grounding", "-", None) in keys
     assert ("member_003", "interaction.withdrawal", "+", None) in keys
-    assert all(r.endswith(":0.4.0") for q in doc["quanta"] for r in q["rule_ids"])
+    assert all(r.endswith(":0.5.0") for q in doc["quanta"] for r in q["rule_ids"])
     assert [e["episode_id"] for e in doc["episodes"]] == ["ep:t02", "ep:t05"]
     # messages[] are byte-identical in shape to /v1/classify items for the same text
     st2, cdoc, _ = _req(server, "POST", "/v1/classify",
@@ -179,7 +182,7 @@ def test_discourse_contract_climate_window(server):
     assert (ans["actor_ref"], ans["target_ref"], ans["evidence"]) == ("expert_e", "member_m", ["c06", "c07"])
     un = next(q for q in doc["quanta"] if q["trait"] == "inquiry.unanswered")
     assert (un["actor_ref"], un["evidence"], "target_ref" in un) == ("member_n", ["c08"], False)
-    assert all(r.endswith(":0.4.0") for q in doc["quanta"] for r in q["rule_ids"])
+    assert all(r.endswith(":0.5.0") for q in doc["quanta"] for r in q["rule_ids"])
 
 
 def test_dangling_reply_and_no_cue_window(server):

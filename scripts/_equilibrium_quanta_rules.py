@@ -1,5 +1,12 @@
-"""Equilibrium pack 0.4.0 (stream T3b): Rule JSON + codebook DATA for the
+"""Equilibrium pack 0.5.0 (streams T3b + T3c): Rule JSON + codebook DATA for the
 window / scope / traits / quanta / competence / episode / climate manifests.
+
+0.5.0 (T3c, conversation tracking): turn ADJACENCY is no longer structure. The
+`eq_turn_next` edge and the `eq.win.responds_to.adjacent` rule are gone; every
+relational rule consumes `eq_responds_to` (declared here from platform replies,
+basis "declared"; tracked inference lands as further producers of the same edge).
+New window structure: `eq_thread` (thread id; O2: decided by the tracking cursor) and
+`eq_answers` (per-turn answers; same shape as inquiry.answered).
 
 BUILD-TIME ONLY, imported by scripts/build_equilibrium_seed_pack.py. This module
 only ASSEMBLES Rule JSON and codebook rows (CLAUDE.md "_compose_*/builder scripts
@@ -199,18 +206,22 @@ MSG_STRUCT_RULES = [
 
 # ---- window (S0): who responds to whom -------------------------------------
 WINDOW_RULES = [
-    # explicit reply to another actor's turn
+    # explicit (platform-declared) reply to another actor's turn: basis "declared".
+    # 0.5.0: adjacency is NOT structure -- a meeting turn with no declared reply
+    # responds to nothing until a tracking rule (pack >= 0.6) derives the edge.
     rule("eq.win.responds_to.reply",
          [WIN, TURN, ["m", "eq_reply_to", "p"], AUTH, ["p", "eq_authored_by", "b"]],
          Not(Same("a", "b")),
-         [["add_edge", "m", "eq_responds_to", "p"], ["add_edge", "m", "eq_addresses", "b"]]),
-    # meetings carry no reply edges: an un-replied turn responds to the previous
-    # turn when another actor spoke it (turn-taking adjacency, design §8.3)
-    rule("eq.win.responds_to.adjacent",
-         [WIN, TURN, ["p", "eq_turn_next", "m"], AUTH, ["p", "eq_authored_by", "b"]],
-         And(Eq(A("w", "eq_kind"), L("meeting")), Not(Ex(Nb("m", "eq_reply_to"), "x")),
-             Not(Same("a", "b"))),
-         [["add_edge", "m", "eq_responds_to", "p"], ["add_edge", "m", "eq_addresses", "b"]]),
+         [["add_edge", "m", "eq_responds_to", "p"], ["add_edge", "m", "eq_addresses", "b"],
+          ["set_attr", "m", "eq_basis", "declared"]]),
+    # a platform-declared thread id names the thread directly (S0). Every other
+    # thread id is decided by the tracking cursor (eq.trk.thread.*, 0.5.0 O2):
+    # the earliest parent's thread, else the turn roots its own thread. (O1 ran
+    # root / inherit at S1 on the scratch fork: one chain hop per pass, which cost
+    # O(turns x chain length) per batch once tracked chains existed.)
+    rule("eq.win.thread.platform", [WIN, TURN],
+         And(Eq(A("m", "eq_thread"), L(None)), Not(Eq(A("m", "eq_platform_thread"), L(None)))),
+         [["set_attr", "m", "eq_thread", T(A("m", "eq_platform_thread"))]]),
 ]
 STRATUM_ITEMS = [("EqStratum", {"eq_stratum": k, "eq_open_edge": f"eq_stratum_{k}"})
                  for k in range(1, STRATA + 1)]
@@ -386,29 +397,32 @@ QUANTA_RULES = (
                  Not(Ex(Nb("w", "eq_has_actor"), "o",
                         And(Not(Same("o", "a")), Gt(turns_of("o"), turns_of("b")))))),
              [["add_edge", "q", "eq_counter", "m"], prov("q", "eq.quanta.interaction.floor.counter")]),
-        # consecutive turns by the same actor; evidence = a turn whose predecessor is theirs
+        # consecutive turns by the same actor; evidence = a turn that CONTINUES the
+        # actor's own immediately preceding turn (0.5.0 O2: `eq_continues`, the
+        # same-actor continuation edge of equilibrium_tracking -- a run is turn
+        # order by definition, so it reads the ordering edge, not responds_to)
         rule("eq.quanta.interaction.run",
-             [ST(1), WIN, TURN, ["p", "eq_turn_next", "m"], AUTH, ["p", "eq_authored_by", "a"]],
+             [ST(1), WIN, TURN, ["m", "eq_continues", "p"], AUTH, ["p", "eq_authored_by", "a"]],
              enabled(L("interaction.run")),
              mint("q", "a", A("a", REF), L("interaction.run"), L("+"), L(""),
                   "eq.quanta.interaction.run") + [["add_edge", "q", "eq_evidence", "m"]]),
-        # selective non-response: b's question replying to a's turn, a posted LATER
-        # in the window, and no turn by a replies to that question
+        # selective non-response: b's question responding to a's turn, a posted LATER
+        # in the window, and no turn by a responds to that question
         rule("eq.quanta.interaction.responsiveness",
-             [ST(1), WIN, ["w", "eq_has_turn", "qt"], ["qt", "eq_reply_to", "p"],
+             [ST(1), WIN, ["w", "eq_has_turn", "qt"], ["qt", "eq_responds_to", "p"],
               ["p", "eq_authored_by", "a"], ["qt", "eq_authored_by", "b"]],
              And(enabled(L("interaction.responsiveness")), Not(Same("a", "b")), has("qt", QUESTION),
                  Ex(InNb("a", "eq_authored_by"), "x", Gt(A("x", POS), A("qt", POS))),
-                 Not(Ex(InNb("qt", "eq_reply_to"), "r", _authored_by("r", "a")))),
+                 Not(Ex(InNb("qt", "eq_responds_to"), "r", _authored_by("r", "a")))),
              mint("q", "a", A("a", REF), L("interaction.responsiveness"), L("-"), A("b", REF),
                   "eq.quanta.interaction.responsiveness") + [["add_edge", "q", "eq_evidence", "qt"]]),
         # counter: b's other questions to a that a DID answer
         rule("eq.quanta.interaction.responsiveness.counter",
-             [ST(2), ["a", "eq_has_quantum", "q"], ["qt", "eq_reply_to", "p"],
+             [ST(2), ["a", "eq_has_quantum", "q"], ["qt", "eq_responds_to", "p"],
               ["p", "eq_authored_by", "a"], ["qt", "eq_authored_by", "b"]],
              And(Eq(A("q", "q_trait"), L("interaction.responsiveness")),
                  Eq(A("q", "q_target"), A("b", REF)), has("qt", QUESTION),
-                 Ex(InNb("qt", "eq_reply_to"), "r", _authored_by("r", "a")),
+                 Ex(InNb("qt", "eq_responds_to"), "r", _authored_by("r", "a")),
                  Not(In(V("qt"), Nb("q", "eq_evidence")))),
              [["add_edge", "q", "eq_counter", "qt"],
               prov("q", "eq.quanta.interaction.responsiveness.counter")]),
@@ -420,9 +434,9 @@ QUANTA_RULES = (
                  Not(In(V("m2"), Nb("q", "eq_evidence")))),
              [["add_edge", "q", "eq_counter", "m2"],
               prov("q", "eq.quanta.interaction.withdrawal.counter")]),
-        # question replying to a turn that already carried code / link / citation
+        # question responding to a turn that already carried code / link / citation
         rule("eq.quanta.epistemic.question_demand",
-             [ST(1), WIN, ["w", "eq_has_turn", "qt"], ["qt", "eq_reply_to", "p"],
+             [ST(1), WIN, ["w", "eq_has_turn", "qt"], ["qt", "eq_responds_to", "p"],
               ["qt", "eq_authored_by", "a"], ["p", "eq_authored_by", "b"]],
              And(enabled(L("epistemic.question_demand")), Not(Same("a", "b")), has("qt", QUESTION),
                  _any("p", EVIDENCE_KEYS)),
@@ -743,9 +757,12 @@ CLIMATE_RULES = [
          And(_cc("p", "stimulus"), _cc("m", "engage"), Not(_dismissive("m")),
              enabled(L("response.engagement"))),
          _reply_mint("response.engagement", "eq.quanta.response.engagement")),
-    rule("eq.quanta.inquiry.answered", [ST(1)] + REPLY,
-         And(has("p", QUESTION), Gt(A("m", POS), A("p", POS)),
-             Not(_cc("m", "nonanswer")), Not(_dismissive("m")), enabled(L("inquiry.answered"))),
+    # 0.5.0 (T3c O2): inquiry.answered CONSUMES the per-turn `eq_answers` edge the
+    # tracking cursor writes (declared or tracked responds_to + answer-type turn);
+    # the answer shape lives once, in eq.trk.answers (equilibrium_tracking).
+    rule("eq.quanta.inquiry.answered",
+         [ST(1), WIN, TURN, AUTH, ["m", "eq_answers", "p"], ["p", "eq_authored_by", "b"]],
+         enabled(L("inquiry.answered")),
          _reply_mint("inquiry.answered", "eq.quanta.inquiry.answered")),
     # S2 (reads the ABSENCE of S1 inquiry.answered over the completed window).
     # Absence is relative: only once another actor has posted after the question.
@@ -767,7 +784,8 @@ CLIMATE_RULES = [
 WINDOW_EDGE_TYPES = [
     ("Agent", "eq_window", "EqWindow"), ("EqWindow", "eq_has_actor", "EqActor"),
     ("EqWindow", "eq_has_turn", "Message"), ("Message", "eq_authored_by", "EqActor"),
-    ("Message", "eq_reply_to", "Message"), ("Message", "eq_turn_next", "Message"),
+    ("Message", "eq_reply_to", "Message"), ("Message", "eq_thread_parent", "Message"),
+    ("Message", "eq_answers", "Message"),
     ("Message", "eq_responds_to", "Message"), ("Message", "eq_addresses", "EqActor"),
     ("Agent", "eq_has_stratum", "EqStratum"),
     *[("Agent", f"eq_stratum_{k}", "EqStratum") for k in range(1, STRATA + 1)],
@@ -783,3 +801,203 @@ EPISODE_EDGE_TYPES = [("Agent", e, t) for t, e in EPISODE_EDGE.items()] + [
     ("EqWindow", "eq_has_episode", "EqEpisode"), ("EqEpisode", "eq_root", "Message"),
     ("Message", "eq_in_episode", "EqEpisode"), ("EqEpisode", "eq_has_facet", "EqEpFacet"),
     ("EqEpFacet", "eq_evidence", "Message")]
+
+
+# ---- conversation TRACKING (T3c stage O2, pack 0.5.0) -----------------------
+# Who responds to whom when the platform declares nothing. A seeded TURN CURSOR
+# walks the conversation in turn order on the RETAINED fork: the adapter queues
+# each new turn (`w -eq_trk_pending-> m`) once the S0 fixpoint is reached (that
+# edge IS the "S0 done" stamp) and ticks; one turn at a time becomes current
+# (`w -eq_trk_cur-> m`) and passes the phases below in rule order, all within one
+# pass. Every negation in a phase reads either the current turn's completed S0
+# labels or the state left by EARLIER turns, which the cursor has finalised --
+# stratification by turn order, so a turn's tracked structure is causal (never
+# revised by later turns) and incremental batches == one shot by construction.
+#
+# Conversation state (graph-resident, mutated only by these rules):
+#   w -eq_qud-> q               open-question set (QUD): q is a question turn not
+#                               yet answered; its addressees are q's eq_addresses
+#                               edges, none = the room
+#   b -eq_pending-> x           x addressed actor b and b has not taken a turn since
+#   b -eq_last_addressed_by-> x the most recent turn by another actor addressing b
+#                               (second-person resolution)
+#   a -eq_last_claim-> x        a's most recent claim (assertion / directive) turn
+SECOND_PERSON = ("you", "your", "yours", "yourself", "yourselves", "you're", "you've",
+                 "you'll", "you'd", "ya", "y'all")
+TRACKING_ITEMS = [("EqSecondPerson", {"form": f}) for f in SECOND_PERSON]
+TRACKING_EDGE = {"EqSecondPerson": "eq_has_second_person"}
+CUR = ["w", "eq_trk_cur", "m"]
+CLAIM_LABS = (ASSERTION, DIRECTIVE)
+
+
+def _addressed_any(m):
+    return Ex(Nb(m, "eq_addresses"), f"ad_{m}")
+
+
+def _compat(m, x, b):
+    """x (authored by b) is a compatible response target for m: m's explicit /
+    second-person addressees (if any) include b, and m and x share the
+    platform thread whenever m declares one."""
+    return And(Or(Not(_addressed_any(m)), In(V(b), Nb(m, "eq_addresses"))),
+               Or(Eq(A(m, "eq_platform_thread"), L(None)),
+                  Eq(A(m, "eq_platform_thread"), A(x, "eq_platform_thread"))))
+
+
+def _qud_for(x, a, m="m"):
+    """open question x is for m's author a: addressed to a, or to the room (no
+    addressees) when m is not itself a question -- a question after a ROOM
+    question opens its own room question (a counter-question presupposes being
+    addressed)."""
+    return Or(In(V(a), Nb(x, "eq_addresses")),
+              And(Not(Ex(Nb(x, "eq_addresses"), f"xa_{x}")), Not(has(m, QUESTION))))
+
+
+def _open_item(y, a, m, b_same=None):
+    """y is a compatible open item for m's author a: an open question for a / the
+    room, or a pending address to a; by another actor; compatible with m.
+    `b_same` restricts y's author to the same actor (per-addressee grouping)."""
+    yb = f"au_{y}"
+    by = And(Not(Same(yb, a)), _compat(m, y, yb))
+    if b_same is not None:
+        by = And(by, Or(Not(_addressed_any(m)), Same(yb, b_same)))
+    return Ex(Nb(y, "eq_authored_by"), yb, by)
+
+
+def _newer_qud(x, a, m, b):
+    """a strictly more recent compatible OPEN QUESTION exists (in the same addressee
+    group when m names addressees): x is then not the target."""
+    return Ex(Nb("w", "eq_qud"), "yq", And(Gt(A("yq", POS), A(x, POS)), _qud_for("yq", a),
+                                          _open_item("yq", a, m, b)))
+
+
+def _any_qud(a, m, b):
+    """some compatible open question exists for m's author (QUD precedence: a
+    pending address is a target only when no question is open for the author)."""
+    return Ex(Nb("w", "eq_qud"), "zq", And(_qud_for("zq", a), _open_item("zq", a, m, b)))
+
+
+def _newer_pending(x, a, m, b):
+    return Ex(Nb(a, "eq_pending"), "yp", And(Gt(A("yp", POS), A(x, POS)), _open_item("yp", a, m, b)))
+
+
+def _leads_with_contrast(m):
+    return Ex(Nb(m, "eq_has_token"), "lt", And(
+        Not(Ex(Nb(m, "eq_has_token"), "lk", Lt(A("lk", "eq_pos"), A("lt", "eq_pos")))),
+        Ex(Nb("agent", "eq_has_coh_marker"), "lc",
+           And(Eq(A("lc", "rel"), L("contrast")), Eq(A("lc", "form"), A("lt", "form"))))))
+
+
+UNDECLARED = Eq(A("m", "eq_reply_to_ref"), L(None))
+# (the target's author becomes an addressee only AFTER every T3 rule ran, so the
+# three target rules all read the same T1/T2 addressee set)
+# The sweep writes the target as `eq_trk_to` (read by the later phases of the same
+# turn); `eq.trk.materialise` turns it into `eq_responds_to` + basis "tracked" once
+# the whole queue is swept. (Engine cost, not semantics: writing eq_responds_to per
+# turn re-enumerates every reply-pair msg rule on every cursor pass.)
+TRACKED_FX = [["add_edge", "m", "eq_trk_to", "x"]]
+
+TRACKING_RULES = [
+    # ordering-only continuation: consecutive turns by the same actor (interaction.run)
+    rule("eq.trk.continues", [WIN, TURN, ["m", "eq_prev_turn", "p"], AUTH, ["p", "eq_authored_by", "a"]],
+         L(True), [["add_edge", "m", "eq_continues", "p"]]),
+    # T0 cursor: the earliest queued turn becomes current once no turn is current
+    rule("eq.trk.cursor", [WIN, ["w", "eq_trk_pending", "m"]],
+         And(Not(Ex(Nb("w", "eq_trk_cur"), "c")),
+             Not(Ex(Nb("m", "eq_prev_turn"), "y", In(V("y"), Nb("w", "eq_trk_pending"))))),
+         [["add_edge", "w", "eq_trk_cur", "m"], ["del_edge", "w", "eq_trk_pending", "m"]]),
+    # T1 explicit address: a token equal to the name form of an actor who has
+    # already spoken (actor_ref supplied by the platform; no identity guessing)
+    rule("eq.trk.addressee.mention",
+         [WIN, CUR, AUTH, ["m", "eq_has_token", "t"], ["w", "eq_has_actor", "b"]],
+         And(Eq(A("t", "form"), A("b", "eq_name_form")), Not(Same("a", "b")),
+             Lt(A("b", "eq_first_pos"), A("m", POS))),
+         [["add_edge", "m", "eq_addresses", "b"]]),
+    # T2 second-person address with no explicit addressee: the last speaker who
+    # addressed this actor
+    rule("eq.trk.addressee.second_person",
+         [WIN, CUR, AUTH, ["a", "eq_last_addressed_by", "x"], ["x", "eq_authored_by", "b"]],
+         And(Not(_addressed_any("m")), Not(Same("a", "b")),
+             Ex(Nb("m", "eq_has_token"), "t2", Ex(Nb("agent", "eq_has_second_person"), "sp",
+                                                  Eq(A("sp", "form"), A("t2", "form"))))),
+         [["add_edge", "m", "eq_addresses", "b"]]),
+    # T3 tracked responds_to (only when the platform declared no reply): the most
+    # recent compatible open item addressed to the author or the room -- an open
+    # question (QUD first: once a counter-question closes, the question under it is
+    # the top again), else the most recent pending address to the author; one per
+    # named addressee, else one overall
+    rule("eq.trk.responds.open_question",
+         [WIN, CUR, AUTH, ["w", "eq_qud", "x"], ["x", "eq_authored_by", "b"]],
+         And(UNDECLARED, Not(Same("a", "b")), _qud_for("x", "a"), _compat("m", "x", "b"),
+             Not(_newer_qud("x", "a", "m", "b"))),
+         TRACKED_FX),
+    rule("eq.trk.responds.pending_address",
+         [WIN, CUR, AUTH, ["a", "eq_pending", "x"], ["x", "eq_authored_by", "b"]],
+         And(UNDECLARED, Not(Same("a", "b")), _compat("m", "x", "b"),
+             Not(_any_qud("a", "m", "b")), Not(_newer_pending("x", "a", "m", "b"))),
+         TRACKED_FX),
+    # ... or a claim the turn contrasts with / concedes / disagrees with (existing
+    # contrast-marker + concession / disagreement cue machinery): the most recent
+    # claim by another actor
+    rule("eq.trk.responds.claim",
+         [WIN, CUR, AUTH, ["w", "eq_has_actor", "b"], ["b", "eq_last_claim", "x"]],
+         And(UNDECLARED, Not(Same("a", "b")), _compat("m", "x", "b"),
+             Or(_leads_with_contrast("m"), has("m", lab("msg.concession")),
+                has("m", lab("msg.disagreement"))),
+             Not(Ex(Nb("w", "eq_has_actor"), "c", And(Not(Same("c", "a")), Ex(
+                 Nb("c", "eq_last_claim"), "z",
+                 And(Gt(A("z", POS), A("x", POS)), _compat("m", "z", "c"))))))),
+         TRACKED_FX),
+    rule("eq.trk.addressee.target", [WIN, CUR, AUTH, ["m", "eq_trk_to", "x"], ["x", "eq_authored_by", "b"]],
+         Not(Same("a", "b")),
+         [["add_edge", "m", "eq_addresses", "b"]]),
+    # T4 answers (declared OR tracked responds_to): an answer-type turn by another
+    # actor -- counter-questions / withdrawals (nonanswer) and dismissals do not close
+    *[rule(f"eq.trk.answers.{basis}",
+           [WIN, CUR, AUTH, ["m", edge, "p"], ["p", "eq_authored_by", "b"]],
+           And(Not(Same("a", "b")), has("p", QUESTION), Gt(A("m", POS), A("p", POS)),
+               Not(_cc("m", "nonanswer")), Not(_dismissive("m"))),
+           [["add_edge", "m", "eq_answers", "p"]])
+      for basis, edge in (("declared", "eq_responds_to"), ("tracked", "eq_trk_to"))],
+    # T5 state update for the turns after this one
+    rule("eq.trk.qud.close", [WIN, CUR, ["m", "eq_answers", "p"], ["w", "eq_qud", "p"]], L(True),
+         [["del_edge", "w", "eq_qud", "p"]]),
+    rule("eq.trk.qud.open", [WIN, CUR], has("m", QUESTION), [["add_edge", "w", "eq_qud", "m"]]),
+    rule("eq.trk.pending.taken", [WIN, CUR, AUTH, ["a", "eq_pending", "x"]], L(True),
+         [["del_edge", "a", "eq_pending", "x"]]),
+    rule("eq.trk.pending.add", [WIN, CUR, AUTH, ["m", "eq_addresses", "b"]], Not(Same("a", "b")),
+         [["add_edge", "b", "eq_pending", "m"]]),
+    rule("eq.trk.addressed_by.drop",
+         [WIN, CUR, AUTH, ["m", "eq_addresses", "b"], ["b", "eq_last_addressed_by", "x"]],
+         Not(Same("a", "b")), [["del_edge", "b", "eq_last_addressed_by", "x"]]),
+    rule("eq.trk.addressed_by.set", [WIN, CUR, AUTH, ["m", "eq_addresses", "b"]], Not(Same("a", "b")),
+         [["add_edge", "b", "eq_last_addressed_by", "m"]]),
+    rule("eq.trk.claim.drop", [WIN, CUR, AUTH, ["a", "eq_last_claim", "x"]],
+         Or(*[has("m", k) for k in CLAIM_LABS]), [["del_edge", "a", "eq_last_claim", "x"]]),
+    rule("eq.trk.claim.set", [WIN, CUR, AUTH], Or(*[has("m", k) for k in CLAIM_LABS]),
+         [["add_edge", "a", "eq_last_claim", "m"]]),
+    # thread id: the platform thread (S0), else the thread of the EARLIEST parent
+    # (declared reply_to, any author, or tracked target; every earlier turn already
+    # has its thread), else the turn roots its own thread
+    *[rule(f"eq.trk.thread.inherit_{edge}", [WIN, CUR, ["m", edge, "p"]],
+           And(Eq(A("m", "eq_thread"), L(None)), Not(Eq(A("p", "eq_thread"), L(None))),
+               Not(Ex(Nb("m", "eq_reply_to"), "p1", Lt(A("p1", POS), A("p", POS)))),
+               Not(Ex(Nb("m", "eq_trk_to"), "p2", Lt(A("p2", POS), A("p", POS))))),
+           [["set_attr", "m", "eq_thread", T(A("p", "eq_thread"))]])
+      for edge in ("eq_reply_to", "eq_trk_to")],
+    rule("eq.trk.thread.root", [WIN, CUR], Eq(A("m", "eq_thread"), L(None)),
+         [["set_attr", "m", "eq_thread", T(A("m", "eq_ref"))]]),
+    # cursor release (last in rule order): the next queued turn starts next pass
+    rule("eq.trk.release", [WIN, CUR], L(True),
+         [["del_edge", "w", "eq_trk_cur", "m"]]),
+    # once the queue is swept: tracked targets become responds_to (basis tracked)
+    rule("eq.trk.materialise", [WIN, TURN, ["m", "eq_trk_to", "x"]],
+         And(Not(Ex(Nb("w", "eq_trk_cur"), "c")), Not(Ex(Nb("w", "eq_trk_pending"), "q"))),
+         [["add_edge", "m", "eq_responds_to", "x"], ["set_attr", "m", "eq_basis", "tracked"]]),
+]
+TRACKING_EDGE_TYPES = [
+    ("Agent", "eq_has_second_person", "EqSecondPerson"),
+    ("Message", "eq_prev_turn", "Message"), ("Message", "eq_trk_to", "Message"), ("Message", "eq_continues", "Message"),
+    ("EqWindow", "eq_trk_pending", "Message"), ("EqWindow", "eq_trk_cur", "Message"),
+    ("EqWindow", "eq_qud", "Message"), ("EqActor", "eq_pending", "Message"),
+    ("EqActor", "eq_last_addressed_by", "Message"), ("EqActor", "eq_last_claim", "Message"),
+]
