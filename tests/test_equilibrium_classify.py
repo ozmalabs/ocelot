@@ -2,6 +2,11 @@
 
 Synthetic golden set only (pseudonyms actor_a / expert_e). OZMA_NO_LLM=1.
 Pack 0.2.0 adds cue labels concession / status_claim / hostility / domain(technical).
+Pack 0.3.0 (T3b): scoped cue sets (deescalation / concession / status_claim /
+hostility / ...) mark a HIT with their n-gram rule (`eqcue:` provenance) and the
+negation/hedge scope rule `<label>.affirmed` decides the label; technical
+vocabulary is lemma-matched. Rule-id expectations below are the v0.2 n-gram
+rules plus the `.affirmed` label rule (see `_expand`).
 Run: OZMA_NO_LLM=1 python3 -m pytest tests/test_equilibrium_classify.py -q
 """
 import importlib.util
@@ -17,7 +22,14 @@ os.environ.setdefault("OZMA_NO_LLM", "1")
 from domains import equilibrium_classify as eq  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
-RULE_NAME = re.compile(r"^eq\.(msg|rel|emo|pat)\.[a-z_]+\.[a-z0-9_]+$")
+RULE_NAME = re.compile(r"^eq\.((msg|rel|emo|pat)\.[a-z_]+\.[a-z0-9_]+"
+                       r"|(win|quanta|competence|ep)(\.[a-z_]+){1,3})$")
+SCOPED = {"deescalation", "concession", "status_claim", "hostility"}
+
+
+def _expand(rules):
+    """v0.2 rule names -> 0.3.0 rule ids: a scoped n-gram hit adds `<label>.affirmed`."""
+    return set(rules) | {f"{r.split('.')[0]}.affirmed" for r in rules if r.split(".")[0] in SCOPED}
 
 # (id, text, {label: values}, {rule names without "eq.msg." / "@ver"})
 GOLDEN = [
@@ -124,9 +136,11 @@ GOLDEN_V2 = [
      {"domain.technical_cue_unigram"}),
     ("expert_e_22", "We found a memory leak in the connection pool.", A_,
      {"msg.domain": ["technical"]}, {"domain.technical_cue_bigram"}),
-    ("actor_a_22", "The indexes look fine to me.", A_, {}, set()),             # exact class: no stemming
-    ("actor_a_23", "Read `tcp_dump.txt` and the socketed notes.", None,
-     {"msg.substantive_markers": ["code"]}, {"substantive_markers.code_inline"}),  # code + near miss
+    # 0.3.0: technical vocabulary is lemma-matched (indexes -> index), was a near miss in 0.2.0
+    ("actor_a_22", "The indexes look fine to me.", A_, {"msg.domain": ["technical"]},
+     {"domain.technical_cue_unigram"}),
+    ("actor_a_23", "Read `tcp_dump.txt` and the socketed notes.", None,  # lemma limit: WordNet
+     {"msg.substantive_markers": ["code"]}, {"substantive_markers.code_inline"}),  # has no 'socketed'
     # de-escalation: meeting facilitation
     ("expert_e_23", "Let\u2019s step back for a moment.", None, {"msg.deescalation": [True]},
      {"deescalation.cue_trigram"}),
@@ -142,6 +156,8 @@ GOLDEN_V2 = [
     ("expert_e_26", "Run `let's pause` in the shell.", None,
      {"msg.substantive_markers": ["code"]}, {"substantive_markers.code_inline"}),  # cue in code
 ]
+CUE_FAMILIES = {"concession", "status_claim", "hostility", "domain", "deescalation",
+                "substantive_markers"}
 CUE_LABELS = {"msg.concession", "msg.status_claim", "msg.hostility", "msg.domain",
               "msg.deescalation", "msg.substantive_markers"}
 
@@ -165,7 +181,7 @@ def test_golden_labels_and_rule_ids(base):
     for o, (mid, _text, labels, rules) in zip(out, GOLDEN):
         got = {k: sorted(v["values"], key=str) for k, v in o["labels"].items()}
         assert got == {k: sorted(v, key=str) for k, v in labels.items()}, mid
-        assert set(o["rule_ids"]) == {f"eq.msg.{r}@{eq.PACK_VERSION}" for r in rules}, mid
+        assert set(o["rule_ids"]) == {f"eq.msg.{r}@{eq.PACK_VERSION}" for r in _expand(rules)}, mid
         for lab, row in o["labels"].items():
             assert row["status"] == "shadow" and row["match_class"] == "exact", (mid, lab)
             assert all(r.startswith(f"eq.{lab}.") for r in row["rule_ids"]), (mid, lab)
@@ -195,16 +211,21 @@ def test_pack_manifests_shape():
 
 
 def test_pattern_labels_are_disabled_stubs(base):
+    """0.3.0: v0 `pat.*` person labels are replaced by `pattern.*` composite
+    traits, all disabled; every msg label, trait, episode kind and facet is shadow."""
     _, root, snap = base
     st = eq._label_status(snap.fork(), root)
-    pats = {k: v for k, v in st.items() if k.startswith("pat.")}
-    assert len(pats) == 7 and all(v["status"] == "disabled" for v in pats.values())
-    assert {k for k, v in st.items() if v["status"] == "shadow"} == {
-        "msg.speech_act", "msg.substantive_markers", "msg.deescalation",
-        "msg.concession", "msg.status_claim", "msg.hostility", "msg.domain"}
+    assert not any(k.startswith("pat.") for k in st)
+    pats = {k: v for k, v in st.items() if k.startswith("pattern.")}
+    assert len(pats) == 7 and all(v["status"] == "disabled" and v["kind"] == "trait"
+                                  for v in pats.values())
+    assert {k for k, v in st.items() if v["status"] != "shadow"} == set(pats)
+    assert {"msg.speech_act", "msg.substantive_markers", "msg.deescalation", "msg.concession",
+            "msg.status_claim", "msg.hostility", "msg.domain"} <= set(st)
     assert all(st[k]["match_class"] == "exact" for k in CUE_LABELS)
     assert {k for k, v in st.items() if v["since_pack"] == "0.2.0"} == {
         "msg.concession", "msg.status_claim", "msg.hostility", "msg.domain"}
+    assert {v["kind"] for v in st.values()} == {"msg", "trait", "episode_kind", "facet"}
 
 
 def test_v2_cue_labels_golden(base):
@@ -216,8 +237,8 @@ def test_v2_cue_labels_golden(base):
     for o, (mid, _text, act, labels, rules) in zip(out, GOLDEN_V2):
         got = {k: sorted(v["values"], key=str) for k, v in o["labels"].items() if k in CUE_LABELS}
         assert got == labels, mid
-        cue_rids = {r for r in o["rule_ids"] if not r.startswith("eq.msg.speech_act.")}
-        assert cue_rids == {f"eq.msg.{r}@{eq.PACK_VERSION}" for r in rules}, mid
+        cue_rids = {r for r in o["rule_ids"] if r.split(".")[2] in CUE_FAMILIES}
+        assert cue_rids == {f"eq.msg.{r}@{eq.PACK_VERSION}" for r in _expand(rules)}, mid
         if act is not None:
             assert o["labels"]["msg.speech_act"]["values"] == [act], mid
         for lab in got:
@@ -240,11 +261,19 @@ def test_lexicon_cues_are_contiguous_and_num_slot_is_scoped():
         slots = [k for k in ("w1", "w2", "w3", "w4", "w5") if k in c]
         assert slots == ["w1", "w2", "w3", "w4", "w5"][:len(slots)] and slots, c
         assert set(c) <= {"cue", "variant", *slots}, c
-        assert all(re.fullmatch(r"[a-z0-9]+(?:'[a-z]+)?|<num>", c[k]) for k in slots), c
-        if any(c[k] == eq.NUM_CLASS for k in slots):
+        assert all(re.fullmatch(r"[a-z0-9]+(?:'[a-z]+)?|<num>|<noun\.(person|group)>", c[k])
+                   for k in slots), c
+        classes = {c[k] for k in slots if c[k].startswith("<")}
+        if eq.NUM_CLASS in classes:
             assert c["cue"] == "status_claim", c
-    assert {c["cue"] for c in cues} == {"deescalation", "citation", "concession",
-                                        "status_claim", "hostility", "domain_technical"}
+        if "<noun.person>" in classes:
+            assert c["cue"] in ("credential", "credential_denial"), c
+        if "<noun.group>" in classes:
+            assert c["cue"] == "tribal", c
+    assert {c["cue"] for c in cues} == {
+        "deescalation", "citation", "concession", "status_claim", "hostility", "domain_technical",
+        "credential", "credential_denial", "deference", "booster", "withdrawal", "dismissal",
+        "tribal", "procedural"}
 
 
 def test_builder_reproduces_checked_in_seeds():
