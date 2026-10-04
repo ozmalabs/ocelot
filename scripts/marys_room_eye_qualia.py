@@ -22,7 +22,7 @@ NEUTRAL = {"cL": 10, "cM": 10, "cS": 20}
 
 
 def boot():
-    s, agent = boot_core()
+    s, agent = boot_core(seeds=())
     load_seeds_into(s, agent, ["vision_colour_identity"])
     # Qualia-space is a graph schema but is not a boot_core registry seed.
     # Install its manifest explicitly so the signature read uses the codebook.
@@ -69,7 +69,7 @@ def main():
     achromatopsia = run_exposure(RED, achromatopsia=1.0)
 
     result = {
-        "experiment": "marys_room_eye_qualia_bounded_analogue_v1",
+        "experiment": "marys_room_eye_qualia_bounded_analogue_v2",
         "provenance": provenance_line(),
         "before_release": before,
         "after_release": after,

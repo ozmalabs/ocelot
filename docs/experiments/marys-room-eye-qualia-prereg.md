@@ -80,3 +80,16 @@ philosophical argument.
 The engine provenance check must pass before measurement. This preregistration
 must be committed before the confirmatory invocation. Record the complete runner
 output and the engine identity with the results.
+
+## Amendment v2 — isolated substrate after the v1 liveness failure
+
+The committed v1 runner used `boot_core()` with all core cognition seeds. Its
+first execution computed no opponent values, minted no categories, and failed the
+predeclared live-signal gates. The failure is retained in
+`results/marys_room_eye_qualia_v1_precondition_failure.json`. A diagnostic found
+the cause: the default core enables a cognitive-cycle policy that did not schedule
+these standalone color rules in this run. On an otherwise bare substrate with
+the same color and qualia seeds, the eye rules compute the expected values and
+mint a category. Because Mary’s Room does not require the unrelated core
+faculties, v2 runs each arm on that bare substrate. This is a declared protocol
+amendment before the v2 run; the v1 result remains a failure and is not replaced.
