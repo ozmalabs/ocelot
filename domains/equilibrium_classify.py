@@ -1,4 +1,4 @@
-"""Equilibrium classifier sidecar — the THIN world adapter (tracks T3 / T3b / T3c, pack 0.5.0).
+"""Equilibrium classifier sidecar — the THIN world adapter (tracks T3 / T3b / T3c / T3e, pack 0.6.0).
 
 CLAUDE.md "the agent is a graph in Rust": this module does only
   * INGEST  — each message becomes Message/Token/CodeSpan/LinkSpan nodes + edges
@@ -33,8 +33,9 @@ Usage (caller owns isolation — run on a FORK, never the frozen base):
     out = discourse(snap.fork(), root, {"window_id": "w1", "kind": "thread"},
                     [{"id": "t1", "actor_ref": "actor_a", "text": "..."}])
     conv = snap.fork(); st = conversation_open(conv, root, "c1", "meeting")
-    conversation_ingest(conv, root, st, turns)   # per batch (caller ran conversation_check)
-    conversation_close(conv, root, st)           # complete final quanta / episodes
+    conversation_ingest(conv, root, st, turns)   # per batch: turns + EVIDENCE DELTAS (0.6.0)
+    conversation_close(conv, root, st)           # final read-out (deltas: empty, no ticks)
+    conversation_full(conv, root, st)            # complete quanta / episodes (discourse)
 """
 from __future__ import annotations
 
@@ -48,8 +49,8 @@ from typing import Any, Iterable
 from substrate.boot_core import boot_core
 from substrate.seed_loader import manifest_for
 
-PACK_VERSION = "0.5.1"
-TAXONOMY_VERSION = "eq-tax-0.5.1"
+PACK_VERSION = "0.6.0"
+TAXONOMY_VERSION = "eq-tax-0.6.0"
 PACK_IDS = ("equilibrium_tokens", "equilibrium_window", "equilibrium_lexicon",
             "equilibrium_scope", "equilibrium_msg", "equilibrium_pattern",
             "equilibrium_traits", "equilibrium_quanta", "equilibrium_competence",
@@ -284,9 +285,21 @@ def classify(substrate, agent_root, messages: Iterable[dict]) -> list[dict]:
 # the same (golden-checked, RESULTS T3d stage A).
 # Stage B adds hop_frontier (one-hop local attr reads) and delete_frontier (a
 # retraction edge's delete re-checks only its endpoints' bindings).
-# Read-out is a DELTA (see _emit): only quanta / episodes the batch's ticks wrote
+# Read-out is a DELTA (see _emit): only quanta / episodes the batch's ticks changed
 # are re-read; open questions are the tracking rules' graph-resident QUD set
 # `w -eq_qud-> q`.
+# 0.6.0 (T3e) EVIDENCE DELTAS: the wire carries `quanta_delta` / `episodes_delta`
+# instead of re-emitting whole rows. Every tick is the engine's exact-edge-delta
+# run (run_rules_edge_delta): the NET existence change of every edge of the
+# read-out's edge types (evidence / counter / quantum-existence / episode
+# membership / facet) and the touched quantum / episode / facet nodes. An
+# evidence pair's previous state is the engine's first-seen edge state, so the
+# add / remove sets are read from the change alone (no list is re-read). The
+# ledger keeps one mark per emitted quantum / episode (its id, sort key and
+# scalar fields), so retraction (an existing quantum whose existence edges are
+# gone) and field changes are mechanical comparisons. Folding every delta in
+# seq order gives exactly the full rows a full read gives at that point
+# (conversation_full; RESULTS T3e).
 CONVERSATION_KINDS = ("meeting", "thread", "channel")
 QUESTION_KEY = "eqlab:msg.speech_act=question"
 EMIT_PREFIX = "eqemit:"
@@ -296,6 +309,10 @@ EMIT_PREFIX = "eqemit:"
 QUANTUM_EDGES = ("eq_has_quantum", "eq_nm_quantum")
 EVIDENCE_EDGES = ("eq_evidence", "eq_hedged", "eq_context", "eq_evidence_nm")
 COUNTER_EDGES = ("eq_counter", "eq_counter_nm")
+EPISODE_EDGES = ("eq_has_episode", "eq_in_episode", "eq_has_facet")
+# what the engine's exact-edge-delta run reports (edge types / node types)
+DELTA_EDGE_TYPES = list(QUANTUM_EDGES + EVIDENCE_EDGES + COUNTER_EDGES + EPISODE_EDGES)
+DELTA_NODE_TYPES = ["EqQuantum", "EqEpisode", "EqEpFacet"]
 
 
 class Conversation:
@@ -305,6 +322,36 @@ class Conversation:
 
     def __init__(self, w, ledger) -> None:
         self.w, self.ledger = w, ledger
+
+
+class Changes:
+    """What one call's ticks changed, accumulated from the engine's
+    exact-edge-delta reports (mechanical bookkeeping): touched node ids by type,
+    and per edge key (src, type, tgt) [exists at the call's start, exists now]."""
+    __slots__ = ("nodes", "edges")
+
+    def __init__(self) -> None:
+        self.nodes: dict[str, set] = {}
+        self.edges: dict[tuple, list] = {}
+
+    def add(self, rep: dict) -> None:
+        for typ, ids in rep["affected_nodes"].items():
+            self.nodes.setdefault(typ, set()).update(ids)
+        for s, et, t, now in rep["edges_changed"]:
+            k = (s, et, t)
+            if k in self.edges:
+                self.edges[k][1] = now
+            else:
+                self.edges[k] = [not now, now]
+
+    def net(self) -> dict:
+        """edge key -> exists now, for the edges whose existence changed"""
+        return {k: now for k, (before, now) in self.edges.items() if before != now}
+
+
+def _led(n, ledger, key: str):
+    """one ledger attr (never the whole ledger: its marks grow with the conversation)"""
+    return n.get_attr_many([ledger], key)[0]
 
 
 def incremental_engine(n) -> None:
@@ -345,7 +392,7 @@ def conversation_open(substrate, agent_root, conversation_id: str, kind: str) ->
 def conversation_info(substrate, state: Conversation) -> dict:
     n = _native(substrate)
     a = n.node(state.w)["attrs"]
-    return {"conversation_id": a["conversation_id"], "seq": n.node(state.ledger)["attrs"]["eq_seq"],
+    return {"conversation_id": a["conversation_id"], "seq": _led(n, state.ledger, "eq_seq"),
             "kind": a["eq_kind"]}
 
 
@@ -354,7 +401,7 @@ def conversation_check(substrate, state: Conversation, turns: list[dict]) -> str
     repeats in the batch or already exists in the conversation, 'out_of_order'
     if a ts_ms is earlier than the latest ts_ms seen (ties keep array order)."""
     n = _native(substrate)
-    last = n.node(state.ledger)["attrs"].get("eq_last_ts")
+    last = _led(n, state.ledger, "eq_last_ts")
     seen: set[str] = set()
     for t in turns:
         tid = str(t["id"])
@@ -372,12 +419,11 @@ def conversation_check(substrate, state: Conversation, turns: list[dict]) -> str
 def conversation_ingest(substrate, agent_root, state: Conversation, turns: list[dict]) -> dict:
     """Append one batch to the retained conversation fork and read it out.
     The caller has run conversation_check. Returns
-      {"conversation_id", "seq", "turns": [...], "quanta": [new/changed],
-       "episodes": [new/changed], "open_questions": [...], "steps": [...]}"""
+      {"conversation_id", "seq", "turns": [...], "quanta_delta": [...],
+       "episodes_delta": [...], "open_questions": [...], "steps": [...]}"""
     n = _native(substrate)
     w = state.w
-    book = n.node(state.ledger)["attrs"]
-    pos, last_ref, last_ts = book["eq_next_pos"], book.get("eq_last_ref"), None
+    pos, last_ref, last_ts = _led(n, state.ledger, "eq_next_pos"), _led(n, state.ledger, "eq_last_ref"), None
     prev = _lookup(n, "Message", "eq_ref", last_ref) if last_ref is not None else None
     nodes = []
     for t in turns:
@@ -420,7 +466,7 @@ def conversation_ingest(substrate, agent_root, state: Conversation, turns: list[
         n.set_attr(state.ledger, "eq_next_pos", pos)
     if last_ts is not None:
         n.set_attr(state.ledger, "eq_last_ts", last_ts)
-    touched: set = set()  # ids of the nodes this batch's ticks wrote (delta read-out)
+    touched = Changes()  # what this batch's ticks changed (engine reports; delta read-out)
     s0 = _tick(n, touched)  # S0 on the retained fork
     if s0 >= DISCOURSE_FUEL:
         raise BudgetExhausted("rule fuel exhausted")
@@ -460,9 +506,9 @@ def conversation_ingest(substrate, agent_root, state: Conversation, turns: list[
             n.remove_edge(agent_root, "eq_l2_open", w)
             for q in qnew:
                 n.remove_edge(w, "eq_qnew", q)
-    seq = book["eq_seq"] + 1
+    seq = _led(n, state.ledger, "eq_seq") + 1
     n.set_attr(state.ledger, "eq_seq", seq)
-    out = _emit(substrate, agent_root, state, nodes, full=False, touched=touched)
+    out = _emit(substrate, agent_root, state, nodes, touched)
     out["steps"] = [s0, trk] + live + out["steps"]
     return out
 
@@ -471,7 +517,6 @@ def _new_quanta(n, state: Conversation) -> list:
     """Quanta first minted on the retained fork in this batch (mechanical set
     difference against the ledger's `eqq:` marks; bounded by actors x quanta,
     not by conversation length; the quantum keys are read in bulk)."""
-    seen = n.node(state.ledger)["attrs"]
     qs = [q for a in n.neighbours(state.w, "eq_has_actor") for q in n.neighbours(a, "eq_has_quantum")]
     if not qs:
         return []
@@ -479,23 +524,31 @@ def _new_quanta(n, state: Conversation) -> list:
     new = []
     for q, actor, trait, pole, target in zip(qs, *cols):
         k = f"eqq:{actor}|{trait}|{pole}|{'' if target is None else target}"
-        if k not in seen:
+        if _led(n, state.ledger, k) is None:
             n.set_attr(state.ledger, k, True)
             new.append(q)
     return new
 
 
 def conversation_close(substrate, agent_root, state: Conversation) -> dict:
-    """Final read-out: every quantum / episode of the conversation, no turns.
-    The caller drops the retained fork afterwards."""
-    return _emit(substrate, agent_root, state, [], full=True)
+    """Final read-out: no turns, and no ticks, so the deltas are empty (every
+    change was emitted by the batch that made it). The caller drops the retained
+    fork afterwards."""
+    return _emit(substrate, agent_root, state, [], Changes())
 
 
-def run_strata(substrate, agent_root, touched: set | None = None) -> list[int]:
+def conversation_full(substrate, agent_root, state: Conversation) -> dict:
+    """Every quantum / episode of the conversation as full rows (/v1/discourse,
+    and the reference a folded delta stream must equal)."""
+    n = _native(substrate)
+    return {"quanta": _read_quanta(n, state.w), "episodes": _read_episodes(n, state.w),
+            "open_questions": _open_questions(n, state.w)}
+
+
+def run_strata(substrate, agent_root, touched: Changes | None = None) -> list[int]:
     """Tick to fixpoint, then open each seeded EqStratum in its seeded order and
     tick again. Returns the step count of every tick. With `touched`, every tick
-    is the engine's delta-reporting run and the ids of the nodes it wrote are
-    added to `touched` (mechanical bookkeeping for the delta read-out)."""
+    is the engine's exact-edge-delta run, accumulated into `touched`."""
     n = _native(substrate)
     strata = sorted(n.neighbours(agent_root, "eq_has_stratum"),
                     key=lambda x: n.node(x)["attrs"]["eq_stratum"])
@@ -508,13 +561,13 @@ def run_strata(substrate, agent_root, touched: set | None = None) -> list[int]:
     return steps
 
 
-def _tick(n, touched: set | None) -> int:
-    """One run_rules fixpoint; with `touched`, the delta-reporting variant (same
-    fixpoint) whose written-node ids are collected."""
+def _tick(n, touched: Changes | None) -> int:
+    """One run_rules fixpoint; with `touched`, the engine's exact-edge-delta
+    variant (same fixpoint) whose report is accumulated into `touched`."""
     if touched is None:
         return n.run_rules(DISCOURSE_FUEL)
-    rep = n.run_rules_delta_report(DISCOURSE_FUEL)
-    touched.update(rep["affected_nodes"])
+    rep = n.run_rules_edge_delta(DISCOURSE_FUEL, DELTA_EDGE_TYPES, DELTA_NODE_TYPES)
+    touched.add(rep)
     return rep["progress_steps"]
 
 
@@ -539,48 +592,55 @@ def _read_turn(f, m, status) -> dict:
             "answers": _refs(n, n.neighbours(m, "eq_answers"))}
 
 
+def _quantum_row(n, q, qa: dict) -> dict:
+    """One quantum's full row (the 0.5.x wire row; /v1/discourse)."""
+    # eq_context (0.4.0): the turn a relational quantum replies to (e.g. the
+    # question of inquiry.answered) -- evidence on the wire, not counted by
+    # the seeded match shapes
+    ev = {x for et in EVIDENCE_EDGES for x in n.neighbours(q, et)}
+    row = {"actor_ref": qa["q_actor"], "trait": qa["q_trait"], "polarity": qa["q_pole"],
+           "match": qa.get("eq_match"), "evidence": _refs(n, ev),
+           "counter_evidence": _refs(n, {x for et in COUNTER_EDGES for x in n.neighbours(q, et)}),
+           "rule_ids": _rule_ids(qa, RULE_PREFIX)}
+    if qa.get("q_target"):
+        row["target_ref"] = qa["q_target"]
+    return row
+
+
 def _read_quanta(n, w, only: list | None = None) -> list[dict]:
     """Every quantum of the conversation, or only the quanta in `only`."""
-    quanta = []
     if only is None:
         only = [q for a in n.neighbours(w, "eq_has_actor") for et in QUANTUM_EDGES
                 for q in n.neighbours(a, et)]
-    for q in only:
-            qa = n.node(q)["attrs"]
-            # eq_context (0.4.0): the turn a relational quantum replies to (e.g. the
-            # question of inquiry.answered) -- evidence on the wire, not counted by
-            # the seeded match shapes
-            ev = {x for et in EVIDENCE_EDGES for x in n.neighbours(q, et)}
-            row = {"actor_ref": qa["q_actor"], "trait": qa["q_trait"], "polarity": qa["q_pole"],
-                   "match": qa.get("eq_match"), "evidence": _refs(n, ev),
-                   "counter_evidence": _refs(n, {x for et in COUNTER_EDGES for x in n.neighbours(q, et)}),
-                   "rule_ids": _rule_ids(qa, RULE_PREFIX)}
-            if qa.get("q_target"):
-                row["target_ref"] = qa["q_target"]
-            quanta.append(row)
+    quanta = [_quantum_row(n, q, n.node(q)["attrs"]) for q in only]
     quanta.sort(key=lambda r: (r["actor_ref"], r["trait"], r["polarity"], r.get("target_ref", "")))
     return quanta
 
 
+def _facets(n, e) -> list[dict]:
+    return sorted(({"code": n.node(f)["attrs"]["fx_code"], "match": n.node(f)["attrs"].get("eq_match")}
+                   for f in n.neighbours(e, "eq_has_facet")), key=lambda r: r["code"])
+
+
+def _episode_row(n, e, ea: dict) -> tuple[dict, int]:
+    """One episode's full row and its first member's turn position."""
+    turns = n.in_neighbours(e, "eq_in_episode")
+    members = sorted((n.node(x)["attrs"] for x in turns), key=lambda r: r["eq_turn_pos"])
+    actor_refs = sorted({n.node(a)["attrs"]["actor_ref"] for x in turns
+                         for a in n.neighbours(x, "eq_authored_by")})
+    return ({"episode_id": f"ep:{ea['ep_root_ref']}", "kind": ea["ep_kind"],
+             "actor_refs": actor_refs, "turns": [r["eq_ref"] for r in members],
+             "facets": _facets(n, e), "generative": ea.get("ep_generative"),
+             "rule_ids": _rule_ids(ea, RULE_PREFIX)},
+            members[0]["eq_turn_pos"] if members else -1)
+
+
 def _read_episodes(n, w, only: list | None = None) -> list[dict]:
     """Every episode of the conversation, or only the episodes in `only`."""
-    episodes = []
-    for e in (n.neighbours(w, "eq_has_episode") if only is None else only):
-        ea = n.node(e)["attrs"]
-        turns = n.in_neighbours(e, "eq_in_episode")
-        members = sorted((n.node(x)["attrs"] for x in turns), key=lambda r: r["eq_turn_pos"])
-        actor_refs = sorted({n.node(a)["attrs"]["actor_ref"] for x in turns
-                             for a in n.neighbours(x, "eq_authored_by")})
-        facets = sorted(({"code": n.node(f)["attrs"]["fx_code"],
-                          "match": n.node(f)["attrs"].get("eq_match")}
-                         for f in n.neighbours(e, "eq_has_facet")), key=lambda r: r["code"])
-        episodes.append({"episode_id": f"ep:{ea['ep_root_ref']}", "kind": ea["ep_kind"],
-                         "actor_refs": actor_refs, "turns": [r["eq_ref"] for r in members],
-                         "facets": facets, "generative": ea.get("ep_generative"),
-                         "rule_ids": _rule_ids(ea, RULE_PREFIX),
-                         "_first_pos": members[0]["eq_turn_pos"] if members else -1})
-    episodes.sort(key=lambda r: (r.pop("_first_pos"), r["episode_id"]))
-    return episodes
+    rows = [_episode_row(n, e, n.node(e)["attrs"])
+            for e in (n.neighbours(w, "eq_has_episode") if only is None else only)]
+    rows.sort(key=lambda r: (r[1], r[0]["episode_id"]))
+    return [r for r, _ in rows]
 
 
 def _open_questions(n, w) -> list[str]:
@@ -591,84 +651,195 @@ def _open_questions(n, w) -> list[str]:
     return _refs(n, n.neighbours(w, "eq_qud"))
 
 
-def _touched_rows(n, w, ids) -> tuple[list, list]:
-    """Map written-node ids to this conversation's quanta and episodes (a facet
-    stands for its episode). Mechanical: type + ownership look-ups only."""
-    import substrate_rs as srs
-    actors = set(n.neighbours(w, "eq_has_actor"))
-    quanta, episodes = set(), set()
-    for i in ids:
-        x = srs.NodeID(i)
-        if not n.has_node(x):
-            continue
-        typ = n.node(x)["type"]
-        if typ == "EqQuantum":
-            if any(a in actors for et in QUANTUM_EDGES for a in n.in_neighbours(x, et)):
-                quanta.add(x)
-        elif typ == "EqEpisode":
-            episodes.add(x)
-        elif typ == "EqEpFacet":
-            episodes.update(n.in_neighbours(x, "eq_has_facet"))
-    episodes = {e for e in episodes if w in n.in_neighbours(e, "eq_has_episode")}
-    return sorted(quanta, key=lambda x: x.value), sorted(episodes, key=lambda x: x.value)
+# ---- evidence deltas (track T3e, pack 0.6.0) ----------------------------------
+# A delta is relative to everything emitted earlier for the conversation. Every
+# change is emitted by the call that made it, so "previously emitted" is the graph
+# at the start of the call: an edge's previous state is the engine's first-seen
+# state (Changes.net), a quantum's / episode's previous existence and scalar
+# fields are its ledger mark (written when emitted, cleared on retract).
+
+def _srs():
+    import substrate_rs
+    return substrate_rs
 
 
-def _sig(row: dict) -> str:
-    blob = json.dumps(row, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
-    return hashlib.sha256(blob.encode("utf-8")).hexdigest()[:32]
+def _quantum_id(key: list) -> str:
+    """Stable within the conversation: a digest of the permanent quantum node's
+    identity key (the add_node_if_absent key the rules mint it under)."""
+    blob = json.dumps(key, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    return "q:" + hashlib.sha256(blob).hexdigest()[:16]
 
 
-def _delta(n, ledger, kind: str, rows: list[dict], key, seq: int, full: bool) -> list[dict]:
-    """Mechanical emitted-mark comparison: a row is emitted when its signature
-    differs from the `eqemit:` mark on the conversation's ledger (or when `full`)."""
+def _was(n, net: dict, s, et: str, t) -> bool:
+    """An edge's existence at the start of the call."""
+    k = (s.value, et, t.value)
+    return (not net[k]) if k in net else n.has_edge(s, et, t)
+
+
+def _pairs(n, net: dict, q, ms, types) -> tuple[list, list]:
+    """Turns added to / removed from q's union over `types` edges, among the
+    turns `ms` one of whose `types` edges from q changed existence."""
+    add, rem = [], []
+    for m in ms:
+        now = any(n.has_edge(q, et, m) for et in types)
+        was = any(_was(n, net, q, et, m) for et in types)
+        if now != was:
+            (add if now else rem).append(m)
+    return _refs(n, add), _refs(n, rem)
+
+
+def _mark(n, ledger, key: str):
+    raw = _led(n, ledger, key)
+    return json.loads(raw) if raw else None
+
+
+def _quanta_delta(n, state: Conversation, ch: Changes, net: dict) -> list[dict]:
+    srs = _srs()
+    actors = {a.value for a in n.neighbours(state.w, "eq_has_actor")}
+    cand: dict[int, tuple[set, set]] = {}
+    for (s, et, t) in net:
+        if et in QUANTUM_EDGES:
+            cand.setdefault(t, (set(), set()))
+        elif et in EVIDENCE_EDGES:
+            cand.setdefault(s, (set(), set()))[0].add(srs.NodeID(t))
+        elif et in COUNTER_EDGES:
+            cand.setdefault(s, (set(), set()))[1].add(srs.NodeID(t))
+    for qi in ch.nodes.get("EqQuantum", ()):
+        cand.setdefault(qi, (set(), set()))
     out = []
-    marks = n.node(ledger)["attrs"]
-    for r in rows:
-        k = f"{EMIT_PREFIX}{kind}:{json.dumps(key(r), separators=(',', ':'))}"
-        sig = _sig(r)
-        prev = marks.get(k)
-        if full or prev is None or prev.split(":", 1)[1] != sig:
-            out.append(r)
-        if prev is None or prev.split(":", 1)[1] != sig:
-            n.set_attr(ledger, k, f"{seq}:{sig}")
-    return out
+    for qi, (ev, co) in cand.items():
+        q, mk = srs.NodeID(qi), f"{EMIT_PREFIX}q:{qi}"
+        mark = _mark(n, state.ledger, mk)
+        node = n.node(q) if n.has_node(q) else None
+        exists = (node is not None and node["type"] == "EqQuantum"
+                  and any(a.value in actors for et in QUANTUM_EDGES for a in n.in_neighbours(q, et)))
+        if not exists:
+            if mark is not None:  # it no longer holds
+                out.append((mark["k"], {"quantum_id": mark["id"], "op": "retract"}))
+                n.set_attr(state.ledger, mk, None)
+            continue
+        qa = node["attrs"]
+        key = [qa["q_actor"], qa["q_trait"], qa["q_pole"], qa.get("q_target") or ""]
+        fields = {"match": qa.get("eq_match"), "rule_ids": _rule_ids(qa, RULE_PREFIX)}
+        if mark is None:  # first appearance (or re-appearance): full lists
+            row = _quantum_row(n, q, qa)
+            d = {"quantum_id": _quantum_id(key), "op": "upsert", "actor_ref": row["actor_ref"],
+                 "trait": row["trait"], "polarity": row["polarity"], "match": row["match"],
+                 "target_ref": row.get("target_ref"),
+                 "evidence_add": row["evidence"], "evidence_remove": [],
+                 "counter_add": row["counter_evidence"], "counter_remove": [],
+                 "rule_ids": row["rule_ids"]}
+        else:
+            ea, er = _pairs(n, net, q, ev, EVIDENCE_EDGES)
+            ca, cr = _pairs(n, net, q, co, COUNTER_EDGES)
+            d = {"quantum_id": mark["id"], "op": "upsert"}
+            if fields["match"] != mark["match"]:
+                d["match"] = fields["match"]
+            d.update(evidence_add=ea, evidence_remove=er, counter_add=ca, counter_remove=cr)
+            if fields["rule_ids"] != mark["rule_ids"]:
+                d["rule_ids"] = fields["rule_ids"]
+            if len(d) == 6 and not (ea or er or ca or cr):
+                continue  # touched, unchanged
+        if mark is None or any(fields[f] != mark[f] for f in fields):
+            n.set_attr(state.ledger, mk, json.dumps({"id": d["quantum_id"], "k": key, **fields},
+                                                    separators=(",", ":"), ensure_ascii=False))
+        out.append((key, d))
+    out.sort(key=lambda r: r[0])
+    return [d for _, d in out]
 
 
-def _emit(substrate, agent_root, state: Conversation, nodes: list, full: bool,
-          touched: set | None = None) -> dict:
-    """Read-out of the retained fork. DELTA read-out (`touched` given, not `full`):
-    every quantum / episode row is a function of the retained fork, and every
-    fact a row reads is a node attr or an edge AT the row's node, so a row can
-    differ from its last emitted value only if this batch's ticks wrote it
-    (`touched`, the engine's delta report: attr writes, and both endpoints of
-    every added or deleted edge). Only those rows are re-read and compared with
-    the ledger marks; `full` re-reads everything."""
+def _episodes_delta(n, state: Conversation, ch: Changes, net: dict) -> list[dict]:
+    srs = _srs()
+    w = state.w
+    cand: dict[int, list] = {}
+    for (s, et, t) in net:
+        if et == "eq_has_episode" and s == w.value:
+            cand.setdefault(t, [])
+        elif et == "eq_in_episode":
+            cand.setdefault(t, []).append(s)
+        elif et == "eq_has_facet":
+            cand.setdefault(s, [])
+    for ei in ch.nodes.get("EqEpisode", ()):
+        cand.setdefault(ei, [])
+    for fi in ch.nodes.get("EqEpFacet", ()):
+        f = srs.NodeID(fi)
+        if n.has_node(f):
+            for e in n.in_neighbours(f, "eq_has_facet"):
+                cand.setdefault(e.value, [])
+    out = []
+    for ei, ms in cand.items():
+        e, mk = srs.NodeID(ei), f"{EMIT_PREFIX}e:{ei}"
+        mark = _mark(n, state.ledger, mk)
+        if not (n.has_node(e) and n.has_edge(w, "eq_has_episode", e)):
+            if mark is not None:
+                out.append((mark["s"], {"episode_id": mark["id"], "op": "retract"}))
+                n.set_attr(state.ledger, mk, None)
+            continue
+        ea = n.node(e)["attrs"]
+        fields = {"kind": ea["ep_kind"], "facets": _facets(n, e),
+                  "generative": ea.get("ep_generative"), "rule_ids": _rule_ids(ea, RULE_PREFIX)}
+        if mark is None:  # first appearance: full lists
+            row, first = _episode_row(n, e, ea)
+            counts: dict[str, int] = {}
+            for x in n.in_neighbours(e, "eq_in_episode"):
+                for a in n.neighbours(x, "eq_authored_by"):
+                    r = n.node(a)["attrs"]["actor_ref"]
+                    counts[r] = counts.get(r, 0) + 1
+            sort = [first, row["episode_id"]]
+            d = {"episode_id": row["episode_id"], "op": "upsert", "kind": row["kind"],
+                 "actor_refs": row["actor_refs"], "turns_add": row["turns"], "turns_remove": [],
+                 "facets": row["facets"], "generative": row["generative"], "rule_ids": row["rule_ids"]}
+        else:
+            add = [srs.NodeID(m) for m in ms if net[(m, "eq_in_episode", ei)]]
+            rem = [srs.NodeID(m) for m in ms if not net[(m, "eq_in_episode", ei)]]
+            counts = dict(mark["n"])
+            for m, step in [(m, 1) for m in add] + [(m, -1) for m in rem]:
+                for a in n.neighbours(m, "eq_authored_by"):
+                    r = n.node(a)["attrs"]["actor_ref"]
+                    counts[r] = counts.get(r, 0) + step
+                    if counts[r] == 0:
+                        del counts[r]
+            sort = mark["s"]
+            d = {"episode_id": mark["id"], "op": "upsert"}
+            if fields["kind"] != mark["kind"]:
+                d["kind"] = fields["kind"]
+            if sorted(counts) != sorted(mark["n"]):
+                d["actor_refs"] = sorted(counts)
+            d["turns_add"], d["turns_remove"] = _refs(n, add), _refs(n, rem)
+            for f in ("facets", "generative", "rule_ids"):
+                if fields[f] != mark[f]:
+                    d[f] = fields[f]
+            if len(d) == 4 and not (add or rem):
+                continue  # touched, unchanged
+        n.set_attr(state.ledger, mk, json.dumps({"id": d["episode_id"], "s": sort, "n": counts, **fields},
+                                                separators=(",", ":"), ensure_ascii=False))
+        out.append((sort, d))
+    out.sort(key=lambda r: r[0])
+    return [d for _, d in out]
+
+
+def _emit(substrate, agent_root, state: Conversation, nodes: list, changes: Changes) -> dict:
+    """Read-out of the retained fork: the batch's turns, the quanta / episodes
+    deltas of what this call's ticks changed (`changes`), the open questions."""
     n = _native(substrate)
     w = state.w
     status = _label_status(substrate, agent_root)
     turns = [_read_turn(substrate, m, status) for m in nodes]
-    if touched is not None and not full:
-        cq, ce = _touched_rows(n, w, touched)
-        quanta, episodes = _read_quanta(n, w, cq), _read_episodes(n, w, ce)
-    else:
-        quanta, episodes = _read_quanta(n, w), _read_episodes(n, w)
-    open_q = _open_questions(n, w)
-    seq = n.node(state.ledger)["attrs"]["eq_seq"]
-    qkey = lambda r: [r["actor_ref"], r["trait"], r["polarity"], r.get("target_ref", "")]  # noqa: E731
-    return {"conversation_id": n.node(w)["attrs"]["conversation_id"], "seq": seq,
-            "turns": turns,
-            "quanta": _delta(n, state.ledger, "q", quanta, qkey, seq, full),
-            "episodes": _delta(n, state.ledger, "e", episodes, lambda r: [r["episode_id"]], seq, full),
-            "open_questions": open_q, "steps": []}
+    net = changes.net()
+    return {"conversation_id": n.node(w)["attrs"]["conversation_id"],
+            "seq": _led(n, state.ledger, "eq_seq"), "turns": turns,
+            "quanta_delta": _quanta_delta(n, state, changes, net),
+            "episodes_delta": _episodes_delta(n, state, changes, net),
+            "open_questions": _open_questions(n, w), "steps": []}
 
 
 def discourse(substrate, agent_root, window: dict, turns: Iterable[dict]) -> dict:
-    """/v1/discourse = open + one ingest + close on `substrate` (pass a fork).
-    Returns {"window_id", "messages", "quanta", "episodes", "steps"}."""
+    """/v1/discourse = open + one ingest + full read-out on `substrate` (pass a fork).
+    Returns {"window_id", "messages", "quanta", "episodes", "steps"} (full rows)."""
     turns = list(turns)
     st = conversation_open(substrate, agent_root, window["window_id"], window["kind"])
     got = conversation_ingest(substrate, agent_root, st, turns)
-    fin = conversation_close(substrate, agent_root, st)
+    fin = conversation_full(substrate, agent_root, st)
     return {"window_id": str(window["window_id"]), "messages": [t["read"] for t in got["turns"]],
             "turns": got["turns"], "quanta": fin["quanta"], "episodes": fin["episodes"],
             "open_questions": fin["open_questions"], "steps": got["steps"]}

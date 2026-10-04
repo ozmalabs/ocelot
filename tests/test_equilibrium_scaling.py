@@ -1,4 +1,4 @@
-"""Equilibrium conversation scaling (track T3d, pack 0.5.1): the shared batch
+"""Equilibrium conversation scaling (track T3d, pack 0.5.1; 0.6.0 evidence deltas): the shared batch
 contract POST /v1/conversations/_batch, per-conversation concurrency, and the
 live (monotone) strata layer, and (stage B) the live non-monotone families.
 Synthetic pseudonymous data only."""
@@ -18,8 +18,9 @@ os.environ.setdefault("OZMA_NO_LLM", "1")
 from test_equilibrium_classifier_service import _free_port, _req, _start, _stop  # noqa: E402
 from test_equilibrium_conversations import client_parse_conversation  # noqa: E402
 from test_equilibrium_discourse_service import synthetic_window  # noqa: E402
+from equilibrium_delta_fold import DeltaFold  # noqa: E402
 
-TAX = "eq-tax-0.5.1"
+TAX = "eq-tax-0.6.0"
 
 
 @pytest.fixture(scope="module")
@@ -196,28 +197,35 @@ def test_new_engine_flags_default_off():
 
 
 @pytest.mark.parametrize("kind,seed", [("thread", 1211), ("meeting", 1212)])
-def test_delta_readout_equals_full_readout(srv, monkeypatch, kind, seed):
-    """Stage A/B: the delta read-out (only rows this batch's ticks wrote are re-read;
-    stage B has no scratch fork) and the graph-resident open-question set
-    (`w -eq_qud-> q`) emit exactly what the full re-read + turn scan emits."""
+def test_delta_readout_equals_full_readout(srv, kind, seed):
+    """0.6.0 evidence deltas: folding the per-batch deltas (only what this batch's
+    ticks changed, from the engine's exact-edge-delta report and the ledger marks)
+    gives exactly the full re-read after every batch, and the graph-resident
+    open-question set (`w -eq_qud-> q`) equals the pre-stage-A turn scan."""
     from domains import equilibrium_classify as ec
     turns = _conv(seed, n=160, kind=kind)
     on = srv.ClassifierService(workers=1)
-    got_on = _sequential(on, "d", kind, turns, 40) + [on.conversation_close("d")]
-    tick, emit = ec._tick, ec._emit
 
     def scan_open(n, w):  # the pre-stage-A definition
         qs = [x for x in n.neighbours(w, "eq_has_turn")
               if n.node(x)["attrs"].get(ec.QUESTION_KEY) is True
               and not n.in_neighbours(x, "eq_answers")]
         return ec._refs(n, qs)
-    monkeypatch.setattr(ec, "_tick", lambda n, touched: tick(n, None))
-    monkeypatch.setattr(ec, "_emit", lambda *a, **kw: emit(*a, **dict(kw, touched=None)))
-    monkeypatch.setattr(ec, "_open_questions", scan_open)
-    off = srv.ClassifierService(workers=1)
-    got_off = _sequential(off, "d", kind, turns, 40) + [off.conversation_close("d")]
-    assert got_on == got_off
-    assert any(r["open_questions"] for r in got_on[:-1])  # the set is exercised
+    f = DeltaFold()
+    f.turns(turns)
+    opened = False
+    for i in range(0, len(turns), 40):
+        out = on.conversation_turns("d", kind, turns[i:i + 40])
+        f.apply(out)
+        sess = on.sessions["d"]
+        full = ec.conversation_full(sess.branch, on.root, sess.state)
+        assert f.quanta() == srv.quanta_to_wire(full["quanta"]), i
+        assert f.episodes() == srv.episodes_to_wire(full["episodes"]), i
+        assert out["open_questions"] == scan_open(ec._native(sess.branch), sess.state.w)
+        opened |= bool(out["open_questions"])
+    fin = on.conversation_close("d")
+    assert fin["quanta_delta"] == [] and fin["episodes_delta"] == []
+    assert opened  # the set is exercised
 
 
 def _s0_candidates(ec, b, root, st, batch, monkeypatch):
@@ -276,8 +284,8 @@ NM_TRAITS = ("interaction.floor", "interaction.responsiveness", "inquiry.unanswe
 
 
 def _full(ec, b, root, st):
-    """the complete read-out (close() is a read; the fork stays usable)"""
-    got = ec.conversation_close(b, root, st)
+    """the complete read-out (a read; the fork stays usable)"""
+    got = ec.conversation_full(b, root, st)
     return {"quanta": got["quanta"], "episodes": got["episodes"], "open": got["open_questions"]}
 
 

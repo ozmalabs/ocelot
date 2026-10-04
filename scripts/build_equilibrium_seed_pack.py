@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the Equilibrium seed pack (0.5.1, tracks T3 + T3b + T3c + T3d) as flat seed manifests.
+"""Build the Equilibrium seed pack (0.6.0, tracks T3 + T3b + T3c + T3d + T3e) as flat seed manifests.
 
     PYTHONPATH=.:runners/dsl/python OZMA_NO_LLM=1 python3 scripts/build_equilibrium_seed_pack.py
 
@@ -37,8 +37,8 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 SEEDS = ROOT / "seeds"
-PACK_VERSION = "0.5.1"
-TAXONOMY_VERSION = "eq-tax-0.5.1"
+PACK_VERSION = "0.6.0"
+TAXONOMY_VERSION = "eq-tax-0.6.0"
 NUM = "<num>"            # token class slot: any all-digit prose token
 PERSON = "<noun.person>"  # token class slot: first-sense WordNet noun lexname
 GROUP = "<noun.group>"

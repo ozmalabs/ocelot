@@ -1,4 +1,4 @@
-"""T3d scaling bench for the Equilibrium conversation sidecar (service level, no HTTP).
+"""T3d / T3e scaling bench for the Equilibrium conversation sidecar (service level, no HTTP).
 
 Prints AGGREGATES only (latencies, counts, RSS); never text. Synthetic conversations
 are pseudonymous (tests/test_equilibrium_discourse_service.synthetic_window). The
@@ -93,34 +93,72 @@ class _Split:
         return row
 
 
+class _Wire:
+    """Wire-size accounting of the conversation responses (measurement only): the
+    0.6.0 response bytes, its quanta_delta + episodes_delta bytes, and the bytes
+    the 0.5.x contract would have sent for the same batch -- the FULL rows of every
+    quantum / episode the batch changed, reconstructed from the client fold
+    (tests/equilibrium_delta_fold.py; equal to the saved 0.5.1 goldens, RESULTS T3e)."""
+
+    def __init__(self):
+        from equilibrium_delta_fold import DeltaFold
+        self.fold = DeltaFold()
+
+    @staticmethod
+    def _n(x) -> int:
+        return len(json.dumps(x, separators=(",", ":"), ensure_ascii=False).encode("utf-8"))
+
+    def account(self, batch, out) -> dict:
+        self.fold.turns(batch)
+        self.fold.apply(out)
+        f = self.fold
+        oq = [f.quantum_row(d["quantum_id"]) for d in out["quanta_delta"] if d["op"] == "upsert"]
+        oe = [f.episode_row(d["episode_id"])[0] for d in out["episodes_delta"] if d["op"] == "upsert"]
+        rest = {k: v for k, v in out.items() if k not in ("quanta_delta", "episodes_delta")}
+        return {"bytes": self._n(out), "delta_bytes": self._n(out["quanta_delta"]) + self._n(out["episodes_delta"]),
+                "old_bytes": self._n({**rest, "quanta": oq, "episodes": oe}),
+                "old_rows_bytes": self._n(oq) + self._n(oe),
+                "q_rows": len(out["quanta_delta"]), "e_rows": len(out["episodes_delta"])}
+
+
 def bench_a(lengths):
-    """(a) latency of a 100-turn batch at conversation length L (median of 3 probes)."""
+    """(a) latency of a 100-turn batch at conversation length L (median of 3 probes),
+    its split, and the wire size of each probe (0.6.0 deltas vs the 0.5.x rows)."""
     _, s = _svc(max_conversations=4)
     top = max(lengths)
     turns = _turns(top + 300, seed=4242)
     lat_at, all_lat = {}, []
-    split, split_at = _Split(), {}
+    split, split_at, wire, wire_at = _Split(), {}, _Wire(), {}
     pos = 0
     for L in sorted(lengths):
         while pos < L:
             t0 = time.perf_counter()
-            s.conversation_turns("bench:a", "thread", turns[pos:pos + 100])
+            out = s.conversation_turns("bench:a", "thread", turns[pos:pos + 100])
             all_lat.append((pos + 100, time.perf_counter() - t0))
+            wire.account(turns[pos:pos + 100], out)
             pos += 100
-        probe, rows = [], []
+        probe, rows, sizes = [], [], []
         for _ in range(3):  # three consecutive 100-turn batches at ~L
+            got = []
             t0 = time.perf_counter()
-            rows.append(split.run(lambda: s.conversation_turns("bench:a", "thread",
-                                                               turns[pos:pos + 100])))
+            rows.append(split.run(lambda: got.append(s.conversation_turns("bench:a", "thread",
+                                                                          turns[pos:pos + 100]))))
             probe.append(time.perf_counter() - t0)
             all_lat.append((pos + 100, probe[-1]))
+            sizes.append(wire.account(turns[pos:pos + 100], got[0]))
             pos += 100
         lat_at[L] = statistics.median(probe)
         split_at[L] = {k: statistics.median(r.get(k, 0.0) for r in rows) for k in rows[0]}
+        wire_at[L] = {k: statistics.median(x[k] for x in sizes) for k in sizes[0]}
         print(f"(a) L={L:>6}: 100-turn batch median {lat_at[L] * 1e3:.0f} ms "
               f"(probes {', '.join(f'{x * 1e3:.0f}' for x in probe)} ms; load {_load()})", flush=True)
         print("(a)          split (median ms): " + ", ".join(
-            f"{k} {v * 1e3:.0f}" for k, v in split_at[L].items()), flush=True)
+            f"{k} {v * 1e3:.1f}" for k, v in split_at[L].items()), flush=True)
+        w = wire_at[L]
+        print(f"(a)          wire (median of probes): response {w['bytes'] / 1024:.1f} KiB, deltas "
+              f"{w['delta_bytes'] / 1024:.1f} KiB ({w['q_rows']:.0f} quanta / {w['e_rows']:.0f} episode rows); "
+              f"0.5.x would send {w['old_bytes'] / 1024:.1f} KiB (rows {w['old_rows_bytes'] / 1024:.1f} KiB)",
+              flush=True)
     xs = sorted(lat_at)
     if len(xs) >= 2:
         for k in split_at[xs[0]]:
@@ -128,6 +166,10 @@ def bench_a(lengths):
             if len(ys) >= 2:
                 print(f"(a) component {k}: exponent over L >= 1000 "
                       f"{_fit([x for x in xs if x >= 1000], ys):.3f}")
+        big = [x for x in xs if x >= 1000]
+        if len(big) >= 2:
+            for k in ("bytes", "delta_bytes", "old_bytes"):
+                print(f"(a) wire {k}: exponent over L >= 1000 {_fit(big, [wire_at[x][k] for x in big]):.3f}")
     if len(xs) >= 2:
         print(f"(a) growth exponent over L={xs}: {_fit(xs, [lat_at[x] for x in xs]):.3f} "
               f"(1.0 = linear in prefix, 0 = flat)")
@@ -136,8 +178,9 @@ def bench_a(lengths):
             print(f"(a) exponent over every batch with prefix >= 1000 ({len(tail)} batches): "
                   f"{_fit([p for p, _ in tail], [y for _, y in tail]):.3f}")
     t0 = time.perf_counter()
-    s.conversation_close("bench:a")
-    print(f"(a) close at {pos} turns: {(time.perf_counter() - t0) * 1e3:.0f} ms")
+    fin = s.conversation_close("bench:a")
+    print(f"(a) close at {pos} turns: {(time.perf_counter() - t0) * 1e3:.0f} ms, "
+          f"{_Wire._n(fin)} bytes")
 
 
 def bench_b(levels=(1, 2, 4, 8, 16), turns_per=300):
