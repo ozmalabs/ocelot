@@ -43,12 +43,14 @@ def match(a, b):
             "direction_score": 100.0 * (1.0 + cosine) / 2.0}
 
 
-def photon_eye_pair():
-    eye = GraphEye(n_az=2, context={"worker_capacity": 1}).build()
+def photon_eye_field():
+    eye = GraphEye(n_az=24, context={"worker_capacity": 1}).build()
     try:
         eye.submit_photons([
-            {"column": 0, "wavelength_nm": 610.0, "count": PHOTONS},
-            {"column": 1, "wavelength_nm": 530.0, "count": PHOTONS},
+            *[{"column": col, "wavelength_nm": 610.0, "count": PHOTONS}
+              for col in range(REPEATS)],
+            *[{"column": col, "wavelength_nm": 530.0, "count": PHOTONS}
+              for col in range(REPEATS, 2 * REPEATS)],
         ])
         deadline = time.monotonic() + 5.0
         while eye.processed_count() < 1 and time.monotonic() < deadline:
@@ -56,12 +58,11 @@ def photon_eye_pair():
         if eye.processed_count() != 1:
             raise RuntimeError(f"processed {eye.processed_count()} exposures, expected 1")
         percepts = eye.latest()["percepts"]
-        if len(percepts) != 2:
-            raise RuntimeError(f"received {len(percepts)} percepts, expected 2")
-        return {
-            "red_610nm": (float(percepts[0]["red_green"]), float(percepts[0]["blue_yellow"])),
-            "green_530nm": (float(percepts[1]["red_green"]), float(percepts[1]["blue_yellow"])),
-        }
+        if len(percepts) != 2 * REPEATS:
+            raise RuntimeError(f"received {len(percepts)} percepts, expected {2 * REPEATS}")
+        values = [(float(p["red_green"]), float(p["blue_yellow"])) for p in percepts]
+        return {"red_610nm": values[:REPEATS],
+                "green_530nm": values[REPEATS:]}
     finally:
         eye.stop()
 
@@ -84,8 +85,12 @@ def compress_field(vectors):
     s._inner.load_seed_manifest(qualia, agent)
     cells = []
     for label in ("red_610nm", "green_530nm"):
-        vals = _cone_encoding(*vectors[label])
-        cells.extend([dict(vals, rrow=0, rcol=len(cells) + i) for i in range(REPEATS)])
+        samples = vectors[label]
+        if len(samples) != REPEATS:
+            samples = [samples] * REPEATS
+        for value in samples:
+            vals = _cone_encoding(*value)
+            cells.append(dict(vals, rrow=0, rcol=len(cells)))
     h = ciw.add_field(s, cells=cells)
     ciw.set_flag(s, identity=1.0)
     ciw.tick(s)
@@ -109,41 +114,46 @@ def compress_field(vectors):
 
 def main():
     research = {k: opponent_from_lms(v) for k, v in CIE_LMS.items()}
-    eye = photon_eye_pair()
+    eye = photon_eye_field()
+    eye_means = {label: tuple(sum(v[j] for v in samples) / len(samples) for j in range(2))
+                 for label, samples in eye.items()}
     per_color = {}
     for label, reference in research.items():
-        observed = eye[label]
+        samples = eye[label]
+        observed = eye_means[label]
         theory_label = "red" if reference[0] > 0 else "green" if reference[0] < 0 else "unclassified"
-        eye_label = "red" if observed[0] > 0 else "green" if observed[0] < 0 else "unclassified"
+        eye_labels = ["red" if v[0] > 0 else "green" if v[0] < 0 else "unclassified" for v in samples]
         per_color[label] = {
             "cie_lms": CIE_LMS[label], "research_opponent": reference,
-            "research_prediction": theory_label, "eye_opponent": observed,
-            "eye_prediction": eye_label, "label_agreement": theory_label == eye_label,
-            "direction_match": match(reference, observed),
+            "research_prediction": theory_label, "eye_opponent_mean": observed,
+            "eye_prediction_counts": {"red": eye_labels.count("red"), "green": eye_labels.count("green")},
+            "eye_unique_opponent_vectors": len(set(samples)),
+            "eye_direction_matches": [match(reference, v) for v in samples],
+            "mean_eye_direction_match": match(reference, observed),
+            "label_agreement": all(v == theory_label for v in eye_labels),
         }
-    research_comp = compress_field(research)
+    research_samples = {k: [v] * REPEATS for k, v in research.items()}
+    research_comp = compress_field(research_samples)
     eye_comp = compress_field(eye)
-    prototype_match = {}
-    # The minted prototypes are the two exact source coordinates after the same
-    # graph quantizer. Match by known RG sign, not by node order or labels in graph.
-    for label in per_color:
-        rcoord = research[label]
-        ecoord = eye[label]
-        prototype_match[label] = match(rcoord, ecoord)
+    prototype_match = {label: match(research[label], eye_means[label]) for label in per_color}
+    expected_eye_labels = {"red_610nm": "red", "green_530nm": "green"}
+    eye_correct = sum(v["eye_prediction_counts"][expected_eye_labels[k]]
+                      for k, v in per_color.items())
     result = {
-        "experiment": "marys_room_red_green_identification_compression_v1",
+        "experiment": "marys_room_red_green_identification_compression_v2",
         "provenance": provenance_line(),
         "stimulus_photons": PHOTONS,
         "research_source": "CIE 2006 LMS cone fundamentals, 2-degree field, energy units, CIE 170-1:2006 table 6.7",
         "opponent_axes": {"red_green": "L-M", "blue_yellow": "S-0.5*(L+M)"},
         "research_only_classification_accuracy": sum(v["research_prediction"] == ("red" if k == "red_610nm" else "green") for k, v in per_color.items()) / 2.0,
-        "eye_classification_accuracy": sum(v["eye_prediction"] == ("red" if k == "red_610nm" else "green") for k, v in per_color.items()) / 2.0,
+        "eye_classification_accuracy": eye_correct / (2 * REPEATS),
         "red_green_label_agreement": all(v["label_agreement"] for v in per_color.values()),
+        "eye_retinal_columns_per_color": REPEATS,
         "per_color": per_color,
         "research_field_compression": research_comp,
         "experienced_eye_field_compression": eye_comp,
         "prototype_direction_matches": prototype_match,
-        "mean_eye_research_direction_score": sum(v["direction_match"]["direction_score"] for v in per_color.values()) / 2.0,
+        "mean_eye_research_direction_score": sum(v["mean_eye_direction_match"]["direction_score"] for v in per_color.values()) / 2.0,
     }
     out = Path(__file__).parents[1] / "results" / "marys_room_red_green.json"
     out.parent.mkdir(exist_ok=True)

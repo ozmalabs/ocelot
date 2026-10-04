@@ -34,19 +34,28 @@ on the eye data. Both test stimuli have nonzero RG under the CIE reference.
 
 ## Confirmatory photon-eye arm
 
-Build one fresh `GraphEye(n_az=2)`. Submit one simultaneous exposure: column 0
-receives 1000 photons at 610 nm; column 1 receives 1000 photons at 530 nm. Wait
-for one completed exposure and read the two `VisionPercept` outputs. No labels
-are inserted into the eye graph. Keep the mapping from column to stimulus in the
-external scoring record only.
+**Amendment v2:** the initial preregistered plan used `GraphEye(n_az=2)` and one
+retinal column per color. Review showed this could classify the pair but would
+not supply a populated experienced field for the compression measurement. The
+v1 run is preserved in `results/marys_room_red_green_v1.json`; its quantizer
+compression repeats the same two returned vectors in the adapter and is not
+counted as compression of a populated sensory field.
+
+The v2 confirmatory apparatus is one fresh `GraphEye(n_az=24)`. Submit one
+simultaneous exposure: columns 0–11 each receive 1000 photons at 610 nm; columns
+12–23 each receive 1000 photons at 530 nm. Wait for one completed exposure and
+read all 24 `VisionPercept` outputs. No labels are inserted into the eye graph.
+Keep the column-to-stimulus mapping in the external scoring record only.
 
 ## Representation and compression arms
 
-Separately process the two research vectors and two observed eye vectors through
-the committed `vision_colour_identity` graph rules. Each vector is mechanically
-encoded as a cone triple whose opponent transform reproduces `(RG,BY)` exactly;
-this is a reversible coordinate adapter, not a classifier. Repeat each source
-vector 12 times in the same scene. Labels are not inserted into graph nodes.
+Separately process the two research vectors and the 24 eye-produced vectors
+through the committed `vision_colour_identity` graph rules. Each vector is
+mechanically encoded as a cone triple whose opponent transform reproduces
+`(RG,BY)` exactly; this is a reversible coordinate adapter, not a classifier.
+For research, replicate each standard-observer prediction across its 12 fixed
+retinal positions. For the eye arm, use the 24 actual column outputs from the
+single exposure. Labels are not inserted into graph nodes.
 
 For each source (research and eye), the graph should mint two categories and
 assign all 24 observations. The code-length proxy is the existing two-axis MDL
@@ -68,6 +77,8 @@ Report, without threshold-based pass claims:
 
 A dead eye arm or missing/duplicate category remains a measured failure and is
 reported; do not change the stimulus, sign rule, or cost model after seeing it.
+The v2 eye-arm category count and member counts must be derived from the actual
+24-column outputs. No adapter-side duplication is permitted.
 
 ## Interpretation boundary
 
@@ -81,9 +92,9 @@ all qualia are reducible to compression.
 
 ## Pilot and run discipline
 
-A pilot before this preregistration used one eye with simultaneous 610 nm red
-and 530 nm green packets at 1000 photons. It returned red `(0.3436120,
--0.3456013)` and green `(-0.0753723,-0.6214368)`, with the expected opposite RG
-signs. These values are pilot only. The fixed confirmatory run starts only after
-this document and its runner are committed. The runner must pass engine provenance
-before measuring.
+A pilot before v1 used one eye with simultaneous 610 nm red and 530 nm green
+packets at 1000 photons. It returned red `(0.3436120,-0.3456013)` and green
+`(-0.0753723,-0.6214368)`, with the expected opposite RG signs. The v1 result is
+preserved separately and is not substituted for v2. The v2 amendment and updated
+runner must be committed before its confirmatory invocation. The runner must pass
+engine provenance before measuring.
