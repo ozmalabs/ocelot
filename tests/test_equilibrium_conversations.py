@@ -10,6 +10,7 @@ Synthetic windows only (pseudonyms actor_a / member_###); no corpus, no LLM
 """
 from __future__ import annotations
 
+import copy
 import os
 import statistics
 import time
@@ -19,6 +20,7 @@ import pytest
 os.environ.setdefault("OZMA_NO_LLM", "1")
 
 from domains import equilibrium_classify as eq  # noqa: E402
+from equilibrium_delta_fold import DeltaFold  # noqa: E402
 from test_equilibrium_classifier_service import (  # noqa: E402  shared harness
     SECRET, _CODE, _client_parse, _free_port, _req, _start, _stop)
 from test_equilibrium_climate import CLIMATE  # noqa: E402
@@ -26,9 +28,13 @@ from test_equilibrium_discourse import MEETING, THREAD  # noqa: E402
 from test_equilibrium_discourse_service import synthetic_window  # noqa: E402
 from test_equilibrium_tracking import WINDOWS as TRK_WINDOWS, _turns as _tracking_turns  # noqa: E402
 
-TAX = "eq-tax-0.5.1"
-_TOP = {"ok", "taxonomy_version", "conversation_id", "seq", "turns", "quanta", "episodes",
+TAX = "eq-tax-0.6.0"
+_TOP = {"ok", "taxonomy_version", "conversation_id", "seq", "turns", "quanta_delta", "episodes_delta",
         "open_questions"}
+_QD = {"quantum_id", "op", "actor_ref", "trait", "polarity", "match", "target_ref", "evidence_add",
+       "evidence_remove", "counter_add", "counter_remove", "rule_ids"}
+_ED = {"episode_id", "op", "kind", "actor_refs", "turns_add", "turns_remove", "facets", "generative",
+       "rule_ids"}
 _TURN = {"id", "labels", "responds_to", "basis", "addressees", "thread_id", "topic_id", "answers"}
 
 
@@ -54,12 +60,20 @@ def client_parse_conversation(doc: dict, cid: str, ids_so_far: set[str], batch: 
         assert (t["basis"] == "none") == (t["responds_to"] == [])
         assert set(t["responds_to"]) <= ids_so_far and set(t["answers"]) <= ids_so_far
         assert isinstance(t["thread_id"], str) and t["topic_id"] is None
-    for q in doc["quanta"]:
-        assert set(q["evidence"]) | set(q["counter_evidence"]) <= ids_so_far
-        assert q["match"] in ("exact", "partial", "weak")
-        assert all(_CODE.fullmatch(r) and r.endswith(":0.5.1") for r in q["rule_ids"])
-    for e in doc["episodes"]:
-        assert set(e["turns"]) <= ids_so_far
+    for q in doc["quanta_delta"]:  # 0.6.0 evidence deltas
+        assert q["op"] in ("upsert", "retract") and isinstance(q["quantum_id"], str)
+        if q["op"] == "retract":
+            assert set(q) == {"quantum_id", "op"}
+            continue
+        assert set(q) <= _QD and {"evidence_add", "evidence_remove", "counter_add", "counter_remove"} <= set(q)
+        assert set().union(*(q[k] for k in ("evidence_add", "evidence_remove", "counter_add",
+                                             "counter_remove"))) <= ids_so_far
+        assert q.get("match", "exact") in ("exact", "partial", "weak")
+        assert all(_CODE.fullmatch(r) and r.endswith(":0.6.0") for r in q.get("rule_ids", ()))
+    for e in doc["episodes_delta"]:
+        assert e["op"] in ("upsert", "retract")
+        if e["op"] == "upsert":
+            assert set(e) <= _ED and set(e["turns_add"]) | set(e["turns_remove"]) <= ids_so_far
     assert set(doc["open_questions"]) <= ids_so_far
 
 
@@ -109,7 +123,9 @@ def test_session_lifecycle(svc):
     assert tb["p5"]["answers"] == ["p3"] and tb["p5"]["addressees"] == ["member_102"]
     assert a["open_questions"] == ["p3"] and b["open_questions"] == ["p6", "p7"]
     c = svc.conversation_close("conv:life~1")
-    assert c["turns"] == [] and c["seq"] == 2 and c["quanta"]
+    # every change was emitted by the batch that made it: close (no ticks) has empty deltas
+    assert a["quanta_delta"] and c["turns"] == [] and c["seq"] == 2
+    assert c["quanta_delta"] == [] and c["episodes_delta"] == []
     assert _err(svc.conversation_get, "conv:life~1") == (404, "unknown_conversation")
     assert _err(svc.conversation_close, "conv:life~1") == (404, "unknown_conversation")
     assert "conv:life~1" not in svc.sessions
@@ -200,14 +216,26 @@ def _run_batches(srv_mod, svc, cid, kind, turns, size):
 
 
 def _one_shot(svc, kind, turns):
-    """Reference: open + ONE ingest + close on a fresh fork (adapter level)."""
+    """Reference: open + ONE ingest + FULL read-out on a fresh fork (adapter level):
+    (wire turns, {"quanta", "episodes" (full wire rows), "open_questions"})."""
     branch = svc.snap.fork()
     st = eq.conversation_open(branch, svc.root, "ref", kind)
     got = eq.conversation_ingest(branch, svc.root, st, turns)
-    fin = eq.conversation_close(branch, svc.root, st)
-    from services.equilibrium_classifier.server import conversation_to_wire
+    fin = eq.conversation_full(branch, svc.root, st)
+    from services.equilibrium_classifier.server import conversation_to_wire, episodes_to_wire, quanta_to_wire
     return (conversation_to_wire({**got, "conversation_id": "ref"}, TAX)["turns"],
-            conversation_to_wire({**fin, "conversation_id": "ref"}, TAX))
+            {"quanta": quanta_to_wire(fin["quanta"]), "episodes": episodes_to_wire(fin["episodes"]),
+             "open_questions": fin["open_questions"]})
+
+
+def _fold(turns, deltas, fin):
+    """Client fold of a conversation's delta stream (tests/equilibrium_delta_fold.py)."""
+    f = DeltaFold()
+    f.turns(turns)
+    for _, out in deltas:
+        f.apply(out)
+    f.apply(fin)
+    return f
 
 
 @pytest.mark.parametrize("name", ["thread", "climate", "meeting_declared", "synthetic_thread",
@@ -230,22 +258,26 @@ def test_incremental_batches_equal_one_shot(srv, svc, name):
     for size in sizes:
         rows, deltas, fin = _run_batches(srv, svc, f"conv:inc:{name}:{size}", kind, turns, size)
         assert rows == ref_turns, (name, size)
-        assert fin["quanta"] == ref_fin["quanta"] and fin["episodes"] == ref_fin["episodes"], (name, size)
+        f = _fold(turns, deltas, fin)
+        assert f.quanta() == ref_fin["quanta"] and f.episodes() == ref_fin["episodes"], (name, size)
         assert fin["open_questions"] == ref_fin["open_questions"]
         if len(turns) < 50:
-            # every emitted quantum / episode equals the one-shot read-out over that
-            # prefix, and an unchanged row is never re-emitted
-            emitted: dict = {}
+            # at every prefix the folded deltas equal the one-shot full read-out over
+            # that prefix, and a delta row always changes its quantum / episode
+            g = DeltaFold()
+            g.turns(turns)
             for upto, out in deltas:
                 _, pre = _one_shot(svc, kind, turns[:upto])
-                pq = {_key(q): q for q in pre["quanta"]}
-                pe = {e["episode_id"]: e for e in pre["episodes"]}
-                for q in out["quanta"]:
-                    assert pq[_key(q)] == q and emitted.get(_key(q)) != q
-                    emitted[_key(q)] = q
-                for e in out["episodes"]:
-                    assert pe[e["episode_id"]] == e
-                assert all(emitted.get(k) == v for k, v in pq.items()), "a changed row was not re-emitted"
+                before_q = copy.deepcopy(g.q)
+                g.apply(out)
+                assert g.quanta() == pre["quanta"] and g.episodes() == pre["episodes"], (name, size, upto)
+                for d in out["quanta_delta"]:
+                    if d["op"] == "upsert" and d["quantum_id"] in before_q:
+                        b = before_q[d["quantum_id"]]
+                        fields = [k for k in d if k in b and k not in ("evidence", "counter_evidence")]
+                        assert all(d[k] != b[k] for k in fields), "an unchanged field was re-emitted"
+                        assert fields or any(d[k] for k in ("evidence_add", "evidence_remove", "counter_add",
+                                                            "counter_remove")), "an unchanged quantum was re-emitted"
                 assert out["open_questions"] == pre["open_questions"]
 
 
@@ -351,7 +383,7 @@ def test_http_contract_and_errors(server):
     st, info, _ = _req(server, "GET", "/v1/info")
     assert info["conversations"]["open"] == 1 and info["conversations"]["concurrency"] == "per_conversation_locks"
     st, fin, _ = _req(server, "POST", "/v1/conversations/c.h-1:x~y/close")
-    assert st == 200 and fin["turns"] == [] and fin["quanta"]
+    assert st == 200 and fin["turns"] == [] and fin["quanta_delta"] == [] and fin["episodes_delta"] == []
     client_parse_conversation(fin, "c.h-1:x~y", {t["id"] for t in turns}, [])
 
     def code(st_doc):

@@ -849,6 +849,17 @@ impl TypedGraph {
         self.mutation_log = Some(GraphMutationLog::default());
     }
 
+    /// Begin the notification log plus the first-seen state of every touched
+    /// EDGE (no node before-images): enough to report the exact net edge
+    /// change of one observed operation at O(touched edges) cost.
+    pub fn begin_edge_before_log(&mut self) {
+        assert!(self.mutation_log.is_none(), "graph mutation log already active");
+        self.mutation_log = Some(GraphMutationLog {
+            before_edges: Some(FxHashMap::default()),
+            ..GraphMutationLog::default()
+        });
+    }
+
     /// Begin an opt-in semantic before-image journal for branch residuals.
     /// Unlike the notification-only logger, this retains only the first state
     /// of touched nodes/edges and scales with the branch write set.

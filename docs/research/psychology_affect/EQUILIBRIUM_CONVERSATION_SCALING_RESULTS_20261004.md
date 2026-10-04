@@ -594,3 +594,208 @@ New tests in `tests/test_equilibrium_scaling.py`:
   flags off);
 - the default-off setter test, which now also covers `set_hop_frontier` /
   `set_delete_frontier`.
+
+## 6. T3e: evidence deltas on the wire (pack 0.6.0, eq-tax-0.6.0)
+
+Stage B left the read-out tracking the wire: a changed quantum was re-emitted with its
+full evidence list, so a 100-turn batch's response grew with the conversation (§5.3).
+T3e changes the conversation response contract (not in production, so free to change):
+`/turns`, `/close` and every ok `/_batch` item carry `quanta_delta` / `episodes_delta`
+in place of `quanta` / `episodes`. `/v1/discourse` keeps the full rows.
+
+### 6.1 Contract
+
+- `quanta_delta`: `{quantum_id, op: upsert|retract, ...}`. The first upsert of an id
+  carries `actor_ref`, `trait`, `polarity`, `match`, `target_ref` (null when none),
+  the full current lists in `evidence_add` / `counter_add`, and `rule_ids`. Later
+  upserts carry the four `*_add` / `*_remove` lists (always present, may be empty),
+  plus `match` / `rule_ids` only if they changed. `retract` has no other fields: the
+  quantum no longer holds. If it holds again later, it gets a fresh upsert with full
+  lists.
+- `episodes_delta`: `{episode_id, op, kind?, actor_refs?, turns_add, turns_remove,
+  facets?, generative?, rule_ids?}`. Every field appears on the first upsert; after
+  that a field appears only if it changed.
+- Deltas are relative to everything emitted earlier for the conversation, in seq order.
+  Only quanta and episodes that changed in this call appear. `open_questions` stays a
+  full list.
+- `quantum_id` = `q:` + the first 16 hex characters of sha256 over the permanent quantum
+  node's identity key `[actor, trait, polarity, target or ""]`, i.e. the
+  `add_node_if_absent` key the rules mint it under. It is stable within a conversation,
+  across batch sizes, and across re-appearance.
+- Close runs no ticks. Every change was already emitted by the batch that made it, so
+  close's deltas are empty.
+
+### 6.2 Mechanism
+
+- **New engine primitive** `run_rules_edge_delta(max_steps, edge_types, node_types)`
+  (runners/dsl: `graph.rs` `begin_edge_before_log`, `substrate.rs`, `py.rs`):
+  - It runs the same fixpoint as `run_rules`.
+  - The graph keeps the first-seen state of every edge it touches. These are edge
+    before-images only, with no node clones, so the cost is O(touched edges).
+  - It reports the exact NET existence change of every edge of the requested types:
+    `(src, type, tgt, exists_now)`. An edge added and removed within the run is not a
+    change.
+  - It also reports the touched nodes of the requested types, grouped by type.
+- **The adapter** (`domains/equilibrium_classify.py`) accumulates these reports across
+  the batch's ticks into `Changes`:
+  - Edge types: quantum existence, the evidence and counter edge types, and episode
+    membership / facet.
+  - Node types: EqQuantum / EqEpisode / EqEpFacet.
+- **The read-out** compares mechanically:
+  - An evidence pair's previous state is the engine's first-seen state. The add /
+    remove lists are read from the changed edges alone; no evidence list is re-read.
+  - A quantum's or episode's previous existence and scalar fields come from one ledger
+    mark (id, sort key, fields). The mark is written when the row is emitted and
+    cleared on retract.
+  - An existing quantum whose existence edges are gone is retracted.
+  - A first appearance is read in full, once.
+- Episode `actor_refs` is kept as per-actor member counts in the mark.
+- No ledger read materialises the whole ledger: the marks grow with the conversation,
+  so each lookup reads one attr.
+- No label, quantum or episode is decided by this code: it is a diff of what the rules
+  wrote.
+
+### 6.3 Exactness
+
+All checks were run against the saved t3d goldens, using `/tmp/eqdelta_golden.py`
+(small: `/tmp/eq_golden_t3d_head.json`; big: `/tmp/eq_big_head.json`). Before any
+change, the unmodified t3e tree compared byte-identical with both golden sets
+(26 + 7 runs).
+
+| set | runs | responses | prefix checks | mismatches | retracts | evidence/counter removals |
+|---|---|---|---|---|---|---|
+| small (every golden conversation, sizes 1/3/100 or 7/100) | 26 | 351 | 325 | **0** | 176 | 590 |
+| big (2.5k / 2k / 1.5k / 600 turns, sizes 1/37/100/250/600) | 7 | 429 | 422 | **0** | 196 | 3,413 |
+
+What each prefix check asserts:
+
+1. The fold of the delta stream equals a live full read (`conversation_full`) after
+   that batch.
+2. Every old changed row equals the folded row. Version suffixes are normalised
+   0.5.1 → 0.6.0.
+3. The set of quanta / episodes upserted is exactly the old changed set.
+4. All turn-level fields are identical.
+
+At close:
+
+- The fold equals the old close's complete lists.
+- Close's deltas are empty.
+- `seq` and `open_questions` are identical.
+
+Wire bytes over the golden runs: small 4.89 MB → 3.56 MB, big 16.11 MB → 9.77 MB. The
+old figures include the old close's full lists.
+
+### 6.4 Measurements
+
+**(a)** Median of 3 probes of a 100-turn batch, in ms. Same bench as §4.3 / §5.3, load
+11.6–15.1. Load was higher than §5.3's 8.7–10.2.
+
+| L | §5.3 total | **T3e total** | S0 | trk | L1 | L2 | read-out (§5.3 → T3e) |
+|---|---|---|---|---|---|---|---|
+| 100 | 408 | **397** | 182 | 71 | 28 | 58 | 8 → **8.8** |
+| 1,000 | 442 | **438** | 177 | 82 | 36 | 77 | 12 → **9.9** |
+| 5,000 | 592 | **568** | 216 | 119 | 53 | 109 | 30 → **10.7** |
+| 10,000 | 692 | **636** | 242 | 127 | 88 | 112 | 49 → **17.4** |
+
+Exponents over L ≥ 1,000:
+
+| component | §5.3 | T3e |
+|---|---|---|
+| S0 | 0.08 | 0.14 |
+| tracking | 0.18 | 0.20 |
+| L1 | 0.37 | 0.36 |
+| L2 | 0.18 | 0.17 |
+| read-out | 0.60 | **0.21** |
+| **total** | 0.19 | **0.16** |
+
+Other figures from the same run:
+
+- Over L = 100…10k the exponent is 0.10. Over every batch with prefix ≥ 1k
+  (94 batches) it is 0.14.
+- Close at 10,300 turns takes **19 ms** (§5.3: 169 ms) and returns 193 bytes.
+
+**Wire per 100-turn batch.** Two sources:
+
+- The same probes as (a).
+- Separately, the mean over 10 consecutive batches at each L on the same 10.3k-turn
+  thread (`/tmp/eqdelta_wire.py`).
+
+"0.5.x" is the response the old contract sends for the same batch: the full rows of
+every quantum / episode the batch changed. It is reconstructed from the client fold;
+§6.3 (2)–(3) show this reconstruction equals the old wire.
+
+| L | response (KiB) | quanta+episodes deltas (KiB) | rows | 0.5.x response (KiB) | 0.5.x rows part (KiB) |
+|---|---|---|---|---|---|
+| 1,000 | 90.8 | 46.7 | 210 q / 9 e | 150.6 | 106.4 |
+| 5,000 | 87.9 | 43.6 | 215 q / 9 e | 302.8 | 258.5 |
+| 10,000 | 104.0 | 59.4 | 225 q / 11 e | 461.3 | 416.7 |
+
+- Probe medians (bench a), exponent over L ≥ 1k: response **0.05**, deltas 0.09,
+  0.5.x 0.52.
+- Whole 10.3k conversation (103 batches): 9.25 MiB of responses vs 28.76 MiB under
+  0.5.x. The quanta / episodes part is 4.81 MiB vs 24.33 MiB.
+- About 45 KiB of every response is the per-turn label read-out of the 100 new turns,
+  which is constant.
+
+### 6.5 Predictions vs outcome, gaps
+
+- **Prediction:** the wire and the read-out track change, not conversation length.
+  **Outcome:** the response is ~flat (0.05). The read-out exponent fell from 0.60 to
+  0.21 (49 → 17 ms at 10k).
+- **Residual wire growth comes from one trait's semantics, not the mechanism.** In the
+  last 10 batches of the 10k thread, 9 `interaction.floor` change rows carry 164 KiB,
+  and one floor re-appearance carries 25 KiB:
+  - The floor counter set is every turn of the current runner-up. When the runner-up
+    changes, the delta is a real O(turns of that actor) remove / add.
+  - A re-appearing floor quantum carries its full lists, as the contract requires.
+  - Every other trait's rows are small (e.g. 378 concession rows in 57.6 KiB).
+- **Residual read-out growth.** The read-out still grows slightly (0.21):
+  - The number of changed rows per batch grows slowly (210 → 225 quanta).
+  - Floor swaps and re-appearances resolve O(changed turns) refs.
+  - The Python side reads one ledger mark per touched quantum.
+- **Not changed:** the per-component tick costs (S0, tracking, L1, L2) are within load
+  noise of §5.3, and their exponents are the same.
+- **Not run:** the Rust unit tests (`cargo test`). I stopped the build after it ran past
+  the time budget. The primitive is checked from Python against an O(V+E) graph-diff
+  oracle around every tick (§6.6).
+- **Not re-measured:** benches (b) to (e) and the AMI replay. T3e changes only the
+  read-out and wire, not the ticks.
+
+### 6.6 Tests
+
+- New file `tests/test_equilibrium_evidence_deltas.py` (6 tests). The reference client
+  fold is `tests/equilibrium_delta_fold.py`; it raises on any contract violation.
+  - `test_retraction_counter_removal_and_reappearance`: an explicit floor case. The
+    runner-up switch yields exactly `counter_remove [f3]` / `counter_add [f5, f6]`.
+    A tie retracts. Re-appearance carries the full lists. The fold equals the full read
+    after every batch.
+  - `test_every_delta_kind_folds_exactly_at_every_prefix`: three synthetic windows
+    with 7-turn batches. It asserts that retract, re-appearance, evidence removal,
+    counter removal, match change, episode field change and episode turn additions
+    all occur.
+  - `test_quantum_ids_are_stable_across_batch_sizes`
+  - `test_reference_fold_rejects_contract_violations`
+  - `test_engine_exact_edge_delta_equals_graph_diff_oracle`: around every tick of a
+    conversation, the primitive's report equals a before/after `graph_to_dict` diff,
+    restricted to the delta edge types.
+  - `test_http_turns_close_and_batch_shape`: `/turns`, `/_batch` item, `/close` and
+    `/v1/discourse` over HTTP.
+- Updated for the new contract and versions: `test_equilibrium_conversations.py`
+  (incremental == one-shot via the fold, at every prefix, and no unchanged field is
+  re-emitted), `test_equilibrium_scaling.py` (delta read-out == full re-read after
+  every batch, and the full read for the non-monotone prefix checks),
+  `test_equilibrium_tracking.py`, and version strings in the classifier, climate and
+  discourse service suites.
+- **Suite results:**
+  - All 9 `tests/test_equilibrium_*.py` suites plus `test_engine_provenance_migrated.py`:
+    **169 passed, 1 skipped**. One test, `test_phase9_exit_10k_base_unchanged_no_writes`,
+    failed in the full run only because I edited a test helper while the suite was
+    running (its tree-state check saw the edit). It passed when re-run alone. The skip
+    is provenance's uncommitted-Rust-source check.
+  - Engine suites: batch-apply, empty-match, incremental-match, predicate-retraction
+    and counterfactual-experiment gave **35 passed, 1 failed**. The failure is
+    `test_predicate_retraction_migrated::test_covered_work_count_drops_to_constant`,
+    the failure §4.5 / §5.7 already record as predating stage B; that test uses none
+    of the changed APIs.
+- Seeds were regenerated with `scripts/build_equilibrium_seed_pack.py`. The only diff
+  is the version fields, 0.5.1 → 0.6.0, in all 13 manifests.

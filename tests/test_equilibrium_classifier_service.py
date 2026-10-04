@@ -79,20 +79,33 @@ def _wait_up(proc, port, deadline_s=120):
 
 def _start(tmp: Path, port: int, prefix: list[str] | None = None, **env_over):
     log = open(tmp / f"server_{port}.stderr", "wb")
+    # Own process group: when the server runs under `strace -f`, signalling only strace detaches it and leaves the
+    # server orphaned (observed: dozens of leaked sidecars after repeated 10k-turn runs). _stop signals the group.
     proc = subprocess.Popen((prefix or []) + [sys.executable, str(SERVER), "--port", str(port)],
-                            cwd=tmp, env=_env(tmp, **env_over), stdout=log, stderr=log)
+                            cwd=tmp, env=_env(tmp, **env_over), stdout=log, stderr=log, start_new_session=True)
     boot_s = _wait_up(proc, port)
     return proc, boot_s
 
 
+def _signal_group(proc, sig) -> None:
+    try:
+        os.killpg(proc.pid, sig)
+    except ProcessLookupError:
+        pass
+
+
 def _stop(proc):
+    """Stop the server and everything in its process group (strace and the server it traces)."""
+    _signal_group(proc, signal.SIGINT)
+    try:
+        proc.wait(15)
+    except subprocess.TimeoutExpired:
+        pass
+    _signal_group(proc, signal.SIGTERM)
+    time.sleep(0.2)
+    _signal_group(proc, signal.SIGKILL)
     if proc.poll() is None:
-        proc.send_signal(signal.SIGINT)
-        try:
-            proc.wait(15)
-        except subprocess.TimeoutExpired:
-            proc.kill()
-            proc.wait(5)
+        proc.wait(5)
 
 
 def _client_parse(item: dict) -> None:
@@ -207,7 +220,7 @@ def test_info_contract(server):
     st, doc, _ = _req(server, "GET", "/v1/info")
     assert st == 200 and doc["ok"] is True
     assert doc["mode"] == "fork_per_batch" and doc["no_llm"] is True
-    assert doc["taxonomy_version"] == "eq-tax-0.5.1" and doc["seed_pack_version"] == "0.5.1"
+    assert doc["taxonomy_version"] == "eq-tax-0.6.0" and doc["seed_pack_version"] == "0.6.0"
     assert doc["seed_pack_sha256"] == doc["seed_pack_digest"] == srv.seed_pack_sha256()
     assert doc["seed_pack_files"] == [p.name for p in sorted((ROOT / "seeds").glob("equilibrium_*.json"))]
     head = subprocess.run(["git", "-C", str(ROOT), "rev-parse", "HEAD"], capture_output=True,
@@ -243,9 +256,9 @@ def test_classify_contract(server):
     assert labels[0]["deescalation"] == 0.0
     assert labels[1]["deescalation"] == 1.0
     assert {"code", "link"} <= set(labels[1]["substantive_markers"])
-    assert "eq.msg.speech_act.sak_question:0.5.1" in labels[0]["rule_ids"]
+    assert "eq.msg.speech_act.sak_question:0.6.0" in labels[0]["rule_ids"]
     # taxonomy_version optional; when present it must match
-    st, _, _ = _req(server, "POST", "/v1/classify", {"taxonomy_version": "eq-tax-0.5.1", "messages": msgs[:1]})
+    st, _, _ = _req(server, "POST", "/v1/classify", {"taxonomy_version": "eq-tax-0.6.0", "messages": msgs[:1]})
     assert st == 200
 
 
@@ -276,9 +289,9 @@ def test_classify_v2_cue_fields(server):
                      "v4": set(), "v5": {"deescalation"}, "v6": set(), "v7": set()}
     assert {i: lab[i]["domains"] for i in lab} == {
         "v1": [], "v2": [], "v3": [], "v4": ["technical"], "v5": [], "v6": [], "v7": []}
-    assert "eq.msg.status_claim.cue_4gram:0.5.1" in lab["v2"]["rule_ids"]
-    assert "eq.msg.domain.technical_cue_bigram:0.5.1" in lab["v4"]["rule_ids"]
-    assert all(r.endswith(":0.5.1") for x in doc["labels"] for r in x["rule_ids"])
+    assert "eq.msg.status_claim.cue_4gram:0.6.0" in lab["v2"]["rule_ids"]
+    assert "eq.msg.domain.technical_cue_bigram:0.6.0" in lab["v4"]["rule_ids"]
+    assert all(r.endswith(":0.6.0") for x in doc["labels"] for r in x["rule_ids"])
 
 
 def test_classify_deterministic_across_requests(server):
@@ -300,7 +313,7 @@ def test_classify_errors_closed_and_no_echo(server, case):
         "not_object": ([SECRET], 400, "schema_violation"),
         "unknown_top": ({"messages": [ok], SECRET: 1}, 400, "schema_violation"),
         "unknown_msg_key": ({"messages": [{**ok, SECRET: 1}]}, 400, "schema_violation"),
-        "missing_messages": ({"taxonomy_version": "eq-tax-0.5.1"}, 400, "schema_violation"),
+        "missing_messages": ({"taxonomy_version": "eq-tax-0.6.0"}, 400, "schema_violation"),
         "empty": ({"messages": []}, 400, "schema_violation"),
         "too_many": ({"messages": [{"id": f"x{i}", "text": SECRET} for i in range(101)]}, 413, "too_large"),
         "id_type": ({"messages": [{"id": 5, "text": SECRET}]}, 400, "schema_violation"),

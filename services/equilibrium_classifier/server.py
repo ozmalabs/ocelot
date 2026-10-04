@@ -26,16 +26,28 @@ worker client (equilibrium_worker/classify.py, OcelotClassifier):
                      -> {"ok","taxonomy_version","conversation_id","seq",
                          "turns":[{"id","labels"(as /v1/classify),"responds_to","basis",
                                    "addressees","thread_id","topic_id","answers"}],
-                         "quanta":[new/changed],"episodes":[new/changed],"open_questions"}
-  POST /v1/conversations/{id}/close  -> same shape, "turns":[], COMPLETE final quanta/episodes;
-                                        frees the retained fork
+                         "quanta_delta":[...],"episodes_delta":[...],"open_questions"}
+                        (0.6.0 EVIDENCE DELTAS, relative to everything emitted earlier for
+                         the conversation, in seq order; only quanta / episodes this call
+                         changed appear:
+                         quanta_delta  {quantum_id, op: upsert|retract; upsert: actor_ref,
+                           trait, polarity, match, target_ref (first appearance; afterwards
+                           only if changed), evidence_add/_remove, counter_add/_remove
+                           (always; first appearance carries the full lists in *_add),
+                           rule_ids (full; first appearance / when changed)}
+                         episodes_delta {episode_id, op; upsert: kind?, actor_refs?,
+                           turns_add, turns_remove, facets?, generative?, rule_ids?}
+                         folding them in order gives exactly the full rows; open_questions
+                         is a full list)
+  POST /v1/conversations/{id}/close  -> same shape, "turns":[], deltas of this call (no ticks:
+                                        empty); frees the retained fork
   GET  /v1/conversations/{id}        -> {"ok","conversation_id","seq","idle_ttl_s","kind"}
   POST /v1/conversations/_batch      (shared batch contract)
                      -> {"taxonomy_version"?, "items":[{"conversation_id","kind","turns":[as /turns],
                          "close"?: bool}]}  (1..64 items, <= 2,000 turns in total, <= 100 per item,
                          each conversation_id at most once)
                      -> {"ok":true,"taxonomy_version","results":[ {"conversation_id","ok":true,
-                         seq,turns,quanta,episodes,open_questions} (as /turns)
+                         seq,turns,quanta_delta,episodes_delta,open_questions} (as /turns)
                          | {"conversation_id","ok":false,"error":{code,message,retryable}} ]}
                         results in request order; items run in parallel on the worker pool; a
                         per-item failure does not fail the batch; "close":true frees the
@@ -449,6 +461,49 @@ def episodes_to_wire(episodes: list[dict]) -> list[dict]:
     return out
 
 
+MATCHES = ("exact", "partial", "weak")
+QUANTUM_KEY_FIELDS = ("actor_ref", "trait", "polarity", "match", "target_ref")
+DELTA_LISTS = ("evidence_add", "evidence_remove", "counter_add", "counter_remove")
+
+
+def quanta_delta_to_wire(deltas: list[dict]) -> list[dict]:
+    """Type conversion only (0.6.0 evidence deltas): every delta is the adapter's
+    mechanical read of what the rules changed."""
+    out = []
+    for d in deltas:
+        row = {"quantum_id": d["quantum_id"], "op": d["op"]}
+        if d["op"] == "upsert":
+            if "match" in d and d["match"] not in MATCHES:
+                raise RuntimeError("quantum without a match shape")  # -> 500, never a guess
+            row.update({k: d[k] for k in QUANTUM_KEY_FIELDS if k in d})
+            row.update({k: list(d[k]) for k in DELTA_LISTS})
+            if "rule_ids" in d:
+                row["rule_ids"] = [wire_rule_id(r) for r in d["rule_ids"]]
+        out.append(row)
+    return out
+
+
+def episodes_delta_to_wire(deltas: list[dict]) -> list[dict]:
+    out = []
+    for d in deltas:
+        row = {"episode_id": d["episode_id"], "op": d["op"]}
+        if d["op"] == "upsert":
+            if any(f["match"] not in MATCHES for f in d.get("facets", ())):
+                raise RuntimeError("facet without a match shape")
+            for k in ("kind", "actor_refs"):
+                if k in d:
+                    row[k] = d[k] if k == "kind" else list(d[k])
+            row["turns_add"], row["turns_remove"] = list(d["turns_add"]), list(d["turns_remove"])
+            if "facets" in d:
+                row["facets"] = [{"code": f["code"], "match": f["match"]} for f in d["facets"]]
+            if "generative" in d:
+                row["generative"] = d["generative"]
+            if "rule_ids" in d:
+                row["rule_ids"] = [wire_rule_id(r) for r in d["rule_ids"]]
+        out.append(row)
+    return out
+
+
 def discourse_to_wire(result: dict, taxonomy_version: str) -> dict:
     """Re-shape the adapter read-out into the shared /v1/discourse response."""
     return {"ok": True, "taxonomy_version": taxonomy_version, "window_id": result["window_id"],
@@ -470,8 +525,8 @@ def conversation_to_wire(result: dict, taxonomy_version: str) -> dict:
                       "topic_id": t["topic_id"], "answers": list(t["answers"])})
     return {"ok": True, "taxonomy_version": taxonomy_version,
             "conversation_id": result["conversation_id"], "seq": result["seq"], "turns": turns,
-            "quanta": quanta_to_wire(result["quanta"]),
-            "episodes": episodes_to_wire(result["episodes"]),
+            "quanta_delta": quanta_delta_to_wire(result["quanta_delta"]),
+            "episodes_delta": episodes_delta_to_wire(result["episodes_delta"]),
             "open_questions": list(result["open_questions"])}
 
 
@@ -630,7 +685,7 @@ class ClassifierService:
 
     def discourse(self, window: dict, turns: list[dict]) -> dict:
         """/v1/discourse = open + turns (chunks of MAX_CONV_TURNS) + close on one
-        fork that is dropped afterwards; quanta/episodes are the close read-out."""
+        fork that is dropped afterwards; quanta/episodes are the full read-out."""
         self._require_healthy()
         ec = self._ec
         with self._slot():
@@ -642,7 +697,7 @@ class ClassifierService:
                 for i in range(0, len(turns), MAX_CONV_TURNS):
                     got += self._budget(ec.conversation_ingest, branch, self.root, st,
                                         turns[i:i + MAX_CONV_TURNS])["turns"]
-                fin = self._budget(ec.conversation_close, branch, self.root, st)
+                fin = self._budget(ec.conversation_full, branch, self.root, st)
             finally:
                 del branch
         self._after_batch(windows=1, turns=len(turns))
@@ -757,7 +812,7 @@ class ClassifierService:
         return conversation_to_wire(result, ec.TAXONOMY_VERSION)
 
     def conversation_close(self, cid: str, read_out: bool = True) -> dict | None:
-        """Close: the COMPLETE final read-out (read_out=False: just free the fork,
+        """Close: the final read-out (deltas of this call; read_out=False: just free the fork,
         used by /_batch `close`), then drop the retained fork."""
         self._require_healthy()
         ec = self._ec
