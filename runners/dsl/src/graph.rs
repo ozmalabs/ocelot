@@ -426,6 +426,16 @@ pub struct TypedGraph {
     /// Default-off ⇒ the push is gated ⇒ byte- and cost-identical.
     pub attr_write_log: Vec<(NodeID, Sym)>,
     pub log_attr_writes: bool,
+    /// Write-frontier twin of `attr_write_log` (`Substrate::write_frontier`):
+    /// every edge that BECOMES present, as (src, type, tgt). Pushed only while
+    /// `log_edge_writes` is on; drained by the owning Substrate.
+    pub edge_write_log: Vec<(NodeID, Sym, NodeID)>,
+    pub log_edge_writes: bool,
+    /// Delete twin of `edge_write_log` (`Substrate::delete_frontier`): every edge
+    /// REMOVED, as (src, type, tgt). Pushed only while `log_edge_deletes` is on;
+    /// drained by the owning Substrate.
+    pub edge_delete_log: Vec<(NodeID, Sym, NodeID)>,
+    pub log_edge_deletes: bool,
 }
 
 /// Per-index clone profile used by the source-locked CoW representation probe.
@@ -476,6 +486,10 @@ impl TypedGraph {
             pending_net_collapses: Vec::new(),
             attr_write_log: Vec::new(),
             log_attr_writes: false,
+            edge_write_log: Vec::new(),
+            log_edge_writes: false,
+            edge_delete_log: Vec::new(),
+            log_edge_deletes: false,
         }
     }
 
@@ -655,6 +669,8 @@ impl TypedGraph {
     pub(crate) fn clear_experiment_observers(&mut self) {
         self.mutation_log = None;
         self.attr_write_log.clear();
+        self.edge_write_log.clear();
+        self.edge_delete_log.clear();
     }
 
     /// Edge IDs of `edge_type`. O(1) hash lookup. Used by the rule
@@ -1263,8 +1279,14 @@ impl TypedGraph {
                 self.edge_read_scope.as_mut().expect("scope checked")
                     .insert(existing, EdgeKey { src, edge_type, tgt });
                 self.log_edge_mutation(EdgeKey { src, edge_type, tgt });
+                if self.log_edge_writes {
+                    self.edge_write_log.push((src, edge_type, tgt));
+                }
                 return Ok(existing);
             }
+        }
+        if self.log_edge_writes {
+            self.edge_write_log.push((src, edge_type, tgt));
         }
         let data = EdgeData {
             src,
@@ -1328,6 +1350,9 @@ impl TypedGraph {
         let data = slot.take()?;
         self.bump_mutation_version();
         let key = data.key();
+        if self.log_edge_deletes {
+            self.edge_delete_log.push((key.src, key.edge_type, key.tgt));
+        }
         if let Some(scope) = self.edge_read_scope.as_mut() {
             scope.remove(idx, key);
         }

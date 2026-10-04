@@ -914,39 +914,23 @@
     [
      "add_edge",
      "x",
-     "eq_in_episode",
-     "e"
-    ],
-    [
-     "set_attr",
-     "e",
-     "eqrule:eq.ep.extend",
-     true
+     "eq_cue_extend",
+     "w"
     ]
    ],
    "match": [
     [
      "agent",
-     "eq_l1_open",
+     "eq_window",
      "w"
     ],
     [
      "w",
-     "eq_has_turn",
+     "eq_l1",
      "x"
-    ],
-    [
-     "x",
-     "eq_responds_to",
-     "y"
-    ],
-    [
-     "y",
-     "eq_in_episode",
-     "e"
     ]
    ],
-   "name": "eq.ep.extend",
+   "name": "eq.ep.extend.turn",
    "where": {
     "predicate": {
      "items": [
@@ -1006,58 +990,52 @@
    "batch": true,
    "effects": [
     [
-     "add_node_if_absent",
-     "fx",
-     "EqEpFacet",
-     {
-      "fx_code": {
-       "__term__": {
-        "key": "code",
-        "node": {
-         "name": "f",
-         "type": "Var"
-        },
-        "type": "Attr"
-       }
-      },
-      "fx_ep": {
-       "__term__": {
-        "name": "e",
-        "type": "Var"
-       }
-      }
-     }
-    ],
-    [
      "add_edge",
-     "e",
-     "eq_has_facet",
-     "fx"
-    ],
-    [
-     "add_edge",
-     "fx",
-     "eq_evidence",
-     "m"
+     "x",
+     "eq_in_episode",
+     "e"
     ],
     [
      "set_attr",
      "e",
-     "eqrule:eq.ep.facet",
+     "eqrule:eq.ep.extend",
      true
     ]
    ],
    "match": [
     [
-     "agent",
-     "eq_l1_open",
+     "x",
+     "eq_cue_extend",
      "w"
     ],
     [
-     "agent",
-     "eq_has_facet_cue",
-     "f"
+     "x",
+     "eq_responds_to",
+     "y"
     ],
+    [
+     "y",
+     "eq_in_episode",
+     "e"
+    ]
+   ],
+   "name": "eq.ep.extend",
+   "where": {
+    "type": "Lit",
+    "value": true
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "add_edge",
+     "m",
+     "eq_fx_cue",
+     "f"
+    ]
+   ],
+   "match": [
     [
      "agent",
      "eq_window",
@@ -1065,16 +1043,16 @@
     ],
     [
      "w",
-     "eq_has_episode",
-     "e"
+     "eq_l1",
+     "m"
     ],
     [
-     "m",
-     "eq_in_episode",
-     "e"
+     "agent",
+     "eq_has_facet_cue",
+     "f"
     ]
    ],
-   "name": "eq.ep.facet",
+   "name": "eq.ep.facet.turn",
    "where": {
     "items": [
      {
@@ -1161,6 +1139,403 @@
    "batch": true,
    "effects": [
     [
+     "add_node_if_absent",
+     "fx",
+     "EqEpFacet",
+     {
+      "fx_code": {
+       "__term__": {
+        "key": "code",
+        "node": {
+         "name": "f",
+         "type": "Var"
+        },
+        "type": "Attr"
+       }
+      },
+      "fx_ep": {
+       "__term__": {
+        "name": "e",
+        "type": "Var"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "e",
+     "eq_has_facet",
+     "fx"
+    ]
+   ],
+   "match": [
+    [
+     "w",
+     "eq_has_episode",
+     "e"
+    ],
+    [
+     "m",
+     "eq_in_episode",
+     "e"
+    ],
+    [
+     "m",
+     "eq_fx_cue",
+     "f"
+    ]
+   ],
+   "name": "eq.ep.facet.node",
+   "where": {
+    "arg": {
+     "predicate": {
+      "a": {
+       "key": "fx_code",
+       "node": {
+        "name": "y",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "key": "code",
+       "node": {
+        "name": "f",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "type": "Eq"
+     },
+     "source": {
+      "edge_type": "eq_has_facet",
+      "node": {
+       "name": "e",
+       "type": "Var"
+      },
+      "type": "Neighbours"
+     },
+     "type": "Exists",
+     "var_name": "y"
+    },
+    "type": "Not"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "add_edge",
+     "fx",
+     "eq_evidence",
+     "m"
+    ],
+    [
+     "set_attr",
+     "e",
+     "eqrule:eq.ep.facet",
+     true
+    ]
+   ],
+   "match": [
+    [
+     "w",
+     "eq_has_episode",
+     "e"
+    ],
+    [
+     "m",
+     "eq_in_episode",
+     "e"
+    ],
+    [
+     "m",
+     "eq_fx_cue",
+     "f"
+    ],
+    [
+     "e",
+     "eq_has_facet",
+     "fx"
+    ]
+   ],
+   "name": "eq.ep.facet",
+   "where": {
+    "a": {
+     "key": "fx_code",
+     "node": {
+      "name": "fx",
+      "type": "Var"
+     },
+     "type": "Attr"
+    },
+    "b": {
+     "key": "code",
+     "node": {
+      "name": "f",
+      "type": "Var"
+     },
+     "type": "Attr"
+    },
+    "type": "Eq"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "add_edge",
+     "m",
+     "eq_cue_resolve",
+     "w"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_l1",
+     "m"
+    ]
+   ],
+   "name": "eq.ep.gen.resolve_turn",
+   "where": {
+    "predicate": {
+     "items": [
+      {
+       "a": {
+        "key": "role",
+        "node": {
+         "name": "ec_m",
+         "type": "Var"
+        },
+        "type": "Attr"
+       },
+       "b": {
+        "type": "Lit",
+        "value": "resolve"
+       },
+       "type": "Eq"
+      },
+      {
+       "a": {
+        "name": {
+         "key": "lab_key",
+         "node": {
+          "name": "ec_m",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "node": {
+         "name": "m",
+         "type": "Var"
+        },
+        "type": "AttrByName"
+       },
+       "b": {
+        "type": "Lit",
+        "value": true
+       },
+       "type": "Eq"
+      }
+     ],
+     "type": "And"
+    },
+    "source": {
+     "edge_type": "eq_has_episode_cue",
+     "node": {
+      "name": "agent",
+      "type": "Var"
+     },
+     "type": "Neighbours"
+    },
+    "type": "Exists",
+    "var_name": "ec_m"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "add_edge",
+     "m",
+     "eq_cue_escalate",
+     "w"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_l1",
+     "m"
+    ]
+   ],
+   "name": "eq.ep.gen.escalate_turn",
+   "where": {
+    "predicate": {
+     "items": [
+      {
+       "a": {
+        "key": "role",
+        "node": {
+         "name": "ec_m",
+         "type": "Var"
+        },
+        "type": "Attr"
+       },
+       "b": {
+        "type": "Lit",
+        "value": "escalate"
+       },
+       "type": "Eq"
+      },
+      {
+       "a": {
+        "name": {
+         "key": "lab_key",
+         "node": {
+          "name": "ec_m",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "node": {
+         "name": "m",
+         "type": "Var"
+        },
+        "type": "AttrByName"
+       },
+       "b": {
+        "type": "Lit",
+        "value": true
+       },
+       "type": "Eq"
+      }
+     ],
+     "type": "And"
+    },
+    "source": {
+     "edge_type": "eq_has_episode_cue",
+     "node": {
+      "name": "agent",
+      "type": "Var"
+     },
+     "type": "Neighbours"
+    },
+    "type": "Exists",
+    "var_name": "ec_m"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "add_edge",
+     "m",
+     "eq_ep_res",
+     "e"
+    ]
+   ],
+   "match": [
+    [
+     "e",
+     "eq_root",
+     "r"
+    ],
+    [
+     "m",
+     "eq_in_episode",
+     "e"
+    ],
+    [
+     "m",
+     "eq_cue_resolve",
+     "w"
+    ]
+   ],
+   "name": "eq.ep.gen.resolve_member",
+   "where": {
+    "a": {
+     "key": "eq_turn_pos",
+     "node": {
+      "name": "m",
+      "type": "Var"
+     },
+     "type": "Attr"
+    },
+    "b": {
+     "key": "eq_turn_pos",
+     "node": {
+      "name": "r",
+      "type": "Var"
+     },
+     "type": "Attr"
+    },
+    "type": "Gt"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "add_edge",
+     "m",
+     "eq_ep_esc",
+     "e"
+    ]
+   ],
+   "match": [
+    [
+     "e",
+     "eq_root",
+     "r"
+    ],
+    [
+     "m",
+     "eq_in_episode",
+     "e"
+    ],
+    [
+     "m",
+     "eq_cue_escalate",
+     "w"
+    ]
+   ],
+   "name": "eq.ep.gen.escalate_member",
+   "where": {
+    "a": {
+     "key": "eq_turn_pos",
+     "node": {
+      "name": "m",
+      "type": "Var"
+     },
+     "type": "Attr"
+    },
+    "b": {
+     "key": "eq_turn_pos",
+     "node": {
+      "name": "r",
+      "type": "Var"
+     },
+     "type": "Attr"
+    },
+    "type": "Gt"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
      "set_attr",
      "e",
      "ep_generative",
@@ -1171,14 +1546,15 @@
      "e",
      "eqrule:eq.ep.generative.resolved",
      true
+    ],
+    [
+     "set_attr",
+     "e",
+     "eqrule:eq.ep.generative.escalated",
+     null
     ]
    ],
    "match": [
-    [
-     "agent",
-     "eq_stratum_3",
-     "st"
-    ],
     [
      "agent",
      "eq_window",
@@ -1188,76 +1564,17 @@
      "w",
      "eq_has_episode",
      "e"
-    ],
-    [
-     "e",
-     "eq_root",
-     "r"
     ]
    ],
    "name": "eq.ep.generative.resolved",
    "where": {
     "predicate": {
-     "items": [
-      {
-       "predicate": {
-        "items": [
-         {
-          "a": {
-           "key": "role",
-           "node": {
-            "name": "ec_rm",
-            "type": "Var"
-           },
-           "type": "Attr"
-          },
-          "b": {
-           "type": "Lit",
-           "value": "resolve"
-          },
-          "type": "Eq"
-         },
-         {
-          "a": {
-           "name": {
-            "key": "lab_key",
-            "node": {
-             "name": "ec_rm",
-             "type": "Var"
-            },
-            "type": "Attr"
-           },
-           "node": {
-            "name": "rm",
-            "type": "Var"
-           },
-           "type": "AttrByName"
-          },
-          "b": {
-           "type": "Lit",
-           "value": true
-          },
-          "type": "Eq"
-         }
-        ],
-        "type": "And"
-       },
-       "source": {
-        "edge_type": "eq_has_episode_cue",
-        "node": {
-         "name": "agent",
-         "type": "Var"
-        },
-        "type": "Neighbours"
-       },
-       "type": "Exists",
-       "var_name": "ec_rm"
-      },
-      {
+     "arg": {
+      "predicate": {
        "a": {
         "key": "eq_turn_pos",
         "node": {
-         "name": "rm",
+         "name": "xm",
          "type": "Var"
         },
         "type": "Attr"
@@ -1265,111 +1582,28 @@
        "b": {
         "key": "eq_turn_pos",
         "node": {
-         "name": "r",
+         "name": "rm",
          "type": "Var"
         },
         "type": "Attr"
        },
        "type": "Gt"
       },
-      {
-       "arg": {
-        "predicate": {
-         "items": [
-          {
-           "predicate": {
-            "items": [
-             {
-              "a": {
-               "key": "role",
-               "node": {
-                "name": "ec_xm",
-                "type": "Var"
-               },
-               "type": "Attr"
-              },
-              "b": {
-               "type": "Lit",
-               "value": "escalate"
-              },
-              "type": "Eq"
-             },
-             {
-              "a": {
-               "name": {
-                "key": "lab_key",
-                "node": {
-                 "name": "ec_xm",
-                 "type": "Var"
-                },
-                "type": "Attr"
-               },
-               "node": {
-                "name": "xm",
-                "type": "Var"
-               },
-               "type": "AttrByName"
-              },
-              "b": {
-               "type": "Lit",
-               "value": true
-              },
-              "type": "Eq"
-             }
-            ],
-            "type": "And"
-           },
-           "source": {
-            "edge_type": "eq_has_episode_cue",
-            "node": {
-             "name": "agent",
-             "type": "Var"
-            },
-            "type": "Neighbours"
-           },
-           "type": "Exists",
-           "var_name": "ec_xm"
-          },
-          {
-           "a": {
-            "key": "eq_turn_pos",
-            "node": {
-             "name": "xm",
-             "type": "Var"
-            },
-            "type": "Attr"
-           },
-           "b": {
-            "key": "eq_turn_pos",
-            "node": {
-             "name": "rm",
-             "type": "Var"
-            },
-            "type": "Attr"
-           },
-           "type": "Gt"
-          }
-         ],
-         "type": "And"
-        },
-        "source": {
-         "edge_type": "eq_in_episode",
-         "node": {
-          "name": "e",
-          "type": "Var"
-         },
-         "type": "InNeighbours"
-        },
-        "type": "Exists",
-        "var_name": "xm"
+      "source": {
+       "edge_type": "eq_ep_esc",
+       "node": {
+        "name": "e",
+        "type": "Var"
        },
-       "type": "Not"
-      }
-     ],
-     "type": "And"
+       "type": "InNeighbours"
+      },
+      "type": "Exists",
+      "var_name": "xm"
+     },
+     "type": "Not"
     },
     "source": {
-     "edge_type": "eq_in_episode",
+     "edge_type": "eq_ep_res",
      "node": {
       "name": "e",
       "type": "Var"
@@ -1394,14 +1628,15 @@
      "e",
      "eqrule:eq.ep.generative.escalated",
      true
+    ],
+    [
+     "set_attr",
+     "e",
+     "eqrule:eq.ep.generative.resolved",
+     null
     ]
    ],
    "match": [
-    [
-     "agent",
-     "eq_stratum_3",
-     "st"
-    ],
     [
      "agent",
      "eq_window",
@@ -1411,11 +1646,6 @@
      "w",
      "eq_has_episode",
      "e"
-    ],
-    [
-     "e",
-     "eq_root",
-     "r"
     ]
    ],
    "name": "eq.ep.generative.escalated",
@@ -1423,85 +1653,11 @@
     "items": [
      {
       "predicate": {
-       "items": [
-        {
-         "predicate": {
-          "items": [
-           {
-            "a": {
-             "key": "role",
-             "node": {
-              "name": "ec_xm",
-              "type": "Var"
-             },
-             "type": "Attr"
-            },
-            "b": {
-             "type": "Lit",
-             "value": "escalate"
-            },
-            "type": "Eq"
-           },
-           {
-            "a": {
-             "name": {
-              "key": "lab_key",
-              "node": {
-               "name": "ec_xm",
-               "type": "Var"
-              },
-              "type": "Attr"
-             },
-             "node": {
-              "name": "xm",
-              "type": "Var"
-             },
-             "type": "AttrByName"
-            },
-            "b": {
-             "type": "Lit",
-             "value": true
-            },
-            "type": "Eq"
-           }
-          ],
-          "type": "And"
-         },
-         "source": {
-          "edge_type": "eq_has_episode_cue",
-          "node": {
-           "name": "agent",
-           "type": "Var"
-          },
-          "type": "Neighbours"
-         },
-         "type": "Exists",
-         "var_name": "ec_xm"
-        },
-        {
-         "a": {
-          "key": "eq_turn_pos",
-          "node": {
-           "name": "xm",
-           "type": "Var"
-          },
-          "type": "Attr"
-         },
-         "b": {
-          "key": "eq_turn_pos",
-          "node": {
-           "name": "r",
-           "type": "Var"
-          },
-          "type": "Attr"
-         },
-         "type": "Gt"
-        }
-       ],
-       "type": "And"
+       "type": "Lit",
+       "value": true
       },
       "source": {
-       "edge_type": "eq_in_episode",
+       "edge_type": "eq_ep_esc",
        "node": {
         "name": "e",
         "type": "Var"
@@ -1514,66 +1670,88 @@
      {
       "arg": {
        "predicate": {
-        "items": [
-         {
-          "predicate": {
-           "items": [
-            {
-             "a": {
-              "key": "role",
-              "node": {
-               "name": "ec_rm",
-               "type": "Var"
-              },
-              "type": "Attr"
-             },
-             "b": {
-              "type": "Lit",
-              "value": "resolve"
-             },
-             "type": "Eq"
-            },
-            {
-             "a": {
-              "name": {
-               "key": "lab_key",
-               "node": {
-                "name": "ec_rm",
-                "type": "Var"
-               },
-               "type": "Attr"
-              },
-              "node": {
-               "name": "rm",
-               "type": "Var"
-              },
-              "type": "AttrByName"
-             },
-             "b": {
-              "type": "Lit",
-              "value": true
-             },
-             "type": "Eq"
-            }
-           ],
-           "type": "And"
-          },
-          "source": {
-           "edge_type": "eq_has_episode_cue",
-           "node": {
-            "name": "agent",
-            "type": "Var"
-           },
-           "type": "Neighbours"
-          },
-          "type": "Exists",
-          "var_name": "ec_rm"
-         },
-         {
+        "type": "Lit",
+        "value": true
+       },
+       "source": {
+        "edge_type": "eq_ep_res",
+        "node": {
+         "name": "e",
+         "type": "Var"
+        },
+        "type": "InNeighbours"
+       },
+       "type": "Exists",
+       "var_name": "rm"
+      },
+      "type": "Not"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "set_attr",
+     "e",
+     "ep_generative",
+     null
+    ],
+    [
+     "set_attr",
+     "e",
+     "eqrule:eq.ep.generative.resolved",
+     null
+    ],
+    [
+     "set_attr",
+     "e",
+     "eqrule:eq.ep.generative.escalated",
+     null
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_has_episode",
+     "e"
+    ]
+   ],
+   "name": "eq.ep.generative.reopened",
+   "where": {
+    "items": [
+     {
+      "predicate": {
+       "type": "Lit",
+       "value": true
+      },
+      "source": {
+       "edge_type": "eq_ep_res",
+       "node": {
+        "name": "e",
+        "type": "Var"
+       },
+       "type": "InNeighbours"
+      },
+      "type": "Exists",
+      "var_name": "rm"
+     },
+     {
+      "arg": {
+       "predicate": {
+        "arg": {
+         "predicate": {
           "a": {
            "key": "eq_turn_pos",
            "node": {
-            "name": "rm",
+            "name": "xm",
             "type": "Var"
            },
            "type": "Attr"
@@ -1581,18 +1759,28 @@
           "b": {
            "key": "eq_turn_pos",
            "node": {
-            "name": "r",
+            "name": "rm",
             "type": "Var"
            },
            "type": "Attr"
           },
           "type": "Gt"
-         }
-        ],
-        "type": "And"
+         },
+         "source": {
+          "edge_type": "eq_ep_esc",
+          "node": {
+           "name": "e",
+           "type": "Var"
+          },
+          "type": "InNeighbours"
+         },
+         "type": "Exists",
+         "var_name": "xm"
+        },
+        "type": "Not"
        },
        "source": {
-        "edge_type": "eq_in_episode",
+        "edge_type": "eq_ep_res",
         "node": {
          "name": "e",
          "type": "Var"
@@ -1625,11 +1813,6 @@
     ]
    ],
    "match": [
-    [
-     "agent",
-     "eq_stratum_4",
-     "st"
-    ],
     [
      "agent",
      "eq_window",
@@ -1733,11 +1916,6 @@
     ]
    ],
    "match": [
-    [
-     "agent",
-     "eq_stratum_4",
-     "st"
-    ],
     [
      "agent",
      "eq_window",
@@ -1887,11 +2065,6 @@
    "match": [
     [
      "agent",
-     "eq_stratum_4",
-     "st"
-    ],
-    [
-     "agent",
      "eq_window",
      "w"
     ],
@@ -1945,6 +2118,228 @@
      "type": "Gt"
     },
     "type": "Not"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "set_attr",
+     "e",
+     "eqrule:eq.ep.facet_match.exact",
+     null
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_has_episode",
+     "e"
+    ]
+   ],
+   "name": "eq.ep.facet_match.exact.clear",
+   "where": {
+    "items": [
+     {
+      "a": {
+       "key": "eqrule:eq.ep.facet_match.exact",
+       "node": {
+        "name": "e",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": true
+      },
+      "type": "Eq"
+     },
+     {
+      "arg": {
+       "predicate": {
+        "a": {
+         "key": "eq_match",
+         "node": {
+          "name": "f",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "exact"
+        },
+        "type": "Eq"
+       },
+       "source": {
+        "edge_type": "eq_has_facet",
+        "node": {
+         "name": "e",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "f"
+      },
+      "type": "Not"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "set_attr",
+     "e",
+     "eqrule:eq.ep.facet_match.partial",
+     null
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_has_episode",
+     "e"
+    ]
+   ],
+   "name": "eq.ep.facet_match.partial.clear",
+   "where": {
+    "items": [
+     {
+      "a": {
+       "key": "eqrule:eq.ep.facet_match.partial",
+       "node": {
+        "name": "e",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": true
+      },
+      "type": "Eq"
+     },
+     {
+      "arg": {
+       "predicate": {
+        "a": {
+         "key": "eq_match",
+         "node": {
+          "name": "f",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "partial"
+        },
+        "type": "Eq"
+       },
+       "source": {
+        "edge_type": "eq_has_facet",
+        "node": {
+         "name": "e",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "f"
+      },
+      "type": "Not"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "set_attr",
+     "e",
+     "eqrule:eq.ep.facet_match.weak",
+     null
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_has_episode",
+     "e"
+    ]
+   ],
+   "name": "eq.ep.facet_match.weak.clear",
+   "where": {
+    "items": [
+     {
+      "a": {
+       "key": "eqrule:eq.ep.facet_match.weak",
+       "node": {
+        "name": "e",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": true
+      },
+      "type": "Eq"
+     },
+     {
+      "arg": {
+       "predicate": {
+        "a": {
+         "key": "eq_match",
+         "node": {
+          "name": "f",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "weak"
+        },
+        "type": "Eq"
+       },
+       "source": {
+        "edge_type": "eq_has_facet",
+        "node": {
+         "name": "e",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "f"
+      },
+      "type": "Not"
+     }
+    ],
+    "type": "And"
    }
   }
  ],

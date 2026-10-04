@@ -34,6 +34,8 @@ only after stratum k-1 has reached its fixpoint.
 """
 from __future__ import annotations
 
+import json
+
 # ---- Term-JSON helpers -----------------------------------------------------
 def V(n): return {"type": "Var", "name": n}
 def _n(x): return V(x) if isinstance(x, str) else x
@@ -1098,3 +1100,376 @@ def apply_live(rules):
                 continue
         out.append(r)
     return out
+
+
+# ---- 0.5.1 stage B (T3d scaling): the NON-MONOTONE families run LIVE too ---------
+# The families that read ABSENCE over facts later turns can still change (floor,
+# selective non-response, unanswered, claim grounding, generative outcome, match
+# shapes) used to be re-derived over the whole conversation on a per-batch scratch
+# fork. They now run on the retained fork with BOUNDED rolling state, the same
+# one-shot meaning, and no scratch fork:
+#   * per-actor turn count `a.eq_nturns`, kept by the turn cursor (one increment per
+#     tracked turn, guarded by `m -eq_counted-> a`); the floor family compares
+#     `a.eq_nturns_b`, the batch-final copy taken on the L1 frontier, so it sees one
+#     state per batch (comparisons over ACTORS, never over turns);
+#   * per-question state the cursor finalises in turn order: `w -eq_unans_wait-> q`
+#     (question not yet followed by another actor) -> `q -eq_unans_due-> w`;
+#     `a -eq_rsp_wait-> q` (question to a, a has not posted since) ->
+#     `q -eq_rsp_due-> a`; `q -eq_rsp_ans-> a` (a responded to q);
+#   * per-episode membership marks `m -eq_ep_res / eq_ep_esc-> e` (resolve /
+#     escalate cue members after the root) for the generative outcome;
+#   * RETRACTABLE facts live on DEDICATED edge types, so a retraction only
+#     invalidates the few rules reading that type (whose candidate sets are small):
+#     `a -eq_nm_quantum-> q` (a non-monotone quantum EXISTS now; the read-out reads
+#     it next to `eq_has_quantum`), `q -eq_evidence_nm-> m` (open evidence of an
+#     unanswered / non-responded question), `q -eq_counter_nm-> m` (runner-up turns
+#     of the floor), `q -eq_floor_ru-> b` (current floor runner-up). A family's
+#     quantum NODE is permanent (`a -eq_floor_node / eq_rsp_node / eq_unans_node-> q`)
+#     and accrues its monotone parts (floor evidence, answered-question counters)
+#     whether or not it currently exists, so re-existence reads exactly the one-shot
+#     row. Retired facts leave every candidate set (a vanished quantum is no longer
+#     matched by the match shapes; a followed / answered question leaves its wait set).
+#   * Match shapes switch: the rule whose shape holds also clears the other shapes'
+#     provenance (set to null; the read-out skips null attrs), so the quantum carries
+#     exactly the provenance of its current shape. Facet-match provenance on the
+#     episode is cleared when no facet of it holds that shape any more.
+# Composites (eq.quanta.compose) read `eq_has_quantum` only: pack CONDITION (checked
+# by check_nm_pack) -- no EqTraitCompose row requires a non-monotone trait, and no
+# EqTraitCue row names one (cue rules never saw scratch quanta, and must not see
+# their live successors).
+NTB = "eq_nturns_b"
+FLOOR_T, RSP_T, UNANS_T, CG_T = ("interaction.floor", "interaction.responsiveness",
+                                 "inquiry.unanswered", "competence.claim_grounding")
+NM_TRAITS = (FLOOR_T, RSP_T, UNANS_T, CG_T)
+
+
+def Plus(*xs): return {"type": "Plus", "items": list(xs)}
+def Union(a, b): return {"type": "Union", "a": a, "b": b}
+def trait_is(q, t): return Eq(A(q, "q_trait"), L(t))
+
+
+def node_nm(q, owner, actor_ref, trait, pole, target, node_edge):
+    """Create a family's permanent quantum node (once): the node-creating rule is
+    separate from the frequent attach / evidence rules, so those never write a
+    node type (which would clear every opaque reader's cursor)."""
+    key = {"q_actor": T(actor_ref), "q_trait": T(trait), "q_pole": T(pole), "q_target": T(target)}
+    return [["add_node_if_absent", q, "EqQuantum", key], ["add_edge", owner, node_edge, q]]
+
+
+def attach_nm(q, owner, name):
+    return [["add_edge", owner, "eq_nm_quantum", q], ["set_attr", q, f"eqrule:{name}", True]]
+
+
+def unset(var, name):
+    return ["set_attr", var, f"eqrule:{name}", None]
+
+
+# -- turn cursor (equilibrium_tracking), inserted before eq.trk.release -------------
+def _resp_to_actor(x, a):
+    """x responds (declared, or tracked at its own cursor step) to a turn by a."""
+    return Or(Ex(Nb(x, "eq_responds_to"), "rp1", _authored_by("rp1", a)),
+              Ex(Nb(x, "eq_trk_to"), "rp2", _authored_by("rp2", a)))
+
+
+# the actor's turn count so far plus |{m}| (set shapes, no numeric literal: |{}| / |{m}|)
+NUM_TURNS = If(Eq(A("a", "eq_nturns"), L(None)), Count({"type": "SetT", "items": []}), A("a", "eq_nturns"))
+TRK_NM_RULES = [
+    rule("eq.trk.nturns", [WIN, CUR, AUTH], Not(Ex(Nb("m", "eq_counted"), "cx")),
+         [["set_attr", "a", "eq_nturns", T(Plus(NUM_TURNS, Count({"type": "SetT", "items": [V("m")]})))],
+          ["add_edge", "m", "eq_counted", "a"]]),
+    # unanswered: a question is FOLLOWED once another actor takes a later turn
+    rule("eq.trk.unans.follow", [WIN, CUR, AUTH, ["w", "eq_unans_wait", "qt"], ["qt", "eq_authored_by", "b"]],
+         Not(Same("a", "b")),
+         [["del_edge", "w", "eq_unans_wait", "qt"], ["add_edge", "qt", "eq_unans_due", "w"]]),
+    rule("eq.trk.unans.wait", [WIN, CUR], has("m", QUESTION), [["add_edge", "w", "eq_unans_wait", "m"]]),
+    # selective non-response: a question to a is DUE once a posts again; a's reply to it
+    rule("eq.trk.rsp.due", [WIN, CUR, AUTH, ["a", "eq_rsp_wait", "qt"]], L(True),
+         [["del_edge", "a", "eq_rsp_wait", "qt"], ["add_edge", "qt", "eq_rsp_due", "a"]]),
+    *[rule(f"eq.trk.rsp.ans.{basis}", [WIN, CUR, AUTH, ["m", edge, "qt"], ["qt", "eq_authored_by", "b"]],
+           And(Not(Same("a", "b")), has("qt", QUESTION), _resp_to_actor("qt", "a")),
+           [["add_edge", "qt", "eq_rsp_ans", "a"]])
+      for basis, edge in (("declared", "eq_responds_to"), ("tracked", "eq_trk_to"))],
+    *[rule(f"eq.trk.rsp.wait.{basis}", [WIN, CUR, AUTH, ["m", edge, "p"], ["p", "eq_authored_by", "b"]],
+           And(Not(Same("a", "b")), has("m", QUESTION)), [["add_edge", "b", "eq_rsp_wait", "m"]])
+      for basis, edge in (("declared", "eq_responds_to"), ("tracked", "eq_trk_to"))],
+]
+
+
+# -- floor (equilibrium_quanta) -------------------------------------------------
+def _nt(x): return A(x, NTB)
+
+
+COUNTED = Not(Ex(Nb("w", "eq_has_actor"), "oc", Eq(_nt("oc"), L(None))))
+
+
+def _floor_holds(a):
+    return And(Ex(Nb("w", "eq_has_actor"), "o", Not(Same("o", a))),
+               Not(Ex(Nb("w", "eq_has_actor"), "o", And(Not(Same("o", a)), Gte(_nt("o"), _nt(a))))))
+
+
+def _runner_up(a, b):
+    return Not(Ex(Nb("w", "eq_has_actor"), "o", And(Not(Same("o", a)), Gt(_nt("o"), _nt(b)))))
+
+
+FLOOR_RULES = [
+    # batch-final turn counts (one atomic copy per batch, on the L1 frontier)
+    rule("eq.quanta.interaction.floor.counts", [WIN, ["w", "eq_l1", "m"], AUTH], L(True),
+         [["set_attr", "a", NTB, T(A("a", "eq_nturns"))]]),
+    # held the floor: strictly more turns than every other actor (a tie mints nothing)
+    rule("eq.quanta.interaction.floor.node", [WIN, ["w", "eq_has_actor", "a"]],
+         And(enabled(L(FLOOR_T)), COUNTED, _floor_holds("a"), Not(Ex(Nb("a", "eq_floor_node"), "y"))),
+         node_nm("q", "a", A("a", REF), L(FLOOR_T), L("+"), L(""), "eq_floor_node")),
+    rule("eq.quanta.interaction.floor", [WIN, ["w", "eq_has_actor", "a"], ["a", "eq_floor_node", "q"]],
+         And(enabled(L(FLOOR_T)), COUNTED, _floor_holds("a")),
+         attach_nm("q", "a", "eq.quanta.interaction.floor")),
+    rule("eq.quanta.interaction.floor.vanish", [WIN, ["a", "eq_nm_quantum", "q"]],
+         And(trait_is("q", FLOOR_T), COUNTED, Not(_floor_holds("a"))),
+         [["del_edge", "a", "eq_nm_quantum", "q"]]),
+    # evidence: every turn of the actor (monotone, on the permanent node)
+    rule("eq.quanta.interaction.floor.evidence", [["a", "eq_floor_node", "q"], ["m", "eq_authored_by", "a"]],
+         L(True), [["add_edge", "q", "eq_evidence", "m"], prov("q", "eq.quanta.interaction.floor.evidence")]),
+    # counter: the turns of the runner(s)-up (no other non-holder has more turns)
+    rule("eq.quanta.interaction.floor.ru", [WIN, ["a", "eq_nm_quantum", "q"], ["w", "eq_has_actor", "b"]],
+         And(trait_is("q", FLOOR_T), COUNTED, Not(Same("a", "b")), _runner_up("a", "b")),
+         [["add_edge", "q", "eq_floor_ru", "b"]]),
+    rule("eq.quanta.interaction.floor_ru_drop", [WIN, ["a", "eq_floor_node", "q"], ["q", "eq_floor_ru", "b"]],
+         And(COUNTED, Or(Not(In(V("q"), Nb("a", "eq_nm_quantum"))), Not(_runner_up("a", "b")))),
+         [["del_edge", "q", "eq_floor_ru", "b"]]),
+    rule("eq.quanta.interaction.floor.counter", [["q", "eq_floor_ru", "b"], ["m", "eq_authored_by", "b"]],
+         L(True), [["add_edge", "q", "eq_counter_nm", "m"], prov("q", "eq.quanta.interaction.floor.counter")]),
+    rule("eq.quanta.interaction.floor_counter_drop", [["q", "eq_counter_nm", "m"], ["m", "eq_authored_by", "b"]],
+         Not(In(V("b"), Nb("q", "eq_floor_ru"))), [["del_edge", "q", "eq_counter_nm", "m"]]),
+]
+
+# -- selective non-response (equilibrium_quanta) ---------------------------------
+RSP_RULES = [
+    # b's question responding to a's turn, a posted LATER, and no turn by a responds to it
+    rule("eq.quanta.interaction.responsiveness.node", [["qt", "eq_rsp_due", "a"], ["qt", "eq_authored_by", "b"]],
+         And(enabled(L(RSP_T)), Not(In(V("a"), Nb("qt", "eq_rsp_ans"))),
+             Not(Ex(Nb("a", "eq_rsp_node"), "y", Eq(A("y", "q_target"), A("b", REF))))),
+         node_nm("q", "a", A("a", REF), L(RSP_T), L("-"), A("b", REF), "eq_rsp_node")
+         + [["add_edge", "q", "eq_rsp_target", "b"]]),
+    rule("eq.quanta.interaction.responsiveness",
+         [["qt", "eq_rsp_due", "a"], ["qt", "eq_authored_by", "b"], ["a", "eq_rsp_node", "q"]],
+         And(Eq(A("q", "q_target"), A("b", REF)), enabled(L(RSP_T)), Not(In(V("a"), Nb("qt", "eq_rsp_ans")))),
+         attach_nm("q", "a", "eq.quanta.interaction.responsiveness") + [["add_edge", "q", "eq_evidence_nm", "qt"]]),
+    # retraction, driven by the answer itself (never by a scan of the open evidence)
+    rule("eq.quanta.interaction.responsiveness.retract",
+         [["qt", "eq_rsp_ans", "a"], ["qt", "eq_authored_by", "b"], ["a", "eq_rsp_node", "q"],
+          ["q", "eq_rsp_target", "b"]],
+         L(True), [["del_edge", "q", "eq_evidence_nm", "qt"]]),
+    # counter: b's other questions to a that a DID answer (monotone, permanent node)
+    rule("eq.quanta.interaction.responsiveness.counter",
+         [["qt", "eq_rsp_ans", "a"], ["qt", "eq_authored_by", "b"], ["a", "eq_rsp_node", "q"]],
+         Eq(A("q", "q_target"), A("b", REF)),
+         [["add_edge", "q", "eq_counter", "qt"], prov("q", "eq.quanta.interaction.responsiveness.counter")]),
+]
+# a non-monotone quantum whose open evidence emptied no longer exists
+NM_VANISH = rule("eq.quanta.nm.vanish", [["a", "eq_nm_quantum", "q"]],
+                 And(Or(trait_is("q", RSP_T), trait_is("q", UNANS_T)), Not(Ex(Nb("q", "eq_evidence_nm"), "xe"))),
+                 [["del_edge", "a", "eq_nm_quantum", "q"]])
+
+# -- inquiry.unanswered (equilibrium_climate) -------------------------------------
+def _answered_by_edge(qt):
+    """inquiry.answered mints a quantum with context qt exactly when it is enabled
+    and some turn `eq_answers` qt (eq.quanta.inquiry.answered consumes that edge,
+    the answer shape lives once in eq.trk.answers), so this IS `_answered(qt)` at
+    the batch fixpoint -- read off the tracking edge, at the cursor step."""
+    return And(enabled(L("inquiry.answered")), Ex(InNb(qt, "eq_answers"), "an_" + qt))
+
+
+UNANS_RULES = [
+    # S2 meaning: a question no answer closed, once another actor has posted after it
+    rule("eq.quanta.inquiry.unanswered.node", [["qt", "eq_unans_due", "w"], ["qt", "eq_authored_by", "b"]],
+         And(Not(_answered_by_edge("qt")), enabled(L(UNANS_T)), Not(Ex(Nb("b", "eq_unans_node"), "y"))),
+         node_nm("q", "b", A("b", REF), L(UNANS_T), L("+"), L(""), "eq_unans_node")),
+    rule("eq.quanta.inquiry.unanswered",
+         [["qt", "eq_unans_due", "w"], ["qt", "eq_authored_by", "b"], ["b", "eq_unans_node", "q"]],
+         And(Not(_answered_by_edge("qt")), enabled(L(UNANS_T))),
+         attach_nm("q", "b", "eq.quanta.inquiry.unanswered") + [["add_edge", "q", "eq_evidence_nm", "qt"]]),
+    rule("eq.quanta.inquiry.unanswered.retract",
+         [["x", "eq_answers", "qt"], ["qt", "eq_authored_by", "b"], ["b", "eq_unans_node", "q"]],
+         enabled(L("inquiry.answered")), [["del_edge", "q", "eq_evidence_nm", "qt"]]),
+    rule("eq.quanta.inquiry.unanswered.counter", [["b", "eq_unans_node", "q"], ["qt", "eq_authored_by", "b"]],
+         And(has("qt", QUESTION), _answered_by_edge("qt")),
+         [["add_edge", "q", "eq_counter", "qt"], prov("q", "eq.quanta.inquiry.unanswered.counter")]),
+]
+
+# -- claim grounding (equilibrium_competence) -------------------------------------
+CG_RULES = [
+    # a holds a grounding quantum (demonstrated / acknowledged / corroborated): permanent
+    rule("eq.competence.grounded", [["a", "eq_has_quantum", "g"]], _grounding("g"),
+         [["add_edge", "a", "eq_cg_grounded", "g"]]),
+    # '+' (monotone): its node is created once, attached by the first evidence
+    rule("eq.competence.claim_grounding.node_pos", [["a", "eq_has_quantum", "qc"], ["a", "eq_cg_grounded", "g"]],
+         And(CLAIMED, enabled(L(CG_T)), Not(Ex(Nb("a", "eq_cg_pos_node"), "y"))),
+         node_nm("q", "a", A("a", REF), L(CG_T), L("+"), L(""), "eq_cg_pos_node")),
+    rule("eq.competence.claim_grounding.grounded_claim", CLAIM + [["a", "eq_cg_pos_node", "q"]],
+         And(CLAIMED, enabled(L(CG_T)), Ex(Nb("a", "eq_cg_grounded"), "g")),
+         [["add_edge", "a", "eq_has_quantum", "q"], prov("q", "eq.competence.claim_grounding.grounded_claim"),
+          ["add_edge", "q", "eq_evidence", "m1"]]),
+    rule("eq.competence.claim_grounding.grounding",
+         [["a", "eq_has_quantum", "qc"], ["a", "eq_cg_grounded", "g"], ["g", "eq_evidence", "m2"],
+          ["a", "eq_cg_pos_node", "q"]],
+         And(CLAIMED, enabled(L(CG_T))),
+         [["add_edge", "a", "eq_has_quantum", "q"], prov("q", "eq.competence.claim_grounding.grounding"),
+          ["add_edge", "q", "eq_evidence", "m2"]]),
+    # '-': claimed and NONE of demonstrated / acknowledged / corroborated (retired for good
+    # once a grounding quantum appears)
+    rule("eq.competence.claim_grounding.node_neg", CLAIM,
+         And(CLAIMED, enabled(L(CG_T)), Not(Ex(Nb("a", "eq_cg_grounded"), "g")),
+             Not(Ex(Nb("a", "eq_cg_neg_node"), "y"))),
+         node_nm("q", "a", A("a", REF), L(CG_T), L("-"), L(""), "eq_cg_neg_node")),
+    rule("eq.competence.claim_grounding.ungrounded", CLAIM + [["a", "eq_cg_neg_node", "q"]],
+         And(CLAIMED, enabled(L(CG_T)), Not(Ex(Nb("a", "eq_cg_grounded"), "g"))),
+         attach_nm("q", "a", "eq.competence.claim_grounding.ungrounded") + [["add_edge", "q", "eq_evidence", "m1"]]),
+    rule("eq.competence.claim_grounding.ungrounded.vanish", [["a", "eq_nm_quantum", "q"], ["a", "eq_cg_grounded", "g"]],
+         And(trait_is("q", CG_T), Eq(A("q", "q_pole"), L("-"))), [["del_edge", "a", "eq_nm_quantum", "q"]]),
+]
+
+# -- generative outcome + facet match (equilibrium_episode) ---------------------------
+RES, ESC = InNb("e", "eq_ep_res"), InNb("e", "eq_ep_esc")
+_RESOLVED = Ex(RES, "rm", Not(Ex(ESC, "xm", Gt(A("xm", POS), A("rm", POS)))))
+GEN_LIVE = [WIN, ["w", "eq_has_episode", "e"]]
+GR, GX = "eq.ep.generative.resolved", "eq.ep.generative.escalated"
+FXL = [WIN, ["w", "eq_has_episode", "e"], ["e", "eq_has_facet", "fx"]]
+EP_NM_RULES = [
+    # episode growth + etiology facets (monotone; were live L1 rules re-driven over
+    # every membership by the `eq_l1_open` gate each batch): a turn's extend role /
+    # facet cues are marked once, on the L1 frontier, and the membership rules read
+    # the marks (no dynamic attr look-up, no gate)
+    rule("eq.ep.extend.turn", [WIN, ["w", "eq_l1", "x"]], _cue_role("x", "extend"),
+         [["add_edge", "x", "eq_cue_extend", "w"]]),
+    rule("eq.ep.extend", [["x", "eq_cue_extend", "w"], ["x", "eq_responds_to", "y"], ["y", "eq_in_episode", "e"]],
+         L(True), [["add_edge", "x", "eq_in_episode", "e"], prov("e", "eq.ep.extend")]),
+    rule("eq.ep.facet.turn", [WIN, ["w", "eq_l1", "m"], ["agent", "eq_has_facet_cue", "f"]],
+         And(Eq(ABN("m", A("f", "lab_key")), L(True)), enabled(A("f", "status_label"))),
+         [["add_edge", "m", "eq_fx_cue", "f"]]),
+    rule("eq.ep.facet.node", [["w", "eq_has_episode", "e"], ["m", "eq_in_episode", "e"], ["m", "eq_fx_cue", "f"]],
+         Not(Ex(Nb("e", "eq_has_facet"), "y", Eq(A("y", "fx_code"), A("f", "code")))),
+         [["add_node_if_absent", "fx", "EqEpFacet", {"fx_ep": T(V("e")), "fx_code": T(A("f", "code"))}],
+          ["add_edge", "e", "eq_has_facet", "fx"]]),
+    rule("eq.ep.facet", [["w", "eq_has_episode", "e"], ["m", "eq_in_episode", "e"], ["m", "eq_fx_cue", "f"],
+                         ["e", "eq_has_facet", "fx"]],
+         Eq(A("fx", "fx_code"), A("f", "code")),
+         [["add_edge", "fx", "eq_evidence", "m"], prov("e", "eq.ep.facet")]),
+    # a turn's resolve / escalate cue role, once, on the L1 frontier (dynamic cue
+    # look-up there only; the membership marks below read the mark edge)
+    *[rule(f"eq.ep.gen.{role}_turn", [WIN, ["w", "eq_l1", "m"]], _cue_role("m", role),
+           [["add_edge", "m", f"eq_cue_{role}", "w"]]) for role in ("resolve", "escalate")],
+    *[rule(f"eq.ep.gen.{role}_member", [["e", "eq_root", "r"], ["m", "eq_in_episode", "e"], ["m", f"eq_cue_{role}", "w"]],
+           Gt(A("m", POS), A("r", POS)), [["add_edge", "m", edge, "e"]])
+      for role, edge in (("resolve", "eq_ep_res"), ("escalate", "eq_ep_esc"))],
+    rule(GR, GEN_LIVE, _RESOLVED,
+         [["set_attr", "e", "ep_generative", True], prov("e", GR), unset("e", GX)]),
+    rule(GX, GEN_LIVE, And(Ex(ESC, "xm"), Not(Ex(RES, "rm"))),
+         [["set_attr", "e", "ep_generative", False], prov("e", GX), unset("e", GR)]),
+    # a resolution later escalated again: neither outcome (null = default)
+    rule("eq.ep.generative.reopened", GEN_LIVE, And(Ex(RES, "rm"), Not(_RESOLVED)),
+         [["set_attr", "e", "ep_generative", None], unset("e", GR), unset("e", GX)]),
+    rule("eq.ep.facet_match.exact", FXL, _FX_EXACT, _fx_match("exact")),
+    rule("eq.ep.facet_match.partial", FXL, And(Gt(Count(FX_E), Count(FX_C)), Not(_FX_EXACT)), _fx_match("partial")),
+    rule("eq.ep.facet_match.weak", FXL, Not(Gt(Count(FX_E), Count(FX_C))), _fx_match("weak")),
+    *[rule(f"eq.ep.facet_match.{v}.clear", GEN_LIVE,
+           And(Eq(A("e", f"eqrule:eq.ep.facet_match.{v}"), L(True)),
+               Not(Ex(Nb("e", "eq_has_facet"), "f", Eq(A("f", "eq_match"), L(v))))),
+           [unset("e", f"eq.ep.facet_match.{v}")])
+      for v in ("exact", "partial", "weak")],
+]
+
+
+# -- match shapes (equilibrium_quanta) --------------------------------------------
+def _shape_rules(qm, ev, ctr, sfx):
+    """exact / partial / weak / weak_by_construction over quanta matched by `qm`
+    with evidence set `ev` and counter set `ctr`; each clears its siblings."""
+    ex = And(Gt(Count(ev), singleton(ev)), Not(Ex(ctr, "x")), Not(Ex(H, "x")))
+    ow = Gt(Count(ev), Count(ctr))
+    plain = ("eq.quanta.match.exact", "eq.quanta.match.partial", "eq.quanta.match.weak")
+
+    def sw(name, value):
+        return [["set_attr", "q", "eq_match", value], prov("q", name)] + [unset("q", o) for o in plain if o != name]
+    return [
+        rule(plain[0] + sfx, qm, And(_PLAIN, ex), sw(plain[0], "exact")),
+        rule(plain[1] + sfx, qm, And(_PLAIN, ow, Not(ex)), sw(plain[1], "partial")),
+        rule(plain[2] + sfx, qm, And(_PLAIN, Ex(ev, "x"), Not(ow)), sw(plain[2], "weak")),
+        rule("eq.quanta.match.weak_by_construction" + sfx, qm,
+             And(trait_is("q", CG_T), Eq(A("q", "q_pole"), L("-"))),
+             _set_match("q", "eq.quanta.match.weak_by_construction", "weak")),
+    ]
+
+
+QLIVE = [WIN, ["w", "eq_has_actor", "a"], ["a", "eq_has_quantum", "q"]]
+QNM = [WIN, ["w", "eq_has_actor", "a"], ["a", "eq_nm_quantum", "q"]]
+_CMP = ("eq.quanta.match.composite_exact", "eq.quanta.match.composite_weak", "eq.quanta.match.composite_partial")
+
+
+def _csw(name, value):
+    return _set_match("q", name, value) + [unset("q", o) for o in _CMP if o != name]
+
+
+QCOMP = QLIVE + [["q", "eq_component", "x0"]]
+MATCH_NM_RULES = (
+    _shape_rules(QLIVE, E, C, "")
+    + _shape_rules(QNM, Union(E, Nb("q", "eq_evidence_nm")), Union(C, Nb("q", "eq_counter_nm")), ".nm")
+    + [rule(_CMP[0], QCOMP, And(Eq(A("q", "q_composite"), L(True)),
+                                Not(Ex(COMP, "x", Not(Eq(A("x", "eq_match"), L("exact")))))), _csw(_CMP[0], "exact")),
+       rule(_CMP[1], QCOMP, And(Eq(A("q", "q_composite"), L(True)), Ex(COMP, "x", Eq(A("x", "eq_match"), L("weak")))),
+            _csw(_CMP[1], "weak")),
+       rule(_CMP[2], QCOMP, And(Eq(A("q", "q_composite"), L(True)),
+                                Ex(COMP, "x", Not(Eq(A("x", "eq_match"), L("exact")))),
+                                Not(Ex(COMP, "x", Eq(A("x", "eq_match"), L("weak"))))), _csw(_CMP[2], "partial"))])
+
+# composites over the (monotone) live quanta: the same rules without a stratum anchor
+COMPOSE_LIVE = [dict(r, match=[e for e in r["match"] if not e[1].startswith("eq_stratum_")])
+                for r in QUANTA_RULES if r["name"] in ("eq.quanta.compose", "eq.quanta.compose.evidence")]
+# the scratch-fork rules these replace (same provenance names)
+NM_REPLACED = frozenset(
+    {"eq.quanta.interaction.floor", "eq.quanta.interaction.floor.evidence", "eq.quanta.interaction.floor.counter",
+     "eq.quanta.interaction.responsiveness", "eq.quanta.interaction.responsiveness.counter",
+     "eq.quanta.inquiry.unanswered", "eq.quanta.inquiry.unanswered.counter",
+     "eq.competence.claim_grounding.grounded_claim", "eq.competence.claim_grounding.grounding",
+     "eq.competence.claim_grounding.ungrounded", "eq.ep.generative.resolved", "eq.ep.generative.escalated",
+     "eq.ep.facet_match.exact", "eq.ep.facet_match.partial", "eq.ep.facet_match.weak",
+     "eq.quanta.compose", "eq.quanta.compose.evidence", "eq.ep.extend", "eq.ep.facet"}
+    | {r["name"] for r in MATCH_RULES})
+NM_PACK = {"quanta": FLOOR_RULES + RSP_RULES + [NM_VANISH] + COMPOSE_LIVE + MATCH_NM_RULES, "competence": CG_RULES,
+           "episode": EP_NM_RULES, "climate": UNANS_RULES}
+NM_EDGE_TYPES = [
+    ("Message", "eq_counted", "EqActor"), ("EqWindow", "eq_unans_wait", "Message"),
+    ("Message", "eq_unans_due", "EqWindow"), ("EqActor", "eq_rsp_wait", "Message"),
+    ("Message", "eq_rsp_due", "EqActor"), ("Message", "eq_rsp_ans", "EqActor"),
+    ("EqActor", "eq_nm_quantum", "EqQuantum"), ("EqActor", "eq_floor_node", "EqQuantum"),
+    ("EqActor", "eq_rsp_node", "EqQuantum"), ("EqActor", "eq_unans_node", "EqQuantum"),
+    ("EqActor", "eq_cg_grounded", "EqQuantum"), ("EqQuantum", "eq_evidence_nm", "Message"),
+    ("EqQuantum", "eq_counter_nm", "Message"), ("EqQuantum", "eq_floor_ru", "EqActor"),
+    ("Message", "eq_ep_res", "EqEpisode"), ("Message", "eq_ep_esc", "EqEpisode"),
+    ("EqQuantum", "eq_rsp_target", "EqActor"), ("Message", "eq_cue_resolve", "EqWindow"),
+    ("Message", "eq_cue_extend", "EqWindow"), ("Message", "eq_fx_cue", "EqFacetCue"), ("Message", "eq_cue_escalate", "EqWindow"),
+    ("EqActor", "eq_cg_pos_node", "EqQuantum"), ("EqActor", "eq_cg_neg_node", "EqQuantum")]
+
+
+def _bind_agent(r):
+    """A rule reading the agent's codebooks (cue roles, label status) binds `agent`
+    through the window edge (the scratch rules bound it through the stratum anchor)."""
+    bound = {v for e in r["match"] for v in (e[0], e[2])}
+    if "agent" in bound or '"agent"' not in json.dumps([r["where"], r["effects"]]):
+        return r
+    return dict(r, match=[WIN] + r["match"])
+
+
+def apply_nm(rules, pack):
+    """Replace a pack's scratch-fork rules by their live non-monotone successors; the
+    tracking pack gets the cursor rules inserted before `eq.trk.release`."""
+    if pack == "tracking":
+        i = [r["name"] for r in rules].index("eq.trk.release")
+        return rules[:i] + TRK_NM_RULES + rules[i:]
+    kept = [r for r in rules if r["name"] not in NM_REPLACED]
+    assert not any(e[0] == "agent" and e[1].startswith("eq_stratum_") for r in kept for e in r["match"]), \
+        "a scratch-stratum rule is left without a live successor"
+    return kept + [_bind_agent(r) for r in NM_PACK.get(pack, [])]
+
+
+def check_nm_pack():
+    """Pack CONDITION of the live non-monotone families (see above)."""
+    assert not any(t in NM_TRAITS for t, *_ in TRAIT_CUES), "a cue row names a non-monotone trait"
+    assert not any(r[0] == "EqTraitCompose" for r in trait_items()), "compose rows need a check"

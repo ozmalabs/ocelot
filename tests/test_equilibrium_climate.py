@@ -227,7 +227,9 @@ def test_climate_traits_are_shadow_and_versioned(base):
     assert {n["type"] for n in climate["nodes"]} == {"EqClimateCue"}
     assert {r["name"] for r in climate["rules"]} == {
         "eq.quanta.response.dismissal", "eq.quanta.response.engagement", "eq.quanta.inquiry.answered",
-        "eq.quanta.inquiry.unanswered", "eq.quanta.inquiry.unanswered.counter"}
+        "eq.quanta.inquiry.unanswered", "eq.quanta.inquiry.unanswered.counter",
+        # 0.5.1 stage B: unanswered runs live (permanent node + answer-driven retraction)
+        "eq.quanta.inquiry.unanswered.node", "eq.quanta.inquiry.unanswered.retract"}
 
 
 def test_disabling_a_climate_trait_is_data_only(base):

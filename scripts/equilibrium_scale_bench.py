@@ -55,12 +55,51 @@ def _fit(xs, ys):
     return sum((a - mx) * (b - my) for a, b in zip(lx, ly)) / sum((a - mx) ** 2 for a in lx)
 
 
+class _Split:
+    """Per-component wall split of one conversation_ingest (measurement only):
+    the retained-fork ticks in call order (S0, tracking, live L1, live L2) and the
+    read-out (_emit). Stage B: there is no scratch fork any more -- the
+    non-monotone families run live inside these ticks (mostly L1)."""
+    PHASES = ("s0", "trk", "l1", "l2")
+
+    def __init__(self):
+        from domains import equilibrium_classify as ec
+        self.ec, self.cur = ec, None
+        self._tick, self._emit = ec._tick, ec._emit
+
+        def tick(n, touched):
+            t0 = time.perf_counter()
+            r = self._tick(n, touched)
+            if self.cur is not None:
+                self.cur.append(time.perf_counter() - t0)
+            return r
+
+        def emit(*a, **kw):
+            t0 = time.perf_counter()
+            r = self._emit(*a, **kw)
+            self.t_emit = time.perf_counter() - t0
+            return r
+        ec._tick, ec._emit = tick, emit
+
+    def run(self, fn):
+        self.cur, self.t_emit = [], 0.0
+        t0 = time.perf_counter()
+        fn()
+        total = time.perf_counter() - t0
+        row = dict(zip(self.PHASES, self.cur))
+        row["readout"] = self.t_emit
+        row["total"] = total
+        self.cur = None
+        return row
+
+
 def bench_a(lengths):
     """(a) latency of a 100-turn batch at conversation length L (median of 3 probes)."""
     _, s = _svc(max_conversations=4)
     top = max(lengths)
     turns = _turns(top + 300, seed=4242)
     lat_at, all_lat = {}, []
+    split, split_at = _Split(), {}
     pos = 0
     for L in sorted(lengths):
         while pos < L:
@@ -68,17 +107,27 @@ def bench_a(lengths):
             s.conversation_turns("bench:a", "thread", turns[pos:pos + 100])
             all_lat.append((pos + 100, time.perf_counter() - t0))
             pos += 100
-        probe = []
+        probe, rows = [], []
         for _ in range(3):  # three consecutive 100-turn batches at ~L
             t0 = time.perf_counter()
-            s.conversation_turns("bench:a", "thread", turns[pos:pos + 100])
+            rows.append(split.run(lambda: s.conversation_turns("bench:a", "thread",
+                                                               turns[pos:pos + 100])))
             probe.append(time.perf_counter() - t0)
             all_lat.append((pos + 100, probe[-1]))
             pos += 100
         lat_at[L] = statistics.median(probe)
+        split_at[L] = {k: statistics.median(r.get(k, 0.0) for r in rows) for k in rows[0]}
         print(f"(a) L={L:>6}: 100-turn batch median {lat_at[L] * 1e3:.0f} ms "
               f"(probes {', '.join(f'{x * 1e3:.0f}' for x in probe)} ms; load {_load()})", flush=True)
+        print("(a)          split (median ms): " + ", ".join(
+            f"{k} {v * 1e3:.0f}" for k, v in split_at[L].items()), flush=True)
     xs = sorted(lat_at)
+    if len(xs) >= 2:
+        for k in split_at[xs[0]]:
+            ys = [max(split_at[x][k], 1e-4) for x in xs if x >= 1000]
+            if len(ys) >= 2:
+                print(f"(a) component {k}: exponent over L >= 1000 "
+                      f"{_fit([x for x in xs if x >= 1000], ys):.3f}")
     if len(xs) >= 2:
         print(f"(a) growth exponent over L={xs}: {_fit(xs, [lat_at[x] for x in xs]):.3f} "
               f"(1.0 = linear in prefix, 0 = flat)")

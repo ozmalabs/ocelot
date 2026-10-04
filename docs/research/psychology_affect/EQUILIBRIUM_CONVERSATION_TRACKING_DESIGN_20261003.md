@@ -269,3 +269,93 @@ is about 2× below T3c (see RESULTS). The O(prefix) parts are:
 
 The next step is retraction rules for the six non-monotone families, so that they
 can also run live.
+
+### T3d stage B: the non-monotone families run live (no scratch fork)
+
+The per-batch scratch fork is gone. Every rule now runs on the retained fork, and the
+read-out reads the retained fork directly. The read-out after each batch must still
+equal a one-shot run over the same prefix. Three things keep that contract
+(scripts/_equilibrium_quanta_rules.py, "0.5.1 stage B"):
+
+**Bounded rolling state, finalised by the turn cursor** (equilibrium_tracking, before
+`eq.trk.release`):
+
+- **Per-actor turn count.** `eq.trk.nturns` increments `a.eq_nturns` once per tracked
+  turn, guarded by `m -eq_counted-> a`.
+- **Unanswered wait set.** `w -eq_unans_wait-> q` holds questions no other actor has
+  posted after yet. The first later turn by another actor moves the question to
+  `q -eq_unans_due-> w`. In steady state the wait set holds only the trailing
+  questions of one actor.
+- **Non-response wait set.** `a -eq_rsp_wait-> q` holds b's questions to a that a has
+  not answered by posting since. a's next turn moves each one to `q -eq_rsp_due-> a`.
+  When a responds (declared or tracked), `q -eq_rsp_ans-> a` is added.
+- **Episode marks.** For the episode families, each turn's cue role is marked once on
+  the L1 frontier: `m -eq_cue_resolve | eq_cue_escalate | eq_cue_extend-> w` and
+  `m -eq_fx_cue-> f`. Membership marks `m -eq_ep_res | eq_ep_esc-> e` then feed the
+  generative outcome. These marks also replace the dynamic cue look-up and the
+  `eq_l1_open` gate of `eq.ep.extend` / `eq.ep.facet`.
+
+**Dedicated retraction edges.** A fact that a later turn can invalidate lives on its
+own small edge type:
+
+- `a -eq_nm_quantum-> q`: the quantum exists now. The read-out unions it with
+  `eq_has_quantum`.
+- `q -eq_evidence_nm-> m`: open evidence.
+- `q -eq_counter_nm-> m`: the floor's runner-up turns.
+- `q -eq_floor_ru-> b`: the current runner-up.
+
+The monotone parts stay on the committed types: floor evidence (every turn of the
+actor) and the answered-question counters. Each family's quantum node is permanent,
+linked by `eq_floor_node`, `eq_rsp_node`, `eq_unans_node`, `eq_cg_pos_node` or
+`eq_cg_neg_node`. The node accrues its monotone parts whether or not it currently
+exists, so when a quantum re-appears it reads exactly the one-shot row.
+
+The retractions:
+
+- **Event-driven.** Unanswered and non-response evidence is retracted when the answer
+  edge arrives. This uses `eq_answers` + `enabled(inquiry.answered)`, which is the
+  input that `eq.quanta.inquiry.answered` itself consumes.
+- **Small candidate sets.** Existence (`*.vanish`), runner-up and runner-up-turn
+  retractions match only the dedicated edges.
+- **Floor family.** It compares the batch-final copy `a.eq_nturns_b`, taken atomically
+  on the L1 frontier. So it sees one state per batch: holder and runner-up flip at most
+  once per batch.
+
+**Switching shapes.** Each match-shape rule (quanta exact / partial / weak, composite)
+also sets its siblings' provenance to null; the read-out skips null attrs.
+Generative resolved / escalated / reopened are mutually exclusive and clear each
+other. A facet-match provenance on the episode is cleared once no facet of that
+episode holds the shape any more.
+
+**Pack conditions** (asserted by `check_nm_pack` at build time):
+
+- No EqTraitCue row names a non-monotone trait. Cue rules never saw scratch quanta,
+  and they must not see the live successors.
+- No EqTraitCompose row exists. Composites read `eq_has_quantum` only.
+
+**Engine** (both flags default OFF, enabled only by `incremental_engine` on
+conversation forks):
+
+- `set_hop_frontier` refines `write_frontier`'s locality, computed as a second
+  install-time variant (`RewriteRule.wf_hop_alt`):
+  - `SetT` / `Pick` / `Union` / `Intersect` / `Difference` / `Plus` / `Minus` are
+    transparent.
+  - An attr read of an `Exists` variable over `Neighbours(v, E)` / `InNeighbours(v, E)`
+    of a match variable is one-hop local. A write of that key on x seeds x's
+    E-neighbours, e.g. "no facet of e holds shape s" re-checks only e.
+  - A `DelEdge` of a type the rule does not match counts as a read at its two bound
+    endpoints, so retraction rules can be write-frontier eligible.
+- `set_delete_frontier`: a rule-effect `DelEdge (s, E, t)` makes a non-matching reader
+  of E re-check only the bindings of s and t, provided every read it makes of E is
+  local or is a seedable `AddEdge` of its own. A reader that only deletes E is not
+  woken at all. Readers that match E still go stale through the per-type delete
+  version. The graph keeps a rule-effect delete log (`edge_delete_log`) for this.
+
+Prefix-proportional work that is left, measured in RESULTS §5:
+
+- the read-out of changed rows, whose evidence lists grow with the conversation (this
+  is wire size);
+- `eq.competence.corroborated` / `.contested`, whose shape pairs a reply with every
+  earlier claim;
+- a floor runner-up change, which rewrites O(turns / actors) counter edges. This is
+  the size of the wire change.
