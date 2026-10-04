@@ -381,6 +381,7 @@ def label_status_rows():
 
 
 def build() -> dict[str, dict]:
+    qr.check_nm_pack()
     out = {}
     out["equilibrium_tokens"] = dict(
         header("equilibrium_tokens", ["speech_act_classify"],
@@ -422,23 +423,23 @@ def build() -> dict[str, dict]:
                "Generic quanta rules: evidence / hedged / counter from EqTraitCue rows, interaction "
                "shapes (floor, run, responsiveness, withdrawal), question_demand, composites, match shapes."),
         nodes=[], edges=[], productions=productions("equilibrium_quanta", qr.QUANTA_EDGE_TYPES),
-        rules=qr.apply_live(qr.QUANTA_RULES))
+        rules=qr.apply_nm(qr.apply_live(qr.QUANTA_RULES), "quanta"))
     out["equilibrium_competence"] = dict(
         header("equilibrium_competence", ["equilibrium_quanta"],
                "Relational competence: corroborated, contested, claim_grounding (+ / - capped weak)."),
-        nodes=[], edges=[], productions=[], rules=qr.apply_live(qr.COMPETENCE_RULES))
+        nodes=[], edges=[], productions=[], rules=qr.apply_nm(qr.apply_live(qr.COMPETENCE_RULES), "competence"))
     ep = codebook("equilibrium_episode", ["equilibrium_quanta"],
                   "Episodes (dispute root / growth over responds_to), etiology facets (EqFacetCue), "
                   "generative true/false (null = default), facet match shapes.",
                   qr.episode_items(), qr.EPISODE_EDGE, qr.EPISODE_EDGE_TYPES)
-    ep["rules"] = qr.apply_live(qr.EPISODE_RULES)
+    ep["rules"] = qr.apply_nm(qr.apply_live(qr.EPISODE_RULES), "episode")
     out["equilibrium_episode"] = ep
     cl = codebook("equilibrium_climate", ["equilibrium_quanta"],
                   "Space-climate relational traits (0.4.0): EqClimateCue{role,lab_key} reply codebook "
                   "(stimulus / dismiss / status / ground / engage / nonanswer) and the S1/S2 rules for "
                   "response.dismissal, response.engagement, inquiry.answered, inquiry.unanswered.",
                   qr.climate_items(), qr.CLIMATE_EDGE, qr.CLIMATE_EDGE_TYPES)
-    cl["rules"] = qr.apply_live(qr.CLIMATE_RULES)
+    cl["rules"] = qr.apply_nm(qr.apply_live(qr.CLIMATE_RULES), "climate")
     out["equilibrium_climate"] = cl
     trk = codebook("equilibrium_tracking", ["equilibrium_climate", "equilibrium_window", "equilibrium_scope"],
                    "Conversation tracking (T3c O2): a seeded turn cursor over the retained conversation "
@@ -446,8 +447,9 @@ def build() -> dict[str, dict]:
                    "addresser), tracked responds_to (most recent compatible open question / pending "
                    "address / contrasted claim), eq_answers, the open-question set (eq_qud) and "
                    "same-actor continuation. EqSecondPerson closed-class codebook.",
-                   qr.TRACKING_ITEMS, qr.TRACKING_EDGE, qr.TRACKING_EDGE_TYPES + qr.LIVE_EDGE_TYPES)
-    trk["rules"] = qr.apply_frontier(qr.TRACKING_RULES)
+                   qr.TRACKING_ITEMS, qr.TRACKING_EDGE,
+                   qr.TRACKING_EDGE_TYPES + qr.LIVE_EDGE_TYPES + qr.NM_EDGE_TYPES)
+    trk["rules"] = qr.apply_nm(qr.apply_frontier(qr.TRACKING_RULES), "tracking")
     out["equilibrium_tracking"] = trk
     nodes = [{"local_id": i, "type": "LabelStatus", "attrs": a} for i, a in enumerate(label_status_rows())]
     out["equilibrium_label_status"] = dict(

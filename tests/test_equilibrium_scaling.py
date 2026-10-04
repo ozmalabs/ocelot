@@ -1,6 +1,7 @@
 """Equilibrium conversation scaling (track T3d, pack 0.5.1): the shared batch
 contract POST /v1/conversations/_batch, per-conversation concurrency, and the
-live (monotone) strata layer. Synthetic pseudonymous data only."""
+live (monotone) strata layer, and (stage B) the live non-monotone families.
+Synthetic pseudonymous data only."""
 from __future__ import annotations
 
 import os
@@ -184,12 +185,193 @@ def test_new_engine_flags_default_off():
     n = ec._native(b)
     # defaults: no exemption, no semi-naive batch path -> a batch rule re-enumerates;
     # the setters exist and are idempotent
-    for name in ("set_fresh_node_exempt", "set_batch_incremental"):
+    for name in ("set_fresh_node_exempt", "set_batch_incremental", "set_own_write_exempt",
+                 "set_precise_rule_deletes", "set_seeded_join_order", "set_write_frontier",
+                 "set_hop_frontier", "set_delete_frontier"):
         getattr(n, name)(False)
         getattr(n, name)(False)
     st = ec.conversation_open(b, root, "c", "thread")  # turns the flags on for this fork
     out = ec.conversation_ingest(b, root, st, _conv(1203, n=5))
     assert out["seq"] == 1 and len(out["turns"]) == 5
+
+
+@pytest.mark.parametrize("kind,seed", [("thread", 1211), ("meeting", 1212)])
+def test_delta_readout_equals_full_readout(srv, monkeypatch, kind, seed):
+    """Stage A/B: the delta read-out (only rows this batch's ticks wrote are re-read;
+    stage B has no scratch fork) and the graph-resident open-question set
+    (`w -eq_qud-> q`) emit exactly what the full re-read + turn scan emits."""
+    from domains import equilibrium_classify as ec
+    turns = _conv(seed, n=160, kind=kind)
+    on = srv.ClassifierService(workers=1)
+    got_on = _sequential(on, "d", kind, turns, 40) + [on.conversation_close("d")]
+    tick, emit = ec._tick, ec._emit
+
+    def scan_open(n, w):  # the pre-stage-A definition
+        qs = [x for x in n.neighbours(w, "eq_has_turn")
+              if n.node(x)["attrs"].get(ec.QUESTION_KEY) is True
+              and not n.in_neighbours(x, "eq_answers")]
+        return ec._refs(n, qs)
+    monkeypatch.setattr(ec, "_tick", lambda n, touched: tick(n, None))
+    monkeypatch.setattr(ec, "_emit", lambda *a, **kw: emit(*a, **dict(kw, touched=None)))
+    monkeypatch.setattr(ec, "_open_questions", scan_open)
+    off = srv.ClassifierService(workers=1)
+    got_off = _sequential(off, "d", kind, turns, 40) + [off.conversation_close("d")]
+    assert got_on == got_off
+    assert any(r["open_questions"] for r in got_on[:-1])  # the set is exercised
+
+
+def _s0_candidates(ec, b, root, st, batch, monkeypatch):
+    """load-independent matcher work (scale-audit `cand_tested`, every path) of the
+    batch's S0 tick on the retained fork -- the msg / cue / window layer"""
+    n = ec._native(b)
+    S = type(n)
+    tick, calls, out = ec._tick, [], {}
+
+    def audited(nn, touched):
+        calls.append(1)
+        if len(calls) != 1:
+            return tick(nn, touched)
+        S.scale_audit_reset()
+        S.scale_audit_set_enabled(True)
+        try:
+            return tick(nn, touched)
+        finally:
+            S.scale_audit_set_enabled(False)
+            out.update(S.scale_audit_snapshot())
+    monkeypatch.setattr(ec, "_tick", audited)
+    try:
+        ec.conversation_ingest(b, root, st, batch)
+    finally:
+        monkeypatch.setattr(ec, "_tick", tick)
+    return out["cand_tested"]
+
+
+def test_s0_msg_rules_do_not_rescan_the_prefix(monkeypatch):
+    """Stage A regression: a progressing DelEdge rule (eq.trk.cursor) used to clear
+    EVERY rule cursor, msg rules cleared their own on every firing, and an external
+    `eq_has_token` edge cleared every rule reading it in a term, so each batch
+    re-matched the S0 msg rules over the whole conversation. The S0 matcher work of
+    a 50-turn batch must not grow with the prefix (before: ~linear)."""
+    from domains import equilibrium_classify as ec
+    turns = _conv(1221, n=700)
+    base, root = ec.boot()
+    b = base.snapshot().fork()
+    st = ec.conversation_open(b, root, "s0", "thread")
+    work = {}
+    for i in range(0, 650, 50):
+        if i in (100, 600):
+            work[i] = _s0_candidates(ec, b, root, st, turns[i:i + 50], monkeypatch)
+        else:
+            ec.conversation_ingest(b, root, st, turns[i:i + 50])
+    assert work[100] > 0
+    assert work[600] < 2.0 * work[100], work  # 6x the prefix, not 6x the work
+
+
+# ---- stage B: the non-monotone families run live (no scratch fork) -----------------
+NM_RULE_KEYS = ("eq.trk.nturns", "eq.trk.unans.", "eq.trk.rsp.", "interaction.floor", "responsiveness",
+                "eq.quanta.nm.", "inquiry.unanswered", "competence.grounded", "claim_grounding",
+                "eq.ep.gen.", "generative", "facet_match", "eq.quanta.match.", "eq.quanta.compose")
+NM_TRAITS = ("interaction.floor", "interaction.responsiveness", "inquiry.unanswered",
+             "competence.claim_grounding")
+
+
+def _full(ec, b, root, st):
+    """the complete read-out (close() is a read; the fork stays usable)"""
+    got = ec.conversation_close(b, root, st)
+    return {"quanta": got["quanta"], "episodes": got["episodes"], "open": got["open_questions"]}
+
+
+@pytest.mark.parametrize("kind,seed,size", [("thread", 1231, 7), ("meeting", 1232, 5), ("channel", 1233, 11)])
+def test_nonmonotone_families_equal_one_shot_at_every_prefix(kind, seed, size):
+    """The scratch fork's contract, now kept by rolling state + retraction edges:
+    after every batch the conversation's complete read-out equals a fresh one-shot
+    run over the same prefix -- including facts a later turn retracted (a floor
+    holder overtaken, a question answered after it was counted unanswered / not
+    responded to, a claim grounded later, a resolution escalated again)."""
+    from domains import equilibrium_classify as ec
+    turns = _conv(seed, n=150, kind=kind)
+    base, root = ec.boot()
+    snap = base.snapshot()
+    b = snap.fork()
+    st = ec.conversation_open(b, root, "p", kind)
+    seen, checked = {}, 0
+    for i in range(0, len(turns), size):
+        ec.conversation_ingest(b, root, st, turns[i:i + size])
+        if (i // size) % 3 and i + size < len(turns):
+            continue
+        k = min(i + size, len(turns))
+        inc = _full(ec, b, root, st)
+        one = ec.discourse(snap.fork(), root, {"window_id": "p", "kind": kind}, turns[:k])
+        assert inc["quanta"] == one["quanta"], k
+        assert inc["episodes"] == one["episodes"], k
+        assert inc["open"] == one["open_questions"], k
+        for q in inc["quanta"]:
+            if q["trait"] in NM_TRAITS:
+                seen.setdefault((q["actor_ref"], q["trait"], q["polarity"], q.get("target_ref")), []).append(k)
+        checked += 1
+    assert checked >= 5
+    traits = {key[1] for key in seen}
+    assert {"interaction.floor", "inquiry.unanswered"} <= traits, traits
+    # some non-monotone quantum existed at one checkpoint and not at a later one
+    last = max(v[-1] for v in seen.values())
+    assert any(v[-1] < last for v in seen.values()), "no retraction exercised"
+
+
+def test_stage_b_flags_equal_without(srv, monkeypatch):
+    """hop_frontier / delete_frontier are evaluation strategy only: the same
+    conversation reads out identically with both off."""
+    from domains import equilibrium_classify as ec
+    turns = _conv(1241, n=160, kind="meeting")
+    on = srv.ClassifierService(workers=1)
+    got_on = _sequential(on, "h", "meeting", turns, 20) + [on.conversation_close("h")]
+    full = ec.incremental_engine
+
+    def without(n):
+        full(n)
+        n.set_hop_frontier(False)
+        n.set_delete_frontier(False)
+    monkeypatch.setattr(ec, "incremental_engine", without)
+    off = srv.ClassifierService(workers=1)
+    got_off = _sequential(off, "h", "meeting", turns, 20) + [off.conversation_close("h")]
+    assert got_on == got_off
+
+
+def _nm_candidates(ec, b, root, st, batch):
+    """load-independent matcher work (scale-audit candidate tests by rule) of the
+    stage-B non-monotone rules over one whole batch (every tick)"""
+    S = type(ec._native(b))
+    S.scale_audit_reset()
+    S.scale_audit_per_rule_reset()
+    S.scale_audit_set_enabled(True)
+    S.scale_audit_set_per_rule_enabled(True)
+    try:
+        ec.conversation_ingest(b, root, st, batch)
+    finally:
+        S.scale_audit_set_enabled(False)
+        S.scale_audit_set_per_rule_enabled(False)
+    names = {r[0]: r[2] for r in S.scale_audit_rule_metadata_snapshot()}
+    return sum(c for i, _pos, c in S.scale_audit_match_clause_snapshot()
+               if any(k in names.get(i, "") for k in NM_RULE_KEYS))
+
+
+def test_nonmonotone_families_do_not_rescan_the_prefix():
+    """Stage B regression: the six non-monotone families used to be re-derived over
+    the whole conversation on a scratch fork every batch. Their matcher work for a
+    50-turn batch must not grow with the prefix (6x the prefix, < 1.5x the work;
+    measured ~1.0x; with hop_frontier / delete_frontier off it is ~1.7x)."""
+    from domains import equilibrium_classify as ec
+    turns = _conv(1251, n=700, kind="meeting")
+    base, root = ec.boot()
+    b = base.snapshot().fork()
+    st = ec.conversation_open(b, root, "nm", "meeting")
+    work = {}
+    for i in range(0, 650, 50):
+        if i in (100, 600):
+            work[i] = _nm_candidates(ec, b, root, st, turns[i:i + 50])
+        else:
+            ec.conversation_ingest(b, root, st, turns[i:i + 50])
+    assert work[100] > 0
+    assert work[600] < 1.5 * work[100], work
 
 
 def test_busy_session_is_never_evicted(srv):

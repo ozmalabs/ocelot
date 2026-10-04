@@ -4622,6 +4622,48 @@ impl PySubstrate {
         self.inner.lock().expect("substrate mutex poisoned").set_batch_incremental(on);
     }
 
+    /// Own-write exemption (equilibrium scaling), DEFAULT OFF: an effect's own
+    /// write-target look-up (AddEdge type, AddNodeIfAbsent type/keys, SetAttr key)
+    /// no longer makes a write to it clear the consumer's cursor (see `Substrate`).
+    fn set_own_write_exempt(&mut self, on: bool) {
+        self.inner.lock().expect("substrate mutex poisoned").set_own_write_exempt(on);
+    }
+
+    /// Precise rule-effect edge deletes (equilibrium scaling), DEFAULT OFF: a
+    /// DelEdge-only rule invalidates like an external remove_edge instead of
+    /// clearing every rule's cursor (see `Substrate`).
+    fn set_precise_rule_deletes(&mut self, on: bool) {
+        self.inner.lock().expect("substrate mutex poisoned").set_precise_rule_deletes(on);
+    }
+
+    /// Seeded join order (equilibrium scaling), DEFAULT OFF: semi-naive / node-
+    /// seeded sub-matches order the remaining match edges by connectivity to the
+    /// seed and keep the rule's index hints (traversal only; see `Substrate`).
+    fn set_seeded_join_order(&mut self, on: bool) {
+        self.inner.lock().expect("substrate mutex poisoned").set_seeded_join_order(on);
+    }
+
+    /// Hop frontier (equilibrium scaling stage B), DEFAULT OFF: one-hop local attr
+    /// reads + transparent set / arithmetic operators refine the write-frontier
+    /// locality (see `Substrate`).
+    fn set_hop_frontier(&mut self, on: bool) {
+        self.inner.lock().expect("substrate mutex poisoned").set_hop_frontier(on);
+    }
+
+    /// Delete frontier (equilibrium scaling stage B), DEFAULT OFF: a rule-effect
+    /// DelEdge re-checks a local / own-target reader at the deleted edge's
+    /// endpoints instead of clearing its cursor (see `Substrate`).
+    fn set_delete_frontier(&mut self, on: bool) {
+        self.inner.lock().expect("substrate mutex poisoned").set_delete_frontier(on);
+    }
+
+    /// Write frontier (equilibrium scaling), DEFAULT OFF: a rule-effect attr write
+    /// seeds a local reader's re-evaluation at the written nodes instead of
+    /// clearing its cursor (see `Substrate`).
+    fn set_write_frontier(&mut self, on: bool) {
+        self.inner.lock().expect("substrate mutex poisoned").set_write_frontier(on);
+    }
+
     /// **THE UNSOUND-RETRACTION FALSIFIER** (block 192000). Accepts a stale
     /// cursor regardless of its edge type's delete version, so a delete of a
     /// rule's own match type is NOT retracted — the graph diverges from the full
