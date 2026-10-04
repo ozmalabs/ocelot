@@ -68,8 +68,12 @@ def _disc(base, turns, kind="thread", window_id="w_test", fork=None):
                         {"window_id": window_id, "kind": kind}, turns)
 
 
-def _q(out):
-    return {(q["actor_ref"], q["trait"], q["polarity"], q.get("target_ref")): q for q in out["quanta"]}
+SHARE = "interaction.floor_share"  # 0.7.0: one per speaking actor; checked in test_floor_share_*
+
+
+def _q(out, share=False):
+    return {(q["actor_ref"], q["trait"], q["polarity"], q.get("target_ref")): q for q in out["quanta"]
+            if share or q["trait"] != SHARE}
 
 
 CLIMATE_TRAITS = {"voice.dissent", "voice.error_admission", "inquiry.challenge", "inquiry.answered",
@@ -193,10 +197,14 @@ def test_golden_meeting_window(base):
         ("member_003", "epistemic.hedging", "+", None),
         ("member_003", "interaction.withdrawal", "+", None),
     }
-    # floor dominance: strictly most turns; counter = the runner-up's turns
+    # floor dominance: strictly most turns. 0.7.0: evidence / counter are the holder's /
+    # the runner-up's FIRST turn (bounded), the shares are interaction.floor_share
     fl = q[("actor_a", "interaction.floor", "+", None)]
-    assert fl["evidence"] == ["t01", "t03", "t05", "t07", "t09"]
-    assert fl["counter_evidence"] == ["t02", "t04"] and fl["match"] == "partial"
+    assert fl["evidence"] == ["t01"] and fl["counter_evidence"] == ["t02"] and fl["match"] == "partial"
+    qs = _q(out, share=True)
+    assert qs[("actor_a", SHARE, "+", None)]["evidence"] == ["t01", "t03", "t05", "t07", "t09"]
+    assert qs[("member_003", SHARE, "+", None)]["evidence"] == ["t02", "t04"]
+    assert {k[0] for k in qs if k[1] == SHARE} == {t["actor_ref"] for t in turns}
     # uncorroborated status claim, later contested by grounded evidence
     cl = q[("actor_a", "competence.claimed", "+", None)]
     assert cl["evidence"] == ["t01", "t03"] and cl["match"] == "exact"   # repeated act
@@ -341,10 +349,29 @@ def test_question_demand_negative_control(base):
 
 
 def test_no_cue_window_is_empty(base):
-    """PREREG G14: neutral logistics chat -> no quanta, no episodes."""
+    """PREREG G14: neutral logistics chat -> no quanta, no episodes (0.7.0: apart from
+    each speaker's interaction.floor_share, which every turn feeds)."""
     rows = [("z1", "member_601", "ok", None), ("z2", "member_602", "the build is green", None)]
     out = _disc(base, _thread_turns(rows))
-    assert out["quanta"] == [] and out["episodes"] == []
+    assert _q(out) == {} and out["episodes"] == []
+    assert [(q["actor_ref"], q["evidence"], q["match"]) for q in out["quanta"]] == [
+        ("member_601", ["z1"], "partial"), ("member_602", ["z2"], "partial")]
+
+
+def test_floor_share_is_monotone_and_floor_swap_is_bounded(base):
+    """0.7.0: every turn is evidence of its author's floor share; a runner-up change
+    moves ONE counter ref on the floor quantum (0.6.0: every turn of both runners-up)."""
+    rows = [("a1", "actor_a", "the cache is cold"), ("a2", "actor_a", "the disk is full"),
+            ("b1", "member_201", "lunch is at noon"), ("a3", "actor_a", "the build is green"),
+            ("c1", "member_202", "the runner is slow"), ("c2", "member_202", "the log is long")]
+    q4 = _q(_disc(base, _meeting_turns(rows[:4]), kind="meeting"), share=True)
+    q6 = _q(_disc(base, _meeting_turns(rows), kind="meeting"), share=True)
+    f4, f6 = q4[("actor_a", "interaction.floor", "+", None)], q6[("actor_a", "interaction.floor", "+", None)]
+    assert (f4["evidence"], f4["counter_evidence"]) == (["a1"], ["b1"])
+    assert (f6["evidence"], f6["counter_evidence"]) == (["a1"], ["c1"])  # runner-up member_201 -> member_202
+    assert q6[("actor_a", SHARE, "+", None)]["evidence"] == ["a1", "a2", "a3"]
+    assert q6[("member_202", SHARE, "+", None)]["evidence"] == ["c1", "c2"]
+    assert q6[("member_202", SHARE, "+", None)]["match"] == "exact" and q6[("member_201", SHARE, "+", None)]["match"] == "partial"
 
 
 def test_no_numeric_literal_comparison_operands():
@@ -454,12 +481,12 @@ def test_determinism_and_actor_relabelling_invariance(base):
     back = {v: k for k, v in ren.items()}
     mapped = {(back[q["actor_ref"]], q["trait"], q["polarity"], back.get(q.get("target_ref"))):
               (q["match"], q["evidence"], q["counter_evidence"]) for q in c["quanta"]}
-    assert mapped == {k: (v["match"], v["evidence"], v["counter_evidence"]) for k, v in _q(a).items()}
+    assert mapped == {k: (v["match"], v["evidence"], v["counter_evidence"]) for k, v in _q(a, share=True).items()}
 
 
 def test_prepended_neutral_turn_invariance_thread(base):
     a = _q(_disc(base, _thread_turns()))
-    b = _q(_disc(base, _thread_turns([("p0", "member_900", "ok", None)] + THREAD)))
+    b = _q(_disc(base, _thread_turns([("p0", "member_900", "ok", None)] + THREAD)))  # (shares not compared)
     assert {k: (v["match"], v["evidence"], v["counter_evidence"]) for k, v in b.items()} == \
            {k: (v["match"], v["evidence"], v["counter_evidence"]) for k, v in a.items()}
 

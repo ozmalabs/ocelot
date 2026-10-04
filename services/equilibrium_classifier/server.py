@@ -21,8 +21,15 @@ worker client (equilibrium_worker/classify.py, OcelotClassifier):
                          turns in chunks of 100 + close, exactly as below)
   POST /v1/conversations/{id}/turns   (track T3c; id matches [A-Za-z0-9_.:~-]{1,200})
                      -> {"taxonomy_version"?, "kind": meeting|thread|channel,
-                         "turns":[{"id","actor_ref","text","ts_ms"?,"reply_to"?,"platform_thread"?}]}
-                         (0..100 per call, ts_ms non-decreasing, ids unique in the conversation)
+                         "turns":[{"id","actor_ref","text","ts_ms"?,"reply_to"?,"platform_thread"?}],
+                         "participants"?:[{"actor_ref","aliases"?:[str]}]}
+                         (0..100 turns per call, ts_ms non-decreasing, ids unique in the conversation;
+                          participants (0.7.0): <= 500 per call, <= 8 aliases of 1..64 chars each,
+                          cumulative per conversation, applied from this call's turns on; an actor_ref
+                          may not have spoken yet. Aliases are display names / handles as they appear in
+                          text: TRANSIENT -- held only in the conversation's retained fork, never
+                          logged, never returned. "addressees" may name participants who have not
+                          spoken, and so may a quantum's actor_ref / target_ref)
                      -> {"ok","taxonomy_version","conversation_id","seq",
                          "turns":[{"id","labels"(as /v1/classify),"responds_to","basis",
                                    "addressees","thread_id","topic_id","answers"}],
@@ -44,7 +51,7 @@ worker client (equilibrium_worker/classify.py, OcelotClassifier):
   GET  /v1/conversations/{id}        -> {"ok","conversation_id","seq","idle_ttl_s","kind"}
   POST /v1/conversations/_batch      (shared batch contract)
                      -> {"taxonomy_version"?, "items":[{"conversation_id","kind","turns":[as /turns],
-                         "close"?: bool}]}  (1..64 items, <= 2,000 turns in total, <= 100 per item,
+                         "participants"?: [as /turns], "close"?: bool}]}  (1..64 items, <= 2,000 turns in total, <= 100 per item,
                          each conversation_id at most once)
                      -> {"ok":true,"taxonomy_version","results":[ {"conversation_id","ok":true,
                          seq,turns,quanta_delta,episodes_delta,open_questions} (as /turns)
@@ -119,10 +126,18 @@ TURN_KEYS = frozenset({"id", "actor_ref", "text", "reply_to", "ts_ms"})
 WINDOW_KINDS = frozenset({"meeting", "thread", "channel"})
 # /v1/conversations (track T3c shared contract): one retained fork per conversation
 CONV_ID_RE = re.compile(r"[A-Za-z0-9_.:~-]{1,200}")
-CONV_KEYS = frozenset({"taxonomy_version", "kind", "turns"})
+CONV_KEYS = frozenset({"taxonomy_version", "kind", "turns", "participants"})
 CONV_TURN_KEYS = frozenset({"id", "actor_ref", "text", "ts_ms", "reply_to", "platform_thread"})
 MAX_CONV_TURNS = 100
-MAX_CONV_BODY_BYTES = 4_194_304  # 100 turns x 4000 chars, worst-case JSON escaping
+# participants roster (optional on /turns and every /_batch item; cumulative per
+# conversation): <= 500 entries per call, <= 8 aliases per entry, 1..64 chars each.
+PARTICIPANT_KEYS = frozenset({"actor_ref", "aliases"})
+MAX_PARTICIPANTS = 500
+MAX_ALIASES = 8
+MAX_ALIAS_LEN = 64
+# worst-case JSON escaping of one full roster (500 x (255-char ref + 8 x 64-char alias), 6 bytes/char)
+MAX_ROSTER_BYTES = 2_621_440
+MAX_CONV_BODY_BYTES = 4_194_304 + MAX_ROSTER_BYTES  # 100 turns x 4000 chars + one roster, worst case
 DEFAULT_IDLE_TTL_S = 900
 DEFAULT_MAX_CONVERSATIONS = 64
 # /v1/conversations/_batch (shared batch contract)
@@ -130,7 +145,7 @@ MAX_BATCH_ITEMS = 64
 MAX_BATCH_TURNS = 2_000
 MAX_BATCH_BODY_BYTES = MAX_CONV_BODY_BYTES * (MAX_BATCH_TURNS // MAX_CONV_TURNS)
 BATCH_KEYS = frozenset({"taxonomy_version", "items"})
-BATCH_ITEM_KEYS = frozenset({"conversation_id", "kind", "turns", "close"})
+BATCH_ITEM_KEYS = frozenset({"conversation_id", "kind", "turns", "close", "participants"})
 DEFAULT_WORKERS = max(1, min(8, os.cpu_count() or 1))
 MAX_TOMBSTONES = 4096  # evicted ids remembered (-> 409 conversation_evicted), LRU-capped
 BASES = frozenset({"declared", "tracked", "none"})
@@ -322,13 +337,41 @@ def _validate_turns(turns: list, keys: frozenset, bad) -> list[dict]:
     return out
 
 
+def _validate_participants(ps: Any, path: str, bad) -> list[dict]:
+    """Closed validation of the optional conversation roster (shared contract):
+    [{"actor_ref": id, "aliases"?: [str 1..64 chars, <= 8]}], <= 500 entries.
+    Aliases are display names / handles as they appear in text: TRANSIENT content
+    -- they are handed to the conversation's retained fork only, never logged,
+    never echoed in an error (paths only), never returned."""
+    if not isinstance(ps, list):
+        raise bad(path, "must be an array")
+    if len(ps) > MAX_PARTICIPANTS:
+        raise ApiError(413, "too_large", f"at most {MAX_PARTICIPANTS} participants per call")
+    out = []
+    for i, p in enumerate(ps):
+        pp = f"{path}[{i}]"
+        if not isinstance(p, dict):
+            raise bad(pp, "must be an object")
+        if set(p) - PARTICIPANT_KEYS or "actor_ref" not in p:
+            raise bad(pp, "must be an object with actor_ref and optional aliases")
+        if not _is_ref(p["actor_ref"]):
+            raise bad(pp + ".actor_ref", f"must be an id string of 1..{MAX_REF_LEN} chars")
+        aliases = p.get("aliases", [])
+        if not isinstance(aliases, list) or len(aliases) > MAX_ALIASES:
+            raise bad(pp + ".aliases", f"must be an array of at most {MAX_ALIASES} strings")
+        for k, a in enumerate(aliases):
+            if not isinstance(a, str) or not 1 <= len(a) <= MAX_ALIAS_LEN:
+                raise bad(f"{pp}.aliases[{k}]", f"must be a string of 1..{MAX_ALIAS_LEN} chars")
+        out.append({"actor_ref": p["actor_ref"], "aliases": list(aliases)})
+    return out
+
 def valid_conversation_id(cid: str) -> bool:
     return CONV_ID_RE.fullmatch(cid) is not None
 
 
-def validate_conversation(doc: Any, taxonomy_version: str) -> tuple[str, list[dict]]:
-    """Closed validation of a POST /v1/conversations/{id}/turns body.
-    Error messages carry field paths only, never input."""
+def validate_conversation(doc: Any, taxonomy_version: str) -> tuple[str, list[dict], list[dict] | None]:
+    """Closed validation of a POST /v1/conversations/{id}/turns body ->
+    (kind, turns, participants or None). Error messages carry field paths only, never input."""
     def bad(path: str, why: str) -> ApiError:
         return ApiError(400, "bad_request", f"{path}: {why}")
     if not isinstance(doc, dict):
@@ -346,7 +389,9 @@ def validate_conversation(doc: Any, taxonomy_version: str) -> tuple[str, list[di
         raise bad("$.turns", "must be an array")
     if len(turns) > MAX_CONV_TURNS:
         raise ApiError(413, "too_large", f"at most {MAX_CONV_TURNS} turns per call")
-    return kind, _validate_turns(turns, CONV_TURN_KEYS, bad)
+    turns = _validate_turns(turns, CONV_TURN_KEYS, bad)
+    roster = _validate_participants(doc["participants"], "$.participants", bad) if "participants" in doc else None
+    return kind, turns, roster
 
 
 def validate_batch(doc: Any, taxonomy_version: str) -> list[dict]:
@@ -398,8 +443,11 @@ def validate_batch(doc: Any, taxonomy_version: str) -> list[dict]:
 
         def ibad(path: str, why: str, _p=p) -> ApiError:
             return bad(_p + path[1:], why)
-        out.append({"conversation_id": cid, "kind": it["kind"], "close": close,
-                    "turns": _validate_turns(turns, CONV_TURN_KEYS, ibad)})
+        item = {"conversation_id": cid, "kind": it["kind"], "close": close,
+                "turns": _validate_turns(turns, CONV_TURN_KEYS, ibad)}
+        if "participants" in it:
+            item["participants"] = _validate_participants(it["participants"], p + ".participants", bad)
+        out.append(item)
     return out
 
 
@@ -776,7 +824,10 @@ class ClassifierService:
             self._drop(cid, sess, None)
             self.conversations_opened -= 1
 
-    def conversation_turns(self, cid: str, kind: str, turns: list[dict]) -> dict:
+    def conversation_turns(self, cid: str, kind: str, turns: list[dict],
+                           participants: list[dict] | None = None) -> dict:
+        """One batch of turns (and optionally roster entries, cumulative; aliases are
+        transient: they live only in this conversation's retained fork)."""
         self._require_healthy()
         ec = self._ec
         with self._slot():
@@ -796,7 +847,7 @@ class ClassifierService:
                     with self._meta:
                         self._make_room(keep=cid)
                 try:
-                    result = ec.conversation_ingest(sess.branch, self.root, sess.state, turns)
+                    result = ec.conversation_ingest(sess.branch, self.root, sess.state, turns, participants)
                 except ec.BudgetExhausted:
                     with self._meta:
                         self._drop(cid, sess, None)  # state is partial: drop it
@@ -831,7 +882,7 @@ class ClassifierService:
     def _batch_item(self, item: dict) -> dict:
         cid = item["conversation_id"]
         try:
-            out = self.conversation_turns(cid, item["kind"], item["turns"])
+            out = self.conversation_turns(cid, item["kind"], item["turns"], item.get("participants"))
             if item.get("close") is True:
                 self.conversation_close(cid, read_out=False)
         except BaseDrift:
@@ -903,6 +954,9 @@ class ClassifierService:
                            "strong_check_every_batches": self.strong_every,
                            "max_conversation_turns_per_call": MAX_CONV_TURNS,
                            "max_conversation_body_bytes": MAX_CONV_BODY_BYTES,
+                           "max_participants_per_call": MAX_PARTICIPANTS,
+                           "max_aliases_per_participant": MAX_ALIASES,
+                           "max_alias_chars": MAX_ALIAS_LEN,
                            "max_batch_items": MAX_BATCH_ITEMS,
                            "max_batch_turns": MAX_BATCH_TURNS,
                            "max_batch_body_bytes": MAX_BATCH_BODY_BYTES,
@@ -1006,8 +1060,8 @@ def make_handler(service: ClassifierService):
                 cp = self._conv_path() if p.startswith("/v1/conversations/") else None
                 if cp is not None and cp[1] == "turns":
                     tax = service.provenance["taxonomy_version"]
-                    kind, turns = validate_conversation(parse_json(self._body(MAX_CONV_BODY_BYTES)), tax)
-                    self._send(200, service.conversation_turns(cp[0], kind, turns))
+                    kind, turns, roster = validate_conversation(parse_json(self._body(MAX_CONV_BODY_BYTES)), tax)
+                    self._send(200, service.conversation_turns(cp[0], kind, turns, roster))
                     return
                 if cp is not None and cp[1] == "close":
                     if self.headers.get("Content-Length") is not None or self.headers.get("Transfer-Encoding"):

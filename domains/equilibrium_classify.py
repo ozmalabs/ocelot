@@ -1,4 +1,4 @@
-"""Equilibrium classifier sidecar — the THIN world adapter (tracks T3 / T3b / T3c / T3e, pack 0.6.0).
+"""Equilibrium classifier sidecar — the THIN world adapter (tracks T3 / T3b / T3c / T3e / T3f, pack 0.7.0).
 
 CLAUDE.md "the agent is a graph in Rust": this module does only
   * INGEST  — each message becomes Message/Token/CodeSpan/LinkSpan nodes + edges
@@ -33,7 +33,7 @@ Usage (caller owns isolation — run on a FORK, never the frozen base):
     out = discourse(snap.fork(), root, {"window_id": "w1", "kind": "thread"},
                     [{"id": "t1", "actor_ref": "actor_a", "text": "..."}])
     conv = snap.fork(); st = conversation_open(conv, root, "c1", "meeting")
-    conversation_ingest(conv, root, st, turns)   # per batch: turns + EVIDENCE DELTAS (0.6.0)
+    conversation_ingest(conv, root, st, turns, participants)  # per batch: turns (+ roster, 0.7.0) + EVIDENCE DELTAS
     conversation_close(conv, root, st)           # final read-out (deltas: empty, no ticks)
     conversation_full(conv, root, st)            # complete quanta / episodes (discourse)
 """
@@ -49,8 +49,8 @@ from typing import Any, Iterable
 from substrate.boot_core import boot_core
 from substrate.seed_loader import manifest_for
 
-PACK_VERSION = "0.6.0"
-TAXONOMY_VERSION = "eq-tax-0.6.0"
+PACK_VERSION = "0.7.0"
+TAXONOMY_VERSION = "eq-tax-0.7.0"
 PACK_IDS = ("equilibrium_tokens", "equilibrium_window", "equilibrium_lexicon",
             "equilibrium_scope", "equilibrium_msg", "equilibrium_pattern",
             "equilibrium_traits", "equilibrium_quanta", "equilibrium_competence",
@@ -370,6 +370,18 @@ def incremental_engine(n) -> None:
     n.set_delete_frontier(True)  # a retraction edge's delete re-checks only its endpoints' bindings
 
 
+def _actors(n, w) -> list:
+    """the conversation's actors: speakers (`eq_has_actor`), then roster participants
+    who have not spoken (`eq_has_participant`); a quantum may be on either (e.g. an
+    acknowledgement addressed to a named participant)"""
+    sp = n.neighbours(w, "eq_has_actor")
+    part = n.neighbours(w, "eq_has_participant")
+    if not part:
+        return sp
+    seen = {a.value for a in sp}
+    return sp + [a for a in part if a.value not in seen]
+
+
 def _lookup(n, typ: str, key: str, value: str):
     hit = n.nodes_where(typ, key, value)
     return hit[0] if hit else None
@@ -416,13 +428,64 @@ def conversation_check(substrate, state: Conversation, turns: list[dict]) -> str
     return None
 
 
-def conversation_ingest(substrate, agent_root, state: Conversation, turns: list[dict]) -> dict:
-    """Append one batch to the retained conversation fork and read it out.
+def _alias_forms(text: str) -> list[str]:
+    """An alias / name as the token forms the ingest tokeniser gives it in a turn
+    (same normaliser and word pattern; clause punctuation is ignored, an alias is
+    matched over consecutive token positions)."""
+    return _WORD.findall(_CLAUSE.sub(" ", text.replace("\u2019", "'").lower()))
+
+
+def _name_form(ref: str) -> str | None:
+    name = ref.replace("\u2019", "'").lower()
+    return name if _WORD.fullmatch(name) else None
+
+
+def _roster(n, w, participants: list[dict]) -> None:
+    """Participants roster (cumulative): each entry becomes / reuses the EqActor of
+    its actor_ref, linked `w -eq_has_participant-> a` (NOT `eq_has_actor`: an actor
+    joins the speakers -- floor, turn counts -- only with its first turn), plus one
+    EqAlias per distinct alias token sequence (`a -eq_has_alias-> al`, its first
+    form `a_form1`, its tokens `al -eq_alias_tok-> EqAliasTok{form, eq_apos}`). The
+    actor_ref's own name form is one more alias. Ingest only: the tracking rule
+    eq.trk.addressee.participant decides addressing. Aliases are transient: they
+    exist only in this retained fork (dropped on close / eviction) and no read-out
+    reads them."""
+    for p in participants:
+        ref = str(p["actor_ref"])
+        actor = _lookup(n, "EqActor", "actor_ref", ref)
+        if actor is None:
+            attrs = {"actor_ref": ref}
+            if _name_form(ref) is not None:
+                attrs["eq_name_form"] = _name_form(ref)
+            actor = n.add_node("EqActor", attrs)
+        if not n.has_edge(w, "eq_has_participant", actor):
+            n.add_edge(w, "eq_has_participant", actor)
+        held = set(n.get_attr_many(n.neighbours(actor, "eq_has_alias"), "a_key")) \
+            if n.neighbours(actor, "eq_has_alias") else set()
+        names = ([ref] if _name_form(ref) is not None else []) + list(p.get("aliases") or ())
+        for text in names:
+            forms = _alias_forms(str(text))
+            key = " ".join(forms)
+            if not forms or key in held:
+                continue  # no word token (cannot occur in a turn's tokens) / already held
+            held.add(key)
+            al = n.add_node("EqAlias", {"a_form1": forms[0], "a_key": key})
+            n.add_edge(actor, "eq_has_alias", al)
+            for i, f in enumerate(forms):
+                n.add_edge(al, "eq_alias_tok", n.add_node("EqAliasTok", {"form": f, "eq_apos": i}))
+
+
+def conversation_ingest(substrate, agent_root, state: Conversation, turns: list[dict],
+                        participants: list[dict] | None = None) -> dict:
+    """Append one batch (and optionally roster entries, which apply from this
+    batch's turns on) to the retained conversation fork and read it out.
     The caller has run conversation_check. Returns
       {"conversation_id", "seq", "turns": [...], "quanta_delta": [...],
        "episodes_delta": [...], "open_questions": [...], "steps": [...]}"""
     n = _native(substrate)
     w = state.w
+    if participants:
+        _roster(n, w, participants)
     pos, last_ref, last_ts = _led(n, state.ledger, "eq_next_pos"), _led(n, state.ledger, "eq_last_ref"), None
     prev = _lookup(n, "Message", "eq_ref", last_ref) if last_ref is not None else None
     nodes = []
@@ -449,6 +512,10 @@ def conversation_ingest(substrate, agent_root, state: Conversation, turns: list[
             if _WORD.fullmatch(name):
                 aattrs["eq_name_form"] = name
             actor = n.add_node("EqActor", aattrs)
+            n.add_edge(w, "eq_has_actor", actor)
+        elif not n.has_edge(w, "eq_has_actor", actor):
+            # a roster participant's first turn: it joins the speakers now
+            n.set_attr(actor, "eq_first_pos", extra["eq_turn_pos"])
             n.add_edge(w, "eq_has_actor", actor)
         n.add_edge(w, "eq_has_turn", m)
         n.add_edge(w, "eq_l0", m)  # S0 / tracking frontier mark (removed after tracking)
@@ -517,7 +584,7 @@ def _new_quanta(n, state: Conversation) -> list:
     """Quanta first minted on the retained fork in this batch (mechanical set
     difference against the ledger's `eqq:` marks; bounded by actors x quanta,
     not by conversation length; the quantum keys are read in bulk)."""
-    qs = [q for a in n.neighbours(state.w, "eq_has_actor") for q in n.neighbours(a, "eq_has_quantum")]
+    qs = list(dict.fromkeys(q for a in _actors(n, state.w) for q in n.neighbours(a, "eq_has_quantum")))
     if not qs:
         return []
     cols = [n.get_attr_many(qs, k) for k in ("q_actor", "q_trait", "q_pole", "q_target")]
@@ -610,8 +677,8 @@ def _quantum_row(n, q, qa: dict) -> dict:
 def _read_quanta(n, w, only: list | None = None) -> list[dict]:
     """Every quantum of the conversation, or only the quanta in `only`."""
     if only is None:
-        only = [q for a in n.neighbours(w, "eq_has_actor") for et in QUANTUM_EDGES
-                for q in n.neighbours(a, et)]
+        only = list(dict.fromkeys(q for a in _actors(n, w) for et in QUANTUM_EDGES
+                                  for q in n.neighbours(a, et)))
     quanta = [_quantum_row(n, q, n.node(q)["attrs"]) for q in only]
     quanta.sort(key=lambda r: (r["actor_ref"], r["trait"], r["polarity"], r.get("target_ref", "")))
     return quanta
@@ -695,7 +762,7 @@ def _mark(n, ledger, key: str):
 
 def _quanta_delta(n, state: Conversation, ch: Changes, net: dict) -> list[dict]:
     srs = _srs()
-    actors = {a.value for a in n.neighbours(state.w, "eq_has_actor")}
+    actors = {a.value for a in _actors(n, state.w)}
     cand: dict[int, tuple[set, set]] = {}
     for (s, et, t) in net:
         if et in QUANTUM_EDGES:

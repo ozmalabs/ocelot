@@ -12,6 +12,390 @@
    "batch": true,
    "effects": [
     [
+     "add_edge",
+     "a",
+     "eq_claim_first",
+     "m1"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_l1",
+     "m1"
+    ],
+    [
+     "a",
+     "eq_has_quantum",
+     "qc"
+    ],
+    [
+     "qc",
+     "eq_evidence",
+     "m1"
+    ]
+   ],
+   "name": "eq.competence.claim_first.set",
+   "where": {
+    "items": [
+     {
+      "items": [
+       {
+        "a": {
+         "key": "q_trait",
+         "node": {
+          "name": "qc",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "competence.claimed"
+        },
+        "type": "Eq"
+       },
+       {
+        "a": {
+         "key": "q_pole",
+         "node": {
+          "name": "qc",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "+"
+        },
+        "type": "Eq"
+       }
+      ],
+      "type": "And"
+     },
+     {
+      "arg": {
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       },
+       "source": {
+        "edge_type": "eq_claim_first",
+        "node": {
+         "name": "a",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "cf"
+      },
+      "type": "Not"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "del_edge",
+     "a",
+     "eq_claim_first",
+     "x"
+    ],
+    [
+     "add_edge",
+     "a",
+     "eq_claim_first",
+     "m1"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_l1",
+     "m1"
+    ],
+    [
+     "a",
+     "eq_has_quantum",
+     "qc"
+    ],
+    [
+     "qc",
+     "eq_evidence",
+     "m1"
+    ],
+    [
+     "a",
+     "eq_claim_first",
+     "x"
+    ]
+   ],
+   "name": "eq.competence.claim_first.earlier",
+   "where": {
+    "items": [
+     {
+      "items": [
+       {
+        "a": {
+         "key": "q_trait",
+         "node": {
+          "name": "qc",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "competence.claimed"
+        },
+        "type": "Eq"
+       },
+       {
+        "a": {
+         "key": "q_pole",
+         "node": {
+          "name": "qc",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "+"
+        },
+        "type": "Eq"
+       }
+      ],
+      "type": "And"
+     },
+     {
+      "a": {
+       "key": "eq_turn_pos",
+       "node": {
+        "name": "m1",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "key": "eq_turn_pos",
+       "node": {
+        "name": "x",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "type": "Lt"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "add_edge",
+     "a",
+     "eq_corr_last",
+     "m2"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_l1",
+     "m2"
+    ],
+    [
+     "m2",
+     "eq_addresses",
+     "a"
+    ]
+   ],
+   "name": "eq.competence.corr_last.set",
+   "where": {
+    "items": [
+     {
+      "items": [
+       {
+        "a": {
+         "key": "eqlab:msg.concession",
+         "node": {
+          "name": "m2",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "b": {
+         "type": "Lit",
+         "value": true
+        },
+        "type": "Eq"
+       },
+       {
+        "a": {
+         "key": "eqlab:msg.deference",
+         "node": {
+          "name": "m2",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "b": {
+         "type": "Lit",
+         "value": true
+        },
+        "type": "Eq"
+       }
+      ],
+      "type": "Or"
+     },
+     {
+      "arg": {
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       },
+       "source": {
+        "edge_type": "eq_corr_last",
+        "node": {
+         "name": "a",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "cl"
+      },
+      "type": "Not"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "del_edge",
+     "a",
+     "eq_corr_last",
+     "x"
+    ],
+    [
+     "add_edge",
+     "a",
+     "eq_corr_last",
+     "m2"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_l1",
+     "m2"
+    ],
+    [
+     "m2",
+     "eq_addresses",
+     "a"
+    ],
+    [
+     "a",
+     "eq_corr_last",
+     "x"
+    ]
+   ],
+   "name": "eq.competence.corr_last.later",
+   "where": {
+    "items": [
+     {
+      "items": [
+       {
+        "a": {
+         "key": "eqlab:msg.concession",
+         "node": {
+          "name": "m2",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "b": {
+         "type": "Lit",
+         "value": true
+        },
+        "type": "Eq"
+       },
+       {
+        "a": {
+         "key": "eqlab:msg.deference",
+         "node": {
+          "name": "m2",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "b": {
+         "type": "Lit",
+         "value": true
+        },
+        "type": "Eq"
+       }
+      ],
+      "type": "Or"
+     },
+     {
+      "a": {
+       "key": "eq_turn_pos",
+       "node": {
+        "name": "m2",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "key": "eq_turn_pos",
+       "node": {
+        "name": "x",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "type": "Gt"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
      "add_node_if_absent",
      "q",
      "EqQuantum",
@@ -62,12 +446,6 @@
      "add_edge",
      "q",
      "eq_evidence",
-     "m1"
-    ],
-    [
-     "add_edge",
-     "q",
-     "eq_evidence",
      "m2"
     ]
    ],
@@ -78,14 +456,9 @@
      "w"
     ],
     [
-     "a",
-     "eq_has_quantum",
-     "qc"
-    ],
-    [
-     "qc",
-     "eq_evidence",
-     "m1"
+     "w",
+     "eq_l1",
+     "m2"
     ],
     [
      "m2",
@@ -93,48 +466,48 @@
      "a"
     ],
     [
-     "w",
-     "eq_l1",
-     "m2"
+     "a",
+     "eq_claim_first",
+     "f"
     ]
    ],
-   "name": "eq.competence.corroborated",
+   "name": "eq.competence.corroborated.reply",
    "where": {
     "items": [
      {
       "items": [
        {
         "a": {
-         "key": "q_trait",
+         "key": "eqlab:msg.concession",
          "node": {
-          "name": "qc",
+          "name": "m2",
           "type": "Var"
          },
          "type": "Attr"
         },
         "b": {
          "type": "Lit",
-         "value": "competence.claimed"
+         "value": true
         },
         "type": "Eq"
        },
        {
         "a": {
-         "key": "q_pole",
+         "key": "eqlab:msg.deference",
          "node": {
-          "name": "qc",
+          "name": "m2",
           "type": "Var"
          },
          "type": "Attr"
         },
         "b": {
          "type": "Lit",
-         "value": "+"
+         "value": true
         },
         "type": "Eq"
        }
       ],
-      "type": "And"
+      "type": "Or"
      },
      {
       "arg": {
@@ -198,47 +571,471 @@
       "b": {
        "key": "eq_turn_pos",
        "node": {
-        "name": "m1",
+        "name": "f",
         "type": "Var"
        },
        "type": "Attr"
       },
       "type": "Gt"
-     },
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "add_edge",
+     "a",
+     "eq_claim_open",
+     "m1"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_l1",
+     "m1"
+    ],
+    [
+     "a",
+     "eq_has_quantum",
+     "qc"
+    ],
+    [
+     "qc",
+     "eq_evidence",
+     "m1"
+    ]
+   ],
+   "name": "eq.competence.claim_open.corr",
+   "where": {
+    "items": [
      {
       "items": [
        {
         "a": {
-         "key": "eqlab:msg.concession",
+         "key": "q_trait",
          "node": {
-          "name": "m2",
+          "name": "qc",
           "type": "Var"
          },
          "type": "Attr"
         },
         "b": {
          "type": "Lit",
-         "value": true
+         "value": "competence.claimed"
         },
         "type": "Eq"
        },
        {
         "a": {
-         "key": "eqlab:msg.deference",
+         "key": "q_pole",
          "node": {
-          "name": "m2",
+          "name": "qc",
           "type": "Var"
          },
          "type": "Attr"
         },
         "b": {
          "type": "Lit",
-         "value": true
+         "value": "+"
         },
         "type": "Eq"
        }
       ],
-      "type": "Or"
+      "type": "And"
+     },
+     {
+      "arg": {
+       "predicate": {
+        "a": {
+         "key": "eq_turn_pos",
+         "node": {
+          "name": "cx",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "b": {
+         "key": "eq_turn_pos",
+         "node": {
+          "name": "m1",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "type": "Gt"
+       },
+       "source": {
+        "edge_type": "eq_corr_last",
+        "node": {
+         "name": "a",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "cx"
+      },
+      "type": "Not"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "add_node_if_absent",
+     "q",
+     "EqQuantum",
+     {
+      "q_actor": {
+       "__term__": {
+        "key": "actor_ref",
+        "node": {
+         "name": "a",
+         "type": "Var"
+        },
+        "type": "Attr"
+       }
+      },
+      "q_pole": {
+       "__term__": {
+        "type": "Lit",
+        "value": "+"
+       }
+      },
+      "q_target": {
+       "__term__": {
+        "type": "Lit",
+        "value": ""
+       }
+      },
+      "q_trait": {
+       "__term__": {
+        "type": "Lit",
+        "value": "competence.corroborated"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "a",
+     "eq_has_quantum",
+     "q"
+    ],
+    [
+     "set_attr",
+     "q",
+     "eqrule:eq.competence.corroborated",
+     true
+    ],
+    [
+     "add_edge",
+     "q",
+     "eq_evidence",
+     "m1"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_l1",
+     "m1"
+    ],
+    [
+     "a",
+     "eq_has_quantum",
+     "qc"
+    ],
+    [
+     "qc",
+     "eq_evidence",
+     "m1"
+    ],
+    [
+     "a",
+     "eq_corr_last",
+     "x"
+    ]
+   ],
+   "name": "eq.competence.corroborated.claim_new",
+   "where": {
+    "items": [
+     {
+      "items": [
+       {
+        "a": {
+         "key": "q_trait",
+         "node": {
+          "name": "qc",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "competence.claimed"
+        },
+        "type": "Eq"
+       },
+       {
+        "a": {
+         "key": "q_pole",
+         "node": {
+          "name": "qc",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "+"
+        },
+        "type": "Eq"
+       }
+      ],
+      "type": "And"
+     },
+     {
+      "a": {
+       "key": "eq_turn_pos",
+       "node": {
+        "name": "m1",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "key": "eq_turn_pos",
+       "node": {
+        "name": "x",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "type": "Lt"
+     },
+     {
+      "arg": {
+       "predicate": {
+        "items": [
+         {
+          "a": {
+           "key": "label",
+           "node": {
+            "name": "ls",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "competence.corroborated"
+          },
+          "type": "Eq"
+         },
+         {
+          "a": {
+           "key": "status",
+           "node": {
+            "name": "ls",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "disabled"
+          },
+          "type": "Eq"
+         }
+        ],
+        "type": "And"
+       },
+       "source": {
+        "edge_type": "eq_has_label_status",
+        "node": {
+         "name": "agent",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "ls"
+      },
+      "type": "Not"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "add_node_if_absent",
+     "q",
+     "EqQuantum",
+     {
+      "q_actor": {
+       "__term__": {
+        "key": "actor_ref",
+        "node": {
+         "name": "a",
+         "type": "Var"
+        },
+        "type": "Attr"
+       }
+      },
+      "q_pole": {
+       "__term__": {
+        "type": "Lit",
+        "value": "+"
+       }
+      },
+      "q_target": {
+       "__term__": {
+        "type": "Lit",
+        "value": ""
+       }
+      },
+      "q_trait": {
+       "__term__": {
+        "type": "Lit",
+        "value": "competence.corroborated"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "a",
+     "eq_has_quantum",
+     "q"
+    ],
+    [
+     "set_attr",
+     "q",
+     "eqrule:eq.competence.corroborated",
+     true
+    ],
+    [
+     "add_edge",
+     "q",
+     "eq_evidence",
+     "m1"
+    ],
+    [
+     "del_edge",
+     "a",
+     "eq_claim_open",
+     "m1"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "a",
+     "eq_claim_open",
+     "m1"
+    ],
+    [
+     "a",
+     "eq_corr_last",
+     "x"
+    ]
+   ],
+   "name": "eq.competence.corroborated.claim",
+   "where": {
+    "items": [
+     {
+      "a": {
+       "key": "eq_turn_pos",
+       "node": {
+        "name": "m1",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "key": "eq_turn_pos",
+       "node": {
+        "name": "x",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "type": "Lt"
+     },
+     {
+      "arg": {
+       "predicate": {
+        "items": [
+         {
+          "a": {
+           "key": "label",
+           "node": {
+            "name": "ls",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "competence.corroborated"
+          },
+          "type": "Eq"
+         },
+         {
+          "a": {
+           "key": "status",
+           "node": {
+            "name": "ls",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "disabled"
+          },
+          "type": "Eq"
+         }
+        ],
+        "type": "And"
+       },
+       "source": {
+        "edge_type": "eq_has_label_status",
+        "node": {
+         "name": "agent",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "ls"
+      },
+      "type": "Not"
      }
     ],
     "type": "And"
@@ -302,12 +1099,6 @@
      "add_edge",
      "q",
      "eq_evidence",
-     "m1"
-    ],
-    [
-     "add_edge",
-     "q",
-     "eq_evidence",
      "m2"
     ]
    ],
@@ -318,14 +1109,9 @@
      "w"
     ],
     [
-     "a",
-     "eq_has_quantum",
-     "qc"
-    ],
-    [
-     "qc",
-     "eq_evidence",
-     "m1"
+     "w",
+     "eq_l1",
+     "m2"
     ],
     [
      "m2",
@@ -338,45 +1124,95 @@
      "b"
     ],
     [
-     "w",
-     "eq_l1",
-     "m2"
+     "a",
+     "eq_claim_first",
+     "f"
     ]
    ],
-   "name": "eq.competence.contested",
+   "name": "eq.competence.contested.reply",
    "where": {
     "items": [
      {
       "items": [
        {
         "a": {
-         "key": "q_trait",
+         "key": "eqlab:msg.reply_contrast",
          "node": {
-          "name": "qc",
+          "name": "m2",
           "type": "Var"
          },
          "type": "Attr"
         },
         "b": {
          "type": "Lit",
-         "value": "competence.claimed"
+         "value": true
         },
         "type": "Eq"
        },
        {
-        "a": {
-         "key": "q_pole",
-         "node": {
-          "name": "qc",
-          "type": "Var"
+        "items": [
+         {
+          "a": {
+           "key": "eqlab:msg.substantive_markers=code",
+           "node": {
+            "name": "m2",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": true
+          },
+          "type": "Eq"
          },
-         "type": "Attr"
-        },
-        "b": {
-         "type": "Lit",
-         "value": "+"
-        },
-        "type": "Eq"
+         {
+          "a": {
+           "key": "eqlab:msg.substantive_markers=link",
+           "node": {
+            "name": "m2",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": true
+          },
+          "type": "Eq"
+         },
+         {
+          "a": {
+           "key": "eqlab:msg.substantive_markers=citation",
+           "node": {
+            "name": "m2",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": true
+          },
+          "type": "Eq"
+         },
+         {
+          "a": {
+           "key": "eqlab:msg.domain=technical",
+           "node": {
+            "name": "m2",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": true
+          },
+          "type": "Eq"
+         }
+        ],
+        "type": "Or"
        }
       ],
       "type": "And"
@@ -443,25 +1279,88 @@
       "b": {
        "key": "eq_turn_pos",
        "node": {
-        "name": "m1",
+        "name": "f",
         "type": "Var"
        },
        "type": "Attr"
       },
       "type": "Gt"
-     },
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "add_edge",
+     "q",
+     "eq_ct_last",
+     "m2"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_l1",
+     "m2"
+    ],
+    [
+     "m2",
+     "eq_addresses",
+     "a"
+    ],
+    [
+     "m2",
+     "eq_authored_by",
+     "b"
+    ],
+    [
+     "a",
+     "eq_has_quantum",
+     "q"
+    ]
+   ],
+   "name": "eq.competence.ct_last.set",
+   "where": {
+    "items": [
      {
       "a": {
-       "key": "eqlab:msg.reply_contrast",
+       "key": "q_trait",
        "node": {
-        "name": "m2",
+        "name": "q",
         "type": "Var"
        },
        "type": "Attr"
       },
       "b": {
        "type": "Lit",
-       "value": true
+       "value": "competence.contested"
+      },
+      "type": "Eq"
+     },
+     {
+      "a": {
+       "key": "q_target",
+       "node": {
+        "name": "q",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "key": "actor_ref",
+       "node": {
+        "name": "b",
+        "type": "Var"
+       },
+       "type": "Attr"
       },
       "type": "Eq"
      },
@@ -469,7 +1368,7 @@
       "items": [
        {
         "a": {
-         "key": "eqlab:msg.substantive_markers=code",
+         "key": "eqlab:msg.reply_contrast",
          "node": {
           "name": "m2",
           "type": "Var"
@@ -483,8 +1382,186 @@
         "type": "Eq"
        },
        {
+        "items": [
+         {
+          "a": {
+           "key": "eqlab:msg.substantive_markers=code",
+           "node": {
+            "name": "m2",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": true
+          },
+          "type": "Eq"
+         },
+         {
+          "a": {
+           "key": "eqlab:msg.substantive_markers=link",
+           "node": {
+            "name": "m2",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": true
+          },
+          "type": "Eq"
+         },
+         {
+          "a": {
+           "key": "eqlab:msg.substantive_markers=citation",
+           "node": {
+            "name": "m2",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": true
+          },
+          "type": "Eq"
+         },
+         {
+          "a": {
+           "key": "eqlab:msg.domain=technical",
+           "node": {
+            "name": "m2",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": true
+          },
+          "type": "Eq"
+         }
+        ],
+        "type": "Or"
+       }
+      ],
+      "type": "And"
+     },
+     {
+      "arg": {
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       },
+       "source": {
+        "edge_type": "eq_ct_last",
+        "node": {
+         "name": "q",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "cl"
+      },
+      "type": "Not"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "del_edge",
+     "q",
+     "eq_ct_last",
+     "x"
+    ],
+    [
+     "add_edge",
+     "q",
+     "eq_ct_last",
+     "m2"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_l1",
+     "m2"
+    ],
+    [
+     "m2",
+     "eq_addresses",
+     "a"
+    ],
+    [
+     "m2",
+     "eq_authored_by",
+     "b"
+    ],
+    [
+     "a",
+     "eq_has_quantum",
+     "q"
+    ],
+    [
+     "q",
+     "eq_ct_last",
+     "x"
+    ]
+   ],
+   "name": "eq.competence.ct_last.later",
+   "where": {
+    "items": [
+     {
+      "a": {
+       "key": "q_trait",
+       "node": {
+        "name": "q",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "competence.contested"
+      },
+      "type": "Eq"
+     },
+     {
+      "a": {
+       "key": "q_target",
+       "node": {
+        "name": "q",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "key": "actor_ref",
+       "node": {
+        "name": "b",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "type": "Eq"
+     },
+     {
+      "items": [
+       {
         "a": {
-         "key": "eqlab:msg.substantive_markers=link",
+         "key": "eqlab:msg.reply_contrast",
          "node": {
           "name": "m2",
           "type": "Var"
@@ -498,37 +1575,308 @@
         "type": "Eq"
        },
        {
+        "items": [
+         {
+          "a": {
+           "key": "eqlab:msg.substantive_markers=code",
+           "node": {
+            "name": "m2",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": true
+          },
+          "type": "Eq"
+         },
+         {
+          "a": {
+           "key": "eqlab:msg.substantive_markers=link",
+           "node": {
+            "name": "m2",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": true
+          },
+          "type": "Eq"
+         },
+         {
+          "a": {
+           "key": "eqlab:msg.substantive_markers=citation",
+           "node": {
+            "name": "m2",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": true
+          },
+          "type": "Eq"
+         },
+         {
+          "a": {
+           "key": "eqlab:msg.domain=technical",
+           "node": {
+            "name": "m2",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": true
+          },
+          "type": "Eq"
+         }
+        ],
+        "type": "Or"
+       }
+      ],
+      "type": "And"
+     },
+     {
+      "a": {
+       "key": "eq_turn_pos",
+       "node": {
+        "name": "m2",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "key": "eq_turn_pos",
+       "node": {
+        "name": "x",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "type": "Gt"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "add_edge",
+     "q",
+     "eq_ct_open",
+     "m1"
+    ]
+   ],
+   "match": [
+    [
+     "a",
+     "eq_has_quantum",
+     "q"
+    ],
+    [
+     "a",
+     "eq_has_quantum",
+     "qc"
+    ],
+    [
+     "qc",
+     "eq_evidence",
+     "m1"
+    ]
+   ],
+   "name": "eq.competence.claim_open.ct",
+   "where": {
+    "items": [
+     {
+      "items": [
+       {
         "a": {
-         "key": "eqlab:msg.substantive_markers=citation",
+         "key": "q_trait",
          "node": {
-          "name": "m2",
+          "name": "qc",
           "type": "Var"
          },
          "type": "Attr"
         },
         "b": {
          "type": "Lit",
-         "value": true
+         "value": "competence.claimed"
         },
         "type": "Eq"
        },
        {
         "a": {
-         "key": "eqlab:msg.domain=technical",
+         "key": "q_pole",
          "node": {
-          "name": "m2",
+          "name": "qc",
           "type": "Var"
          },
          "type": "Attr"
         },
         "b": {
          "type": "Lit",
-         "value": true
+         "value": "+"
         },
         "type": "Eq"
        }
       ],
-      "type": "Or"
+      "type": "And"
+     },
+     {
+      "a": {
+       "key": "q_trait",
+       "node": {
+        "name": "q",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "competence.contested"
+      },
+      "type": "Eq"
+     },
+     {
+      "arg": {
+       "container": {
+        "edge_type": "eq_evidence",
+        "node": {
+         "name": "q",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "member": {
+        "name": "m1",
+        "type": "Var"
+       },
+       "type": "In"
+      },
+      "type": "Not"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "add_edge",
+     "q",
+     "eq_evidence",
+     "m1"
+    ],
+    [
+     "set_attr",
+     "q",
+     "eqrule:eq.competence.contested",
+     true
+    ],
+    [
+     "del_edge",
+     "q",
+     "eq_ct_open",
+     "m1"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "q",
+     "eq_ct_open",
+     "m1"
+    ],
+    [
+     "q",
+     "eq_ct_last",
+     "x"
+    ]
+   ],
+   "name": "eq.competence.contested.claim",
+   "where": {
+    "items": [
+     {
+      "a": {
+       "key": "eq_turn_pos",
+       "node": {
+        "name": "m1",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "key": "eq_turn_pos",
+       "node": {
+        "name": "x",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "type": "Lt"
+     },
+     {
+      "arg": {
+       "predicate": {
+        "items": [
+         {
+          "a": {
+           "key": "label",
+           "node": {
+            "name": "ls",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "competence.contested"
+          },
+          "type": "Eq"
+         },
+         {
+          "a": {
+           "key": "status",
+           "node": {
+            "name": "ls",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "disabled"
+          },
+          "type": "Eq"
+         }
+        ],
+        "type": "And"
+       },
+       "source": {
+        "edge_type": "eq_has_label_status",
+        "node": {
+         "name": "agent",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "ls"
+      },
+      "type": "Not"
      }
     ],
     "type": "And"
@@ -1477,6 +2825,6 @@
   }
  ],
  "self_load_only": true,
- "taxonomy_version": "eq-tax-0.6.0",
- "version": "0.6.0"
+ "taxonomy_version": "eq-tax-0.7.0",
+ "version": "0.7.0"
 }

@@ -172,3 +172,32 @@ WINDOWS = {
                         ("q4", "bea", "It lands on Friday."), ("q5", "cy", "However, Friday is a freeze."),
                         ("q6", "bea", "Fair point, Monday then.")],
 }
+
+
+def test_backchannel_does_not_answer(base):
+    """0.7.0: a backchannel-only turn (closed-class EqBackchannel codebook: yeah / okay /
+    right / mm-hmm / uh-huh ...) may respond to a question but does not answer it; the
+    next substantive turn does. Polar answers ("yes") and backchannel + content do."""
+    out = _disc(base, HELLO + [
+        ("b1", "ana", "Which port does the cache use?"),
+        ("b2", "bea", "Yeah."),
+        ("b3", "cy", "Mm-hmm, okay right."),
+        ("b4", "dov", "It uses port 6379."),
+        ("b5", "ana", "Bea, is the deploy today?"),
+        ("b6", "bea", "Yes."),
+        ("b7", "cy", "Is the queue empty?"),
+        ("b8", "dov", "Yeah, it drained at noon."),
+        ("b9", "ana", "Does anyone know the build id?"),
+        ("b10", "bea", "Uh-huh https://example.org/build/42")], kind="meeting")
+    r = _rows(out, {"b2", "b3", "b4", "b6", "b8", "b10"})
+    assert r["b2"] == (["b1"], "tracked", ["ana"], []) and r["b3"][3] == []
+    assert r["b4"] == (["b1"], "tracked", ["ana"], ["b1"])
+    assert r["b6"][3] == ["b5"] and r["b8"][3] == ["b7"] and r["b10"][3] == ["b9"]
+    assert out["open_questions"] == []
+    q = _q(out)
+    assert ("bea", "inquiry.answered", "+", "ana") in q and ("dov", "inquiry.answered", "+", "ana") in q
+    assert q[("dov", "inquiry.answered", "+", "ana")]["evidence"] == ["b1", "b4"]
+    # a question met ONLY by backchannels stays open (and is unanswered once others posted)
+    out = _disc(base, HELLO + [("u1", "ana", "Who owns the cache?"), ("u2", "bea", "Hmm."),
+                               ("u3", "cy", "Okay.")], kind="meeting")
+    assert out["open_questions"] == ["u1"] and ("ana", "inquiry.unanswered", "+", None) in _q(out)

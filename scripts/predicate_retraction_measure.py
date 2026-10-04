@@ -41,7 +41,20 @@ def _no_edge_out(var, et):
 
 @contextlib.contextmanager
 def _flags(inner, *, pred, unsound=False):
-    """Scoped: set the predicate-retraction flags for the duration, restore OFF."""
+    """Scoped: set the predicate-retraction flags for the duration, restore OFF.
+
+    BOTH arms also run with `write_frontier` (edge locality) ON. Since 616bd532
+    (COW fork support) a rule-effect write of an edge type a consumer reads in a
+    TERM clears that consumer's cursor (`hits_term_edge` in mark_dirty_for: a term
+    read may change predicates of stable bindings). The covered rule reads its
+    own effect edge `fired` in its where-clause, so every firing cleared its OWN
+    cursor and the next pass was a full O(N) re-match in both arms (measured with
+    the committed binaries: f1fbf43f ON 6 / 6 at N=64 / 256, 616bd532 ON 70 / 262).
+    `write_frontier` is the engine's mechanism for exactly that read shape
+    (`Neighbours` of a match variable -> re-check only the edge's endpoints);
+    with it the OFF arm is still a full rescan (the external attr flip) and only
+    predicate retraction flattens the ON arm, so the arms still isolate rung B."""
+    inner.set_write_frontier(True)
     inner.set_predicate_retraction(pred)
     inner.set_predicate_retraction_unsound(unsound)
     try:
@@ -49,6 +62,7 @@ def _flags(inner, *, pred, unsound=False):
     finally:
         inner.set_predicate_retraction_unsound(False)
         inner.set_predicate_retraction(False)
+        inner.set_write_frontier(False)
 
 
 def _build(N):
