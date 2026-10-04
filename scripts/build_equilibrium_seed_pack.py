@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the Equilibrium seed pack (0.6.0, tracks T3 + T3b + T3c + T3d + T3e) as flat seed manifests.
+"""Build the Equilibrium seed pack (0.7.0, tracks T3 + T3b + T3c + T3d + T3e + T3f) as flat seed manifests.
 
     PYTHONPATH=.:runners/dsl/python OZMA_NO_LLM=1 python3 scripts/build_equilibrium_seed_pack.py
 
@@ -37,8 +37,8 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 SEEDS = ROOT / "seeds"
-PACK_VERSION = "0.6.0"
-TAXONOMY_VERSION = "eq-tax-0.6.0"
+PACK_VERSION = "0.7.0"
+TAXONOMY_VERSION = "eq-tax-0.7.0"
 NUM = "<num>"            # token class slot: any all-digit prose token
 PERSON = "<noun.person>"  # token class slot: first-sense WordNet noun lexname
 GROUP = "<noun.group>"
@@ -369,7 +369,8 @@ def label_status_rows():
     rows = [{"label": lbl, "kind": "msg", "values": vals, "status": "shadow", "since_pack": since,
              "match_class": mc} for lbl, vals, mc, since in SUPPORTED]
     rows += [{"label": t, "kind": "trait", "values": list(p), "status": "shadow",
-              "since_pack": "0.4.0" if t in qr.CLIMATE_TRAIT_NAMES else "0.3.0", "match_class": None}
+              "since_pack": qr.TRAIT_SINCE.get(t, "0.4.0" if t in qr.CLIMATE_TRAIT_NAMES else "0.3.0"),
+              "match_class": None}
              for t, p, _tg, _n in qr.TRAITS]
     rows += [{"label": p, "kind": "trait", "values": ["+"], "status": "disabled",
               "since_pack": "0.3.0", "match_class": None} for p in qr.PATTERNS]

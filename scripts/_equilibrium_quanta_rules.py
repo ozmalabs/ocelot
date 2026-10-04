@@ -251,13 +251,18 @@ TRAITS = [
     ("status.claim", "+", False, "status / rank / tenure assertion (status != expertise)"),
     ("status.dismissal", "+", True, "dismissal of another's standing"),
     ("deference.to", "+", True, "deference formulae"),
-    ("interaction.floor", "+", False, "the unique actor with strictly the most turns"),
+    ("interaction.floor", "+", False, "the unique actor with strictly the most turns (0.7.0: evidence = the "
+     "holder's first turn, counter = each runner-up's first turn, match partial by construction; the "
+     "turn shares are interaction.floor_share)"),
+    ("interaction.floor_share", "+", False, "0.7.0: the actor's share of the floor -- evidence = every turn "
+     "by the actor (monotone, never retracted)"),
     ("interaction.run", "+", False, "consecutive turns by the same actor"),
     ("interaction.responsiveness", "-", True, "question to the actor unanswered though the actor posted later"),
     ("interaction.withdrawal", "+", False, "disengagement formula; later turns by the actor are counter-evidence"),
     ("tribal.outgroup_reference", "+", False, "address + collective noun construction; no identity lexicon"),
     ("procedural.appeal", "+", False, "procedure / agenda formulae"),
 ]
+TRAIT_SINCE = {"interaction.floor_share": "0.7.0"}  # traits added after 0.4.0
 PATTERNS = ["pattern.sealioning", "pattern.selective_non_response", "pattern.goalpost_shifting",
             "pattern.jaqing", "pattern.concern_trolling", "pattern.darvo", "pattern.motte_and_bailey"]
 _TARGETABLE = {t: tg for t, _p, tg, _n in TRAITS}
@@ -464,7 +469,10 @@ QUANTA_RULES = (
 # ---- match shapes (S4/S5; design §6.2) -------------------------------------
 E, C, H = Nb("q", "eq_evidence"), Nb("q", "eq_counter"), Nb("q", "eq_hedged")
 _PLAIN = And(Eq(A("q", "q_composite"), L(None)),
-             Not(And(Eq(A("q", "q_trait"), L("competence.claim_grounding")), Eq(A("q", "q_pole"), L("-")))))
+             Not(And(Eq(A("q", "q_trait"), L("competence.claim_grounding")), Eq(A("q", "q_pole"), L("-")))),
+             # 0.7.0: the floor's evidence / counter are bounded anchors (first turns), not
+             # the shares; its match is set by construction (eq.quanta.match.partial_by_construction)
+             Not(Eq(A("q", "q_trait"), L("interaction.floor"))))
 _EXACT = And(Gt(Count(E), singleton(E)), Not(Ex(C, "x")), Not(Ex(H, "x")))
 _OUTWEIGHS = Gt(Count(E), Count(C))
 QMATCH = [ST(4), WIN, ["w", "eq_has_actor", "a"], ["a", "eq_has_quantum", "q"]]
@@ -826,10 +834,24 @@ EPISODE_EDGE_TYPES = [("Agent", e, t) for t, e in EPISODE_EDGE.items()] + [
 #   a -eq_last_claim-> x        a's most recent claim (assertion / directive) turn
 SECOND_PERSON = ("you", "your", "yours", "yourself", "yourselves", "you're", "you've",
                  "you'll", "you'd", "ya", "y'all")
-TRACKING_ITEMS = [("EqSecondPerson", {"form": f}) for f in SECOND_PERSON]
-TRACKING_EDGE = {"EqSecondPerson": "eq_has_second_person"}
+# 0.7.0 closed-class BACKCHANNEL codebook (continuers / acknowledgement tokens /
+# fillers, as tokenised: "mm-hmm" -> mm, hmm; "uh-huh" -> uh, huh). A turn made only of
+# these tokens (and no code / link span) is a backchannel: it may respond to a
+# question but does not ANSWER it. Polar answers ("yes" / "no") are not in the list.
+BACKCHANNEL = ("yeah", "yeh", "yah", "yep", "yup", "okay", "ok", "right", "alright", "mm", "mmm", "mhm",
+               "hmm", "hm", "huh", "uh", "um", "uhm", "er", "erm", "ah", "oh", "aha", "ooh")
+TRACKING_ITEMS = ([("EqSecondPerson", {"form": f}) for f in SECOND_PERSON]
+                  + [("EqBackchannel", {"form": f}) for f in BACKCHANNEL])
+TRACKING_EDGE = {"EqSecondPerson": "eq_has_second_person", "EqBackchannel": "eq_has_backchannel"}
 CUR = ["w", "eq_trk_cur", "m"]
 CLAIM_LABS = (ASSERTION, DIRECTIVE)
+
+
+def _backchannel_only(m):
+    """m has at least one token, every token is a backchannel form, and no span."""
+    return And(Ex(Nb(m, "eq_has_token"), "bk0"), Not(Ex(Nb(m, "eq_has_span"), "bks")),
+               Not(Ex(Nb(m, "eq_has_token"), "bk1", Not(Ex(Nb("agent", "eq_has_backchannel"), "bk2",
+                                                           Eq(A("bk2", "form"), A("bk1", "form")))))))
 
 
 def _addressed_any(m):
@@ -914,6 +936,22 @@ TRACKING_RULES = [
          And(Eq(A("t", "form"), A("b", "eq_name_form")), Not(Same("a", "b")),
              Lt(A("b", "eq_first_pos"), A("m", POS))),
          [["add_edge", "m", "eq_addresses", "b"]]),
+    # T1' (0.7.0, participants roster) explicit address of a ROSTER participant,
+    # who may not have spoken yet: the turn carries one of the participant's
+    # aliases (or its actor_ref name form) as consecutive tokens -- the alias's
+    # first form at token t, and every alias token at t's position plus its
+    # offset. Same address edge as T1; second-person rules unchanged.
+    dict(rule("eq.trk.addressee.participant",
+              [WIN, CUR, AUTH, ["m", "eq_has_token", "t"], ["w", "eq_has_participant", "b"],
+               ["b", "eq_has_alias", "al"]],
+              And(Eq(A("al", "a_form1"), A("t", "form")), Not(Same("a", "b")),
+                  Not(Ex(Nb("al", "eq_alias_tok"), "k", Not(Ex(Nb("m", "eq_has_token"), "u", And(
+                      Eq(A("u", "eq_pos"), {"type": "Plus", "items": [A("t", "eq_pos"), A("k", "eq_apos")]}),
+                      Eq(A("u", "form"), A("k", "form")))))))),
+              [["add_edge", "m", "eq_addresses", "b"]]),
+         # R10 join index (matcher traversal only): probe the alias by the token's form
+         index_hints=[{"for_var": "al", "via_var": "t", "via_key": "form", "node_type": "EqAlias",
+                       "this_key": "a_form1"}]),
     # T2 second-person address with no explicit addressee: the last speaker who
     # addressed this actor
     rule("eq.trk.addressee.second_person",
@@ -952,12 +990,13 @@ TRACKING_RULES = [
     rule("eq.trk.addressee.target", [WIN, CUR, AUTH, ["m", "eq_trk_to", "x"], ["x", "eq_authored_by", "b"]],
          Not(Same("a", "b")),
          [["add_edge", "m", "eq_addresses", "b"]]),
-    # T4 answers (declared OR tracked responds_to): an answer-type turn by another
-    # actor -- counter-questions / withdrawals (nonanswer) and dismissals do not close
+    # T4 answers (declared OR tracked responds_to): a SUBSTANTIVE answer-type turn by
+    # another actor -- counter-questions / withdrawals (nonanswer), dismissals and
+    # (0.7.0) backchannel-only turns do not close
     *[rule(f"eq.trk.answers.{basis}",
            [WIN, CUR, AUTH, ["m", edge, "p"], ["p", "eq_authored_by", "b"]],
            And(Not(Same("a", "b")), has("p", QUESTION), Gt(A("m", POS), A("p", POS)),
-               Not(_cc("m", "nonanswer")), Not(_dismissive("m"))),
+               Not(_cc("m", "nonanswer")), Not(_dismissive("m")), Not(_backchannel_only("m"))),
            [["add_edge", "m", "eq_answers", "p"]])
       for basis, edge in (("declared", "eq_responds_to"), ("tracked", "eq_trk_to"))],
     # T5 state update for the turns after this one
@@ -997,11 +1036,14 @@ TRACKING_RULES = [
          [["add_edge", "m", "eq_responds_to", "x"], ["set_attr", "m", "eq_basis", "tracked"]]),
 ]
 TRACKING_EDGE_TYPES = [
-    ("Agent", "eq_has_second_person", "EqSecondPerson"),
+    ("Agent", "eq_has_second_person", "EqSecondPerson"), ("Agent", "eq_has_backchannel", "EqBackchannel"),
     ("Message", "eq_prev_turn", "Message"), ("Message", "eq_trk_to", "Message"), ("Message", "eq_continues", "Message"),
     ("EqWindow", "eq_trk_pending", "Message"), ("EqWindow", "eq_trk_cur", "Message"),
     ("EqWindow", "eq_qud", "Message"), ("EqActor", "eq_pending", "Message"),
     ("EqActor", "eq_last_addressed_by", "Message"), ("EqActor", "eq_last_claim", "Message"),
+    # 0.7.0 participants roster (ingest; transient alias content, conversation fork only)
+    ("EqWindow", "eq_has_participant", "EqActor"), ("EqActor", "eq_has_alias", "EqAlias"),
+    ("EqAlias", "eq_alias_tok", "EqAliasTok"),
 ]
 
 
@@ -1032,12 +1074,10 @@ LIVE_L1 = ("eq.quanta.evidence.untargeted", "eq.quanta.evidence.targeted",
            "eq.quanta.hedged.untargeted", "eq.quanta.hedged.targeted", "eq.quanta.evidence.addressee",
            "eq.quanta.interaction.run", "eq.quanta.epistemic.question_demand",
            "eq.quanta.response.dismissal", "eq.quanta.response.engagement",
-           "eq.quanta.inquiry.answered", "eq.ep.root", "eq.ep.extend", "eq.ep.facet",
-           "eq.competence.corroborated", "eq.competence.contested")
+           "eq.quanta.inquiry.answered", "eq.ep.root", "eq.ep.extend", "eq.ep.facet")
 LIVE_L2 = ("eq.quanta.counter.untargeted", "eq.quanta.counter.targeted",
            "eq.quanta.interaction.withdrawal.counter")
-LIVE_ANCHOR = {"eq.competence.corroborated": "m2",
-               "eq.competence.contested": "m2", "eq.quanta.interaction.withdrawal.counter": "m2"}
+LIVE_ANCHOR = {"eq.quanta.interaction.withdrawal.counter": "m2"}
 L1_OPEN, L2_OPEN = ["agent", "eq_l1_open", "w"], ["agent", "eq_l2_open", "w"]
 LIVE_EDGE_TYPES = [("EqWindow", "eq_l0", "Message"), ("EqWindow", "eq_l1", "Message"), ("EqWindow", "eq_l2", "Message"),
                    ("Agent", "eq_l1_open", "EqWindow"), ("Agent", "eq_l2_open", "EqWindow"),
@@ -1177,6 +1217,9 @@ TRK_NM_RULES = [
     rule("eq.trk.nturns", [WIN, CUR, AUTH], Not(Ex(Nb("m", "eq_counted"), "cx")),
          [["set_attr", "a", "eq_nturns", T(Plus(NUM_TURNS, Count({"type": "SetT", "items": [V("m")]})))],
           ["add_edge", "m", "eq_counted", "a"]]),
+    # 0.7.0: the actor's first turn (set once; the floor's bounded evidence anchor)
+    rule("eq.trk.first_turn", [WIN, CUR, AUTH], Not(Ex(Nb("a", "eq_first_turn"), "ft")),
+         [["add_edge", "a", "eq_first_turn", "m"]]),
     # unanswered: a question is FOLLOWED once another actor takes a later turn
     rule("eq.trk.unans.follow", [WIN, CUR, AUTH, ["w", "eq_unans_wait", "qt"], ["qt", "eq_authored_by", "b"]],
          Not(Same("a", "b")),
@@ -1225,8 +1268,10 @@ FLOOR_RULES = [
     rule("eq.quanta.interaction.floor.vanish", [WIN, ["a", "eq_nm_quantum", "q"]],
          And(trait_is("q", FLOOR_T), COUNTED, Not(_floor_holds("a"))),
          [["del_edge", "a", "eq_nm_quantum", "q"]]),
-    # evidence: every turn of the actor (monotone, on the permanent node)
-    rule("eq.quanta.interaction.floor.evidence", [["a", "eq_floor_node", "q"], ["m", "eq_authored_by", "a"]],
+    # 0.7.0 evidence: the holder's FIRST turn (`eq_first_turn`, set once by the turn
+    # cursor), on the permanent node -- a bounded anchor; the holder's turns are its
+    # interaction.floor_share quantum (0.6.0: every turn of the holder)
+    rule("eq.quanta.interaction.floor.evidence", [["a", "eq_floor_node", "q"], ["a", "eq_first_turn", "m"]],
          L(True), [["add_edge", "q", "eq_evidence", "m"], prov("q", "eq.quanta.interaction.floor.evidence")]),
     # counter: the turns of the runner(s)-up (no other non-holder has more turns)
     rule("eq.quanta.interaction.floor.ru", [WIN, ["a", "eq_nm_quantum", "q"], ["w", "eq_has_actor", "b"]],
@@ -1235,7 +1280,9 @@ FLOOR_RULES = [
     rule("eq.quanta.interaction.floor_ru_drop", [WIN, ["a", "eq_floor_node", "q"], ["q", "eq_floor_ru", "b"]],
          And(COUNTED, Or(Not(In(V("q"), Nb("a", "eq_nm_quantum"))), Not(_runner_up("a", "b")))),
          [["del_edge", "q", "eq_floor_ru", "b"]]),
-    rule("eq.quanta.interaction.floor.counter", [["q", "eq_floor_ru", "b"], ["m", "eq_authored_by", "b"]],
+    # 0.7.0 counter: each runner-up's FIRST turn (0.6.0: every turn of every runner-up,
+    # so a runner-up change rewrote O(turns) counter refs; now O(runners-up))
+    rule("eq.quanta.interaction.floor.counter", [["q", "eq_floor_ru", "b"], ["b", "eq_first_turn", "m"]],
          L(True), [["add_edge", "q", "eq_counter_nm", "m"], prov("q", "eq.quanta.interaction.floor.counter")]),
     rule("eq.quanta.interaction.floor_counter_drop", [["q", "eq_counter_nm", "m"], ["m", "eq_authored_by", "b"]],
          Not(In(V("b"), Nb("q", "eq_floor_ru"))), [["del_edge", "q", "eq_counter_nm", "m"]]),
@@ -1263,6 +1310,14 @@ RSP_RULES = [
          [["qt", "eq_rsp_ans", "a"], ["qt", "eq_authored_by", "b"], ["a", "eq_rsp_node", "q"]],
          Eq(A("q", "q_target"), A("b", REF)),
          [["add_edge", "q", "eq_counter", "qt"], prov("q", "eq.quanta.interaction.responsiveness.counter")]),
+]
+# 0.7.0 per-actor floor share (monotone, live L1): every turn is evidence of its
+# author's interaction.floor_share quantum
+FLOOR_SHARE_T = "interaction.floor_share"
+FLOOR_SHARE_RULES = [
+    rule("eq.quanta.interaction.floor_share", [WIN, ["w", "eq_l1", "m"], AUTH], enabled(L(FLOOR_SHARE_T)),
+         mint("q", "a", A("a", REF), L(FLOOR_SHARE_T), L("+"), L(""), "eq.quanta.interaction.floor_share")
+         + [["add_edge", "q", "eq_evidence", "m"]]),
 ]
 # a non-monotone quantum whose open evidence emptied no longer exists
 NM_VANISH = rule("eq.quanta.nm.vanish", [["a", "eq_nm_quantum", "q"]],
@@ -1293,6 +1348,89 @@ UNANS_RULES = [
     rule("eq.quanta.inquiry.unanswered.counter", [["b", "eq_unans_node", "q"], ["qt", "eq_authored_by", "b"]],
          And(has("qt", QUESTION), _answered_by_edge("qt")),
          [["add_edge", "q", "eq_counter", "qt"], prov("q", "eq.quanta.inquiry.unanswered.counter")]),
+]
+
+# -- corroboration / contest with BOUNDED claim state (0.7.0; equilibrium_competence) ----
+# 0.6.0 paired every reply with EVERY earlier claim of the addressed actor (O(claims)
+# per reply). The relation is unchanged -- E(corroborated, a) = {claims of a followed
+# by a later concession / deference addressed to a} + {such replies preceded by a
+# claim of a}; E(contested, a, b) likewise per replier b -- but it is now derived
+# from bounded per-actor / per-(actor, replier) state:
+#   a -eq_claim_first-> m   a's earliest claim (replace-if-earlier: converges in-batch)
+#   a -eq_corr_last-> m     the latest corroborating reply addressed to a
+#   a -eq_claim_open-> m    a's claims with no later corroborating reply yet
+#   q -eq_ct_last-> m       (q = contested(a, b)) b's latest contest of a
+#   q -eq_ct_open-> m       a's claims not yet in q's evidence
+# A reply is evidence iff it is later than a's first claim (O(1)); a claim is evidence
+# iff it is earlier than the latest reply, read off the OPEN claims only, each of which
+# closes once (amortised O(1) per claim and pair). Seeding a new (a, b) pair with a's
+# earlier claims is O(claims) once per pair -- exactly the refs its first upsert
+# carries on the wire.
+CORR_CUE = (lab("msg.concession"), lab("msg.deference"))
+CORR_T, CT_T = "competence.corroborated", "competence.contested"
+CLAIM_E = [["a", "eq_has_quantum", "qc"], ["qc", "eq_evidence", "m1"]]
+# a claim turn of THIS batch (L1 frontier): earlier claims never change the first claim
+# and are already open / evidence
+NEW_CLAIM = [WIN, ["w", "eq_l1", "m1"]] + CLAIM_E
+REPLY_TO_A = [WIN, ["w", "eq_l1", "m2"], ["m2", "eq_addresses", "a"]]
+
+
+def _contest(m):
+    return And(has(m, lab("msg.reply_contrast")), _any(m, GROUNDED_KEYS))
+
+
+CORR_RULES = [
+    rule("eq.competence.claim_first.set", NEW_CLAIM, And(CLAIMED, Not(Ex(Nb("a", "eq_claim_first"), "cf"))),
+         [["add_edge", "a", "eq_claim_first", "m1"]]),
+    rule("eq.competence.claim_first.earlier", NEW_CLAIM + [["a", "eq_claim_first", "x"]],
+         And(CLAIMED, Lt(A("m1", POS), A("x", POS))),
+         [["del_edge", "a", "eq_claim_first", "x"], ["add_edge", "a", "eq_claim_first", "m1"]]),
+    # corroborated
+    rule("eq.competence.corr_last.set", REPLY_TO_A,
+         And(_any("m2", CORR_CUE), Not(Ex(Nb("a", "eq_corr_last"), "cl"))),
+         [["add_edge", "a", "eq_corr_last", "m2"]]),
+    rule("eq.competence.corr_last.later", REPLY_TO_A + [["a", "eq_corr_last", "x"]],
+         And(_any("m2", CORR_CUE), Gt(A("m2", POS), A("x", POS))),
+         [["del_edge", "a", "eq_corr_last", "x"], ["add_edge", "a", "eq_corr_last", "m2"]]),
+    rule("eq.competence.corroborated.reply", REPLY_TO_A + [["a", "eq_claim_first", "f"]],
+         And(_any("m2", CORR_CUE), enabled(L(CORR_T)), Gt(A("m2", POS), A("f", POS))),
+         mint("q", "a", A("a", REF), L(CORR_T), L("+"), L(""), "eq.competence.corroborated")
+         + [["add_edge", "q", "eq_evidence", "m2"]]),
+    # a new claim with no later corroborating reply (yet) is OPEN; one that already has
+    # one is evidence at once; an open claim closes when a later reply arrives
+    rule("eq.competence.claim_open.corr", NEW_CLAIM,
+         And(CLAIMED, Not(Ex(Nb("a", "eq_corr_last"), "cx", Gt(A("cx", POS), A("m1", POS))))),
+         [["add_edge", "a", "eq_claim_open", "m1"]]),
+    rule("eq.competence.corroborated.claim_new", NEW_CLAIM + [["a", "eq_corr_last", "x"]],
+         And(CLAIMED, Lt(A("m1", POS), A("x", POS)), enabled(L(CORR_T))),
+         mint("q", "a", A("a", REF), L(CORR_T), L("+"), L(""), "eq.competence.corroborated")
+         + [["add_edge", "q", "eq_evidence", "m1"]]),
+    rule("eq.competence.corroborated.claim", [WIN, ["a", "eq_claim_open", "m1"], ["a", "eq_corr_last", "x"]],
+         And(Lt(A("m1", POS), A("x", POS)), enabled(L(CORR_T))),
+         mint("q", "a", A("a", REF), L(CORR_T), L("+"), L(""), "eq.competence.corroborated")
+         + [["add_edge", "q", "eq_evidence", "m1"], ["del_edge", "a", "eq_claim_open", "m1"]]),
+    # contested (per replier b = the quantum's target)
+    rule("eq.competence.contested.reply", REPLY_TO_A + [["m2", "eq_authored_by", "b"], ["a", "eq_claim_first", "f"]],
+         And(_contest("m2"), enabled(L(CT_T)), Gt(A("m2", POS), A("f", POS))),
+         mint("q", "a", A("a", REF), L(CT_T), L("+"), A("b", REF), "eq.competence.contested")
+         + [["add_edge", "q", "eq_evidence", "m2"]]),
+    rule("eq.competence.ct_last.set",
+         REPLY_TO_A + [["m2", "eq_authored_by", "b"], ["a", "eq_has_quantum", "q"]],
+         And(trait_is("q", CT_T), Eq(A("q", "q_target"), A("b", REF)), _contest("m2"),
+             Not(Ex(Nb("q", "eq_ct_last"), "cl"))),
+         [["add_edge", "q", "eq_ct_last", "m2"]]),
+    rule("eq.competence.ct_last.later",
+         REPLY_TO_A + [["m2", "eq_authored_by", "b"], ["a", "eq_has_quantum", "q"], ["q", "eq_ct_last", "x"]],
+         And(trait_is("q", CT_T), Eq(A("q", "q_target"), A("b", REF)), _contest("m2"),
+             Gt(A("m2", POS), A("x", POS))),
+         [["del_edge", "q", "eq_ct_last", "x"], ["add_edge", "q", "eq_ct_last", "m2"]]),
+    rule("eq.competence.claim_open.ct", [["a", "eq_has_quantum", "q"]] + CLAIM_E,
+         And(CLAIMED, trait_is("q", CT_T), Not(In(V("m1"), Nb("q", "eq_evidence")))),
+         [["add_edge", "q", "eq_ct_open", "m1"]]),
+    rule("eq.competence.contested.claim", [WIN, ["q", "eq_ct_open", "m1"], ["q", "eq_ct_last", "x"]],
+         And(Lt(A("m1", POS), A("x", POS)), enabled(L(CT_T))),
+         [["add_edge", "q", "eq_evidence", "m1"], prov("q", "eq.competence.contested"),
+          ["del_edge", "q", "eq_ct_open", "m1"]]),
 ]
 
 # -- claim grounding (equilibrium_competence) -------------------------------------
@@ -1395,10 +1533,19 @@ def _shape_rules(qm, ev, ctr, sfx):
         rule("eq.quanta.match.weak_by_construction" + sfx, qm,
              And(trait_is("q", CG_T), Eq(A("q", "q_pole"), L("-"))),
              _set_match("q", "eq.quanta.match.weak_by_construction", "weak")),
+        # 0.7.0: the floor holds iff the holder's share strictly outweighs every other
+        # actor's (each of which is non-empty): the generic `partial` shape over the
+        # shares. 0.6.0 derived exactly that from the full lists (every 0.6.0 floor
+        # quantum was partial); with bounded anchors it is set by construction.
+        rule("eq.quanta.match.partial_by_construction" + sfx, qm, trait_is("q", FLOOR_T),
+             _set_match("q", "eq.quanta.match.partial_by_construction", "partial")),
     ]
 
 
 QLIVE = [WIN, ["w", "eq_has_actor", "a"], ["a", "eq_has_quantum", "q"]]
+# 0.7.0: a roster participant who has not spoken can hold a (monotone) quantum, e.g.
+# competence.acknowledged from a concession addressed to it by name
+QPART = [WIN, ["w", "eq_has_participant", "a"], ["a", "eq_has_quantum", "q"]]
 QNM = [WIN, ["w", "eq_has_actor", "a"], ["a", "eq_nm_quantum", "q"]]
 _CMP = ("eq.quanta.match.composite_exact", "eq.quanta.match.composite_weak", "eq.quanta.match.composite_partial")
 
@@ -1410,6 +1557,7 @@ def _csw(name, value):
 QCOMP = QLIVE + [["q", "eq_component", "x0"]]
 MATCH_NM_RULES = (
     _shape_rules(QLIVE, E, C, "")
+    + _shape_rules(QPART, E, C, ".participant")
     + _shape_rules(QNM, Union(E, Nb("q", "eq_evidence_nm")), Union(C, Nb("q", "eq_counter_nm")), ".nm")
     + [rule(_CMP[0], QCOMP, And(Eq(A("q", "q_composite"), L(True)),
                                 Not(Ex(COMP, "x", Not(Eq(A("x", "eq_match"), L("exact")))))), _csw(_CMP[0], "exact")),
@@ -1430,9 +1578,11 @@ NM_REPLACED = frozenset(
      "eq.competence.claim_grounding.grounded_claim", "eq.competence.claim_grounding.grounding",
      "eq.competence.claim_grounding.ungrounded", "eq.ep.generative.resolved", "eq.ep.generative.escalated",
      "eq.ep.facet_match.exact", "eq.ep.facet_match.partial", "eq.ep.facet_match.weak",
-     "eq.quanta.compose", "eq.quanta.compose.evidence", "eq.ep.extend", "eq.ep.facet"}
+     "eq.quanta.compose", "eq.quanta.compose.evidence", "eq.ep.extend", "eq.ep.facet",
+     "eq.competence.corroborated", "eq.competence.contested"}
     | {r["name"] for r in MATCH_RULES})
-NM_PACK = {"quanta": FLOOR_RULES + RSP_RULES + [NM_VANISH] + COMPOSE_LIVE + MATCH_NM_RULES, "competence": CG_RULES,
+NM_PACK = {"quanta": FLOOR_RULES + FLOOR_SHARE_RULES + RSP_RULES + [NM_VANISH] + COMPOSE_LIVE + MATCH_NM_RULES,
+           "competence": CORR_RULES + CG_RULES,
            "episode": EP_NM_RULES, "climate": UNANS_RULES}
 NM_EDGE_TYPES = [
     ("Message", "eq_counted", "EqActor"), ("EqWindow", "eq_unans_wait", "Message"),
@@ -1445,7 +1595,11 @@ NM_EDGE_TYPES = [
     ("Message", "eq_ep_res", "EqEpisode"), ("Message", "eq_ep_esc", "EqEpisode"),
     ("EqQuantum", "eq_rsp_target", "EqActor"), ("Message", "eq_cue_resolve", "EqWindow"),
     ("Message", "eq_cue_extend", "EqWindow"), ("Message", "eq_fx_cue", "EqFacetCue"), ("Message", "eq_cue_escalate", "EqWindow"),
-    ("EqActor", "eq_cg_pos_node", "EqQuantum"), ("EqActor", "eq_cg_neg_node", "EqQuantum")]
+    ("EqActor", "eq_cg_pos_node", "EqQuantum"), ("EqActor", "eq_cg_neg_node", "EqQuantum"),
+    # 0.7.0: floor anchors; bounded corroboration / contest state
+    ("EqActor", "eq_first_turn", "Message"), ("EqActor", "eq_claim_first", "Message"),
+    ("EqActor", "eq_corr_last", "Message"), ("EqActor", "eq_claim_open", "Message"),
+    ("EqQuantum", "eq_ct_last", "Message"), ("EqQuantum", "eq_ct_open", "Message")]
 
 
 def _bind_agent(r):
