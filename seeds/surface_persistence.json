@@ -1,0 +1,3746 @@
+{
+ "id": "surface_persistence",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": [
+  "surface_segmentation"
+ ],
+ "latency_class": "hard_realtime",
+ "description": "Mary's Room stage 4.4: persistent surface identity across exposures by cell-set overlap, colour-free. A current SurfaceSegment S (from surface_segmentation, has_boundary=1) continues PersistentSurface P iff ov = #members of S whose prev_sid == P.sid satisfies the track_comps overlap criterion 2*ov >= min(S.n_cells, P.n_cells) (runners/dsl/src/substrate.rs track_comps), P is S's unique overlap argmax, and no other current segment claims P with >= overlap. Otherwise S is born as a new P (sid from SurfaceCounter.next_sid): an ambiguous split/merge is REFUSED rather than guessed, and a P claimed by >= 2 segments with no acceptor is marked 'split'. Unmatched P coast (coast += 1; never deleted). Unlike track_comps the match is order-independent and has no centroid/velocity fallback and no value gate: identity never reads colour. Each cell keeps prev_sid (previous exposure) and cur_sid (this exposure); prev_sid is rolled at the next segmentation reset so overlap always reads the previous epoch. Ganzfeld (has_boundary=0) segments are not offered. Flag SurfacePersistenceParams.enabled, OFF by default (sec 9).",
+ "microtheory": {
+  "name": "surface_persistence",
+  "description": "surface segments -> persistent surfaces by cell overlap"
+ },
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "SurfacePersistenceParams",
+   "attrs": {
+    "enabled": 0.0
+   }
+  },
+  {
+   "local_id": 1,
+   "type": "PersistenceState",
+   "attrs": {
+    "ready_epoch": -1
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "SurfaceCounter",
+   "attrs": {
+    "next_sid": 0
+   }
+  }
+ ],
+ "edges": [
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_surface_persistence_params",
+   "tgt": {
+    "local": 0
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_persistence_state",
+   "tgt": {
+    "local": 1
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_surface_counter",
+   "tgt": {
+    "local": 2
+   },
+   "attrs": {}
+  }
+ ],
+ "productions": [],
+ "rules": [
+  {
+   "name": "ps_init",
+   "comment": "First sight of a cell: no persistent surface yet (sid -1).",
+   "match": [
+    [
+     "retina",
+     "has_column",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SurfacePersistenceParams"
+         },
+         "var_name": "pp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SurfaceSegmentationParams"
+         },
+         "var_name": "sp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "ps_epoch"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "ps_epoch",
+     -1
+    ],
+    [
+     "set_attr",
+     "c",
+     "prev_sid",
+     -1
+    ],
+    [
+     "set_attr",
+     "c",
+     "cur_sid",
+     -1
+    ]
+   ]
+  },
+  {
+   "name": "ps_roll",
+   "comment": "When segmentation resets a cell for a new epoch, roll its identity clock: prev_sid := cur_sid (the sid assigned at the previous exposure; -1 if that exposure offered no surface, e.g. a ganzfeld), cur_sid := -1. Overlap is computed ONLY from prev_sid, so it always reads the previous epoch.",
+   "match": [
+    [
+     "retina",
+     "has_column",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SurfacePersistenceParams"
+         },
+         "var_name": "pp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SurfaceSegmentationParams"
+         },
+         "var_name": "sp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       }
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "c"
+        },
+        "key": "ps_epoch"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "seg_epoch"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "ps_epoch"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "prev_sid",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "cur_sid"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "c",
+     "cur_sid",
+     -1
+    ],
+    [
+     "set_attr",
+     "c",
+     "ps_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "seg_epoch"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ps_ready",
+   "comment": "One binding: segmentation has published final_epoch e and every cell has rolled to e -> ready_epoch := e.",
+   "match": [
+    [
+     "pp",
+     "has_persistence_state",
+     "ps"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SurfacePersistenceParams"
+         },
+         "var_name": "pp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SurfaceSegmentationParams"
+         },
+         "var_name": "sp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       }
+      ]
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "SegmentationState"
+        }
+       },
+       "key": "final_epoch"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ps"
+       },
+       "key": "ready_epoch"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "RetinalColumn"
+       },
+       "var_name": "x",
+       "predicate": {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "x"
+          },
+          "key": "ps_epoch"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "PickUnique",
+           "source": {
+            "type": "NodesOfType",
+            "node_type": "SegmentationState"
+           }
+          },
+          "key": "final_epoch"
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "ps",
+     "ready_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "SegmentationState"
+        }
+       },
+       "key": "final_epoch"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ps_decide_continue",
+   "comment": "DECISION ONLY (no P mutation, so every segment's decision is made against the same previous-epoch state): S accepts P (track_comps overlap 2*ov >= min(count), unique argmax, no rival claimant with >= overlap).",
+   "match": [
+    [
+     "st",
+     "has_segment",
+     "S"
+    ],
+    [
+     "sc",
+     "has_surface",
+     "P"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SurfacePersistenceParams"
+         },
+         "var_name": "pp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SurfaceSegmentationParams"
+         },
+         "var_name": "sp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       }
+      ]
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "S"
+         },
+         "key": "epoch"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "PickUnique",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "PersistenceState"
+          }
+         },
+         "key": "ready_epoch"
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "S"
+         },
+         "key": "has_boundary"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "S"
+         },
+         "key": "current"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "S"
+       },
+       "key": "decision"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gt",
+          "a": {
+           "type": "Count",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "InNeighbours",
+             "node": {
+              "type": "Var",
+              "name": "S"
+             },
+             "edge_type": "in_segment",
+             "any_type": false
+            },
+            "var_name": "qca",
+            "predicate": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "qca"
+              },
+              "key": "prev_sid"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "P"
+              },
+              "key": "sid"
+             }
+            }
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         {
+          "type": "Gte",
+          "a": {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Lit",
+             "value": 2
+            },
+            {
+             "type": "Count",
+             "source": {
+              "type": "Filter",
+              "source": {
+               "type": "InNeighbours",
+               "node": {
+                "type": "Var",
+                "name": "S"
+               },
+               "edge_type": "in_segment",
+               "any_type": false
+              },
+              "var_name": "qca",
+              "predicate": {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "qca"
+                },
+                "key": "prev_sid"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "P"
+                },
+                "key": "sid"
+               }
+              }
+             }
+            }
+           ]
+          },
+          "b": {
+           "type": "Min",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "S"
+             },
+             "key": "n_cells"
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "P"
+             },
+             "key": "n_cells"
+            }
+           ]
+          }
+         }
+        ]
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Exists",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "PersistentSurface"
+         },
+         "var_name": "P2a",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Not",
+            "arg": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "P2a"
+              },
+              "key": "sid"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "P"
+              },
+              "key": "sid"
+             }
+            }
+           },
+           {
+            "type": "Gte",
+            "a": {
+             "type": "Count",
+             "source": {
+              "type": "Filter",
+              "source": {
+               "type": "InNeighbours",
+               "node": {
+                "type": "Var",
+                "name": "S"
+               },
+               "edge_type": "in_segment",
+               "any_type": false
+              },
+              "var_name": "q2a",
+              "predicate": {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "q2a"
+                },
+                "key": "prev_sid"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "P2a"
+                },
+                "key": "sid"
+               }
+              }
+             }
+            },
+            "b": {
+             "type": "Count",
+             "source": {
+              "type": "Filter",
+              "source": {
+               "type": "InNeighbours",
+               "node": {
+                "type": "Var",
+                "name": "S"
+               },
+               "edge_type": "in_segment",
+               "any_type": false
+              },
+              "var_name": "qa",
+              "predicate": {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "qa"
+                },
+                "key": "prev_sid"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "P"
+                },
+                "key": "sid"
+               }
+              }
+             }
+            }
+           }
+          ]
+         }
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Exists",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "PickUnique",
+           "source": {
+            "type": "NodesOfType",
+            "node_type": "SegmentationState"
+           }
+          },
+          "edge_type": "has_segment",
+          "any_type": false
+         },
+         "var_name": "S2a",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "S2a"
+               },
+               "key": "epoch"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "PickUnique",
+                "source": {
+                 "type": "NodesOfType",
+                 "node_type": "PersistenceState"
+                }
+               },
+               "key": "ready_epoch"
+              }
+             },
+             {
+              "type": "Gt",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "S2a"
+               },
+               "key": "has_boundary"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.5
+              }
+             },
+             {
+              "type": "Gt",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "S2a"
+               },
+               "key": "current"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.5
+              }
+             }
+            ]
+           },
+           {
+            "type": "Not",
+            "arg": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "S2a"
+              },
+              "key": "root"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "S"
+              },
+              "key": "root"
+             }
+            }
+           },
+           {
+            "type": "And",
+            "items": [
+             {
+              "type": "Gt",
+              "a": {
+               "type": "Count",
+               "source": {
+                "type": "Filter",
+                "source": {
+                 "type": "InNeighbours",
+                 "node": {
+                  "type": "Var",
+                  "name": "S2a"
+                 },
+                 "edge_type": "in_segment",
+                 "any_type": false
+                },
+                "var_name": "q3a",
+                "predicate": {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "q3a"
+                  },
+                  "key": "prev_sid"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "P"
+                  },
+                  "key": "sid"
+                 }
+                }
+               }
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0
+              }
+             },
+             {
+              "type": "Gte",
+              "a": {
+               "type": "Times",
+               "items": [
+                {
+                 "type": "Lit",
+                 "value": 2
+                },
+                {
+                 "type": "Count",
+                 "source": {
+                  "type": "Filter",
+                  "source": {
+                   "type": "InNeighbours",
+                   "node": {
+                    "type": "Var",
+                    "name": "S2a"
+                   },
+                   "edge_type": "in_segment",
+                   "any_type": false
+                  },
+                  "var_name": "q3a",
+                  "predicate": {
+                   "type": "Eq",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "q3a"
+                    },
+                    "key": "prev_sid"
+                   },
+                   "b": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "P"
+                    },
+                    "key": "sid"
+                   }
+                  }
+                 }
+                }
+               ]
+              },
+              "b": {
+               "type": "Min",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "S2a"
+                 },
+                 "key": "n_cells"
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "P"
+                 },
+                 "key": "n_cells"
+                }
+               ]
+              }
+             }
+            ]
+           },
+           {
+            "type": "Gte",
+            "a": {
+             "type": "Count",
+             "source": {
+              "type": "Filter",
+              "source": {
+               "type": "InNeighbours",
+               "node": {
+                "type": "Var",
+                "name": "S2a"
+               },
+               "edge_type": "in_segment",
+               "any_type": false
+              },
+              "var_name": "q4a",
+              "predicate": {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "q4a"
+                },
+                "key": "prev_sid"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "P"
+                },
+                "key": "sid"
+               }
+              }
+             }
+            },
+            "b": {
+             "type": "Count",
+             "source": {
+              "type": "Filter",
+              "source": {
+               "type": "InNeighbours",
+               "node": {
+                "type": "Var",
+                "name": "S"
+               },
+               "edge_type": "in_segment",
+               "any_type": false
+              },
+              "var_name": "qa",
+              "predicate": {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "qa"
+                },
+                "key": "prev_sid"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "P"
+                },
+                "key": "sid"
+               }
+              }
+             }
+            }
+           }
+          ]
+         }
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "S",
+     "decision",
+     "continue"
+    ],
+    [
+     "set_attr",
+     "S",
+     "cand_sid",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "P"
+       },
+       "key": "sid"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ps_decide_birth",
+   "comment": "DECISION ONLY: S accepts no existing P -> birth. birth_reason records whether S claimed some P (overlap passed but the match was ambiguous -> REFUSED) or claimed none.",
+   "match": [
+    [
+     "st",
+     "has_segment",
+     "S"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SurfacePersistenceParams"
+         },
+         "var_name": "pp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SurfaceSegmentationParams"
+         },
+         "var_name": "sp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       }
+      ]
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "S"
+         },
+         "key": "epoch"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "PickUnique",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "PersistenceState"
+          }
+         },
+         "key": "ready_epoch"
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "S"
+         },
+         "key": "has_boundary"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "S"
+         },
+         "key": "current"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "S"
+       },
+       "key": "decision"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "PersistentSurface"
+       },
+       "var_name": "Pb",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "And",
+          "items": [
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Count",
+             "source": {
+              "type": "Filter",
+              "source": {
+               "type": "InNeighbours",
+               "node": {
+                "type": "Var",
+                "name": "S"
+               },
+               "edge_type": "in_segment",
+               "any_type": false
+              },
+              "var_name": "qcb",
+              "predicate": {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "qcb"
+                },
+                "key": "prev_sid"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "Pb"
+                },
+                "key": "sid"
+               }
+              }
+             }
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0
+            }
+           },
+           {
+            "type": "Gte",
+            "a": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 2
+              },
+              {
+               "type": "Count",
+               "source": {
+                "type": "Filter",
+                "source": {
+                 "type": "InNeighbours",
+                 "node": {
+                  "type": "Var",
+                  "name": "S"
+                 },
+                 "edge_type": "in_segment",
+                 "any_type": false
+                },
+                "var_name": "qcb",
+                "predicate": {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "qcb"
+                  },
+                  "key": "prev_sid"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "Pb"
+                  },
+                  "key": "sid"
+                 }
+                }
+               }
+              }
+             ]
+            },
+            "b": {
+             "type": "Min",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "S"
+               },
+               "key": "n_cells"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Pb"
+               },
+               "key": "n_cells"
+              }
+             ]
+            }
+           }
+          ]
+         },
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Exists",
+           "source": {
+            "type": "NodesOfType",
+            "node_type": "PersistentSurface"
+           },
+           "var_name": "P2b",
+           "predicate": {
+            "type": "And",
+            "items": [
+             {
+              "type": "Not",
+              "arg": {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "P2b"
+                },
+                "key": "sid"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "Pb"
+                },
+                "key": "sid"
+               }
+              }
+             },
+             {
+              "type": "Gte",
+              "a": {
+               "type": "Count",
+               "source": {
+                "type": "Filter",
+                "source": {
+                 "type": "InNeighbours",
+                 "node": {
+                  "type": "Var",
+                  "name": "S"
+                 },
+                 "edge_type": "in_segment",
+                 "any_type": false
+                },
+                "var_name": "q2b",
+                "predicate": {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "q2b"
+                  },
+                  "key": "prev_sid"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "P2b"
+                  },
+                  "key": "sid"
+                 }
+                }
+               }
+              },
+              "b": {
+               "type": "Count",
+               "source": {
+                "type": "Filter",
+                "source": {
+                 "type": "InNeighbours",
+                 "node": {
+                  "type": "Var",
+                  "name": "S"
+                 },
+                 "edge_type": "in_segment",
+                 "any_type": false
+                },
+                "var_name": "qb",
+                "predicate": {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "qb"
+                  },
+                  "key": "prev_sid"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "Pb"
+                  },
+                  "key": "sid"
+                 }
+                }
+               }
+              }
+             }
+            ]
+           }
+          }
+         },
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Exists",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "PickUnique",
+             "source": {
+              "type": "NodesOfType",
+              "node_type": "SegmentationState"
+             }
+            },
+            "edge_type": "has_segment",
+            "any_type": false
+           },
+           "var_name": "S2b",
+           "predicate": {
+            "type": "And",
+            "items": [
+             {
+              "type": "And",
+              "items": [
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "S2b"
+                 },
+                 "key": "epoch"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "PickUnique",
+                  "source": {
+                   "type": "NodesOfType",
+                   "node_type": "PersistenceState"
+                  }
+                 },
+                 "key": "ready_epoch"
+                }
+               },
+               {
+                "type": "Gt",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "S2b"
+                 },
+                 "key": "has_boundary"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 0.5
+                }
+               },
+               {
+                "type": "Gt",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "S2b"
+                 },
+                 "key": "current"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 0.5
+                }
+               }
+              ]
+             },
+             {
+              "type": "Not",
+              "arg": {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "S2b"
+                },
+                "key": "root"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "S"
+                },
+                "key": "root"
+               }
+              }
+             },
+             {
+              "type": "And",
+              "items": [
+               {
+                "type": "Gt",
+                "a": {
+                 "type": "Count",
+                 "source": {
+                  "type": "Filter",
+                  "source": {
+                   "type": "InNeighbours",
+                   "node": {
+                    "type": "Var",
+                    "name": "S2b"
+                   },
+                   "edge_type": "in_segment",
+                   "any_type": false
+                  },
+                  "var_name": "q3b",
+                  "predicate": {
+                   "type": "Eq",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "q3b"
+                    },
+                    "key": "prev_sid"
+                   },
+                   "b": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "Pb"
+                    },
+                    "key": "sid"
+                   }
+                  }
+                 }
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 0
+                }
+               },
+               {
+                "type": "Gte",
+                "a": {
+                 "type": "Times",
+                 "items": [
+                  {
+                   "type": "Lit",
+                   "value": 2
+                  },
+                  {
+                   "type": "Count",
+                   "source": {
+                    "type": "Filter",
+                    "source": {
+                     "type": "InNeighbours",
+                     "node": {
+                      "type": "Var",
+                      "name": "S2b"
+                     },
+                     "edge_type": "in_segment",
+                     "any_type": false
+                    },
+                    "var_name": "q3b",
+                    "predicate": {
+                     "type": "Eq",
+                     "a": {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "q3b"
+                      },
+                      "key": "prev_sid"
+                     },
+                     "b": {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "Pb"
+                      },
+                      "key": "sid"
+                     }
+                    }
+                   }
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Min",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "S2b"
+                   },
+                   "key": "n_cells"
+                  },
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "Pb"
+                   },
+                   "key": "n_cells"
+                  }
+                 ]
+                }
+               }
+              ]
+             },
+             {
+              "type": "Gte",
+              "a": {
+               "type": "Count",
+               "source": {
+                "type": "Filter",
+                "source": {
+                 "type": "InNeighbours",
+                 "node": {
+                  "type": "Var",
+                  "name": "S2b"
+                 },
+                 "edge_type": "in_segment",
+                 "any_type": false
+                },
+                "var_name": "q4b",
+                "predicate": {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "q4b"
+                  },
+                  "key": "prev_sid"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "Pb"
+                  },
+                  "key": "sid"
+                 }
+                }
+               }
+              },
+              "b": {
+               "type": "Count",
+               "source": {
+                "type": "Filter",
+                "source": {
+                 "type": "InNeighbours",
+                 "node": {
+                  "type": "Var",
+                  "name": "S"
+                 },
+                 "edge_type": "in_segment",
+                 "any_type": false
+                },
+                "var_name": "qb",
+                "predicate": {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "qb"
+                  },
+                  "key": "prev_sid"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "Pb"
+                  },
+                  "key": "sid"
+                 }
+                }
+               }
+              }
+             }
+            ]
+           }
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "S",
+     "decision",
+     "birth"
+    ],
+    [
+     "set_attr",
+     "S",
+     "birth_reason",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Exists",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "PersistentSurface"
+        },
+        "var_name": "Pr",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Count",
+            "source": {
+             "type": "Filter",
+             "source": {
+              "type": "InNeighbours",
+              "node": {
+               "type": "Var",
+               "name": "S"
+              },
+              "edge_type": "in_segment",
+              "any_type": false
+             },
+             "var_name": "qr",
+             "predicate": {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "qr"
+               },
+               "key": "prev_sid"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "Pr"
+               },
+               "key": "sid"
+              }
+             }
+            }
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          {
+           "type": "Gte",
+           "a": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 2
+             },
+             {
+              "type": "Count",
+              "source": {
+               "type": "Filter",
+               "source": {
+                "type": "InNeighbours",
+                "node": {
+                 "type": "Var",
+                 "name": "S"
+                },
+                "edge_type": "in_segment",
+                "any_type": false
+               },
+               "var_name": "qr",
+               "predicate": {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "qr"
+                 },
+                 "key": "prev_sid"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "Pr"
+                 },
+                 "key": "sid"
+                }
+               }
+              }
+             }
+            ]
+           },
+           "b": {
+            "type": "Min",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "S"
+              },
+              "key": "n_cells"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "Pr"
+              },
+              "key": "n_cells"
+             }
+            ]
+           }
+          }
+         ]
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": "refused_ambiguous"
+       },
+       "other": {
+        "type": "Lit",
+        "value": "no_overlap"
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ps_apply_continue",
+   "comment": "After ALL offered segments of the epoch are decided: link S -segment_of-> P and update P (n_cells, last_epoch, coast 0, status tracked).",
+   "match": [
+    [
+     "st",
+     "has_segment",
+     "S"
+    ],
+    [
+     "sc",
+     "has_surface",
+     "P"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SurfacePersistenceParams"
+         },
+         "var_name": "pp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SurfaceSegmentationParams"
+         },
+         "var_name": "sp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       }
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "PickUnique",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SegmentationState"
+         }
+        },
+        "edge_type": "has_segment",
+        "any_type": false
+       },
+       "var_name": "u_",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "u_"
+             },
+             "key": "epoch"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "PickUnique",
+              "source": {
+               "type": "NodesOfType",
+               "node_type": "PersistenceState"
+              }
+             },
+             "key": "ready_epoch"
+            }
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "u_"
+             },
+             "key": "has_boundary"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0.5
+            }
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "u_"
+             },
+             "key": "current"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0.5
+            }
+           }
+          ]
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "u_"
+           },
+           "key": "decision"
+          },
+          "b": {
+           "type": "Lit",
+           "value": null
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "S"
+         },
+         "key": "epoch"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "PickUnique",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "PersistenceState"
+          }
+         },
+         "key": "ready_epoch"
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "S"
+         },
+         "key": "has_boundary"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "S"
+         },
+         "key": "current"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "S"
+       },
+       "key": "decision"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "continue"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "S"
+       },
+       "key": "applied"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "P"
+       },
+       "key": "sid"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "S"
+       },
+       "key": "cand_sid"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "S",
+     "segment_of",
+     "P"
+    ],
+    [
+     "set_attr",
+     "S",
+     "sid",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "P"
+       },
+       "key": "sid"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "S",
+     "applied",
+     1.0
+    ],
+    [
+     "set_attr",
+     "P",
+     "n_cells",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "S"
+       },
+       "key": "n_cells"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "P",
+     "last_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "S"
+       },
+       "key": "epoch"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "P",
+     "status_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "S"
+       },
+       "key": "epoch"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "P",
+     "coast",
+     0
+    ],
+    [
+     "set_attr",
+     "P",
+     "claims",
+     1
+    ],
+    [
+     "set_attr",
+     "P",
+     "status",
+     "tracked"
+    ]
+   ]
+  },
+  {
+   "name": "ps_apply_birth",
+   "comment": "After ALL offered segments are decided: mint a PersistentSurface with sid = SurfaceCounter.next_sid, then increment the counter (effects apply in order per binding, so concurrent births get distinct sids).",
+   "match": [
+    [
+     "st",
+     "has_segment",
+     "S"
+    ],
+    [
+     "pp",
+     "has_surface_counter",
+     "sc"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SurfacePersistenceParams"
+         },
+         "var_name": "pp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SurfaceSegmentationParams"
+         },
+         "var_name": "sp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       }
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "PickUnique",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SegmentationState"
+         }
+        },
+        "edge_type": "has_segment",
+        "any_type": false
+       },
+       "var_name": "u_",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "u_"
+             },
+             "key": "epoch"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "PickUnique",
+              "source": {
+               "type": "NodesOfType",
+               "node_type": "PersistenceState"
+              }
+             },
+             "key": "ready_epoch"
+            }
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "u_"
+             },
+             "key": "has_boundary"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0.5
+            }
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "u_"
+             },
+             "key": "current"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0.5
+            }
+           }
+          ]
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "u_"
+           },
+           "key": "decision"
+          },
+          "b": {
+           "type": "Lit",
+           "value": null
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "S"
+         },
+         "key": "epoch"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "PickUnique",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "PersistenceState"
+          }
+         },
+         "key": "ready_epoch"
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "S"
+         },
+         "key": "has_boundary"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "S"
+         },
+         "key": "current"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "S"
+       },
+       "key": "decision"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "birth"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "S"
+       },
+       "key": "applied"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "P",
+     "PersistentSurface",
+     {
+      "sid": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sc"
+        },
+        "key": "next_sid"
+       }
+      },
+      "n_cells": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "S"
+        },
+        "key": "n_cells"
+       }
+      },
+      "born_epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "S"
+        },
+        "key": "epoch"
+       }
+      },
+      "last_epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "S"
+        },
+        "key": "epoch"
+       }
+      },
+      "status_epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "S"
+        },
+        "key": "epoch"
+       }
+      },
+      "coast": {
+       "__term__": {
+        "type": "Lit",
+        "value": 0
+       }
+      },
+      "claims": {
+       "__term__": {
+        "type": "Lit",
+        "value": 0
+       }
+      },
+      "status": {
+       "__term__": {
+        "type": "Lit",
+        "value": "tracked"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "sc",
+     "has_surface",
+     "P"
+    ],
+    [
+     "add_edge",
+     "S",
+     "segment_of",
+     "P"
+    ],
+    [
+     "set_attr",
+     "S",
+     "sid",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "sc"
+       },
+       "key": "next_sid"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "S",
+     "applied",
+     1.0
+    ],
+    [
+     "set_attr",
+     "sc",
+     "next_sid",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "sc"
+         },
+         "key": "next_sid"
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ps_mark_cells",
+   "comment": "Each member cell records its surface for THIS epoch in cur_sid (prev_sid untouched until the next roll).",
+   "match": [
+    [
+     "c",
+     "in_segment",
+     "S"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SurfacePersistenceParams"
+         },
+         "var_name": "pp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SurfaceSegmentationParams"
+         },
+         "var_name": "sp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "S"
+       },
+       "key": "applied"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "S"
+       },
+       "key": "epoch"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "seg_epoch"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "c"
+        },
+        "key": "cur_sid"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "S"
+        },
+        "key": "sid"
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "cur_sid",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "S"
+       },
+       "key": "sid"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ps_coast",
+   "comment": "After ALL offered segments are decided, a P not accepted at the ready epoch COASTS (coast += 1; kept, never deleted). status = 'split' if >= 2 current segments claimed it (ambiguous split, refused), else 'coasting'; claims = the claimant count.",
+   "match": [
+    [
+     "sc",
+     "has_surface",
+     "P"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SurfacePersistenceParams"
+         },
+         "var_name": "pp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SurfaceSegmentationParams"
+         },
+         "var_name": "sp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       }
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "PickUnique",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SegmentationState"
+         }
+        },
+        "edge_type": "has_segment",
+        "any_type": false
+       },
+       "var_name": "u_",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "u_"
+             },
+             "key": "epoch"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "PickUnique",
+              "source": {
+               "type": "NodesOfType",
+               "node_type": "PersistenceState"
+              }
+             },
+             "key": "ready_epoch"
+            }
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "u_"
+             },
+             "key": "has_boundary"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0.5
+            }
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "u_"
+             },
+             "key": "current"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0.5
+            }
+           }
+          ]
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "u_"
+           },
+           "key": "decision"
+          },
+          "b": {
+           "type": "Lit",
+           "value": null
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "PersistenceState"
+        }
+       },
+       "key": "ready_epoch"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "P"
+       },
+       "key": "last_epoch"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "PersistenceState"
+        }
+       },
+       "key": "ready_epoch"
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "P"
+       },
+       "key": "status_epoch"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "PersistenceState"
+        }
+       },
+       "key": "ready_epoch"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "PickUnique",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SegmentationState"
+         }
+        },
+        "edge_type": "has_segment",
+        "any_type": false
+       },
+       "var_name": "w_",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "w_"
+             },
+             "key": "epoch"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "PickUnique",
+              "source": {
+               "type": "NodesOfType",
+               "node_type": "PersistenceState"
+              }
+             },
+             "key": "ready_epoch"
+            }
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "w_"
+             },
+             "key": "has_boundary"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0.5
+            }
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "w_"
+             },
+             "key": "current"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0.5
+            }
+           }
+          ]
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "w_"
+           },
+           "key": "decision"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "continue"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "w_"
+           },
+           "key": "cand_sid"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "P"
+           },
+           "key": "sid"
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "P",
+     "coast",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "P"
+         },
+         "key": "coast"
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "P",
+     "status_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "PersistenceState"
+        }
+       },
+       "key": "ready_epoch"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "P",
+     "claims",
+     {
+      "__term__": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "PickUnique",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "SegmentationState"
+          }
+         },
+         "edge_type": "has_segment",
+         "any_type": false
+        },
+        "var_name": "k_",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "k_"
+              },
+              "key": "epoch"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "PickUnique",
+               "source": {
+                "type": "NodesOfType",
+                "node_type": "PersistenceState"
+               }
+              },
+              "key": "ready_epoch"
+             }
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "k_"
+              },
+              "key": "has_boundary"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.5
+             }
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "k_"
+              },
+              "key": "current"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.5
+             }
+            }
+           ]
+          },
+          {
+           "type": "And",
+           "items": [
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Count",
+              "source": {
+               "type": "Filter",
+               "source": {
+                "type": "InNeighbours",
+                "node": {
+                 "type": "Var",
+                 "name": "k_"
+                },
+                "edge_type": "in_segment",
+                "any_type": false
+               },
+               "var_name": "qk",
+               "predicate": {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "qk"
+                 },
+                 "key": "prev_sid"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "P"
+                 },
+                 "key": "sid"
+                }
+               }
+              }
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            {
+             "type": "Gte",
+             "a": {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Lit",
+                "value": 2
+               },
+               {
+                "type": "Count",
+                "source": {
+                 "type": "Filter",
+                 "source": {
+                  "type": "InNeighbours",
+                  "node": {
+                   "type": "Var",
+                   "name": "k_"
+                  },
+                  "edge_type": "in_segment",
+                  "any_type": false
+                 },
+                 "var_name": "qk",
+                 "predicate": {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "qk"
+                   },
+                   "key": "prev_sid"
+                  },
+                  "b": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "P"
+                   },
+                   "key": "sid"
+                  }
+                 }
+                }
+               }
+              ]
+             },
+             "b": {
+              "type": "Min",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "k_"
+                },
+                "key": "n_cells"
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "P"
+                },
+                "key": "n_cells"
+               }
+              ]
+             }
+            }
+           ]
+          }
+         ]
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "P",
+     "status",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gte",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "PickUnique",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "SegmentationState"
+            }
+           },
+           "edge_type": "has_segment",
+           "any_type": false
+          },
+          "var_name": "k2_",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "And",
+             "items": [
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "k2_"
+                },
+                "key": "epoch"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "PickUnique",
+                 "source": {
+                  "type": "NodesOfType",
+                  "node_type": "PersistenceState"
+                 }
+                },
+                "key": "ready_epoch"
+               }
+              },
+              {
+               "type": "Gt",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "k2_"
+                },
+                "key": "has_boundary"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0.5
+               }
+              },
+              {
+               "type": "Gt",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "k2_"
+                },
+                "key": "current"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0.5
+               }
+              }
+             ]
+            },
+            {
+             "type": "And",
+             "items": [
+              {
+               "type": "Gt",
+               "a": {
+                "type": "Count",
+                "source": {
+                 "type": "Filter",
+                 "source": {
+                  "type": "InNeighbours",
+                  "node": {
+                   "type": "Var",
+                   "name": "k2_"
+                  },
+                  "edge_type": "in_segment",
+                  "any_type": false
+                 },
+                 "var_name": "qk2",
+                 "predicate": {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "qk2"
+                   },
+                   "key": "prev_sid"
+                  },
+                  "b": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "P"
+                   },
+                   "key": "sid"
+                  }
+                 }
+                }
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0
+               }
+              },
+              {
+               "type": "Gte",
+               "a": {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Lit",
+                  "value": 2
+                 },
+                 {
+                  "type": "Count",
+                  "source": {
+                   "type": "Filter",
+                   "source": {
+                    "type": "InNeighbours",
+                    "node": {
+                     "type": "Var",
+                     "name": "k2_"
+                    },
+                    "edge_type": "in_segment",
+                    "any_type": false
+                   },
+                   "var_name": "qk2",
+                   "predicate": {
+                    "type": "Eq",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "qk2"
+                     },
+                     "key": "prev_sid"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "P"
+                     },
+                     "key": "sid"
+                    }
+                   }
+                  }
+                 }
+                ]
+               },
+               "b": {
+                "type": "Min",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "k2_"
+                  },
+                  "key": "n_cells"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "P"
+                  },
+                  "key": "n_cells"
+                 }
+                ]
+               }
+              }
+             ]
+            }
+           ]
+          }
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 2
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": "split"
+       },
+       "other": {
+        "type": "Lit",
+        "value": "coasting"
+       }
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

@@ -1,0 +1,6491 @@
+{
+ "id": "colour_property",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": [
+  "surface_persistence"
+ ],
+ "latency_class": "hard_realtime",
+ "description": "Mary's Room stage 4.5 (seed 3): the COLOUR PROPERTY of a perceived PersistentSurface (surface_persistence), by the vision_lighting T3/L1 von Kries arithmetic. Per surface matched at epoch e: c_ch = Round(mean member L/M/S caught_quanta, 0) -- LINEAR catches (photon_transduce: adaptation enters only the activation; cone dark current 0), on a declared integer quanta lattice (|eps|<=1/2). FrameStats anchor a_ch = MaxOver(matched surfaces, c_ch) (T3's anchor, constant-free). First sight mints ONE ColourProperty{p=c, pa=a, minted_epoch} via has_colour_property (descriptor p/pa). RUNG 1 (L1 bound): later, HOLDS iff per channel |c*pa - p*a| <= 1/2(c+pa+p+a) (+1/4 per bracket with a zero lattice value). DERIVATION: in-class (diagonal) change gives c*pa* = p*a* exactly (round is monotone so the anchor is the same material); with all four observed values rounded, D = c pa - p a = [c e_pa + pa e_c - e_c e_pa] - [p e_a + a e_p - e_p e_a]; each bracket is bilinear on [-1/2,1/2]^2 so its range is [-(x+y)/2 - 1/4, (x+y)/2 - 1/4] for x,y >= 1/2 and the -1/4 corner terms cancel in the difference: |D| <= (c+pa+p+a)/2; a zero lattice value widens its bracket by 1/4. Every term is a half-step rounding times its own cross-multiplier (L1 PREREG 2.1/2.2); nothing tuned. It bounds rounding only, NOT the model error of this eye's non-diagonal sensors, so refusals under illuminant A are the reported result. Verdict on PropertyCheck{epoch, sid, status holds|refused, resid_*, bound_*, resid_max, margin}; the property is never changed. RUNG 2 (flag pooled; L3b leave-one-out with surfaces as locales): gain g_ch = c/p; G^(-K) = Chebyshev centre of the other checks' gains (same frame, same reference epoch), tolerance = their own spread MaxOver|g_j - G|; pooled_status holds_pooled|refused_pooled (empty pool / zero p refuse). Flags ColourPropertyParams{enabled, pooled}, OFF by default (sec 9). See tools/build_colour_property_seed.py.",
+ "microtheory": {
+  "name": "colour_property",
+  "description": "persistent surfaces -> anchor-relative colour properties"
+ },
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "ColourPropertyParams",
+   "attrs": {
+    "enabled": 0.0,
+    "pooled": 0.0
+   }
+  },
+  {
+   "local_id": 1,
+   "type": "ColourState",
+   "attrs": {
+    "frame_epoch": -1
+   }
+  }
+ ],
+ "edges": [
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_colour_property_params",
+   "tgt": {
+    "local": 0
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_colour_state",
+   "tgt": {
+    "local": 1
+   },
+   "attrs": {}
+  }
+ ],
+ "productions": [],
+ "rules": [
+  {
+   "name": "cp_catch",
+   "comment": "Per segment S applied by persistence at the ready epoch (so S -segment_of-> P exists): the surface's mean LINEAR cone catch per channel over its member cells, put on the integer quanta lattice: c_ch = Round(Sum(member caught_quanta)/n, 0). Gated on every member's L/M/S receptor carrying this epoch.",
+   "match": [
+    [
+     "st",
+     "has_segment",
+     "S"
+    ],
+    [
+     "S",
+     "segment_of",
+     "P"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "ColourPropertyParams"
+         },
+         "var_name": "cpp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cpp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SurfaceSegmentationParams"
+         },
+         "var_name": "sp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SurfacePersistenceParams"
+         },
+         "var_name": "pp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       }
+      ]
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "S"
+         },
+         "key": "epoch"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "PickUnique",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "PersistenceState"
+          }
+         },
+         "key": "ready_epoch"
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "S"
+         },
+         "key": "current"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "S"
+         },
+         "key": "applied"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       }
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "P"
+        },
+        "key": "cp_epoch"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "S"
+        },
+        "key": "epoch"
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "InNeighbours",
+        "node": {
+         "type": "Var",
+         "name": "S"
+        },
+        "edge_type": "in_segment",
+        "any_type": false
+       },
+       "var_name": "m_",
+       "predicate": {
+        "type": "Or",
+        "items": [
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "PickUnique",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "m_"
+              },
+              "edge_type": "l_receptor",
+              "any_type": false
+             }
+            },
+            "key": "input_epoch"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "S"
+            },
+            "key": "epoch"
+           }
+          }
+         },
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "PickUnique",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "m_"
+              },
+              "edge_type": "m_receptor",
+              "any_type": false
+             }
+            },
+            "key": "input_epoch"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "S"
+            },
+            "key": "epoch"
+           }
+          }
+         },
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "PickUnique",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "m_"
+              },
+              "edge_type": "s_receptor",
+              "any_type": false
+             }
+            },
+            "key": "input_epoch"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "S"
+            },
+            "key": "epoch"
+           }
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "P",
+     "cL",
+     {
+      "__term__": {
+       "type": "Round",
+       "value": {
+        "type": "Div",
+        "a": {
+         "type": "Sum",
+         "source": {
+          "type": "InNeighbours",
+          "node": {
+           "type": "Var",
+           "name": "S"
+          },
+          "edge_type": "in_segment",
+          "any_type": false
+         },
+         "var_name": "mL",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "PickUnique",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "mL"
+            },
+            "edge_type": "l_receptor",
+            "any_type": false
+           }
+          },
+          "key": "caught_quanta"
+         }
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "S"
+         },
+         "key": "n_cells"
+        }
+       },
+       "ndigits": {
+        "type": "Lit",
+        "value": 0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "P",
+     "cM",
+     {
+      "__term__": {
+       "type": "Round",
+       "value": {
+        "type": "Div",
+        "a": {
+         "type": "Sum",
+         "source": {
+          "type": "InNeighbours",
+          "node": {
+           "type": "Var",
+           "name": "S"
+          },
+          "edge_type": "in_segment",
+          "any_type": false
+         },
+         "var_name": "mM",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "PickUnique",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "mM"
+            },
+            "edge_type": "m_receptor",
+            "any_type": false
+           }
+          },
+          "key": "caught_quanta"
+         }
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "S"
+         },
+         "key": "n_cells"
+        }
+       },
+       "ndigits": {
+        "type": "Lit",
+        "value": 0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "P",
+     "cS",
+     {
+      "__term__": {
+       "type": "Round",
+       "value": {
+        "type": "Div",
+        "a": {
+         "type": "Sum",
+         "source": {
+          "type": "InNeighbours",
+          "node": {
+           "type": "Var",
+           "name": "S"
+          },
+          "edge_type": "in_segment",
+          "any_type": false
+         },
+         "var_name": "mS",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "PickUnique",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "mS"
+            },
+            "edge_type": "s_receptor",
+            "any_type": false
+           }
+          },
+          "key": "caught_quanta"
+         }
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "S"
+         },
+         "key": "n_cells"
+        }
+       },
+       "ndigits": {
+        "type": "Lit",
+        "value": 0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "P",
+     "cp_n",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "S"
+       },
+       "key": "n_cells"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "P",
+     "cp_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "S"
+       },
+       "key": "epoch"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "cp_frame",
+   "comment": "ONE FrameStats per epoch, once every applied boundary segment of the ready epoch has its surface's catch: the anchor a_ch = MaxOver(surfaces matched this epoch, c_ch) -- T3's li_frame_stats anchor, constant-free (the brightest surface per channel acts as the scene white). No frame for an epoch with no surface (ganzfeld).",
+   "match": [
+    [
+     "cpp",
+     "has_colour_state",
+     "cs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "ColourPropertyParams"
+         },
+         "var_name": "cpp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cpp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SurfaceSegmentationParams"
+         },
+         "var_name": "sp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SurfacePersistenceParams"
+         },
+         "var_name": "pp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       }
+      ]
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "PersistenceState"
+        }
+       },
+       "key": "ready_epoch"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "cs"
+       },
+       "key": "frame_epoch"
+      }
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "Neighbours",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "SegmentationState"
+        }
+       },
+       "edge_type": "has_segment",
+       "any_type": false
+      },
+      "var_name": "s_",
+      "predicate": {
+       "type": "And",
+       "items": [
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "s_"
+          },
+          "key": "epoch"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "PickUnique",
+           "source": {
+            "type": "NodesOfType",
+            "node_type": "PersistenceState"
+           }
+          },
+          "key": "ready_epoch"
+         }
+        },
+        {
+         "type": "Gt",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "s_"
+          },
+          "key": "current"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.5
+         }
+        },
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "s_"
+          },
+          "key": "applied"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        }
+       ]
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "PickUnique",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SegmentationState"
+         }
+        },
+        "edge_type": "has_segment",
+        "any_type": false
+       },
+       "var_name": "s2_",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "s2_"
+           },
+           "key": "epoch"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "PickUnique",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "PersistenceState"
+            }
+           },
+           "key": "ready_epoch"
+          }
+         },
+         {
+          "type": "Gt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "s2_"
+           },
+           "key": "has_boundary"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.5
+          }
+         },
+         {
+          "type": "Gt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "s2_"
+           },
+           "key": "current"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.5
+          }
+         },
+         {
+          "type": "Not",
+          "arg": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "s2_"
+              },
+              "key": "applied"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 1.0
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "PickUnique",
+               "source": {
+                "type": "Neighbours",
+                "node": {
+                 "type": "Var",
+                 "name": "s2_"
+                },
+                "edge_type": "segment_of",
+                "any_type": false
+               }
+              },
+              "key": "cp_epoch"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "PickUnique",
+               "source": {
+                "type": "NodesOfType",
+                "node_type": "PersistenceState"
+               }
+              },
+              "key": "ready_epoch"
+             }
+            }
+           ]
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "F",
+     "FrameStats",
+     {
+      "epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "PickUnique",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "PersistenceState"
+         }
+        },
+        "key": "ready_epoch"
+       }
+      },
+      "aL": {
+       "__term__": {
+        "type": "MaxOver",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "PersistentSurface"
+         },
+         "var_name": "f_",
+         "predicate": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "f_"
+           },
+           "key": "cp_epoch"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "PickUnique",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "PersistenceState"
+            }
+           },
+           "key": "ready_epoch"
+          }
+         }
+        },
+        "var_name": "f2_",
+        "value": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "f2_"
+         },
+         "key": "cL"
+        },
+        "default": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       }
+      },
+      "aM": {
+       "__term__": {
+        "type": "MaxOver",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "PersistentSurface"
+         },
+         "var_name": "f_",
+         "predicate": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "f_"
+           },
+           "key": "cp_epoch"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "PickUnique",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "PersistenceState"
+            }
+           },
+           "key": "ready_epoch"
+          }
+         }
+        },
+        "var_name": "f2_",
+        "value": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "f2_"
+         },
+         "key": "cM"
+        },
+        "default": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       }
+      },
+      "aS": {
+       "__term__": {
+        "type": "MaxOver",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "PersistentSurface"
+         },
+         "var_name": "f_",
+         "predicate": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "f_"
+           },
+           "key": "cp_epoch"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "PickUnique",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "PersistenceState"
+            }
+           },
+           "key": "ready_epoch"
+          }
+         }
+        },
+        "var_name": "f2_",
+        "value": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "f2_"
+         },
+         "key": "cS"
+        },
+        "default": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       }
+      },
+      "n_surfaces": {
+       "__term__": {
+        "type": "Count",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "PersistentSurface"
+         },
+         "var_name": "f3_",
+         "predicate": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "f3_"
+           },
+           "key": "cp_epoch"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "PickUnique",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "PersistenceState"
+            }
+           },
+           "key": "ready_epoch"
+          }
+         }
+        }
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "cs",
+     "has_frame",
+     "F"
+    ],
+    [
+     "add_edge",
+     "cs",
+     "current_frame",
+     "F"
+    ],
+    [
+     "set_attr",
+     "cs",
+     "frame_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "PersistenceState"
+        }
+       },
+       "key": "ready_epoch"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "cp_frame_retire",
+   "comment": "Keep old FrameStats as history (has_frame) but drop the live current_frame edge once a newer frame exists.",
+   "match": [
+    [
+     "cs",
+     "current_frame",
+     "F"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "ColourPropertyParams"
+         },
+         "var_name": "cpp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cpp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SurfaceSegmentationParams"
+         },
+         "var_name": "sp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SurfacePersistenceParams"
+         },
+         "var_name": "pp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       }
+      ]
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "F"
+       },
+       "key": "epoch"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "cs"
+       },
+       "key": "frame_epoch"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "del_edge",
+     "cs",
+     "current_frame",
+     "F"
+    ]
+   ]
+  },
+  {
+   "name": "cp_mint",
+   "comment": "The FIRST epoch a PersistentSurface is seen it gets ONE ColourProperty: p_ch = its lattice catch, pa_ch = that frame's anchor (descriptor = anchor-relative reflectance p/pa), via P -has_colour_property-> CP. A PropertyCheck{status 'minted', resid 0} records the epoch. Never re-minted.",
+   "match": [
+    [
+     "cs",
+     "current_frame",
+     "F"
+    ],
+    [
+     "sc",
+     "has_surface",
+     "P"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "ColourPropertyParams"
+         },
+         "var_name": "cpp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cpp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SurfaceSegmentationParams"
+         },
+         "var_name": "sp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SurfacePersistenceParams"
+         },
+         "var_name": "pp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "P"
+       },
+       "key": "cp_epoch"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "F"
+       },
+       "key": "epoch"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "P"
+        },
+        "edge_type": "has_colour_property",
+        "any_type": false
+       },
+       "var_name": "x_",
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "CP",
+     "ColourProperty",
+     {
+      "sid": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "P"
+        },
+        "key": "sid"
+       }
+      },
+      "minted_epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "F"
+        },
+        "key": "epoch"
+       }
+      },
+      "pL": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "P"
+        },
+        "key": "cL"
+       }
+      },
+      "pM": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "P"
+        },
+        "key": "cM"
+       }
+      },
+      "pS": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "P"
+        },
+        "key": "cS"
+       }
+      },
+      "paL": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "F"
+        },
+        "key": "aL"
+       }
+      },
+      "paM": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "F"
+        },
+        "key": "aM"
+       }
+      },
+      "paS": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "F"
+        },
+        "key": "aS"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "P",
+     "has_colour_property",
+     "CP"
+    ],
+    [
+     "add_node",
+     "K",
+     "PropertyCheck",
+     {
+      "epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "F"
+        },
+        "key": "epoch"
+       }
+      },
+      "sid": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "P"
+        },
+        "key": "sid"
+       }
+      },
+      "minted_epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "F"
+        },
+        "key": "epoch"
+       }
+      },
+      "status": {
+       "__term__": {
+        "type": "Lit",
+        "value": "minted"
+       }
+      },
+      "cL": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "P"
+        },
+        "key": "cL"
+       }
+      },
+      "cM": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "P"
+        },
+        "key": "cM"
+       }
+      },
+      "cS": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "P"
+        },
+        "key": "cS"
+       }
+      },
+      "aL": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "F"
+        },
+        "key": "aL"
+       }
+      },
+      "aM": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "F"
+        },
+        "key": "aM"
+       }
+      },
+      "aS": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "F"
+        },
+        "key": "aS"
+       }
+      },
+      "resid_max": {
+       "__term__": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "F",
+     "has_check",
+     "K"
+    ],
+    [
+     "add_edge",
+     "K",
+     "check_of",
+     "CP"
+    ],
+    [
+     "set_attr",
+     "P",
+     "chk_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "F"
+       },
+       "key": "epoch"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "cp_check",
+   "comment": "RUNG 1 (L1 bound). At a later matched epoch the property HOLDS iff for every channel |c*pa - p*a| <= 1/2(c+pa+p+a) (+1/4 per cross-term with a zero lattice value) -- the rounding envelope derived in the seed description; no tuned constant. Verdict written on a PropertyCheck (refusal is a positive datum, l1_refuse). The property is NOT changed. Also writes the anchor-free gain g_ch = c/p for rung 2 (g_ok = 0 if some p_ch is 0: gain unidentifiable).",
+   "match": [
+    [
+     "cs",
+     "current_frame",
+     "F"
+    ],
+    [
+     "sc",
+     "has_surface",
+     "P"
+    ],
+    [
+     "P",
+     "has_colour_property",
+     "CP"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "ColourPropertyParams"
+         },
+         "var_name": "cpp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cpp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SurfaceSegmentationParams"
+         },
+         "var_name": "sp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SurfacePersistenceParams"
+         },
+         "var_name": "pp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "P"
+       },
+       "key": "cp_epoch"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "F"
+       },
+       "key": "epoch"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "P"
+        },
+        "key": "chk_epoch"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "F"
+        },
+        "key": "epoch"
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "K",
+     "PropertyCheck",
+     {
+      "epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "F"
+        },
+        "key": "epoch"
+       }
+      },
+      "sid": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "P"
+        },
+        "key": "sid"
+       }
+      },
+      "minted_epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "CP"
+        },
+        "key": "minted_epoch"
+       }
+      },
+      "status": {
+       "__term__": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Lte",
+           "a": {
+            "type": "Abs",
+            "arg": {
+             "type": "Minus",
+             "a": {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "P"
+                },
+                "key": "cL"
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "paL"
+               }
+              ]
+             },
+             "b": {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "pL"
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "F"
+                },
+                "key": "aL"
+               }
+              ]
+             }
+            }
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Lit",
+                "value": 0.5
+               },
+               {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "P"
+                  },
+                  "key": "cL"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "CP"
+                  },
+                  "key": "paL"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "CP"
+                  },
+                  "key": "pL"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "F"
+                  },
+                  "key": "aL"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": "IfThenElse",
+              "cond": {
+               "type": "Lt",
+               "a": {
+                "type": "Min",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "P"
+                  },
+                  "key": "cL"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "CP"
+                  },
+                  "key": "paL"
+                 }
+                ]
+               },
+               "b": {
+                "type": "Lit",
+                "value": 1.0
+               }
+              },
+              "then": {
+               "type": "Lit",
+               "value": 0.25
+              },
+              "other": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             },
+             {
+              "type": "IfThenElse",
+              "cond": {
+               "type": "Lt",
+               "a": {
+                "type": "Min",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "CP"
+                  },
+                  "key": "pL"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "F"
+                  },
+                  "key": "aL"
+                 }
+                ]
+               },
+               "b": {
+                "type": "Lit",
+                "value": 1.0
+               }
+              },
+              "then": {
+               "type": "Lit",
+               "value": 0.25
+              },
+              "other": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             }
+            ]
+           }
+          },
+          {
+           "type": "Lte",
+           "a": {
+            "type": "Abs",
+            "arg": {
+             "type": "Minus",
+             "a": {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "P"
+                },
+                "key": "cM"
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "paM"
+               }
+              ]
+             },
+             "b": {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "pM"
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "F"
+                },
+                "key": "aM"
+               }
+              ]
+             }
+            }
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Lit",
+                "value": 0.5
+               },
+               {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "P"
+                  },
+                  "key": "cM"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "CP"
+                  },
+                  "key": "paM"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "CP"
+                  },
+                  "key": "pM"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "F"
+                  },
+                  "key": "aM"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": "IfThenElse",
+              "cond": {
+               "type": "Lt",
+               "a": {
+                "type": "Min",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "P"
+                  },
+                  "key": "cM"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "CP"
+                  },
+                  "key": "paM"
+                 }
+                ]
+               },
+               "b": {
+                "type": "Lit",
+                "value": 1.0
+               }
+              },
+              "then": {
+               "type": "Lit",
+               "value": 0.25
+              },
+              "other": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             },
+             {
+              "type": "IfThenElse",
+              "cond": {
+               "type": "Lt",
+               "a": {
+                "type": "Min",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "CP"
+                  },
+                  "key": "pM"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "F"
+                  },
+                  "key": "aM"
+                 }
+                ]
+               },
+               "b": {
+                "type": "Lit",
+                "value": 1.0
+               }
+              },
+              "then": {
+               "type": "Lit",
+               "value": 0.25
+              },
+              "other": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             }
+            ]
+           }
+          },
+          {
+           "type": "Lte",
+           "a": {
+            "type": "Abs",
+            "arg": {
+             "type": "Minus",
+             "a": {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "P"
+                },
+                "key": "cS"
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "paS"
+               }
+              ]
+             },
+             "b": {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "pS"
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "F"
+                },
+                "key": "aS"
+               }
+              ]
+             }
+            }
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Lit",
+                "value": 0.5
+               },
+               {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "P"
+                  },
+                  "key": "cS"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "CP"
+                  },
+                  "key": "paS"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "CP"
+                  },
+                  "key": "pS"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "F"
+                  },
+                  "key": "aS"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "type": "IfThenElse",
+              "cond": {
+               "type": "Lt",
+               "a": {
+                "type": "Min",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "P"
+                  },
+                  "key": "cS"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "CP"
+                  },
+                  "key": "paS"
+                 }
+                ]
+               },
+               "b": {
+                "type": "Lit",
+                "value": 1.0
+               }
+              },
+              "then": {
+               "type": "Lit",
+               "value": 0.25
+              },
+              "other": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             },
+             {
+              "type": "IfThenElse",
+              "cond": {
+               "type": "Lt",
+               "a": {
+                "type": "Min",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "CP"
+                  },
+                  "key": "pS"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "F"
+                  },
+                  "key": "aS"
+                 }
+                ]
+               },
+               "b": {
+                "type": "Lit",
+                "value": 1.0
+               }
+              },
+              "then": {
+               "type": "Lit",
+               "value": 0.25
+              },
+              "other": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             }
+            ]
+           }
+          }
+         ]
+        },
+        "then": {
+         "type": "Lit",
+         "value": "holds"
+        },
+        "other": {
+         "type": "Lit",
+         "value": "refused"
+        }
+       }
+      },
+      "cL": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "P"
+        },
+        "key": "cL"
+       }
+      },
+      "cM": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "P"
+        },
+        "key": "cM"
+       }
+      },
+      "cS": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "P"
+        },
+        "key": "cS"
+       }
+      },
+      "aL": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "F"
+        },
+        "key": "aL"
+       }
+      },
+      "aM": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "F"
+        },
+        "key": "aM"
+       }
+      },
+      "aS": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "F"
+        },
+        "key": "aS"
+       }
+      },
+      "resid_L": {
+       "__term__": {
+        "type": "Abs",
+        "arg": {
+         "type": "Minus",
+         "a": {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "P"
+            },
+            "key": "cL"
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "CP"
+            },
+            "key": "paL"
+           }
+          ]
+         },
+         "b": {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "CP"
+            },
+            "key": "pL"
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "F"
+            },
+            "key": "aL"
+           }
+          ]
+         }
+        }
+       }
+      },
+      "resid_M": {
+       "__term__": {
+        "type": "Abs",
+        "arg": {
+         "type": "Minus",
+         "a": {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "P"
+            },
+            "key": "cM"
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "CP"
+            },
+            "key": "paM"
+           }
+          ]
+         },
+         "b": {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "CP"
+            },
+            "key": "pM"
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "F"
+            },
+            "key": "aM"
+           }
+          ]
+         }
+        }
+       }
+      },
+      "resid_S": {
+       "__term__": {
+        "type": "Abs",
+        "arg": {
+         "type": "Minus",
+         "a": {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "P"
+            },
+            "key": "cS"
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "CP"
+            },
+            "key": "paS"
+           }
+          ]
+         },
+         "b": {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "CP"
+            },
+            "key": "pS"
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "F"
+            },
+            "key": "aS"
+           }
+          ]
+         }
+        }
+       }
+      },
+      "bound_L": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Lit",
+            "value": 0.5
+           },
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "P"
+              },
+              "key": "cL"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "CP"
+              },
+              "key": "paL"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "CP"
+              },
+              "key": "pL"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "F"
+              },
+              "key": "aL"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Lt",
+           "a": {
+            "type": "Min",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "P"
+              },
+              "key": "cL"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "CP"
+              },
+              "key": "paL"
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 1.0
+           }
+          },
+          "then": {
+           "type": "Lit",
+           "value": 0.25
+          },
+          "other": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         },
+         {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Lt",
+           "a": {
+            "type": "Min",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "CP"
+              },
+              "key": "pL"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "F"
+              },
+              "key": "aL"
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 1.0
+           }
+          },
+          "then": {
+           "type": "Lit",
+           "value": 0.25
+          },
+          "other": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         }
+        ]
+       }
+      },
+      "bound_M": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Lit",
+            "value": 0.5
+           },
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "P"
+              },
+              "key": "cM"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "CP"
+              },
+              "key": "paM"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "CP"
+              },
+              "key": "pM"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "F"
+              },
+              "key": "aM"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Lt",
+           "a": {
+            "type": "Min",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "P"
+              },
+              "key": "cM"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "CP"
+              },
+              "key": "paM"
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 1.0
+           }
+          },
+          "then": {
+           "type": "Lit",
+           "value": 0.25
+          },
+          "other": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         },
+         {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Lt",
+           "a": {
+            "type": "Min",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "CP"
+              },
+              "key": "pM"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "F"
+              },
+              "key": "aM"
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 1.0
+           }
+          },
+          "then": {
+           "type": "Lit",
+           "value": 0.25
+          },
+          "other": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         }
+        ]
+       }
+      },
+      "bound_S": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Lit",
+            "value": 0.5
+           },
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "P"
+              },
+              "key": "cS"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "CP"
+              },
+              "key": "paS"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "CP"
+              },
+              "key": "pS"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "F"
+              },
+              "key": "aS"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Lt",
+           "a": {
+            "type": "Min",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "P"
+              },
+              "key": "cS"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "CP"
+              },
+              "key": "paS"
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 1.0
+           }
+          },
+          "then": {
+           "type": "Lit",
+           "value": 0.25
+          },
+          "other": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         },
+         {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Lt",
+           "a": {
+            "type": "Min",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "CP"
+              },
+              "key": "pS"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "F"
+              },
+              "key": "aS"
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 1.0
+           }
+          },
+          "then": {
+           "type": "Lit",
+           "value": 0.25
+          },
+          "other": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         }
+        ]
+       }
+      },
+      "resid_max": {
+       "__term__": {
+        "type": "Max",
+        "items": [
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "P"
+              },
+              "key": "cL"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "CP"
+              },
+              "key": "paL"
+             }
+            ]
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "CP"
+              },
+              "key": "pL"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "F"
+              },
+              "key": "aL"
+             }
+            ]
+           }
+          }
+         },
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "P"
+              },
+              "key": "cM"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "CP"
+              },
+              "key": "paM"
+             }
+            ]
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "CP"
+              },
+              "key": "pM"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "F"
+              },
+              "key": "aM"
+             }
+            ]
+           }
+          }
+         },
+         {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "P"
+              },
+              "key": "cS"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "CP"
+              },
+              "key": "paS"
+             }
+            ]
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "CP"
+              },
+              "key": "pS"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "F"
+              },
+              "key": "aS"
+             }
+            ]
+           }
+          }
+         }
+        ]
+       }
+      },
+      "margin": {
+       "__term__": {
+        "type": "Max",
+        "items": [
+         {
+          "type": "Minus",
+          "a": {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "P"
+               },
+               "key": "cL"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "CP"
+               },
+               "key": "paL"
+              }
+             ]
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "CP"
+               },
+               "key": "pL"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "F"
+               },
+               "key": "aL"
+              }
+             ]
+            }
+           }
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "P"
+                 },
+                 "key": "cL"
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "CP"
+                 },
+                 "key": "paL"
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "CP"
+                 },
+                 "key": "pL"
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "F"
+                 },
+                 "key": "aL"
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "type": "IfThenElse",
+             "cond": {
+              "type": "Lt",
+              "a": {
+               "type": "Min",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "P"
+                 },
+                 "key": "cL"
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "CP"
+                 },
+                 "key": "paL"
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1.0
+              }
+             },
+             "then": {
+              "type": "Lit",
+              "value": 0.25
+             },
+             "other": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            },
+            {
+             "type": "IfThenElse",
+             "cond": {
+              "type": "Lt",
+              "a": {
+               "type": "Min",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "CP"
+                 },
+                 "key": "pL"
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "F"
+                 },
+                 "key": "aL"
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1.0
+              }
+             },
+             "then": {
+              "type": "Lit",
+              "value": 0.25
+             },
+             "other": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           ]
+          }
+         },
+         {
+          "type": "Minus",
+          "a": {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "P"
+               },
+               "key": "cM"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "CP"
+               },
+               "key": "paM"
+              }
+             ]
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "CP"
+               },
+               "key": "pM"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "F"
+               },
+               "key": "aM"
+              }
+             ]
+            }
+           }
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "P"
+                 },
+                 "key": "cM"
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "CP"
+                 },
+                 "key": "paM"
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "CP"
+                 },
+                 "key": "pM"
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "F"
+                 },
+                 "key": "aM"
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "type": "IfThenElse",
+             "cond": {
+              "type": "Lt",
+              "a": {
+               "type": "Min",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "P"
+                 },
+                 "key": "cM"
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "CP"
+                 },
+                 "key": "paM"
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1.0
+              }
+             },
+             "then": {
+              "type": "Lit",
+              "value": 0.25
+             },
+             "other": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            },
+            {
+             "type": "IfThenElse",
+             "cond": {
+              "type": "Lt",
+              "a": {
+               "type": "Min",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "CP"
+                 },
+                 "key": "pM"
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "F"
+                 },
+                 "key": "aM"
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1.0
+              }
+             },
+             "then": {
+              "type": "Lit",
+              "value": 0.25
+             },
+             "other": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           ]
+          }
+         },
+         {
+          "type": "Minus",
+          "a": {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "P"
+               },
+               "key": "cS"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "CP"
+               },
+               "key": "paS"
+              }
+             ]
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "CP"
+               },
+               "key": "pS"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "F"
+               },
+               "key": "aS"
+              }
+             ]
+            }
+           }
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "P"
+                 },
+                 "key": "cS"
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "CP"
+                 },
+                 "key": "paS"
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "CP"
+                 },
+                 "key": "pS"
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "F"
+                 },
+                 "key": "aS"
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "type": "IfThenElse",
+             "cond": {
+              "type": "Lt",
+              "a": {
+               "type": "Min",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "P"
+                 },
+                 "key": "cS"
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "CP"
+                 },
+                 "key": "paS"
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1.0
+              }
+             },
+             "then": {
+              "type": "Lit",
+              "value": 0.25
+             },
+             "other": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            },
+            {
+             "type": "IfThenElse",
+             "cond": {
+              "type": "Lt",
+              "a": {
+               "type": "Min",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "CP"
+                 },
+                 "key": "pS"
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "F"
+                 },
+                 "key": "aS"
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1.0
+              }
+             },
+             "then": {
+              "type": "Lit",
+              "value": 0.25
+             },
+             "other": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           ]
+          }
+         }
+        ]
+       }
+      },
+      "gL": {
+       "__term__": {
+        "type": "Div",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "P"
+         },
+         "key": "cL"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "CP"
+         },
+         "key": "pL"
+        }
+       }
+      },
+      "gM": {
+       "__term__": {
+        "type": "Div",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "P"
+         },
+         "key": "cM"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "CP"
+         },
+         "key": "pM"
+        }
+       }
+      },
+      "gS": {
+       "__term__": {
+        "type": "Div",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "P"
+         },
+         "key": "cS"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "CP"
+         },
+         "key": "pS"
+        }
+       }
+      },
+      "g_ok": {
+       "__term__": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Gte",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "CP"
+            },
+            "key": "pL"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 1.0
+           }
+          },
+          {
+           "type": "Gte",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "CP"
+            },
+            "key": "pM"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 1.0
+           }
+          },
+          {
+           "type": "Gte",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "CP"
+            },
+            "key": "pS"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 1.0
+           }
+          }
+         ]
+        },
+        "then": {
+         "type": "Lit",
+         "value": 1.0
+        },
+        "other": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "F",
+     "has_check",
+     "K"
+    ],
+    [
+     "add_edge",
+     "K",
+     "check_of",
+     "CP"
+    ],
+    [
+     "set_attr",
+     "P",
+     "chk_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "F"
+       },
+       "key": "epoch"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "cp_pool",
+   "comment": "RUNG 2 (pooled flag): L3b l3b_pool_loo with surfaces as locales. Once every surface of the frame is checked, K's leave-one-out pool (same frame, same reference epoch, not K) gives G^(-K) = the Chebyshev centre of the pool's gains (Argmin_i MaxOver_j L-inf |g_i - g_j|). Fires once per check.",
+   "match": [
+    [
+     "cs",
+     "current_frame",
+     "F"
+    ],
+    [
+     "F",
+     "has_check",
+     "K"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "ColourPropertyParams"
+         },
+         "var_name": "cpp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cpp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SurfaceSegmentationParams"
+         },
+         "var_name": "sp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SurfacePersistenceParams"
+         },
+         "var_name": "pp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       }
+      ]
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "ColourPropertyParams"
+       },
+       "var_name": "cpq_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "cpq_"
+        },
+        "key": "pooled"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "PersistentSurface"
+       },
+       "var_name": "u_",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "u_"
+           },
+           "key": "cp_epoch"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "F"
+           },
+           "key": "epoch"
+          }
+         },
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "u_"
+            },
+            "key": "chk_epoch"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "F"
+            },
+            "key": "epoch"
+           }
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "K"
+        },
+        "key": "status"
+       },
+       "b": {
+        "type": "Lit",
+        "value": "minted"
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "K"
+       },
+       "key": "pool_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "K"
+       },
+       "key": "g_ok"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "F"
+         },
+         "edge_type": "has_check",
+         "any_type": false
+        },
+        "var_name": "pc_",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Var",
+             "name": "pc_"
+            },
+            "b": {
+             "type": "Var",
+             "name": "K"
+            }
+           }
+          },
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "pc_"
+             },
+             "key": "status"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "minted"
+            }
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "pc_"
+            },
+            "key": "minted_epoch"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "K"
+            },
+            "key": "minted_epoch"
+           }
+          },
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "pc_"
+            },
+            "key": "g_ok"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.5
+           }
+          }
+         ]
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "K",
+     "GL",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Argmin",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "F"
+          },
+          "edge_type": "has_check",
+          "any_type": false
+         },
+         "var_name": "pi_",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Not",
+            "arg": {
+             "type": "Eq",
+             "a": {
+              "type": "Var",
+              "name": "pi_"
+             },
+             "b": {
+              "type": "Var",
+              "name": "K"
+             }
+            }
+           },
+           {
+            "type": "Not",
+            "arg": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "pi_"
+              },
+              "key": "status"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "minted"
+             }
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "pi_"
+             },
+             "key": "minted_epoch"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "K"
+             },
+             "key": "minted_epoch"
+            }
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "pi_"
+             },
+             "key": "g_ok"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0.5
+            }
+           }
+          ]
+         }
+        },
+        "var_name": "pi2_",
+        "value": {
+         "type": "MaxOver",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "F"
+           },
+           "edge_type": "has_check",
+           "any_type": false
+          },
+          "var_name": "pj_",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Not",
+             "arg": {
+              "type": "Eq",
+              "a": {
+               "type": "Var",
+               "name": "pj_"
+              },
+              "b": {
+               "type": "Var",
+               "name": "K"
+              }
+             }
+            },
+            {
+             "type": "Not",
+             "arg": {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "pj_"
+               },
+               "key": "status"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "minted"
+              }
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "pj_"
+              },
+              "key": "minted_epoch"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "K"
+              },
+              "key": "minted_epoch"
+             }
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "pj_"
+              },
+              "key": "g_ok"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.5
+             }
+            }
+           ]
+          }
+         },
+         "var_name": "pj2_",
+         "value": {
+          "type": "Max",
+          "items": [
+           {
+            "type": "Abs",
+            "arg": {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "pi2_"
+              },
+              "key": "gL"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "pj2_"
+              },
+              "key": "gL"
+             }
+            }
+           },
+           {
+            "type": "Abs",
+            "arg": {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "pi2_"
+              },
+              "key": "gM"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "pj2_"
+              },
+              "key": "gM"
+             }
+            }
+           },
+           {
+            "type": "Abs",
+            "arg": {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "pi2_"
+              },
+              "key": "gS"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "pj2_"
+              },
+              "key": "gS"
+             }
+            }
+           }
+          ]
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        }
+       },
+       "key": "gL"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "K",
+     "GM",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Argmin",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "F"
+          },
+          "edge_type": "has_check",
+          "any_type": false
+         },
+         "var_name": "pi_",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Not",
+            "arg": {
+             "type": "Eq",
+             "a": {
+              "type": "Var",
+              "name": "pi_"
+             },
+             "b": {
+              "type": "Var",
+              "name": "K"
+             }
+            }
+           },
+           {
+            "type": "Not",
+            "arg": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "pi_"
+              },
+              "key": "status"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "minted"
+             }
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "pi_"
+             },
+             "key": "minted_epoch"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "K"
+             },
+             "key": "minted_epoch"
+            }
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "pi_"
+             },
+             "key": "g_ok"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0.5
+            }
+           }
+          ]
+         }
+        },
+        "var_name": "pi2_",
+        "value": {
+         "type": "MaxOver",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "F"
+           },
+           "edge_type": "has_check",
+           "any_type": false
+          },
+          "var_name": "pj_",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Not",
+             "arg": {
+              "type": "Eq",
+              "a": {
+               "type": "Var",
+               "name": "pj_"
+              },
+              "b": {
+               "type": "Var",
+               "name": "K"
+              }
+             }
+            },
+            {
+             "type": "Not",
+             "arg": {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "pj_"
+               },
+               "key": "status"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "minted"
+              }
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "pj_"
+              },
+              "key": "minted_epoch"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "K"
+              },
+              "key": "minted_epoch"
+             }
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "pj_"
+              },
+              "key": "g_ok"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.5
+             }
+            }
+           ]
+          }
+         },
+         "var_name": "pj2_",
+         "value": {
+          "type": "Max",
+          "items": [
+           {
+            "type": "Abs",
+            "arg": {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "pi2_"
+              },
+              "key": "gL"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "pj2_"
+              },
+              "key": "gL"
+             }
+            }
+           },
+           {
+            "type": "Abs",
+            "arg": {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "pi2_"
+              },
+              "key": "gM"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "pj2_"
+              },
+              "key": "gM"
+             }
+            }
+           },
+           {
+            "type": "Abs",
+            "arg": {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "pi2_"
+              },
+              "key": "gS"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "pj2_"
+              },
+              "key": "gS"
+             }
+            }
+           }
+          ]
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        }
+       },
+       "key": "gM"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "K",
+     "GS",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Argmin",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "F"
+          },
+          "edge_type": "has_check",
+          "any_type": false
+         },
+         "var_name": "pi_",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Not",
+            "arg": {
+             "type": "Eq",
+             "a": {
+              "type": "Var",
+              "name": "pi_"
+             },
+             "b": {
+              "type": "Var",
+              "name": "K"
+             }
+            }
+           },
+           {
+            "type": "Not",
+            "arg": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "pi_"
+              },
+              "key": "status"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "minted"
+             }
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "pi_"
+             },
+             "key": "minted_epoch"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "K"
+             },
+             "key": "minted_epoch"
+            }
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "pi_"
+             },
+             "key": "g_ok"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0.5
+            }
+           }
+          ]
+         }
+        },
+        "var_name": "pi2_",
+        "value": {
+         "type": "MaxOver",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "F"
+           },
+           "edge_type": "has_check",
+           "any_type": false
+          },
+          "var_name": "pj_",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Not",
+             "arg": {
+              "type": "Eq",
+              "a": {
+               "type": "Var",
+               "name": "pj_"
+              },
+              "b": {
+               "type": "Var",
+               "name": "K"
+              }
+             }
+            },
+            {
+             "type": "Not",
+             "arg": {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "pj_"
+               },
+               "key": "status"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "minted"
+              }
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "pj_"
+              },
+              "key": "minted_epoch"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "K"
+              },
+              "key": "minted_epoch"
+             }
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "pj_"
+              },
+              "key": "g_ok"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.5
+             }
+            }
+           ]
+          }
+         },
+         "var_name": "pj2_",
+         "value": {
+          "type": "Max",
+          "items": [
+           {
+            "type": "Abs",
+            "arg": {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "pi2_"
+              },
+              "key": "gL"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "pj2_"
+              },
+              "key": "gL"
+             }
+            }
+           },
+           {
+            "type": "Abs",
+            "arg": {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "pi2_"
+              },
+              "key": "gM"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "pj2_"
+              },
+              "key": "gM"
+             }
+            }
+           },
+           {
+            "type": "Abs",
+            "arg": {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "pi2_"
+              },
+              "key": "gS"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "pj2_"
+              },
+              "key": "gS"
+             }
+            }
+           }
+          ]
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        }
+       },
+       "key": "gS"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "K",
+     "pool_n",
+     {
+      "__term__": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "F"
+         },
+         "edge_type": "has_check",
+         "any_type": false
+        },
+        "var_name": "pn_",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Var",
+             "name": "pn_"
+            },
+            "b": {
+             "type": "Var",
+             "name": "K"
+            }
+           }
+          },
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "pn_"
+             },
+             "key": "status"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "minted"
+            }
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "pn_"
+            },
+            "key": "minted_epoch"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "K"
+            },
+            "key": "minted_epoch"
+           }
+          },
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "pn_"
+            },
+            "key": "g_ok"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.5
+           }
+          }
+         ]
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "K",
+     "pool_done",
+     1.0
+    ]
+   ]
+  },
+  {
+   "name": "cp_pool_none",
+   "comment": "RUNG 2 refusal by construction: an empty leave-one-out pool, or an unidentifiable own gain, can never acquire an estimate (L3b: an absence must not read as a value) -> refused_pooled with its reason.",
+   "match": [
+    [
+     "cs",
+     "current_frame",
+     "F"
+    ],
+    [
+     "F",
+     "has_check",
+     "K"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "ColourPropertyParams"
+         },
+         "var_name": "cpp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cpp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SurfaceSegmentationParams"
+         },
+         "var_name": "sp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SurfacePersistenceParams"
+         },
+         "var_name": "pp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       }
+      ]
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "ColourPropertyParams"
+       },
+       "var_name": "cpq_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "cpq_"
+        },
+        "key": "pooled"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "PersistentSurface"
+       },
+       "var_name": "u_",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "u_"
+           },
+           "key": "cp_epoch"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "F"
+           },
+           "key": "epoch"
+          }
+         },
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "u_"
+            },
+            "key": "chk_epoch"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "F"
+            },
+            "key": "epoch"
+           }
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "K"
+        },
+        "key": "status"
+       },
+       "b": {
+        "type": "Lit",
+        "value": "minted"
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "K"
+       },
+       "key": "pooled_status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "K"
+       },
+       "key": "pool_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Lt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "K"
+         },
+         "key": "g_ok"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       {
+        "type": "Lt",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "F"
+           },
+           "edge_type": "has_check",
+           "any_type": false
+          },
+          "var_name": "pz_",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Not",
+             "arg": {
+              "type": "Eq",
+              "a": {
+               "type": "Var",
+               "name": "pz_"
+              },
+              "b": {
+               "type": "Var",
+               "name": "K"
+              }
+             }
+            },
+            {
+             "type": "Not",
+             "arg": {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "pz_"
+               },
+               "key": "status"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "minted"
+              }
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "pz_"
+              },
+              "key": "minted_epoch"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "K"
+              },
+              "key": "minted_epoch"
+             }
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "pz_"
+              },
+              "key": "g_ok"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.5
+             }
+            }
+           ]
+          }
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "K",
+     "pooled_status",
+     "refused_pooled"
+    ],
+    [
+     "set_attr",
+     "K",
+     "pooled_reason",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Lt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "K"
+         },
+         "key": "g_ok"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": "no_gain"
+       },
+       "other": {
+        "type": "Lit",
+        "value": "no_pool"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "K",
+     "pool_done",
+     0.0
+    ]
+   ]
+  },
+  {
+   "name": "cp_corroborate",
+   "comment": "RUNG 2 verdict: holds_pooled iff |g_K,ch - G_ch| <= spread_ch on every channel, spread_ch = MaxOver(pool, |g_j,ch - G_ch|) -- the pool's own non-diagonality, data-derived, not tuned. Writes dev_* and spread_* so the verdict is a measurement.",
+   "match": [
+    [
+     "cs",
+     "current_frame",
+     "F"
+    ],
+    [
+     "F",
+     "has_check",
+     "K"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "ColourPropertyParams"
+         },
+         "var_name": "cpp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cpp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SurfaceSegmentationParams"
+         },
+         "var_name": "sp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SurfacePersistenceParams"
+         },
+         "var_name": "pp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       }
+      ]
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "ColourPropertyParams"
+       },
+       "var_name": "cpq_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "cpq_"
+        },
+        "key": "pooled"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "K"
+       },
+       "key": "pool_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "K"
+       },
+       "key": "pooled_status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "K",
+     "dev_L",
+     {
+      "__term__": {
+       "type": "Abs",
+       "arg": {
+        "type": "Minus",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "K"
+         },
+         "key": "gL"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "K"
+         },
+         "key": "GL"
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "K",
+     "dev_M",
+     {
+      "__term__": {
+       "type": "Abs",
+       "arg": {
+        "type": "Minus",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "K"
+         },
+         "key": "gM"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "K"
+         },
+         "key": "GM"
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "K",
+     "dev_S",
+     {
+      "__term__": {
+       "type": "Abs",
+       "arg": {
+        "type": "Minus",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "K"
+         },
+         "key": "gS"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "K"
+         },
+         "key": "GS"
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "K",
+     "spread_L",
+     {
+      "__term__": {
+       "type": "MaxOver",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "F"
+         },
+         "edge_type": "has_check",
+         "any_type": false
+        },
+        "var_name": "psL",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Var",
+             "name": "psL"
+            },
+            "b": {
+             "type": "Var",
+             "name": "K"
+            }
+           }
+          },
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "psL"
+             },
+             "key": "status"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "minted"
+            }
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "psL"
+            },
+            "key": "minted_epoch"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "K"
+            },
+            "key": "minted_epoch"
+           }
+          },
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "psL"
+            },
+            "key": "g_ok"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.5
+           }
+          }
+         ]
+        }
+       },
+       "var_name": "ps2L",
+       "value": {
+        "type": "Abs",
+        "arg": {
+         "type": "Minus",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "ps2L"
+          },
+          "key": "gL"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "K"
+          },
+          "key": "GL"
+         }
+        }
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "K",
+     "spread_M",
+     {
+      "__term__": {
+       "type": "MaxOver",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "F"
+         },
+         "edge_type": "has_check",
+         "any_type": false
+        },
+        "var_name": "psM",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Var",
+             "name": "psM"
+            },
+            "b": {
+             "type": "Var",
+             "name": "K"
+            }
+           }
+          },
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "psM"
+             },
+             "key": "status"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "minted"
+            }
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "psM"
+            },
+            "key": "minted_epoch"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "K"
+            },
+            "key": "minted_epoch"
+           }
+          },
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "psM"
+            },
+            "key": "g_ok"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.5
+           }
+          }
+         ]
+        }
+       },
+       "var_name": "ps2M",
+       "value": {
+        "type": "Abs",
+        "arg": {
+         "type": "Minus",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "ps2M"
+          },
+          "key": "gM"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "K"
+          },
+          "key": "GM"
+         }
+        }
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "K",
+     "spread_S",
+     {
+      "__term__": {
+       "type": "MaxOver",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "F"
+         },
+         "edge_type": "has_check",
+         "any_type": false
+        },
+        "var_name": "psS",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Var",
+             "name": "psS"
+            },
+            "b": {
+             "type": "Var",
+             "name": "K"
+            }
+           }
+          },
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "psS"
+             },
+             "key": "status"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "minted"
+            }
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "psS"
+            },
+            "key": "minted_epoch"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "K"
+            },
+            "key": "minted_epoch"
+           }
+          },
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "psS"
+            },
+            "key": "g_ok"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.5
+           }
+          }
+         ]
+        }
+       },
+       "var_name": "ps2S",
+       "value": {
+        "type": "Abs",
+        "arg": {
+         "type": "Minus",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "ps2S"
+          },
+          "key": "gS"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "K"
+          },
+          "key": "GS"
+         }
+        }
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "K",
+     "pooled_status",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Lte",
+          "a": {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "K"
+             },
+             "key": "gL"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "K"
+             },
+             "key": "GL"
+            }
+           }
+          },
+          "b": {
+           "type": "MaxOver",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "F"
+             },
+             "edge_type": "has_check",
+             "any_type": false
+            },
+            "var_name": "pvL",
+            "predicate": {
+             "type": "And",
+             "items": [
+              {
+               "type": "Not",
+               "arg": {
+                "type": "Eq",
+                "a": {
+                 "type": "Var",
+                 "name": "pvL"
+                },
+                "b": {
+                 "type": "Var",
+                 "name": "K"
+                }
+               }
+              },
+              {
+               "type": "Not",
+               "arg": {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "pvL"
+                 },
+                 "key": "status"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": "minted"
+                }
+               }
+              },
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "pvL"
+                },
+                "key": "minted_epoch"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "K"
+                },
+                "key": "minted_epoch"
+               }
+              },
+              {
+               "type": "Gt",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "pvL"
+                },
+                "key": "g_ok"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0.5
+               }
+              }
+             ]
+            }
+           },
+           "var_name": "pv2L",
+           "value": {
+            "type": "Abs",
+            "arg": {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "pv2L"
+              },
+              "key": "gL"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "K"
+              },
+              "key": "GL"
+             }
+            }
+           },
+           "default": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          }
+         },
+         {
+          "type": "Lte",
+          "a": {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "K"
+             },
+             "key": "gM"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "K"
+             },
+             "key": "GM"
+            }
+           }
+          },
+          "b": {
+           "type": "MaxOver",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "F"
+             },
+             "edge_type": "has_check",
+             "any_type": false
+            },
+            "var_name": "pvM",
+            "predicate": {
+             "type": "And",
+             "items": [
+              {
+               "type": "Not",
+               "arg": {
+                "type": "Eq",
+                "a": {
+                 "type": "Var",
+                 "name": "pvM"
+                },
+                "b": {
+                 "type": "Var",
+                 "name": "K"
+                }
+               }
+              },
+              {
+               "type": "Not",
+               "arg": {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "pvM"
+                 },
+                 "key": "status"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": "minted"
+                }
+               }
+              },
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "pvM"
+                },
+                "key": "minted_epoch"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "K"
+                },
+                "key": "minted_epoch"
+               }
+              },
+              {
+               "type": "Gt",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "pvM"
+                },
+                "key": "g_ok"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0.5
+               }
+              }
+             ]
+            }
+           },
+           "var_name": "pv2M",
+           "value": {
+            "type": "Abs",
+            "arg": {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "pv2M"
+              },
+              "key": "gM"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "K"
+              },
+              "key": "GM"
+             }
+            }
+           },
+           "default": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          }
+         },
+         {
+          "type": "Lte",
+          "a": {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "K"
+             },
+             "key": "gS"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "K"
+             },
+             "key": "GS"
+            }
+           }
+          },
+          "b": {
+           "type": "MaxOver",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "F"
+             },
+             "edge_type": "has_check",
+             "any_type": false
+            },
+            "var_name": "pvS",
+            "predicate": {
+             "type": "And",
+             "items": [
+              {
+               "type": "Not",
+               "arg": {
+                "type": "Eq",
+                "a": {
+                 "type": "Var",
+                 "name": "pvS"
+                },
+                "b": {
+                 "type": "Var",
+                 "name": "K"
+                }
+               }
+              },
+              {
+               "type": "Not",
+               "arg": {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "pvS"
+                 },
+                 "key": "status"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": "minted"
+                }
+               }
+              },
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "pvS"
+                },
+                "key": "minted_epoch"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "K"
+                },
+                "key": "minted_epoch"
+               }
+              },
+              {
+               "type": "Gt",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "pvS"
+                },
+                "key": "g_ok"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0.5
+               }
+              }
+             ]
+            }
+           },
+           "var_name": "pv2S",
+           "value": {
+            "type": "Abs",
+            "arg": {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "pv2S"
+              },
+              "key": "gS"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "K"
+              },
+              "key": "GS"
+             }
+            }
+           },
+           "default": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          }
+         }
+        ]
+       },
+       "then": {
+        "type": "Lit",
+        "value": "holds_pooled"
+       },
+       "other": {
+        "type": "Lit",
+        "value": "refused_pooled"
+       }
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

@@ -1,0 +1,1116 @@
+{
+ "id": "looking_episode",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": [
+  "surface_persistence"
+ ],
+ "latency_class": "hard_realtime",
+ "description": "Mary's Room stage 4.5 (seed 4): LOOKING EPISODES, kept apart from colour properties. Per exposure (Retina.input_epoch advance) ONE durable LookingEpisode{epoch, status 'observed'}: Retina -had_episode-> episode -observed_by-> Observer (a seed-declared node, agent_root -has_observer->). Per PersistentSurface matched that epoch, a SurfaceLook{epoch, sid, rg, by, intensity, n_cells} = mean over member cells of the RetinalPercept red_green / blue_yellow / intensity (opponent ACTIVATIONS: adaptation changes the look), episode -includes_look-> look -look_of-> surface. An exposure with no boundary segment (ganzfeld, eyelid) gets ONE FieldLook (whole-field mean) and no SurfaceLook. Provenance: status attr only (episodic_working_memory_core not reused: it brings its own policies and gates). Flag LookingEpisodeParams.enabled, OFF by default (sec 9). See tools/build_looking_episode_seed.py.",
+ "microtheory": {
+  "name": "looking_episode",
+  "description": "exposures -> looking episodes with per-surface looks"
+ },
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "LookingEpisodeParams",
+   "attrs": {
+    "enabled": 0.0
+   }
+  },
+  {
+   "local_id": 1,
+   "type": "LookingState",
+   "attrs": {
+    "last_epoch": -1
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "Observer",
+   "attrs": {
+    "role": "observer"
+   }
+  }
+ ],
+ "edges": [
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_looking_episode_params",
+   "tgt": {
+    "local": 0
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_looking_state",
+   "tgt": {
+    "local": 1
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_observer",
+   "tgt": {
+    "local": 2
+   },
+   "attrs": {}
+  }
+ ],
+ "productions": [],
+ "rules": [
+  {
+   "name": "le_mint",
+   "comment": "One durable LookingEpisode per exposure: when the Retina's input_epoch passes LookingState.last_epoch. Bound once per retina through its first column (cell_index 0, a position, not a tuned value). Epoch 0 is the eye's pre-exposure clock.",
+   "match": [
+    [
+     "lep",
+     "has_looking_state",
+     "ls"
+    ],
+    [
+     "agent",
+     "has_observer",
+     "ob"
+    ],
+    [
+     "retina",
+     "has_column",
+     "c0"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "LookingEpisodeParams"
+       },
+       "var_name": "lep_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "lep_"
+        },
+        "key": "enabled"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c0"
+       },
+       "key": "cell_index"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "retina"
+       },
+       "key": "input_epoch"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "retina"
+       },
+       "key": "input_epoch"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ls"
+       },
+       "key": "last_epoch"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "E",
+     "LookingEpisode",
+     {
+      "epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "retina"
+        },
+        "key": "input_epoch"
+       }
+      },
+      "status": {
+       "__term__": {
+        "type": "Lit",
+        "value": "observed"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "retina",
+     "had_episode",
+     "E"
+    ],
+    [
+     "add_edge",
+     "E",
+     "observed_by",
+     "ob"
+    ],
+    [
+     "add_edge",
+     "ls",
+     "current_episode",
+     "E"
+    ],
+    [
+     "set_attr",
+     "ls",
+     "last_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "retina"
+       },
+       "key": "input_epoch"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "le_retire",
+   "comment": "Drop the live current_episode pointer to an older episode (the episode itself is durable).",
+   "match": [
+    [
+     "ls",
+     "current_episode",
+     "E"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "LookingEpisodeParams"
+       },
+       "var_name": "lep_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "lep_"
+        },
+        "key": "enabled"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "E"
+       },
+       "key": "epoch"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ls"
+       },
+       "key": "last_epoch"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "del_edge",
+     "ls",
+     "current_episode",
+     "E"
+    ]
+   ]
+  },
+  {
+   "name": "le_surface_look",
+   "comment": "Per (current episode, PersistentSurface matched this epoch through an applied segment S): a SurfaceLook holding the mean RetinalPercept red_green / blue_yellow / intensity over S's member cells, once every member percept carries the epoch. episode -includes_look-> look -look_of-> P.",
+   "match": [
+    [
+     "ls",
+     "current_episode",
+     "E"
+    ],
+    [
+     "st",
+     "has_segment",
+     "S"
+    ],
+    [
+     "S",
+     "segment_of",
+     "P"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "LookingEpisodeParams"
+       },
+       "var_name": "lep_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "lep_"
+        },
+        "key": "enabled"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "SurfaceSegmentationParams"
+       },
+       "var_name": "sp_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sp_"
+        },
+        "key": "enabled"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "SurfacePersistenceParams"
+       },
+       "var_name": "pp_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "pp_"
+        },
+        "key": "enabled"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "S"
+       },
+       "key": "epoch"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "E"
+       },
+       "key": "epoch"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "S"
+       },
+       "key": "current"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "S"
+       },
+       "key": "applied"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "P"
+        },
+        "key": "look_epoch"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "E"
+        },
+        "key": "epoch"
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "InNeighbours",
+        "node": {
+         "type": "Var",
+         "name": "S"
+        },
+        "edge_type": "in_segment",
+        "any_type": false
+       },
+       "var_name": "m_",
+       "predicate": {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "PickUnique",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "m_"
+            },
+            "edge_type": "has_retinal_percept",
+            "any_type": false
+           }
+          },
+          "key": "input_epoch"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "E"
+          },
+          "key": "epoch"
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "K",
+     "SurfaceLook",
+     {
+      "epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "E"
+        },
+        "key": "epoch"
+       }
+      },
+      "sid": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "P"
+        },
+        "key": "sid"
+       }
+      },
+      "n_cells": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "S"
+        },
+        "key": "n_cells"
+       }
+      },
+      "rg": {
+       "__term__": {
+        "type": "Div",
+        "a": {
+         "type": "Sum",
+         "source": {
+          "type": "InNeighbours",
+          "node": {
+           "type": "Var",
+           "name": "S"
+          },
+          "edge_type": "in_segment",
+          "any_type": false
+         },
+         "var_name": "mrg",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "PickUnique",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "mrg"
+            },
+            "edge_type": "has_retinal_percept",
+            "any_type": false
+           }
+          },
+          "key": "red_green"
+         }
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "S"
+         },
+         "key": "n_cells"
+        }
+       }
+      },
+      "by": {
+       "__term__": {
+        "type": "Div",
+        "a": {
+         "type": "Sum",
+         "source": {
+          "type": "InNeighbours",
+          "node": {
+           "type": "Var",
+           "name": "S"
+          },
+          "edge_type": "in_segment",
+          "any_type": false
+         },
+         "var_name": "mby",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "PickUnique",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "mby"
+            },
+            "edge_type": "has_retinal_percept",
+            "any_type": false
+           }
+          },
+          "key": "blue_yellow"
+         }
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "S"
+         },
+         "key": "n_cells"
+        }
+       }
+      },
+      "intensity": {
+       "__term__": {
+        "type": "Div",
+        "a": {
+         "type": "Sum",
+         "source": {
+          "type": "InNeighbours",
+          "node": {
+           "type": "Var",
+           "name": "S"
+          },
+          "edge_type": "in_segment",
+          "any_type": false
+         },
+         "var_name": "mintensity",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "PickUnique",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "mintensity"
+            },
+            "edge_type": "has_retinal_percept",
+            "any_type": false
+           }
+          },
+          "key": "intensity"
+         }
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "S"
+         },
+         "key": "n_cells"
+        }
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "E",
+     "includes_look",
+     "K"
+    ],
+    [
+     "add_edge",
+     "K",
+     "look_of",
+     "P"
+    ],
+    [
+     "set_attr",
+     "P",
+     "look_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "E"
+       },
+       "key": "epoch"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "le_field_look",
+   "comment": "Ganzfeld / eyelid: segmentation finalised this epoch with NO boundary segment, so there is no surface to look at -- the episode gets ONE FieldLook, the whole-field mean percept.",
+   "match": [
+    [
+     "ls",
+     "current_episode",
+     "E"
+    ],
+    [
+     "retina",
+     "had_episode",
+     "E"
+    ],
+    [
+     "sp",
+     "has_segmentation_state",
+     "st"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "LookingEpisodeParams"
+       },
+       "var_name": "lep_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "lep_"
+        },
+        "key": "enabled"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "SurfaceSegmentationParams"
+       },
+       "var_name": "sp_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sp_"
+        },
+        "key": "enabled"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "st"
+       },
+       "key": "final_epoch"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "E"
+       },
+       "key": "epoch"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "E"
+       },
+       "key": "field_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "st"
+        },
+        "edge_type": "has_segment",
+        "any_type": false
+       },
+       "var_name": "s_",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "s_"
+           },
+           "key": "epoch"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "E"
+           },
+           "key": "epoch"
+          }
+         },
+         {
+          "type": "Gt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "s_"
+           },
+           "key": "has_boundary"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.5
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "retina"
+        },
+        "edge_type": "has_column",
+        "any_type": false
+       },
+       "var_name": "m_",
+       "predicate": {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "PickUnique",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "m_"
+            },
+            "edge_type": "has_retinal_percept",
+            "any_type": false
+           }
+          },
+          "key": "input_epoch"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "E"
+          },
+          "key": "epoch"
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "K",
+     "FieldLook",
+     {
+      "epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "E"
+        },
+        "key": "epoch"
+       }
+      },
+      "n_cells": {
+       "__term__": {
+        "type": "Count",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "retina"
+         },
+         "edge_type": "has_column",
+         "any_type": false
+        }
+       }
+      },
+      "rg": {
+       "__term__": {
+        "type": "Div",
+        "a": {
+         "type": "Sum",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "retina"
+          },
+          "edge_type": "has_column",
+          "any_type": false
+         },
+         "var_name": "frg",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "PickUnique",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "frg"
+            },
+            "edge_type": "has_retinal_percept",
+            "any_type": false
+           }
+          },
+          "key": "red_green"
+         }
+        },
+        "b": {
+         "type": "Count",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "retina"
+          },
+          "edge_type": "has_column",
+          "any_type": false
+         }
+        }
+       }
+      },
+      "by": {
+       "__term__": {
+        "type": "Div",
+        "a": {
+         "type": "Sum",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "retina"
+          },
+          "edge_type": "has_column",
+          "any_type": false
+         },
+         "var_name": "fby",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "PickUnique",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "fby"
+            },
+            "edge_type": "has_retinal_percept",
+            "any_type": false
+           }
+          },
+          "key": "blue_yellow"
+         }
+        },
+        "b": {
+         "type": "Count",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "retina"
+          },
+          "edge_type": "has_column",
+          "any_type": false
+         }
+        }
+       }
+      },
+      "intensity": {
+       "__term__": {
+        "type": "Div",
+        "a": {
+         "type": "Sum",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "retina"
+          },
+          "edge_type": "has_column",
+          "any_type": false
+         },
+         "var_name": "fintensity",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "PickUnique",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "fintensity"
+            },
+            "edge_type": "has_retinal_percept",
+            "any_type": false
+           }
+          },
+          "key": "intensity"
+         }
+        },
+        "b": {
+         "type": "Count",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "retina"
+          },
+          "edge_type": "has_column",
+          "any_type": false
+         }
+        }
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "E",
+     "has_field_look",
+     "K"
+    ],
+    [
+     "set_attr",
+     "E",
+     "field_done",
+     1.0
+    ]
+   ]
+  }
+ ]
+}

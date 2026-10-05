@@ -402,6 +402,12 @@ class GraphEye:
     _receptor_layout: list = field(default_factory=list, init=False, repr=False)
     _layout_adjacency_edges: set = field(
         default_factory=set, init=False, repr=False)
+    # COLOUR 2-D SHEET (Mary's Room stage 4.1): additive, OFF by default via
+    # context['retina_2d_cones']. With it off no cone/percept node is built and
+    # the 2-D path is byte-identical. `_percepts_2d` is kept separate from the
+    # 1-D `_percepts` so the 1-D snapshot reader is never touched.
+    _cones_2d: bool = field(default=False, init=False, repr=False)
+    _percepts_2d: list = field(default_factory=list, init=False, repr=False)
 
     def _apply_binding_projection(self, inner) -> None:
         """SHIP THE LINEAR EYE (block 195000) — mechanical adapter config, no
@@ -685,6 +691,35 @@ class GraphEye:
         carve seeds (NOT the 1-D onset/carve seeds), so only the 2-D onset rule
         fires. Mechanical construction only — no decision.
         """
+        # COLOUR SHEET (Mary's Room stage 4.1). OFF by default. With it ON every
+        # cell also gets L/M/S Photoreceptors (the 1-D `_RECEPTORS` params and
+        # typed edges) and a `RetinalPercept`, so the UNCHANGED 1-D opponent
+        # rule `photon_column_synthesizes_retinal_percept` fires per cell. The
+        # combinations below are REFUSED, not silently degraded:
+        #  - retina_accel: `retina_onset_batch` (Rust) updates rod ids only; the
+        #    cones would stay stale and the percept rule would never fire.
+        #  - per_sensor_epoch: the per-sensor seeds rename the column/rod clocks
+        #    (`column_epoch`/`rod_epoch`) while the percept rule joins on
+        #    `input_epoch`, and the rod clock only advances on change; the cone
+        #    join is undefined there.
+        #  - held_prediction: the `staleness_decay` composition is rod-only (it
+        #    holds `rod.caught_quanta`); no cone-held semantics exist yet.
+        self._cones_2d = bool(self.context.get("retina_2d_cones", False))
+        if self._cones_2d:
+            if self.context.get("retina_accel", False):
+                raise ValueError(
+                    "retina_2d_cones is unsupported with retina_accel: the "
+                    "accelerator (retina_onset_batch) updates rod receptors "
+                    "only and would leave L/M/S stale")
+            if (self.context.get("per_sensor_epoch", False)
+                    or self.context.get("per_sensor_epoch_wrong", False)):
+                raise ValueError(
+                    "retina_2d_cones is unsupported with per_sensor_epoch: the "
+                    "opponent percept rule joins on shared input_epoch clocks")
+            if self.context.get("held_prediction", False):
+                raise ValueError(
+                    "retina_2d_cones is unsupported with held_prediction: the "
+                    "staleness_decay held surface is rod-only")
         if self.substrate is None:
             self.substrate = srs.Substrate()
         inner = self.substrate._inner
@@ -860,6 +895,10 @@ class GraphEye:
                 _add_edge(inner, cell, "has_receptor", rod)
                 _add_edge(inner, cell, "rod_receptor", rod)
                 self._receptors[(flat, "rod")] = rod
+                if self._cones_2d:
+                    self._build_cell_cones_2d(
+                        inner, cell, flat, col, row, az, el,
+                        geometry if self._layout_explicit else None)
                 # Seed the refractory clock far in the past so the first
                 # qualifying epoch can fire (mirrors the 1-D onset build).
                 self.substrate.set_attr(cell, "last_onset_epoch", -1.0e9)
@@ -922,6 +961,46 @@ class GraphEye:
                 inner, self._retina, "has_focus_window", self._focus_window)
         self._install_held_prediction_2d(inner)
         return self
+
+    def _build_cell_cones_2d(self, inner, cell, flat, col, row, az, el,
+                             geometry) -> None:
+        """Mechanically add one cell's L/M/S receptors + RetinalPercept.
+
+        Same `_RECEPTORS` params and typed edges as the 1-D build, so the
+        existing 1-D transduction-apply and opponent-percept rules bind
+        unchanged. Geometry attrs are copied as for the rod when an explicit
+        layout supplies them. No decision here.
+        """
+        for receptor_class in ("l", "m", "s"):
+            center, bandwidth, half, dark = _RECEPTORS[receptor_class]
+            attrs = {
+                "receptor_class": receptor_class, "column": col, "row": row,
+                "sensitivity_center_nm": center, "bandwidth_nm": bandwidth,
+                "half_saturation": half, "dark_current": dark,
+                "adapt_rate": self.adapt_rate, "activation": 0.0,
+                "prev_activation": 0.0, "adaptation": 0.0,
+                "caught_quanta": 0.0,
+            }
+            if geometry is not None:
+                attrs.update({
+                    "cell_index": flat,
+                    "eye_id": str(geometry["eye_id"]),
+                    "pathway": str(geometry["pathway"]),
+                    "gaze_az": az, "gaze_el": el,
+                    "angular_width": float(geometry["angular_width"]),
+                    "angular_height": float(geometry["angular_height"]),
+                })
+            receptor = self.substrate.add_node("Photoreceptor", attrs)
+            _add_edge(inner, cell, "has_receptor", receptor)
+            _add_edge(inner, cell, _EDGE_FOR_CLASS[receptor_class], receptor)
+            self._receptors[(flat, receptor_class)] = receptor
+        percept = self.substrate.add_node("RetinalPercept", {
+            "index": flat, "col": col, "row": row, "input_epoch": -1,
+            "intensity": 0.0, "red_green": 0.0, "blue_yellow": 0.0,
+            "salience": 0.0,
+        })
+        _add_edge(inner, cell, "has_retinal_percept", percept)
+        self._percepts_2d.append(percept)
 
     def _validate_receptor_layout_2d(self, layout) -> None:
         """Validate the mechanical receptor-sheet address/geometry contract."""
@@ -1007,6 +1086,11 @@ class GraphEye:
                 self.substrate.set_attr(self._cells[flat], key, value)
                 self.substrate.set_attr(
                     self._receptors[(flat, "rod")], key, value)
+                if self._cones_2d:
+                    for receptor_class in ("l", "m", "s"):
+                        self.substrate.set_attr(
+                            self._receptors[(flat, receptor_class)],
+                            key, value)
                 if flat < len(self._held_surface_cells):
                     self.substrate.set_attr(
                         self._held_surface_cells[flat], key, value)
@@ -1282,6 +1366,67 @@ class GraphEye:
                 })
                 _add_edge(self.substrate._inner, rod, "has_task", task)
                 _add_edge(self.substrate._inner, self._area, "has_task", task)
+                if self._cones_2d:
+                    self._submit_cones_2d(
+                        flat, grouped.get((col, row), []))
+
+    def _submit_cones_2d(self, flat, cell_packets) -> None:
+        """Queue one `photon_transduce` task per cone for one cell (mechanical
+        I/O; the same payload layout as the 1-D path, live adaptation read off
+        each receptor). The rod keeps its `photon_transduce_onset` task, so the
+        onset/carve stream is unchanged. Cone logical times sit after every
+        rod's (`n_cells + 3*flat + k`) so the rod schedule is unchanged."""
+        n_cells = self.n_az * self.n_el
+        for k, receptor_class in enumerate(("l", "m", "s")):
+            params = _RECEPTORS[receptor_class]
+            receptor = self._receptors[(flat, receptor_class)]
+            attrs = self.substrate.node(receptor)["attrs"]
+            payload = [
+                params[0], params[1], float(attrs.get("adaptation", 0.0)),
+                self.adapt_rate, params[2], params[3],
+            ]
+            for wavelength, count in cell_packets:
+                payload.extend([wavelength, count])
+            task = self.substrate.add_node("CognitiveTask", {
+                "status": "requested", "kind": "photon_transduce",
+                "payload": payload, "input_epoch": self._epoch,
+                "logical_time": n_cells + 3 * flat + k, "area": "retina",
+                "order": 0, "salience": 1.0,
+            })
+            _add_edge(self.substrate._inner, receptor, "has_task", task)
+            _add_edge(self.substrate._inner, self._area, "has_task", task)
+
+    def percepts_2d(self) -> list[dict]:
+        """Read the per-cell colour `RetinalPercept`s (mechanical emit).
+
+        Only populated with `retina_2d_cones`; otherwise `[]`. One record per
+        cell in `cell_index` order: cell_index, col, row, red_green,
+        blue_yellow, intensity, salience, input_epoch (-1 until the opponent
+        rule has fired) and `receptors[cls]` = {caught_quanta, activation,
+        adaptation} for cls in l, m, s, rod."""
+        out = []
+        for flat, percept in enumerate(self._percepts_2d):
+            pa = self.substrate.node(percept)["attrs"]
+            row, col = divmod(flat, self.n_az)
+            receptors = {}
+            for receptor_class in ("l", "m", "s", "rod"):
+                ra = self.substrate.node(
+                    self._receptors[(flat, receptor_class)])["attrs"]
+                receptors[receptor_class] = {
+                    "caught_quanta": float(ra.get("caught_quanta", 0.0)),
+                    "activation": float(ra.get("activation", 0.0)),
+                    "adaptation": float(ra.get("adaptation", 0.0)),
+                }
+            out.append({
+                "cell_index": flat, "col": col, "row": row,
+                "red_green": float(pa.get("red_green", 0.0)),
+                "blue_yellow": float(pa.get("blue_yellow", 0.0)),
+                "intensity": float(pa.get("intensity", 0.0)),
+                "salience": float(pa.get("salience", 0.0)),
+                "input_epoch": int(pa.get("input_epoch", -1)),
+                "receptors": receptors,
+            })
+        return out
 
     def _onset_params_2d(self):
         """Read the 2-D onset threshold + refractory as DATA off the graph
@@ -1672,11 +1817,13 @@ class GraphEye:
     def kernels(self) -> dict[str, Any]:
         """Compatibility query: receptor populations replace fixed kernels."""
         if self._retina_2d:
+            classes = list(_RECEPTORS) if self._cones_2d else ["rod"]
             return {
-                "rod": [
-                    self._receptors[(i, "rod")]
+                receptor_class: [
+                    self._receptors[(i, receptor_class)]
                     for i in range(self.n_az * self.n_el)
                 ]
+                for receptor_class in classes
             }
         return {
             receptor_class: [

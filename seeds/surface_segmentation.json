@@ -1,0 +1,1974 @@
+{
+ "id": "surface_segmentation",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": [
+  "photon_retina"
+ ],
+ "latency_class": "hard_realtime",
+ "description": "Mary's Room stage 4.3: colour-free surface segmentation of the 2-D photon sheet (GraphEye retina_2d + retina_2d_cones, adjacent_receptor edges). Luminance Y = L.caught_quanta + M.caught_quanta (no S, no opponent channel). Two adjacent cells are the SAME SURFACE iff |Y_a - Y_b| <= Sqrt(Y_a + Y_b): one standard deviation of the photon shot noise of the difference, a physical grain with no tuned multiplier (VISION_PROTOCOL sec 13). Components are found by the l4_flood min-label flood to the run_rules fixpoint; a per-epoch completion guard (SegmentationState.done_epoch) admits minting only after the fixpoint, then ONE SurfaceSegment{epoch, root, n_cells, has_boundary, current} per component, with cell -in_segment-> segment membership, and SegmentationState.final_epoch once every cell has joined. A component with no boundary (ganzfeld) has has_boundary=0 and is not a surface. Isoluminant chromatic edges are invisible to this criterion BY DESIGN (they merge; reported, not patched). Superseded segments are kept as history (current=0) with their live edges removed. Feeds surface_persistence, whose identity criterion is the track_comps cell overlap 2*ov >= min(count) (runners/dsl/src/substrate.rs track_comps). Flag SurfaceSegmentationParams.enabled, OFF by default (sec 9).",
+ "microtheory": {
+  "name": "surface_segmentation",
+  "description": "luminance shot-noise edges -> connected surface segments"
+ },
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "SurfaceSegmentationParams",
+   "attrs": {
+    "enabled": 0.0
+   }
+  },
+  {
+   "local_id": 1,
+   "type": "SegmentationState",
+   "attrs": {
+    "done_epoch": -1,
+    "final_epoch": -1
+   }
+  }
+ ],
+ "edges": [
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_surface_segmentation_params",
+   "tgt": {
+    "local": 0
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_segmentation_state",
+   "tgt": {
+    "local": 1
+   },
+   "attrs": {}
+  }
+ ],
+ "productions": [],
+ "rules": [
+  {
+   "name": "seg_init",
+   "comment": "First sight of a cell: write the seg_* defaults (label = own cell_index, epoch -1 = never segmented). Mechanical; once per cell.",
+   "match": [
+    [
+     "retina",
+     "has_column",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "SurfaceSegmentationParams"
+       },
+       "var_name": "sp_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sp_"
+        },
+        "key": "enabled"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "seg_epoch"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "seg_epoch",
+     -1
+    ],
+    [
+     "set_attr",
+     "c",
+     "seg_label",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "cell_index"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "c",
+     "seg_Y",
+     0.0
+    ],
+    [
+     "set_attr",
+     "c",
+     "seg_has_edge",
+     0.0
+    ],
+    [
+     "set_attr",
+     "c",
+     "seg_joined",
+     -1
+    ]
+   ]
+  },
+  {
+   "name": "seg_reset",
+   "comment": "Once per cell per epoch, after BOTH the L and M receptors carry this epoch's transduction: copy the colour-free luminance Y = L.caught_quanta + M.caught_quanta (linear catches, no S, no opponent value) onto the cell, and restart the flood from the cell's own index. Epoch 0 is the eye's pre-exposure clock and is never segmented.",
+   "match": [
+    [
+     "retina",
+     "has_column",
+     "c"
+    ],
+    [
+     "c",
+     "l_receptor",
+     "l"
+    ],
+    [
+     "c",
+     "m_receptor",
+     "m"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "SurfaceSegmentationParams"
+       },
+       "var_name": "sp_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sp_"
+        },
+        "key": "enabled"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "c"
+        },
+        "key": "seg_epoch"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "input_epoch"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "input_epoch"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "seg_epoch"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "l"
+       },
+       "key": "input_epoch"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "input_epoch"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "key": "input_epoch"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "input_epoch"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "seg_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "input_epoch"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "c",
+     "seg_label",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "cell_index"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "c",
+     "seg_Y",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "l"
+         },
+         "key": "caught_quanta"
+        },
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "m"
+         },
+         "key": "caught_quanta"
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "c",
+     "seg_has_edge",
+     0.0
+    ]
+   ]
+  },
+  {
+   "name": "seg_edge",
+   "comment": "A boundary exists at c if some reset neighbour of the same epoch is NOT the same surface (|dY| > Sqrt(Y_a+Y_b)). Monotone 0->1 within an epoch; reset clears it.",
+   "match": [
+    [
+     "retina",
+     "has_column",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "SurfaceSegmentationParams"
+       },
+       "var_name": "sp_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sp_"
+        },
+        "key": "enabled"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "seg_epoch"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "input_epoch"
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Lt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "key": "seg_has_edge"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       {
+        "type": "Exists",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "edge_type": "adjacent_receptor",
+         "any_type": false
+        },
+        "var_name": "b",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "c"
+            },
+            "key": "seg_epoch"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "b"
+            },
+            "key": "seg_epoch"
+           }
+          },
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Lte",
+            "a": {
+             "type": "Abs",
+             "arg": {
+              "type": "Minus",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "c"
+               },
+               "key": "seg_Y"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "b"
+               },
+               "key": "seg_Y"
+              }
+             }
+            },
+            "b": {
+             "type": "Sqrt",
+             "arg": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "c"
+                },
+                "key": "seg_Y"
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "b"
+                },
+                "key": "seg_Y"
+               }
+              ]
+             }
+            }
+           }
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "seg_has_edge",
+     1.0
+    ]
+   ]
+  },
+  {
+   "name": "seg_flood",
+   "comment": "l4_flood's min-flood with its predicate replaced by the shot-noise same-surface test: seg_label := min label over same-epoch same-surface neighbours, fired only when one is STRICTLY smaller, so labels decrease monotonically and the flood terminates. At the run_rules fixpoint every connected same-surface component carries its minimum cell_index. DECLARED (as in l4): same-surface is not transitive; the flood takes its transitive closure, so a chain of sub-sigma steps (a smooth luminance ramp) merges.",
+   "match": [
+    [
+     "retina",
+     "has_column",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "SurfaceSegmentationParams"
+       },
+       "var_name": "sp_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sp_"
+        },
+        "key": "enabled"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "seg_epoch"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "input_epoch"
+      }
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "Neighbours",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "edge_type": "adjacent_receptor",
+       "any_type": false
+      },
+      "var_name": "b",
+      "predicate": {
+       "type": "And",
+       "items": [
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "seg_epoch"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "b"
+          },
+          "key": "seg_epoch"
+         }
+        },
+        {
+         "type": "Lte",
+         "a": {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "c"
+            },
+            "key": "seg_Y"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "b"
+            },
+            "key": "seg_Y"
+           }
+          }
+         },
+         "b": {
+          "type": "Sqrt",
+          "arg": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "seg_Y"
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "b"
+             },
+             "key": "seg_Y"
+            }
+           ]
+          }
+         }
+        },
+        {
+         "type": "Lt",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "b"
+          },
+          "key": "seg_label"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "seg_label"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "seg_label",
+     {
+      "__term__": {
+       "type": "Min",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "key": "seg_label"
+        },
+        {
+         "type": "MinOver",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "edge_type": "adjacent_receptor",
+           "any_type": false
+          },
+          "var_name": "b",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "c"
+              },
+              "key": "seg_epoch"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "b"
+              },
+              "key": "seg_epoch"
+             }
+            },
+            {
+             "type": "Lte",
+             "a": {
+              "type": "Abs",
+              "arg": {
+               "type": "Minus",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "c"
+                },
+                "key": "seg_Y"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "b"
+                },
+                "key": "seg_Y"
+               }
+              }
+             },
+             "b": {
+              "type": "Sqrt",
+              "arg": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "c"
+                 },
+                 "key": "seg_Y"
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "b"
+                 },
+                 "key": "seg_Y"
+                }
+               ]
+              }
+             }
+            }
+           ]
+          }
+         },
+         "var_name": "b2",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "b2"
+          },
+          "key": "seg_label"
+         },
+         "default": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "seg_label"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "seg_complete",
+   "comment": "THE MINT GUARD (one binding: params -has_segmentation_state-> state). Epoch e = the sheet's input_epoch. Fires when (1) every cell is reset to e, (2) NO adjacent same-epoch same-surface pair has differing labels -- adjacency is symmetric, so this is exactly the flood's fixpoint (no cell has a strictly smaller same-surface neighbour), and (3) no boundary mark is pending. Only then is done_epoch := e, so n_cells / has_boundary read at mint time are final, never a transient undercount.",
+   "match": [
+    [
+     "sp",
+     "has_segmentation_state",
+     "st"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "SurfaceSegmentationParams"
+       },
+       "var_name": "sp_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sp_"
+        },
+        "key": "enabled"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "RetinalColumn"
+       },
+       "var_name": "e_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "e_"
+        },
+        "key": "input_epoch"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "RetinalColumn"
+       },
+       "var_name": "e_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "e_"
+        },
+        "key": "input_epoch"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0
+       }
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "st"
+       },
+       "key": "done_epoch"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "RetinalColumn"
+       },
+       "var_name": "x",
+       "predicate": {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "x"
+          },
+          "key": "seg_epoch"
+         },
+         "b": {
+          "type": "MaxOver",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "RetinalColumn"
+          },
+          "var_name": "e_",
+          "value": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "e_"
+           },
+           "key": "input_epoch"
+          },
+          "default": {
+           "type": "Lit",
+           "value": 0
+          }
+         }
+        }
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "RetinalColumn"
+       },
+       "var_name": "x",
+       "predicate": {
+        "type": "Exists",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "edge_type": "adjacent_receptor",
+         "any_type": false
+        },
+        "var_name": "y_",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "x"
+            },
+            "key": "seg_epoch"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "y_"
+            },
+            "key": "seg_epoch"
+           }
+          },
+          {
+           "type": "Lte",
+           "a": {
+            "type": "Abs",
+            "arg": {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "x"
+              },
+              "key": "seg_Y"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "y_"
+              },
+              "key": "seg_Y"
+             }
+            }
+           },
+           "b": {
+            "type": "Sqrt",
+            "arg": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "x"
+               },
+               "key": "seg_Y"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "y_"
+               },
+               "key": "seg_Y"
+              }
+             ]
+            }
+           }
+          },
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "y_"
+             },
+             "key": "seg_label"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "x"
+             },
+             "key": "seg_label"
+            }
+           }
+          }
+         ]
+        }
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "RetinalColumn"
+       },
+       "var_name": "x",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Lt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "x"
+           },
+           "key": "seg_has_edge"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.5
+          }
+         },
+         {
+          "type": "Exists",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "x"
+           },
+           "edge_type": "adjacent_receptor",
+           "any_type": false
+          },
+          "var_name": "y_",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "x"
+              },
+              "key": "seg_epoch"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "y_"
+              },
+              "key": "seg_epoch"
+             }
+            },
+            {
+             "type": "Not",
+             "arg": {
+              "type": "Lte",
+              "a": {
+               "type": "Abs",
+               "arg": {
+                "type": "Minus",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "x"
+                 },
+                 "key": "seg_Y"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "y_"
+                 },
+                 "key": "seg_Y"
+                }
+               }
+              },
+              "b": {
+               "type": "Sqrt",
+               "arg": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "x"
+                  },
+                  "key": "seg_Y"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "y_"
+                  },
+                  "key": "seg_Y"
+                 }
+                ]
+               }
+              }
+             }
+            }
+           ]
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "st",
+     "done_epoch",
+     {
+      "__term__": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "RetinalColumn"
+       },
+       "var_name": "e_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "e_"
+        },
+        "key": "input_epoch"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "seg_mint",
+   "comment": "Per ROOT cell (seg_label == cell_index) of the completed epoch: mint ONE SurfaceSegment unless this root already roots one for this epoch (local Not-Exists over roots_segment). Each root is a distinct binding, so exactly one segment per component. n_cells = Count(cells with this label at this epoch); has_boundary = any member carries seg_has_edge (0 = ganzfeld: declared not a surface).",
+   "match": [
+    [
+     "sp",
+     "has_segmentation_state",
+     "st"
+    ],
+    [
+     "retina",
+     "has_column",
+     "r"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "SurfaceSegmentationParams"
+       },
+       "var_name": "sp_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sp_"
+        },
+        "key": "enabled"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "seg_epoch"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "st"
+       },
+       "key": "done_epoch"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "seg_label"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "cell_index"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "r"
+        },
+        "edge_type": "roots_segment",
+        "any_type": false
+       },
+       "var_name": "z",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "z"
+         },
+         "key": "epoch"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "r"
+         },
+         "key": "seg_epoch"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "S",
+     "SurfaceSegment",
+     {
+      "epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "r"
+        },
+        "key": "seg_epoch"
+       }
+      },
+      "root": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "r"
+        },
+        "key": "cell_index"
+       }
+      },
+      "n_cells": {
+       "__term__": {
+        "type": "Count",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "RetinalColumn"
+         },
+         "var_name": "q_",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "q_"
+             },
+             "key": "seg_epoch"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "r"
+             },
+             "key": "seg_epoch"
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "q_"
+             },
+             "key": "seg_label"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "r"
+             },
+             "key": "seg_label"
+            }
+           }
+          ]
+         }
+        }
+       }
+      },
+      "has_boundary": {
+       "__term__": {
+        "type": "MaxOver",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "RetinalColumn"
+         },
+         "var_name": "q_",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "q_"
+             },
+             "key": "seg_epoch"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "r"
+             },
+             "key": "seg_epoch"
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "q_"
+             },
+             "key": "seg_label"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "r"
+             },
+             "key": "seg_label"
+            }
+           }
+          ]
+         }
+        },
+        "var_name": "h_",
+        "value": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "h_"
+         },
+         "key": "seg_has_edge"
+        },
+        "default": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       }
+      },
+      "current": {
+       "__term__": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "st",
+     "has_segment",
+     "S"
+    ],
+    [
+     "add_edge",
+     "r",
+     "roots_segment",
+     "S"
+    ],
+    [
+     "add_edge",
+     "r",
+     "in_segment",
+     "S"
+    ],
+    [
+     "set_attr",
+     "r",
+     "seg_joined",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "seg_epoch"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "seg_join",
+   "comment": "Each non-root cell of the segment's epoch whose label is the segment's root joins it (cell -in_segment-> segment), once per epoch (the root joined at mint: pattern variables bind distinct nodes, so c can never be r here).",
+   "match": [
+    [
+     "r",
+     "roots_segment",
+     "S"
+    ],
+    [
+     "retina",
+     "has_column",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "SurfaceSegmentationParams"
+       },
+       "var_name": "sp_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sp_"
+        },
+        "key": "enabled"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "S"
+       },
+       "key": "current"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "seg_epoch"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "S"
+       },
+       "key": "epoch"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "seg_label"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "S"
+       },
+       "key": "root"
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "seg_joined"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "S"
+       },
+       "key": "epoch"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "c",
+     "in_segment",
+     "S"
+    ],
+    [
+     "set_attr",
+     "c",
+     "seg_joined",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "S"
+       },
+       "key": "epoch"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "seg_final",
+   "comment": "One binding: when every cell has joined its segment for done_epoch (so every component has been minted), publish final_epoch := done_epoch. The downstream gate.",
+   "match": [
+    [
+     "sp",
+     "has_segmentation_state",
+     "st"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "SurfaceSegmentationParams"
+       },
+       "var_name": "sp_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sp_"
+        },
+        "key": "enabled"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "st"
+       },
+       "key": "done_epoch"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "st"
+       },
+       "key": "final_epoch"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "RetinalColumn"
+       },
+       "var_name": "x",
+       "predicate": {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "x"
+          },
+          "key": "seg_joined"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "st"
+          },
+          "key": "done_epoch"
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "st",
+     "final_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "st"
+       },
+       "key": "done_epoch"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "seg_retire",
+   "comment": "HISTORY, NOT DELETION: once a newer epoch is complete, a segment is kept (epoch/root/n_cells/has_boundary and any persistence edge survive) but marked current=0 and unhooked from the live state/root edges, so joins over current segments stay flat. Persistence reads the previous epoch through each cell's own prev_sid, not through old segments.",
+   "match": [
+    [
+     "st",
+     "has_segment",
+     "S"
+    ],
+    [
+     "r",
+     "roots_segment",
+     "S"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "SurfaceSegmentationParams"
+       },
+       "var_name": "sp_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sp_"
+        },
+        "key": "enabled"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "S"
+       },
+       "key": "epoch"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "st"
+       },
+       "key": "done_epoch"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "S",
+     "current",
+     0.0
+    ],
+    [
+     "del_edge",
+     "st",
+     "has_segment",
+     "S"
+    ],
+    [
+     "del_edge",
+     "r",
+     "roots_segment",
+     "S"
+    ]
+   ]
+  },
+  {
+   "name": "seg_retire_member",
+   "comment": "Drop a retired segment's cell membership edges (its n_cells is kept on the node).",
+   "match": [
+    [
+     "c",
+     "in_segment",
+     "S"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "SurfaceSegmentationParams"
+       },
+       "var_name": "sp_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sp_"
+        },
+        "key": "enabled"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "S"
+       },
+       "key": "current"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "del_edge",
+     "c",
+     "in_segment",
+     "S"
+    ]
+   ]
+  }
+ ]
+}
