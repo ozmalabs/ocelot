@@ -1,12 +1,12 @@
 {
  "id": "surface_segmentation",
- "version": "1.0.0",
+ "version": "1.1.0",
  "self_load_only": true,
  "depends_on": [
   "photon_retina"
  ],
  "latency_class": "hard_realtime",
- "description": "Mary's Room stage 4.3: colour-free surface segmentation of the 2-D photon sheet (GraphEye retina_2d + retina_2d_cones, adjacent_receptor edges). Luminance Y = L.caught_quanta + M.caught_quanta (no S, no opponent channel). Two adjacent cells are the SAME SURFACE iff |Y_a - Y_b| <= Sqrt(Y_a + Y_b): one standard deviation of the photon shot noise of the difference, a physical grain with no tuned multiplier (VISION_PROTOCOL sec 13). Components are found by the l4_flood min-label flood to the run_rules fixpoint; a per-epoch completion guard (SegmentationState.done_epoch) admits minting only after the fixpoint, then ONE SurfaceSegment{epoch, root, n_cells, has_boundary, current} per component, with cell -in_segment-> segment membership, and SegmentationState.final_epoch once every cell has joined. A component with no boundary (ganzfeld) has has_boundary=0 and is not a surface. Isoluminant chromatic edges are invisible to this criterion BY DESIGN (they merge; reported, not patched). Superseded segments are kept as history (current=0) with their live edges removed. Feeds surface_persistence, whose identity criterion is the track_comps cell overlap 2*ov >= min(count) (runners/dsl/src/substrate.rs track_comps). Flag SurfaceSegmentationParams.enabled, OFF by default (sec 9).",
+ "description": "Mary's Room stage 4.3: colour-free surface segmentation of the 2-D photon sheet (GraphEye retina_2d + retina_2d_cones, adjacent_receptor edges). Luminance Y = L.caught_quanta + M.caught_quanta (no S, no opponent channel). Two adjacent cells are the SAME SURFACE iff |Y_a - Y_b| <= Sqrt(Y_a + Y_b): one standard deviation of the photon shot noise of the difference, a physical grain with no tuned multiplier (VISION_PROTOCOL sec 13). Components are found by the l4_flood min-label flood to the run_rules fixpoint; a per-epoch completion guard (SegmentationState.done_epoch) admits minting only after the fixpoint, then ONE SurfaceSegment{epoch, root, n_cells, has_boundary, current} per component, with cell -in_segment-> segment membership, and SegmentationState.final_epoch once every cell has joined. A component with no boundary (ganzfeld) has has_boundary=0 and is not a surface. Isoluminant chromatic edges are invisible to this criterion BY DESIGN (they merge; reported, not patched). Superseded segments are kept as history (current=0) with their live edges removed. Feeds surface_persistence, whose identity criterion is the track_comps cell overlap 2*ov >= min(count) (runners/dsl/src/substrate.rs track_comps). Flag SurfaceSegmentationParams.enabled, OFF by default (sec 9). v1.1.0 COMMON-FATE MOTION SEGMENTS, its own flag SurfaceSegmentationParams.motion_segments (default 0.0; with it 0 every observable is byte-identical to v1.0.0): after the 2-D common-fate carve (retinal_carve_2d, rod-driven RetinalOnsetEvents) of the epoch is done and minted (SegmentationState.motion_epoch), each cell gets a motion group seg_mgrp = the span key of the one current-epoch VisionPolygon whose col/row span contains it if it also onset this epoch, else -1 (two spans: refused, -1); the same-surface relation becomes |dY| <= Sqrt(Y_a+Y_b) AND same motion group, so a coherent moving region is cut out of its luminance component into its own SurfaceSegment (attr motion_group) and offered to the SAME surface_persistence rules. Colour-free: onset events and spans only. Needs the adapter to settle the carve every exposure.",
  "microtheory": {
   "name": "surface_segmentation",
   "description": "luminance shot-noise edges -> connected surface segments"
@@ -16,7 +16,8 @@
    "local_id": 0,
    "type": "SurfaceSegmentationParams",
    "attrs": {
-    "enabled": 0.0
+    "enabled": 0.0,
+    "motion_segments": 0.0
    }
   },
   {
@@ -420,6 +421,63 @@
       }
      },
      {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Gt",
+         "a": {
+          "type": "MaxOver",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "SurfaceSegmentationParams"
+          },
+          "var_name": "sm_",
+          "value": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "sm_"
+           },
+           "key": "motion_segments"
+          },
+          "default": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.5
+         }
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "PickUnique",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "SegmentationState"
+          }
+         },
+         "key": "mark_epoch"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "key": "seg_epoch"
+        }
+       }
+      ]
+     },
+     {
       "type": "And",
       "items": [
        {
@@ -474,53 +532,97 @@
           {
            "type": "Not",
            "arg": {
-            "type": "Lte",
-            "a": {
-             "type": "Abs",
-             "arg": {
-              "type": "Minus",
+            "type": "And",
+            "items": [
+             {
+              "type": "Lte",
               "a": {
-               "type": "Attr",
-               "node": {
-                "type": "Var",
-                "name": "c"
-               },
-               "key": "seg_Y"
+               "type": "Abs",
+               "arg": {
+                "type": "Minus",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "c"
+                 },
+                 "key": "seg_Y"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "b"
+                 },
+                 "key": "seg_Y"
+                }
+               }
               },
               "b": {
-               "type": "Attr",
-               "node": {
-                "type": "Var",
-                "name": "b"
-               },
-               "key": "seg_Y"
+               "type": "Sqrt",
+               "arg": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "c"
+                  },
+                  "key": "seg_Y"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "b"
+                  },
+                  "key": "seg_Y"
+                 }
+                ]
+               }
               }
-             }
-            },
-            "b": {
-             "type": "Sqrt",
-             "arg": {
-              "type": "Plus",
+             },
+             {
+              "type": "Or",
               "items": [
                {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "c"
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "c"
+                 },
+                 "key": "seg_mgrp"
                 },
-                "key": "seg_Y"
+                "b": {
+                 "type": "Lit",
+                 "value": null
+                }
                },
                {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "b"
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "c"
+                 },
+                 "key": "seg_mgrp"
                 },
-                "key": "seg_Y"
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "b"
+                 },
+                 "key": "seg_mgrp"
+                }
                }
               ]
              }
-            }
+            ]
            }
           }
          ]
@@ -599,6 +701,63 @@
       }
      },
      {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Gt",
+         "a": {
+          "type": "MaxOver",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "SurfaceSegmentationParams"
+          },
+          "var_name": "sm_",
+          "value": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "sm_"
+           },
+           "key": "motion_segments"
+          },
+          "default": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.5
+         }
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "PickUnique",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "SegmentationState"
+          }
+         },
+         "key": "mark_epoch"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "key": "seg_epoch"
+        }
+       }
+      ]
+     },
+     {
       "type": "Exists",
       "source": {
        "type": "Neighbours",
@@ -633,53 +792,97 @@
          }
         },
         {
-         "type": "Lte",
-         "a": {
-          "type": "Abs",
-          "arg": {
-           "type": "Minus",
+         "type": "And",
+         "items": [
+          {
+           "type": "Lte",
            "a": {
-            "type": "Attr",
-            "node": {
-             "type": "Var",
-             "name": "c"
-            },
-            "key": "seg_Y"
+            "type": "Abs",
+            "arg": {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "c"
+              },
+              "key": "seg_Y"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "b"
+              },
+              "key": "seg_Y"
+             }
+            }
            },
            "b": {
-            "type": "Attr",
-            "node": {
-             "type": "Var",
-             "name": "b"
-            },
-            "key": "seg_Y"
+            "type": "Sqrt",
+            "arg": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "c"
+               },
+               "key": "seg_Y"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "b"
+               },
+               "key": "seg_Y"
+              }
+             ]
+            }
            }
-          }
-         },
-         "b": {
-          "type": "Sqrt",
-          "arg": {
-           "type": "Plus",
+          },
+          {
+           "type": "Or",
            "items": [
             {
-             "type": "Attr",
-             "node": {
-              "type": "Var",
-              "name": "c"
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "c"
+              },
+              "key": "seg_mgrp"
              },
-             "key": "seg_Y"
+             "b": {
+              "type": "Lit",
+              "value": null
+             }
             },
             {
-             "type": "Attr",
-             "node": {
-              "type": "Var",
-              "name": "b"
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "c"
+              },
+              "key": "seg_mgrp"
              },
-             "key": "seg_Y"
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "b"
+              },
+              "key": "seg_mgrp"
+             }
             }
            ]
           }
-         }
+         ]
         },
         {
          "type": "Lt",
@@ -759,53 +962,97 @@
              }
             },
             {
-             "type": "Lte",
-             "a": {
-              "type": "Abs",
-              "arg": {
-               "type": "Minus",
+             "type": "And",
+             "items": [
+              {
+               "type": "Lte",
                "a": {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "c"
-                },
-                "key": "seg_Y"
+                "type": "Abs",
+                "arg": {
+                 "type": "Minus",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "c"
+                  },
+                  "key": "seg_Y"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "b"
+                  },
+                  "key": "seg_Y"
+                 }
+                }
                },
                "b": {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "b"
-                },
-                "key": "seg_Y"
+                "type": "Sqrt",
+                "arg": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "c"
+                   },
+                   "key": "seg_Y"
+                  },
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "b"
+                   },
+                   "key": "seg_Y"
+                  }
+                 ]
+                }
                }
-              }
-             },
-             "b": {
-              "type": "Sqrt",
-              "arg": {
-               "type": "Plus",
+              },
+              {
+               "type": "Or",
                "items": [
                 {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "c"
+                 "type": "Eq",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "c"
+                  },
+                  "key": "seg_mgrp"
                  },
-                 "key": "seg_Y"
+                 "b": {
+                  "type": "Lit",
+                  "value": null
+                 }
                 },
                 {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "b"
+                 "type": "Eq",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "c"
+                  },
+                  "key": "seg_mgrp"
                  },
-                 "key": "seg_Y"
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "b"
+                  },
+                  "key": "seg_mgrp"
+                 }
                 }
                ]
               }
-             }
+             ]
             }
            ]
           }
@@ -1021,53 +1268,97 @@
            }
           },
           {
-           "type": "Lte",
-           "a": {
-            "type": "Abs",
-            "arg": {
-             "type": "Minus",
+           "type": "And",
+           "items": [
+            {
+             "type": "Lte",
              "a": {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "x"
-              },
-              "key": "seg_Y"
+              "type": "Abs",
+              "arg": {
+               "type": "Minus",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "x"
+                },
+                "key": "seg_Y"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "y_"
+                },
+                "key": "seg_Y"
+               }
+              }
              },
              "b": {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "y_"
-              },
-              "key": "seg_Y"
+              "type": "Sqrt",
+              "arg": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "x"
+                 },
+                 "key": "seg_Y"
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "y_"
+                 },
+                 "key": "seg_Y"
+                }
+               ]
+              }
              }
-            }
-           },
-           "b": {
-            "type": "Sqrt",
-            "arg": {
-             "type": "Plus",
+            },
+            {
+             "type": "Or",
              "items": [
               {
-               "type": "Attr",
-               "node": {
-                "type": "Var",
-                "name": "x"
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "x"
+                },
+                "key": "seg_mgrp"
                },
-               "key": "seg_Y"
+               "b": {
+                "type": "Lit",
+                "value": null
+               }
               },
               {
-               "type": "Attr",
-               "node": {
-                "type": "Var",
-                "name": "y_"
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "x"
+                },
+                "key": "seg_mgrp"
                },
-               "key": "seg_Y"
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "y_"
+                },
+                "key": "seg_mgrp"
+               }
               }
              ]
             }
-           }
+           ]
           },
           {
            "type": "Not",
@@ -1160,53 +1451,97 @@
             {
              "type": "Not",
              "arg": {
-              "type": "Lte",
-              "a": {
-               "type": "Abs",
-               "arg": {
-                "type": "Minus",
+              "type": "And",
+              "items": [
+               {
+                "type": "Lte",
                 "a": {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "x"
-                 },
-                 "key": "seg_Y"
+                 "type": "Abs",
+                 "arg": {
+                  "type": "Minus",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "x"
+                   },
+                   "key": "seg_Y"
+                  },
+                  "b": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "y_"
+                   },
+                   "key": "seg_Y"
+                  }
+                 }
                 },
                 "b": {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "y_"
-                 },
-                 "key": "seg_Y"
+                 "type": "Sqrt",
+                 "arg": {
+                  "type": "Plus",
+                  "items": [
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "x"
+                    },
+                    "key": "seg_Y"
+                   },
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "y_"
+                    },
+                    "key": "seg_Y"
+                   }
+                  ]
+                 }
                 }
-               }
-              },
-              "b": {
-               "type": "Sqrt",
-               "arg": {
-                "type": "Plus",
+               },
+               {
+                "type": "Or",
                 "items": [
                  {
-                  "type": "Attr",
-                  "node": {
-                   "type": "Var",
-                   "name": "x"
+                  "type": "Eq",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "x"
+                   },
+                   "key": "seg_mgrp"
                   },
-                  "key": "seg_Y"
+                  "b": {
+                   "type": "Lit",
+                   "value": null
+                  }
                  },
                  {
-                  "type": "Attr",
-                  "node": {
-                   "type": "Var",
-                   "name": "y_"
+                  "type": "Eq",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "x"
+                   },
+                   "key": "seg_mgrp"
                   },
-                  "key": "seg_Y"
+                  "b": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "y_"
+                   },
+                   "key": "seg_mgrp"
+                  }
                  }
                 ]
                }
-              }
+              ]
              }
             }
            ]
@@ -1215,6 +1550,72 @@
         ]
        }
       }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Gt",
+         "a": {
+          "type": "MaxOver",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "SurfaceSegmentationParams"
+          },
+          "var_name": "sm_",
+          "value": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "sm_"
+           },
+           "key": "motion_segments"
+          },
+          "default": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.5
+         }
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "st"
+         },
+         "key": "mark_epoch"
+        },
+        "b": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "RetinalColumn"
+         },
+         "var_name": "e_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "e_"
+          },
+          "key": "input_epoch"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0
+         }
+        }
+       }
+      ]
      }
     ]
    },
@@ -1967,6 +2368,1296 @@
      "c",
      "in_segment",
      "S"
+    ]
+   ]
+  },
+  {
+   "name": "seg_motion_ready",
+   "comment": "MOTION (one binding): the 2-D common-fate carve task of THIS epoch is done and every component passing the carve's own criterion has minted its VisionPolygon -> motion_epoch := e. Requires the adapter to settle the carve each exposure (it does so only when motion_segments is requested).",
+   "match": [
+    [
+     "sp",
+     "has_segmentation_state",
+     "st"
+    ],
+    [
+     "retina",
+     "has_carve_task_2d",
+     "task"
+    ],
+    [
+     "retina",
+     "has_carve_params_2d",
+     "cp"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "SurfaceSegmentationParams"
+       },
+       "var_name": "sp_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sp_"
+        },
+        "key": "enabled"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "SurfaceSegmentationParams"
+       },
+       "var_name": "sm_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sm_"
+        },
+        "key": "motion_segments"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "RetinalColumn"
+       },
+       "var_name": "e_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "e_"
+        },
+        "key": "input_epoch"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "task"
+       },
+       "key": "kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "retinal_common_fate_carve_2d"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "task"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "done"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "task"
+       },
+       "key": "input_epoch"
+      },
+      "b": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "RetinalColumn"
+       },
+       "var_name": "e_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "e_"
+        },
+        "key": "input_epoch"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "st"
+        },
+        "key": "motion_epoch"
+       },
+       "b": {
+        "type": "MaxOver",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "RetinalColumn"
+        },
+        "var_name": "e_",
+        "value": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "e_"
+         },
+         "key": "input_epoch"
+        },
+        "default": {
+         "type": "Lit",
+         "value": 0
+        }
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "RetinalColumn"
+       },
+       "var_name": "xm",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "task"
+            },
+            "key": "output"
+           },
+           "index": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "xm"
+                },
+                "key": "cell_index"
+               },
+               {
+                "type": "Lit",
+                "value": 9
+               }
+              ]
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1.0
+          }
+         },
+         {
+          "type": "Gt",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "task"
+            },
+            "key": "output"
+           },
+           "index": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "xm"
+                },
+                "key": "cell_index"
+               },
+               {
+                "type": "Lit",
+                "value": 9
+               }
+              ]
+             },
+             {
+              "type": "Lit",
+              "value": 7
+             }
+            ]
+           }
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "cp"
+           },
+           "key": "min_coherence"
+          }
+         },
+         {
+          "type": "Gt",
+          "a": {
+           "type": "IndexAt",
+           "seq": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "task"
+            },
+            "key": "output"
+           },
+           "index": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "xm"
+                },
+                "key": "cell_index"
+               },
+               {
+                "type": "Lit",
+                "value": 9
+               }
+              ]
+             },
+             {
+              "type": "Lit",
+              "value": 8
+             }
+            ]
+           }
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "cp"
+           },
+           "key": "min_events"
+          }
+         },
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "xm"
+            },
+            "key": "carve2d_epoch"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "task"
+            },
+            "key": "input_epoch"
+           }
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "st",
+     "motion_epoch",
+     {
+      "__term__": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "RetinalColumn"
+       },
+       "var_name": "e_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "e_"
+        },
+        "key": "input_epoch"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "seg_motion_mark",
+   "comment": "MOTION: once per reset cell per epoch, after motion_epoch: the cell's motion group seg_mgrp = the span key of the ONE current-epoch VisionPolygon whose col/row span contains it, if the cell also minted a RetinalOnsetEvent this epoch (polygons carry only bounding spans, so membership = span AND onset); -1 otherwise. A cell inside two spans is refused (-1): no guess between polygons.",
+   "match": [
+    [
+     "sp",
+     "has_segmentation_state",
+     "st"
+    ],
+    [
+     "retina",
+     "has_column",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "SurfaceSegmentationParams"
+       },
+       "var_name": "sp_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sp_"
+        },
+        "key": "enabled"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "SurfaceSegmentationParams"
+       },
+       "var_name": "sm_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sm_"
+        },
+        "key": "motion_segments"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "seg_epoch"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "input_epoch"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "st"
+       },
+       "key": "motion_epoch"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "seg_epoch"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "c"
+        },
+        "key": "seg_mot_epoch"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "c"
+        },
+        "key": "seg_epoch"
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "seg_mgrp",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Exists",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "edge_type": "has_onset_event",
+           "any_type": false
+          },
+          "var_name": "ev_",
+          "predicate": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "ev_"
+            },
+            "key": "epoch"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "c"
+            },
+            "key": "seg_epoch"
+           }
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Count",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "retina"
+             },
+             "edge_type": "has_vision_polygon",
+             "any_type": false
+            },
+            "var_name": "v1_",
+            "predicate": {
+             "type": "And",
+             "items": [
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "v1_"
+                },
+                "key": "epoch"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "c"
+                },
+                "key": "seg_epoch"
+               }
+              },
+              {
+               "type": "Lte",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "v1_"
+                },
+                "key": "col_min"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "c"
+                },
+                "key": "col"
+               }
+              },
+              {
+               "type": "Gte",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "v1_"
+                },
+                "key": "col_max"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "c"
+                },
+                "key": "col"
+               }
+              },
+              {
+               "type": "Lte",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "v1_"
+                },
+                "key": "row_min"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "c"
+                },
+                "key": "row"
+               }
+              },
+              {
+               "type": "Gte",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "v1_"
+                },
+                "key": "row_max"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "c"
+                },
+                "key": "row"
+               }
+              }
+             ]
+            }
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1
+          }
+         }
+        ]
+       },
+       "then": {
+        "type": "MinOver",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "retina"
+          },
+          "edge_type": "has_vision_polygon",
+          "any_type": false
+         },
+         "var_name": "v2_",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "v2_"
+             },
+             "key": "epoch"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "seg_epoch"
+            }
+           },
+           {
+            "type": "Lte",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "v2_"
+             },
+             "key": "col_min"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "col"
+            }
+           },
+           {
+            "type": "Gte",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "v2_"
+             },
+             "key": "col_max"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "col"
+            }
+           },
+           {
+            "type": "Lte",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "v2_"
+             },
+             "key": "row_min"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "row"
+            }
+           },
+           {
+            "type": "Gte",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "v2_"
+             },
+             "key": "row_max"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "row"
+            }
+           }
+          ]
+         }
+        },
+        "var_name": "v3_",
+        "value": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Times",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "v3_"
+                 },
+                 "key": "row_min"
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "retina"
+                 },
+                 "key": "n_columns"
+                }
+               ]
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "v3_"
+               },
+               "key": "col_min"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "retina"
+               },
+               "key": "n_columns"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "retina"
+               },
+               "key": "n_rows"
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "v3_"
+               },
+               "key": "row_max"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "retina"
+               },
+               "key": "n_columns"
+              }
+             ]
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "v3_"
+             },
+             "key": "col_max"
+            }
+           ]
+          }
+         ]
+        },
+        "default": {
+         "type": "Lit",
+         "value": -1
+        }
+       },
+       "other": {
+        "type": "Lit",
+        "value": -1
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "c",
+     "seg_mot_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "seg_epoch"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "seg_motion_all",
+   "comment": "MOTION (one binding): every cell carries its motion group for this epoch -> mark_epoch := e; flood, boundary marks and the completion guard wait on it (motion_ready).",
+   "match": [
+    [
+     "sp",
+     "has_segmentation_state",
+     "st"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "SurfaceSegmentationParams"
+       },
+       "var_name": "sp_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sp_"
+        },
+        "key": "enabled"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "SurfaceSegmentationParams"
+       },
+       "var_name": "sm_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sm_"
+        },
+        "key": "motion_segments"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "st"
+       },
+       "key": "motion_epoch"
+      },
+      "b": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "RetinalColumn"
+       },
+       "var_name": "e_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "e_"
+        },
+        "key": "input_epoch"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "st"
+        },
+        "key": "mark_epoch"
+       },
+       "b": {
+        "type": "MaxOver",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "RetinalColumn"
+        },
+        "var_name": "e_",
+        "value": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "e_"
+         },
+         "key": "input_epoch"
+        },
+        "default": {
+         "type": "Lit",
+         "value": 0
+        }
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "RetinalColumn"
+       },
+       "var_name": "xa",
+       "predicate": {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "xa"
+          },
+          "key": "seg_mot_epoch"
+         },
+         "b": {
+          "type": "MaxOver",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "RetinalColumn"
+          },
+          "var_name": "e_",
+          "value": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "e_"
+           },
+           "key": "input_epoch"
+          },
+          "default": {
+           "type": "Lit",
+           "value": 0
+          }
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "st",
+     "mark_epoch",
+     {
+      "__term__": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "RetinalColumn"
+       },
+       "var_name": "e_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "e_"
+        },
+        "key": "input_epoch"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "seg_motion_tag",
+   "comment": "MOTION: record on each minted segment its motion group (the root's seg_mgrp; -1 = a luminance-only segment).",
+   "match": [
+    [
+     "st",
+     "has_segment",
+     "S"
+    ],
+    [
+     "r",
+     "roots_segment",
+     "S"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "SurfaceSegmentationParams"
+       },
+       "var_name": "sp_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sp_"
+        },
+        "key": "enabled"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "SurfaceSegmentationParams"
+       },
+       "var_name": "sm_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sm_"
+        },
+        "key": "motion_segments"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "S"
+       },
+       "key": "motion_group"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "seg_epoch"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "S"
+       },
+       "key": "epoch"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "S",
+     "motion_group",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "seg_mgrp"
+      }
+     }
     ]
    ]
   }

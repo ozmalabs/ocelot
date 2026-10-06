@@ -1,0 +1,4927 @@
+{
+ "id": "colour_concept_link",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": [
+  "colour_property"
+ ],
+ "latency_class": "hard_realtime",
+ "description": "Mary's Room stage 4 fix (concept link): ColourProperty -categorised_as-> one of Mary's four pre-exposure research concepts (frozen hue4 classes red/purple, yellow, green, blue). ColourConcept prototypes are DATA compiled at generation time from Mary's research only: the frozen unique-hue anchor stimuli of results/marys_room_broad_armA.json (recomputed from CIE 2006 2-deg LMS, spectral_forward.load_lms, and asserted equal), white-normalised X' = X/X_E by the CIE LMS of equal-energy white, prototype = unit (L'-M', S'-(L'+M')/2). Rule cc_link: descriptor r_ch = p_ch/pa_ch (anchor-relative = white-normalised; the anchor is the scene max/white), d = (r_L-r_M, r_S-(r_L+r_M)/2); angle to each prototype = Atan2(|d x u|, d.u); link the Argmin, with concept_angle_deg and concept_margin_deg on the property. Refusals (concept_status): 'achromatic' (d exactly (0,0)), 'tied' (margin 0), 'no_anchor' (some pa < 1). No tuned constant. The link quality measures the Mary gap (CIE-observer research vs this eye's Gaussian catches). Flag ColourConceptParams.enabled, OFF by default (sec 9). See tools/build_colour_concept_link_seed.py.",
+ "microtheory": {
+  "name": "colour_concept_link",
+  "description": "perceived colour property -> Mary's research hue concept"
+ },
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "ColourConceptParams",
+   "attrs": {
+    "enabled": 0.0
+   }
+  },
+  {
+   "local_id": 1,
+   "type": "ColourConcept",
+   "attrs": {
+    "name": "red/purple",
+    "proto_rg": 0.9942730586721159,
+    "proto_by": 0.10686947552409552,
+    "proto_angle_deg": 6.134885760707861,
+    "anchor_L": 0.00578212566440582,
+    "anchor_M": 0.0004282895525563252,
+    "anchor_S": 0.0018730352915332555,
+    "white_L": 11597.830622608226,
+    "white_M": 9482.133472054828,
+    "white_S": 5842.422634364941,
+    "source": "results/marys_room_broad_armA.json anchors['red/purple']"
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "ColourConcept",
+   "attrs": {
+    "name": "yellow",
+    "proto_rg": 0.11712646834053231,
+    "proto_by": -0.9931170074135647,
+    "proto_angle_deg": -83.27370826308729,
+    "anchor_L": 0.9807378475600002,
+    "anchor_M": 0.7125607589600007,
+    "anchor_S": 0.0001732219369800008,
+    "white_L": 11597.830622608226,
+    "white_M": 9482.133472054828,
+    "white_S": 5842.422634364941,
+    "source": "results/marys_room_broad_armA.json anchors['yellow']"
+   }
+  },
+  {
+   "local_id": 3,
+   "type": "ColourConcept",
+   "attrs": {
+    "name": "green",
+    "proto_rg": -0.4845642489603068,
+    "proto_by": -0.8747556736766752,
+    "proto_angle_deg": -118.98392713288959,
+    "anchor_L": 0.5324244105199991,
+    "anchor_M": 0.7120431138399991,
+    "anchor_S": 0.045644470468000145,
+    "white_L": 11597.830622608226,
+    "white_M": 9482.133472054828,
+    "white_S": 5842.422634364941,
+    "source": "results/marys_room_broad_armA.json anchors['green']"
+   }
+  },
+  {
+   "local_id": 4,
+   "type": "ColourConcept",
+   "attrs": {
+    "name": "blue",
+    "proto_rg": -0.2058478570553548,
+    "proto_by": 0.978584007505599,
+    "proto_angle_deg": 101.87913629048036,
+    "anchor_L": 0.1320112102,
+    "anchor_M": 0.22378180179999999,
+    "anchor_S": 0.4415385694,
+    "white_L": 11597.830622608226,
+    "white_M": 9482.133472054828,
+    "white_S": 5842.422634364941,
+    "source": "results/marys_room_broad_armA.json anchors['blue']"
+   }
+  }
+ ],
+ "edges": [
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_colour_concept_params",
+   "tgt": {
+    "local": 0
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_colour_concept",
+   "tgt": {
+    "local": 1
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_colour_concept",
+   "tgt": {
+    "local": 2
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_colour_concept",
+   "tgt": {
+    "local": 3
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_colour_concept",
+   "tgt": {
+    "local": 4
+   },
+   "attrs": {}
+  }
+ ],
+ "productions": [],
+ "rules": [
+  {
+   "name": "cc_link",
+   "comment": "Pre-exposure research applied to a post-exposure property: CP -categorised_as-> the ColourConcept with the smallest angle between CP's white-normalised opponent descriptor d = (r_L - r_M, r_S - (r_L + r_M)/2), r = p/pa, and the concept's unit prototype. Records the angle and the margin to the runner-up.",
+   "match": [
+    [
+     "P",
+     "has_colour_property",
+     "CP"
+    ],
+    [
+     "cpp",
+     "has_colour_concept",
+     "K"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "ColourConceptParams"
+       },
+       "var_name": "ccp_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "ccp_"
+        },
+        "key": "enabled"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "CP"
+       },
+       "key": "concept_status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Gte",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "CP"
+         },
+         "key": "paL"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Gte",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "CP"
+         },
+         "key": "paM"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Gte",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "CP"
+         },
+         "key": "paS"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       }
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "And",
+       "items": [
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Minus",
+          "a": {
+           "type": "Div",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "CP"
+            },
+            "key": "pL"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "CP"
+            },
+            "key": "paL"
+           }
+          },
+          "b": {
+           "type": "Div",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "CP"
+            },
+            "key": "pM"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "CP"
+            },
+            "key": "paM"
+           }
+          }
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Minus",
+          "a": {
+           "type": "Div",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "CP"
+            },
+            "key": "pS"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "CP"
+            },
+            "key": "paS"
+           }
+          },
+          "b": {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Lit",
+             "value": 0.5
+            },
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Div",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "pL"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "paL"
+               }
+              },
+              {
+               "type": "Div",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "pM"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "paM"
+               }
+              }
+             ]
+            }
+           ]
+          }
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        }
+       ]
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Var",
+       "name": "K"
+      },
+      "b": {
+       "type": "Argmin",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "cpp"
+        },
+        "edge_type": "has_colour_concept",
+        "any_type": false
+       },
+       "var_name": "kb_",
+       "value": {
+        "type": "Atan2",
+        "y": {
+         "type": "Abs",
+         "arg": {
+          "type": "Minus",
+          "a": {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Minus",
+             "a": {
+              "type": "Div",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "CP"
+               },
+               "key": "pL"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "CP"
+               },
+               "key": "paL"
+              }
+             },
+             "b": {
+              "type": "Div",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "CP"
+               },
+               "key": "pM"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "CP"
+               },
+               "key": "paM"
+              }
+             }
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "kb_"
+             },
+             "key": "proto_by"
+            }
+           ]
+          },
+          "b": {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Minus",
+             "a": {
+              "type": "Div",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "CP"
+               },
+               "key": "pS"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "CP"
+               },
+               "key": "paS"
+              }
+             },
+             "b": {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Lit",
+                "value": 0.5
+               },
+               {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Div",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "CP"
+                   },
+                   "key": "pL"
+                  },
+                  "b": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "CP"
+                   },
+                   "key": "paL"
+                  }
+                 },
+                 {
+                  "type": "Div",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "CP"
+                   },
+                   "key": "pM"
+                  },
+                  "b": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "CP"
+                   },
+                   "key": "paM"
+                  }
+                 }
+                ]
+               }
+              ]
+             }
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "kb_"
+             },
+             "key": "proto_rg"
+            }
+           ]
+          }
+         }
+        },
+        "x": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Minus",
+             "a": {
+              "type": "Div",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "CP"
+               },
+               "key": "pL"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "CP"
+               },
+               "key": "paL"
+              }
+             },
+             "b": {
+              "type": "Div",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "CP"
+               },
+               "key": "pM"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "CP"
+               },
+               "key": "paM"
+              }
+             }
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "kb_"
+             },
+             "key": "proto_rg"
+            }
+           ]
+          },
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Minus",
+             "a": {
+              "type": "Div",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "CP"
+               },
+               "key": "pS"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "CP"
+               },
+               "key": "paS"
+              }
+             },
+             "b": {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Lit",
+                "value": 0.5
+               },
+               {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Div",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "CP"
+                   },
+                   "key": "pL"
+                  },
+                  "b": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "CP"
+                   },
+                   "key": "paL"
+                  }
+                 },
+                 {
+                  "type": "Div",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "CP"
+                   },
+                   "key": "pM"
+                  },
+                  "b": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "CP"
+                   },
+                   "key": "paM"
+                  }
+                 }
+                ]
+               }
+              ]
+             }
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "kb_"
+             },
+             "key": "proto_by"
+            }
+           ]
+          }
+         ]
+        }
+       }
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Minus",
+       "a": {
+        "type": "MinOver",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "cpp"
+          },
+          "edge_type": "has_colour_concept",
+          "any_type": false
+         },
+         "var_name": "ko_",
+         "predicate": {
+          "type": "Not",
+          "arg": {
+           "type": "Eq",
+           "a": {
+            "type": "Var",
+            "name": "ko_"
+           },
+           "b": {
+            "type": "Argmin",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "cpp"
+             },
+             "edge_type": "has_colour_concept",
+             "any_type": false
+            },
+            "var_name": "kb_",
+            "value": {
+             "type": "Atan2",
+             "y": {
+              "type": "Abs",
+              "arg": {
+               "type": "Minus",
+               "a": {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Minus",
+                  "a": {
+                   "type": "Div",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "CP"
+                    },
+                    "key": "pL"
+                   },
+                   "b": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "CP"
+                    },
+                    "key": "paL"
+                   }
+                  },
+                  "b": {
+                   "type": "Div",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "CP"
+                    },
+                    "key": "pM"
+                   },
+                   "b": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "CP"
+                    },
+                    "key": "paM"
+                   }
+                  }
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "kb_"
+                  },
+                  "key": "proto_by"
+                 }
+                ]
+               },
+               "b": {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Minus",
+                  "a": {
+                   "type": "Div",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "CP"
+                    },
+                    "key": "pS"
+                   },
+                   "b": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "CP"
+                    },
+                    "key": "paS"
+                   }
+                  },
+                  "b": {
+                   "type": "Times",
+                   "items": [
+                    {
+                     "type": "Lit",
+                     "value": 0.5
+                    },
+                    {
+                     "type": "Plus",
+                     "items": [
+                      {
+                       "type": "Div",
+                       "a": {
+                        "type": "Attr",
+                        "node": {
+                         "type": "Var",
+                         "name": "CP"
+                        },
+                        "key": "pL"
+                       },
+                       "b": {
+                        "type": "Attr",
+                        "node": {
+                         "type": "Var",
+                         "name": "CP"
+                        },
+                        "key": "paL"
+                       }
+                      },
+                      {
+                       "type": "Div",
+                       "a": {
+                        "type": "Attr",
+                        "node": {
+                         "type": "Var",
+                         "name": "CP"
+                        },
+                        "key": "pM"
+                       },
+                       "b": {
+                        "type": "Attr",
+                        "node": {
+                         "type": "Var",
+                         "name": "CP"
+                        },
+                        "key": "paM"
+                       }
+                      }
+                     ]
+                    }
+                   ]
+                  }
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "kb_"
+                  },
+                  "key": "proto_rg"
+                 }
+                ]
+               }
+              }
+             },
+             "x": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Minus",
+                  "a": {
+                   "type": "Div",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "CP"
+                    },
+                    "key": "pL"
+                   },
+                   "b": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "CP"
+                    },
+                    "key": "paL"
+                   }
+                  },
+                  "b": {
+                   "type": "Div",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "CP"
+                    },
+                    "key": "pM"
+                   },
+                   "b": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "CP"
+                    },
+                    "key": "paM"
+                   }
+                  }
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "kb_"
+                  },
+                  "key": "proto_rg"
+                 }
+                ]
+               },
+               {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Minus",
+                  "a": {
+                   "type": "Div",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "CP"
+                    },
+                    "key": "pS"
+                   },
+                   "b": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "CP"
+                    },
+                    "key": "paS"
+                   }
+                  },
+                  "b": {
+                   "type": "Times",
+                   "items": [
+                    {
+                     "type": "Lit",
+                     "value": 0.5
+                    },
+                    {
+                     "type": "Plus",
+                     "items": [
+                      {
+                       "type": "Div",
+                       "a": {
+                        "type": "Attr",
+                        "node": {
+                         "type": "Var",
+                         "name": "CP"
+                        },
+                        "key": "pL"
+                       },
+                       "b": {
+                        "type": "Attr",
+                        "node": {
+                         "type": "Var",
+                         "name": "CP"
+                        },
+                        "key": "paL"
+                       }
+                      },
+                      {
+                       "type": "Div",
+                       "a": {
+                        "type": "Attr",
+                        "node": {
+                         "type": "Var",
+                         "name": "CP"
+                        },
+                        "key": "pM"
+                       },
+                       "b": {
+                        "type": "Attr",
+                        "node": {
+                         "type": "Var",
+                         "name": "CP"
+                        },
+                        "key": "paM"
+                       }
+                      }
+                     ]
+                    }
+                   ]
+                  }
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "kb_"
+                  },
+                  "key": "proto_by"
+                 }
+                ]
+               }
+              ]
+             }
+            }
+           }
+          }
+         }
+        },
+        "var_name": "ko2_",
+        "value": {
+         "type": "Atan2",
+         "y": {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Minus",
+              "a": {
+               "type": "Div",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "pL"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "paL"
+               }
+              },
+              "b": {
+               "type": "Div",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "pM"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "paM"
+               }
+              }
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "ko2_"
+              },
+              "key": "proto_by"
+             }
+            ]
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Minus",
+              "a": {
+               "type": "Div",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "pS"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "paS"
+               }
+              },
+              "b": {
+               "type": "Times",
+               "items": [
+                {
+                 "type": "Lit",
+                 "value": 0.5
+                },
+                {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Div",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "CP"
+                    },
+                    "key": "pL"
+                   },
+                   "b": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "CP"
+                    },
+                    "key": "paL"
+                   }
+                  },
+                  {
+                   "type": "Div",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "CP"
+                    },
+                    "key": "pM"
+                   },
+                   "b": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "CP"
+                    },
+                    "key": "paM"
+                   }
+                  }
+                 ]
+                }
+               ]
+              }
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "ko2_"
+              },
+              "key": "proto_rg"
+             }
+            ]
+           }
+          }
+         },
+         "x": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Minus",
+              "a": {
+               "type": "Div",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "pL"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "paL"
+               }
+              },
+              "b": {
+               "type": "Div",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "pM"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "paM"
+               }
+              }
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "ko2_"
+              },
+              "key": "proto_rg"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Minus",
+              "a": {
+               "type": "Div",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "pS"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "paS"
+               }
+              },
+              "b": {
+               "type": "Times",
+               "items": [
+                {
+                 "type": "Lit",
+                 "value": 0.5
+                },
+                {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Div",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "CP"
+                    },
+                    "key": "pL"
+                   },
+                   "b": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "CP"
+                    },
+                    "key": "paL"
+                   }
+                  },
+                  {
+                   "type": "Div",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "CP"
+                    },
+                    "key": "pM"
+                   },
+                   "b": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "CP"
+                    },
+                    "key": "paM"
+                   }
+                  }
+                 ]
+                }
+               ]
+              }
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "ko2_"
+              },
+              "key": "proto_by"
+             }
+            ]
+           }
+          ]
+         }
+        }
+       },
+       "b": {
+        "type": "MinOver",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "cpp"
+         },
+         "edge_type": "has_colour_concept",
+         "any_type": false
+        },
+        "var_name": "km_",
+        "value": {
+         "type": "Atan2",
+         "y": {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Minus",
+              "a": {
+               "type": "Div",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "pL"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "paL"
+               }
+              },
+              "b": {
+               "type": "Div",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "pM"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "paM"
+               }
+              }
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "km_"
+              },
+              "key": "proto_by"
+             }
+            ]
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Minus",
+              "a": {
+               "type": "Div",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "pS"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "paS"
+               }
+              },
+              "b": {
+               "type": "Times",
+               "items": [
+                {
+                 "type": "Lit",
+                 "value": 0.5
+                },
+                {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Div",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "CP"
+                    },
+                    "key": "pL"
+                   },
+                   "b": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "CP"
+                    },
+                    "key": "paL"
+                   }
+                  },
+                  {
+                   "type": "Div",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "CP"
+                    },
+                    "key": "pM"
+                   },
+                   "b": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "CP"
+                    },
+                    "key": "paM"
+                   }
+                  }
+                 ]
+                }
+               ]
+              }
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "km_"
+              },
+              "key": "proto_rg"
+             }
+            ]
+           }
+          }
+         },
+         "x": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Minus",
+              "a": {
+               "type": "Div",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "pL"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "paL"
+               }
+              },
+              "b": {
+               "type": "Div",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "pM"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "paM"
+               }
+              }
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "km_"
+              },
+              "key": "proto_rg"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Minus",
+              "a": {
+               "type": "Div",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "pS"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "paS"
+               }
+              },
+              "b": {
+               "type": "Times",
+               "items": [
+                {
+                 "type": "Lit",
+                 "value": 0.5
+                },
+                {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Div",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "CP"
+                    },
+                    "key": "pL"
+                   },
+                   "b": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "CP"
+                    },
+                    "key": "paL"
+                   }
+                  },
+                  {
+                   "type": "Div",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "CP"
+                    },
+                    "key": "pM"
+                   },
+                   "b": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "CP"
+                    },
+                    "key": "paM"
+                   }
+                  }
+                 ]
+                }
+               ]
+              }
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "km_"
+              },
+              "key": "proto_by"
+             }
+            ]
+           }
+          ]
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "CP",
+     "categorised_as",
+     "K"
+    ],
+    [
+     "set_attr",
+     "CP",
+     "concept",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "K"
+       },
+       "key": "name"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "CP",
+     "concept_status",
+     "categorised"
+    ],
+    [
+     "set_attr",
+     "CP",
+     "concept_rg",
+     {
+      "__term__": {
+       "type": "Minus",
+       "a": {
+        "type": "Div",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "CP"
+         },
+         "key": "pL"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "CP"
+         },
+         "key": "paL"
+        }
+       },
+       "b": {
+        "type": "Div",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "CP"
+         },
+         "key": "pM"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "CP"
+         },
+         "key": "paM"
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "CP",
+     "concept_by",
+     {
+      "__term__": {
+       "type": "Minus",
+       "a": {
+        "type": "Div",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "CP"
+         },
+         "key": "pS"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "CP"
+         },
+         "key": "paS"
+        }
+       },
+       "b": {
+        "type": "Times",
+        "items": [
+         {
+          "type": "Lit",
+          "value": 0.5
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Div",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "CP"
+             },
+             "key": "pL"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "CP"
+             },
+             "key": "paL"
+            }
+           },
+           {
+            "type": "Div",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "CP"
+             },
+             "key": "pM"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "CP"
+             },
+             "key": "paM"
+            }
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "CP",
+     "concept_angle_deg",
+     {
+      "__term__": {
+       "type": "Times",
+       "items": [
+        {
+         "type": "Atan2",
+         "y": {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Minus",
+              "a": {
+               "type": "Div",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "pL"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "paL"
+               }
+              },
+              "b": {
+               "type": "Div",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "pM"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "paM"
+               }
+              }
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "K"
+              },
+              "key": "proto_by"
+             }
+            ]
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Minus",
+              "a": {
+               "type": "Div",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "pS"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "paS"
+               }
+              },
+              "b": {
+               "type": "Times",
+               "items": [
+                {
+                 "type": "Lit",
+                 "value": 0.5
+                },
+                {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Div",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "CP"
+                    },
+                    "key": "pL"
+                   },
+                   "b": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "CP"
+                    },
+                    "key": "paL"
+                   }
+                  },
+                  {
+                   "type": "Div",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "CP"
+                    },
+                    "key": "pM"
+                   },
+                   "b": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "CP"
+                    },
+                    "key": "paM"
+                   }
+                  }
+                 ]
+                }
+               ]
+              }
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "K"
+              },
+              "key": "proto_rg"
+             }
+            ]
+           }
+          }
+         },
+         "x": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Minus",
+              "a": {
+               "type": "Div",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "pL"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "paL"
+               }
+              },
+              "b": {
+               "type": "Div",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "pM"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "paM"
+               }
+              }
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "K"
+              },
+              "key": "proto_rg"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Minus",
+              "a": {
+               "type": "Div",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "pS"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "paS"
+               }
+              },
+              "b": {
+               "type": "Times",
+               "items": [
+                {
+                 "type": "Lit",
+                 "value": 0.5
+                },
+                {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Div",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "CP"
+                    },
+                    "key": "pL"
+                   },
+                   "b": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "CP"
+                    },
+                    "key": "paL"
+                   }
+                  },
+                  {
+                   "type": "Div",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "CP"
+                    },
+                    "key": "pM"
+                   },
+                   "b": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "CP"
+                    },
+                    "key": "paM"
+                   }
+                  }
+                 ]
+                }
+               ]
+              }
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "K"
+              },
+              "key": "proto_by"
+             }
+            ]
+           }
+          ]
+         }
+        },
+        {
+         "type": "Lit",
+         "value": 57.29577951308232
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "CP",
+     "concept_margin_deg",
+     {
+      "__term__": {
+       "type": "Times",
+       "items": [
+        {
+         "type": "Minus",
+         "a": {
+          "type": "MinOver",
+          "source": {
+           "type": "Filter",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "cpp"
+            },
+            "edge_type": "has_colour_concept",
+            "any_type": false
+           },
+           "var_name": "ko_",
+           "predicate": {
+            "type": "Not",
+            "arg": {
+             "type": "Eq",
+             "a": {
+              "type": "Var",
+              "name": "ko_"
+             },
+             "b": {
+              "type": "Argmin",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Var",
+                "name": "cpp"
+               },
+               "edge_type": "has_colour_concept",
+               "any_type": false
+              },
+              "var_name": "kb_",
+              "value": {
+               "type": "Atan2",
+               "y": {
+                "type": "Abs",
+                "arg": {
+                 "type": "Minus",
+                 "a": {
+                  "type": "Times",
+                  "items": [
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Div",
+                     "a": {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "CP"
+                      },
+                      "key": "pL"
+                     },
+                     "b": {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "CP"
+                      },
+                      "key": "paL"
+                     }
+                    },
+                    "b": {
+                     "type": "Div",
+                     "a": {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "CP"
+                      },
+                      "key": "pM"
+                     },
+                     "b": {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "CP"
+                      },
+                      "key": "paM"
+                     }
+                    }
+                   },
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "kb_"
+                    },
+                    "key": "proto_by"
+                   }
+                  ]
+                 },
+                 "b": {
+                  "type": "Times",
+                  "items": [
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Div",
+                     "a": {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "CP"
+                      },
+                      "key": "pS"
+                     },
+                     "b": {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "CP"
+                      },
+                      "key": "paS"
+                     }
+                    },
+                    "b": {
+                     "type": "Times",
+                     "items": [
+                      {
+                       "type": "Lit",
+                       "value": 0.5
+                      },
+                      {
+                       "type": "Plus",
+                       "items": [
+                        {
+                         "type": "Div",
+                         "a": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "CP"
+                          },
+                          "key": "pL"
+                         },
+                         "b": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "CP"
+                          },
+                          "key": "paL"
+                         }
+                        },
+                        {
+                         "type": "Div",
+                         "a": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "CP"
+                          },
+                          "key": "pM"
+                         },
+                         "b": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "CP"
+                          },
+                          "key": "paM"
+                         }
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   },
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "kb_"
+                    },
+                    "key": "proto_rg"
+                   }
+                  ]
+                 }
+                }
+               },
+               "x": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Times",
+                  "items": [
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Div",
+                     "a": {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "CP"
+                      },
+                      "key": "pL"
+                     },
+                     "b": {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "CP"
+                      },
+                      "key": "paL"
+                     }
+                    },
+                    "b": {
+                     "type": "Div",
+                     "a": {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "CP"
+                      },
+                      "key": "pM"
+                     },
+                     "b": {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "CP"
+                      },
+                      "key": "paM"
+                     }
+                    }
+                   },
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "kb_"
+                    },
+                    "key": "proto_rg"
+                   }
+                  ]
+                 },
+                 {
+                  "type": "Times",
+                  "items": [
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Div",
+                     "a": {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "CP"
+                      },
+                      "key": "pS"
+                     },
+                     "b": {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "CP"
+                      },
+                      "key": "paS"
+                     }
+                    },
+                    "b": {
+                     "type": "Times",
+                     "items": [
+                      {
+                       "type": "Lit",
+                       "value": 0.5
+                      },
+                      {
+                       "type": "Plus",
+                       "items": [
+                        {
+                         "type": "Div",
+                         "a": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "CP"
+                          },
+                          "key": "pL"
+                         },
+                         "b": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "CP"
+                          },
+                          "key": "paL"
+                         }
+                        },
+                        {
+                         "type": "Div",
+                         "a": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "CP"
+                          },
+                          "key": "pM"
+                         },
+                         "b": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "CP"
+                          },
+                          "key": "paM"
+                         }
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   },
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "kb_"
+                    },
+                    "key": "proto_by"
+                   }
+                  ]
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          "var_name": "ko2_",
+          "value": {
+           "type": "Atan2",
+           "y": {
+            "type": "Abs",
+            "arg": {
+             "type": "Minus",
+             "a": {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Minus",
+                "a": {
+                 "type": "Div",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "CP"
+                  },
+                  "key": "pL"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "CP"
+                  },
+                  "key": "paL"
+                 }
+                },
+                "b": {
+                 "type": "Div",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "CP"
+                  },
+                  "key": "pM"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "CP"
+                  },
+                  "key": "paM"
+                 }
+                }
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "ko2_"
+                },
+                "key": "proto_by"
+               }
+              ]
+             },
+             "b": {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Minus",
+                "a": {
+                 "type": "Div",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "CP"
+                  },
+                  "key": "pS"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "CP"
+                  },
+                  "key": "paS"
+                 }
+                },
+                "b": {
+                 "type": "Times",
+                 "items": [
+                  {
+                   "type": "Lit",
+                   "value": 0.5
+                  },
+                  {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Div",
+                     "a": {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "CP"
+                      },
+                      "key": "pL"
+                     },
+                     "b": {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "CP"
+                      },
+                      "key": "paL"
+                     }
+                    },
+                    {
+                     "type": "Div",
+                     "a": {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "CP"
+                      },
+                      "key": "pM"
+                     },
+                     "b": {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "CP"
+                      },
+                      "key": "paM"
+                     }
+                    }
+                   ]
+                  }
+                 ]
+                }
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "ko2_"
+                },
+                "key": "proto_rg"
+               }
+              ]
+             }
+            }
+           },
+           "x": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Minus",
+                "a": {
+                 "type": "Div",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "CP"
+                  },
+                  "key": "pL"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "CP"
+                  },
+                  "key": "paL"
+                 }
+                },
+                "b": {
+                 "type": "Div",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "CP"
+                  },
+                  "key": "pM"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "CP"
+                  },
+                  "key": "paM"
+                 }
+                }
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "ko2_"
+                },
+                "key": "proto_rg"
+               }
+              ]
+             },
+             {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Minus",
+                "a": {
+                 "type": "Div",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "CP"
+                  },
+                  "key": "pS"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "CP"
+                  },
+                  "key": "paS"
+                 }
+                },
+                "b": {
+                 "type": "Times",
+                 "items": [
+                  {
+                   "type": "Lit",
+                   "value": 0.5
+                  },
+                  {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Div",
+                     "a": {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "CP"
+                      },
+                      "key": "pL"
+                     },
+                     "b": {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "CP"
+                      },
+                      "key": "paL"
+                     }
+                    },
+                    {
+                     "type": "Div",
+                     "a": {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "CP"
+                      },
+                      "key": "pM"
+                     },
+                     "b": {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "CP"
+                      },
+                      "key": "paM"
+                     }
+                    }
+                   ]
+                  }
+                 ]
+                }
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "ko2_"
+                },
+                "key": "proto_by"
+               }
+              ]
+             }
+            ]
+           }
+          }
+         },
+         "b": {
+          "type": "MinOver",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "cpp"
+           },
+           "edge_type": "has_colour_concept",
+           "any_type": false
+          },
+          "var_name": "km_",
+          "value": {
+           "type": "Atan2",
+           "y": {
+            "type": "Abs",
+            "arg": {
+             "type": "Minus",
+             "a": {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Minus",
+                "a": {
+                 "type": "Div",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "CP"
+                  },
+                  "key": "pL"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "CP"
+                  },
+                  "key": "paL"
+                 }
+                },
+                "b": {
+                 "type": "Div",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "CP"
+                  },
+                  "key": "pM"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "CP"
+                  },
+                  "key": "paM"
+                 }
+                }
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "km_"
+                },
+                "key": "proto_by"
+               }
+              ]
+             },
+             "b": {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Minus",
+                "a": {
+                 "type": "Div",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "CP"
+                  },
+                  "key": "pS"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "CP"
+                  },
+                  "key": "paS"
+                 }
+                },
+                "b": {
+                 "type": "Times",
+                 "items": [
+                  {
+                   "type": "Lit",
+                   "value": 0.5
+                  },
+                  {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Div",
+                     "a": {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "CP"
+                      },
+                      "key": "pL"
+                     },
+                     "b": {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "CP"
+                      },
+                      "key": "paL"
+                     }
+                    },
+                    {
+                     "type": "Div",
+                     "a": {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "CP"
+                      },
+                      "key": "pM"
+                     },
+                     "b": {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "CP"
+                      },
+                      "key": "paM"
+                     }
+                    }
+                   ]
+                  }
+                 ]
+                }
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "km_"
+                },
+                "key": "proto_rg"
+               }
+              ]
+             }
+            }
+           },
+           "x": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Minus",
+                "a": {
+                 "type": "Div",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "CP"
+                  },
+                  "key": "pL"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "CP"
+                  },
+                  "key": "paL"
+                 }
+                },
+                "b": {
+                 "type": "Div",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "CP"
+                  },
+                  "key": "pM"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "CP"
+                  },
+                  "key": "paM"
+                 }
+                }
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "km_"
+                },
+                "key": "proto_rg"
+               }
+              ]
+             },
+             {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Minus",
+                "a": {
+                 "type": "Div",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "CP"
+                  },
+                  "key": "pS"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "CP"
+                  },
+                  "key": "paS"
+                 }
+                },
+                "b": {
+                 "type": "Times",
+                 "items": [
+                  {
+                   "type": "Lit",
+                   "value": 0.5
+                  },
+                  {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Div",
+                     "a": {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "CP"
+                      },
+                      "key": "pL"
+                     },
+                     "b": {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "CP"
+                      },
+                      "key": "paL"
+                     }
+                    },
+                    {
+                     "type": "Div",
+                     "a": {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "CP"
+                      },
+                      "key": "pM"
+                     },
+                     "b": {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "CP"
+                      },
+                      "key": "paM"
+                     }
+                    }
+                   ]
+                  }
+                 ]
+                }
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "km_"
+                },
+                "key": "proto_by"
+               }
+              ]
+             }
+            ]
+           }
+          }
+         }
+        },
+        {
+         "type": "Lit",
+         "value": 57.29577951308232
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "cc_achromatic",
+   "comment": "REFUSAL: a descriptor exactly at (0, 0) (r_L = r_M = r_S, e.g. the anchor surface) has no hue direction; no link.",
+   "match": [
+    [
+     "P",
+     "has_colour_property",
+     "CP"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "ColourConceptParams"
+       },
+       "var_name": "ccp_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "ccp_"
+        },
+        "key": "enabled"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "CP"
+       },
+       "key": "concept_status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Gte",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "CP"
+         },
+         "key": "paL"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Gte",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "CP"
+         },
+         "key": "paM"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Gte",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "CP"
+         },
+         "key": "paS"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       }
+      ]
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Minus",
+         "a": {
+          "type": "Div",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "CP"
+           },
+           "key": "pL"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "CP"
+           },
+           "key": "paL"
+          }
+         },
+         "b": {
+          "type": "Div",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "CP"
+           },
+           "key": "pM"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "CP"
+           },
+           "key": "paM"
+          }
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Minus",
+         "a": {
+          "type": "Div",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "CP"
+           },
+           "key": "pS"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "CP"
+           },
+           "key": "paS"
+          }
+         },
+         "b": {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Lit",
+            "value": 0.5
+           },
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Div",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "CP"
+               },
+               "key": "pL"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "CP"
+               },
+               "key": "paL"
+              }
+             },
+             {
+              "type": "Div",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "CP"
+               },
+               "key": "pM"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "CP"
+               },
+               "key": "paM"
+              }
+             }
+            ]
+           }
+          ]
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "CP",
+     "concept_status",
+     "achromatic"
+    ],
+    [
+     "set_attr",
+     "CP",
+     "concept_rg",
+     {
+      "__term__": {
+       "type": "Minus",
+       "a": {
+        "type": "Div",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "CP"
+         },
+         "key": "pL"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "CP"
+         },
+         "key": "paL"
+        }
+       },
+       "b": {
+        "type": "Div",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "CP"
+         },
+         "key": "pM"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "CP"
+         },
+         "key": "paM"
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "CP",
+     "concept_by",
+     {
+      "__term__": {
+       "type": "Minus",
+       "a": {
+        "type": "Div",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "CP"
+         },
+         "key": "pS"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "CP"
+         },
+         "key": "paS"
+        }
+       },
+       "b": {
+        "type": "Times",
+        "items": [
+         {
+          "type": "Lit",
+          "value": 0.5
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Div",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "CP"
+             },
+             "key": "pL"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "CP"
+             },
+             "key": "paL"
+            }
+           },
+           {
+            "type": "Div",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "CP"
+             },
+             "key": "pM"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "CP"
+             },
+             "key": "paM"
+            }
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "cc_tied",
+   "comment": "REFUSAL: two concepts exactly equidistant (margin 0); no link, no tie-break guess.",
+   "match": [
+    [
+     "P",
+     "has_colour_property",
+     "CP"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "ColourConceptParams"
+       },
+       "var_name": "ccp_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "ccp_"
+        },
+        "key": "enabled"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "CP"
+       },
+       "key": "concept_status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Gte",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "CP"
+         },
+         "key": "paL"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Gte",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "CP"
+         },
+         "key": "paM"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Gte",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "CP"
+         },
+         "key": "paS"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       }
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "And",
+       "items": [
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Minus",
+          "a": {
+           "type": "Div",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "CP"
+            },
+            "key": "pL"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "CP"
+            },
+            "key": "paL"
+           }
+          },
+          "b": {
+           "type": "Div",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "CP"
+            },
+            "key": "pM"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "CP"
+            },
+            "key": "paM"
+           }
+          }
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Minus",
+          "a": {
+           "type": "Div",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "CP"
+            },
+            "key": "pS"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "CP"
+            },
+            "key": "paS"
+           }
+          },
+          "b": {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Lit",
+             "value": 0.5
+            },
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Div",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "pL"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "paL"
+               }
+              },
+              {
+               "type": "Div",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "pM"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "CP"
+                },
+                "key": "paM"
+               }
+              }
+             ]
+            }
+           ]
+          }
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        }
+       ]
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Gt",
+       "a": {
+        "type": "Minus",
+        "a": {
+         "type": "MinOver",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "cpp"
+           },
+           "edge_type": "has_colour_concept",
+           "any_type": false
+          },
+          "var_name": "ko_",
+          "predicate": {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Var",
+             "name": "ko_"
+            },
+            "b": {
+             "type": "Argmin",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "cpp"
+              },
+              "edge_type": "has_colour_concept",
+              "any_type": false
+             },
+             "var_name": "kb_",
+             "value": {
+              "type": "Atan2",
+              "y": {
+               "type": "Abs",
+               "arg": {
+                "type": "Minus",
+                "a": {
+                 "type": "Times",
+                 "items": [
+                  {
+                   "type": "Minus",
+                   "a": {
+                    "type": "Div",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "CP"
+                     },
+                     "key": "pL"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "CP"
+                     },
+                     "key": "paL"
+                    }
+                   },
+                   "b": {
+                    "type": "Div",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "CP"
+                     },
+                     "key": "pM"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "CP"
+                     },
+                     "key": "paM"
+                    }
+                   }
+                  },
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "kb_"
+                   },
+                   "key": "proto_by"
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Times",
+                 "items": [
+                  {
+                   "type": "Minus",
+                   "a": {
+                    "type": "Div",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "CP"
+                     },
+                     "key": "pS"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "CP"
+                     },
+                     "key": "paS"
+                    }
+                   },
+                   "b": {
+                    "type": "Times",
+                    "items": [
+                     {
+                      "type": "Lit",
+                      "value": 0.5
+                     },
+                     {
+                      "type": "Plus",
+                      "items": [
+                       {
+                        "type": "Div",
+                        "a": {
+                         "type": "Attr",
+                         "node": {
+                          "type": "Var",
+                          "name": "CP"
+                         },
+                         "key": "pL"
+                        },
+                        "b": {
+                         "type": "Attr",
+                         "node": {
+                          "type": "Var",
+                          "name": "CP"
+                         },
+                         "key": "paL"
+                        }
+                       },
+                       {
+                        "type": "Div",
+                        "a": {
+                         "type": "Attr",
+                         "node": {
+                          "type": "Var",
+                          "name": "CP"
+                         },
+                         "key": "pM"
+                        },
+                        "b": {
+                         "type": "Attr",
+                         "node": {
+                          "type": "Var",
+                          "name": "CP"
+                         },
+                         "key": "paM"
+                        }
+                       }
+                      ]
+                     }
+                    ]
+                   }
+                  },
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "kb_"
+                   },
+                   "key": "proto_rg"
+                  }
+                 ]
+                }
+               }
+              },
+              "x": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Times",
+                 "items": [
+                  {
+                   "type": "Minus",
+                   "a": {
+                    "type": "Div",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "CP"
+                     },
+                     "key": "pL"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "CP"
+                     },
+                     "key": "paL"
+                    }
+                   },
+                   "b": {
+                    "type": "Div",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "CP"
+                     },
+                     "key": "pM"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "CP"
+                     },
+                     "key": "paM"
+                    }
+                   }
+                  },
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "kb_"
+                   },
+                   "key": "proto_rg"
+                  }
+                 ]
+                },
+                {
+                 "type": "Times",
+                 "items": [
+                  {
+                   "type": "Minus",
+                   "a": {
+                    "type": "Div",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "CP"
+                     },
+                     "key": "pS"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "CP"
+                     },
+                     "key": "paS"
+                    }
+                   },
+                   "b": {
+                    "type": "Times",
+                    "items": [
+                     {
+                      "type": "Lit",
+                      "value": 0.5
+                     },
+                     {
+                      "type": "Plus",
+                      "items": [
+                       {
+                        "type": "Div",
+                        "a": {
+                         "type": "Attr",
+                         "node": {
+                          "type": "Var",
+                          "name": "CP"
+                         },
+                         "key": "pL"
+                        },
+                        "b": {
+                         "type": "Attr",
+                         "node": {
+                          "type": "Var",
+                          "name": "CP"
+                         },
+                         "key": "paL"
+                        }
+                       },
+                       {
+                        "type": "Div",
+                        "a": {
+                         "type": "Attr",
+                         "node": {
+                          "type": "Var",
+                          "name": "CP"
+                         },
+                         "key": "pM"
+                        },
+                        "b": {
+                         "type": "Attr",
+                         "node": {
+                          "type": "Var",
+                          "name": "CP"
+                         },
+                         "key": "paM"
+                        }
+                       }
+                      ]
+                     }
+                    ]
+                   }
+                  },
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "kb_"
+                   },
+                   "key": "proto_by"
+                  }
+                 ]
+                }
+               ]
+              }
+             }
+            }
+           }
+          }
+         },
+         "var_name": "ko2_",
+         "value": {
+          "type": "Atan2",
+          "y": {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Minus",
+               "a": {
+                "type": "Div",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "CP"
+                 },
+                 "key": "pL"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "CP"
+                 },
+                 "key": "paL"
+                }
+               },
+               "b": {
+                "type": "Div",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "CP"
+                 },
+                 "key": "pM"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "CP"
+                 },
+                 "key": "paM"
+                }
+               }
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "ko2_"
+               },
+               "key": "proto_by"
+              }
+             ]
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Minus",
+               "a": {
+                "type": "Div",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "CP"
+                 },
+                 "key": "pS"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "CP"
+                 },
+                 "key": "paS"
+                }
+               },
+               "b": {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Lit",
+                  "value": 0.5
+                 },
+                 {
+                  "type": "Plus",
+                  "items": [
+                   {
+                    "type": "Div",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "CP"
+                     },
+                     "key": "pL"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "CP"
+                     },
+                     "key": "paL"
+                    }
+                   },
+                   {
+                    "type": "Div",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "CP"
+                     },
+                     "key": "pM"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "CP"
+                     },
+                     "key": "paM"
+                    }
+                   }
+                  ]
+                 }
+                ]
+               }
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "ko2_"
+               },
+               "key": "proto_rg"
+              }
+             ]
+            }
+           }
+          },
+          "x": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Minus",
+               "a": {
+                "type": "Div",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "CP"
+                 },
+                 "key": "pL"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "CP"
+                 },
+                 "key": "paL"
+                }
+               },
+               "b": {
+                "type": "Div",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "CP"
+                 },
+                 "key": "pM"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "CP"
+                 },
+                 "key": "paM"
+                }
+               }
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "ko2_"
+               },
+               "key": "proto_rg"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Minus",
+               "a": {
+                "type": "Div",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "CP"
+                 },
+                 "key": "pS"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "CP"
+                 },
+                 "key": "paS"
+                }
+               },
+               "b": {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Lit",
+                  "value": 0.5
+                 },
+                 {
+                  "type": "Plus",
+                  "items": [
+                   {
+                    "type": "Div",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "CP"
+                     },
+                     "key": "pL"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "CP"
+                     },
+                     "key": "paL"
+                    }
+                   },
+                   {
+                    "type": "Div",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "CP"
+                     },
+                     "key": "pM"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "CP"
+                     },
+                     "key": "paM"
+                    }
+                   }
+                  ]
+                 }
+                ]
+               }
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "ko2_"
+               },
+               "key": "proto_by"
+              }
+             ]
+            }
+           ]
+          }
+         }
+        },
+        "b": {
+         "type": "MinOver",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "cpp"
+          },
+          "edge_type": "has_colour_concept",
+          "any_type": false
+         },
+         "var_name": "km_",
+         "value": {
+          "type": "Atan2",
+          "y": {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Minus",
+               "a": {
+                "type": "Div",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "CP"
+                 },
+                 "key": "pL"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "CP"
+                 },
+                 "key": "paL"
+                }
+               },
+               "b": {
+                "type": "Div",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "CP"
+                 },
+                 "key": "pM"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "CP"
+                 },
+                 "key": "paM"
+                }
+               }
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "km_"
+               },
+               "key": "proto_by"
+              }
+             ]
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Minus",
+               "a": {
+                "type": "Div",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "CP"
+                 },
+                 "key": "pS"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "CP"
+                 },
+                 "key": "paS"
+                }
+               },
+               "b": {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Lit",
+                  "value": 0.5
+                 },
+                 {
+                  "type": "Plus",
+                  "items": [
+                   {
+                    "type": "Div",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "CP"
+                     },
+                     "key": "pL"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "CP"
+                     },
+                     "key": "paL"
+                    }
+                   },
+                   {
+                    "type": "Div",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "CP"
+                     },
+                     "key": "pM"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "CP"
+                     },
+                     "key": "paM"
+                    }
+                   }
+                  ]
+                 }
+                ]
+               }
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "km_"
+               },
+               "key": "proto_rg"
+              }
+             ]
+            }
+           }
+          },
+          "x": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Minus",
+               "a": {
+                "type": "Div",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "CP"
+                 },
+                 "key": "pL"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "CP"
+                 },
+                 "key": "paL"
+                }
+               },
+               "b": {
+                "type": "Div",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "CP"
+                 },
+                 "key": "pM"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "CP"
+                 },
+                 "key": "paM"
+                }
+               }
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "km_"
+               },
+               "key": "proto_rg"
+              }
+             ]
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Minus",
+               "a": {
+                "type": "Div",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "CP"
+                 },
+                 "key": "pS"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "CP"
+                 },
+                 "key": "paS"
+                }
+               },
+               "b": {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Lit",
+                  "value": 0.5
+                 },
+                 {
+                  "type": "Plus",
+                  "items": [
+                   {
+                    "type": "Div",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "CP"
+                     },
+                     "key": "pL"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "CP"
+                     },
+                     "key": "paL"
+                    }
+                   },
+                   {
+                    "type": "Div",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "CP"
+                     },
+                     "key": "pM"
+                    },
+                    "b": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "CP"
+                     },
+                     "key": "paM"
+                    }
+                   }
+                  ]
+                 }
+                ]
+               }
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "km_"
+               },
+               "key": "proto_by"
+              }
+             ]
+            }
+           ]
+          }
+         }
+        }
+       },
+       "b": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "CP",
+     "concept_status",
+     "tied"
+    ],
+    [
+     "set_attr",
+     "CP",
+     "concept_rg",
+     {
+      "__term__": {
+       "type": "Minus",
+       "a": {
+        "type": "Div",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "CP"
+         },
+         "key": "pL"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "CP"
+         },
+         "key": "paL"
+        }
+       },
+       "b": {
+        "type": "Div",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "CP"
+         },
+         "key": "pM"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "CP"
+         },
+         "key": "paM"
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "CP",
+     "concept_by",
+     {
+      "__term__": {
+       "type": "Minus",
+       "a": {
+        "type": "Div",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "CP"
+         },
+         "key": "pS"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "CP"
+         },
+         "key": "paS"
+        }
+       },
+       "b": {
+        "type": "Times",
+        "items": [
+         {
+          "type": "Lit",
+          "value": 0.5
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Div",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "CP"
+             },
+             "key": "pL"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "CP"
+             },
+             "key": "paL"
+            }
+           },
+           {
+            "type": "Div",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "CP"
+             },
+             "key": "pM"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "CP"
+             },
+             "key": "paM"
+            }
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "cc_no_anchor",
+   "comment": "REFUSAL: some anchor channel pa < 1 -- the anchor-relative descriptor is undefined.",
+   "match": [
+    [
+     "P",
+     "has_colour_property",
+     "CP"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "ColourConceptParams"
+       },
+       "var_name": "ccp_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "ccp_"
+        },
+        "key": "enabled"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "CP"
+       },
+       "key": "concept_status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "And",
+       "items": [
+        {
+         "type": "Gte",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "CP"
+          },
+          "key": "paL"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        },
+        {
+         "type": "Gte",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "CP"
+          },
+          "key": "paM"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        },
+        {
+         "type": "Gte",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "CP"
+          },
+          "key": "paS"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "CP",
+     "concept_status",
+     "no_anchor"
+    ]
+   ]
+  }
+ ]
+}

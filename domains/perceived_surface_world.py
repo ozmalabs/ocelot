@@ -15,6 +15,22 @@ MECHANICAL ONLY (CLAUDE.md "What Python is allowed to do"):
     and (4.5) ColourProperty / FrameStats / PropertyCheck / LookingEpisode /
     SurfaceLook / FieldLook nodes plus the link edges.
 
+Stage-4 fixes (each behind its own NEW seed flag, default 0.0; every new
+kwarg defaults to the old behaviour, so a default world is byte-identical to
+commit f25aae47):
+  * `reacquire=True`        blind-writes SurfacePersistenceParams.reacquire;
+  * `motion_segments=True`  blind-writes SurfaceSegmentationParams.motion_segments
+                            and settles the eye's 2-D common-fate carve every
+                            exposure (events of this and the previous exposure:
+                            two time points, the least that carries a velocity);
+  * `recall=False|True`     loads seed `colour_recall` (flag off|on); `recall()`
+                            writes a RecallCue{sid, epoch_requested} -- external
+                            input, like a question;
+  * `concepts=False|True`   loads seed `colour_concept_link` (flag off|on);
+  * `manifests={id: dict}`  replaces a seed manifest (the byte-identity proof
+                            loads f25aae47's generator output this way).
+None of these reads graph state to decide anything.
+
 Every segmentation / identity decision is a graph rule in the seeds; nothing
 here reads graph state to decide anything.
 """
@@ -26,8 +42,8 @@ from domains.engine_provenance import engine_preamble
 
 engine_preamble()
 
-from domains.photon_eye import GraphEye  # noqa: E402
-from substrate.seed_loader import manifest_for  # noqa: E402
+from domains.photon_eye import GraphEye, _add_edge  # noqa: E402
+from substrate.seed_loader import manifest_for, normalize_declarative  # noqa: E402
 
 SEGMENTATION_SEED = "surface_segmentation"
 PERSISTENCE_SEED = "surface_persistence"
@@ -35,6 +51,8 @@ STAGE45_SEEDS = ("colour_property", "looking_episode", "look_property_link")
 STAGE45_TYPES = ("ColourProperty", "FrameStats", "PropertyCheck",
                  "LookingEpisode", "SurfaceLook", "FieldLook")
 LINK_EDGES = ("presents_property", "presents_unrecognised")
+RECALL_SEED = "colour_recall"
+CONCEPT_SEED = "colour_concept_link"
 
 
 def eye_context(extra: dict | None = None) -> dict:
@@ -52,7 +70,11 @@ class PerceivedSurfaceWorld:
                  persistence: bool = True, load_seeds: bool = True,
                  context: dict | None = None, stage45: bool = False,
                  colour: bool = True, pooled: bool = True,
-                 looking: bool = True):
+                 looking: bool = True, reacquire: bool = False,
+                 motion_segments: bool = False, recall: bool | None = None,
+                 concepts: bool | None = None, manifests: dict | None = None):
+        self._manifests = dict(manifests or {})
+        self.motion_segments = bool(motion_segments)
         self.eye = GraphEye(n_az=n_az, n_el=n_el,
                             context=eye_context(context)).build()
         self.n_az, self.n_el = n_az, n_el
@@ -63,23 +85,44 @@ class PerceivedSurfaceWorld:
         if load_seeds:
             agent = self.eye._agent
             self.load_summaries.append(
-                self.inner.load_seed_manifest(manifest_for(SEGMENTATION_SEED), agent))
+                self.inner.load_seed_manifest(self._manifest(SEGMENTATION_SEED), agent))
             self.load_summaries.append(
-                self.inner.load_seed_manifest(manifest_for(PERSISTENCE_SEED), agent))
+                self.inner.load_seed_manifest(self._manifest(PERSISTENCE_SEED), agent))
             # blind writes of the declared flags (no read-then-decide)
             for nid in self.s.nodes("SurfaceSegmentationParams"):
                 self.s.set_attr(nid, "enabled", 1.0 if segmentation else 0.0)
             for nid in self.s.nodes("SurfacePersistenceParams"):
                 self.s.set_attr(nid, "enabled", 1.0 if persistence else 0.0)
+            # new flags: written only when requested, so a default world never
+            # gains an attr (byte-identity with seeds that lack the flag)
+            if reacquire:
+                for nid in self.s.nodes("SurfacePersistenceParams"):
+                    self.s.set_attr(nid, "reacquire", 1.0)
+            if motion_segments:
+                for nid in self.s.nodes("SurfaceSegmentationParams"):
+                    self.s.set_attr(nid, "motion_segments", 1.0)
         if load_seeds and stage45:
             for seed in STAGE45_SEEDS:
                 self.load_summaries.append(
-                    self.inner.load_seed_manifest(manifest_for(seed), agent))
+                    self.inner.load_seed_manifest(self._manifest(seed), agent))
             for nid in self.s.nodes("ColourPropertyParams"):
                 self.s.set_attr(nid, "enabled", 1.0 if colour else 0.0)
                 self.s.set_attr(nid, "pooled", 1.0 if pooled else 0.0)
             for nid in self.s.nodes("LookingEpisodeParams"):
                 self.s.set_attr(nid, "enabled", 1.0 if looking else 0.0)
+            for seed, on, ptype in ((RECALL_SEED, recall, "ColourRecallParams"),
+                                    (CONCEPT_SEED, concepts, "ColourConceptParams")):
+                if on is None:
+                    continue
+                self.load_summaries.append(
+                    self.inner.load_seed_manifest(self._manifest(seed), agent))
+                for nid in self.s.nodes(ptype):
+                    self.s.set_attr(nid, "enabled", 1.0 if on else 0.0)
+
+    def _manifest(self, seed_id: str) -> dict:
+        if seed_id in self._manifests:
+            return normalize_declarative(self._manifests[seed_id])
+        return manifest_for(seed_id)
 
     # ------------------------------------------------------------- ingest
     def expose(self, packets) -> float:
@@ -89,6 +132,13 @@ class PerceivedSurfaceWorld:
         self.eye.submit_photons_2d(packets)
         self.inner.run_cognitive_tasks(1)
         self.inner.run_rules()
+        if self.motion_segments:
+            # settle the 2-D common-fate carve over this and the previous
+            # exposure's onset events (mechanical: packs the event stream; the
+            # grouping is the Rust kernel + retinal_mint_carve_2d)
+            self.eye.settle_carve_2d(since_epoch=self.eye._epoch - 1)
+            self.inner.run_cognitive_tasks(1)
+            self.inner.run_rules()
         self.eye.prune_settled_tasks()
         dt = time.perf_counter() - t0
         self.timings.append(dt)
@@ -181,6 +231,50 @@ class PerceivedSurfaceWorld:
 
     def in_edges_of(self, nid, edge_type: str) -> list:
         return list(self.s.in_neighbours(nid, edge_type))
+
+    # ------------------------------------------------- stage-4 fix I/O
+    def recall(self, sid: int):
+        """Write ONE RecallCue{sid, epoch_requested} (external input: a
+        question about a surface) under the eye's agent and drive run_rules.
+        Blind write; returns the cue node id."""
+        cue = self.s.add_node("RecallCue", {"sid": int(sid),
+                                            "epoch_requested": int(self.eye._epoch)})
+        _add_edge(self.inner, self.eye._agent, "has_recall_cue", cue)
+        self.inner.run_rules()
+        return cue
+
+    def recollections(self) -> list[dict]:
+        out = []
+        for a in self._typed("Recollection", ("epoch_requested", "sid")):
+            a["recalls"] = [self._attrs(n) for n in self.s.neighbours(a["_nid"], "recalls")]
+            out.append(a)
+        return out
+
+    def concept_links(self) -> list[dict]:
+        """Per ColourProperty: its concept_* attrs and the name(s) of the
+        ColourConcept(s) it is categorised_as."""
+        out = []
+        for a in self.colour_properties():
+            a["categorised_as"] = [self._attrs(n)["name"] for n in
+                                   self.s.neighbours(a["_nid"], "categorised_as")]
+            out.append(a)
+        return out
+
+    def colour_concepts(self) -> list[dict]:
+        return self._typed("ColourConcept", ("name",))
+
+    def reacquired_surfaces(self) -> list[dict]:
+        return [p for p in self.persistent_surfaces()
+                if (p.get("reacquired_count") or 0) > 0]
+
+    def motion_segments_current(self) -> list[dict]:
+        """Current segments that came from the motion route (motion_group >= 0)."""
+        return [s for s in self.segments(current_only=True)
+                if s.get("motion_group") is not None and s["motion_group"] >= 0]
+
+    def polygons(self, epoch: int | None = None) -> list[dict]:
+        return [p for p in self.eye.carve_polygons_2d()
+                if epoch is None or p["epoch"] == epoch]
 
     def stop(self) -> None:
         self.eye.stop()

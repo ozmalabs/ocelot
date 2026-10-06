@@ -38,6 +38,16 @@ PHASES (per epoch e = SegmentationState.final_epoch):
 
 Segments with has_boundary = 0 (ganzfeld) are never offered.
 
+v1.1.0 RE-ACQUISITION (flag SurfacePersistenceParams.reacquire, default 0.0;
+off => byte-identical to v1.0.0). ps_keep_last keeps each cell's last_sid (the
+sid of its last boundary-bearing epoch; boundaryless epochs never write it);
+ps_reacq_key sets the cell's overlap key ov_sid := prev_sid, or last_sid when
+prev_sid is -1; ov() counts ov_sid when it exists (it is only ever written with
+the flag on), so the same 2*ov >= min(count) + refusal rule re-finds a coasting
+surface after a ganzfeld; ps_reacq_mark records the re-acquisition
+(reacquired_count += 1) before ps_apply_continue resets coast. ps_ready and
+ps_apply_continue gain flag-guarded waits (Or(Not(reacquire), ...)).
+
 Flag SurfacePersistenceParams.enabled, OFF by default (sec 9). Manifest
 latency_class hard_realtime. Depends on surface_segmentation.
 """
@@ -60,6 +70,7 @@ def Lt(a, b): return {"type": "Lt", "a": a, "b": b}
 def Gt(a, b): return {"type": "Gt", "a": a, "b": b}
 def Gte(a, b): return {"type": "Gte", "a": a, "b": b}
 def And(*xs): return {"type": "And", "items": list(xs)}
+def Or(*xs): return {"type": "Or", "items": list(xs)}
 def Not(x): return {"type": "Not", "arg": x}
 def Plus(*xs): return {"type": "Plus", "items": list(xs)}
 def Times(*xs): return {"type": "Times", "items": list(xs)}
@@ -98,16 +109,25 @@ ENABLED = Gt(MaxOver(NodesOfType(PARAMS), "pp_", A("pp_", "enabled"), L(0.0)), L
 SEG_ENABLED = Gt(MaxOver(NodesOfType("SurfaceSegmentationParams"), "sp_",
                          A("sp_", "enabled"), L(0.0)), L(0.5))
 GATE = And(ENABLED, SEG_ENABLED)
+# v1.1.0: RE-ACQUISITION across boundaryless exposures, its own flag (sec 9).
+REACQ = Gt(MaxOver(NodesOfType(PARAMS), "pr_", A("pr_", "reacquire"), L(0.0)), L(0.5))
 READY = A(PickUnique(NodesOfType(PSTATE)), "ready_epoch")
 FINAL = A(PickUnique(NodesOfType(SEGSTATE)), "final_epoch")
 CUR_SEGS = Nbrs(PickUnique(NodesOfType(SEGSTATE)), "has_segment")
 ALL_P = NodesOfType(SURF)
 
 
+def overlap_key(q):
+    """The sid a member cell votes for. v1.0.0: prev_sid. With reacquire on,
+    ps_reacq_key writes ov_sid (= prev_sid, or last_sid when prev_sid is -1);
+    ov_sid is never written with the flag off, so this is prev_sid exactly."""
+    return IfThenElse(Eq(A(q, "ov_sid"), L(None)), A(q, "prev_sid"), A(q, "ov_sid"))
+
+
 def ov(S, P, q):
-    """Members of S whose previous-epoch sid is P's sid."""
+    """Members of S whose overlap key (previous-epoch sid) is P's sid."""
     return Count(Filter(InNbrs(S, "in_segment"), q,
-                        Eq(A(q, "prev_sid"), A(P, "sid"))))
+                        Eq(overlap_key(q), A(P, "sid"))))
 
 
 def offered(S):
@@ -173,7 +193,10 @@ RULES = [
         "match": [["pp", "has_persistence_state", "ps"]],
         "where": And(
             GATE, Gt(FINAL, A("ps", "ready_epoch")),
-            Not(Exists(NodesOfType(CELL), "x", Ne(A("x", "ps_epoch"), FINAL)))),
+            Not(Exists(NodesOfType(CELL), "x", Ne(A("x", "ps_epoch"), FINAL))),
+            # v1.1.0 (reacquire only): every cell has its overlap key for e.
+            Or(Not(REACQ),
+               Not(Exists(NodesOfType(CELL), "xk", Ne(A("xk", "key_epoch"), FINAL))))),
         "effects": [seta("ps", "ready_epoch", T(FINAL))],
     },
     {
@@ -212,7 +235,10 @@ RULES = [
         "where": And(GATE, ALL_DECIDED, offered("S"),
                      Eq(A("S", "decision"), L("continue")),
                      Eq(A("S", "applied"), L(None)),
-                     Eq(A("P", "sid"), A("S", "cand_sid"))),
+                     Eq(A("P", "sid"), A("S", "cand_sid")),
+                     # v1.1.0 (reacquire only): ps_reacq_mark has read P.coast
+                     # before this rule resets it.
+                     Or(Not(REACQ), Not(Eq(A("S", "reacq_seen"), L(None))))),
         "effects": [
             ["add_edge", "S", "segment_of", "P"],
             seta("S", "sid", T(A("P", "sid"))),
@@ -290,9 +316,71 @@ RULES = [
     },
 ]
 
+# ------------------------------------------------- v1.1.0: re-acquisition
+# Flag SurfacePersistenceParams.reacquire (default 0.0). Every rule below is
+# gated on it, writes only NEW attrs (last_sid, ov_sid, key_epoch on cells;
+# reacq_seen, reacquired on segments; reacquired_count on surfaces) and so never
+# fires with the flag off. Colour-free: reads sids and coast only.
+REACQ_RULES = [
+    {
+        "name": "ps_keep_last",
+        "comment": "REACQUIRE: a cell that belongs to a surface at a boundary-"
+                   "bearing epoch remembers it in last_sid. A boundaryless epoch "
+                   "(ganzfeld, eyelid, pure adapting field) assigns no cur_sid, so "
+                   "it never overwrites last_sid.",
+        "match": [["retina", "has_column", "c"]],
+        "where": And(GATE, REACQ, Gt(A("c", "cur_sid"), L(-1)),
+                     Ne(A("c", "last_sid"), A("c", "cur_sid"))),
+        "effects": [seta("c", "last_sid", T(A("c", "cur_sid")))],
+    },
+    {
+        "name": "ps_reacq_key",
+        "comment": "REACQUIRE: once per rolled epoch, the cell's overlap key "
+                   "ov_sid := prev_sid, or last_sid when prev_sid is -1 (the "
+                   "previous exposure offered no surface). The overlap rule "
+                   "itself (2*ov >= min(count), unique argmax, rival refusal) is "
+                   "unchanged; only the vote of a cell with no previous sid is "
+                   "carried across the boundaryless gap.",
+        "match": [["retina", "has_column", "c"]],
+        "where": And(GATE, REACQ, Not(Eq(A("c", "ps_epoch"), L(None))),
+                     Ne(A("c", "key_epoch"), A("c", "ps_epoch"))),
+        "effects": [
+            seta("c", "ov_sid", T(IfThenElse(
+                Eq(A("c", "prev_sid"), L(-1)),
+                IfThenElse(Eq(A("c", "last_sid"), L(None)), L(-1), A("c", "last_sid")),
+                A("c", "prev_sid")))),
+            seta("c", "key_epoch", T(A("c", "ps_epoch"))),
+        ],
+    },
+    {
+        "name": "ps_reacq_mark",
+        "comment": "REACQUIRE: before ps_apply_continue resets coast, a continuing "
+                   "segment whose accepted P was COASTING (coast > 0: not matched "
+                   "at the previous epoch, so the match can only have come through "
+                   "last_sid) marks the re-acquisition: S.reacquired = 1 and "
+                   "P.reacquired_count += 1. ps_apply_continue then sets status "
+                   "'tracked' and coast 0 as for any continuation.",
+        "match": [SEG_MATCH, ["sc", "has_surface", "P"]],
+        "where": And(GATE, REACQ, ALL_DECIDED, offered("S"),
+                     Eq(A("S", "decision"), L("continue")),
+                     Eq(A("S", "reacq_seen"), L(None)),
+                     Eq(A("P", "sid"), A("S", "cand_sid"))),
+        "effects": [
+            seta("S", "reacquired", T(IfThenElse(Gt(A("P", "coast"), L(0)),
+                                                 L(1.0), L(0.0)))),
+            seta("P", "reacquired_count", T(Plus(
+                IfThenElse(Eq(A("P", "reacquired_count"), L(None)), L(0),
+                           A("P", "reacquired_count")),
+                IfThenElse(Gt(A("P", "coast"), L(0)), L(1), L(0))))),
+            seta("S", "reacq_seen", 1.0),
+        ],
+    },
+]
+RULES = RULES + REACQ_RULES
+
 MANIFEST = {
     "id": "surface_persistence",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "self_load_only": True,
     "depends_on": ["surface_segmentation"],
     "latency_class": "hard_realtime",
@@ -313,14 +401,24 @@ MANIFEST = {
         "exposure) and cur_sid (this exposure); prev_sid is rolled at the next "
         "segmentation reset so overlap always reads the previous epoch. Ganzfeld "
         "(has_boundary=0) segments are not offered. Flag "
-        "SurfacePersistenceParams.enabled, OFF by default (sec 9)."
+        "SurfacePersistenceParams.enabled, OFF by default (sec 9). "
+        "v1.1.0 RE-ACQUISITION, its own flag SurfacePersistenceParams.reacquire "
+        "(default 0.0; with it 0 every observable is byte-identical to v1.0.0): "
+        "each cell keeps last_sid, the sid it last belonged to at a "
+        "boundary-bearing epoch (a boundaryless epoch never overwrites it); at "
+        "the next boundary epoch a cell whose prev_sid is -1 votes with last_sid "
+        "(cell attr ov_sid) under the SAME 2*ov >= min(count) + ambiguity-refusal "
+        "rule, so a coasting surface can be re-found after a ganzfeld/eyelid/"
+        "adapting field. A coasting P matched this way is re-acquired: status "
+        "'tracked', coast 0, reacquired_count += 1 (segment attr reacquired=1). "
+        "Colour-free: reads sids and coast only."
     ),
     "microtheory": {
         "name": "surface_persistence",
         "description": "surface segments -> persistent surfaces by cell overlap",
     },
     "nodes": [
-        {"local_id": 0, "type": PARAMS, "attrs": {"enabled": 0.0}},
+        {"local_id": 0, "type": PARAMS, "attrs": {"enabled": 0.0, "reacquire": 0.0}},
         {"local_id": 1, "type": PSTATE, "attrs": {"ready_epoch": -1}},
         {"local_id": 2, "type": COUNTER, "attrs": {"next_sid": 0}},
     ],

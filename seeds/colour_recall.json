@@ -1,0 +1,427 @@
+{
+ "id": "colour_recall",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": [
+  "colour_property"
+ ],
+ "latency_class": "hard_realtime",
+ "description": "Mary's Room stage 4 fix (recall arm): a colour property WITHOUT a look. Input: a RecallCue{sid, epoch_requested} written by the adapter as external input (agent -has_recall_cue-> cue). cr_recall: an unanswered cue naming a PersistentSurface with a ColourProperty -> ONE Recollection{sid, epoch_requested, status 'recalled', minted_epoch, provenance_kind 'recalled', observation_status 'not_observed'} -recalls-> that ColourProperty (and -recollection_of-> the surface; cue -answered_by-> it). cr_no_property: otherwise ONE Recollection{status 'no_property', reason no_surface|no_property, provenance_kind 'retrieval_failure'}. No rule mints a LookingEpisode, SurfaceLook or FieldLook or reads a percept or catch. Provenance attrs follow episodic_working_memory_core's observed/recalled split (attrs only; its policies are not reused). Flag ColourRecallParams.enabled, OFF by default (sec 9). See tools/build_colour_recall_seed.py.",
+ "microtheory": {
+  "name": "colour_recall",
+  "description": "recall cue -> the held colour property, with no look"
+ },
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "ColourRecallParams",
+   "attrs": {
+    "enabled": 0.0
+   }
+  }
+ ],
+ "edges": [
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_colour_recall_params",
+   "tgt": {
+    "local": 0
+   },
+   "attrs": {}
+  }
+ ],
+ "productions": [],
+ "rules": [
+  {
+   "name": "cr_recall",
+   "comment": "An unanswered RecallCue naming a PersistentSurface that holds a ColourProperty is answered by ONE Recollection that points at that property (recalls) and surface (recollection_of). No look is made: no LookingEpisode / SurfaceLook is minted and no percept or catch is read.",
+   "match": [
+    [
+     "agent",
+     "has_recall_cue",
+     "Q"
+    ],
+    [
+     "sc",
+     "has_surface",
+     "P"
+    ],
+    [
+     "P",
+     "has_colour_property",
+     "CP"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "ColourRecallParams"
+       },
+       "var_name": "crp_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "crp_"
+        },
+        "key": "enabled"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "Q"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "P"
+       },
+       "key": "sid"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "Q"
+       },
+       "key": "sid"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "R",
+     "Recollection",
+     {
+      "sid": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "Q"
+        },
+        "key": "sid"
+       }
+      },
+      "epoch_requested": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "Q"
+        },
+        "key": "epoch_requested"
+       }
+      },
+      "status": {
+       "__term__": {
+        "type": "Lit",
+        "value": "recalled"
+       }
+      },
+      "minted_epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "CP"
+        },
+        "key": "minted_epoch"
+       }
+      },
+      "provenance_kind": {
+       "__term__": {
+        "type": "Lit",
+        "value": "recalled"
+       }
+      },
+      "observation_status": {
+       "__term__": {
+        "type": "Lit",
+        "value": "not_observed"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "agent",
+     "has_recollection",
+     "R"
+    ],
+    [
+     "add_edge",
+     "Q",
+     "answered_by",
+     "R"
+    ],
+    [
+     "add_edge",
+     "R",
+     "recalls",
+     "CP"
+    ],
+    [
+     "add_edge",
+     "R",
+     "recollection_of",
+     "P"
+    ],
+    [
+     "set_attr",
+     "Q",
+     "status",
+     "answered"
+    ]
+   ]
+  },
+  {
+   "name": "cr_no_property",
+   "comment": "An unanswered RecallCue whose sid names no PersistentSurface with a ColourProperty is answered by ONE Recollection with status 'no_property' (reason 'no_surface' if no surface has that sid). Nothing is recalled and nothing is guessed.",
+   "match": [
+    [
+     "agent",
+     "has_recall_cue",
+     "Q"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "ColourRecallParams"
+       },
+       "var_name": "crp_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "crp_"
+        },
+        "key": "enabled"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "Q"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "PersistentSurface"
+       },
+       "var_name": "np_",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "np_"
+           },
+           "key": "sid"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "sid"
+          }
+         },
+         {
+          "type": "Exists",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "np_"
+           },
+           "edge_type": "has_colour_property",
+           "any_type": false
+          },
+          "var_name": "np_c",
+          "predicate": {
+           "type": "Lit",
+           "value": true
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "R",
+     "Recollection",
+     {
+      "sid": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "Q"
+        },
+        "key": "sid"
+       }
+      },
+      "epoch_requested": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "Q"
+        },
+        "key": "epoch_requested"
+       }
+      },
+      "status": {
+       "__term__": {
+        "type": "Lit",
+        "value": "no_property"
+       }
+      },
+      "reason": {
+       "__term__": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Exists",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "PersistentSurface"
+         },
+         "var_name": "ns_",
+         "predicate": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ns_"
+           },
+           "key": "sid"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "Q"
+           },
+           "key": "sid"
+          }
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": "no_property"
+        },
+        "other": {
+         "type": "Lit",
+         "value": "no_surface"
+        }
+       }
+      },
+      "provenance_kind": {
+       "__term__": {
+        "type": "Lit",
+        "value": "retrieval_failure"
+       }
+      },
+      "observation_status": {
+       "__term__": {
+        "type": "Lit",
+        "value": "not_observed"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "agent",
+     "has_recollection",
+     "R"
+    ],
+    [
+     "add_edge",
+     "Q",
+     "answered_by",
+     "R"
+    ],
+    [
+     "set_attr",
+     "Q",
+     "status",
+     "answered"
+    ]
+   ]
+  }
+ ]
+}

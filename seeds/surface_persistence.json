@@ -1,12 +1,12 @@
 {
  "id": "surface_persistence",
- "version": "1.0.0",
+ "version": "1.1.0",
  "self_load_only": true,
  "depends_on": [
   "surface_segmentation"
  ],
  "latency_class": "hard_realtime",
- "description": "Mary's Room stage 4.4: persistent surface identity across exposures by cell-set overlap, colour-free. A current SurfaceSegment S (from surface_segmentation, has_boundary=1) continues PersistentSurface P iff ov = #members of S whose prev_sid == P.sid satisfies the track_comps overlap criterion 2*ov >= min(S.n_cells, P.n_cells) (runners/dsl/src/substrate.rs track_comps), P is S's unique overlap argmax, and no other current segment claims P with >= overlap. Otherwise S is born as a new P (sid from SurfaceCounter.next_sid): an ambiguous split/merge is REFUSED rather than guessed, and a P claimed by >= 2 segments with no acceptor is marked 'split'. Unmatched P coast (coast += 1; never deleted). Unlike track_comps the match is order-independent and has no centroid/velocity fallback and no value gate: identity never reads colour. Each cell keeps prev_sid (previous exposure) and cur_sid (this exposure); prev_sid is rolled at the next segmentation reset so overlap always reads the previous epoch. Ganzfeld (has_boundary=0) segments are not offered. Flag SurfacePersistenceParams.enabled, OFF by default (sec 9).",
+ "description": "Mary's Room stage 4.4: persistent surface identity across exposures by cell-set overlap, colour-free. A current SurfaceSegment S (from surface_segmentation, has_boundary=1) continues PersistentSurface P iff ov = #members of S whose prev_sid == P.sid satisfies the track_comps overlap criterion 2*ov >= min(S.n_cells, P.n_cells) (runners/dsl/src/substrate.rs track_comps), P is S's unique overlap argmax, and no other current segment claims P with >= overlap. Otherwise S is born as a new P (sid from SurfaceCounter.next_sid): an ambiguous split/merge is REFUSED rather than guessed, and a P claimed by >= 2 segments with no acceptor is marked 'split'. Unmatched P coast (coast += 1; never deleted). Unlike track_comps the match is order-independent and has no centroid/velocity fallback and no value gate: identity never reads colour. Each cell keeps prev_sid (previous exposure) and cur_sid (this exposure); prev_sid is rolled at the next segmentation reset so overlap always reads the previous epoch. Ganzfeld (has_boundary=0) segments are not offered. Flag SurfacePersistenceParams.enabled, OFF by default (sec 9). v1.1.0 RE-ACQUISITION, its own flag SurfacePersistenceParams.reacquire (default 0.0; with it 0 every observable is byte-identical to v1.0.0): each cell keeps last_sid, the sid it last belonged to at a boundary-bearing epoch (a boundaryless epoch never overwrites it); at the next boundary epoch a cell whose prev_sid is -1 votes with last_sid (cell attr ov_sid) under the SAME 2*ov >= min(count) + ambiguity-refusal rule, so a coasting surface can be re-found after a ganzfeld/eyelid/adapting field. A coasting P matched this way is re-acquired: status 'tracked', coast 0, reacquired_count += 1 (segment attr reacquired=1). Colour-free: reads sids and coast only.",
  "microtheory": {
   "name": "surface_persistence",
   "description": "surface segments -> persistent surfaces by cell overlap"
@@ -16,7 +16,8 @@
    "local_id": 0,
    "type": "SurfacePersistenceParams",
    "attrs": {
-    "enabled": 0.0
+    "enabled": 0.0,
+    "reacquire": 0.0
    }
   },
   {
@@ -457,6 +458,77 @@
         }
        }
       }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Gt",
+         "a": {
+          "type": "MaxOver",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "SurfacePersistenceParams"
+          },
+          "var_name": "pr_",
+          "value": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "pr_"
+           },
+           "key": "reacquire"
+          },
+          "default": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.5
+         }
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Exists",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "RetinalColumn"
+         },
+         "var_name": "xk",
+         "predicate": {
+          "type": "Not",
+          "arg": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "xk"
+            },
+            "key": "key_epoch"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "PickUnique",
+             "source": {
+              "type": "NodesOfType",
+              "node_type": "SegmentationState"
+             }
+            },
+            "key": "final_epoch"
+           }
+          }
+         }
+        }
+       }
+      ]
      }
     ]
    },
@@ -655,12 +727,38 @@
             "predicate": {
              "type": "Eq",
              "a": {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "qca"
+              "type": "IfThenElse",
+              "cond": {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "qca"
+                },
+                "key": "ov_sid"
+               },
+               "b": {
+                "type": "Lit",
+                "value": null
+               }
               },
-              "key": "prev_sid"
+              "then": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "qca"
+               },
+               "key": "prev_sid"
+              },
+              "other": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "qca"
+               },
+               "key": "ov_sid"
+              }
              },
              "b": {
               "type": "Attr",
@@ -704,12 +802,38 @@
               "predicate": {
                "type": "Eq",
                "a": {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "qca"
+                "type": "IfThenElse",
+                "cond": {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "qca"
+                  },
+                  "key": "ov_sid"
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": null
+                 }
                 },
-                "key": "prev_sid"
+                "then": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "qca"
+                 },
+                 "key": "prev_sid"
+                },
+                "other": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "qca"
+                 },
+                 "key": "ov_sid"
+                }
                },
                "b": {
                 "type": "Attr",
@@ -801,12 +925,38 @@
               "predicate": {
                "type": "Eq",
                "a": {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "q2a"
+                "type": "IfThenElse",
+                "cond": {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "q2a"
+                  },
+                  "key": "ov_sid"
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": null
+                 }
                 },
-                "key": "prev_sid"
+                "then": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "q2a"
+                 },
+                 "key": "prev_sid"
+                },
+                "other": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "q2a"
+                 },
+                 "key": "ov_sid"
+                }
                },
                "b": {
                 "type": "Attr",
@@ -836,12 +986,38 @@
               "predicate": {
                "type": "Eq",
                "a": {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "qa"
+                "type": "IfThenElse",
+                "cond": {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "qa"
+                  },
+                  "key": "ov_sid"
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": null
+                 }
                 },
-                "key": "prev_sid"
+                "then": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "qa"
+                 },
+                 "key": "prev_sid"
+                },
+                "other": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "qa"
+                 },
+                 "key": "ov_sid"
+                }
                },
                "b": {
                 "type": "Attr",
@@ -980,12 +1156,38 @@
                 "predicate": {
                  "type": "Eq",
                  "a": {
-                  "type": "Attr",
-                  "node": {
-                   "type": "Var",
-                   "name": "q3a"
+                  "type": "IfThenElse",
+                  "cond": {
+                   "type": "Eq",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "q3a"
+                    },
+                    "key": "ov_sid"
+                   },
+                   "b": {
+                    "type": "Lit",
+                    "value": null
+                   }
                   },
-                  "key": "prev_sid"
+                  "then": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "q3a"
+                   },
+                   "key": "prev_sid"
+                  },
+                  "other": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "q3a"
+                   },
+                   "key": "ov_sid"
+                  }
                  },
                  "b": {
                   "type": "Attr",
@@ -1029,12 +1231,38 @@
                   "predicate": {
                    "type": "Eq",
                    "a": {
-                    "type": "Attr",
-                    "node": {
-                     "type": "Var",
-                     "name": "q3a"
+                    "type": "IfThenElse",
+                    "cond": {
+                     "type": "Eq",
+                     "a": {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "q3a"
+                      },
+                      "key": "ov_sid"
+                     },
+                     "b": {
+                      "type": "Lit",
+                      "value": null
+                     }
                     },
-                    "key": "prev_sid"
+                    "then": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "q3a"
+                     },
+                     "key": "prev_sid"
+                    },
+                    "other": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "q3a"
+                     },
+                     "key": "ov_sid"
+                    }
                    },
                    "b": {
                     "type": "Attr",
@@ -1092,12 +1320,38 @@
               "predicate": {
                "type": "Eq",
                "a": {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "q4a"
+                "type": "IfThenElse",
+                "cond": {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "q4a"
+                  },
+                  "key": "ov_sid"
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": null
+                 }
                 },
-                "key": "prev_sid"
+                "then": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "q4a"
+                 },
+                 "key": "prev_sid"
+                },
+                "other": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "q4a"
+                 },
+                 "key": "ov_sid"
+                }
                },
                "b": {
                 "type": "Attr",
@@ -1127,12 +1381,38 @@
               "predicate": {
                "type": "Eq",
                "a": {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "qa"
+                "type": "IfThenElse",
+                "cond": {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "qa"
+                  },
+                  "key": "ov_sid"
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": null
+                 }
                 },
-                "key": "prev_sid"
+                "then": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "qa"
+                 },
+                 "key": "prev_sid"
+                },
+                "other": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "qa"
+                 },
+                 "key": "ov_sid"
+                }
                },
                "b": {
                 "type": "Attr",
@@ -1356,12 +1636,38 @@
               "predicate": {
                "type": "Eq",
                "a": {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "qcb"
+                "type": "IfThenElse",
+                "cond": {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "qcb"
+                  },
+                  "key": "ov_sid"
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": null
+                 }
                 },
-                "key": "prev_sid"
+                "then": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "qcb"
+                 },
+                 "key": "prev_sid"
+                },
+                "other": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "qcb"
+                 },
+                 "key": "ov_sid"
+                }
                },
                "b": {
                 "type": "Attr",
@@ -1405,12 +1711,38 @@
                 "predicate": {
                  "type": "Eq",
                  "a": {
-                  "type": "Attr",
-                  "node": {
-                   "type": "Var",
-                   "name": "qcb"
+                  "type": "IfThenElse",
+                  "cond": {
+                   "type": "Eq",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "qcb"
+                    },
+                    "key": "ov_sid"
+                   },
+                   "b": {
+                    "type": "Lit",
+                    "value": null
+                   }
                   },
-                  "key": "prev_sid"
+                  "then": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "qcb"
+                   },
+                   "key": "prev_sid"
+                  },
+                  "other": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "qcb"
+                   },
+                   "key": "ov_sid"
+                  }
                  },
                  "b": {
                   "type": "Attr",
@@ -1502,12 +1834,38 @@
                 "predicate": {
                  "type": "Eq",
                  "a": {
-                  "type": "Attr",
-                  "node": {
-                   "type": "Var",
-                   "name": "q2b"
+                  "type": "IfThenElse",
+                  "cond": {
+                   "type": "Eq",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "q2b"
+                    },
+                    "key": "ov_sid"
+                   },
+                   "b": {
+                    "type": "Lit",
+                    "value": null
+                   }
                   },
-                  "key": "prev_sid"
+                  "then": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "q2b"
+                   },
+                   "key": "prev_sid"
+                  },
+                  "other": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "q2b"
+                   },
+                   "key": "ov_sid"
+                  }
                  },
                  "b": {
                   "type": "Attr",
@@ -1537,12 +1895,38 @@
                 "predicate": {
                  "type": "Eq",
                  "a": {
-                  "type": "Attr",
-                  "node": {
-                   "type": "Var",
-                   "name": "qb"
+                  "type": "IfThenElse",
+                  "cond": {
+                   "type": "Eq",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "qb"
+                    },
+                    "key": "ov_sid"
+                   },
+                   "b": {
+                    "type": "Lit",
+                    "value": null
+                   }
                   },
-                  "key": "prev_sid"
+                  "then": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "qb"
+                   },
+                   "key": "prev_sid"
+                  },
+                  "other": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "qb"
+                   },
+                   "key": "ov_sid"
+                  }
                  },
                  "b": {
                   "type": "Attr",
@@ -1681,12 +2065,38 @@
                   "predicate": {
                    "type": "Eq",
                    "a": {
-                    "type": "Attr",
-                    "node": {
-                     "type": "Var",
-                     "name": "q3b"
+                    "type": "IfThenElse",
+                    "cond": {
+                     "type": "Eq",
+                     "a": {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "q3b"
+                      },
+                      "key": "ov_sid"
+                     },
+                     "b": {
+                      "type": "Lit",
+                      "value": null
+                     }
                     },
-                    "key": "prev_sid"
+                    "then": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "q3b"
+                     },
+                     "key": "prev_sid"
+                    },
+                    "other": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "q3b"
+                     },
+                     "key": "ov_sid"
+                    }
                    },
                    "b": {
                     "type": "Attr",
@@ -1730,12 +2140,38 @@
                     "predicate": {
                      "type": "Eq",
                      "a": {
-                      "type": "Attr",
-                      "node": {
-                       "type": "Var",
-                       "name": "q3b"
+                      "type": "IfThenElse",
+                      "cond": {
+                       "type": "Eq",
+                       "a": {
+                        "type": "Attr",
+                        "node": {
+                         "type": "Var",
+                         "name": "q3b"
+                        },
+                        "key": "ov_sid"
+                       },
+                       "b": {
+                        "type": "Lit",
+                        "value": null
+                       }
                       },
-                      "key": "prev_sid"
+                      "then": {
+                       "type": "Attr",
+                       "node": {
+                        "type": "Var",
+                        "name": "q3b"
+                       },
+                       "key": "prev_sid"
+                      },
+                      "other": {
+                       "type": "Attr",
+                       "node": {
+                        "type": "Var",
+                        "name": "q3b"
+                       },
+                       "key": "ov_sid"
+                      }
                      },
                      "b": {
                       "type": "Attr",
@@ -1793,12 +2229,38 @@
                 "predicate": {
                  "type": "Eq",
                  "a": {
-                  "type": "Attr",
-                  "node": {
-                   "type": "Var",
-                   "name": "q4b"
+                  "type": "IfThenElse",
+                  "cond": {
+                   "type": "Eq",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "q4b"
+                    },
+                    "key": "ov_sid"
+                   },
+                   "b": {
+                    "type": "Lit",
+                    "value": null
+                   }
                   },
-                  "key": "prev_sid"
+                  "then": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "q4b"
+                   },
+                   "key": "prev_sid"
+                  },
+                  "other": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "q4b"
+                   },
+                   "key": "ov_sid"
+                  }
                  },
                  "b": {
                   "type": "Attr",
@@ -1828,12 +2290,38 @@
                 "predicate": {
                  "type": "Eq",
                  "a": {
-                  "type": "Attr",
-                  "node": {
-                   "type": "Var",
-                   "name": "qb"
+                  "type": "IfThenElse",
+                  "cond": {
+                   "type": "Eq",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "qb"
+                    },
+                    "key": "ov_sid"
+                   },
+                   "b": {
+                    "type": "Lit",
+                    "value": null
+                   }
                   },
-                  "key": "prev_sid"
+                  "then": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "qb"
+                   },
+                   "key": "prev_sid"
+                  },
+                  "other": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "qb"
+                   },
+                   "key": "ov_sid"
+                  }
                  },
                  "b": {
                   "type": "Attr",
@@ -1900,12 +2388,38 @@
              "predicate": {
               "type": "Eq",
               "a": {
-               "type": "Attr",
-               "node": {
-                "type": "Var",
-                "name": "qr"
+               "type": "IfThenElse",
+               "cond": {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "qr"
+                 },
+                 "key": "ov_sid"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": null
+                }
                },
-               "key": "prev_sid"
+               "then": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "qr"
+                },
+                "key": "prev_sid"
+               },
+               "other": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "qr"
+                },
+                "key": "ov_sid"
+               }
               },
               "b": {
                "type": "Attr",
@@ -1949,12 +2463,38 @@
                "predicate": {
                 "type": "Eq",
                 "a": {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "qr"
+                 "type": "IfThenElse",
+                 "cond": {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "qr"
+                   },
+                   "key": "ov_sid"
+                  },
+                  "b": {
+                   "type": "Lit",
+                   "value": null
+                  }
                  },
-                 "key": "prev_sid"
+                 "then": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "qr"
+                  },
+                  "key": "prev_sid"
+                 },
+                 "other": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "qr"
+                  },
+                  "key": "ov_sid"
+                 }
                 },
                 "b": {
                  "type": "Attr",
@@ -2285,6 +2825,59 @@
        },
        "key": "cand_sid"
       }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Gt",
+         "a": {
+          "type": "MaxOver",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "SurfacePersistenceParams"
+          },
+          "var_name": "pr_",
+          "value": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "pr_"
+           },
+           "key": "reacquire"
+          },
+          "default": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.5
+         }
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "S"
+          },
+          "key": "reacq_seen"
+         },
+         "b": {
+          "type": "Lit",
+          "value": null
+         }
+        }
+       }
+      ]
      }
     ]
    },
@@ -3420,12 +4013,38 @@
                "predicate": {
                 "type": "Eq",
                 "a": {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "qk"
+                 "type": "IfThenElse",
+                 "cond": {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "qk"
+                   },
+                   "key": "ov_sid"
+                  },
+                  "b": {
+                   "type": "Lit",
+                   "value": null
+                  }
                  },
-                 "key": "prev_sid"
+                 "then": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "qk"
+                  },
+                  "key": "prev_sid"
+                 },
+                 "other": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "qk"
+                  },
+                  "key": "ov_sid"
+                 }
                 },
                 "b": {
                  "type": "Attr",
@@ -3469,12 +4088,38 @@
                  "predicate": {
                   "type": "Eq",
                   "a": {
-                   "type": "Attr",
-                   "node": {
-                    "type": "Var",
-                    "name": "qk"
+                   "type": "IfThenElse",
+                   "cond": {
+                    "type": "Eq",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "qk"
+                     },
+                     "key": "ov_sid"
+                    },
+                    "b": {
+                     "type": "Lit",
+                     "value": null
+                    }
                    },
-                   "key": "prev_sid"
+                   "then": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "qk"
+                    },
+                    "key": "prev_sid"
+                   },
+                   "other": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "qk"
+                    },
+                    "key": "ov_sid"
+                   }
                   },
                   "b": {
                    "type": "Attr",
@@ -3627,12 +4272,38 @@
                  "predicate": {
                   "type": "Eq",
                   "a": {
-                   "type": "Attr",
-                   "node": {
-                    "type": "Var",
-                    "name": "qk2"
+                   "type": "IfThenElse",
+                   "cond": {
+                    "type": "Eq",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "qk2"
+                     },
+                     "key": "ov_sid"
+                    },
+                    "b": {
+                     "type": "Lit",
+                     "value": null
+                    }
                    },
-                   "key": "prev_sid"
+                   "then": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "qk2"
+                    },
+                    "key": "prev_sid"
+                   },
+                   "other": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "qk2"
+                    },
+                    "key": "ov_sid"
+                   }
                   },
                   "b": {
                    "type": "Attr",
@@ -3676,12 +4347,38 @@
                    "predicate": {
                     "type": "Eq",
                     "a": {
-                     "type": "Attr",
-                     "node": {
-                      "type": "Var",
-                      "name": "qk2"
+                     "type": "IfThenElse",
+                     "cond": {
+                      "type": "Eq",
+                      "a": {
+                       "type": "Attr",
+                       "node": {
+                        "type": "Var",
+                        "name": "qk2"
+                       },
+                       "key": "ov_sid"
+                      },
+                      "b": {
+                       "type": "Lit",
+                       "value": null
+                      }
                      },
-                     "key": "prev_sid"
+                     "then": {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "qk2"
+                      },
+                      "key": "prev_sid"
+                     },
+                     "other": {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "qk2"
+                      },
+                      "key": "ov_sid"
+                     }
                     },
                     "b": {
                      "type": "Attr",
@@ -3739,6 +4436,802 @@
        }
       }
      }
+    ]
+   ]
+  },
+  {
+   "name": "ps_keep_last",
+   "comment": "REACQUIRE: a cell that belongs to a surface at a boundary-bearing epoch remembers it in last_sid. A boundaryless epoch (ganzfeld, eyelid, pure adapting field) assigns no cur_sid, so it never overwrites last_sid.",
+   "match": [
+    [
+     "retina",
+     "has_column",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SurfacePersistenceParams"
+         },
+         "var_name": "pp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SurfaceSegmentationParams"
+         },
+         "var_name": "sp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       }
+      ]
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "SurfacePersistenceParams"
+       },
+       "var_name": "pr_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "pr_"
+        },
+        "key": "reacquire"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "cur_sid"
+      },
+      "b": {
+       "type": "Lit",
+       "value": -1
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "c"
+        },
+        "key": "last_sid"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "c"
+        },
+        "key": "cur_sid"
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "last_sid",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "cur_sid"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ps_reacq_key",
+   "comment": "REACQUIRE: once per rolled epoch, the cell's overlap key ov_sid := prev_sid, or last_sid when prev_sid is -1 (the previous exposure offered no surface). The overlap rule itself (2*ov >= min(count), unique argmax, rival refusal) is unchanged; only the vote of a cell with no previous sid is carried across the boundaryless gap.",
+   "match": [
+    [
+     "retina",
+     "has_column",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SurfacePersistenceParams"
+         },
+         "var_name": "pp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SurfaceSegmentationParams"
+         },
+         "var_name": "sp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       }
+      ]
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "SurfacePersistenceParams"
+       },
+       "var_name": "pr_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "pr_"
+        },
+        "key": "reacquire"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "c"
+        },
+        "key": "ps_epoch"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "c"
+        },
+        "key": "key_epoch"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "c"
+        },
+        "key": "ps_epoch"
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "ov_sid",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "key": "prev_sid"
+        },
+        "b": {
+         "type": "Lit",
+         "value": -1
+        }
+       },
+       "then": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "last_sid"
+         },
+         "b": {
+          "type": "Lit",
+          "value": null
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": -1
+        },
+        "other": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "key": "last_sid"
+        }
+       },
+       "other": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "c"
+        },
+        "key": "prev_sid"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "c",
+     "key_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "ps_epoch"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ps_reacq_mark",
+   "comment": "REACQUIRE: before ps_apply_continue resets coast, a continuing segment whose accepted P was COASTING (coast > 0: not matched at the previous epoch, so the match can only have come through last_sid) marks the re-acquisition: S.reacquired = 1 and P.reacquired_count += 1. ps_apply_continue then sets status 'tracked' and coast 0 as for any continuation.",
+   "match": [
+    [
+     "st",
+     "has_segment",
+     "S"
+    ],
+    [
+     "sc",
+     "has_surface",
+     "P"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SurfacePersistenceParams"
+         },
+         "var_name": "pp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "MaxOver",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SurfaceSegmentationParams"
+         },
+         "var_name": "sp_",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sp_"
+          },
+          "key": "enabled"
+         },
+         "default": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       }
+      ]
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "MaxOver",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "SurfacePersistenceParams"
+       },
+       "var_name": "pr_",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "pr_"
+        },
+        "key": "reacquire"
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "PickUnique",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SegmentationState"
+         }
+        },
+        "edge_type": "has_segment",
+        "any_type": false
+       },
+       "var_name": "u_",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "u_"
+             },
+             "key": "epoch"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "PickUnique",
+              "source": {
+               "type": "NodesOfType",
+               "node_type": "PersistenceState"
+              }
+             },
+             "key": "ready_epoch"
+            }
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "u_"
+             },
+             "key": "has_boundary"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0.5
+            }
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "u_"
+             },
+             "key": "current"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0.5
+            }
+           }
+          ]
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "u_"
+           },
+           "key": "decision"
+          },
+          "b": {
+           "type": "Lit",
+           "value": null
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "S"
+         },
+         "key": "epoch"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "PickUnique",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "PersistenceState"
+          }
+         },
+         "key": "ready_epoch"
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "S"
+         },
+         "key": "has_boundary"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "S"
+         },
+         "key": "current"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "S"
+       },
+       "key": "decision"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "continue"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "S"
+       },
+       "key": "reacq_seen"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "P"
+       },
+       "key": "sid"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "S"
+       },
+       "key": "cand_sid"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "S",
+     "reacquired",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "P"
+         },
+         "key": "coast"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "P",
+     "reacquired_count",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "P"
+           },
+           "key": "reacquired_count"
+          },
+          "b": {
+           "type": "Lit",
+           "value": null
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 0
+         },
+         "other": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "P"
+          },
+          "key": "reacquired_count"
+         }
+        },
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Gt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "P"
+           },
+           "key": "coast"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 1
+         },
+         "other": {
+          "type": "Lit",
+          "value": 0
+         }
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "S",
+     "reacq_seen",
+     1.0
     ]
    ]
   }

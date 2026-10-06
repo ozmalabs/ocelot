@@ -79,6 +79,11 @@ empty pool, or a zero lattice value in p, REFUSES ('refused_pooled',
 pooled_reason 'no_pool' / 'no_gain'); a scene whose surfaces are all wrong the
 same way corroborates (L3b's kappa result).
 
+SATURATION (v1.1.0 note, rules unchanged): the catch is pre-saturation (linear in
+photons); only the activation saturates. Measured at 1e5 td: catches stay on the
+packet-linear lattice and E->E checks hold while looks compress, so the stage-4
+"refusal of saturated cells" item is closed WITHOUT a refusal rule.
+
 Flags ColourPropertyParams{enabled 0.0, pooled 0.0}, OFF by default (sec 9);
 also gated on the segmentation and persistence flags. Manifest latency_class
 hard_realtime. Depends on surface_persistence.
@@ -449,12 +454,23 @@ DESCRIPTION = (
     "frame, same reference epoch), tolerance = their own spread "
     "MaxOver|g_j - G|; pooled_status holds_pooled|refused_pooled (empty pool / "
     "zero p refuse). Flags ColourPropertyParams{enabled, pooled}, OFF by "
-    "default (sec 9). See tools/build_colour_property_seed.py."
+    "default (sec 9). See tools/build_colour_property_seed.py. "
+    "v1.1.0 (description only; rules unchanged): SATURATION DOES NOT AFFECT "
+    "THE PROPERTY PATH. caught_quanta is linear in the photons "
+    "(cognitive_tasks.rs photon_transduce: caught = dark + sum count*exp(-z^2/2)); "
+    "only the activation caught/(caught + half_saturation + adaptation) "
+    "saturates, and this seed reads catches only (pre-saturation). Measured at "
+    "1e5 td (cone activations 0.91-0.998 at first sight): per-cell catches equal "
+    "the packet-linear oracle, properties equal the lattice of the linear "
+    "catches, E->E checks hold with residual 0 (rung 1) and holds_pooled "
+    "(rung 2), while SurfaceLooks compress (tests/test_stage4_fixes_migrated.py). "
+    "So no refusal of saturated cells is needed or built for properties; "
+    "saturation is a property of looks."
 )
 
 MANIFEST = {
     "id": "colour_property",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "self_load_only": True,
     "depends_on": ["surface_persistence"],
     "latency_class": "hard_realtime",
