@@ -64,11 +64,23 @@ MSG = "eq.msg"
 # speech_act: Ocelot sak_kind (seeds/speech_act_classify.json) -> Equilibrium act
 # (design §1.1): question->question, statement->assertion, instruction->directive.
 SAK_MAP = [("question", "question"), ("statement", "assertion"), ("instruction", "directive")]
-RULES = [rule(f"{MSG}.speech_act.sak_{k}", [RECV], [Eq(A("m", "sak_kind"), L(k))], act)
-         for k, act in SAK_MAP]
+# T3h: a clause the syntax marks interrogative (qr.interrogative_rule: subject-aux
+# inversion, wh + inverted auxiliary, tag; `m.eq_interrogative`) is a question even when the
+# ladder (typed '?' / first parsed element) did not call it one -- speech transcripts carry
+# no '?'. The ladder's assertion / directive then do not fire (one speech act per turn).
+# The mark rule runs FIRST in the pass (rules apply in order), so every speech-act rule
+# reads its final value. Only where the ladder did not already call it a question: a typed
+# / ladder question keeps exactly its 0.8.0 provenance.
+INTERROGATIVE = Eq(A("m", qr.INTERROG_ATTR), L(True))
+RULES = [qr.interrogative_rule(f"{MSG}.speech_act.interrogative_mark")]
+RULES += [rule(f"{MSG}.speech_act.sak_{k}", [RECV],
+               [Eq(A("m", "sak_kind"), L(k))] + ([] if k == "question" else [Not(INTERROGATIVE)]), act)
+          for k, act in SAK_MAP]
+RULES += [rule(f"{MSG}.speech_act.interrogative", [RECV],
+               [Not(Eq(A("m", "sak_kind"), L("question"))), INTERROGATIVE], "question")]
 RULES += [
     rule(f"{MSG}.substantive_markers.question_act", [RECV],
-         [Eq(A("m", f"eqfire:{MSG}.speech_act.sak_question"), L("question"))], "question"),
+         [Or(Eq(A("m", f"eqfire:{MSG}.speech_act.sak_question"), L("question")), INTERROGATIVE)], "question"),
     rule(f"{MSG}.substantive_markers.code_fence", [RECV, ["m", "eq_has_span", "sp"]],
          [Eq(A("sp", "eq_span"), L("code")), Eq(A("sp", "form"), L("fence"))], "code"),
     rule(f"{MSG}.substantive_markers.code_inline", [RECV, ["m", "eq_has_span", "sp"]],

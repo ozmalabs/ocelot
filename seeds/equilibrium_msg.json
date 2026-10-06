@@ -16,6 +16,1179 @@
     [
      "set_attr",
      "m",
+     "eq_interrogative",
+     true
+    ]
+   ],
+   "index_hints": [
+    {
+     "for_var": "c",
+     "node_type": "EqInterrog",
+     "this_key": "form",
+     "via_key": "form",
+     "via_var": "t"
+    }
+   ],
+   "match": [
+    [
+     "agent",
+     "received",
+     "m"
+    ],
+    [
+     "m",
+     "eq_has_token",
+     "t"
+    ],
+    [
+     "agent",
+     "eq_has_interrog",
+     "c"
+    ]
+   ],
+   "name": "eq.msg.speech_act.interrogative_mark",
+   "where": {
+    "items": [
+     {
+      "a": {
+       "key": "eq_interrogative",
+       "node": {
+        "name": "m",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      },
+      "type": "Eq"
+     },
+     {
+      "a": {
+       "key": "form",
+       "node": {
+        "name": "c",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "key": "form",
+       "node": {
+        "name": "t",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "type": "Eq"
+     },
+     {
+      "items": [
+       {
+        "items": [
+         {
+          "a": {
+           "key": "role",
+           "node": {
+            "name": "c",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "aux"
+          },
+          "type": "Eq"
+         },
+         {
+          "predicate": {
+           "predicate": {
+            "items": [
+             {
+              "a": {
+               "key": "role",
+               "node": {
+                "name": "ir_s",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "subject"
+              },
+              "type": "Eq"
+             },
+             {
+              "a": {
+               "key": "form",
+               "node": {
+                "name": "ir_s",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              "b": {
+               "key": "form",
+               "node": {
+                "name": "nx_s",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              "type": "Eq"
+             }
+            ],
+            "type": "And"
+           },
+           "source": {
+            "edge_type": "eq_has_interrog",
+            "node": {
+             "name": "agent",
+             "type": "Var"
+            },
+            "type": "Neighbours"
+           },
+           "type": "Exists",
+           "var_name": "ir_s"
+          },
+          "source": {
+           "edge_type": "eq_next",
+           "node": {
+            "name": "t",
+            "type": "Var"
+           },
+           "type": "Neighbours"
+          },
+          "type": "Exists",
+          "var_name": "nx_s"
+         },
+         {
+          "arg": {
+           "predicate": {
+            "items": [
+             {
+              "a": {
+               "key": "eq_clause",
+               "node": {
+                "name": "ci_h",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              "b": {
+               "key": "eq_clause",
+               "node": {
+                "name": "t",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              "type": "Eq"
+             },
+             {
+              "a": {
+               "key": "eq_pos",
+               "node": {
+                "name": "ci_h",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              "b": {
+               "key": "eq_pos",
+               "node": {
+                "name": "t",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              "type": "Lt"
+             },
+             {
+              "arg": {
+               "predicate": {
+                "items": [
+                 {
+                  "a": {
+                   "key": "role",
+                   "node": {
+                    "name": "ir_hp",
+                    "type": "Var"
+                   },
+                   "type": "Attr"
+                  },
+                  "b": {
+                   "type": "Lit",
+                   "value": "preface"
+                  },
+                  "type": "Eq"
+                 },
+                 {
+                  "a": {
+                   "key": "form",
+                   "node": {
+                    "name": "ir_hp",
+                    "type": "Var"
+                   },
+                   "type": "Attr"
+                  },
+                  "b": {
+                   "key": "form",
+                   "node": {
+                    "name": "ci_h",
+                    "type": "Var"
+                   },
+                   "type": "Attr"
+                  },
+                  "type": "Eq"
+                 }
+                ],
+                "type": "And"
+               },
+               "source": {
+                "edge_type": "eq_has_interrog",
+                "node": {
+                 "name": "agent",
+                 "type": "Var"
+                },
+                "type": "Neighbours"
+               },
+               "type": "Exists",
+               "var_name": "ir_hp"
+              },
+              "type": "Not"
+             }
+            ],
+            "type": "And"
+           },
+           "source": {
+            "edge_type": "eq_has_token",
+            "node": {
+             "name": "m",
+             "type": "Var"
+            },
+            "type": "Neighbours"
+           },
+           "type": "Exists",
+           "var_name": "ci_h"
+          },
+          "type": "Not"
+         },
+         {
+          "arg": {
+           "predicate": {
+            "items": [
+             {
+              "predicate": {
+               "items": [
+                {
+                 "a": {
+                  "key": "role",
+                  "node": {
+                   "name": "ir_o",
+                   "type": "Var"
+                  },
+                  "type": "Attr"
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": "additive"
+                 },
+                 "type": "Eq"
+                },
+                {
+                 "a": {
+                  "key": "form",
+                  "node": {
+                   "name": "ir_o",
+                   "type": "Var"
+                  },
+                  "type": "Attr"
+                 },
+                 "b": {
+                  "key": "form",
+                  "node": {
+                   "name": "is_m",
+                   "type": "Var"
+                  },
+                  "type": "Attr"
+                 },
+                 "type": "Eq"
+                }
+               ],
+               "type": "And"
+              },
+              "source": {
+               "edge_type": "eq_has_interrog",
+               "node": {
+                "name": "agent",
+                "type": "Var"
+               },
+               "type": "Neighbours"
+              },
+              "type": "Exists",
+              "var_name": "ir_o"
+             },
+             {
+              "predicate": {
+               "arg": {
+                "predicate": {
+                 "type": "Lit",
+                 "value": true
+                },
+                "source": {
+                 "edge_type": "eq_next",
+                 "node": {
+                  "name": "isj_m",
+                  "type": "Var"
+                 },
+                 "type": "Neighbours"
+                },
+                "type": "Exists",
+                "var_name": "isk_m"
+               },
+               "type": "Not"
+              },
+              "source": {
+               "edge_type": "eq_next",
+               "node": {
+                "name": "t",
+                "type": "Var"
+               },
+               "type": "Neighbours"
+              },
+              "type": "Exists",
+              "var_name": "isj_m"
+             }
+            ],
+            "type": "And"
+           },
+           "source": {
+            "edge_type": "eq_next",
+            "node": {
+             "name": "t",
+             "type": "Var"
+            },
+            "type": "InNeighbours"
+           },
+           "type": "Exists",
+           "var_name": "is_m"
+          },
+          "type": "Not"
+         }
+        ],
+        "type": "And"
+       },
+       {
+        "items": [
+         {
+          "a": {
+           "key": "role",
+           "node": {
+            "name": "c",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "wh"
+          },
+          "type": "Eq"
+         },
+         {
+          "predicate": {
+           "predicate": {
+            "items": [
+             {
+              "a": {
+               "key": "role",
+               "node": {
+                "name": "ir_x",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "aux"
+              },
+              "type": "Eq"
+             },
+             {
+              "a": {
+               "key": "form",
+               "node": {
+                "name": "ir_x",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              "b": {
+               "key": "form",
+               "node": {
+                "name": "nx_x",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              "type": "Eq"
+             }
+            ],
+            "type": "And"
+           },
+           "source": {
+            "edge_type": "eq_has_interrog",
+            "node": {
+             "name": "agent",
+             "type": "Var"
+            },
+            "type": "Neighbours"
+           },
+           "type": "Exists",
+           "var_name": "ir_x"
+          },
+          "source": {
+           "edge_type": "eq_next",
+           "node": {
+            "name": "t",
+            "type": "Var"
+           },
+           "type": "Neighbours"
+          },
+          "type": "Exists",
+          "var_name": "nx_x"
+         },
+         {
+          "arg": {
+           "predicate": {
+            "items": [
+             {
+              "a": {
+               "key": "eq_clause",
+               "node": {
+                "name": "ci_h",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              "b": {
+               "key": "eq_clause",
+               "node": {
+                "name": "t",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              "type": "Eq"
+             },
+             {
+              "a": {
+               "key": "eq_pos",
+               "node": {
+                "name": "ci_h",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              "b": {
+               "key": "eq_pos",
+               "node": {
+                "name": "t",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              "type": "Lt"
+             },
+             {
+              "arg": {
+               "predicate": {
+                "items": [
+                 {
+                  "a": {
+                   "key": "role",
+                   "node": {
+                    "name": "ir_hp",
+                    "type": "Var"
+                   },
+                   "type": "Attr"
+                  },
+                  "b": {
+                   "type": "Lit",
+                   "value": "preface"
+                  },
+                  "type": "Eq"
+                 },
+                 {
+                  "a": {
+                   "key": "form",
+                   "node": {
+                    "name": "ir_hp",
+                    "type": "Var"
+                   },
+                   "type": "Attr"
+                  },
+                  "b": {
+                   "key": "form",
+                   "node": {
+                    "name": "ci_h",
+                    "type": "Var"
+                   },
+                   "type": "Attr"
+                  },
+                  "type": "Eq"
+                 }
+                ],
+                "type": "And"
+               },
+               "source": {
+                "edge_type": "eq_has_interrog",
+                "node": {
+                 "name": "agent",
+                 "type": "Var"
+                },
+                "type": "Neighbours"
+               },
+               "type": "Exists",
+               "var_name": "ir_hp"
+              },
+              "type": "Not"
+             }
+            ],
+            "type": "And"
+           },
+           "source": {
+            "edge_type": "eq_has_token",
+            "node": {
+             "name": "m",
+             "type": "Var"
+            },
+            "type": "Neighbours"
+           },
+           "type": "Exists",
+           "var_name": "ci_h"
+          },
+          "type": "Not"
+         }
+        ],
+        "type": "And"
+       },
+       {
+        "items": [
+         {
+          "a": {
+           "key": "role",
+           "node": {
+            "name": "c",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "wh_aux"
+          },
+          "type": "Eq"
+         },
+         {
+          "arg": {
+           "predicate": {
+            "items": [
+             {
+              "a": {
+               "key": "eq_clause",
+               "node": {
+                "name": "ci_h",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              "b": {
+               "key": "eq_clause",
+               "node": {
+                "name": "t",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              "type": "Eq"
+             },
+             {
+              "a": {
+               "key": "eq_pos",
+               "node": {
+                "name": "ci_h",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              "b": {
+               "key": "eq_pos",
+               "node": {
+                "name": "t",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              "type": "Lt"
+             },
+             {
+              "arg": {
+               "predicate": {
+                "items": [
+                 {
+                  "a": {
+                   "key": "role",
+                   "node": {
+                    "name": "ir_hp",
+                    "type": "Var"
+                   },
+                   "type": "Attr"
+                  },
+                  "b": {
+                   "type": "Lit",
+                   "value": "preface"
+                  },
+                  "type": "Eq"
+                 },
+                 {
+                  "a": {
+                   "key": "form",
+                   "node": {
+                    "name": "ir_hp",
+                    "type": "Var"
+                   },
+                   "type": "Attr"
+                  },
+                  "b": {
+                   "key": "form",
+                   "node": {
+                    "name": "ci_h",
+                    "type": "Var"
+                   },
+                   "type": "Attr"
+                  },
+                  "type": "Eq"
+                 }
+                ],
+                "type": "And"
+               },
+               "source": {
+                "edge_type": "eq_has_interrog",
+                "node": {
+                 "name": "agent",
+                 "type": "Var"
+                },
+                "type": "Neighbours"
+               },
+               "type": "Exists",
+               "var_name": "ir_hp"
+              },
+              "type": "Not"
+             }
+            ],
+            "type": "And"
+           },
+           "source": {
+            "edge_type": "eq_has_token",
+            "node": {
+             "name": "m",
+             "type": "Var"
+            },
+            "type": "Neighbours"
+           },
+           "type": "Exists",
+           "var_name": "ci_h"
+          },
+          "type": "Not"
+         }
+        ],
+        "type": "And"
+       },
+       {
+        "items": [
+         {
+          "a": {
+           "key": "role",
+           "node": {
+            "name": "c",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "degree_head"
+          },
+          "type": "Eq"
+         },
+         {
+          "predicate": {
+           "predicate": {
+            "items": [
+             {
+              "a": {
+               "key": "role",
+               "node": {
+                "name": "ir_g",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "degree"
+              },
+              "type": "Eq"
+             },
+             {
+              "a": {
+               "key": "form",
+               "node": {
+                "name": "ir_g",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              "b": {
+               "key": "form",
+               "node": {
+                "name": "nx_g",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              "type": "Eq"
+             }
+            ],
+            "type": "And"
+           },
+           "source": {
+            "edge_type": "eq_has_interrog",
+            "node": {
+             "name": "agent",
+             "type": "Var"
+            },
+            "type": "Neighbours"
+           },
+           "type": "Exists",
+           "var_name": "ir_g"
+          },
+          "source": {
+           "edge_type": "eq_next",
+           "node": {
+            "name": "t",
+            "type": "Var"
+           },
+           "type": "Neighbours"
+          },
+          "type": "Exists",
+          "var_name": "nx_g"
+         },
+         {
+          "arg": {
+           "predicate": {
+            "items": [
+             {
+              "a": {
+               "key": "eq_clause",
+               "node": {
+                "name": "ci_h",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              "b": {
+               "key": "eq_clause",
+               "node": {
+                "name": "t",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              "type": "Eq"
+             },
+             {
+              "a": {
+               "key": "eq_pos",
+               "node": {
+                "name": "ci_h",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              "b": {
+               "key": "eq_pos",
+               "node": {
+                "name": "t",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              "type": "Lt"
+             },
+             {
+              "arg": {
+               "predicate": {
+                "items": [
+                 {
+                  "a": {
+                   "key": "role",
+                   "node": {
+                    "name": "ir_hp",
+                    "type": "Var"
+                   },
+                   "type": "Attr"
+                  },
+                  "b": {
+                   "type": "Lit",
+                   "value": "preface"
+                  },
+                  "type": "Eq"
+                 },
+                 {
+                  "a": {
+                   "key": "form",
+                   "node": {
+                    "name": "ir_hp",
+                    "type": "Var"
+                   },
+                   "type": "Attr"
+                  },
+                  "b": {
+                   "key": "form",
+                   "node": {
+                    "name": "ci_h",
+                    "type": "Var"
+                   },
+                   "type": "Attr"
+                  },
+                  "type": "Eq"
+                 }
+                ],
+                "type": "And"
+               },
+               "source": {
+                "edge_type": "eq_has_interrog",
+                "node": {
+                 "name": "agent",
+                 "type": "Var"
+                },
+                "type": "Neighbours"
+               },
+               "type": "Exists",
+               "var_name": "ir_hp"
+              },
+              "type": "Not"
+             }
+            ],
+            "type": "And"
+           },
+           "source": {
+            "edge_type": "eq_has_token",
+            "node": {
+             "name": "m",
+             "type": "Var"
+            },
+            "type": "Neighbours"
+           },
+           "type": "Exists",
+           "var_name": "ci_h"
+          },
+          "type": "Not"
+         }
+        ],
+        "type": "And"
+       },
+       {
+        "items": [
+         {
+          "a": {
+           "key": "role",
+           "node": {
+            "name": "c",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "wh"
+          },
+          "type": "Eq"
+         },
+         {
+          "predicate": {
+           "items": [
+            {
+             "predicate": {
+              "items": [
+               {
+                "a": {
+                 "key": "role",
+                 "node": {
+                  "name": "ir_X",
+                  "type": "Var"
+                 },
+                 "type": "Attr"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": "aux"
+                },
+                "type": "Eq"
+               },
+               {
+                "a": {
+                 "key": "form",
+                 "node": {
+                  "name": "ir_X",
+                  "type": "Var"
+                 },
+                 "type": "Attr"
+                },
+                "b": {
+                 "key": "form",
+                 "node": {
+                  "name": "iu",
+                  "type": "Var"
+                 },
+                 "type": "Attr"
+                },
+                "type": "Eq"
+               }
+              ],
+              "type": "And"
+             },
+             "source": {
+              "edge_type": "eq_has_interrog",
+              "node": {
+               "name": "agent",
+               "type": "Var"
+              },
+              "type": "Neighbours"
+             },
+             "type": "Exists",
+             "var_name": "ir_X"
+            },
+            {
+             "predicate": {
+              "predicate": {
+               "items": [
+                {
+                 "a": {
+                  "key": "role",
+                  "node": {
+                   "name": "ir_S",
+                   "type": "Var"
+                  },
+                  "type": "Attr"
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": "subject"
+                 },
+                 "type": "Eq"
+                },
+                {
+                 "a": {
+                  "key": "form",
+                  "node": {
+                   "name": "ir_S",
+                   "type": "Var"
+                  },
+                  "type": "Attr"
+                 },
+                 "b": {
+                  "key": "form",
+                  "node": {
+                   "name": "nx_S",
+                   "type": "Var"
+                  },
+                  "type": "Attr"
+                 },
+                 "type": "Eq"
+                }
+               ],
+               "type": "And"
+              },
+              "source": {
+               "edge_type": "eq_has_interrog",
+               "node": {
+                "name": "agent",
+                "type": "Var"
+               },
+               "type": "Neighbours"
+              },
+              "type": "Exists",
+              "var_name": "ir_S"
+             },
+             "source": {
+              "edge_type": "eq_next",
+              "node": {
+               "name": "iu",
+               "type": "Var"
+              },
+              "type": "Neighbours"
+             },
+             "type": "Exists",
+             "var_name": "nx_S"
+            }
+           ],
+           "type": "And"
+          },
+          "source": {
+           "edge_type": "eq_next",
+           "node": {
+            "name": "t",
+            "type": "Var"
+           },
+           "type": "Neighbours"
+          },
+          "type": "Exists",
+          "var_name": "iu"
+         }
+        ],
+        "type": "And"
+       },
+       {
+        "items": [
+         {
+          "a": {
+           "key": "role",
+           "node": {
+            "name": "c",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "tag_aux"
+          },
+          "type": "Eq"
+         },
+         {
+          "predicate": {
+           "items": [
+            {
+             "predicate": {
+              "items": [
+               {
+                "a": {
+                 "key": "role",
+                 "node": {
+                  "name": "ir_P",
+                  "type": "Var"
+                 },
+                 "type": "Attr"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": "tag_subject"
+                },
+                "type": "Eq"
+               },
+               {
+                "a": {
+                 "key": "form",
+                 "node": {
+                  "name": "ir_P",
+                  "type": "Var"
+                 },
+                 "type": "Attr"
+                },
+                "b": {
+                 "key": "form",
+                 "node": {
+                  "name": "tv",
+                  "type": "Var"
+                 },
+                 "type": "Attr"
+                },
+                "type": "Eq"
+               }
+              ],
+              "type": "And"
+             },
+             "source": {
+              "edge_type": "eq_has_interrog",
+              "node": {
+               "name": "agent",
+               "type": "Var"
+              },
+              "type": "Neighbours"
+             },
+             "type": "Exists",
+             "var_name": "ir_P"
+            },
+            {
+             "arg": {
+              "predicate": {
+               "a": {
+                "key": "eq_pos",
+                "node": {
+                 "name": "tz",
+                 "type": "Var"
+                },
+                "type": "Attr"
+               },
+               "b": {
+                "key": "eq_pos",
+                "node": {
+                 "name": "tv",
+                 "type": "Var"
+                },
+                "type": "Attr"
+               },
+               "type": "Gt"
+              },
+              "source": {
+               "edge_type": "eq_has_token",
+               "node": {
+                "name": "m",
+                "type": "Var"
+               },
+               "type": "Neighbours"
+              },
+              "type": "Exists",
+              "var_name": "tz"
+             },
+             "type": "Not"
+            }
+           ],
+           "type": "And"
+          },
+          "source": {
+           "edge_type": "eq_next",
+           "node": {
+            "name": "t",
+            "type": "Var"
+           },
+           "type": "Neighbours"
+          },
+          "type": "Exists",
+          "var_name": "tv"
+         }
+        ],
+        "type": "And"
+       }
+      ],
+      "type": "Or"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "effects": [
+    [
+     "set_attr",
+     "m",
      "eqfire:eq.msg.speech_act.sak_question",
      "question"
     ],
@@ -124,6 +1297,24 @@
        "value": "statement"
       },
       "type": "Eq"
+     },
+     {
+      "arg": {
+       "a": {
+        "key": "eq_interrogative",
+        "node": {
+         "name": "m",
+         "type": "Var"
+        },
+        "type": "Attr"
+       },
+       "b": {
+        "type": "Lit",
+        "value": true
+       },
+       "type": "Eq"
+      },
+      "type": "Not"
      }
     ],
     "type": "And"
@@ -183,6 +1374,101 @@
        "value": "instruction"
       },
       "type": "Eq"
+     },
+     {
+      "arg": {
+       "a": {
+        "key": "eq_interrogative",
+        "node": {
+         "name": "m",
+         "type": "Var"
+        },
+        "type": "Attr"
+       },
+       "b": {
+        "type": "Lit",
+        "value": true
+       },
+       "type": "Eq"
+      },
+      "type": "Not"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "effects": [
+    [
+     "set_attr",
+     "m",
+     "eqfire:eq.msg.speech_act.interrogative",
+     "question"
+    ],
+    [
+     "set_attr",
+     "m",
+     "eqlab:msg.speech_act=question",
+     true
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "received",
+     "m"
+    ]
+   ],
+   "name": "eq.msg.speech_act.interrogative",
+   "where": {
+    "items": [
+     {
+      "a": {
+       "key": "eqfire:eq.msg.speech_act.interrogative",
+       "node": {
+        "name": "m",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      },
+      "type": "Eq"
+     },
+     {
+      "arg": {
+       "a": {
+        "key": "sak_kind",
+        "node": {
+         "name": "m",
+         "type": "Var"
+        },
+        "type": "Attr"
+       },
+       "b": {
+        "type": "Lit",
+        "value": "question"
+       },
+       "type": "Eq"
+      },
+      "type": "Not"
+     },
+     {
+      "a": {
+       "key": "eq_interrogative",
+       "node": {
+        "name": "m",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": true
+      },
+      "type": "Eq"
      }
     ],
     "type": "And"
@@ -229,19 +1515,39 @@
       "type": "Eq"
      },
      {
-      "a": {
-       "key": "eqfire:eq.msg.speech_act.sak_question",
-       "node": {
-        "name": "m",
-        "type": "Var"
+      "items": [
+       {
+        "a": {
+         "key": "eqfire:eq.msg.speech_act.sak_question",
+         "node": {
+          "name": "m",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "question"
+        },
+        "type": "Eq"
        },
-       "type": "Attr"
-      },
-      "b": {
-       "type": "Lit",
-       "value": "question"
-      },
-      "type": "Eq"
+       {
+        "a": {
+         "key": "eq_interrogative",
+         "node": {
+          "name": "m",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "b": {
+         "type": "Lit",
+         "value": true
+        },
+        "type": "Eq"
+       }
+      ],
+      "type": "Or"
      }
     ],
     "type": "And"

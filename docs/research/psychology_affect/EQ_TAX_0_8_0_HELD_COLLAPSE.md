@@ -29,7 +29,8 @@ null      no candidates (basis "none")
 ## Turn object (in `turns` of /turns, _batch items; keys closed)
 {"id","labels","responds_to","basis","confidence","candidates","addressees","thread_id","topic_id","answers"}
 - basis: "declared" | "tracked" | "held" | "none"
-- candidates: [{"ref": <earlier turn id>, "cues": [code, ...]}]  (<= 16 candidates, cues unique, non-empty)
+- candidates: [{"ref": <earlier turn id>, "cues": [code, ...]}]  (cues unique, non-empty)
+  [T3h: the bound is <= 4 + 3 x len(addressees) of the same row, by construction -- was "<= 16"]
 - invariants:
   - basis "none"     <=> candidates == [] and responds_to == [] and confidence null
   - basis "held"     <=> responds_to == [] and len(candidates) >= 2 and confidence "held"; answers == []
@@ -45,7 +46,8 @@ null      no candidates (basis "none")
   [superseded by Amendment A: topic_id / topic_candidates are revisable; labels never change]
 - same invariants as the turn object; only turns already emitted in this segment; one entry per id per reply
 - emitted when a later turn (or close) changes an earlier turn's structure: a held turn collapses
-  (uptake / new cue), a held turn is superseded (its author spoke again with no resolution: it stays
+  (uptake / new cue; T3h: or a sequence-closing third RULES OUT its other candidates -- the
+  revised `candidates` may then be a strict subset of the first emission's), a held turn is superseded (its author spoke again with no resolution: it stays
   held but is FROZEN), or a weak collapse is overturned by new cues
 - strong / declared collapses are frozen: never revised
 - folding turns_delta over the first emission at every prefix == the one-shot structure (exact)
@@ -78,7 +80,8 @@ Topic cue codebook (closed): open_question, via_reply (the turn's settled reply 
 topic, or is the question itself), vocative (names the asker), same_thread, uptake (LATER: a turn
 by the asker or by another topic member settles a reply to this turn), answer_form.
 
-Turn object keys (closed) add "topic_candidates": [{"ref": <question turn id>, "cues": [...]}] (<= 16).
+Turn object keys (closed) add "topic_candidates": [{"ref": <question turn id>, "cues": [...]}]
+(T3h: <= 4 by construction -- was "<= 16").
 - topic_id = ref of the issue-opening question when ONE candidate dominates (strict cue-superset)
   every rival (sole candidate dominates vacuously); else null.
 - topic held <=> topic_id null and len(topic_candidates) >= 2; no topic <=> topic_candidates == [].
@@ -392,3 +395,177 @@ candidate of the answering turn 62% of the time and its decided topic 26% (the r
 held between several live room questions -- in a 4-person meeting each asker's latest room
 question stays live). Uptake still resolves no held REPLY: what remains held is mostly the
 slot / pending question vs the adjacent turn, which uptake does not order.
+
+---
+
+## T3h (still eq-tax-0.8.0; pack 0.8.0) — tracking bugs: bounds, interrogatives, held resolution
+
+Data: AMI VALIDATION (18 meetings, 13 with adjacency-pair annotation, 4 with addressee
+annotation; CC-BY-4.0) for all diagnosis and development; AMI TEST evaluated ONCE at the
+end. `scripts/equilibrium_tracking_eval.py --split validation|test [--segments-dir]
+[--batch N]`. Aggregates only.
+
+### WIRE CHANGES for the consumer (exact)
+1. `candidates`: the fixed `<= 16` is replaced by **`len(candidates) <= 4 + 3 * len(addressees)`**
+   (the same row's `addressees`), on turn objects and turns_delta rows alike. It holds by
+   construction (below); Ocelot still validates it (a violation is a 500 = a rules bug).
+2. `topic_candidates`: **`<= 4`** (was `<= 16`). The client's existing `<= 16` check stays valid.
+3. A turns_delta row may now carry a STRICT SUBSET of the turn's first-emitted `candidates`
+   (a sequence-closing third ruled the others out, below); the row still satisfies every
+   invariant (the collapsed parent is the sole / dominating candidate). Cue sets of the
+   remaining candidates still only grow.
+No new keys, codes, bases or confidences; taxonomy_version unchanged.
+
+### Issue 2 — the 16-candidate cap (500 on big channels): bounded by construction
+Diagnosis: two sources were O(actors) / O(named addressees): the topic room source (every
+other asker's latest room question) and the reply sources per named addressee (QUD top,
+pending top, last turn: 3 each). 60 askers or 6 mentions exceeded 16 -> 500.
+- TOPIC: the room source contributes the room's **MaxQUD** -- the most recent live room
+  issue by another actor in the turn's sequence space (platform thread when declared) --
+  not every asker's pointer (Ginzburg 2012 KoS: QSPEC, a move is about MaxQUD; Roberts
+  1996 QUD stack). Older room issues stay LIVE (open, unanswered / responsiveness state,
+  via_reply into their sequence) and are MaxQUD again once the newer one is downdated.
+  Topic candidates <= 1 (addressee pointer) + 1 (room MaxQUD) + 2 (via_reply) = 4.
+  Deviation from Amendment A ("every live issue ... is a topic candidate"): D4 below.
+- REPLY: the per-addressee grouping is KEPT (a turn naming two askers with equal evidence is
+  a genuine tie -- `test_tie_is_held_open_never_tiebroken`; taking one stack top over the
+  group would break it by recency). Its size is a function of the turn's own addressees,
+  so the bound is stated per row: QUD top + pending top + claim + adjacent (4 with no
+  addressee; with N >= 1 addressees every candidate is by an addressee: <= 3N + 2), hence
+  `<= 4 + 3 * len(addressees)` (the strong-collapse target author is added after the
+  candidates are built, which only raises the bound).
+- Test: `tests/test_equilibrium_tracking_t3h.py::test_big_channel_room_questions_never_500_and_bounded`
+  (60 actors each asking a room question, then a 61st actor, then a turn naming 20 speakers:
+  > 16 candidates, no 500, every row valid).
+
+### Issue 3 — question detection on transcripts (no '?')
+Diagnosis (validation): 655 segments contain an el.* elicitation; Ocelot labelled 256
+questions, precision 0.566 / recall 0.221 against el.* (the ladder's '?' cue is absent; its
+first-parsed-element cue misses turn-initial prefaces: el.* segments most often start with
+so / and / okay / yeah / uh). Rule (`eq.msg.speech_act.interrogative_mark` + `.interrogative`,
+closed EqInterrog codebook in equilibrium_scope; graph-native): a main interrogative clause
+by SYNTAX alone (Huddleston & Pullum 2002 ch.10; Quirk et al. 1985 §11):
+- subject-aux inversion at clause start ("do you", "is it", "can we"), except additive
+  so-inversion ("so do I", subject ends the clause; H&P §10.2.2);
+- wh-word + inverted auxiliary at clause start ("what do", "how does"), wh+aux contractions
+  ("where's"), "how" + degree word ("how many");
+- WH + AUX + SUBJECT anywhere (inversion after a wh-word is a root-clause phenomenon --
+  Emonds 1976 -- so it marks a main interrogative even mid-turn);
+- turn-final tag: negative auxiliary + pronoun ("isn't it").
+"Clause start" admits turn prefaces (Schiffrin 1987 discourse markers; response tokens
+and fillers, Jefferson 1984, Clark & Fox Tree 2002). Declarative questions are marked only
+by intonation: NOT guessed. Text: the rule fires only where the ladder did not already
+call the turn a question (typed questions keep their exact provenance); a syntactic
+question no longer also fires assertion / directive (one speech act). Tests: the golden /
+text tests are unchanged; `test_interrogative_syntax_marks_questions_without_a_question_mark`.
+
+### Issue 1 — held replies never resolved by uptake: diagnosis and grounded changes
+Diagnosis (validation, before; batch 100 and streaming batch 1 agree: 0 of 1215 resolved):
+- 1212 of 1215 held turns are followed by a turn of a candidate's author; that turn
+  collapses onto the held turn in 512 cases and lists it while held in 96 (uptake is added:
+  610 held turns carry `uptake`), does not list it in 604; in 424 the held turn's own
+  author spoke again first (frozen).
+- dominance still fails because of the SHAPE: a held set of two candidates with disjoint
+  single cues ({addressed} | {adjacent}: 249; {adjacent} | {answer_form, open_question}:
+  226, ...) cannot be ordered by adding `uptake` to one side -- the rival's cue is never in
+  the winner's set. And in 566 of 1215 held turns ALL candidates are by ONE actor (208 in
+  one uninterrupted run, 358 across runs): uptake by that actor marks every candidate
+  equally. No rule bug (no still-held row had a dominating candidate).
+- measurement bug fixed: resolutions inside the turn's own batch were invisible in the
+  first emission; the eval now also reads `w -eq_trk_resolved-> p` (graph read-out, read by
+  no rule) and offers `--batch 1`.
+Changes (each grounded; nothing ranked, no weights):
+1. CONTINUERS (Yngve 1970; Schegloff 1982): a backchannel-only turn by another actor
+   between two turns of the same speaker -- where the earlier one is not a question --
+   passes up the turn; the speaker's continuation follows its own talk (adjacent = its
+   run's prior turn), not the continuer (`eq.trk.adj.continuer`). After a question the
+   response token is the second pair part, not a continuer.
+2. TRP LAPSE OF A NON-FPP SELECTION, SPEECH ONLY (Sacks, Schegloff & Jefferson 1974 rule 1:
+   transfer to a selected speaker occurs at that transition-relevance place, the rules
+   re-apply at each next one; Schegloff 1968 / 2007: only a first pair part keeps a response
+   conditionally relevant -- noticeable absence): in `meeting` windows a pending address
+   that is neither a question nor a directive stops being an `addressed` cue / pending
+   candidate once a further non-backchannel turn holds the floor (`w -eq_floor_last-> y`).
+   Text (`thread` / `channel`) is quasi-synchronous -- no TRPs, disrupted adjacency (Garcia &
+   Jacobs 1999; Herring 1999) -- so an address persists there (unchanged).
+3. SEQUENCE-CLOSING THIRD (Schegloff 2007 ch.7.2; Heritage 1984): the first-pair-part
+   speaker's minimal post-expansion (closed EqClosingThird: oh / okay / alright / right /
+   good / great / fine / cool / thanks; continuers excluded) right after the held turn,
+   where that speaker authored the UNIQUE candidate that is a first pair part paired with
+   the held turn by its cues (question: open_question / answer_form / addressed; directive:
+   addressed), rules the other candidates out (`eq.trk.sct.ratify`); the unchanged
+   dominance shape then collapses the turn (sole candidate, strong). Two paired FPPs by the
+   same speaker stay held.
+Held open (theory does not decide): which of ONE speaker's turns a response targets (one
+run = one multi-unit turn, SSJ 1974; several runs); `{adjacent} | {answer_form,
+open_question}` where the leading "yeah" may answer the earlier question or agree with the
+intervening turn; generic uptake by a candidate's author (a participant may respond to a
+turn that answered someone else). Whether uptake should outrank the other cues is still a
+ranking the contract forbids.
+
+### Issue 4 — D2 (answer_form polar only): KEPT
+Fragment answers to wh-questions (Ginzburg 2012 ch.7 short answers) are resolved by the
+TYPE of the wh-phrase (who -> a person, when -> a time, how many -> a number) against the
+fragment's content, i.e. semantics; and recognising a fragment needs the absence of a
+finite clause, which a token stream of disfluent ASR speech does not give (fragments,
+restarts and backchannels are everywhere). A syntax-only cue would be a guess, so D2 stays:
+a wh-answer is a free-form contribution (topic relation) and, in the slot, a reply.
+
+### Deviation added
+- D4 (Amendment A): the topic room source is the room's MaxQUD, not every asker's live
+  pointer (needed for a bound; theory: KoS). Older room issues remain live but are topic
+  candidates only via_reply or once MaxQUD again.
+- Synthetic scaling seed: `test_nonmonotone_families_equal_one_shot_at_every_prefix` meeting
+  seed 1232 -> 1233 (with MaxQUD every free-form turn after a room question engages it; 1232
+  no longer has an unanswered question; 1233 exercises every family).
+
+### Issue 5 — flaky `framebuffer::tests::seqlock_read_races_writer_and_stays_honest`
+A test-timing assumption: under `--test-threads=4` the writer thread can be preempted in
+the middle of its payload fill, stretching the documented single-bump window (module docs)
+from microseconds to a scheduler slice. The test now counts writes started / finished
+(test-side atomics) and tolerates a `torn: false` mismatch only for a read that overlapped
+an in-progress write (counted, printed); any other mismatch still fails. No engine
+behaviour change. 72 / 72 runs under 6-way parallel load passed, one of them observing a
+gap read (which the old assertion would have failed on).
+
+### Numbers
+VALIDATION (13 annotated meetings, 8284 turns; batch 100; "before" = HEAD d7c91ff4):
+
+| metric | before | after |
+|---|---|---|
+| reply recall / precision on gold targets | 0.379 / 0.505 | 0.451 / 0.516 |
+| strong / weak precision | 0.565 / 0.451 | 0.602 / 0.449 |
+| held share of turns | 0.147 (1215) | 0.070 (581) |
+| held at own step resolved later (any batch) | 0 / 1215 | 19 / 600 (5 of 15 on gold targets hit) |
+| adjacency baseline | 0.514 / 0.522 | unchanged |
+| question labels vs el.* (P / R; turns) | 0.566 / 0.221 (256) | 0.616 / 0.426 (453) |
+| topic recall, el.* pairs: topic_id / candidates | 0.094 / 0.180 | 0.178 / 0.349 |
+| answers recall / precision (el.* pairs) | 0.077 / 0.759 | 0.185 / 0.869 |
+| addressees, individual-addressed turns (462): predicted / exact / pair precision | 0.368 / 0.212 / 0.577 | 0.383 / 0.217 / 0.565 |
+| addressees, group-addressed turns (639): empty (= room) share | 0.726 | 0.703 |
+| addressee baseline (adjacent author), individual: exact | 0.725 | 0.725 |
+
+TEST (once; 12 annotated meetings, 7520 turns; no addressee annotation in the test split):
+
+| metric | 0.8.0 Amendment A | T3h |
+|---|---|---|
+| reply recall / precision on gold targets | 0.339 / 0.475 | 0.408 / 0.488 |
+| strong / weak precision | 0.539 / 0.427 | 0.579 / 0.420 |
+| held share of turns | 0.149 (1122) | 0.077 (582) |
+| held resolved later | 0 / 1122 (first emission) | 0 / 582 first emission; 17 / 599 any batch (2 of 9 on gold targets hit) |
+| topic recall: topic_id / candidates | 0.059 / 0.142 | 0.166 / 0.319 |
+| el.* sources Ocelot labels a question | 105 / 458 | 205 / 458 |
+| Ocelot question turns | 211 | 397 (P / R vs el.* 0.509 / 0.415) |
+| adjacency baseline | 0.476 / 0.488 | unchanged |
+
+Reading: the reply relation gained mostly from the two speech-structure rules (continuers,
+TRP lapse) -- held turns halved, reply recall +0.07 at slightly higher precision; still
+below the adjacency baseline's recall (0.476), now level with its precision. Interrogative
+syntax doubled the question turns at higher precision, doubling topic recall. Uptake-type
+resolution stays rare (on test only 12 still-held turns are followed by a closing third
+from a candidate's author; on validation every such still-held case had several candidates
+by that author)
+because what remains held is mostly one speaker's several turns or the "yeah" ambiguity,
+which theory does not decide. Addressee inference from strong collapses is less precise
+than the adjacent author on individually addressed turns (0.565 vs 0.725): recorded, not
+changed here.

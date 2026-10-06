@@ -303,7 +303,10 @@ def _full(ec, b, root, st):
     return {"quanta": got["quanta"], "episodes": got["episodes"], "open": got["open_questions"]}
 
 
-@pytest.mark.parametrize("kind,seed,size", [("thread", 1231, 7), ("meeting", 1232, 5), ("channel", 1233, 11)])
+# (T3h: meeting seed 1232 -> 1233. With the room's MaxQUD as its topic source every free-form
+# turn after a room question is decided under it and ENGAGES it, so seed 1232's 150-turn
+# meeting no longer has an unanswered question; 1233 still exercises every family.)
+@pytest.mark.parametrize("kind,seed,size", [("thread", 1231, 7), ("meeting", 1233, 5), ("channel", 1233, 11)])
 def test_nonmonotone_families_equal_one_shot_at_every_prefix(kind, seed, size):
     """The scratch fork's contract, now kept by rolling state + retraction edges:
     after every batch the conversation's complete read-out equals a fresh one-shot

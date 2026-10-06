@@ -41,11 +41,12 @@ worker client (equilibrium_worker/classify.py, OcelotClassifier):
                         (eq-tax-0.8.0 HELD-OPEN reply attribution, shared contract
                          docs/research/psychology_affect/EQ_TAX_0_8_0_HELD_COLLAPSE.md:
                          basis declared|tracked|held|none; confidence declared|strong|weak|
-                         held|null; candidates [{ref, cues}] (<= 16, closed cue codebook);
+                         held|null; candidates [{ref, cues}] (<= 4 + 3 x len(addressees), closed
+                         cue codebook; T3h bound by construction);
                          turns_delta = full structure of earlier turns this call revised --
                          a held turn collapsed / taken up, or frozen (its author spoke again,
                          or close); folding it over the first emission gives the one-shot
-                         structure. Amendment A: topic_candidates [{ref, cues}] (<= 16, closed
+                         structure. Amendment A: topic_candidates [{ref, cues}] (<= 4, closed
                          topic cue codebook) = the live issues (questions) the turn is under;
                          topic_id = the dominating one, else null (held / none); topic fields
                          are revisable by topic uptake and travel in turns_delta)
@@ -173,7 +174,17 @@ BASES = frozenset({"declared", "tracked", "held", "none"})
 CUE_CODES = frozenset({"adjacent", "open_question", "addressed", "vocative", "second_person", "contrast",
                        "answer_form", "same_thread", "uptake"})
 CONFIDENCES = frozenset({"declared", "strong", "weak", "held"})
-MAX_CANDIDATES = 16
+# T3h: candidate sets are bounded BY CONSTRUCTION (sources contribute one stack top each;
+# see the contract doc, "T3h bounds"): reply candidates <= 4 + 3 x len(addressees) (QUD top,
+# pending top, contrasted claim, adjacent turn; per named addressee its QUD top, pending top
+# and last turn), topic candidates <= 4 (addressee-pointer issue, the room's MaxQUD, the
+# via_reply parent question and its topic). A violation is still a 500 (a rules bug).
+MAX_CANDIDATES_BASE, MAX_CANDIDATES_PER_ADDRESSEE = 4, 3
+MAX_TOPIC_CANDIDATES = 4
+
+
+def max_candidates(addressees) -> int:
+    return MAX_CANDIDATES_BASE + MAX_CANDIDATES_PER_ADDRESSEE * len(addressees)
 # eq-tax-0.8.0 Amendment A: the topic relation (live issues the turn is under), closed
 # topic cue codebook, same bound and dominance shape
 TOPIC_CUE_CODES = frozenset({"open_question", "via_reply", "vocative", "same_thread", "uptake", "answer_form"})
@@ -600,7 +611,7 @@ def structure_violation(t: dict) -> str | None:
         return "basis / thread"
     if conf is not None and conf not in CONFIDENCES:
         return "confidence"
-    if len(cands) > MAX_CANDIDATES:
+    if len(cands) > max_candidates(t["addressees"]):
         return "too many candidates"
     refs = [c["ref"] for c in cands]
     if len(set(refs)) != len(refs) or any(not c["cues"] or len(set(c["cues"])) != len(c["cues"])
@@ -625,7 +636,7 @@ def structure_violation(t: dict) -> str | None:
 
 def _cands_ok(cands, codes) -> bool:
     refs = [c["ref"] for c in cands]
-    return (len(cands) <= MAX_CANDIDATES and len(set(refs)) == len(refs)
+    return (len(cands) <= MAX_TOPIC_CANDIDATES and len(set(refs)) == len(refs)
             and all(c["cues"] and len(set(c["cues"])) == len(c["cues"]) and set(c["cues"]) <= codes
                     for c in cands))
 
