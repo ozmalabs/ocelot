@@ -1,4 +1,4 @@
-"""Equilibrium conversation EVIDENCE DELTAS (track T3e, pack 0.6.0; contract unchanged in eq-tax-0.7.0).
+"""Equilibrium conversation EVIDENCE DELTAS (track T3e, pack 0.6.0; contract unchanged in eq-tax-0.8.0).
 
 /turns, /close and every /_batch item carry `quanta_delta` / `episodes_delta`
 instead of whole rows; folding them in seq order (tests/equilibrium_delta_fold.py,
@@ -23,7 +23,7 @@ from equilibrium_delta_fold import DeltaFold, FoldError  # noqa: E402
 from test_equilibrium_classifier_service import _free_port, _req, _start, _stop  # noqa: E402
 from test_equilibrium_discourse_service import synthetic_window  # noqa: E402
 
-TAX = "eq-tax-0.7.0"
+TAX = "eq-tax-0.8.0"
 
 
 def T(i, a, text, r=None):
@@ -80,7 +80,7 @@ def test_retraction_counter_removal_and_reappearance(srv, svc):
     # 0.7.0: bounded anchors -- the holder's first turn / the runner-up's first turn
     assert first[0]["evidence_add"] == ["f1"] and first[0]["counter_add"] == ["f3"]
     assert first[0]["target_ref"] is None and first[0]["match"] == "partial"
-    assert first[0]["rule_ids"] == [f"eq.quanta.{r}:0.7.0" for r in (
+    assert first[0]["rule_ids"] == [f"eq.quanta.{r}:0.8.0" for r in (
         "interaction.floor", "interaction.floor.counter", "interaction.floor.evidence",
         "match.partial_by_construction")]
     # batch 2: same quantum, runner-up bea -> cy: one counter ref out, one in (0.6.0: the
@@ -217,12 +217,13 @@ def test_http_turns_close_and_batch_shape(srv, tmp_path):
                                                                "turns": FLOOR[1]}]})
         assert st == 200 and out["results"][0]["ok"] is True
         item = out["results"][0]
-        assert set(item) == {"conversation_id", "ok", "seq", "turns", "quanta_delta", "episodes_delta",
-                             "open_questions"}
+        assert set(item) == {"conversation_id", "ok", "seq", "turns", "turns_delta", "quanta_delta",
+                             "episodes_delta", "open_questions"}  # 0.8.0: turns_delta
         f.apply(item)
-        assert all(r.endswith(":0.7.0") for d in item["quanta_delta"] for r in d.get("rule_ids", ()))
+        assert all(r.endswith(":0.8.0") for d in item["quanta_delta"] for r in d.get("rule_ids", ()))
         st, fin, _ = _req(port, "POST", "/v1/conversations/h:1/close")
         assert st == 200 and fin["quanta_delta"] == [] and fin["episodes_delta"] == []
+        f.apply(fin)  # 0.8.0: the frozen frontier, folded like any turns_delta
         # /v1/discourse keeps the full rows
         st, disc, _ = _req(port, "POST", "/v1/discourse",
                            {"taxonomy_version": TAX, "window": {"window_id": "h:1", "kind": "channel"},

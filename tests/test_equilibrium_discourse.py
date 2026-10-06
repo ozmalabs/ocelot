@@ -119,35 +119,48 @@ def _meeting_declared(rows=MEETING):
 
 
 def test_meeting_without_declared_replies_tracks_structure(base):
-    """0.5.0 (T3c O2): adjacency is still not structure, but the seeded turn cursor
-    TRACKS it. G-M1 with no declared replies: the dismissal t03 responds to the open
-    room question t02 without closing it; the withdrawal t04 responds to the address
-    t03 made to its author; actor_a's assertion t05 answers t02 (QUD first: the
-    question is still open for actor_a); the contrast-led t06 responds to actor_a's
-    latest claim t05; the concession t07 responds to t06. Turns that address nobody
-    and follow no open item get basis none (t01, t08, t09)."""
+    """0.5.0 (T3c O2): adjacency is not a forced edge; the seeded turn cursor TRACKS
+    structure. 0.8.0 (T3g, held-open collapse): adjacency is one cue among others and
+    a turn collapses only on strict cue-set dominance. eq-tax-0.8.0 Amendment A: the
+    open room question t02 is a REPLY rival only in its conditional-relevance slot (the
+    first turn by another actor after it: actor_a's dismissal t03) or for an answer
+    FORM; it is no rival of the adjacent turn later (0.8.0 before the amendment held
+    t05..t09 between {t02: open_question, answer_form} and their adjacent turn). So the
+    meeting tracks as one chain, each turn replying locally (adjacent + addressed /
+    contrast / uptake where they hold), and every later turn is under the TOPIC t02
+    (the live issue, inherited via_reply). The reply-pair quanta of t05..t09 (contested,
+    acknowledged, engagement, dissent, the addressed stance targets) are back; t02 stays
+    open (no answer) but is ENGAGED (actor_a's t05 under its topic), so not unanswered."""
     turns = _meeting_turns()
     out = _disc(base, turns, kind="meeting", window_id="w_meet_0")
     _check_wire_invariants(out, turns)
-    rows = {t["id"]: (t["responds_to"], t["basis"], t["addressees"], t["answers"]) for t in out["turns"]}
+    rows = {t["id"]: (t["responds_to"], t["basis"], t["confidence"], t["addressees"], t["answers"])
+            for t in out["turns"]}
     assert rows == {
-        "t01": ([], "none", [], []), "t02": ([], "none", [], []),
-        "t03": (["t02"], "tracked", ["member_003"], []),
-        "t04": (["t03"], "tracked", ["actor_a"], []),
-        "t05": (["t02"], "tracked", ["member_003"], ["t02"]),
-        "t06": (["t05"], "tracked", ["actor_a"], []),
-        "t07": (["t06"], "tracked", ["expert_e"], []),
-        "t08": ([], "none", [], []), "t09": ([], "none", [], []),
+        "t01": ([], "none", None, [], []), "t02": (["t01"], "tracked", "strong", [], []),
+        "t03": (["t02"], "tracked", "strong", ["member_003"], []),
+        "t04": (["t03"], "tracked", "strong", ["actor_a"], []),
+        "t05": (["t04"], "tracked", "strong", ["member_003"], []),
+        "t06": (["t05"], "tracked", "strong", ["actor_a"], []),
+        "t07": (["t06"], "tracked", "strong", ["expert_e"], []),
+        "t08": (["t07"], "tracked", "strong", [], []),
+        "t09": (["t08"], "tracked", "weak", [], []),
     }
-    assert {t["id"]: t["thread_id"] for t in out["turns"]} == {
-        **{k: "t02" for k in ("t02", "t03", "t04", "t05", "t06", "t07")},
-        "t01": "t01", "t08": "t08", "t09": "t09"}
+    cands = {t["id"]: {c["ref"]: c["cues"] for c in t["candidates"]} for t in out["turns"]}
+    assert cands["t03"] == {"t02": ["adjacent", "open_question"]}  # the slot
+    assert cands["t05"] == {"t04": ["addressed", "adjacent"]}
+    assert cands["t06"] == {"t05": ["adjacent", "contrast"]}
+    assert cands["t08"] == {"t07": ["adjacent", "uptake"]}
+    topics = {t["id"]: (t["topic_id"], {c["ref"]: c["cues"] for c in t["topic_candidates"]}) for t in out["turns"]}
+    assert topics["t04"] == ("t02", {"t02": ["via_reply"]})  # the asker's own turn: via its reply only
+    assert all(topics[k] == ("t02", {"t02": ["open_question", "via_reply"]})
+               for k in ("t03", "t05", "t06", "t07", "t08", "t09"))
+    assert {t["id"]: t["thread_id"] for t in out["turns"]} == {f"t0{k}": "t01" for k in range(1, 10)}
     q = _q(out)
     assert set(q) == {
         ("actor_a", "competence.claim_grounding", "-", None),
         ("actor_a", "competence.claimed", "+", None),
         ("actor_a", "competence.contested", "+", "expert_e"),
-        ("actor_a", "inquiry.answered", "+", "member_003"),
         ("actor_a", "interaction.floor", "+", None),
         ("actor_a", "response.dismissal", "+", "member_003"),
         ("actor_a", "response.engagement", "+", "expert_e"),
@@ -167,7 +180,7 @@ def test_meeting_without_declared_replies_tracks_structure(base):
         ("member_003", "epistemic.hedging", "+", None),
         ("member_003", "interaction.withdrawal", "+", None),
     }
-    assert out["open_questions"] == []
+    assert out["open_questions"] == ["t02"]
 
 
 def test_golden_meeting_window(base):
@@ -231,14 +244,17 @@ def test_golden_meeting_window(base):
     assert e2["actor_refs"] == ["actor_a", "expert_e", "member_002"]
     assert [e["episode_id"] for e in out["episodes"]] == ["ep:t02", "ep:t05"]  # by first turn
     # 0.4.0 climate quanta on the same window: the question t02 met by a hostile
-    # status reply (dismissal, so t02 stays unanswered); the contrast t06 against
-    # actor_a's claim is dissent, met by a concession (engagement)
+    # status reply (dismissal: no answer); the contrast t06 against actor_a's claim is
+    # dissent, met by a concession (engagement). eq-tax-0.8.0 Amendment A: the declared
+    # reply chain keeps t02's topic (t03 -> t04 -> t05 inherit it via_reply) and actor_a's
+    # t05 ("We ship it as is.") is a free-form contribution under it, so t02 is ENGAGED,
+    # not unanswered (0.8.0 before the amendment: unanswered)
     assert _climate(q) == {
         ("actor_a", "response.dismissal", "+", "member_003"): ("partial", ["t02", "t03"], []),
         ("actor_a", "response.engagement", "+", "expert_e"): ("partial", ["t06", "t07"], []),
         ("expert_e", "voice.dissent", "+", "actor_a"): ("partial", ["t06"], []),
-        ("member_003", "inquiry.unanswered", "+", None): ("partial", ["t02"], []),
     }
+    assert {t["id"]: t["topic_id"] for t in out["turns"]}["t05"] == "t02"
 
 
 def test_withdrawal_with_return_is_contested(base):

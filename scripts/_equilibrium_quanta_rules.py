@@ -821,8 +821,11 @@ EPISODE_EDGE_TYPES = [("Agent", e, t) for t, e in EPISODE_EDGE.items()] + [
 # (`w -eq_trk_cur-> m`) and passes the phases below in rule order, all within one
 # pass. Every negation in a phase reads either the current turn's completed S0
 # labels or the state left by EARLIER turns, which the cursor has finalised --
-# stratification by turn order, so a turn's tracked structure is causal (never
-# revised by later turns) and incremental batches == one shot by construction.
+# stratification by turn order, so incremental batches == one shot by construction.
+# 0.8.0 (T3g): a turn's structure may be REVISED by a later turn, but only at that
+# later turn's cursor step and only while the earlier turn is in its author's bounded
+# held frontier (uptake, below) -- still a function of the turn sequence alone, so
+# incremental == one shot holds once the revisions (turns_delta) are folded.
 #
 # Conversation state (graph-resident, mutated only by these rules):
 #   w -eq_qud-> q               open-question set (QUD): q is a question turn not
@@ -832,6 +835,8 @@ EPISODE_EDGE_TYPES = [("Agent", e, t) for t, e in EPISODE_EDGE.items()] + [
 #   b -eq_last_addressed_by-> x the most recent turn by another actor addressing b
 #                               (second-person resolution)
 #   a -eq_last_claim-> x        a's most recent claim (assertion / directive) turn
+#   a -eq_last_turn-> x         (0.8.0) a's most recent turn
+#   a -eq_trk_held-> x          (0.8.0) a's held / weak turn still revisable (frontier)
 SECOND_PERSON = ("you", "your", "yours", "yourself", "yourselves", "you're", "you've",
                  "you'll", "you'd", "ya", "y'all")
 # 0.7.0 closed-class BACKCHANNEL codebook (continuers / acknowledgement tokens /
@@ -887,19 +892,6 @@ def _open_item(y, a, m, b_same=None):
     return Ex(Nb(y, "eq_authored_by"), yb, by)
 
 
-def _newer_qud(x, a, m, b):
-    """a strictly more recent compatible OPEN QUESTION exists (in the same addressee
-    group when m names addressees): x is then not the target."""
-    return Ex(Nb("w", "eq_qud"), "yq", And(Gt(A("yq", POS), A(x, POS)), _qud_for("yq", a),
-                                          _open_item("yq", a, m, b)))
-
-
-def _any_qud(a, m, b):
-    """some compatible open question exists for m's author (QUD precedence: a
-    pending address is a target only when no question is open for the author)."""
-    return Ex(Nb("w", "eq_qud"), "zq", And(_qud_for("zq", a), _open_item("zq", a, m, b)))
-
-
 def _newer_pending(x, a, m, b):
     return Ex(Nb(a, "eq_pending"), "yp", And(Gt(A("yp", POS), A(x, POS)), _open_item("yp", a, m, b)))
 
@@ -912,13 +904,366 @@ def _leads_with_contrast(m):
 
 
 UNDECLARED = Eq(A("m", "eq_reply_to_ref"), L(None))
-# (the target's author becomes an addressee only AFTER every T3 rule ran, so the
-# three target rules all read the same T1/T2 addressee set)
-# The sweep writes the target as `eq_trk_to` (read by the later phases of the same
-# turn); `eq.trk.materialise` turns it into `eq_responds_to` + basis "tracked" once
-# the whole queue is swept. (Engine cost, not semantics: writing eq_responds_to per
-# turn re-enumerates every reply-pair msg rule on every cursor pass.)
-TRACKED_FX = [["add_edge", "m", "eq_trk_to", "x"]]
+
+# ---- 0.8.0 (T3g): HELD-OPEN reply attribution ---------------------------------
+# A turn's parent is no longer forced. At its cursor step an undeclared turn m gets a
+# bounded CANDIDATE set (`m -eq_has_cand-> c`, `c -eq_cand_ref-> x`, one fresh
+# EqParentCand node per candidate), built only from bounded conversation state:
+#   * the QUD top for m's author: the most recent compatible question among the latest
+#     open question addressed to m's author (`a -eq_qud_for-> x`) and every actor's latest
+#     open room question (`c -eq_qud_room-> x`) -- bounded by actors; older open
+#     questions stay open (QUD read-out) but are no source; one per named addressee group
+#                                                    (eq.trk.cand.open_question.addressed / .room)
+#   * the most recent compatible pending address to m's author (eq.trk.cand.pending)
+#   * the most recent compatible claim by another actor, when m leads with contrast /
+#     concession / disagreement                                (eq.trk.cand.claim)
+#   * the adjacent other-speaker turn `m -eq_trk_adj-> x` (the previous turn if another
+#     actor wrote it, else the previous turn's own adjacent turn: one chain step over the
+#     same-actor run, finalised at each turn's step)          (eq.trk.cand.adjacent)
+#   * each addressee's last turn `b -eq_last_turn-> x`        (eq.trk.cand.addressee)
+# Each source contributes its stack top (a maximal element of a bounded state set), never
+# a ranking BETWEEN candidates. Every candidate must be compatible with m (_compat).
+# Each candidate then carries CUE edges `c -eq_cue-> k` to the closed EqTrkCue codebook
+# (equilibrium_tracking): every cue whose predicate holds for (m, x) -- the cue rules are
+# properties of the pair, independent of which source proposed it.
+# COLLAPSE is the categorical dominance shape (cf. vision_border_ownership bo_mint_owned):
+#   c dominates r  <=>  cues(r) is a STRICT subset of cues(c)
+#   m collapses to c <=> c dominates every rival (a sole candidate dominates vacuously);
+#   confidence strong (|cues(c)| > |{pick}|, i.e. >= 2 distinct cues) else weak;
+#   otherwise (>= 2 candidates, none dominating all) m is HELD -- a tie is never broken.
+# A held or weak turn enters its author's HELD FRONTIER `a -eq_trk_held-> m` (at most one
+# turn per actor: it is frozen -- leaves the frontier, structure unchanged -- when its
+# author speaks again). UPTAKE: when a later turn y by actor B collapses to (or is a
+# declared reply to, or is HELD with among its candidates) a frontier turn m and B
+# authored candidate x of m, x gains the cue
+# `uptake` and m's dominance is re-evaluated at y's step; strong collapses leave the
+# frontier (frozen). Since a weak winner is a SOLE candidate with one cue (a strict subset
+# of a singleton is empty and cues are non-empty), a weak collapse can only be upgraded to
+# strong by uptake, never overturned; responds_to edges are never retracted.
+# STATE (qud / pending / addressed_by / claim / rsp): updated at m's own step from m's
+# immediate structure (as before); a held turn closes nothing; the parent's author is
+# an addressee (hence pending / addressed_by) only of a STRONG collapse. A LATE collapse (uptake)
+# applies only what is still applicable at y's step: the answer edge (same guards), the
+# QUD close of the answered question, and (strong, non-question m) the parent's author as
+# m's own addressee. It adds no pending address (the parent's author has just spoken in y:
+# moot) and no last-addresser pointer, does not re-route a question, does not revise
+# thread ids (causal), and does not touch rsp state.
+# Revisions are marked for the read-out: `w -eq_trk_rev-> m` (uptake / freeze: emitted as
+# a turns_delta entry), `w -eq_trk_late-> m` (a late collapse: materialised and re-layered
+# through L1 / L2 so downstream facts equal a one-shot run). The adapter removes both
+# marks after the batch's tracking fixpoint.
+CUE_CODES = ("adjacent", "open_question", "addressed", "vocative", "second_person", "contrast",
+             "answer_form", "same_thread", "uptake")
+# closed-class polar-question openers (auxiliaries, as tokenised) and polar answer forms
+POLAR_AUX = ("is", "are", "was", "were", "am", "do", "does", "did", "can", "could", "will", "would",
+             "should", "shall", "may", "might", "must", "have", "has", "had", "isn't", "aren't",
+             "wasn't", "weren't", "don't", "doesn't", "didn't", "can't", "couldn't", "won't",
+             "wouldn't", "shouldn't", "haven't", "hasn't", "hadn't")
+POLAR_ANSWER = ("yes", "no", "yeah", "yep", "yup", "nope", "nah", "sure", "absolutely",
+                "definitely", "certainly", "correct", "exactly", "indeed")
+TRACKING_ITEMS += ([("EqTrkCue", {"code": c}) for c in CUE_CODES]
+                   + [("EqPolarAux", {"form": f}) for f in POLAR_AUX]
+                   + [("EqPolarAnswer", {"form": f}) for f in POLAR_ANSWER])
+TRACKING_EDGE.update({"EqTrkCue": "eq_has_trk_cue", "EqPolarAux": "eq_has_polar_aux",
+                      "EqPolarAnswer": "eq_has_polar_answer"})
+
+CANDS = Nb("m", "eq_has_cand")
+
+
+def _open_q(x):
+    """x is in the open-question set (read from x's side: O(1), never a scan of the QUD)"""
+    return In(V("w"), InNb(x, "eq_qud"))
+
+
+def _newer_open(x, b):
+    """a strictly more recent compatible open question among the bounded QUD-top sources
+    (in the same addressee group when m names addressees): x is then not the top.
+    (Amendment A: an answered question stays on its pointer as a live TOPIC issue, so
+    the reply-level top reads only the still-open ones.)"""
+    return Or(Ex(Nb("a", "eq_qud_for"), "yf", And(Gt(A("yf", POS), A(x, POS)), _open_q("yf"),
+                                                 _open_item("yf", "a", "m", b))),
+              And(Not(has("m", QUESTION)), Ex(Nb("w", "eq_has_actor"), "oc", Ex(Nb("oc", "eq_qud_room"), "yr", And(
+                  Gt(A("yr", POS), A(x, POS)), _open_q("yr"), _open_item("yr", "a", "m", b))))))
+
+
+def _answer_form(m, x):
+    """eq-tax-0.8.0 Amendment A: the TYPE-CONFORMING answer form (Raymond 2003; Schegloff
+    2007): x is a question led by a polar auxiliary (after any leading vocative: "Bea, is
+    ...") and m leads with a polar answer form. A free-form assertion is not an answer
+    FORM -- it is a free-form contribution to the issue x raised (the topic relation
+    below), so it no longer makes x a reply rival."""
+    t, k, cb, v = f"qt_{x}", f"qk_{x}", f"qc_{x}", f"qv_{x}"
+    polar_q = Ex(Nb(x, "eq_has_token"), t, And(
+        Ex(Nb("agent", "eq_has_polar_aux"), cb, Eq(A(cb, "form"), A(t, "form"))),
+        Not(Ex(Nb(x, "eq_has_token"), k, And(Lt(A(k, "eq_pos"), A(t, "eq_pos")), Not(Ex(
+            Nb(x, "eq_trk_voc"), v, Eq(A(v, "eq_name_form"), A(k, "form")))))))))
+    return And(has(x, QUESTION), polar_q, _leads_with(m, "eq_has_polar_answer", f"pa_{x}"))
+
+
+def _thread_shared(m, x):
+    """m and x are in the same sequence space: the same platform thread, or either
+    declares none"""
+    return Or(Eq(A(m, "eq_platform_thread"), L(None)), Eq(A(x, "eq_platform_thread"), L(None)),
+              Eq(A(m, "eq_platform_thread"), A(x, "eq_platform_thread")))
+
+
+def _room_slot(x, b):
+    """m (by a) occupies the conditional-relevance slot of ROOM question x (by b): x's
+    slot is still open (`x -eq_cr_slot-> w`: no turn by another actor in x's sequence
+    space -- its platform thread, when declared -- since x; eq.trk.slot.*) and m is by
+    another actor in that space"""
+    return And(Not(Same("a", b)), In(V("w"), Nb(x, "eq_cr_slot")), _thread_shared("m", x))
+
+
+def _reply_gate(x, b):
+    """Amendment A reply relation: an open question x (by b) for m's author a is a REPLY
+    rival only when m has the answer form, or m occupies x's conditional-relevance slot
+    (Schegloff 2007): a selected next speaker's first turn after it (x addressed a and a
+    has not spoken since: `a -eq_pending-> x`), or for a room question the first turn by
+    another actor after it. The question is never classified (simple / complex): the
+    replying turn's form and position decide."""
+    return Or(_answer_form("m", x), In(V("a"), InNb(x, "eq_pending")), _room_slot(x, b))
+
+
+def _cues(c):
+    return Nb(c, "eq_cue")
+
+
+def _dominates(c, r):
+    """cues(r) is a strict subset of cues(c): every cue of r is a cue of c, and c has
+    strictly more (two set sizes compared, no number)."""
+    k = f"dk_{c}_{r}"
+    return And(Not(Ex(_cues(r), k, Not(In(V(k), _cues(c))))), Gt(Count(_cues(c)), Count(_cues(r))))
+
+
+def _dominates_all(m, c):
+    r = f"rv_{c}"
+    return Not(Ex(Nb(m, "eq_has_cand"), r, And(Not(Same(r, c)), Not(_dominates(c, r)))))
+
+
+def _strong(c):
+    return Gt(Count(_cues(c)), singleton(_cues(c)))
+
+
+def _leads_with(m, edge, sfx):
+    """m's first token is a form of the `edge` codebook"""
+    t, k, cb = f"lt_{sfx}", f"lk_{sfx}", f"lc_{sfx}"
+    return Ex(Nb(m, "eq_has_token"), t, And(
+        Not(Ex(Nb(m, "eq_has_token"), k, Lt(A(k, "eq_pos"), A(t, "eq_pos")))),
+        Ex(Nb("agent", edge), cb, Eq(A(cb, "form"), A(t, "form")))))
+
+
+def _contrastive(m):
+    return Or(_leads_with_contrast(m), has(m, lab("msg.concession")), has(m, lab("msg.disagreement")))
+
+
+def _substantive_answer(m):
+    """the existing answer guards: not a counter-question / withdrawal, not dismissive,
+    not backchannel-only"""
+    return And(Not(_cc(m, "nonanswer")), Not(_dismissive(m)), Not(_backchannel_only(m)))
+
+
+# cue predicates over (m by a, candidate c -> x by b)
+CUE_PREDICATES = {
+    "adjacent": In(V("x"), Nb("m", "eq_trk_adj")),
+    "open_question": And(_open_q("x"), _qud_for("x", "a"), _reply_gate("x", "b")),
+    "addressed": In(V("a"), InNb("x", "eq_pending")),
+    "vocative": In(V("b"), Nb("m", "eq_trk_voc")),
+    "second_person": In(V("b"), Nb("m", "eq_trk_2p")),
+    "contrast": And(_contrastive("m"), In(V("x"), Nb("b", "eq_last_claim"))),
+    # Amendment A: the type-conforming (polar) answer form only
+    "answer_form": _answer_form("m", "x"),
+    "same_thread": And(Not(Eq(A("m", "eq_platform_thread"), L(None))),
+                       Eq(A("m", "eq_platform_thread"), A("x", "eq_platform_thread"))),
+}
+CAND_FX = [["add_edge", "m", "eq_trk_cand", "x"]]
+TRK_CUE = ["agent", "eq_has_trk_cue", "k"]
+CAND_X = ["m", "eq_has_cand", "c"], ["c", "eq_cand_ref", "x"]
+HELD_OR_WEAK = Or(Eq(A("m", "eq_trk_conf"), L("held")), Eq(A("m", "eq_trk_conf"), L("weak")))
+
+# ---- eq-tax-0.8.0 AMENDMENT A: questions open TOPICS ---------------------------
+# Two relations per turn, each held open with the same dominance shape:
+#   reply (above): the local sequential prior; an open question is a reply rival only
+#     under _reply_gate (answer form / conditional-relevance slot);
+#   topic (here): the live issue(s) the turn is under (Roberts 1996 QUD; Ginzburg 2012:
+#     a question raises an issue that stays live while people say other things).
+# LIVE ISSUES (bounded, no new state): the question on m's author's addressee pointer
+# (`a -eq_qud_for-> x`, one) and each other actor's latest room question
+# (`b -eq_qud_room-> x`, one per asker), current on that pointer, by another actor. A
+# free-form answer leaves the issue live; only a type-conforming (polar) answer resolves
+# and downdates it (eq.trk.open_q.answered.*). No intervening talk retires an issue; only
+# a newer question on the same pointer, that resolution, or close does. A platform-
+# DECLARED reply (text) takes its parent's topic only (via_reply sources). Bound:
+# |topic candidates| <= 1 (addressee pointer) + (other actors with a room question on
+# their pointer) + 2 (via_reply: the one settled / declared parent -- itself when a
+# question, and its decided topic) -- per turn O(actors), as the reply room source.
+# A candidate is a fresh EqTopicCand (`m -eq_has_tcand-> c -eq_tcand_ref-> x`) with cue
+# edges `c -eq_tcue-> k` to the closed EqTopicCue codebook; topic decided
+# (`m -eq_top_to-> x`) iff one candidate's cue set strictly contains every rival's (a
+# sole candidate dominates vacuously); else HELD (`m.eq_top_state = held`). FROZEN
+# (`frozen`) when decided with >= 2 cues, or decided via_reply from a frozen reply
+# (strong / declared); a decided-but-revisable topic is `open` (a sole 1-cue
+# candidate: by the same argument as the reply relation, it can only gain cues, never
+# change target). Held / open topics enter the author's TOPIC FRONTIER
+# `a -eq_top_held-> m` (at most one turn per actor; frozen when the author speaks again).
+# TOPIC UPTAKE: a later turn y by the asker of x or by a topic MEMBER of x
+# (`x -eq_tmember-> actor`: the asker's co-participants whose turn was decided under x)
+# that SETTLES a reply onto frontier turn m adds `uptake` to m's candidate x; m is
+# re-evaluated at y's step (turns_delta).
+# ENGAGEMENT: a turn decided under x, by an actor c other than x's asker, that is not
+# backchannel-only / nonanswer / dismissive marks `x -eq_engaged_by-> c`: x is not
+# unanswered (inquiry.unanswered: engaged by anyone, as answered by anyone) and c
+# responded to it (interaction.responsiveness: per actor, as `eq_rsp_ans`); x stays live.
+TOPIC_CUE_CODES = ("open_question", "via_reply", "vocative", "same_thread", "uptake", "answer_form")
+TRACKING_ITEMS += [("EqTopicCue", {"code": c}) for c in TOPIC_CUE_CODES]
+TRACKING_EDGE["EqTopicCue"] = "eq_has_top_cue"
+TCANDS = Nb("m", "eq_has_tcand")
+TOP_CUE = ["agent", "eq_has_top_cue", "k"]
+TCAND_X = ["m", "eq_has_tcand", "c"], ["c", "eq_tcand_ref", "x"]
+TOP_FX = [["add_edge", "m", "eq_top_cand", "x"]]
+SETTLED = (("declared", "eq_responds_to"), ("tracked", "eq_trk_to"))
+# a platform-declared reply, to another actor (eq_responds_to, declared at m's own step)
+# or a declared self-continuation (eq_reply_to to the author's own turn)
+NOT_DECLARED = Not(Ex(Nb("m", "eq_reply_to"), "dr_m"))
+VIA = SETTLED + (("platform", "eq_reply_to"),)
+
+
+def _tcues(c):
+    return Nb(c, "eq_tcue")
+
+
+def _tdominates(c, r):
+    k = f"tk_{c}_{r}"
+    return And(Not(Ex(_tcues(r), k, Not(In(V(k), _tcues(c))))), Gt(Count(_tcues(c)), Count(_tcues(r))))
+
+
+def _tdominates_all(m, c):
+    r = f"tr_{c}"
+    return Not(Ex(Nb(m, "eq_has_tcand"), r, And(Not(Same(r, c)), Not(_tdominates(c, r)))))
+
+
+def _live_issue(x):
+    """x is current on a bounded QUD pointer (read from x's side: O(1))"""
+    return Or(Ex(InNb(x, "eq_qud_for"), f"lf_{x}"), Ex(InNb(x, "eq_qud_room"), f"lr_{x}"))
+
+
+def _issue_for(x, a):
+    """x is a live issue for actor a: on a's addressee pointer, or a room question on its
+    asker's pointer"""
+    return Or(In(V(a), InNb(x, "eq_qud_for")), Ex(InNb(x, "eq_qud_room"), f"ir_{x}"))
+
+
+def _has_tcue(c, code):
+    v = f"hc_{c}_{code}"
+    return Ex(_tcues(c), v, Eq(A(v, "code"), L(code)))
+
+
+def _reply_frozen(m):
+    """m's reply is frozen at its own step: platform-declared, or a strong collapse"""
+    return Or(Ex(Nb(m, "eq_reply_to"), f"rf_{m}"), Eq(A(m, "eq_trk_conf"), L("strong")))
+
+
+def _strong_t(c):
+    return Gt(Count(_tcues(c)), singleton(_tcues(c)))
+
+
+def _engaging(p):
+    """p is a free-form contribution, not backchannel-only / nonanswer / dismissive"""
+    return _substantive_answer(p)
+
+
+# (x's author is read by a where-check, not a match edge: the matcher binds distinct
+# variables to distinct nodes, and x may be by m's own author -- via_reply inherits the
+# author's own question as the topic it is under)
+def _x_by(pred):
+    return Ex(Nb("x", "eq_authored_by"), "xb", pred)
+
+
+TOPIC_CUE_PREDICATES = {
+    "open_question": And(_x_by(Not(Same("a", "xb"))), _issue_for("x", "a")),
+    # m's settled reply parent is x, or is decided under x
+    "via_reply": Or(*[Or(In(V("x"), Nb("m", e)), Ex(Nb("m", e), f"vr_{bs}", In(V("x"), Nb(f"vr_{bs}", "eq_top_to"))))
+                      for bs, e in VIA]),
+    "vocative": _x_by(In(V("xb"), Nb("m", "eq_trk_voc"))),
+    "same_thread": And(Not(Eq(A("m", "eq_platform_thread"), L(None))),
+                       Eq(A("m", "eq_platform_thread"), A("x", "eq_platform_thread"))),
+    "answer_form": _answer_form("m", "x"),
+}
+
+# (1) TOPIC UPTAKE of a frontier turn p by the current turn m (by a), run BEFORE m's own
+# topic so that m's via_reply reads p's revised topic
+TOPIC_UPTAKE_RULES = [
+    *[rule(f"eq.trk.top.uptake.{basis}",
+           [WIN, CUR, AUTH, ["m", edge, "p"], ["p", "eq_has_tcand", "c"], ["c", "eq_tcand_ref", "x"], TOP_CUE],
+           And(Eq(A("k", "code"), L("uptake")), Not(In(V("k"), _tcues("c"))), Not(_authored_by("p", "a")),
+               Or(_authored_by("x", "a"), In(V("a"), Nb("x", "eq_tmember"))),
+               Ex(Nb("p", "eq_authored_by"), "tpa", In(V("p"), Nb("tpa", "eq_top_held")))),
+           [["add_edge", "c", "eq_tcue", "k"], ["add_edge", "m", "eq_top_up", "p"],
+            ["add_edge", "w", "eq_trk_rev", "p"]])
+      for basis, edge in SETTLED],
+    rule("eq.trk.top.late.decide", [WIN, CUR, ["m", "eq_top_up", "p"], ["p", "eq_has_tcand", "c"],
+                                    ["c", "eq_tcand_ref", "x"]],
+         And(Not(Ex(Nb("p", "eq_top_to"), "ptx")), _tdominates_all("p", "c")),
+         [["add_edge", "p", "eq_top_to", "x"], ["set_attr", "p", "eq_top_state", "open"]]),
+    rule("eq.trk.top.late.frozen", [WIN, CUR, ["m", "eq_top_up", "p"], ["p", "eq_top_to", "x"],
+                                    ["p", "eq_has_tcand", "c"], ["c", "eq_tcand_ref", "x"]],
+         _strong_t("c"), [["set_attr", "p", "eq_top_state", "frozen"]]),
+    rule("eq.trk.top.late.leave", [WIN, CUR, ["m", "eq_top_up", "p"], ["p", "eq_authored_by", "pa"],
+                                   ["pa", "eq_top_held", "p"]],
+         Eq(A("p", "eq_top_state"), L("frozen")), [["del_edge", "pa", "eq_top_held", "p"]]),
+    rule("eq.trk.top.late.member", [WIN, CUR, ["m", "eq_top_up", "p"], ["p", "eq_top_to", "x"],
+                                    ["p", "eq_authored_by", "pa"]],
+         L(True), [["add_edge", "x", "eq_tmember", "pa"]]),
+    rule("eq.trk.top.late.engaged", [WIN, CUR, ["m", "eq_top_up", "p"], ["p", "eq_top_to", "x"],
+                                     ["p", "eq_authored_by", "pa"], ["x", "eq_authored_by", "xb"]],
+         And(Not(Same("pa", "xb")), _engaging("p")), [["add_edge", "x", "eq_engaged_by", "pa"]]),
+]
+
+# (2) the current turn's own topic
+TOPIC_RULES = [
+    # every live issue for m's author -- unless m is a platform-DECLARED reply: in text the
+    # participant displays the sequence the turn continues (SSJ 1974 next-turn display), so
+    # its topic is its parent's (the via_reply sources below), never an unrelated issue
+    rule("eq.trk.top.cand.for", [WIN, CUR, AUTH, ["a", "eq_qud_for", "x"], ["x", "eq_authored_by", "b"]],
+         And(Not(Same("a", "b")), NOT_DECLARED), TOP_FX),
+    rule("eq.trk.top.cand.room", [WIN, CUR, AUTH, ["w", "eq_has_actor", "b"], ["b", "eq_qud_room", "x"]],
+         And(Not(Same("a", "b")), NOT_DECLARED), TOP_FX),
+    # via_reply sources: the settled parent question itself, or the parent's decided topic
+    *[rule(f"eq.trk.top.via_q.{basis}", [WIN, CUR, ["m", edge, "x"]],
+           And(has("x", QUESTION), _live_issue("x")), TOP_FX) for basis, edge in VIA],
+    *[rule(f"eq.trk.top.via_t.{basis}", [WIN, CUR, ["m", edge, "p"], ["p", "eq_top_to", "x"]],
+           _live_issue("x"), TOP_FX) for basis, edge in VIA],
+    rule("eq.trk.top.cand.node", [WIN, CUR, ["m", "eq_top_cand", "x"]],
+         Not(Ex(TCANDS, "t0", In(V("x"), Nb("t0", "eq_tcand_ref")))),
+         [["add_node", "c", "EqTopicCand", {"eq_tcand": True}], ["add_edge", "m", "eq_has_tcand", "c"],
+          ["add_edge", "c", "eq_tcand_ref", "x"]]),
+    *[rule(f"eq.trk.top.cue.{code}", [WIN, CUR, AUTH, *TCAND_X, TOP_CUE],
+           And(Eq(A("k", "code"), L(code)), pred), [["add_edge", "c", "eq_tcue", "k"]])
+      for code, pred in TOPIC_CUE_PREDICATES.items()],
+    rule("eq.trk.top.collapse", [WIN, CUR, *TCAND_X], _tdominates_all("m", "c"),
+         [["add_edge", "m", "eq_top_to", "x"], ["set_attr", "m", "eq_top_state", "open"]]),
+    rule("eq.trk.top.held", [WIN, CUR],
+         And(Ex(TCANDS, "t0"), Not(Ex(TCANDS, "t1", _tdominates_all("m", "t1")))),
+         [["set_attr", "m", "eq_top_state", "held"]]),
+    rule("eq.trk.top.frozen", [WIN, CUR, ["m", "eq_top_to", "x"], *TCAND_X],
+         Or(_strong_t("c"), And(_has_tcue("c", "via_reply"), _reply_frozen("m"))),
+         [["set_attr", "m", "eq_top_state", "frozen"]]),
+    rule("eq.trk.top.member", [WIN, CUR, AUTH, ["m", "eq_top_to", "x"]], L(True),
+         [["add_edge", "x", "eq_tmember", "a"]]),
+    rule("eq.trk.top.engaged", [WIN, CUR, AUTH, ["m", "eq_top_to", "x"], ["x", "eq_authored_by", "b"]],
+         And(Not(Same("a", "b")), _engaging("m")), [["add_edge", "x", "eq_engaged_by", "a"]]),
+]
+
+# (3) topic frontier (with the reply frontier, at the author's next turn / close)
+TOPIC_FRONTIER_RULES = [
+    rule("eq.trk.top.freeze.mark", [WIN, CUR, AUTH, ["a", "eq_top_held", "z"]], Not(Same("z", "m")),
+         [["add_edge", "w", "eq_trk_rev", "z"]]),
+    rule("eq.trk.top.freeze.drop", [WIN, CUR, AUTH, ["a", "eq_top_held", "z"]], Not(Same("z", "m")),
+         [["del_edge", "a", "eq_top_held", "z"]]),
+    rule("eq.trk.top.frontier.enter", [WIN, CUR, AUTH],
+         Or(Eq(A("m", "eq_top_state"), L("held")), Eq(A("m", "eq_top_state"), L("open"))),
+         [["add_edge", "a", "eq_top_held", "m"]]),
+]
 
 TRACKING_RULES = [
     # ordering-only continuation: consecutive turns by the same actor (interaction.run)
@@ -929,13 +1274,22 @@ TRACKING_RULES = [
          And(Not(Ex(Nb("w", "eq_trk_cur"), "c")),
              Not(Ex(Nb("m", "eq_prev_turn"), "y", In(V("y"), Nb("w", "eq_trk_pending"))))),
          [["add_edge", "w", "eq_trk_cur", "m"], ["del_edge", "w", "eq_trk_pending", "m"]]),
+    # 0.8.0 adjacent other-speaker turn: the previous turn if another actor wrote it,
+    # else (same-actor run) the previous turn's own adjacent turn -- one chain step
+    rule("eq.trk.adj.prev", [WIN, CUR, AUTH, ["m", "eq_prev_turn", "p"], ["p", "eq_authored_by", "b"]],
+         Not(Same("a", "b")), [["add_edge", "m", "eq_trk_adj", "p"]]),
+    # (p's author is a where-check, not a match edge: a match edge `p -eq_authored_by-> a`
+    # joined from the new authorship edge would enumerate every turn of a)
+    rule("eq.trk.adj.run", [WIN, CUR, AUTH, ["m", "eq_prev_turn", "p"], ["p", "eq_trk_adj", "x"]],
+         _authored_by("p", "a"), [["add_edge", "m", "eq_trk_adj", "x"]]),
     # T1 explicit address: a token equal to the name form of an actor who has
-    # already spoken (actor_ref supplied by the platform; no identity guessing)
+    # already spoken (actor_ref supplied by the platform; no identity guessing).
+    # 0.8.0: the vocative mark `m -eq_trk_voc-> b` is the `vocative` cue's fact.
     rule("eq.trk.addressee.mention",
          [WIN, CUR, AUTH, ["m", "eq_has_token", "t"], ["w", "eq_has_actor", "b"]],
          And(Eq(A("t", "form"), A("b", "eq_name_form")), Not(Same("a", "b")),
              Lt(A("b", "eq_first_pos"), A("m", POS))),
-         [["add_edge", "m", "eq_addresses", "b"]]),
+         [["add_edge", "m", "eq_addresses", "b"], ["add_edge", "m", "eq_trk_voc", "b"]]),
     # T1' (0.7.0, participants roster) explicit address of a ROSTER participant,
     # who may not have spoken yet: the turn carries one of the participant's
     # aliases (or its actor_ref name form) as consecutive tokens -- the alias's
@@ -948,61 +1302,184 @@ TRACKING_RULES = [
                   Not(Ex(Nb("al", "eq_alias_tok"), "k", Not(Ex(Nb("m", "eq_has_token"), "u", And(
                       Eq(A("u", "eq_pos"), {"type": "Plus", "items": [A("t", "eq_pos"), A("k", "eq_apos")]}),
                       Eq(A("u", "form"), A("k", "form")))))))),
-              [["add_edge", "m", "eq_addresses", "b"]]),
+              [["add_edge", "m", "eq_addresses", "b"], ["add_edge", "m", "eq_trk_voc", "b"]]),
          # R10 join index (matcher traversal only): probe the alias by the token's form
          index_hints=[{"for_var": "al", "via_var": "t", "via_key": "form", "node_type": "EqAlias",
                        "this_key": "a_form1"}]),
     # T2 second-person address with no explicit addressee: the last speaker who
-    # addressed this actor
+    # addressed this actor (0.8.0: marked `m -eq_trk_2p-> b`, the second_person cue's fact)
     rule("eq.trk.addressee.second_person",
          [WIN, CUR, AUTH, ["a", "eq_last_addressed_by", "x"], ["x", "eq_authored_by", "b"]],
          And(Not(_addressed_any("m")), Not(Same("a", "b")),
              Ex(Nb("m", "eq_has_token"), "t2", Ex(Nb("agent", "eq_has_second_person"), "sp",
                                                   Eq(A("sp", "form"), A("t2", "form"))))),
-         [["add_edge", "m", "eq_addresses", "b"]]),
-    # T3 tracked responds_to (only when the platform declared no reply): the most
-    # recent compatible open item addressed to the author or the room -- an open
-    # question (QUD first: once a counter-question closes, the question under it is
-    # the top again), else the most recent pending address to the author; one per
-    # named addressee, else one overall
-    rule("eq.trk.responds.open_question",
-         [WIN, CUR, AUTH, ["w", "eq_qud", "x"], ["x", "eq_authored_by", "b"]],
-         And(UNDECLARED, Not(Same("a", "b")), _qud_for("x", "a"), _compat("m", "x", "b"),
-             Not(_newer_qud("x", "a", "m", "b"))),
-         TRACKED_FX),
-    rule("eq.trk.responds.pending_address",
+         [["add_edge", "m", "eq_addresses", "b"], ["add_edge", "m", "eq_trk_2p", "b"]]),
+    # T3 (0.8.0) CANDIDATE SOURCES (only when the platform declared no reply). Each
+    # source proposes its stack top; none decides the parent.
+    # QUD top over BOUNDED state, never a scan of the whole open-question set: the latest
+    # open question addressed to m's author (`a -eq_qud_for-> x`) and each actor's latest
+    # open ROOM question (`c -eq_qud_room-> x`, when m is not itself a question)
+    rule("eq.trk.cand.open_question.addressed",
+         [WIN, CUR, AUTH, ["a", "eq_qud_for", "x"], ["x", "eq_authored_by", "b"]],
+         And(UNDECLARED, Not(Same("a", "b")), _open_q("x"), _reply_gate("x", "b"), _compat("m", "x", "b"),
+             Not(_newer_open("x", "b"))),
+         CAND_FX),
+    rule("eq.trk.cand.open_question.room",
+         [WIN, CUR, AUTH, ["w", "eq_has_actor", "b"], ["b", "eq_qud_room", "x"]],
+         And(UNDECLARED, Not(Same("a", "b")), Not(has("m", QUESTION)), _open_q("x"), _reply_gate("x", "b"),
+             _compat("m", "x", "b"), Not(_newer_open("x", "b"))),
+         CAND_FX),
+    rule("eq.trk.cand.pending",
          [WIN, CUR, AUTH, ["a", "eq_pending", "x"], ["x", "eq_authored_by", "b"]],
-         And(UNDECLARED, Not(Same("a", "b")), _compat("m", "x", "b"),
-             Not(_any_qud("a", "m", "b")), Not(_newer_pending("x", "a", "m", "b"))),
-         TRACKED_FX),
-    # ... or a claim the turn contrasts with / concedes / disagrees with (existing
-    # contrast-marker + concession / disagreement cue machinery): the most recent
-    # claim by another actor
-    rule("eq.trk.responds.claim",
+         And(UNDECLARED, Not(Same("a", "b")), _compat("m", "x", "b"), Not(_newer_pending("x", "a", "m", "b"))),
+         CAND_FX),
+    # a claim the turn contrasts with / concedes / disagrees with: the most recent
+    # compatible claim by another actor
+    rule("eq.trk.cand.claim",
          [WIN, CUR, AUTH, ["w", "eq_has_actor", "b"], ["b", "eq_last_claim", "x"]],
-         And(UNDECLARED, Not(Same("a", "b")), _compat("m", "x", "b"),
-             Or(_leads_with_contrast("m"), has("m", lab("msg.concession")),
-                has("m", lab("msg.disagreement"))),
+         And(UNDECLARED, Not(Same("a", "b")), _compat("m", "x", "b"), _contrastive("m"),
              Not(Ex(Nb("w", "eq_has_actor"), "c", And(Not(Same("c", "a")), Ex(
                  Nb("c", "eq_last_claim"), "z",
                  And(Gt(A("z", POS), A("x", POS)), _compat("m", "z", "c"))))))),
-         TRACKED_FX),
+         CAND_FX),
+    rule("eq.trk.cand.adjacent", [WIN, CUR, AUTH, ["m", "eq_trk_adj", "x"], ["x", "eq_authored_by", "b"]],
+         And(UNDECLARED, _compat("m", "x", "b")), CAND_FX),
+    rule("eq.trk.cand.addressee", [WIN, CUR, AUTH, ["m", "eq_addresses", "b"], ["b", "eq_last_turn", "x"]],
+         And(UNDECLARED, Not(Same("a", "b")), _compat("m", "x", "b")), CAND_FX),
+    # one fresh candidate node per proposed parent (the proposal edge dedups sources)
+    rule("eq.trk.cand.node", [WIN, CUR, ["m", "eq_trk_cand", "x"]],
+         Not(Ex(CANDS, "c0", In(V("x"), Nb("c0", "eq_cand_ref")))),
+         [["add_node", "c", "EqParentCand", {"eq_cand": True}], ["add_edge", "m", "eq_has_cand", "c"],
+          ["add_edge", "c", "eq_cand_ref", "x"]]),
+    # cue producers: every codebook cue whose predicate holds for (m, x)
+    *[rule(f"eq.trk.cue.{code}", [WIN, CUR, AUTH, *CAND_X, ["x", "eq_authored_by", "b"], TRK_CUE],
+           And(Eq(A("k", "code"), L(code)), pred), [["add_edge", "c", "eq_cue", "k"]])
+      for code, pred in CUE_PREDICATES.items()],
+    # COLLAPSE (categorical dominance shape; a tie is held open, never broken)
+    rule("eq.trk.collapse.strong", [WIN, CUR, *CAND_X], And(_dominates_all("m", "c"), _strong("c")),
+         [["add_edge", "m", "eq_trk_to", "x"], ["set_attr", "m", "eq_trk_conf", "strong"]]),
+    rule("eq.trk.collapse.weak", [WIN, CUR, *CAND_X], And(_dominates_all("m", "c"), Not(_strong("c"))),
+         [["add_edge", "m", "eq_trk_to", "x"], ["set_attr", "m", "eq_trk_conf", "weak"]]),
+    rule("eq.trk.collapse.held", [WIN, CUR],
+         And(Ex(CANDS, "c0"), Not(Ex(CANDS, "c1", _dominates_all("m", "c1")))),
+         [["set_attr", "m", "eq_trk_conf", "held"]]),
+    # (the collapsed parent's author becomes an addressee only AFTER the collapse, so
+    # every candidate source read the same T1/T2 addressee set). 0.8.0: only on a STRONG
+    # collapse -- a weak one rests on a single cue (typically adjacency), and the address
+    # it would infer feeds the `addressed` / `second_person` cues of later turns, so the
+    # one cue would be counted again as independent evidence.
     rule("eq.trk.addressee.target", [WIN, CUR, AUTH, ["m", "eq_trk_to", "x"], ["x", "eq_authored_by", "b"]],
-         Not(Same("a", "b")),
+         And(Not(Same("a", "b")), Eq(A("m", "eq_trk_conf"), L("strong"))),
          [["add_edge", "m", "eq_addresses", "b"]]),
-    # T4 answers (declared OR tracked responds_to): a SUBSTANTIVE answer-type turn by
+    # T4 answers (declared OR collapsed responds_to): a SUBSTANTIVE answer-type turn by
     # another actor -- counter-questions / withdrawals (nonanswer), dismissals and
-    # (0.7.0) backchannel-only turns do not close
+    # (0.7.0) backchannel-only turns do not close. A held turn answers nothing.
     *[rule(f"eq.trk.answers.{basis}",
            [WIN, CUR, AUTH, ["m", edge, "p"], ["p", "eq_authored_by", "b"]],
-           And(Not(Same("a", "b")), has("p", QUESTION), Gt(A("m", POS), A("p", POS)),
-               Not(_cc("m", "nonanswer")), Not(_dismissive("m")), Not(_backchannel_only("m"))),
+           And(Not(Same("a", "b")), has("p", QUESTION), Gt(A("m", POS), A("p", POS)), _substantive_answer("m")),
            [["add_edge", "m", "eq_answers", "p"]])
       for basis, edge in (("declared", "eq_responds_to"), ("tracked", "eq_trk_to"))],
+    # T4' (0.8.0) UPTAKE: m (by a) collapsed to / declared reply to a frontier turn p, and a
+    # authored candidate x of p: x gains the `uptake` cue; p is re-evaluated below
+    # (authorship and frontier membership are where-checks, never match edges joined from
+    # an actor: those would enumerate the actor's every turn)
+    *[rule(f"eq.trk.uptake.{basis}",
+           [WIN, CUR, AUTH, ["m", edge, "p"], ["p", "eq_has_cand", "c"], ["c", "eq_cand_ref", "x"], TRK_CUE],
+           And(Eq(A("k", "code"), L("uptake")), Not(In(V("k"), _cues("c"))), _authored_by("x", "a"),
+               Ex(Nb("p", "eq_authored_by"), "pa", In(V("p"), Nb("pa", "eq_trk_held")))),
+           [["add_edge", "c", "eq_cue", "k"], ["add_edge", "m", "eq_trk_up", "p"],
+            ["add_edge", "w", "eq_trk_rev", "p"]])
+      for basis, edge in (("declared", "eq_responds_to"), ("tracked", "eq_trk_to"))],
+    # T4'' (0.8.0 rev, next-turn proof procedure, Sacks, Schegloff & Jefferson 1974): a
+    # HELD later turn takes part too. Its structure does not rule out any of its
+    # candidates, so each frontier turn p among them is possibly responded to by a, and
+    # a's turn displays a's understanding of p: a candidate x of p authored by a gains
+    # `uptake`. (A COLLAPSED m displays one target, so only that target is taken up:
+    # the rules above.) Bounded: m's candidates x p's candidates x the cue codebook.
+    rule("eq.trk.uptake.held",
+         [WIN, CUR, AUTH, ["m", "eq_has_cand", "cm"], ["cm", "eq_cand_ref", "p"], ["p", "eq_has_cand", "c"],
+          ["c", "eq_cand_ref", "x"], TRK_CUE],
+         And(Eq(A("m", "eq_trk_conf"), L("held")), Eq(A("k", "code"), L("uptake")), Not(In(V("k"), _cues("c"))),
+             _authored_by("x", "a"),
+             Ex(Nb("p", "eq_authored_by"), "pa", In(V("p"), Nb("pa", "eq_trk_held")))),
+         [["add_edge", "c", "eq_cue", "k"], ["add_edge", "m", "eq_trk_up", "p"],
+          ["add_edge", "w", "eq_trk_rev", "p"]]),
+    # late collapse of a taken-up frontier turn p (same dominance shape, at m's step)
+    rule("eq.trk.late.mark", [WIN, CUR, ["m", "eq_trk_up", "p"], ["p", "eq_has_cand", "c"], ["c", "eq_cand_ref", "x"]],
+         And(_dominates_all("p", "c"), Not(Ex(Nb("p", "eq_trk_to"), "px"))),
+         [["add_edge", "w", "eq_trk_late", "p"]]),
+    rule("eq.trk.late.strong", [WIN, CUR, ["m", "eq_trk_up", "p"], ["p", "eq_has_cand", "c"], ["c", "eq_cand_ref", "x"]],
+         And(_dominates_all("p", "c"), _strong("c")),
+         [["add_edge", "p", "eq_trk_to", "x"], ["set_attr", "p", "eq_trk_conf", "strong"]]),
+    rule("eq.trk.late.weak", [WIN, CUR, ["m", "eq_trk_up", "p"], ["p", "eq_has_cand", "c"], ["c", "eq_cand_ref", "x"]],
+         And(_dominates_all("p", "c"), Not(_strong("c"))),
+         [["add_edge", "p", "eq_trk_to", "x"], ["set_attr", "p", "eq_trk_conf", "weak"]]),
+    # a strong collapse is frozen: it leaves the frontier
+    rule("eq.trk.late.frozen", [WIN, CUR, ["m", "eq_trk_up", "p"], ["p", "eq_authored_by", "pa"],
+                                ["pa", "eq_trk_held", "p"]],
+         Eq(A("p", "eq_trk_conf"), L("strong")), [["del_edge", "pa", "eq_trk_held", "p"]]),
+    # what is still applicable of a late collapse: the answer (same guards) and its QUD close
+    rule("eq.trk.late.answers",
+         [WIN, CUR, ["m", "eq_trk_up", "p"], ["p", "eq_trk_to", "x"], ["p", "eq_authored_by", "pa"],
+          ["x", "eq_authored_by", "xb"]],
+         And(Not(Same("pa", "xb")), has("x", QUESTION), Gt(A("p", POS), A("x", POS)), _substantive_answer("p")),
+         [["add_edge", "p", "eq_answers", "x"]]),
+    rule("eq.trk.late.qud_close", [WIN, CUR, ["m", "eq_trk_up", "p"], ["p", "eq_answers", "x"]],
+         _open_q("x"), [["del_edge", "w", "eq_qud", "x"]]),
+    # (Amendment A fix) NO late addressee: a turn's addressees are causal -- fixed at its
+    # own step, like thread ids. The 0.8.0 rev added the parent's author as p's addressee
+    # on a strong LATE collapse, but the per-turn evidence rules read the ABSENCE of an
+    # addressee (eq.quanta.evidence.untargeted runs live on p's own batch), so a later
+    # address made incremental != one shot (the untargeted quantum of p's batch stays).
+    # The late collapse still shows the parent's author as the turn's reply target.
+    # Amendment A: topic uptake of frontier turns, then the current turn's own topic
+    # (read before m's own state updates below: m is never its own topic)
+    *TOPIC_UPTAKE_RULES,
+    *TOPIC_RULES,
     # T5 state update for the turns after this one
-    rule("eq.trk.qud.close", [WIN, CUR, ["m", "eq_answers", "p"], ["w", "eq_qud", "p"]], L(True),
+    rule("eq.trk.qud.close", [WIN, CUR, ["m", "eq_answers", "p"]], _open_q("p"),
          [["del_edge", "w", "eq_qud", "p"]]),
     rule("eq.trk.qud.open", [WIN, CUR], has("m", QUESTION), [["add_edge", "w", "eq_qud", "m"]]),
+    # 0.8.0 the bounded QUD-top sources: per addressee its latest question, per asker its
+    # latest room question. Amendment A: a question answered in the TYPE-CONFORMING answer
+    # form (a polar answer to a polar question: the "simple" call / response, Schegloff
+    # 2007; Raymond 2003) is resolved and downdated (Ginzburg 2012) -- it leaves its
+    # pointer. Any other answer (a free-form contribution that closes it at reply level:
+    # eq_qud / open_questions) leaves the issue LIVE on its pointer -- discussion
+    # continues -- until a newer question supersedes it there, or close (Roberts 1996).
+    # The relation decides, not a classification of the question. The reply sources read
+    # only the still-open questions on the pointers.
+    *[rule(f"eq.trk.open_q.answered.{e[7:]}", [WIN, CUR, ["m", "eq_answers", "p"], ["b", e, "p"]],
+           _answer_form("m", "p"), [["del_edge", "b", e, "p"]]) for e in ("eq_qud_for", "eq_qud_room")],
+    *[rule(f"eq.trk.open_q.late_answered.{e[7:]}", [WIN, CUR, ["m", "eq_trk_up", "p"], ["p", "eq_answers", "x"],
+                                                     ["b", e, "x"]], _answer_form("p", "x"),
+           [["del_edge", "b", e, "x"]]) for e in ("eq_qud_for", "eq_qud_room")],
+    # (eval read-out only, read by no rule) a still-OPEN question leaving its bounded QUD-top
+    # pointer because a newer question superseded it there: `w -eq_qud_lapsed-> x`. The
+    # question itself stays open and live (eq_qud, unanswered / responsiveness state);
+    # intervening talk never lapses it (a question opens a topic; answers are free form).
+    rule("eq.trk.open_q.lapse_for", [WIN, CUR, AUTH, ["m", "eq_addresses", "b"], ["b", "eq_qud_for", "x"]],
+         And(has("m", QUESTION), Not(Same("a", "b")), _open_q("x")), [["add_edge", "w", "eq_qud_lapsed", "x"]]),
+    rule("eq.trk.open_q.for_drop", [WIN, CUR, AUTH, ["m", "eq_addresses", "b"], ["b", "eq_qud_for", "x"]],
+         And(has("m", QUESTION), Not(Same("a", "b"))), [["del_edge", "b", "eq_qud_for", "x"]]),
+    rule("eq.trk.open_q.for_set", [WIN, CUR, AUTH, ["m", "eq_addresses", "b"]],
+         And(has("m", QUESTION), Not(Same("a", "b"))), [["add_edge", "b", "eq_qud_for", "m"]]),
+    rule("eq.trk.open_q.lapse_room", [WIN, CUR, AUTH, ["a", "eq_qud_room", "x"]],
+         And(has("m", QUESTION), Not(_addressed_any("m")), _open_q("x")), [["add_edge", "w", "eq_qud_lapsed", "x"]]),
+    rule("eq.trk.open_q.room_drop", [WIN, CUR, AUTH, ["a", "eq_qud_room", "x"]],
+         And(has("m", QUESTION), Not(_addressed_any("m"))), [["del_edge", "a", "eq_qud_room", "x"]]),
+    rule("eq.trk.open_q.room_set", [WIN, CUR, AUTH], And(has("m", QUESTION), Not(_addressed_any("m"))),
+         [["add_edge", "a", "eq_qud_room", "m"]]),
+    # Amendment A: the conditional-relevance slot of a ROOM question (Schegloff 2007; SSJ
+    # 1974 rule 1b): open from the question until the first turn by another actor in its
+    # sequence space (its platform thread when declared; interleaved threads keep their
+    # own slots). Read only through the bounded per-asker pointer (O(actors) per turn,
+    # as the room source); the current turn read it above.
+    rule("eq.trk.slot.close", [WIN, CUR, AUTH, ["w", "eq_has_actor", "b"], ["b", "eq_qud_room", "x"],
+                               ["x", "eq_cr_slot", "w"]],
+         And(Not(Same("a", "b")), _thread_shared("m", "x")), [["del_edge", "x", "eq_cr_slot", "w"]]),
+    rule("eq.trk.slot.open", [WIN, CUR], And(has("m", QUESTION), Not(_addressed_any("m"))),
+         [["add_edge", "m", "eq_cr_slot", "w"]]),
     rule("eq.trk.pending.taken", [WIN, CUR, AUTH, ["a", "eq_pending", "x"]], L(True),
          [["del_edge", "a", "eq_pending", "x"]]),
     rule("eq.trk.pending.add", [WIN, CUR, AUTH, ["m", "eq_addresses", "b"]], Not(Same("a", "b")),
@@ -1016,9 +1493,22 @@ TRACKING_RULES = [
          Or(*[has("m", k) for k in CLAIM_LABS]), [["del_edge", "a", "eq_last_claim", "x"]]),
     rule("eq.trk.claim.set", [WIN, CUR, AUTH], Or(*[has("m", k) for k in CLAIM_LABS]),
          [["add_edge", "a", "eq_last_claim", "m"]]),
+    # 0.8.0 the actor's last turn (the addressee source of later turns)
+    rule("eq.trk.last_turn.drop", [WIN, CUR, AUTH, ["a", "eq_last_turn", "x"]], Not(Same("x", "m")),
+         [["del_edge", "a", "eq_last_turn", "x"]]),
+    rule("eq.trk.last_turn.set", [WIN, CUR, AUTH], L(True), [["add_edge", "a", "eq_last_turn", "m"]]),
+    # 0.8.0 FREEZE: the author speaks again -- its frontier turn leaves the frontier with
+    # its structure unchanged (re-emitted once as final), then this turn may enter
+    rule("eq.trk.freeze.mark", [WIN, CUR, AUTH, ["a", "eq_trk_held", "z"]], Not(Same("z", "m")),
+         [["add_edge", "w", "eq_trk_rev", "z"]]),
+    rule("eq.trk.freeze.drop", [WIN, CUR, AUTH, ["a", "eq_trk_held", "z"]], Not(Same("z", "m")),
+         [["del_edge", "a", "eq_trk_held", "z"]]),
+    rule("eq.trk.frontier.enter", [WIN, CUR, AUTH], HELD_OR_WEAK, [["add_edge", "a", "eq_trk_held", "m"]]),
+    *TOPIC_FRONTIER_RULES,
     # thread id: the platform thread (S0), else the thread of the EARLIEST parent
-    # (declared reply_to, any author, or tracked target; every earlier turn already
-    # has its thread), else the turn roots its own thread
+    # (declared reply_to, any author, or the immediate collapse; every earlier turn
+    # already has its thread), else the turn roots its own thread (a held turn too:
+    # thread ids are causal, never revised by a late collapse)
     *[rule(f"eq.trk.thread.inherit_{edge}", [WIN, CUR, ["m", edge, "p"]],
            And(Eq(A("m", "eq_thread"), L(None)), Not(Eq(A("p", "eq_thread"), L(None))),
                Not(Ex(Nb("m", "eq_reply_to"), "p1", Lt(A("p1", POS), A("p", POS)))),
@@ -1030,8 +1520,12 @@ TRACKING_RULES = [
     # cursor release (last in rule order): the next queued turn starts next pass
     rule("eq.trk.release", [WIN, CUR], L(True),
          [["del_edge", "w", "eq_trk_cur", "m"]]),
-    # once the queue is swept: tracked targets become responds_to (basis tracked)
+    # once the queue is swept: collapsed parents become responds_to (basis tracked) --
+    # the batch's own turns, and earlier turns collapsed late in this batch
     rule("eq.trk.materialise", [WIN, TURN, ["m", "eq_trk_to", "x"]],
+         And(Not(Ex(Nb("w", "eq_trk_cur"), "c")), Not(Ex(Nb("w", "eq_trk_pending"), "q"))),
+         [["add_edge", "m", "eq_responds_to", "x"], ["set_attr", "m", "eq_basis", "tracked"]]),
+    rule("eq.trk.materialise.late", [WIN, ["w", "eq_trk_late", "m"], ["m", "eq_trk_to", "x"]],
          And(Not(Ex(Nb("w", "eq_trk_cur"), "c")), Not(Ex(Nb("w", "eq_trk_pending"), "q"))),
          [["add_edge", "m", "eq_responds_to", "x"], ["set_attr", "m", "eq_basis", "tracked"]]),
 ]
@@ -1044,6 +1538,24 @@ TRACKING_EDGE_TYPES = [
     # 0.7.0 participants roster (ingest; transient alias content, conversation fork only)
     ("EqWindow", "eq_has_participant", "EqActor"), ("EqActor", "eq_has_alias", "EqAlias"),
     ("EqAlias", "eq_alias_tok", "EqAliasTok"),
+    # 0.8.0 held-open reply attribution
+    ("Agent", "eq_has_trk_cue", "EqTrkCue"), ("Agent", "eq_has_polar_aux", "EqPolarAux"),
+    ("Agent", "eq_has_polar_answer", "EqPolarAnswer"),
+    ("Message", "eq_trk_adj", "Message"), ("EqActor", "eq_last_turn", "Message"),
+    ("Message", "eq_trk_voc", "EqActor"), ("Message", "eq_trk_2p", "EqActor"),
+    ("Message", "eq_trk_cand", "Message"), ("Message", "eq_has_cand", "EqParentCand"),
+    ("EqParentCand", "eq_cand_ref", "Message"), ("EqParentCand", "eq_cue", "EqTrkCue"),
+    ("EqActor", "eq_trk_held", "Message"), ("Message", "eq_trk_up", "Message"),
+    ("EqWindow", "eq_trk_rev", "Message"), ("EqWindow", "eq_trk_late", "Message"),
+    ("EqActor", "eq_qud_for", "Message"), ("EqActor", "eq_qud_room", "Message"),
+    ("EqWindow", "eq_qud_lapsed", "Message"),
+    # eq-tax-0.8.0 Amendment A: topic relation
+    ("Agent", "eq_has_top_cue", "EqTopicCue"), ("Message", "eq_top_cand", "Message"),
+    ("Message", "eq_has_tcand", "EqTopicCand"), ("EqTopicCand", "eq_tcand_ref", "Message"),
+    ("EqTopicCand", "eq_tcue", "EqTopicCue"), ("Message", "eq_top_to", "Message"),
+    ("Message", "eq_tmember", "EqActor"), ("Message", "eq_engaged_by", "EqActor"),
+    ("EqActor", "eq_top_held", "Message"), ("Message", "eq_top_up", "Message"),
+    ("Message", "eq_cr_slot", "EqWindow"),
 ]
 
 
@@ -1289,21 +1801,37 @@ FLOOR_RULES = [
 ]
 
 # -- selective non-response (equilibrium_quanta) ---------------------------------
+def _engaged(qt, by=None):
+    """eq-tax-0.8.0 Amendment A: qt has a decided-topic free-form contribution by another
+    actor (`qt -eq_engaged_by-> c`, set by the turn cursor) -- by anyone (not
+    unanswered), or by actor `by` (`by` responded to it)"""
+    if by is not None:
+        return In(V(by), Nb(qt, "eq_engaged_by"))
+    return Ex(Nb(qt, "eq_engaged_by"), "en_" + qt)
+
+
 RSP_RULES = [
     # b's question responding to a's turn, a posted LATER, and no turn by a responds to it
+    # (Amendment A: nor is the question ENGAGED -- discussed under its topic)
     rule("eq.quanta.interaction.responsiveness.node", [["qt", "eq_rsp_due", "a"], ["qt", "eq_authored_by", "b"]],
-         And(enabled(L(RSP_T)), Not(In(V("a"), Nb("qt", "eq_rsp_ans"))),
+         And(enabled(L(RSP_T)), Not(In(V("a"), Nb("qt", "eq_rsp_ans"))), Not(_engaged("qt", "a")),
              Not(Ex(Nb("a", "eq_rsp_node"), "y", Eq(A("y", "q_target"), A("b", REF))))),
          node_nm("q", "a", A("a", REF), L(RSP_T), L("-"), A("b", REF), "eq_rsp_node")
          + [["add_edge", "q", "eq_rsp_target", "b"]]),
     rule("eq.quanta.interaction.responsiveness",
          [["qt", "eq_rsp_due", "a"], ["qt", "eq_authored_by", "b"], ["a", "eq_rsp_node", "q"]],
-         And(Eq(A("q", "q_target"), A("b", REF)), enabled(L(RSP_T)), Not(In(V("a"), Nb("qt", "eq_rsp_ans")))),
+         And(Eq(A("q", "q_target"), A("b", REF)), enabled(L(RSP_T)), Not(In(V("a"), Nb("qt", "eq_rsp_ans"))),
+             Not(_engaged("qt", "a"))),
          attach_nm("q", "a", "eq.quanta.interaction.responsiveness") + [["add_edge", "q", "eq_evidence_nm", "qt"]]),
     # retraction, driven by the answer itself (never by a scan of the open evidence)
     rule("eq.quanta.interaction.responsiveness.retract",
          [["qt", "eq_rsp_ans", "a"], ["qt", "eq_authored_by", "b"], ["a", "eq_rsp_node", "q"],
           ["q", "eq_rsp_target", "b"]],
+         L(True), [["del_edge", "q", "eq_evidence_nm", "qt"]]),
+    # Amendment A: retraction driven by a's own engagement (a later topic contribution by a)
+    rule("eq.quanta.interaction.responsiveness.retract_engaged",
+         [["qt", "eq_engaged_by", "a"], ["qt", "eq_authored_by", "b"],
+          ["a", "eq_rsp_node", "q"], ["q", "eq_rsp_target", "b"]],
          L(True), [["del_edge", "q", "eq_evidence_nm", "qt"]]),
     # counter: b's other questions to a that a DID answer (monotone, permanent node)
     rule("eq.quanta.interaction.responsiveness.counter",
@@ -1336,15 +1864,21 @@ def _answered_by_edge(qt):
 UNANS_RULES = [
     # S2 meaning: a question no answer closed, once another actor has posted after it
     rule("eq.quanta.inquiry.unanswered.node", [["qt", "eq_unans_due", "w"], ["qt", "eq_authored_by", "b"]],
-         And(Not(_answered_by_edge("qt")), enabled(L(UNANS_T)), Not(Ex(Nb("b", "eq_unans_node"), "y"))),
+         And(Not(_answered_by_edge("qt")), Not(_engaged("qt")), enabled(L(UNANS_T)),
+             Not(Ex(Nb("b", "eq_unans_node"), "y"))),
          node_nm("q", "b", A("b", REF), L(UNANS_T), L("+"), L(""), "eq_unans_node")),
     rule("eq.quanta.inquiry.unanswered",
          [["qt", "eq_unans_due", "w"], ["qt", "eq_authored_by", "b"], ["b", "eq_unans_node", "q"]],
-         And(Not(_answered_by_edge("qt")), enabled(L(UNANS_T))),
+         And(Not(_answered_by_edge("qt")), Not(_engaged("qt")), enabled(L(UNANS_T))),
          attach_nm("q", "b", "eq.quanta.inquiry.unanswered") + [["add_edge", "q", "eq_evidence_nm", "qt"]]),
     rule("eq.quanta.inquiry.unanswered.retract",
          [["x", "eq_answers", "qt"], ["qt", "eq_authored_by", "b"], ["b", "eq_unans_node", "q"]],
          enabled(L("inquiry.answered")), [["del_edge", "q", "eq_evidence_nm", "qt"]]),
+    # Amendment A: an ENGAGED question (a decided-topic contribution by another actor) is
+    # not unanswered; the retraction is driven by the engagement mark
+    rule("eq.quanta.inquiry.unanswered.retract_engaged",
+         [["qt", "eq_engaged_by", "c"], ["qt", "eq_authored_by", "b"], ["b", "eq_unans_node", "q"]],
+         L(True), [["del_edge", "q", "eq_evidence_nm", "qt"]]),
     rule("eq.quanta.inquiry.unanswered.counter", [["b", "eq_unans_node", "q"], ["qt", "eq_authored_by", "b"]],
          And(has("qt", QUESTION), _answered_by_edge("qt")),
          [["add_edge", "q", "eq_counter", "qt"], prov("q", "eq.quanta.inquiry.unanswered.counter")]),

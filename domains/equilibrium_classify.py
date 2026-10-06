@@ -1,4 +1,4 @@
-"""Equilibrium classifier sidecar — the THIN world adapter (tracks T3 / T3b / T3c / T3e / T3f, pack 0.7.0).
+"""Equilibrium classifier sidecar — the THIN world adapter (tracks T3 / T3b / T3c / T3e / T3f / T3g, pack 0.8.0).
 
 CLAUDE.md "the agent is a graph in Rust": this module does only
   * INGEST  — each message becomes Message/Token/CodeSpan/LinkSpan nodes + edges
@@ -49,8 +49,8 @@ from typing import Any, Iterable
 from substrate.boot_core import boot_core
 from substrate.seed_loader import manifest_for
 
-PACK_VERSION = "0.7.0"
-TAXONOMY_VERSION = "eq-tax-0.7.0"
+PACK_VERSION = "0.8.0"
+TAXONOMY_VERSION = "eq-tax-0.8.0"
 PACK_IDS = ("equilibrium_tokens", "equilibrium_window", "equilibrium_lexicon",
             "equilibrium_scope", "equilibrium_msg", "equilibrium_pattern",
             "equilibrium_traits", "equilibrium_quanta", "equilibrium_competence",
@@ -480,7 +480,7 @@ def conversation_ingest(substrate, agent_root, state: Conversation, turns: list[
     """Append one batch (and optionally roster entries, which apply from this
     batch's turns on) to the retained conversation fork and read it out.
     The caller has run conversation_check. Returns
-      {"conversation_id", "seq", "turns": [...], "quanta_delta": [...],
+      {"conversation_id", "seq", "turns": [...], "turns_delta": [...], "quanta_delta": [...],
        "episodes_delta": [...], "open_questions": [...], "steps": [...]}"""
     n = _native(substrate)
     w = state.w
@@ -548,12 +548,23 @@ def conversation_ingest(substrate, agent_root, state: Conversation, turns: list[
     # retire them from that frontier, so later batches never re-match them
     for m in nodes:
         n.remove_edge(w, "eq_l0", m)
+    # 0.8.0: earlier turns the cursor REVISED in this batch (uptake / freeze:
+    # `w -eq_trk_rev-> m`) are re-read as turns_delta; those collapsed late
+    # (`w -eq_trk_late-> m`, already materialised) re-enter the live layers below
+    # with the batch's turns. Both are frontier marks: removed once read.
+    rev, late = n.neighbours(w, "eq_trk_rev"), n.neighbours(w, "eq_trk_late")
+    for m in rev:
+        n.remove_edge(w, "eq_trk_rev", m)
+    for m in late:
+        n.remove_edge(w, "eq_trk_late", m)
+    batch = {m.value for m in nodes}
+    layered = nodes + [m for m in late if m.value not in batch]
     # the tracked turns enter the LIVE (monotone) strata layers in order -- L1
     # per-turn rules, then L2 (rules whose absence test reads an L1 fact) -- as
     # the layer's frontier marks, which are removed once its fixpoint is reached
     live = []
     for layer in ("eq_l1", "eq_l2"):
-        for m in nodes:
+        for m in layered:
             n.add_edge(w, layer, m)
         if layer == "eq_l1":
             n.add_edge(agent_root, "eq_l1_open", w)
@@ -565,7 +576,7 @@ def conversation_ingest(substrate, agent_root, state: Conversation, turns: list[
         live.append(_tick(n, touched))
         if live[-1] >= DISCOURSE_FUEL:
             raise BudgetExhausted("rule fuel exhausted")
-        for m in nodes:
+        for m in layered:
             n.remove_edge(w, layer, m)
         if layer == "eq_l1":
             n.remove_edge(agent_root, "eq_l1_open", w)
@@ -575,7 +586,8 @@ def conversation_ingest(substrate, agent_root, state: Conversation, turns: list[
                 n.remove_edge(w, "eq_qnew", q)
     seq = _led(n, state.ledger, "eq_seq") + 1
     n.set_attr(state.ledger, "eq_seq", seq)
-    out = _emit(substrate, agent_root, state, nodes, touched)
+    out = _emit(substrate, agent_root, state, nodes, touched,
+                [m for m in rev if m.value not in batch])
     out["steps"] = [s0, trk] + live + out["steps"]
     return out
 
@@ -597,11 +609,20 @@ def _new_quanta(n, state: Conversation) -> list:
     return new
 
 
+def _frontier(n, w) -> list:
+    """0.8.0: the held frontier (every actor's still-revisable held / weak turn, and
+    Amendment A: its still-revisable held / open topic turn)"""
+    return [m for a in _actors(n, w) for e in ("eq_trk_held", "eq_top_held") for m in n.neighbours(a, e)]
+
+
 def conversation_close(substrate, agent_root, state: Conversation) -> dict:
-    """Final read-out: no turns, and no ticks, so the deltas are empty (every
-    change was emitted by the batch that made it). The caller drops the retained
-    fork afterwards."""
-    return _emit(substrate, agent_root, state, [], Changes())
+    """Final read-out: no turns, and no ticks, so the evidence deltas are empty
+    (every change was emitted by the batch that made it). 0.8.0: the held frontier
+    is frozen at close, so its turns are re-emitted once as final turns_delta
+    entries (structure unchanged: freezing never changes a field). The caller
+    drops the retained fork afterwards."""
+    n = _native(substrate)
+    return _emit(substrate, agent_root, state, [], Changes(), _frontier(n, state.w))
 
 
 def conversation_full(substrate, agent_root, state: Conversation) -> dict:
@@ -647,16 +668,53 @@ def _refs(n, nodes) -> list[str]:
     return [r for _, r in sorted(zip(pos, ref))]
 
 
-def _read_turn(f, m, status) -> dict:
-    n = _native(f)
+def _candidates(n, m, has="eq_has_cand", ref="eq_cand_ref", cue="eq_cue") -> list[dict]:
+    """0.8.0: the turn's candidate parents (EqParentCand nodes) with their cue codes,
+    in turn order of the candidate; cues sorted (a set on the wire). Amendment A: the
+    same read-out over the topic candidates (EqTopicCand: eq_has_tcand / eq_tcand_ref /
+    eq_tcue)."""
+    rows = []
+    for c in n.neighbours(m, has):
+        x = n.neighbours(c, ref)[0]
+        xa = n.node(x)["attrs"]
+        rows.append((xa["eq_turn_pos"], {"ref": xa["eq_ref"], "cues": sorted(
+            n.node(k)["attrs"]["code"] for k in n.neighbours(c, cue))}))
+    return [r for _, r in sorted(rows, key=lambda r: r[0])]
+
+
+def _structure(n, m) -> dict:
+    """The turn's revisable structure fields (the turns_delta row). Mechanical: basis
+    and confidence are the rules' own marks (`eq_basis`, `eq_trk_conf`)."""
     a = n.node(m)["attrs"]
     responds = _refs(n, n.neighbours(m, "eq_responds_to"))
-    return {"id": a["eq_ref"], "read": _read(f, m, status), "responds_to": responds,
-            "basis": a.get("eq_basis") if responds else "none",
+    conf = a.get("eq_trk_conf")
+    if responds:
+        basis = a.get("eq_basis")
+        conf = "declared" if basis == "declared" else conf
+    else:
+        basis = "held" if conf == "held" else "none"
+        conf = "held" if conf == "held" else None
+    return {"id": a["eq_ref"], "responds_to": responds, "basis": basis, "confidence": conf,
+            "candidates": _candidates(n, m),
             "addressees": sorted({n.node(x)["attrs"]["actor_ref"]
                                   for x in n.neighbours(m, "eq_addresses")}),
-            "thread_id": a.get("eq_thread"), "topic_id": a.get("eq_topic"),
-            "answers": _refs(n, n.neighbours(m, "eq_answers"))}
+            "thread_id": a.get("eq_thread"), "answers": _refs(n, n.neighbours(m, "eq_answers")),
+            # Amendment A: the topic relation (the rules' decided `eq_top_to`, else null)
+            "topic_id": next(iter(_refs(n, n.neighbours(m, "eq_top_to"))), None),
+            "topic_candidates": _candidates(n, m, "eq_has_tcand", "eq_tcand_ref", "eq_tcue")}
+
+
+def _read_turn(f, m, status) -> dict:
+    row = _structure(_native(f), m)
+    row["read"] = _read(f, m, status)
+    return row
+
+
+def _turns_delta(n, revised) -> list[dict]:
+    """0.8.0: full structure rows of earlier turns this call revised (one per id, turn order)."""
+    revised = list({m.value: m for m in revised}.values())
+    pos = n.get_attr_many(revised, "eq_turn_pos") if revised else []
+    return [_structure(n, m) for _, m in sorted(zip(pos, revised), key=lambda r: r[0])]
 
 
 def _quantum_row(n, q, qa: dict) -> dict:
@@ -885,9 +943,11 @@ def _episodes_delta(n, state: Conversation, ch: Changes, net: dict) -> list[dict
     return [d for _, d in out]
 
 
-def _emit(substrate, agent_root, state: Conversation, nodes: list, changes: Changes) -> dict:
-    """Read-out of the retained fork: the batch's turns, the quanta / episodes
-    deltas of what this call's ticks changed (`changes`), the open questions."""
+def _emit(substrate, agent_root, state: Conversation, nodes: list, changes: Changes,
+          revised: list = ()) -> dict:
+    """Read-out of the retained fork: the batch's turns, the earlier turns this call
+    revised (`turns_delta`, 0.8.0), the quanta / episodes deltas of what this call's
+    ticks changed (`changes`), the open questions."""
     n = _native(substrate)
     w = state.w
     status = _label_status(substrate, agent_root)
@@ -895,6 +955,7 @@ def _emit(substrate, agent_root, state: Conversation, nodes: list, changes: Chan
     net = changes.net()
     return {"conversation_id": n.node(w)["attrs"]["conversation_id"],
             "seq": _led(n, state.ledger, "eq_seq"), "turns": turns,
+            "turns_delta": _turns_delta(n, revised),
             "quanta_delta": _quanta_delta(n, state, changes, net),
             "episodes_delta": _episodes_delta(n, state, changes, net),
             "open_questions": _open_questions(n, w), "steps": []}

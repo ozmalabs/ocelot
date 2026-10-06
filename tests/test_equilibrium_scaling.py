@@ -18,9 +18,9 @@ os.environ.setdefault("OZMA_NO_LLM", "1")
 from test_equilibrium_classifier_service import _free_port, _req, _start, _stop  # noqa: E402
 from test_equilibrium_conversations import client_parse_conversation  # noqa: E402
 from test_equilibrium_discourse_service import synthetic_window  # noqa: E402
-from equilibrium_delta_fold import DeltaFold  # noqa: E402
+from equilibrium_delta_fold import STRUCT, DeltaFold  # noqa: E402
 
-TAX = "eq-tax-0.7.0"
+TAX = "eq-tax-0.8.0"
 
 
 @pytest.fixture(scope="module")
@@ -50,6 +50,11 @@ def test_batch_equals_single_calls_in_request_order(svc):
     convs = [(f"b:eq:{i}", "thread" if i % 2 else "meeting", _conv(900 + i, kind="thread" if i % 2 else "meeting"))
              for i in range(6)]
     ref = {cid: _sequential(svc, f"ref:{cid}", kind, turns, 30) for cid, kind, turns in convs}
+    # 0.8.0: an item with close:true also carries the close's frozen frontier (turns_delta)
+    from services.equilibrium_classifier.server import merge_turns_delta
+    for cid, _, _ in convs:
+        fin = svc.conversation_close(f"ref:{cid}")
+        ref[cid][1]["turns_delta"] = merge_turns_delta(ref[cid][1], fin["turns_delta"])
     for step in range(2):
         items = [{"conversation_id": cid, "kind": kind, "turns": turns[step * 30:(step + 1) * 30],
                   "close": step == 1} for cid, kind, turns in convs]
@@ -278,7 +283,16 @@ def test_s0_msg_rules_do_not_rescan_the_prefix(monkeypatch):
 # ---- stage B: the non-monotone families run live (no scratch fork) -----------------
 NM_RULE_KEYS = ("eq.trk.nturns", "eq.trk.unans.", "eq.trk.rsp.", "interaction.floor", "responsiveness",
                 "eq.quanta.nm.", "inquiry.unanswered", "competence.grounded", "claim_grounding",
-                "eq.ep.gen.", "generative", "facet_match", "eq.quanta.match.", "eq.quanta.compose")
+                "eq.ep.gen.", "generative", "facet_match", "eq.quanta.match.", "eq.quanta.compose",
+                # 0.8.0 (T3g) held-open collapse: candidates, cues, dominance, uptake / late
+                # collapse, frontier freeze, adjacency / last-turn state, late materialise
+                "eq.trk.cand.", "eq.trk.cue.", "eq.trk.collapse.", "eq.trk.uptake.", "eq.trk.late.",
+                "eq.trk.freeze.", "eq.trk.frontier.", "eq.trk.adj.", "eq.trk.last_turn.",
+                "eq.trk.materialise",
+                # eq-tax-0.8.0 Amendment A: topic relation (live-issue / via_reply candidates,
+                # topic cues, dominance, topic uptake / late decision, topic frontier,
+                # engagement) and the room-question slot state
+                "eq.trk.top.", "eq.trk.slot.", "retract_engaged")
 NM_TRAITS = ("interaction.floor", "interaction.responsiveness", "inquiry.unanswered",
              "competence.claim_grounding")
 
@@ -303,13 +317,18 @@ def test_nonmonotone_families_equal_one_shot_at_every_prefix(kind, seed, size):
     b = snap.fork()
     st = ec.conversation_open(b, root, "p", kind)
     seen, checked = {}, 0
+    fold, revised = DeltaFold(), 0  # 0.8.0: turn structure, folded over turns_delta
+    fold.turns(turns)
     for i in range(0, len(turns), size):
-        ec.conversation_ingest(b, root, st, turns[i:i + size])
+        got = ec.conversation_ingest(b, root, st, turns[i:i + size])
+        fold.apply(got)
+        revised += len(got["turns_delta"])
         if (i // size) % 3 and i + size < len(turns):
             continue
         k = min(i + size, len(turns))
         inc = _full(ec, b, root, st)
         one = ec.discourse(snap.fork(), root, {"window_id": "p", "kind": kind}, turns[:k])
+        assert fold.structure() == {t["id"]: {f: t[f] for f in STRUCT} for t in one["turns"]}, k
         assert inc["quanta"] == one["quanta"], k
         assert inc["episodes"] == one["episodes"], k
         assert inc["open"] == one["open_questions"], k
@@ -318,6 +337,11 @@ def test_nonmonotone_families_equal_one_shot_at_every_prefix(kind, seed, size):
                 seen.setdefault((q["actor_ref"], q["trait"], q["polarity"], q.get("target_ref")), []).append(k)
         checked += 1
     assert checked >= 5
+    assert revised  # held-turn revisions (uptake / freeze) are exercised
+    # Amendment A: the topic relation is exercised (decided and held topics folded above)
+    tops = [st["topic_id"] for st in fold.structure().values()]
+    assert any(tops) and any(t is None and st["topic_candidates"] for t, st in
+                             zip(tops, fold.structure().values()))
     traits = {key[1] for key in seen}
     assert {"interaction.floor", "inquiry.unanswered"} <= traits, traits
     # some non-monotone quantum existed at one checkpoint and not at a later one

@@ -28,14 +28,17 @@ from test_equilibrium_discourse import MEETING, THREAD  # noqa: E402
 from test_equilibrium_discourse_service import synthetic_window  # noqa: E402
 from test_equilibrium_tracking import WINDOWS as TRK_WINDOWS, _turns as _tracking_turns  # noqa: E402
 
-TAX = "eq-tax-0.7.0"
-_TOP = {"ok", "taxonomy_version", "conversation_id", "seq", "turns", "quanta_delta", "episodes_delta",
-        "open_questions"}
+TAX = "eq-tax-0.8.0"
+_TOP = {"ok", "taxonomy_version", "conversation_id", "seq", "turns", "turns_delta", "quanta_delta",
+        "episodes_delta", "open_questions"}
 _QD = {"quantum_id", "op", "actor_ref", "trait", "polarity", "match", "target_ref", "evidence_add",
        "evidence_remove", "counter_add", "counter_remove", "rule_ids"}
 _ED = {"episode_id", "op", "kind", "actor_refs", "turns_add", "turns_remove", "facets", "generative",
        "rule_ids"}
-_TURN = {"id", "labels", "responds_to", "basis", "addressees", "thread_id", "topic_id", "answers"}
+_TURN = {"id", "labels", "responds_to", "basis", "confidence", "candidates", "addressees", "thread_id",
+         "topic_id", "topic_candidates", "answers"}  # eq-tax-0.8.0 (Amendment A): closed key set
+_DELTA = {"id", "responds_to", "basis", "confidence", "candidates", "addressees", "thread_id", "answers",
+          "topic_id", "topic_candidates"}
 
 
 def _thread(rows):
@@ -52,14 +55,24 @@ def client_parse_conversation(doc: dict, cid: str, ids_so_far: set[str], batch: 
     assert set(doc) == _TOP and doc["ok"] is True and doc["conversation_id"] == cid
     assert doc["taxonomy_version"] == TAX and isinstance(doc["seq"], int)
     assert [t["id"] for t in doc["turns"]] == [t["id"] for t in batch]
+    from services.equilibrium_classifier.server import structure_violation
     for t in doc["turns"]:
         assert set(t) == _TURN, t
         _client_parse(t["labels"])
         assert t["labels"]["id"] == t["id"]
-        assert t["basis"] in ("declared", "tracked", "none")
-        assert (t["basis"] == "none") == (t["responds_to"] == [])
-        assert set(t["responds_to"]) <= ids_so_far and set(t["answers"]) <= ids_so_far
-        assert isinstance(t["thread_id"], str) and t["topic_id"] is None
+        assert t["basis"] in ("declared", "tracked", "held", "none")
+        assert structure_violation(t) is None, t
+        assert (t["basis"] in ("none", "held")) == (t["responds_to"] == [])
+        refs = {c["ref"] for c in t["candidates"]} | {c["ref"] for c in t["topic_candidates"]}
+        assert (set(t["responds_to"]) | set(t["answers"]) | refs) <= ids_so_far
+        assert isinstance(t["thread_id"], str)
+        # Amendment A: topic_id is the dominating topic candidate (a question turn), or null
+        assert t["topic_id"] is None or t["topic_id"] in {c["ref"] for c in t["topic_candidates"]}
+    batch_ids = {t["id"] for t in doc["turns"]}
+    assert len({d["id"] for d in doc["turns_delta"]}) == len(doc["turns_delta"])
+    for d in doc["turns_delta"]:  # 0.8.0: earlier turns of this conversation only
+        assert set(d) == _DELTA and d["id"] in ids_so_far and d["id"] not in batch_ids
+        assert structure_violation(d) is None, d
     for q in doc["quanta_delta"]:  # 0.6.0 evidence deltas
         assert q["op"] in ("upsert", "retract") and isinstance(q["quantum_id"], str)
         if q["op"] == "retract":
@@ -69,7 +82,7 @@ def client_parse_conversation(doc: dict, cid: str, ids_so_far: set[str], batch: 
         assert set().union(*(q[k] for k in ("evidence_add", "evidence_remove", "counter_add",
                                              "counter_remove"))) <= ids_so_far
         assert q.get("match", "exact") in ("exact", "partial", "weak")
-        assert all(_CODE.fullmatch(r) and r.endswith(":0.7.0") for r in q.get("rule_ids", ()))
+        assert all(_CODE.fullmatch(r) and r.endswith(":0.8.0") for r in q.get("rule_ids", ()))
     for e in doc["episodes_delta"]:
         assert e["op"] in ("upsert", "retract")
         if e["op"] == "upsert":
@@ -146,7 +159,10 @@ def test_platform_thread_and_self_reply_threading(svc):
     assert t["c1"]["thread_id"] == "T-9" and t["c3"]["thread_id"] == "T-9" and t["c4"]["thread_id"] == "T-9"
     assert t["c3"]["responds_to"] == [] and t["c3"]["basis"] == "none"  # self reply: thread, not response
     assert t["c4"]["responds_to"] == ["c3"] and t["c4"]["addressees"] == ["member_1"]
-    assert t["c2"]["thread_id"] == "c2" and t["c5"]["thread_id"] == "c5" and t["c5"]["basis"] == "none"
+    # 0.8.0: c2 (no platform thread, no declared reply) weak-collapses onto the adjacent c1
+    # and inherits its thread; c5 declares an unknown parent: no candidates, its own thread
+    assert (t["c2"]["responds_to"], t["c2"]["confidence"], t["c2"]["thread_id"]) == (["c1"], "weak", "T-9")
+    assert t["c5"]["thread_id"] == "c5" and t["c5"]["basis"] == "none" and t["c5"]["candidates"] == []
     svc.conversation_close("conv:pt")
 
 
@@ -228,6 +244,17 @@ def _one_shot(svc, kind, turns):
              "open_questions": fin["open_questions"]})
 
 
+def _static(t):
+    # eq-tax-0.8.0 Amendment A: topic_id is revisable (topic uptake), so it is part of the
+    # folded structure below; labels never change
+    return {k: t[k] for k in ("id", "labels")}
+
+
+def _structure(wire_turns):
+    from equilibrium_delta_fold import STRUCT
+    return {t["id"]: {k: t[k] for k in STRUCT} for t in wire_turns}
+
+
 def _fold(turns, deltas, fin):
     """Client fold of a conversation's delta stream (tests/equilibrium_delta_fold.py)."""
     f = DeltaFold()
@@ -257,8 +284,11 @@ def test_incremental_batches_equal_one_shot(srv, svc, name):
     sizes = (1, 3, 100) if len(turns) < 50 else (7, 100)
     for size in sizes:
         rows, deltas, fin = _run_batches(srv, svc, f"conv:inc:{name}:{size}", kind, turns, size)
-        assert rows == ref_turns, (name, size)
+        # labels are never revised; structure incl. topic is (eq-tax-0.8.0 turns_delta):
+        # the folded structure equals the one-shot structure
+        assert [_static(t) for t in rows] == [_static(t) for t in ref_turns], (name, size)
         f = _fold(turns, deltas, fin)
+        assert f.structure() == _structure(ref_turns), (name, size)
         assert f.quanta() == ref_fin["quanta"] and f.episodes() == ref_fin["episodes"], (name, size)
         assert fin["open_questions"] == ref_fin["open_questions"]
         if len(turns) < 50:
@@ -267,9 +297,10 @@ def test_incremental_batches_equal_one_shot(srv, svc, name):
             g = DeltaFold()
             g.turns(turns)
             for upto, out in deltas:
-                _, pre = _one_shot(svc, kind, turns[:upto])
+                pre_turns, pre = _one_shot(svc, kind, turns[:upto])
                 before_q = copy.deepcopy(g.q)
                 g.apply(out)
+                assert g.structure() == _structure(pre_turns), (name, size, upto)
                 assert g.quanta() == pre["quanta"] and g.episodes() == pre["episodes"], (name, size, upto)
                 for d in out["quanta_delta"]:
                     if d["op"] == "upsert" and d["quantum_id"] in before_q:

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the Equilibrium seed pack (0.7.0, tracks T3 + T3b + T3c + T3d + T3e + T3f) as flat seed manifests.
+"""Build the Equilibrium seed pack (0.8.0, tracks T3 + T3b + T3c + T3d + T3e + T3f + T3g) as flat seed manifests.
 
     PYTHONPATH=.:runners/dsl/python OZMA_NO_LLM=1 python3 scripts/build_equilibrium_seed_pack.py
 
@@ -37,8 +37,8 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 SEEDS = ROOT / "seeds"
-PACK_VERSION = "0.7.0"
-TAXONOMY_VERSION = "eq-tax-0.7.0"
+PACK_VERSION = "0.8.0"
+TAXONOMY_VERSION = "eq-tax-0.8.0"
 NUM = "<num>"            # token class slot: any all-digit prose token
 PERSON = "<noun.person>"  # token class slot: first-sense WordNet noun lexname
 GROUP = "<noun.group>"
@@ -443,11 +443,15 @@ def build() -> dict[str, dict]:
     cl["rules"] = qr.apply_nm(qr.apply_live(qr.CLIMATE_RULES), "climate")
     out["equilibrium_climate"] = cl
     trk = codebook("equilibrium_tracking", ["equilibrium_climate", "equilibrium_window", "equilibrium_scope"],
-                   "Conversation tracking (T3c O2): a seeded turn cursor over the retained conversation "
-                   "fork derives addressees (name mention of a known actor_ref, second person to the last "
-                   "addresser), tracked responds_to (most recent compatible open question / pending "
-                   "address / contrasted claim), eq_answers, the open-question set (eq_qud) and "
-                   "same-actor continuation. EqSecondPerson closed-class codebook.",
+                   "Conversation tracking (T3c O2; 0.8.0 T3g held-open collapse): a seeded turn cursor "
+                   "over the retained conversation fork derives addressees (name mention of a known "
+                   "actor_ref, second person to the last addresser), a bounded CANDIDATE parent set per "
+                   "undeclared turn (QUD top / latest pending address / latest contrasted claim / adjacent "
+                   "other-speaker turn / addressee's last turn) with cue edges to the closed EqTrkCue "
+                   "codebook, collapse only on strict cue-set dominance (strong >= 2 cues, weak 1; else "
+                   "HELD, never tiebroken), uptake revision over a per-actor held frontier, eq_answers, the "
+                   "open-question set (eq_qud) and same-actor continuation. EqSecondPerson / EqBackchannel "
+                   "/ EqPolarAux / EqPolarAnswer closed-class codebooks.",
                    qr.TRACKING_ITEMS, qr.TRACKING_EDGE,
                    qr.TRACKING_EDGE_TYPES + qr.LIVE_EDGE_TYPES + qr.NM_EDGE_TYPES)
     trk["rules"] = qr.apply_nm(qr.apply_frontier(qr.TRACKING_RULES), "tracking")
