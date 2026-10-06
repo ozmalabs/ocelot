@@ -428,3 +428,137 @@ def patch_report(scene: Mondrian, illuminant="E", td: float = 100.0) -> list[dic
                      "lm": catches_of_spd(spd)["lm"],
                      "red_green": m["red_green"], "blue_yellow": m["blue_yellow"]})
     return rows
+
+
+# --------------------------------------------------------------------------
+# independent random Mondrians (stage-4 replication amendment A1)
+# --------------------------------------------------------------------------
+# ADDITIVE ONLY: nothing above this line is changed.  The stage-4 held-out
+# layouts (standard_mondrian(seed=k)) permute reflectances among fixed,
+# gutter-separated slots, and the pipeline is invariant to that (stage-4
+# results, "Anomaly").  These generators draw the geometry itself.
+#
+# Declared rules (no tuned constants; every number is stated by amendment A1):
+#   * patch count n ~ U{6..12}; each rect has w, h ~ U{3..7} and a uniform
+#     position fully on the sheet; no gutters, so patches may abut or overlap;
+#     later rects overwrite earlier ones (Mondrian.label_map is the final
+#     visible label map);
+#   * reporting-unit constraint: in the final label map every label (each
+#     patch AND the background) is non-empty and 4-connected.  A rect that
+#     would break this for any label is redrawn (same rng stream), so each
+#     declared patch is one connected visible region;
+#   * random_mondrian: background ~ U(neutrals 19-24); white 9.5 (patch 19)
+#     is a patch iff seed is even, and then never the background; the other
+#     patch reflectances are drawn without replacement from the remaining
+#     ColorChecker patches, and a draw equal to the background is redrawn;
+#     white's z-order slot is uniform;
+#   * neutral_mondrian: the SAME geometry as random_mondrian(seed) (the
+#     geometry is the first thing drawn from default_rng(seed)); background ~
+#     U(neutrals 19-24); every patch ~ U(the five other neutrals), with
+#     replacement (6..12 patches cannot be drawn without replacement from 5).
+
+RANDOM_N_PATCHES = (6, 12)          # inclusive
+RANDOM_SIDE = (3, 7)                # inclusive, for w and h
+NEUTRAL_NUMBERS = (19, 20, 21, 22, 23, 24)
+WHITE_NUMBER = 19
+RANDOM_MAX_TRIES = 10000            # redraws per rect before giving up (raise)
+
+
+def colorchecker_name(number: int) -> str:
+    """ColorChecker patch name of 1-based ``number`` (19 = white 9.5)."""
+    return sf.reflectance_names()[int(number) - 1]
+
+
+def _four_connected(mask: np.ndarray) -> bool:
+    """True iff the True cells of ``mask`` are non-empty and 4-connected."""
+    cells = np.argwhere(mask)
+    if len(cells) == 0:
+        return False
+    seen = {tuple(cells[0])}
+    stack = [tuple(cells[0])]
+    n_el, n_az = mask.shape
+    while stack:
+        r, c = stack.pop()
+        for rr, cc in ((r + 1, c), (r - 1, c), (r, c + 1), (r, c - 1)):
+            if 0 <= rr < n_el and 0 <= cc < n_az and mask[rr, cc] and (rr, cc) not in seen:
+                seen.add((rr, cc))
+                stack.append((rr, cc))
+    return len(seen) == len(cells)
+
+
+def _geometry_label_map(n_az: int, n_el: int, geom) -> np.ndarray:
+    return Mondrian(n_az, n_el, tuple((pid, None, c0, r0, w, h)
+                                      for pid, c0, r0, w, h in geom)).label_map()
+
+
+def _labels_ok(lab: np.ndarray, n_patches: int) -> bool:
+    return all(_four_connected(lab == pid) for pid in range(BACKGROUND_ID, n_patches + 1))
+
+
+def _random_geometry(rng: np.random.Generator, n_az: int, n_el: int) -> list[tuple]:
+    """``[(pid, col0, row0, w, h), ...]`` in z-order (rng: default_rng(seed),
+    consumed first: n, then per rect w, h, col0, row0 with redraws)."""
+    lo_s, hi_s = RANDOM_SIDE
+    if n_az < hi_s or n_el < hi_s:
+        raise ValueError(f"random Mondrian needs a sheet of at least {hi_s}x{hi_s}")
+    n = int(rng.integers(RANDOM_N_PATCHES[0], RANDOM_N_PATCHES[1] + 1))
+    geom: list[tuple] = []
+    for pid in range(1, n + 1):
+        for _ in range(RANDOM_MAX_TRIES):
+            w = int(rng.integers(lo_s, hi_s + 1))
+            h = int(rng.integers(lo_s, hi_s + 1))
+            c0 = int(rng.integers(0, n_az - w + 1))
+            r0 = int(rng.integers(0, n_el - h + 1))
+            cand = geom + [(pid, c0, r0, w, h)]
+            if _labels_ok(_geometry_label_map(n_az, n_el, cand), pid):
+                geom = cand
+                break
+        else:
+            raise RuntimeError(f"no valid placement for rect {pid} after "
+                               f"{RANDOM_MAX_TRIES} draws")
+    return geom
+
+
+def random_mondrian(seed: int, n_az: int = STANDARD_N_AZ,
+                    n_el: int = STANDARD_N_EL) -> Mondrian:
+    """A genuinely independent random Mondrian (amendment A1), deterministic
+    from ``np.random.default_rng(seed)``.  Rules: see the block comment above.
+    Patch ids 1..n in z-order; background id 0."""
+    seed = int(seed)
+    rng = np.random.default_rng(seed)
+    geom = _random_geometry(rng, n_az, n_el)
+    n = len(geom)
+    names = sf.reflectance_names()
+    white = colorchecker_name(WHITE_NUMBER)
+    white_in = seed % 2 == 0
+    neutrals = [colorchecker_name(k) for k in NEUTRAL_NUMBERS]
+    bg_choices = [x for x in neutrals if not (white_in and x == white)]
+    background = bg_choices[int(rng.integers(0, len(bg_choices)))]
+    pool = [x for x in names if x != white]
+    refls: list[str] = []
+    for i in rng.permutation(len(pool)):          # without replacement
+        if len(refls) == n - int(white_in):
+            break
+        if pool[int(i)] == background:            # equal to background -> redraw
+            continue
+        refls.append(pool[int(i)])
+    if white_in:
+        refls.insert(int(rng.integers(0, n)), white)
+    rects = tuple((pid, refl, c0, r0, w, h)
+                  for (pid, c0, r0, w, h), refl in zip(geom, refls))
+    return Mondrian(n_az, n_el, rects, background)
+
+
+def neutral_mondrian(seed: int, n_az: int = STANDARD_N_AZ,
+                     n_el: int = STANDARD_N_EL) -> Mondrian:
+    """The achromatic room for ``seed`` (amendment A1): the geometry of
+    ``random_mondrian(seed)``; background ~ U(neutrals 19-24); each patch ~
+    U(the five neutrals other than the background), with replacement."""
+    rng = np.random.default_rng(int(seed))
+    geom = _random_geometry(rng, n_az, n_el)
+    neutrals = [colorchecker_name(k) for k in NEUTRAL_NUMBERS]
+    background = neutrals[int(rng.integers(0, len(neutrals)))]
+    others = [x for x in neutrals if x != background]
+    rects = tuple((pid, others[int(rng.integers(0, len(others)))], c0, r0, w, h)
+                  for pid, c0, r0, w, h in geom)
+    return Mondrian(n_az, n_el, rects, background)
