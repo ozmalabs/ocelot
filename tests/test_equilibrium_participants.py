@@ -115,15 +115,18 @@ def test_alias_addresses_a_participant_who_has_not_spoken(svc):
     assert [(d["trait"], d["target_ref"], d["evidence_add"], d["match"]) for d in acks] == [
         ("competence.acknowledged", "bea", ["m3"], "partial")]  # a quantum on a participant who never spoke
     # the participant's first turn: the question addressed to it (m1) is a candidate (its
-    # conditional-relevance slot: u7's first turn after it), with the pending address m3
-    # and the adjacent m5 (bea's question to ana: not for u7, and an assertion is no
-    # answer FORM -- Amendment A). m1 dominates m3 but not m5, so m6 is HELD and answers
-    # nothing (0.7.0 forced m1 and closed it)
+    # conditional-relevance slot: u7's first turn after it), with the adjacent m5 (bea's
+    # question to ana: not for u7, and an assertion is no answer FORM -- Amendment A). T3h:
+    # bea's pending address m3 is an assertion, not a first pair part: in SPEECH the
+    # selection lapsed at the next transition-relevance place (m4 took the floor; SSJ 1974
+    # rule 1), so it is no longer a candidate; the QUESTION m1 keeps u7's response
+    # conditionally relevant. m1 does not dominate m5, so m6 is HELD and answers nothing
+    # (0.7.0 forced m1 and closed it)
     o2 = svc.conversation_turns("pt:alias", "meeting", [T("m6", "u7", "The cache is fine, I checked it.")])
     m6 = o2["turns"][0]
     assert (m6["basis"], m6["answers"]) == ("held", [])
     assert {c["ref"]: c["cues"] for c in m6["candidates"]} == {
-        "m1": ["addressed", "open_question"], "m3": ["addressed"], "m5": ["adjacent"]}
+        "m1": ["addressed", "open_question"], "m5": ["adjacent"]}
     assert o2["open_questions"] == ["m1", "m2", "m5"]
     # the same turns without a roster: no participant addressing
     o3 = svc.conversation_turns("pt:alias:none", "meeting", b1)

@@ -53,9 +53,11 @@ TWO = HELLO + [("k1", "ana", "Bea, what is blocking the release?"),
                ("k2", "cy", "What time is the demo?", {"reply_to": "h3"}),
                ("k3", "bea", "The demo is at three."),
                ("k4", "cy", "Bea, great, thanks.")]
-# TEXT: via_reply breaks the tie between two live room issues for dov (ana's v1, cy's v2;
-# cy's v2 is a declared self-continuation, so it is under no topic itself): dov's turn is
-# in v2's slot and collapses onto it (tracked)
+# TEXT: two live room issues (ana's v1, cy's v2; cy's v2 is a declared self-continuation,
+# so it is under no topic itself). T3h: the room's topic source is its MaxQUD (the most
+# recent live room issue, KoS), so dov's turn has v2 as its room issue; it is in v2's slot
+# and collapses onto it (tracked, via_reply). v1 stays live and is top again once v2 is
+# downdated.
 VIA = HELLO + [("v1", "ana", "What is blocking the release?"),
                ("v2", "cy", "What time is the demo?", {"reply_to": "h3"}),
                ("v3", "dov", "At three.")]
@@ -121,7 +123,7 @@ def test_two_live_issues_hold_the_topic(base):
 def test_via_reply_decides_the_topic(base):
     out = _disc(base, VIA)
     assert _rows(out, {"v3"})["v3"][:3] == (["v2"], "tracked", "strong")
-    assert _topic(out, "v3") == ("v2", {"v1": ["open_question"], "v2": ["open_question", "via_reply"]})
+    assert _topic(out, "v3") == ("v2", {"v2": ["open_question", "via_reply"]})
     # TEXT: a platform-DECLARED reply places the turn in its parent's sequence -- its topic
     # is the parent's (here the parent question itself), never an unrelated live issue
     out = _disc(base, VIA[:-1] + [("v3", "dov", "At three.", {"reply_to": "v2"})])
@@ -172,7 +174,7 @@ def test_engaged_question_is_not_unanswered(srv_svc):
 
 def test_topic_fields_on_every_turn_and_delta_and_invariants(srv_svc):
     """Wire: every turn object and turns_delta entry carries topic_id / topic_candidates
-    (closed topic codebook, <= 16, earlier refs, dominance-consistent); a row violating
+    (closed topic codebook, <= 4, earlier refs, dominance-consistent); a row violating
     the topic invariants is a 500 (RuntimeError in the re-shape), never repaired."""
     from services.equilibrium_classifier import server
     outs = _conv(srv_svc, "top:wire", TWO, [2])

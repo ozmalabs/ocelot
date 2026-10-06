@@ -455,7 +455,8 @@ def test_fold_turns_delta_equals_one_shot_at_every_prefix(srv_svc, name):
 
 def test_cue_codebook_is_closed_and_candidates_bounded(base):
     """The seeded EqTrkCue codebook is exactly the contract's; every emitted cue is a
-    codebook code; candidate sets stay bounded (<= 16) on a long synthetic window."""
+    codebook code; candidate sets stay bounded (T3h: <= 4 + 3 x len(addressees), topic <= 4)
+    on a long synthetic window."""
     from test_equilibrium_discourse_service import synthetic_window
 
     from services.equilibrium_classifier.server import CUE_CODES
@@ -469,8 +470,8 @@ def test_cue_codebook_is_closed_and_candidates_bounded(base):
         out = _disc(base, [(t["id"], t["actor_ref"], t["text"], {k: v for k, v in t.items()
                                                                   if k in ("reply_to", "ts_ms")})
                            for t in turns], kind=kind)
-        sizes = [len(t["candidates"]) for t in out["turns"]]
-        assert max(sizes) <= 16
+        assert all(len(t["candidates"]) <= 4 + 3 * len(t["addressees"]) and len(t["topic_candidates"]) <= 4
+                   for t in out["turns"])
         assert {c for t in out["turns"] for x in t["candidates"] for c in x["cues"]} <= codes
         assert {t["basis"] for t in out["turns"]} >= {"tracked", "held"}
 
