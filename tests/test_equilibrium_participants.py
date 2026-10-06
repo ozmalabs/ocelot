@@ -60,7 +60,7 @@ def _conv(**extra):
 
 
 def test_roster_validation_paths_only():
-    tax = "eq-tax-0.7.0"
+    tax = "eq-tax-0.8.0"
     kind, turns, roster = srv.validate_conversation(_conv(), tax)
     assert roster is None
     _, _, roster = srv.validate_conversation(
@@ -105,16 +105,26 @@ def test_alias_addresses_a_participant_who_has_not_spoken(svc):
     o1 = svc.conversation_turns("pt:alias", "meeting", b1, roster)
     r = _by_id(o1)
     assert r["m1"][1] == ["u7"] and r["m2"][1] == ["cy"]       # alias (2 tokens) / actor_ref name form
-    assert r["m3"][1] == ["u7"] and r["m4"][1] == []           # one-token alias; a partial alias is no match
+    # one-token alias; a partial alias is no match: m4 names nobody. bea's m5 takes up m4
+    # (weak on bea's m3 -> strong, late), but addressees are causal (Amendment A fix: no
+    # late addressee -- the per-turn evidence read m4's addressee set at m4's own batch)
+    assert r["m3"][1] == ["u7"] and r["m4"][1] == []
     assert r["m5"][1] == ["ana"]                               # a speaker's name: T1 as before
     assert o1["open_questions"] == ["m1", "m2", "m5"]
     acks = [d for d in o1["quanta_delta"] if d.get("actor_ref") == "u7"]
     assert [(d["trait"], d["target_ref"], d["evidence_add"], d["match"]) for d in acks] == [
         ("competence.acknowledged", "bea", ["m3"], "partial")]  # a quantum on a participant who never spoke
-    # the participant's first turn responds to (and answers) the question addressed to it
+    # the participant's first turn: the question addressed to it (m1) is a candidate (its
+    # conditional-relevance slot: u7's first turn after it), with the pending address m3
+    # and the adjacent m5 (bea's question to ana: not for u7, and an assertion is no
+    # answer FORM -- Amendment A). m1 dominates m3 but not m5, so m6 is HELD and answers
+    # nothing (0.7.0 forced m1 and closed it)
     o2 = svc.conversation_turns("pt:alias", "meeting", [T("m6", "u7", "The cache is fine, I checked it.")])
-    assert _by_id(o2)["m6"] == (["m1"], ["ana"], ["m1"])
-    assert o2["open_questions"] == ["m2", "m5"]
+    m6 = o2["turns"][0]
+    assert (m6["basis"], m6["answers"]) == ("held", [])
+    assert {c["ref"]: c["cues"] for c in m6["candidates"]} == {
+        "m1": ["addressed", "open_question"], "m3": ["addressed"], "m5": ["adjacent"]}
+    assert o2["open_questions"] == ["m1", "m2", "m5"]
     # the same turns without a roster: no participant addressing
     o3 = svc.conversation_turns("pt:alias:none", "meeting", b1)
     r3 = _by_id(o3)
@@ -162,7 +172,11 @@ def test_incremental_equals_one_shot_with_roster(svc):
     outs = [svc.conversation_turns("pt:inc", "meeting", c, roster if k == 0 else None) for k, c in enumerate(chunks)]
     f1, f2 = _fold([rows], [one]), _fold(chunks, outs)
     assert f1.quanta() == f2.quanta() and f1.episodes() == f2.episodes()
-    assert [t for o in outs for t in o["turns"]] == one["turns"]
+    # 0.8.0: labels never change; structure equals one shot after folding turns_delta
+    static = ("id", "labels")  # Amendment A: topic_id is folded structure (revisable)
+    assert [{k: t[k] for k in static} for o in outs for t in o["turns"]] == \
+        [{k: t[k] for k in static} for t in one["turns"]]
+    assert f1.structure() == f2.structure()
     assert outs[-1]["open_questions"] == one["open_questions"]
 
 

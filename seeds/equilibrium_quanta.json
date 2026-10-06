@@ -3951,6 +3951,24 @@
      },
      {
       "arg": {
+       "container": {
+        "edge_type": "eq_engaged_by",
+        "node": {
+         "name": "qt",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "member": {
+        "name": "a",
+        "type": "Var"
+       },
+       "type": "In"
+      },
+      "type": "Not"
+     },
+     {
+      "arg": {
        "predicate": {
         "a": {
          "key": "q_target",
@@ -4120,6 +4138,24 @@
        "type": "In"
       },
       "type": "Not"
+     },
+     {
+      "arg": {
+       "container": {
+        "edge_type": "eq_engaged_by",
+        "node": {
+         "name": "qt",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "member": {
+        "name": "a",
+        "type": "Var"
+       },
+       "type": "In"
+      },
+      "type": "Not"
      }
     ],
     "type": "And"
@@ -4158,6 +4194,44 @@
     ]
    ],
    "name": "eq.quanta.interaction.responsiveness.retract",
+   "where": {
+    "type": "Lit",
+    "value": true
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "del_edge",
+     "q",
+     "eq_evidence_nm",
+     "qt"
+    ]
+   ],
+   "match": [
+    [
+     "qt",
+     "eq_engaged_by",
+     "a"
+    ],
+    [
+     "qt",
+     "eq_authored_by",
+     "b"
+    ],
+    [
+     "a",
+     "eq_rsp_node",
+     "q"
+    ],
+    [
+     "q",
+     "eq_rsp_target",
+     "b"
+    ]
+   ],
+   "name": "eq.quanta.interaction.responsiveness.retract_engaged",
    "where": {
     "type": "Lit",
     "value": true
@@ -7287,6 +7361,6 @@
   }
  ],
  "self_load_only": true,
- "taxonomy_version": "eq-tax-0.7.0",
- "version": "0.7.0"
+ "taxonomy_version": "eq-tax-0.8.0",
+ "version": "0.8.0"
 }

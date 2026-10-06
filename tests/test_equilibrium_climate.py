@@ -77,8 +77,8 @@ def test_golden_climate_window(base):
     }
     msgs = {m["id"]: m for m in out["messages"]}
     # which dissent shape fired is auditable per turn
-    assert msgs["c02"]["labels"]["msg.dissent"]["rule_ids"] == ["eq.msg.dissent.disagreement_cue@0.7.0"]
-    assert msgs["c04"]["labels"]["msg.dissent"]["rule_ids"] == ["eq.msg.dissent.negated_echo@0.7.0"]
+    assert msgs["c02"]["labels"]["msg.dissent"]["rule_ids"] == ["eq.msg.dissent.disagreement_cue@0.8.0"]
+    assert msgs["c04"]["labels"]["msg.dissent"]["rule_ids"] == ["eq.msg.dissent.negated_echo@0.8.0"]
     assert "msg.dissent_hedged" in msgs["c10"]["labels"]
     assert "msg.error_admission_negated" in msgs["c09"]["labels"]
     assert "msg.error_admission" not in msgs["c09"]["labels"]
@@ -133,11 +133,14 @@ def test_answered_and_unanswered_questions(base):
     q = _climate(_disc(base, rows))
     assert q[("member_b", "inquiry.answered", "+", "member_a")] == ("partial", ["q1", "a1"], [])
     # the absence of an answer is read over the completed window (S2 after S1);
-    # the asker's answered question is the counter-evidence
-    assert q[("member_a", "inquiry.unanswered", "+", None)] == ("partial", ["q2", "q3"], ["q1"])
+    # the asker's answered questions are the counter-evidence. 0.8.0: the undeclared z1
+    # has one candidate, the adjacent question q3 (adjacent + answer_form: strong), so
+    # it answers q3 (0.7.0: z1 responded to nothing -- q3 addressed member_b, so it
+    # was no open question for member_c, and adjacency was not evidence)
+    assert q[("member_a", "inquiry.unanswered", "+", None)] == ("weak", ["q2"], ["q1", "q3"])
     assert q[("member_c", "response.dismissal", "+", "member_a")] == ("partial", ["q3", "a3"], [])
     assert q[("member_b", "response.engagement", "+", "member_a")] == ("partial", ["q2", "a2"], [])
-    assert ("member_c", "inquiry.answered", "+", "member_a") not in q
+    assert q[("member_c", "inquiry.answered", "+", "member_a")] == ("partial", ["q3", "z1"], [])
 
 
 def test_trailing_question_is_not_unanswered(base):
@@ -157,9 +160,12 @@ def test_meeting_answer_is_tracked_not_adjacent(base):
             ("m3", "member_a", "Who has the rollback plan?"), ("m4", "member_a", "Anyone?"),
             ("m5", "member_c", "Never mind, let's pause.")]  # withdrawal: not an answer
     out = _disc(base, rows, kind="meeting")
-    assert {t["id"]: (t["responds_to"], t["basis"], t["answers"]) for t in out["turns"]} == {
-        "m1": ([], "none", []), "m2": (["m1"], "tracked", ["m1"]), "m3": (["m2"], "tracked", []),
-        "m4": ([], "none", []), "m5": (["m4"], "tracked", [])}
+    # 0.8.0: m4 (same author as m3) has one candidate, the adjacent other-speaker turn
+    # m2 (one chain step over the run): a weak collapse, which answers nothing
+    assert {t["id"]: (t["responds_to"], t["basis"], t["confidence"], t["answers"]) for t in out["turns"]} == {
+        "m1": ([], "none", None, []), "m2": (["m1"], "tracked", "strong", ["m1"]),
+        "m3": (["m2"], "tracked", "strong", []), "m4": (["m2"], "tracked", "weak", []),
+        "m5": (["m4"], "tracked", "strong", [])}
     assert out["open_questions"] == ["m3", "m4"]
     q = _climate(out)
     assert q[("member_b", "inquiry.answered", "+", "member_a")] == ("partial", ["m1", "m2"], [])
@@ -222,14 +228,16 @@ def test_climate_traits_are_shadow_and_versioned(base):
     st = eq._label_status(snap.fork(), root)
     for t in CLIMATE_TRAITS:
         assert st[t]["status"] == "shadow" and st[t]["kind"] == "trait" and st[t]["since_pack"] == "0.4.0", t
-    assert eq.PACK_VERSION == "0.7.0" and eq.TAXONOMY_VERSION == "eq-tax-0.7.0"
+    assert eq.PACK_VERSION == "0.8.0" and eq.TAXONOMY_VERSION == "eq-tax-0.8.0"
     climate = next(m for m in eq.pack_manifests() if m["id"] == "equilibrium_climate")
     assert {n["type"] for n in climate["nodes"]} == {"EqClimateCue"}
     assert {r["name"] for r in climate["rules"]} == {
         "eq.quanta.response.dismissal", "eq.quanta.response.engagement", "eq.quanta.inquiry.answered",
         "eq.quanta.inquiry.unanswered", "eq.quanta.inquiry.unanswered.counter",
         # 0.5.1 stage B: unanswered runs live (permanent node + answer-driven retraction)
-        "eq.quanta.inquiry.unanswered.node", "eq.quanta.inquiry.unanswered.retract"}
+        "eq.quanta.inquiry.unanswered.node", "eq.quanta.inquiry.unanswered.retract",
+        # eq-tax-0.8.0 Amendment A: an ENGAGED question (topic contribution) is not unanswered
+        "eq.quanta.inquiry.unanswered.retract_engaged"}
 
 
 def test_disabling_a_climate_trait_is_data_only(base):

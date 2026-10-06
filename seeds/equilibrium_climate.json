@@ -1452,6 +1452,25 @@
      {
       "arg": {
        "predicate": {
+        "type": "Lit",
+        "value": true
+       },
+       "source": {
+        "edge_type": "eq_engaged_by",
+        "node": {
+         "name": "qt",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "en_qt"
+      },
+      "type": "Not"
+     },
+     {
+      "arg": {
+       "predicate": {
         "items": [
          {
           "a": {
@@ -1646,6 +1665,25 @@
      {
       "arg": {
        "predicate": {
+        "type": "Lit",
+        "value": true
+       },
+       "source": {
+        "edge_type": "eq_engaged_by",
+        "node": {
+         "name": "qt",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "en_qt"
+      },
+      "type": "Not"
+     },
+     {
+      "arg": {
+       "predicate": {
         "items": [
          {
           "a": {
@@ -1785,6 +1823,39 @@
    "batch": true,
    "effects": [
     [
+     "del_edge",
+     "q",
+     "eq_evidence_nm",
+     "qt"
+    ]
+   ],
+   "match": [
+    [
+     "qt",
+     "eq_engaged_by",
+     "c"
+    ],
+    [
+     "qt",
+     "eq_authored_by",
+     "b"
+    ],
+    [
+     "b",
+     "eq_unans_node",
+     "q"
+    ]
+   ],
+   "name": "eq.quanta.inquiry.unanswered.retract_engaged",
+   "where": {
+    "type": "Lit",
+    "value": true
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
      "add_edge",
      "q",
      "eq_counter",
@@ -1909,6 +1980,6 @@
   }
  ],
  "self_load_only": true,
- "taxonomy_version": "eq-tax-0.7.0",
- "version": "0.7.0"
+ "taxonomy_version": "eq-tax-0.8.0",
+ "version": "0.8.0"
 }
