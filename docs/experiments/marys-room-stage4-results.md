@@ -289,3 +289,7 @@ surface set tested.
   - `raw` (every exposure: sid grid, Y grid for B1/B4, segments, surfaces, checks, looks, field looks, frames, properties, counts and patch→sid map).
 - `results/marys_room_stage4_battery_summary.csv`. One row per summary quantity, with k, n and the Wilson interval where applicable.
 - Run log: `/tmp/marys_room_stage4_run.log`. Raw checkpoint: `/tmp/marys_room_stage4_raw_checkpoint.json`. Both are outside the repo.
+
+## Replication (A1)
+
+A preregistered replication on 16 independent `random_mondrian` layouts (amendment `docs/experiments/marys-room-stage4-amendment-A1.md`, engine `ed9237c97f20`, HEAD `e2311007`) is reported in `docs/experiments/marys-room-stage4-replication-results.md`. Distinct per-layout outcome profiles were 16/16 for R1 and R7, 15/16 for R4 and 8/8 for R6, so the anomaly above does not recur there; R2 (2/16) and R5 (4/16) remain weakly independent. The verdicts were P1 partially (40 silent re-binds from unequal merges continuing the larger parent's sid, a case this battery's symmetric pair never exercised), P2 partially (the hue clause fails again), P3 partially (anchor 0.75, every failure in a layout without a single anchor surface), P4 supported, P5 partially ((a) 0/16, (b) 0/96) and P6 supported. The data-informed Euclidean-shift prediction (Q1) and Q2–Q4 for the new flags were supported.

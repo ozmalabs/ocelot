@@ -288,3 +288,25 @@ All work was done in the worktree `/tmp/ocelot-marys-room`, branch
    - an Arm A with an adaptation model
    - von-Kries illuminant discounting for the illuminant-A failure
    - eyelid parameters matched to the cited mean OD of 2.1
+
+## Execution status (2026-10-06): stage-4 replication (A1)
+
+**What ran:** the preregistered replication of the stage-4 battery (amendment A1, committed at `e2311007`).
+
+- Runner `scripts/marys_room_stage4_replication.py`, sha `29613b77…cdcacd`, embedded in the output. Engine `ed9237c97f20`. The freeze check was clean.
+- 3030 exposures over 45.7 min. The determinism check matched: the R1 and R3 re-run gave identical hashes.
+- Results: `results/marys_room_stage4_replication.json` (gitignored). Write-up: `docs/experiments/marys-room-stage4-replication-results.md`.
+
+**Verdicts:**
+
+- Replication: P1 partially, P2 partially, P3 partially, P4 supported, P5 partially, P6 supported.
+- New: Q1 (Euclidean look shift A > D65, data-informed) supported on new layouts; Q2 re-acquisition, Q3 recall and Q4 concept link supported; Q5 descriptive.
+- Independence: R1, R4, R6 and R7 are independent across layouts. R2 and R5 are not.
+
+**Open items:**
+
+1. **Identity defect.** Unequal merges continue the larger parent's sid without refusal (20 of the 40 P1 re-binds; these also drive most R4 failures). This needs a new prereg for a merge-refusal rule, plus optional split symmetry and an R4 redefinition, with a full re-run.
+2. **P5.** (a) is structural: a constant room cannot produce a refusal. The prereg wording needs revisiting rather than the apparatus.
+3. **Weak arms.** R2 and R5 need designs whose outcomes can vary across layouts.
+4. **Commit.** If requested, commit the replication write-up and the pointer appended to the stage-4 results doc. That file is freeze-tracked by A1. Results files need `git add -f`.
+5. **Paper.** Fold the replication into the paper draft, keeping claims at model level.
