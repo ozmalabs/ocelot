@@ -1,0 +1,50 @@
+# Keep the Podman build context to the API runtime and its selected seed
+# registry. In particular, do not send local corpora, model weights, logs,
+# experiment output, Git history, or virtual environments to the builder.
+*
+!deploy/
+!deploy/podman/
+!deploy/podman/**
+!runners/
+!runners/dsl/
+!runners/dsl/Cargo.toml
+!runners/dsl/Cargo.lock
+!runners/dsl/src/
+!runners/dsl/src/**
+!runners/dsl/python/
+!runners/dsl/python/substrate_rs/
+!runners/dsl/python/substrate_rs/**
+runners/dsl/python/substrate_rs/_native.abi3.so
+!domains/
+!domains/**
+!substrate/
+!substrate/**
+!seeds/
+!seeds/*.json
+!scripts/
+!scripts/**
+
+# The connected API profile discovers its dependency closure from root seed
+# manifests. These large, unrelated corpora and embodied profiles are not
+# needed; the API boot path has been verified with these entries absent.
+seeds/acquired/
+seeds/acquired/**
+seeds/generated/
+seeds/generated/**
+seeds/grounded_lexicon.json
+seeds/embodied_motor_program.json
+seeds/humanoid_adaptation.json
+seeds/helicopter_autorotation.json
+seeds/learned_speech.json
+seeds/precision_driving.json
+seeds/embodied_adaptation.json
+seeds/racing_cognition.json
+seeds/aerial_adaptation.json
+
+**/__pycache__/
+**/*.py[cod]
+.git/
+.venv/
+venv/
+target/
+**/target/
