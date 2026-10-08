@@ -1,0 +1,38 @@
+{
+  "analysis_note": "The original v1 analyzer recorded branch fork times in the raw capture but omitted them from its summary, yielding a misleading 0.0 ms field. This v1.1 independent analysis uses the captured baseline and candidate fork_ns values; it does not change the raw capture or behavior criteria.",
+  "errors": [],
+  "gates_pass": true,
+  "generated_utc": "2026-10-03T00:09:41Z",
+  "input_hashes": {
+    "capture_sha256": "6720820e469aa763f9f887107ad9448421a86b94443aadadca1ac9e478fee629",
+    "initial_analysis_sha256": "584ce6aeb407ccba2f98b06e294cfc2676dc52ce0fd16046d771e2e1747afacf",
+    "lock_sha256": "2fe1ac10470057be99fe6dac9e2a957a20459a506abf588998a97f4b8a581fcf",
+    "runner_sha256": "8f5160e33ed9fb2b1b02ee45f27c2735fa786547ed788e763389c409b8920ddd"
+  },
+  "schema": "ResidualToComposerNativeCueV1_1Analysis",
+  "summary": {
+    "absent_target_controls": 1,
+    "baseline_proposals": 0,
+    "candidate_branch_node_delta_range": [
+      31,
+      72
+    ],
+    "candidate_branch_rule_delta_range": [
+      25,
+      30
+    ],
+    "false_control_cues": 0,
+    "false_control_proposals": 0,
+    "heldout_positive_passes": 4,
+    "median_candidate_grounding_ms": 0.244812,
+    "median_native_induction_ms": 5.891334,
+    "median_raw_baseline_grounding_ms": 0.230741,
+    "median_two_branch_fork_ms": 0.279301,
+    "native_positive_cues": 4,
+    "negative_controls": 8,
+    "positive_cases": 4,
+    "primary_isolation_and_compact_return": 13,
+    "target_absent_cues": 1,
+    "workers": 13
+  }
+}

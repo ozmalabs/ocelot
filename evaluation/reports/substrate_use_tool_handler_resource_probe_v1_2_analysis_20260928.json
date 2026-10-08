@@ -1,0 +1,207 @@
+{
+  "acquisition_attempts_per_worker": [
+    [
+      {
+        "args": [
+          "opinion_lexicon"
+        ],
+        "kind": "nltk.download",
+        "kwargs": {
+          "quiet": true
+        }
+      },
+      {
+        "args": [
+          "opinion_lexicon"
+        ],
+        "kind": "nltk.download",
+        "kwargs": {
+          "quiet": true
+        }
+      }
+    ],
+    [
+      {
+        "args": [
+          "opinion_lexicon"
+        ],
+        "kind": "nltk.download",
+        "kwargs": {
+          "quiet": true
+        }
+      },
+      {
+        "args": [
+          "opinion_lexicon"
+        ],
+        "kind": "nltk.download",
+        "kwargs": {
+          "quiet": true
+        }
+      }
+    ],
+    [
+      {
+        "args": [
+          "opinion_lexicon"
+        ],
+        "kind": "nltk.download",
+        "kwargs": {
+          "quiet": true
+        }
+      },
+      {
+        "args": [
+          "opinion_lexicon"
+        ],
+        "kind": "nltk.download",
+        "kwargs": {
+          "quiet": true
+        }
+      }
+    ]
+  ],
+  "all_gates_pass": true,
+  "analysis": "UseTool handler resource probe v1.2",
+  "gates": {
+    "acquisition_attempts_consistent": true,
+    "all_handlers_present": true,
+    "all_workers_completed": true,
+    "identical_across_workers": true,
+    "repeatable_within_worker": true,
+    "source_and_resource_stable": true,
+    "three_workers": true
+  },
+  "handler_count": 15,
+  "handler_status_counts": {
+    "error": 1,
+    "ok": 14
+  },
+  "handlers": {
+    "cn_antonym": {
+      "repeatable_within_worker": true,
+      "same_across_workers": true,
+      "status": "ok",
+      "value": 1
+    },
+    "cn_contiguity": {
+      "repeatable_within_worker": true,
+      "same_across_workers": true,
+      "status": "ok",
+      "value": 0
+    },
+    "derive_opposes": {
+      "repeatable_within_worker": true,
+      "same_across_workers": true,
+      "status": "ok",
+      "value": 0.8
+    },
+    "is_extreme": {
+      "repeatable_within_worker": true,
+      "same_across_workers": true,
+      "status": "ok",
+      "value": 1
+    },
+    "is_intensifier_spike": {
+      "repeatable_within_worker": true,
+      "same_across_workers": true,
+      "status": "ok",
+      "value": 1
+    },
+    "is_minimizer": {
+      "repeatable_within_worker": true,
+      "same_across_workers": true,
+      "status": "ok",
+      "value": 1
+    },
+    "shape_cross_domain": {
+      "repeatable_within_worker": true,
+      "same_across_workers": true,
+      "status": "ok",
+      "value": 1
+    },
+    "text_severe": {
+      "repeatable_within_worker": true,
+      "same_across_workers": true,
+      "status": "ok",
+      "value": 1
+    },
+    "text_valence": {
+      "repeatable_within_worker": true,
+      "same_across_workers": true,
+      "status": "error",
+      "value": null
+    },
+    "wikt_antonym": {
+      "repeatable_within_worker": true,
+      "same_across_workers": true,
+      "status": "ok",
+      "value": 1
+    },
+    "wikt_idiomatic": {
+      "repeatable_within_worker": true,
+      "same_across_workers": true,
+      "status": "ok",
+      "value": 1
+    },
+    "wikt_metonymic": {
+      "repeatable_within_worker": true,
+      "same_across_workers": true,
+      "status": "ok",
+      "value": 1
+    },
+    "wn_animate": {
+      "repeatable_within_worker": true,
+      "same_across_workers": true,
+      "status": "ok",
+      "value": 1
+    },
+    "wn_antonym": {
+      "repeatable_within_worker": true,
+      "same_across_workers": true,
+      "status": "ok",
+      "value": 1
+    },
+    "wn_verb_agentive": {
+      "repeatable_within_worker": true,
+      "same_across_workers": true,
+      "status": "ok",
+      "value": 1
+    }
+  },
+  "limitations": [
+    "Fixed representative inputs measure repeatability, not lexical accuracy or full function purity.",
+    "Same-process call two is warm relative to call one; independent workers start with empty Python caches.",
+    "Blocked acquisition attempts are observed behavior; no successful download or changed-resource invalidation is measured."
+  ],
+  "nltk_resource_presence": {
+    "nltk:omw-1.4": {
+      "present": true,
+      "resolved": [
+        {
+          "path": "/home/matt/nltk_data/corpora/omw-1.4.zip",
+          "sha256": "3b941e664852f3297b6040236626065796a2aaf7d7f9eec8779a3beaa1096c2d",
+          "size": 26634772
+        }
+      ]
+    },
+    "nltk:opinion_lexicon": {
+      "present": false,
+      "resolved": []
+    },
+    "nltk:sentiwordnet": {
+      "present": false,
+      "resolved": []
+    },
+    "nltk:wordnet": {
+      "present": true,
+      "resolved": [
+        {
+          "path": "/home/matt/nltk_data/corpora/wordnet.zip",
+          "sha256": "cbda5ea6eef7f36a97a43d4a75f85e07fccbb4f23657d27b4ccbc93e2646ab59",
+          "size": 10775600
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,1095 @@
+{
+  "analyzer_sha256": "5d91e4dd9db284369e1fe9efe5ae465295196030168e4ac39a3d703dbbf0f905",
+  "claim_boundary": "Narrow exact-conflict admission prototype, existing global order metadata, and graph proposal-node representation on one deterministic conflict.",
+  "lock_sha256": "c8c3676948d90f9aa202d506e218fbea0b145ec1e48ce78dcc57faa5a34885f3",
+  "locked_inputs": {
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "native_build_manifest_sha256": "425e086594e50335ca917e330206fec9bd8c778d4e58d2c5dd0d06cc61bc41ee",
+    "native_extension_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+    "native_extension_sha256": "260cf6063acbfb2fb83a7bfbe8b0bbe35afa951d3142539fbd868edf331d3afa",
+    "source_sha256": {
+      "docs/research/engine_substrate/SUBSTRATE_RULE_CONFLICT_POLICY_COMPARISON_V1_PREREG_20260928.md": "2512e60d64fc5df0b74362dd86f591c17a5a676a1c5c3309c944a6851e368d58",
+      "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+      "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+      "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+      "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+      "scripts/analyze_rule_conflict_policy_comparison_v1.py": "5d91e4dd9db284369e1fe9efe5ae465295196030168e4ac39a3d703dbbf0f905",
+      "scripts/substrate_rule_conflict_policy_comparison_v1.py": "b7675d9be0f3abceb0399fa7e77445d062fdfeb20c72f8bffbc68313ab530835"
+    }
+  },
+  "protocol_sha256": "2512e60d64fc5df0b74362dd86f591c17a5a676a1c5c3309c944a6851e368d58",
+  "run_id": "rule_conflict_policy_comparison_v1_20260928",
+  "runs": [
+    {
+      "cells": [
+        {
+          "accepted": 2,
+          "callback_count": 4,
+          "exact_reject_prototype": {
+            "conflicting_writes": [
+              {
+                "attribute": "accepted",
+                "proposals": [
+                  [
+                    "A",
+                    1
+                  ],
+                  [
+                    "B",
+                    2
+                  ]
+                ],
+                "variable": "y"
+              }
+            ],
+            "decision": "reject_before_install",
+            "same_match_and_where": true,
+            "scope": "exact structural equality only; no graph pattern unification or predicate equivalence"
+          },
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              }
+            ],
+            "next_id": 2,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "ConflictProbe"
+              },
+              {
+                "attrs": {
+                  "accepted": 2
+                },
+                "id": 1,
+                "type": "ConflictProbe"
+              }
+            ]
+          },
+          "order": "A_then_B",
+          "policy": "metadata_order",
+          "proposal_edge_count": 0,
+          "proposal_nodes": [],
+          "rule_sequence": [
+            "A",
+            "B"
+          ],
+          "termination": {
+            "budget_overshoot": 0,
+            "cycle_detection_enabled": true,
+            "passes_completed": 2,
+            "progress_steps": 4,
+            "requested_progress_budget": 12,
+            "status": "repeated_graph_state"
+          }
+        },
+        {
+          "accepted": 1,
+          "callback_count": 4,
+          "exact_reject_prototype": {
+            "conflicting_writes": [
+              {
+                "attribute": "accepted",
+                "proposals": [
+                  [
+                    "A",
+                    1
+                  ],
+                  [
+                    "B",
+                    2
+                  ]
+                ],
+                "variable": "y"
+              }
+            ],
+            "decision": "reject_before_install",
+            "same_match_and_where": true,
+            "scope": "exact structural equality only; no graph pattern unification or predicate equivalence"
+          },
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              }
+            ],
+            "next_id": 2,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "ConflictProbe"
+              },
+              {
+                "attrs": {
+                  "accepted": 1
+                },
+                "id": 1,
+                "type": "ConflictProbe"
+              }
+            ]
+          },
+          "order": "B_then_A",
+          "policy": "metadata_order",
+          "proposal_edge_count": 0,
+          "proposal_nodes": [],
+          "rule_sequence": [
+            "B",
+            "A"
+          ],
+          "termination": {
+            "budget_overshoot": 0,
+            "cycle_detection_enabled": true,
+            "passes_completed": 2,
+            "progress_steps": 4,
+            "requested_progress_budget": 12,
+            "status": "repeated_graph_state"
+          }
+        },
+        {
+          "accepted": null,
+          "callback_count": 4,
+          "exact_reject_prototype": {
+            "conflicting_writes": [
+              {
+                "attribute": "accepted",
+                "proposals": [
+                  [
+                    "A",
+                    1
+                  ],
+                  [
+                    "B",
+                    2
+                  ]
+                ],
+                "variable": "y"
+              }
+            ],
+            "decision": "reject_before_install",
+            "same_match_and_where": true,
+            "scope": "exact structural equality only; no graph pattern unification or predicate equivalence"
+          },
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              },
+              {
+                "attrs": {},
+                "src": 1,
+                "tgt": 2,
+                "type": "proposes"
+              },
+              {
+                "attrs": {},
+                "src": 1,
+                "tgt": 3,
+                "type": "proposes"
+              }
+            ],
+            "next_id": 4,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "ConflictProbe"
+              },
+              {
+                "attrs": {},
+                "id": 1,
+                "type": "ConflictProbe"
+              },
+              {
+                "attrs": {
+                  "rule": "A",
+                  "value": 1
+                },
+                "id": 2,
+                "type": "ConflictProposal"
+              },
+              {
+                "attrs": {
+                  "rule": "B",
+                  "value": 2
+                },
+                "id": 3,
+                "type": "ConflictProposal"
+              }
+            ]
+          },
+          "order": "A_then_B",
+          "policy": "proposal_nodes",
+          "proposal_edge_count": 2,
+          "proposal_nodes": [
+            [
+              "A",
+              1
+            ],
+            [
+              "B",
+              2
+            ]
+          ],
+          "rule_sequence": [
+            "A",
+            "B"
+          ],
+          "termination": {
+            "budget_overshoot": 0,
+            "cycle_detection_enabled": true,
+            "passes_completed": 2,
+            "progress_steps": 2,
+            "requested_progress_budget": 12,
+            "status": "fixed_point"
+          }
+        },
+        {
+          "accepted": null,
+          "callback_count": 4,
+          "exact_reject_prototype": {
+            "conflicting_writes": [
+              {
+                "attribute": "accepted",
+                "proposals": [
+                  [
+                    "A",
+                    1
+                  ],
+                  [
+                    "B",
+                    2
+                  ]
+                ],
+                "variable": "y"
+              }
+            ],
+            "decision": "reject_before_install",
+            "same_match_and_where": true,
+            "scope": "exact structural equality only; no graph pattern unification or predicate equivalence"
+          },
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              },
+              {
+                "attrs": {},
+                "src": 1,
+                "tgt": 2,
+                "type": "proposes"
+              },
+              {
+                "attrs": {},
+                "src": 1,
+                "tgt": 3,
+                "type": "proposes"
+              }
+            ],
+            "next_id": 4,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "ConflictProbe"
+              },
+              {
+                "attrs": {},
+                "id": 1,
+                "type": "ConflictProbe"
+              },
+              {
+                "attrs": {
+                  "rule": "B",
+                  "value": 2
+                },
+                "id": 2,
+                "type": "ConflictProposal"
+              },
+              {
+                "attrs": {
+                  "rule": "A",
+                  "value": 1
+                },
+                "id": 3,
+                "type": "ConflictProposal"
+              }
+            ]
+          },
+          "order": "B_then_A",
+          "policy": "proposal_nodes",
+          "proposal_edge_count": 2,
+          "proposal_nodes": [
+            [
+              "A",
+              1
+            ],
+            [
+              "B",
+              2
+            ]
+          ],
+          "rule_sequence": [
+            "B",
+            "A"
+          ],
+          "termination": {
+            "budget_overshoot": 0,
+            "cycle_detection_enabled": true,
+            "passes_completed": 2,
+            "progress_steps": 2,
+            "requested_progress_budget": 12,
+            "status": "fixed_point"
+          }
+        }
+      ],
+      "pid": 8,
+      "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+      "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]",
+      "started_inputs": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "425e086594e50335ca917e330206fec9bd8c778d4e58d2c5dd0d06cc61bc41ee",
+        "native_extension_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_extension_sha256": "260cf6063acbfb2fb83a7bfbe8b0bbe35afa951d3142539fbd868edf331d3afa",
+        "source_sha256": {
+          "docs/research/engine_substrate/SUBSTRATE_RULE_CONFLICT_POLICY_COMPARISON_V1_PREREG_20260928.md": "2512e60d64fc5df0b74362dd86f591c17a5a676a1c5c3309c944a6851e368d58",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+          "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+          "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+          "scripts/analyze_rule_conflict_policy_comparison_v1.py": "5d91e4dd9db284369e1fe9efe5ae465295196030168e4ac39a3d703dbbf0f905",
+          "scripts/substrate_rule_conflict_policy_comparison_v1.py": "b7675d9be0f3abceb0399fa7e77445d062fdfeb20c72f8bffbc68313ab530835"
+        }
+      },
+      "worker_id": 1
+    },
+    {
+      "cells": [
+        {
+          "accepted": 2,
+          "callback_count": 4,
+          "exact_reject_prototype": {
+            "conflicting_writes": [
+              {
+                "attribute": "accepted",
+                "proposals": [
+                  [
+                    "A",
+                    1
+                  ],
+                  [
+                    "B",
+                    2
+                  ]
+                ],
+                "variable": "y"
+              }
+            ],
+            "decision": "reject_before_install",
+            "same_match_and_where": true,
+            "scope": "exact structural equality only; no graph pattern unification or predicate equivalence"
+          },
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              }
+            ],
+            "next_id": 2,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "ConflictProbe"
+              },
+              {
+                "attrs": {
+                  "accepted": 2
+                },
+                "id": 1,
+                "type": "ConflictProbe"
+              }
+            ]
+          },
+          "order": "A_then_B",
+          "policy": "metadata_order",
+          "proposal_edge_count": 0,
+          "proposal_nodes": [],
+          "rule_sequence": [
+            "A",
+            "B"
+          ],
+          "termination": {
+            "budget_overshoot": 0,
+            "cycle_detection_enabled": true,
+            "passes_completed": 2,
+            "progress_steps": 4,
+            "requested_progress_budget": 12,
+            "status": "repeated_graph_state"
+          }
+        },
+        {
+          "accepted": 1,
+          "callback_count": 4,
+          "exact_reject_prototype": {
+            "conflicting_writes": [
+              {
+                "attribute": "accepted",
+                "proposals": [
+                  [
+                    "A",
+                    1
+                  ],
+                  [
+                    "B",
+                    2
+                  ]
+                ],
+                "variable": "y"
+              }
+            ],
+            "decision": "reject_before_install",
+            "same_match_and_where": true,
+            "scope": "exact structural equality only; no graph pattern unification or predicate equivalence"
+          },
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              }
+            ],
+            "next_id": 2,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "ConflictProbe"
+              },
+              {
+                "attrs": {
+                  "accepted": 1
+                },
+                "id": 1,
+                "type": "ConflictProbe"
+              }
+            ]
+          },
+          "order": "B_then_A",
+          "policy": "metadata_order",
+          "proposal_edge_count": 0,
+          "proposal_nodes": [],
+          "rule_sequence": [
+            "B",
+            "A"
+          ],
+          "termination": {
+            "budget_overshoot": 0,
+            "cycle_detection_enabled": true,
+            "passes_completed": 2,
+            "progress_steps": 4,
+            "requested_progress_budget": 12,
+            "status": "repeated_graph_state"
+          }
+        },
+        {
+          "accepted": null,
+          "callback_count": 4,
+          "exact_reject_prototype": {
+            "conflicting_writes": [
+              {
+                "attribute": "accepted",
+                "proposals": [
+                  [
+                    "A",
+                    1
+                  ],
+                  [
+                    "B",
+                    2
+                  ]
+                ],
+                "variable": "y"
+              }
+            ],
+            "decision": "reject_before_install",
+            "same_match_and_where": true,
+            "scope": "exact structural equality only; no graph pattern unification or predicate equivalence"
+          },
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              },
+              {
+                "attrs": {},
+                "src": 1,
+                "tgt": 2,
+                "type": "proposes"
+              },
+              {
+                "attrs": {},
+                "src": 1,
+                "tgt": 3,
+                "type": "proposes"
+              }
+            ],
+            "next_id": 4,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "ConflictProbe"
+              },
+              {
+                "attrs": {},
+                "id": 1,
+                "type": "ConflictProbe"
+              },
+              {
+                "attrs": {
+                  "rule": "A",
+                  "value": 1
+                },
+                "id": 2,
+                "type": "ConflictProposal"
+              },
+              {
+                "attrs": {
+                  "rule": "B",
+                  "value": 2
+                },
+                "id": 3,
+                "type": "ConflictProposal"
+              }
+            ]
+          },
+          "order": "A_then_B",
+          "policy": "proposal_nodes",
+          "proposal_edge_count": 2,
+          "proposal_nodes": [
+            [
+              "A",
+              1
+            ],
+            [
+              "B",
+              2
+            ]
+          ],
+          "rule_sequence": [
+            "A",
+            "B"
+          ],
+          "termination": {
+            "budget_overshoot": 0,
+            "cycle_detection_enabled": true,
+            "passes_completed": 2,
+            "progress_steps": 2,
+            "requested_progress_budget": 12,
+            "status": "fixed_point"
+          }
+        },
+        {
+          "accepted": null,
+          "callback_count": 4,
+          "exact_reject_prototype": {
+            "conflicting_writes": [
+              {
+                "attribute": "accepted",
+                "proposals": [
+                  [
+                    "A",
+                    1
+                  ],
+                  [
+                    "B",
+                    2
+                  ]
+                ],
+                "variable": "y"
+              }
+            ],
+            "decision": "reject_before_install",
+            "same_match_and_where": true,
+            "scope": "exact structural equality only; no graph pattern unification or predicate equivalence"
+          },
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              },
+              {
+                "attrs": {},
+                "src": 1,
+                "tgt": 2,
+                "type": "proposes"
+              },
+              {
+                "attrs": {},
+                "src": 1,
+                "tgt": 3,
+                "type": "proposes"
+              }
+            ],
+            "next_id": 4,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "ConflictProbe"
+              },
+              {
+                "attrs": {},
+                "id": 1,
+                "type": "ConflictProbe"
+              },
+              {
+                "attrs": {
+                  "rule": "B",
+                  "value": 2
+                },
+                "id": 2,
+                "type": "ConflictProposal"
+              },
+              {
+                "attrs": {
+                  "rule": "A",
+                  "value": 1
+                },
+                "id": 3,
+                "type": "ConflictProposal"
+              }
+            ]
+          },
+          "order": "B_then_A",
+          "policy": "proposal_nodes",
+          "proposal_edge_count": 2,
+          "proposal_nodes": [
+            [
+              "A",
+              1
+            ],
+            [
+              "B",
+              2
+            ]
+          ],
+          "rule_sequence": [
+            "B",
+            "A"
+          ],
+          "termination": {
+            "budget_overshoot": 0,
+            "cycle_detection_enabled": true,
+            "passes_completed": 2,
+            "progress_steps": 2,
+            "requested_progress_budget": 12,
+            "status": "fixed_point"
+          }
+        }
+      ],
+      "pid": 19,
+      "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+      "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]",
+      "started_inputs": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "425e086594e50335ca917e330206fec9bd8c778d4e58d2c5dd0d06cc61bc41ee",
+        "native_extension_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_extension_sha256": "260cf6063acbfb2fb83a7bfbe8b0bbe35afa951d3142539fbd868edf331d3afa",
+        "source_sha256": {
+          "docs/research/engine_substrate/SUBSTRATE_RULE_CONFLICT_POLICY_COMPARISON_V1_PREREG_20260928.md": "2512e60d64fc5df0b74362dd86f591c17a5a676a1c5c3309c944a6851e368d58",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+          "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+          "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+          "scripts/analyze_rule_conflict_policy_comparison_v1.py": "5d91e4dd9db284369e1fe9efe5ae465295196030168e4ac39a3d703dbbf0f905",
+          "scripts/substrate_rule_conflict_policy_comparison_v1.py": "b7675d9be0f3abceb0399fa7e77445d062fdfeb20c72f8bffbc68313ab530835"
+        }
+      },
+      "worker_id": 2
+    },
+    {
+      "cells": [
+        {
+          "accepted": 2,
+          "callback_count": 4,
+          "exact_reject_prototype": {
+            "conflicting_writes": [
+              {
+                "attribute": "accepted",
+                "proposals": [
+                  [
+                    "A",
+                    1
+                  ],
+                  [
+                    "B",
+                    2
+                  ]
+                ],
+                "variable": "y"
+              }
+            ],
+            "decision": "reject_before_install",
+            "same_match_and_where": true,
+            "scope": "exact structural equality only; no graph pattern unification or predicate equivalence"
+          },
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              }
+            ],
+            "next_id": 2,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "ConflictProbe"
+              },
+              {
+                "attrs": {
+                  "accepted": 2
+                },
+                "id": 1,
+                "type": "ConflictProbe"
+              }
+            ]
+          },
+          "order": "A_then_B",
+          "policy": "metadata_order",
+          "proposal_edge_count": 0,
+          "proposal_nodes": [],
+          "rule_sequence": [
+            "A",
+            "B"
+          ],
+          "termination": {
+            "budget_overshoot": 0,
+            "cycle_detection_enabled": true,
+            "passes_completed": 2,
+            "progress_steps": 4,
+            "requested_progress_budget": 12,
+            "status": "repeated_graph_state"
+          }
+        },
+        {
+          "accepted": 1,
+          "callback_count": 4,
+          "exact_reject_prototype": {
+            "conflicting_writes": [
+              {
+                "attribute": "accepted",
+                "proposals": [
+                  [
+                    "A",
+                    1
+                  ],
+                  [
+                    "B",
+                    2
+                  ]
+                ],
+                "variable": "y"
+              }
+            ],
+            "decision": "reject_before_install",
+            "same_match_and_where": true,
+            "scope": "exact structural equality only; no graph pattern unification or predicate equivalence"
+          },
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              }
+            ],
+            "next_id": 2,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "ConflictProbe"
+              },
+              {
+                "attrs": {
+                  "accepted": 1
+                },
+                "id": 1,
+                "type": "ConflictProbe"
+              }
+            ]
+          },
+          "order": "B_then_A",
+          "policy": "metadata_order",
+          "proposal_edge_count": 0,
+          "proposal_nodes": [],
+          "rule_sequence": [
+            "B",
+            "A"
+          ],
+          "termination": {
+            "budget_overshoot": 0,
+            "cycle_detection_enabled": true,
+            "passes_completed": 2,
+            "progress_steps": 4,
+            "requested_progress_budget": 12,
+            "status": "repeated_graph_state"
+          }
+        },
+        {
+          "accepted": null,
+          "callback_count": 4,
+          "exact_reject_prototype": {
+            "conflicting_writes": [
+              {
+                "attribute": "accepted",
+                "proposals": [
+                  [
+                    "A",
+                    1
+                  ],
+                  [
+                    "B",
+                    2
+                  ]
+                ],
+                "variable": "y"
+              }
+            ],
+            "decision": "reject_before_install",
+            "same_match_and_where": true,
+            "scope": "exact structural equality only; no graph pattern unification or predicate equivalence"
+          },
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              },
+              {
+                "attrs": {},
+                "src": 1,
+                "tgt": 2,
+                "type": "proposes"
+              },
+              {
+                "attrs": {},
+                "src": 1,
+                "tgt": 3,
+                "type": "proposes"
+              }
+            ],
+            "next_id": 4,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "ConflictProbe"
+              },
+              {
+                "attrs": {},
+                "id": 1,
+                "type": "ConflictProbe"
+              },
+              {
+                "attrs": {
+                  "rule": "A",
+                  "value": 1
+                },
+                "id": 2,
+                "type": "ConflictProposal"
+              },
+              {
+                "attrs": {
+                  "rule": "B",
+                  "value": 2
+                },
+                "id": 3,
+                "type": "ConflictProposal"
+              }
+            ]
+          },
+          "order": "A_then_B",
+          "policy": "proposal_nodes",
+          "proposal_edge_count": 2,
+          "proposal_nodes": [
+            [
+              "A",
+              1
+            ],
+            [
+              "B",
+              2
+            ]
+          ],
+          "rule_sequence": [
+            "A",
+            "B"
+          ],
+          "termination": {
+            "budget_overshoot": 0,
+            "cycle_detection_enabled": true,
+            "passes_completed": 2,
+            "progress_steps": 2,
+            "requested_progress_budget": 12,
+            "status": "fixed_point"
+          }
+        },
+        {
+          "accepted": null,
+          "callback_count": 4,
+          "exact_reject_prototype": {
+            "conflicting_writes": [
+              {
+                "attribute": "accepted",
+                "proposals": [
+                  [
+                    "A",
+                    1
+                  ],
+                  [
+                    "B",
+                    2
+                  ]
+                ],
+                "variable": "y"
+              }
+            ],
+            "decision": "reject_before_install",
+            "same_match_and_where": true,
+            "scope": "exact structural equality only; no graph pattern unification or predicate equivalence"
+          },
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              },
+              {
+                "attrs": {},
+                "src": 1,
+                "tgt": 2,
+                "type": "proposes"
+              },
+              {
+                "attrs": {},
+                "src": 1,
+                "tgt": 3,
+                "type": "proposes"
+              }
+            ],
+            "next_id": 4,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "ConflictProbe"
+              },
+              {
+                "attrs": {},
+                "id": 1,
+                "type": "ConflictProbe"
+              },
+              {
+                "attrs": {
+                  "rule": "B",
+                  "value": 2
+                },
+                "id": 2,
+                "type": "ConflictProposal"
+              },
+              {
+                "attrs": {
+                  "rule": "A",
+                  "value": 1
+                },
+                "id": 3,
+                "type": "ConflictProposal"
+              }
+            ]
+          },
+          "order": "B_then_A",
+          "policy": "proposal_nodes",
+          "proposal_edge_count": 2,
+          "proposal_nodes": [
+            [
+              "A",
+              1
+            ],
+            [
+              "B",
+              2
+            ]
+          ],
+          "rule_sequence": [
+            "B",
+            "A"
+          ],
+          "termination": {
+            "budget_overshoot": 0,
+            "cycle_detection_enabled": true,
+            "passes_completed": 2,
+            "progress_steps": 2,
+            "requested_progress_budget": 12,
+            "status": "fixed_point"
+          }
+        }
+      ],
+      "pid": 30,
+      "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+      "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]",
+      "started_inputs": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "425e086594e50335ca917e330206fec9bd8c778d4e58d2c5dd0d06cc61bc41ee",
+        "native_extension_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_extension_sha256": "260cf6063acbfb2fb83a7bfbe8b0bbe35afa951d3142539fbd868edf331d3afa",
+        "source_sha256": {
+          "docs/research/engine_substrate/SUBSTRATE_RULE_CONFLICT_POLICY_COMPARISON_V1_PREREG_20260928.md": "2512e60d64fc5df0b74362dd86f591c17a5a676a1c5c3309c944a6851e368d58",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+          "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+          "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+          "scripts/analyze_rule_conflict_policy_comparison_v1.py": "5d91e4dd9db284369e1fe9efe5ae465295196030168e4ac39a3d703dbbf0f905",
+          "scripts/substrate_rule_conflict_policy_comparison_v1.py": "b7675d9be0f3abceb0399fa7e77445d062fdfeb20c72f8bffbc68313ab530835"
+        }
+      },
+      "worker_id": 3
+    }
+  ]
+}

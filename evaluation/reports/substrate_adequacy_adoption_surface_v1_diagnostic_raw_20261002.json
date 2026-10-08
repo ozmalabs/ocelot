@@ -1,0 +1,824 @@
+{
+  "host": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+  "lock": {
+    "active": {
+      "domains/adequacy_provider_auth.py": "c02bef40c7052aefca17d96ef0e11007597f1c6c4733f48a528b093a13af64b0",
+      "domains/code_curriculum.py": "b20e72c386341c8ff49b22b6b5309da963e73330c8015e8b6d150cb03caaa340",
+      "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+      "domains/code_write_growth.py": "7b28874642000d78ec6886d9248537610c24b679bd46379d4858c97d064cb8e6",
+      "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+      "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+      "domains/register_source.py": "8481e8d0c22ac14749ad569738971f291416528330a93b5d6fa03e2b125ac58c",
+      "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+      "domains_tree": "66c959afb77314d68ba45efab0720b058c6fd128363c9b776daa11277d4a3270",
+      "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+      "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+      "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+      "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+      "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+      "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+      "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+      "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+      "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+      "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+      "substrate/world_adapter.py": "faad410d0c46e8cff5273444675d59904ba3552989e8e3c2b6032fb822de2be5",
+      "substrate_tree": "1a8aa6dbc4ad33bb71eac6cb5e6ddb73cea47f9918a62bd5629903e6cdcf943f"
+    },
+    "design": {
+      "cases": [
+        "valid_signature",
+        "tampered_signature",
+        "direct_legacy_call",
+        "curriculum_legacy_call"
+      ],
+      "curriculum_fixture": "bbe6b0ada8295dfc715e5a07754ce947d7f37c4cf1cf3a9587605bc2d33c5dc7",
+      "example_sha256": "e4406709fbceb3412dc910add4b536fb33490f9c2cc451570246369fc2c95373",
+      "known": [
+        {
+          "expected": 0,
+          "inputs": {
+            "x": 0
+          }
+        }
+      ],
+      "probe": {
+        "x": 2
+      },
+      "provider_id": "adapter-path-square-oracle-v1",
+      "repeats_per_case": 3,
+      "tamper": "change signature first hex digit; compute receipt after tamper",
+      "test_key_sha256": "c80b58e1a5db43027e0358a5ee7e158f6cf56d9dc97355d627999155ce48172b"
+    },
+    "files": {
+      "docs/research/engine_substrate/SUBSTRATE_ADEQUACY_ADOPTION_SURFACE_V1_PREREG_20261002.md": "799361a59b762df4588df65d79b3ad63151b15bde99a6b99e3e799d9f822fc13",
+      "evaluation/substrate_capability/substrate_adequacy_adoption_surface_v1.py": "2201bf62137c2132db611730392f8f7e88e4970e730f75073737639aff1e3606"
+    },
+    "git_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "schema": "SubstrateAdequacyAdoptionSurfaceV1Lock"
+  },
+  "post_lock": {
+    "active": {
+      "domains/adequacy_provider_auth.py": "c02bef40c7052aefca17d96ef0e11007597f1c6c4733f48a528b093a13af64b0",
+      "domains/code_curriculum.py": "b20e72c386341c8ff49b22b6b5309da963e73330c8015e8b6d150cb03caaa340",
+      "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+      "domains/code_write_growth.py": "7b28874642000d78ec6886d9248537610c24b679bd46379d4858c97d064cb8e6",
+      "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+      "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+      "domains/register_source.py": "8481e8d0c22ac14749ad569738971f291416528330a93b5d6fa03e2b125ac58c",
+      "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+      "domains_tree": "66c959afb77314d68ba45efab0720b058c6fd128363c9b776daa11277d4a3270",
+      "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+      "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+      "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+      "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+      "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+      "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+      "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+      "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+      "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+      "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+      "substrate/world_adapter.py": "faad410d0c46e8cff5273444675d59904ba3552989e8e3c2b6032fb822de2be5",
+      "substrate_tree": "1a8aa6dbc4ad33bb71eac6cb5e6ddb73cea47f9918a62bd5629903e6cdcf943f"
+    },
+    "design": {
+      "cases": [
+        "valid_signature",
+        "tampered_signature",
+        "direct_legacy_call",
+        "curriculum_legacy_call"
+      ],
+      "curriculum_fixture": "bbe6b0ada8295dfc715e5a07754ce947d7f37c4cf1cf3a9587605bc2d33c5dc7",
+      "example_sha256": "e4406709fbceb3412dc910add4b536fb33490f9c2cc451570246369fc2c95373",
+      "known": [
+        {
+          "expected": 0,
+          "inputs": {
+            "x": 0
+          }
+        }
+      ],
+      "probe": {
+        "x": 2
+      },
+      "provider_id": "adapter-path-square-oracle-v1",
+      "repeats_per_case": 3,
+      "tamper": "change signature first hex digit; compute receipt after tamper",
+      "test_key_sha256": "c80b58e1a5db43027e0358a5ee7e158f6cf56d9dc97355d627999155ce48172b"
+    },
+    "files": {
+      "docs/research/engine_substrate/SUBSTRATE_ADEQUACY_ADOPTION_SURFACE_V1_PREREG_20261002.md": "799361a59b762df4588df65d79b3ad63151b15bde99a6b99e3e799d9f822fc13",
+      "evaluation/substrate_capability/substrate_adequacy_adoption_surface_v1.py": "2201bf62137c2132db611730392f8f7e88e4970e730f75073737639aff1e3606"
+    },
+    "git_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "schema": "SubstrateAdequacyAdoptionSurfaceV1Lock"
+  },
+  "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]",
+  "schedule": [
+    {
+      "case": "valid_signature",
+      "repetition": 1
+    },
+    {
+      "case": "valid_signature",
+      "repetition": 2
+    },
+    {
+      "case": "valid_signature",
+      "repetition": 3
+    },
+    {
+      "case": "tampered_signature",
+      "repetition": 1
+    },
+    {
+      "case": "tampered_signature",
+      "repetition": 2
+    },
+    {
+      "case": "tampered_signature",
+      "repetition": 3
+    },
+    {
+      "case": "direct_legacy_call",
+      "repetition": 1
+    },
+    {
+      "case": "direct_legacy_call",
+      "repetition": 2
+    },
+    {
+      "case": "direct_legacy_call",
+      "repetition": 3
+    },
+    {
+      "case": "curriculum_legacy_call",
+      "repetition": 1
+    },
+    {
+      "case": "curriculum_legacy_call",
+      "repetition": 2
+    },
+    {
+      "case": "curriculum_legacy_call",
+      "repetition": 3
+    }
+  ],
+  "schema": "SubstrateAdequacyAdoptionSurfaceV1Capture",
+  "source_stable": true,
+  "workers": [
+    {
+      "active_after": {
+        "domains/adequacy_provider_auth.py": "c02bef40c7052aefca17d96ef0e11007597f1c6c4733f48a528b093a13af64b0",
+        "domains/code_curriculum.py": "b20e72c386341c8ff49b22b6b5309da963e73330c8015e8b6d150cb03caaa340",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "7b28874642000d78ec6886d9248537610c24b679bd46379d4858c97d064cb8e6",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/register_source.py": "8481e8d0c22ac14749ad569738971f291416528330a93b5d6fa03e2b125ac58c",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "66c959afb77314d68ba45efab0720b058c6fd128363c9b776daa11277d4a3270",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/world_adapter.py": "faad410d0c46e8cff5273444675d59904ba3552989e8e3c2b6032fb822de2be5",
+        "substrate_tree": "1a8aa6dbc4ad33bb71eac6cb5e6ddb73cea47f9918a62bd5629903e6cdcf943f"
+      },
+      "adopted_code_shape_ids": [
+        "#1616"
+      ],
+      "candidate_id": "3516de6112b77de8a2528898d6c534474974f2ddf9a183818d6c6866b7e91baf",
+      "case": "valid_signature",
+      "code_shape_ids_after": [
+        "#1616"
+      ],
+      "code_shape_ids_before": [],
+      "elapsed_ns": 199886682,
+      "pid": 4,
+      "receipt_status": "accepted",
+      "repetition": 1,
+      "reply": "Thank you -- I read that function and learned the shape 'taught_square' (triggers: square).",
+      "shape_delta": 1
+    },
+    {
+      "active_after": {
+        "domains/adequacy_provider_auth.py": "c02bef40c7052aefca17d96ef0e11007597f1c6c4733f48a528b093a13af64b0",
+        "domains/code_curriculum.py": "b20e72c386341c8ff49b22b6b5309da963e73330c8015e8b6d150cb03caaa340",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "7b28874642000d78ec6886d9248537610c24b679bd46379d4858c97d064cb8e6",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/register_source.py": "8481e8d0c22ac14749ad569738971f291416528330a93b5d6fa03e2b125ac58c",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "66c959afb77314d68ba45efab0720b058c6fd128363c9b776daa11277d4a3270",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/world_adapter.py": "faad410d0c46e8cff5273444675d59904ba3552989e8e3c2b6032fb822de2be5",
+        "substrate_tree": "1a8aa6dbc4ad33bb71eac6cb5e6ddb73cea47f9918a62bd5629903e6cdcf943f"
+      },
+      "adopted_code_shape_ids": [
+        "#1616"
+      ],
+      "candidate_id": "3516de6112b77de8a2528898d6c534474974f2ddf9a183818d6c6866b7e91baf",
+      "case": "valid_signature",
+      "code_shape_ids_after": [
+        "#1616"
+      ],
+      "code_shape_ids_before": [],
+      "elapsed_ns": 177437775,
+      "pid": 252,
+      "receipt_status": "accepted",
+      "repetition": 2,
+      "reply": "Thank you -- I read that function and learned the shape 'taught_square' (triggers: square).",
+      "shape_delta": 1
+    },
+    {
+      "active_after": {
+        "domains/adequacy_provider_auth.py": "c02bef40c7052aefca17d96ef0e11007597f1c6c4733f48a528b093a13af64b0",
+        "domains/code_curriculum.py": "b20e72c386341c8ff49b22b6b5309da963e73330c8015e8b6d150cb03caaa340",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "7b28874642000d78ec6886d9248537610c24b679bd46379d4858c97d064cb8e6",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/register_source.py": "8481e8d0c22ac14749ad569738971f291416528330a93b5d6fa03e2b125ac58c",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "66c959afb77314d68ba45efab0720b058c6fd128363c9b776daa11277d4a3270",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/world_adapter.py": "faad410d0c46e8cff5273444675d59904ba3552989e8e3c2b6032fb822de2be5",
+        "substrate_tree": "1a8aa6dbc4ad33bb71eac6cb5e6ddb73cea47f9918a62bd5629903e6cdcf943f"
+      },
+      "adopted_code_shape_ids": [
+        "#1616"
+      ],
+      "candidate_id": "3516de6112b77de8a2528898d6c534474974f2ddf9a183818d6c6866b7e91baf",
+      "case": "valid_signature",
+      "code_shape_ids_after": [
+        "#1616"
+      ],
+      "code_shape_ids_before": [],
+      "elapsed_ns": 174466614,
+      "pid": 500,
+      "receipt_status": "accepted",
+      "repetition": 3,
+      "reply": "Thank you -- I read that function and learned the shape 'taught_square' (triggers: square).",
+      "shape_delta": 1
+    },
+    {
+      "active_after": {
+        "domains/adequacy_provider_auth.py": "c02bef40c7052aefca17d96ef0e11007597f1c6c4733f48a528b093a13af64b0",
+        "domains/code_curriculum.py": "b20e72c386341c8ff49b22b6b5309da963e73330c8015e8b6d150cb03caaa340",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "7b28874642000d78ec6886d9248537610c24b679bd46379d4858c97d064cb8e6",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/register_source.py": "8481e8d0c22ac14749ad569738971f291416528330a93b5d6fa03e2b125ac58c",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "66c959afb77314d68ba45efab0720b058c6fd128363c9b776daa11277d4a3270",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/world_adapter.py": "faad410d0c46e8cff5273444675d59904ba3552989e8e3c2b6032fb822de2be5",
+        "substrate_tree": "1a8aa6dbc4ad33bb71eac6cb5e6ddb73cea47f9918a62bd5629903e6cdcf943f"
+      },
+      "adopted_code_shape_ids": [],
+      "candidate_id": "3516de6112b77de8a2528898d6c534474974f2ddf9a183818d6c6866b7e91baf",
+      "case": "tampered_signature",
+      "code_shape_ids_after": [],
+      "code_shape_ids_before": [],
+      "elapsed_ns": 170589390,
+      "pid": 748,
+      "receipt_status": "accepted",
+      "repetition": 1,
+      "reply": "I read that function but could not take it as a lesson (provider-authenticated adequacy evidence required).",
+      "shape_delta": 0
+    },
+    {
+      "active_after": {
+        "domains/adequacy_provider_auth.py": "c02bef40c7052aefca17d96ef0e11007597f1c6c4733f48a528b093a13af64b0",
+        "domains/code_curriculum.py": "b20e72c386341c8ff49b22b6b5309da963e73330c8015e8b6d150cb03caaa340",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "7b28874642000d78ec6886d9248537610c24b679bd46379d4858c97d064cb8e6",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/register_source.py": "8481e8d0c22ac14749ad569738971f291416528330a93b5d6fa03e2b125ac58c",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "66c959afb77314d68ba45efab0720b058c6fd128363c9b776daa11277d4a3270",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/world_adapter.py": "faad410d0c46e8cff5273444675d59904ba3552989e8e3c2b6032fb822de2be5",
+        "substrate_tree": "1a8aa6dbc4ad33bb71eac6cb5e6ddb73cea47f9918a62bd5629903e6cdcf943f"
+      },
+      "adopted_code_shape_ids": [],
+      "candidate_id": "3516de6112b77de8a2528898d6c534474974f2ddf9a183818d6c6866b7e91baf",
+      "case": "tampered_signature",
+      "code_shape_ids_after": [],
+      "code_shape_ids_before": [],
+      "elapsed_ns": 172749309,
+      "pid": 995,
+      "receipt_status": "accepted",
+      "repetition": 2,
+      "reply": "I read that function but could not take it as a lesson (provider-authenticated adequacy evidence required).",
+      "shape_delta": 0
+    },
+    {
+      "active_after": {
+        "domains/adequacy_provider_auth.py": "c02bef40c7052aefca17d96ef0e11007597f1c6c4733f48a528b093a13af64b0",
+        "domains/code_curriculum.py": "b20e72c386341c8ff49b22b6b5309da963e73330c8015e8b6d150cb03caaa340",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "7b28874642000d78ec6886d9248537610c24b679bd46379d4858c97d064cb8e6",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/register_source.py": "8481e8d0c22ac14749ad569738971f291416528330a93b5d6fa03e2b125ac58c",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "66c959afb77314d68ba45efab0720b058c6fd128363c9b776daa11277d4a3270",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/world_adapter.py": "faad410d0c46e8cff5273444675d59904ba3552989e8e3c2b6032fb822de2be5",
+        "substrate_tree": "1a8aa6dbc4ad33bb71eac6cb5e6ddb73cea47f9918a62bd5629903e6cdcf943f"
+      },
+      "adopted_code_shape_ids": [],
+      "candidate_id": "3516de6112b77de8a2528898d6c534474974f2ddf9a183818d6c6866b7e91baf",
+      "case": "tampered_signature",
+      "code_shape_ids_after": [],
+      "code_shape_ids_before": [],
+      "elapsed_ns": 162046397,
+      "pid": 1242,
+      "receipt_status": "accepted",
+      "repetition": 3,
+      "reply": "I read that function but could not take it as a lesson (provider-authenticated adequacy evidence required).",
+      "shape_delta": 0
+    },
+    {
+      "active_after": {
+        "domains/adequacy_provider_auth.py": "c02bef40c7052aefca17d96ef0e11007597f1c6c4733f48a528b093a13af64b0",
+        "domains/code_curriculum.py": "b20e72c386341c8ff49b22b6b5309da963e73330c8015e8b6d150cb03caaa340",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "7b28874642000d78ec6886d9248537610c24b679bd46379d4858c97d064cb8e6",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/register_source.py": "8481e8d0c22ac14749ad569738971f291416528330a93b5d6fa03e2b125ac58c",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "66c959afb77314d68ba45efab0720b058c6fd128363c9b776daa11277d4a3270",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/world_adapter.py": "faad410d0c46e8cff5273444675d59904ba3552989e8e3c2b6032fb822de2be5",
+        "substrate_tree": "1a8aa6dbc4ad33bb71eac6cb5e6ddb73cea47f9918a62bd5629903e6cdcf943f"
+      },
+      "adopted_code_shape_ids": [],
+      "case": "direct_legacy_call",
+      "code_shape_ids_after": [],
+      "code_shape_ids_before": [],
+      "elapsed_ns": 4237226,
+      "outcomes": [
+        {
+          "ok": false,
+          "reason": "provider-authenticated adequacy evidence required"
+        }
+      ],
+      "pid": 1489,
+      "receipt_status": null,
+      "repetition": 1,
+      "reply": "provider-authenticated adequacy evidence required",
+      "shape_delta": 0
+    },
+    {
+      "active_after": {
+        "domains/adequacy_provider_auth.py": "c02bef40c7052aefca17d96ef0e11007597f1c6c4733f48a528b093a13af64b0",
+        "domains/code_curriculum.py": "b20e72c386341c8ff49b22b6b5309da963e73330c8015e8b6d150cb03caaa340",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "7b28874642000d78ec6886d9248537610c24b679bd46379d4858c97d064cb8e6",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/register_source.py": "8481e8d0c22ac14749ad569738971f291416528330a93b5d6fa03e2b125ac58c",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "66c959afb77314d68ba45efab0720b058c6fd128363c9b776daa11277d4a3270",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/world_adapter.py": "faad410d0c46e8cff5273444675d59904ba3552989e8e3c2b6032fb822de2be5",
+        "substrate_tree": "1a8aa6dbc4ad33bb71eac6cb5e6ddb73cea47f9918a62bd5629903e6cdcf943f"
+      },
+      "adopted_code_shape_ids": [],
+      "case": "direct_legacy_call",
+      "code_shape_ids_after": [],
+      "code_shape_ids_before": [],
+      "elapsed_ns": 4630388,
+      "outcomes": [
+        {
+          "ok": false,
+          "reason": "provider-authenticated adequacy evidence required"
+        }
+      ],
+      "pid": 1572,
+      "receipt_status": null,
+      "repetition": 2,
+      "reply": "provider-authenticated adequacy evidence required",
+      "shape_delta": 0
+    },
+    {
+      "active_after": {
+        "domains/adequacy_provider_auth.py": "c02bef40c7052aefca17d96ef0e11007597f1c6c4733f48a528b093a13af64b0",
+        "domains/code_curriculum.py": "b20e72c386341c8ff49b22b6b5309da963e73330c8015e8b6d150cb03caaa340",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "7b28874642000d78ec6886d9248537610c24b679bd46379d4858c97d064cb8e6",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/register_source.py": "8481e8d0c22ac14749ad569738971f291416528330a93b5d6fa03e2b125ac58c",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "66c959afb77314d68ba45efab0720b058c6fd128363c9b776daa11277d4a3270",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/world_adapter.py": "faad410d0c46e8cff5273444675d59904ba3552989e8e3c2b6032fb822de2be5",
+        "substrate_tree": "1a8aa6dbc4ad33bb71eac6cb5e6ddb73cea47f9918a62bd5629903e6cdcf943f"
+      },
+      "adopted_code_shape_ids": [],
+      "case": "direct_legacy_call",
+      "code_shape_ids_after": [],
+      "code_shape_ids_before": [],
+      "elapsed_ns": 4651539,
+      "outcomes": [
+        {
+          "ok": false,
+          "reason": "provider-authenticated adequacy evidence required"
+        }
+      ],
+      "pid": 1655,
+      "receipt_status": null,
+      "repetition": 3,
+      "reply": "provider-authenticated adequacy evidence required",
+      "shape_delta": 0
+    },
+    {
+      "active_after": {
+        "domains/adequacy_provider_auth.py": "c02bef40c7052aefca17d96ef0e11007597f1c6c4733f48a528b093a13af64b0",
+        "domains/code_curriculum.py": "b20e72c386341c8ff49b22b6b5309da963e73330c8015e8b6d150cb03caaa340",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "7b28874642000d78ec6886d9248537610c24b679bd46379d4858c97d064cb8e6",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/register_source.py": "8481e8d0c22ac14749ad569738971f291416528330a93b5d6fa03e2b125ac58c",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "66c959afb77314d68ba45efab0720b058c6fd128363c9b776daa11277d4a3270",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/world_adapter.py": "faad410d0c46e8cff5273444675d59904ba3552989e8e3c2b6032fb822de2be5",
+        "substrate_tree": "1a8aa6dbc4ad33bb71eac6cb5e6ddb73cea47f9918a62bd5629903e6cdcf943f"
+      },
+      "adopted_code_shape_ids": [
+        "#16654",
+        "#16655",
+        "#16656",
+        "#16657",
+        "#16658",
+        "#16659",
+        "#16660",
+        "#16661",
+        "#16662",
+        "#16663",
+        "#16664",
+        "#16665",
+        "#16666",
+        "#16667",
+        "#16668",
+        "#4904",
+        "#4905",
+        "#4906",
+        "#4907",
+        "#4908",
+        "#4909",
+        "#4910",
+        "#4911",
+        "#4912",
+        "#6748",
+        "#6749",
+        "#6750"
+      ],
+      "case": "curriculum_legacy_call",
+      "code_shape_ids_after": [
+        "#4904",
+        "#4905",
+        "#4906",
+        "#4907",
+        "#4908",
+        "#4909",
+        "#4910",
+        "#4911",
+        "#4912",
+        "#6748",
+        "#6749",
+        "#6750",
+        "#16654",
+        "#16655",
+        "#16656",
+        "#16657",
+        "#16658",
+        "#16659",
+        "#16660",
+        "#16661",
+        "#16662",
+        "#16663",
+        "#16664",
+        "#16665",
+        "#16666",
+        "#16667",
+        "#16668"
+      ],
+      "code_shape_ids_before": [],
+      "elapsed_ns": 14258536016,
+      "outcomes": [
+        {
+          "ok": false,
+          "reason": "provider-authenticated adequacy evidence required"
+        },
+        {
+          "ok": false,
+          "reason": "provider-authenticated adequacy evidence required"
+        }
+      ],
+      "pid": 1738,
+      "receipt_status": null,
+      "repetition": 1,
+      "reply": "provider-authenticated adequacy evidence required | provider-authenticated adequacy evidence required",
+      "shape_delta": 27
+    },
+    {
+      "active_after": {
+        "domains/adequacy_provider_auth.py": "c02bef40c7052aefca17d96ef0e11007597f1c6c4733f48a528b093a13af64b0",
+        "domains/code_curriculum.py": "b20e72c386341c8ff49b22b6b5309da963e73330c8015e8b6d150cb03caaa340",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "7b28874642000d78ec6886d9248537610c24b679bd46379d4858c97d064cb8e6",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/register_source.py": "8481e8d0c22ac14749ad569738971f291416528330a93b5d6fa03e2b125ac58c",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "66c959afb77314d68ba45efab0720b058c6fd128363c9b776daa11277d4a3270",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/world_adapter.py": "faad410d0c46e8cff5273444675d59904ba3552989e8e3c2b6032fb822de2be5",
+        "substrate_tree": "1a8aa6dbc4ad33bb71eac6cb5e6ddb73cea47f9918a62bd5629903e6cdcf943f"
+      },
+      "adopted_code_shape_ids": [
+        "#16654",
+        "#16655",
+        "#16656",
+        "#16657",
+        "#16658",
+        "#16659",
+        "#16660",
+        "#16661",
+        "#16662",
+        "#16663",
+        "#16664",
+        "#16665",
+        "#16666",
+        "#16667",
+        "#16668",
+        "#4904",
+        "#4905",
+        "#4906",
+        "#4907",
+        "#4908",
+        "#4909",
+        "#4910",
+        "#4911",
+        "#4912",
+        "#6748",
+        "#6749",
+        "#6750"
+      ],
+      "case": "curriculum_legacy_call",
+      "code_shape_ids_after": [
+        "#4904",
+        "#4905",
+        "#4906",
+        "#4907",
+        "#4908",
+        "#4909",
+        "#4910",
+        "#4911",
+        "#4912",
+        "#6748",
+        "#6749",
+        "#6750",
+        "#16654",
+        "#16655",
+        "#16656",
+        "#16657",
+        "#16658",
+        "#16659",
+        "#16660",
+        "#16661",
+        "#16662",
+        "#16663",
+        "#16664",
+        "#16665",
+        "#16666",
+        "#16667",
+        "#16668"
+      ],
+      "code_shape_ids_before": [],
+      "elapsed_ns": 14555202660,
+      "outcomes": [
+        {
+          "ok": false,
+          "reason": "provider-authenticated adequacy evidence required"
+        },
+        {
+          "ok": false,
+          "reason": "provider-authenticated adequacy evidence required"
+        }
+      ],
+      "pid": 4135,
+      "receipt_status": null,
+      "repetition": 2,
+      "reply": "provider-authenticated adequacy evidence required | provider-authenticated adequacy evidence required",
+      "shape_delta": 27
+    },
+    {
+      "active_after": {
+        "domains/adequacy_provider_auth.py": "c02bef40c7052aefca17d96ef0e11007597f1c6c4733f48a528b093a13af64b0",
+        "domains/code_curriculum.py": "b20e72c386341c8ff49b22b6b5309da963e73330c8015e8b6d150cb03caaa340",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "7b28874642000d78ec6886d9248537610c24b679bd46379d4858c97d064cb8e6",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/register_source.py": "8481e8d0c22ac14749ad569738971f291416528330a93b5d6fa03e2b125ac58c",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "66c959afb77314d68ba45efab0720b058c6fd128363c9b776daa11277d4a3270",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/world_adapter.py": "faad410d0c46e8cff5273444675d59904ba3552989e8e3c2b6032fb822de2be5",
+        "substrate_tree": "1a8aa6dbc4ad33bb71eac6cb5e6ddb73cea47f9918a62bd5629903e6cdcf943f"
+      },
+      "adopted_code_shape_ids": [
+        "#16654",
+        "#16655",
+        "#16656",
+        "#16657",
+        "#16658",
+        "#16659",
+        "#16660",
+        "#16661",
+        "#16662",
+        "#16663",
+        "#16664",
+        "#16665",
+        "#16666",
+        "#16667",
+        "#16668",
+        "#4904",
+        "#4905",
+        "#4906",
+        "#4907",
+        "#4908",
+        "#4909",
+        "#4910",
+        "#4911",
+        "#4912",
+        "#6748",
+        "#6749",
+        "#6750"
+      ],
+      "case": "curriculum_legacy_call",
+      "code_shape_ids_after": [
+        "#4904",
+        "#4905",
+        "#4906",
+        "#4907",
+        "#4908",
+        "#4909",
+        "#4910",
+        "#4911",
+        "#4912",
+        "#6748",
+        "#6749",
+        "#6750",
+        "#16654",
+        "#16655",
+        "#16656",
+        "#16657",
+        "#16658",
+        "#16659",
+        "#16660",
+        "#16661",
+        "#16662",
+        "#16663",
+        "#16664",
+        "#16665",
+        "#16666",
+        "#16667",
+        "#16668"
+      ],
+      "code_shape_ids_before": [],
+      "elapsed_ns": 14596216178,
+      "outcomes": [
+        {
+          "ok": false,
+          "reason": "provider-authenticated adequacy evidence required"
+        },
+        {
+          "ok": false,
+          "reason": "provider-authenticated adequacy evidence required"
+        }
+      ],
+      "pid": 6532,
+      "receipt_status": null,
+      "repetition": 3,
+      "reply": "provider-authenticated adequacy evidence required | provider-authenticated adequacy evidence required",
+      "shape_delta": 27
+    }
+  ]
+}

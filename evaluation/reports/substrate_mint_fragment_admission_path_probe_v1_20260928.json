@@ -1,0 +1,1185 @@
+{
+  "all_checks_pass": true,
+  "checks": {
+    "each_worker_has_four_routes": true,
+    "parent_lock_stable": true,
+    "three_fresh_workers": true,
+    "worker_success": true,
+    "workers_source_stable": true
+  },
+  "claim_boundary": "Three-worker probe of four exact rule admission/revision routes; rejected finite-key syntax is installed but never closed. Not an exhaustive admission inventory or termination experiment.",
+  "locked_inputs": {
+    "files": {
+      "docs/research/engine_substrate/SUBSTRATE_MINT_FRAGMENT_ADMISSION_PATH_PROBE_V1_PREREG_20260928.md": "fea5c2c80a259e513dad1f4e4b8d483bd4fe460413fada235cf24d05712350c9",
+      "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+      "runners/dsl/python/substrate_rs/_native.build.json": "425e086594e50335ca917e330206fec9bd8c778d4e58d2c5dd0d06cc61bc41ee",
+      "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+      "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+      "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+      "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+      "runners/dsl/src/term.rs": "0b91be836a6a7fe4587fb2ec3a944fdd6fb461838ca25151b1358c2158705fce",
+      "scripts/analyze_mint_termination_fragment.py": "4ede1431dd0283b77a68e10255c4ed5d0cd0ae3d9a79a131d2bfa9ceeca1cf8a",
+      "scripts/analyze_substrate_mint_fragment_admission_path_probe_v1.py": "f4ed172847b515cd2f78f6efdb9f85d80a0b9fbcfb8defea493abcdf4a64c1d2",
+      "scripts/substrate_mint_fragment_admission_path_probe_v1.py": "b918774f851cbee7920211df047972fc4484c09e76e86390ff8d8ebac7ec9c03",
+      "substrate/world_adapter.py": "1b9fb9a39acd4dae3de12b68d5c38b86bc6605a0199aa99f525aefc847dd6435"
+    },
+    "initial_edges": [
+      [
+        "n0",
+        "admission_trigger",
+        "n1"
+      ]
+    ],
+    "initial_node_ids": [
+      "n0",
+      "n1"
+    ],
+    "native_build_stale": [],
+    "native_extension_sha256": "260cf6063acbfb2fb83a7bfbe8b0bbe35afa951d3142539fbd868edf331d3afa",
+    "negative_rule": {
+      "effects": [
+        [
+          "add_node",
+          "fresh",
+          "AdmissionWitness",
+          {
+            "tag": "fresh"
+          }
+        ]
+      ],
+      "match": [
+        [
+          "x",
+          "admission_trigger",
+          "y"
+        ]
+      ],
+      "name": "finite_key_admission_negative",
+      "where": null
+    },
+    "safe_rule": {
+      "effects": [
+        [
+          "add_node_if_absent",
+          "w",
+          "AdmissionWitness",
+          {
+            "tag": "fixed"
+          }
+        ]
+      ],
+      "match": [
+        [
+          "x",
+          "admission_trigger",
+          "y"
+        ]
+      ],
+      "name": "finite_key_patch_seed",
+      "where": null
+    },
+    "workers": [
+      0,
+      1,
+      2
+    ]
+  },
+  "post_run_inputs": {
+    "files": {
+      "docs/research/engine_substrate/SUBSTRATE_MINT_FRAGMENT_ADMISSION_PATH_PROBE_V1_PREREG_20260928.md": "fea5c2c80a259e513dad1f4e4b8d483bd4fe460413fada235cf24d05712350c9",
+      "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+      "runners/dsl/python/substrate_rs/_native.build.json": "425e086594e50335ca917e330206fec9bd8c778d4e58d2c5dd0d06cc61bc41ee",
+      "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+      "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+      "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+      "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+      "runners/dsl/src/term.rs": "0b91be836a6a7fe4587fb2ec3a944fdd6fb461838ca25151b1358c2158705fce",
+      "scripts/analyze_mint_termination_fragment.py": "4ede1431dd0283b77a68e10255c4ed5d0cd0ae3d9a79a131d2bfa9ceeca1cf8a",
+      "scripts/analyze_substrate_mint_fragment_admission_path_probe_v1.py": "f4ed172847b515cd2f78f6efdb9f85d80a0b9fbcfb8defea493abcdf4a64c1d2",
+      "scripts/substrate_mint_fragment_admission_path_probe_v1.py": "b918774f851cbee7920211df047972fc4484c09e76e86390ff8d8ebac7ec9c03",
+      "substrate/world_adapter.py": "1b9fb9a39acd4dae3de12b68d5c38b86bc6605a0199aa99f525aefc847dd6435"
+    },
+    "initial_edges": [
+      [
+        "n0",
+        "admission_trigger",
+        "n1"
+      ]
+    ],
+    "initial_node_ids": [
+      "n0",
+      "n1"
+    ],
+    "native_build_stale": [],
+    "native_extension_sha256": "260cf6063acbfb2fb83a7bfbe8b0bbe35afa951d3142539fbd868edf331d3afa",
+    "negative_rule": {
+      "effects": [
+        [
+          "add_node",
+          "fresh",
+          "AdmissionWitness",
+          {
+            "tag": "fresh"
+          }
+        ]
+      ],
+      "match": [
+        [
+          "x",
+          "admission_trigger",
+          "y"
+        ]
+      ],
+      "name": "finite_key_admission_negative",
+      "where": null
+    },
+    "safe_rule": {
+      "effects": [
+        [
+          "add_node_if_absent",
+          "w",
+          "AdmissionWitness",
+          {
+            "tag": "fixed"
+          }
+        ]
+      ],
+      "match": [
+        [
+          "x",
+          "admission_trigger",
+          "y"
+        ]
+      ],
+      "name": "finite_key_patch_seed",
+      "where": null
+    },
+    "workers": [
+      0,
+      1,
+      2
+    ]
+  },
+  "run_id": "substrate-mint-fragment-admission-path-probe-v1-20260928",
+  "runs": [
+    {
+      "after": {
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_MINT_FRAGMENT_ADMISSION_PATH_PROBE_V1_PREREG_20260928.md": "fea5c2c80a259e513dad1f4e4b8d483bd4fe460413fada235cf24d05712350c9",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/python/substrate_rs/_native.build.json": "425e086594e50335ca917e330206fec9bd8c778d4e58d2c5dd0d06cc61bc41ee",
+          "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+          "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+          "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+          "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+          "runners/dsl/src/term.rs": "0b91be836a6a7fe4587fb2ec3a944fdd6fb461838ca25151b1358c2158705fce",
+          "scripts/analyze_mint_termination_fragment.py": "4ede1431dd0283b77a68e10255c4ed5d0cd0ae3d9a79a131d2bfa9ceeca1cf8a",
+          "scripts/analyze_substrate_mint_fragment_admission_path_probe_v1.py": "f4ed172847b515cd2f78f6efdb9f85d80a0b9fbcfb8defea493abcdf4a64c1d2",
+          "scripts/substrate_mint_fragment_admission_path_probe_v1.py": "b918774f851cbee7920211df047972fc4484c09e76e86390ff8d8ebac7ec9c03",
+          "substrate/world_adapter.py": "1b9fb9a39acd4dae3de12b68d5c38b86bc6605a0199aa99f525aefc847dd6435"
+        },
+        "initial_edges": [
+          [
+            "n0",
+            "admission_trigger",
+            "n1"
+          ]
+        ],
+        "initial_node_ids": [
+          "n0",
+          "n1"
+        ],
+        "native_build_stale": [],
+        "native_extension_sha256": "260cf6063acbfb2fb83a7bfbe8b0bbe35afa951d3142539fbd868edf331d3afa",
+        "negative_rule": {
+          "effects": [
+            [
+              "add_node",
+              "fresh",
+              "AdmissionWitness",
+              {
+                "tag": "fresh"
+              }
+            ]
+          ],
+          "match": [
+            [
+              "x",
+              "admission_trigger",
+              "y"
+            ]
+          ],
+          "name": "finite_key_admission_negative",
+          "where": null
+        },
+        "safe_rule": {
+          "effects": [
+            [
+              "add_node_if_absent",
+              "w",
+              "AdmissionWitness",
+              {
+                "tag": "fixed"
+              }
+            ]
+          ],
+          "match": [
+            [
+              "x",
+              "admission_trigger",
+              "y"
+            ]
+          ],
+          "name": "finite_key_patch_seed",
+          "where": null
+        },
+        "workers": [
+          0,
+          1,
+          2
+        ]
+      },
+      "before": {
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_MINT_FRAGMENT_ADMISSION_PATH_PROBE_V1_PREREG_20260928.md": "fea5c2c80a259e513dad1f4e4b8d483bd4fe460413fada235cf24d05712350c9",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/python/substrate_rs/_native.build.json": "425e086594e50335ca917e330206fec9bd8c778d4e58d2c5dd0d06cc61bc41ee",
+          "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+          "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+          "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+          "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+          "runners/dsl/src/term.rs": "0b91be836a6a7fe4587fb2ec3a944fdd6fb461838ca25151b1358c2158705fce",
+          "scripts/analyze_mint_termination_fragment.py": "4ede1431dd0283b77a68e10255c4ed5d0cd0ae3d9a79a131d2bfa9ceeca1cf8a",
+          "scripts/analyze_substrate_mint_fragment_admission_path_probe_v1.py": "f4ed172847b515cd2f78f6efdb9f85d80a0b9fbcfb8defea493abcdf4a64c1d2",
+          "scripts/substrate_mint_fragment_admission_path_probe_v1.py": "b918774f851cbee7920211df047972fc4484c09e76e86390ff8d8ebac7ec9c03",
+          "substrate/world_adapter.py": "1b9fb9a39acd4dae3de12b68d5c38b86bc6605a0199aa99f525aefc847dd6435"
+        },
+        "initial_edges": [
+          [
+            "n0",
+            "admission_trigger",
+            "n1"
+          ]
+        ],
+        "initial_node_ids": [
+          "n0",
+          "n1"
+        ],
+        "native_build_stale": [],
+        "native_extension_sha256": "260cf6063acbfb2fb83a7bfbe8b0bbe35afa951d3142539fbd868edf331d3afa",
+        "negative_rule": {
+          "effects": [
+            [
+              "add_node",
+              "fresh",
+              "AdmissionWitness",
+              {
+                "tag": "fresh"
+              }
+            ]
+          ],
+          "match": [
+            [
+              "x",
+              "admission_trigger",
+              "y"
+            ]
+          ],
+          "name": "finite_key_admission_negative",
+          "where": null
+        },
+        "safe_rule": {
+          "effects": [
+            [
+              "add_node_if_absent",
+              "w",
+              "AdmissionWitness",
+              {
+                "tag": "fixed"
+              }
+            ]
+          ],
+          "match": [
+            [
+              "x",
+              "admission_trigger",
+              "y"
+            ]
+          ],
+          "name": "finite_key_patch_seed",
+          "where": null
+        },
+        "workers": [
+          0,
+          1,
+          2
+        ]
+      },
+      "checker": {
+        "accepted": false,
+        "bound_basis": null,
+        "edge_type_count": null,
+        "fragment": "monotone_finite_key_insertions_v0",
+        "initial_edge_fact_count": 1,
+        "initial_node_count": 2,
+        "initial_node_ids": [
+          "n0",
+          "n1"
+        ],
+        "not_claimed": [
+          "weak acyclicity",
+          "arbitrary computed keys",
+          "constructed fresh values",
+          "deletion or replacement effects",
+          "hard CPU/wall-time bound",
+          "polynomial matching cost per firing"
+        ],
+        "possible_edge_fact_count_upper_bound": null,
+        "possible_node_count_upper_bound": null,
+        "progress_steps_upper_bound": null,
+        "reasons": [
+          "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment"
+        ],
+        "unique_mint_signatures": null
+      },
+      "elapsed_wall_ns": 58486744,
+      "environment": {
+        "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+        "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+      },
+      "peak_rss_bytes": 40796160,
+      "pid": 3,
+      "replicate": 0,
+      "routes": [
+        {
+          "accepted": true,
+          "error": null,
+          "route": "direct_add_rule",
+          "rule": {
+            "active": true,
+            "batch": false,
+            "content_hash": 8888153436619449963,
+            "effects": [
+              [
+                "add_node",
+                "fresh",
+                "AdmissionWitness",
+                {
+                  "tag": "fresh"
+                }
+              ]
+            ],
+            "match": [
+              [
+                "x",
+                "admission_trigger",
+                "y"
+              ]
+            ],
+            "match_type": null,
+            "name": "finite_key_admission_negative",
+            "revision": 0,
+            "rule_uid": 1,
+            "where": null
+          },
+          "rule_count": 1
+        },
+        {
+          "accepted": true,
+          "error": null,
+          "imported_count": 1,
+          "route": "checkpoint_import",
+          "rule": {
+            "active": true,
+            "batch": false,
+            "content_hash": 8888153436619449963,
+            "effects": [
+              [
+                "add_node",
+                "fresh",
+                "AdmissionWitness",
+                {
+                  "tag": "fresh"
+                }
+              ]
+            ],
+            "match": [
+              [
+                "x",
+                "admission_trigger",
+                "y"
+              ]
+            ],
+            "match_type": null,
+            "name": "finite_key_admission_negative",
+            "revision": 0,
+            "rule_uid": 1,
+            "where": null
+          },
+          "rule_count": 1
+        },
+        {
+          "accepted": true,
+          "after": {
+            "active": true,
+            "content_hash": 9032284085871957466,
+            "mutation_protected": false,
+            "revision": 1,
+            "rule_idx": 0,
+            "rule_uid": 1
+          },
+          "before": {
+            "active": true,
+            "content_hash": 1872015693641194089,
+            "mutation_protected": false,
+            "revision": 0,
+            "rule_idx": 0,
+            "rule_uid": 1
+          },
+          "error": null,
+          "receipt": {
+            "content_hash": 9032284085871957466,
+            "inverse_clause": [
+              [
+                "add_node_if_absent",
+                "w",
+                "AdmissionWitness",
+                {
+                  "tag": "fixed"
+                }
+              ]
+            ],
+            "previous_content_hash": 1872015693641194089,
+            "previous_revision": 0,
+            "revision": 1,
+            "target_uid": 1
+          },
+          "route": "rule_patch_revision",
+          "rule": {
+            "active": true,
+            "batch": false,
+            "content_hash": 9032284085871957466,
+            "effects": [
+              [
+                "add_node",
+                "fresh",
+                "AdmissionWitness",
+                {
+                  "tag": "fresh"
+                }
+              ]
+            ],
+            "match": [
+              [
+                "x",
+                "admission_trigger",
+                "y"
+              ]
+            ],
+            "match_type": null,
+            "name": "finite_key_patch_seed",
+            "revision": 1,
+            "rule_uid": 1,
+            "where": null
+          }
+        },
+        {
+          "accepted": false,
+          "error": null,
+          "minted_rule": null,
+          "minted_rule_count": 0,
+          "route": "graph_rule_self_mint",
+          "rule_count_after": 0,
+          "rule_count_before": 0,
+          "rule_node_ids": [
+            11,
+            12
+          ],
+          "trigger_edge_absent": true
+        }
+      ],
+      "worker_returncode": 0,
+      "worker_stderr": ""
+    },
+    {
+      "after": {
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_MINT_FRAGMENT_ADMISSION_PATH_PROBE_V1_PREREG_20260928.md": "fea5c2c80a259e513dad1f4e4b8d483bd4fe460413fada235cf24d05712350c9",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/python/substrate_rs/_native.build.json": "425e086594e50335ca917e330206fec9bd8c778d4e58d2c5dd0d06cc61bc41ee",
+          "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+          "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+          "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+          "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+          "runners/dsl/src/term.rs": "0b91be836a6a7fe4587fb2ec3a944fdd6fb461838ca25151b1358c2158705fce",
+          "scripts/analyze_mint_termination_fragment.py": "4ede1431dd0283b77a68e10255c4ed5d0cd0ae3d9a79a131d2bfa9ceeca1cf8a",
+          "scripts/analyze_substrate_mint_fragment_admission_path_probe_v1.py": "f4ed172847b515cd2f78f6efdb9f85d80a0b9fbcfb8defea493abcdf4a64c1d2",
+          "scripts/substrate_mint_fragment_admission_path_probe_v1.py": "b918774f851cbee7920211df047972fc4484c09e76e86390ff8d8ebac7ec9c03",
+          "substrate/world_adapter.py": "1b9fb9a39acd4dae3de12b68d5c38b86bc6605a0199aa99f525aefc847dd6435"
+        },
+        "initial_edges": [
+          [
+            "n0",
+            "admission_trigger",
+            "n1"
+          ]
+        ],
+        "initial_node_ids": [
+          "n0",
+          "n1"
+        ],
+        "native_build_stale": [],
+        "native_extension_sha256": "260cf6063acbfb2fb83a7bfbe8b0bbe35afa951d3142539fbd868edf331d3afa",
+        "negative_rule": {
+          "effects": [
+            [
+              "add_node",
+              "fresh",
+              "AdmissionWitness",
+              {
+                "tag": "fresh"
+              }
+            ]
+          ],
+          "match": [
+            [
+              "x",
+              "admission_trigger",
+              "y"
+            ]
+          ],
+          "name": "finite_key_admission_negative",
+          "where": null
+        },
+        "safe_rule": {
+          "effects": [
+            [
+              "add_node_if_absent",
+              "w",
+              "AdmissionWitness",
+              {
+                "tag": "fixed"
+              }
+            ]
+          ],
+          "match": [
+            [
+              "x",
+              "admission_trigger",
+              "y"
+            ]
+          ],
+          "name": "finite_key_patch_seed",
+          "where": null
+        },
+        "workers": [
+          0,
+          1,
+          2
+        ]
+      },
+      "before": {
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_MINT_FRAGMENT_ADMISSION_PATH_PROBE_V1_PREREG_20260928.md": "fea5c2c80a259e513dad1f4e4b8d483bd4fe460413fada235cf24d05712350c9",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/python/substrate_rs/_native.build.json": "425e086594e50335ca917e330206fec9bd8c778d4e58d2c5dd0d06cc61bc41ee",
+          "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+          "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+          "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+          "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+          "runners/dsl/src/term.rs": "0b91be836a6a7fe4587fb2ec3a944fdd6fb461838ca25151b1358c2158705fce",
+          "scripts/analyze_mint_termination_fragment.py": "4ede1431dd0283b77a68e10255c4ed5d0cd0ae3d9a79a131d2bfa9ceeca1cf8a",
+          "scripts/analyze_substrate_mint_fragment_admission_path_probe_v1.py": "f4ed172847b515cd2f78f6efdb9f85d80a0b9fbcfb8defea493abcdf4a64c1d2",
+          "scripts/substrate_mint_fragment_admission_path_probe_v1.py": "b918774f851cbee7920211df047972fc4484c09e76e86390ff8d8ebac7ec9c03",
+          "substrate/world_adapter.py": "1b9fb9a39acd4dae3de12b68d5c38b86bc6605a0199aa99f525aefc847dd6435"
+        },
+        "initial_edges": [
+          [
+            "n0",
+            "admission_trigger",
+            "n1"
+          ]
+        ],
+        "initial_node_ids": [
+          "n0",
+          "n1"
+        ],
+        "native_build_stale": [],
+        "native_extension_sha256": "260cf6063acbfb2fb83a7bfbe8b0bbe35afa951d3142539fbd868edf331d3afa",
+        "negative_rule": {
+          "effects": [
+            [
+              "add_node",
+              "fresh",
+              "AdmissionWitness",
+              {
+                "tag": "fresh"
+              }
+            ]
+          ],
+          "match": [
+            [
+              "x",
+              "admission_trigger",
+              "y"
+            ]
+          ],
+          "name": "finite_key_admission_negative",
+          "where": null
+        },
+        "safe_rule": {
+          "effects": [
+            [
+              "add_node_if_absent",
+              "w",
+              "AdmissionWitness",
+              {
+                "tag": "fixed"
+              }
+            ]
+          ],
+          "match": [
+            [
+              "x",
+              "admission_trigger",
+              "y"
+            ]
+          ],
+          "name": "finite_key_patch_seed",
+          "where": null
+        },
+        "workers": [
+          0,
+          1,
+          2
+        ]
+      },
+      "checker": {
+        "accepted": false,
+        "bound_basis": null,
+        "edge_type_count": null,
+        "fragment": "monotone_finite_key_insertions_v0",
+        "initial_edge_fact_count": 1,
+        "initial_node_count": 2,
+        "initial_node_ids": [
+          "n0",
+          "n1"
+        ],
+        "not_claimed": [
+          "weak acyclicity",
+          "arbitrary computed keys",
+          "constructed fresh values",
+          "deletion or replacement effects",
+          "hard CPU/wall-time bound",
+          "polynomial matching cost per firing"
+        ],
+        "possible_edge_fact_count_upper_bound": null,
+        "possible_node_count_upper_bound": null,
+        "progress_steps_upper_bound": null,
+        "reasons": [
+          "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment"
+        ],
+        "unique_mint_signatures": null
+      },
+      "elapsed_wall_ns": 60619226,
+      "environment": {
+        "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+        "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+      },
+      "peak_rss_bytes": 40603648,
+      "pid": 9,
+      "replicate": 1,
+      "routes": [
+        {
+          "accepted": true,
+          "error": null,
+          "route": "direct_add_rule",
+          "rule": {
+            "active": true,
+            "batch": false,
+            "content_hash": 8888153436619449963,
+            "effects": [
+              [
+                "add_node",
+                "fresh",
+                "AdmissionWitness",
+                {
+                  "tag": "fresh"
+                }
+              ]
+            ],
+            "match": [
+              [
+                "x",
+                "admission_trigger",
+                "y"
+              ]
+            ],
+            "match_type": null,
+            "name": "finite_key_admission_negative",
+            "revision": 0,
+            "rule_uid": 1,
+            "where": null
+          },
+          "rule_count": 1
+        },
+        {
+          "accepted": true,
+          "error": null,
+          "imported_count": 1,
+          "route": "checkpoint_import",
+          "rule": {
+            "active": true,
+            "batch": false,
+            "content_hash": 8888153436619449963,
+            "effects": [
+              [
+                "add_node",
+                "fresh",
+                "AdmissionWitness",
+                {
+                  "tag": "fresh"
+                }
+              ]
+            ],
+            "match": [
+              [
+                "x",
+                "admission_trigger",
+                "y"
+              ]
+            ],
+            "match_type": null,
+            "name": "finite_key_admission_negative",
+            "revision": 0,
+            "rule_uid": 1,
+            "where": null
+          },
+          "rule_count": 1
+        },
+        {
+          "accepted": true,
+          "after": {
+            "active": true,
+            "content_hash": 9032284085871957466,
+            "mutation_protected": false,
+            "revision": 1,
+            "rule_idx": 0,
+            "rule_uid": 1
+          },
+          "before": {
+            "active": true,
+            "content_hash": 1872015693641194089,
+            "mutation_protected": false,
+            "revision": 0,
+            "rule_idx": 0,
+            "rule_uid": 1
+          },
+          "error": null,
+          "receipt": {
+            "content_hash": 9032284085871957466,
+            "inverse_clause": [
+              [
+                "add_node_if_absent",
+                "w",
+                "AdmissionWitness",
+                {
+                  "tag": "fixed"
+                }
+              ]
+            ],
+            "previous_content_hash": 1872015693641194089,
+            "previous_revision": 0,
+            "revision": 1,
+            "target_uid": 1
+          },
+          "route": "rule_patch_revision",
+          "rule": {
+            "active": true,
+            "batch": false,
+            "content_hash": 9032284085871957466,
+            "effects": [
+              [
+                "add_node",
+                "fresh",
+                "AdmissionWitness",
+                {
+                  "tag": "fresh"
+                }
+              ]
+            ],
+            "match": [
+              [
+                "x",
+                "admission_trigger",
+                "y"
+              ]
+            ],
+            "match_type": null,
+            "name": "finite_key_patch_seed",
+            "revision": 1,
+            "rule_uid": 1,
+            "where": null
+          }
+        },
+        {
+          "accepted": false,
+          "error": null,
+          "minted_rule": null,
+          "minted_rule_count": 0,
+          "route": "graph_rule_self_mint",
+          "rule_count_after": 0,
+          "rule_count_before": 0,
+          "rule_node_ids": [
+            11,
+            12
+          ],
+          "trigger_edge_absent": true
+        }
+      ],
+      "worker_returncode": 0,
+      "worker_stderr": ""
+    },
+    {
+      "after": {
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_MINT_FRAGMENT_ADMISSION_PATH_PROBE_V1_PREREG_20260928.md": "fea5c2c80a259e513dad1f4e4b8d483bd4fe460413fada235cf24d05712350c9",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/python/substrate_rs/_native.build.json": "425e086594e50335ca917e330206fec9bd8c778d4e58d2c5dd0d06cc61bc41ee",
+          "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+          "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+          "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+          "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+          "runners/dsl/src/term.rs": "0b91be836a6a7fe4587fb2ec3a944fdd6fb461838ca25151b1358c2158705fce",
+          "scripts/analyze_mint_termination_fragment.py": "4ede1431dd0283b77a68e10255c4ed5d0cd0ae3d9a79a131d2bfa9ceeca1cf8a",
+          "scripts/analyze_substrate_mint_fragment_admission_path_probe_v1.py": "f4ed172847b515cd2f78f6efdb9f85d80a0b9fbcfb8defea493abcdf4a64c1d2",
+          "scripts/substrate_mint_fragment_admission_path_probe_v1.py": "b918774f851cbee7920211df047972fc4484c09e76e86390ff8d8ebac7ec9c03",
+          "substrate/world_adapter.py": "1b9fb9a39acd4dae3de12b68d5c38b86bc6605a0199aa99f525aefc847dd6435"
+        },
+        "initial_edges": [
+          [
+            "n0",
+            "admission_trigger",
+            "n1"
+          ]
+        ],
+        "initial_node_ids": [
+          "n0",
+          "n1"
+        ],
+        "native_build_stale": [],
+        "native_extension_sha256": "260cf6063acbfb2fb83a7bfbe8b0bbe35afa951d3142539fbd868edf331d3afa",
+        "negative_rule": {
+          "effects": [
+            [
+              "add_node",
+              "fresh",
+              "AdmissionWitness",
+              {
+                "tag": "fresh"
+              }
+            ]
+          ],
+          "match": [
+            [
+              "x",
+              "admission_trigger",
+              "y"
+            ]
+          ],
+          "name": "finite_key_admission_negative",
+          "where": null
+        },
+        "safe_rule": {
+          "effects": [
+            [
+              "add_node_if_absent",
+              "w",
+              "AdmissionWitness",
+              {
+                "tag": "fixed"
+              }
+            ]
+          ],
+          "match": [
+            [
+              "x",
+              "admission_trigger",
+              "y"
+            ]
+          ],
+          "name": "finite_key_patch_seed",
+          "where": null
+        },
+        "workers": [
+          0,
+          1,
+          2
+        ]
+      },
+      "before": {
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_MINT_FRAGMENT_ADMISSION_PATH_PROBE_V1_PREREG_20260928.md": "fea5c2c80a259e513dad1f4e4b8d483bd4fe460413fada235cf24d05712350c9",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/python/substrate_rs/_native.build.json": "425e086594e50335ca917e330206fec9bd8c778d4e58d2c5dd0d06cc61bc41ee",
+          "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+          "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+          "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+          "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+          "runners/dsl/src/term.rs": "0b91be836a6a7fe4587fb2ec3a944fdd6fb461838ca25151b1358c2158705fce",
+          "scripts/analyze_mint_termination_fragment.py": "4ede1431dd0283b77a68e10255c4ed5d0cd0ae3d9a79a131d2bfa9ceeca1cf8a",
+          "scripts/analyze_substrate_mint_fragment_admission_path_probe_v1.py": "f4ed172847b515cd2f78f6efdb9f85d80a0b9fbcfb8defea493abcdf4a64c1d2",
+          "scripts/substrate_mint_fragment_admission_path_probe_v1.py": "b918774f851cbee7920211df047972fc4484c09e76e86390ff8d8ebac7ec9c03",
+          "substrate/world_adapter.py": "1b9fb9a39acd4dae3de12b68d5c38b86bc6605a0199aa99f525aefc847dd6435"
+        },
+        "initial_edges": [
+          [
+            "n0",
+            "admission_trigger",
+            "n1"
+          ]
+        ],
+        "initial_node_ids": [
+          "n0",
+          "n1"
+        ],
+        "native_build_stale": [],
+        "native_extension_sha256": "260cf6063acbfb2fb83a7bfbe8b0bbe35afa951d3142539fbd868edf331d3afa",
+        "negative_rule": {
+          "effects": [
+            [
+              "add_node",
+              "fresh",
+              "AdmissionWitness",
+              {
+                "tag": "fresh"
+              }
+            ]
+          ],
+          "match": [
+            [
+              "x",
+              "admission_trigger",
+              "y"
+            ]
+          ],
+          "name": "finite_key_admission_negative",
+          "where": null
+        },
+        "safe_rule": {
+          "effects": [
+            [
+              "add_node_if_absent",
+              "w",
+              "AdmissionWitness",
+              {
+                "tag": "fixed"
+              }
+            ]
+          ],
+          "match": [
+            [
+              "x",
+              "admission_trigger",
+              "y"
+            ]
+          ],
+          "name": "finite_key_patch_seed",
+          "where": null
+        },
+        "workers": [
+          0,
+          1,
+          2
+        ]
+      },
+      "checker": {
+        "accepted": false,
+        "bound_basis": null,
+        "edge_type_count": null,
+        "fragment": "monotone_finite_key_insertions_v0",
+        "initial_edge_fact_count": 1,
+        "initial_node_count": 2,
+        "initial_node_ids": [
+          "n0",
+          "n1"
+        ],
+        "not_claimed": [
+          "weak acyclicity",
+          "arbitrary computed keys",
+          "constructed fresh values",
+          "deletion or replacement effects",
+          "hard CPU/wall-time bound",
+          "polynomial matching cost per firing"
+        ],
+        "possible_edge_fact_count_upper_bound": null,
+        "possible_node_count_upper_bound": null,
+        "progress_steps_upper_bound": null,
+        "reasons": [
+          "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment"
+        ],
+        "unique_mint_signatures": null
+      },
+      "elapsed_wall_ns": 59296309,
+      "environment": {
+        "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+        "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+      },
+      "peak_rss_bytes": 41148416,
+      "pid": 15,
+      "replicate": 2,
+      "routes": [
+        {
+          "accepted": true,
+          "error": null,
+          "route": "direct_add_rule",
+          "rule": {
+            "active": true,
+            "batch": false,
+            "content_hash": 8888153436619449963,
+            "effects": [
+              [
+                "add_node",
+                "fresh",
+                "AdmissionWitness",
+                {
+                  "tag": "fresh"
+                }
+              ]
+            ],
+            "match": [
+              [
+                "x",
+                "admission_trigger",
+                "y"
+              ]
+            ],
+            "match_type": null,
+            "name": "finite_key_admission_negative",
+            "revision": 0,
+            "rule_uid": 1,
+            "where": null
+          },
+          "rule_count": 1
+        },
+        {
+          "accepted": true,
+          "error": null,
+          "imported_count": 1,
+          "route": "checkpoint_import",
+          "rule": {
+            "active": true,
+            "batch": false,
+            "content_hash": 8888153436619449963,
+            "effects": [
+              [
+                "add_node",
+                "fresh",
+                "AdmissionWitness",
+                {
+                  "tag": "fresh"
+                }
+              ]
+            ],
+            "match": [
+              [
+                "x",
+                "admission_trigger",
+                "y"
+              ]
+            ],
+            "match_type": null,
+            "name": "finite_key_admission_negative",
+            "revision": 0,
+            "rule_uid": 1,
+            "where": null
+          },
+          "rule_count": 1
+        },
+        {
+          "accepted": true,
+          "after": {
+            "active": true,
+            "content_hash": 9032284085871957466,
+            "mutation_protected": false,
+            "revision": 1,
+            "rule_idx": 0,
+            "rule_uid": 1
+          },
+          "before": {
+            "active": true,
+            "content_hash": 1872015693641194089,
+            "mutation_protected": false,
+            "revision": 0,
+            "rule_idx": 0,
+            "rule_uid": 1
+          },
+          "error": null,
+          "receipt": {
+            "content_hash": 9032284085871957466,
+            "inverse_clause": [
+              [
+                "add_node_if_absent",
+                "w",
+                "AdmissionWitness",
+                {
+                  "tag": "fixed"
+                }
+              ]
+            ],
+            "previous_content_hash": 1872015693641194089,
+            "previous_revision": 0,
+            "revision": 1,
+            "target_uid": 1
+          },
+          "route": "rule_patch_revision",
+          "rule": {
+            "active": true,
+            "batch": false,
+            "content_hash": 9032284085871957466,
+            "effects": [
+              [
+                "add_node",
+                "fresh",
+                "AdmissionWitness",
+                {
+                  "tag": "fresh"
+                }
+              ]
+            ],
+            "match": [
+              [
+                "x",
+                "admission_trigger",
+                "y"
+              ]
+            ],
+            "match_type": null,
+            "name": "finite_key_patch_seed",
+            "revision": 1,
+            "rule_uid": 1,
+            "where": null
+          }
+        },
+        {
+          "accepted": false,
+          "error": null,
+          "minted_rule": null,
+          "minted_rule_count": 0,
+          "route": "graph_rule_self_mint",
+          "rule_count_after": 0,
+          "rule_count_before": 0,
+          "rule_node_ids": [
+            11,
+            12
+          ],
+          "trigger_edge_absent": true
+        }
+      ],
+      "worker_returncode": 0,
+      "worker_stderr": ""
+    }
+  ],
+  "schema_version": 1,
+  "started_epoch_s": 1790544584.0674305
+}

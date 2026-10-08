@@ -1,0 +1,2624 @@
+{
+  "aggregate": {
+    "analysis_check_count": 16,
+    "families": [
+      "recurrence",
+      "conversation"
+    ],
+    "selected_heldout_correct_by_family": {
+      "conversation": 8,
+      "recurrence": 8
+    },
+    "selected_scope_workers": {
+      "conversation": 4,
+      "recurrence": 4
+    },
+    "workers": 4
+  },
+  "all_checks_pass": true,
+  "checks": {
+    "all_wrong_and_tie_controls_abstain": true,
+    "both_families_present": true,
+    "complete_nonnegative_phase_timing": true,
+    "current_source_lock": true,
+    "exact_workers_and_stage_linkage": true,
+    "false_scope_proposals_fail_heldout": true,
+    "four_hypotheses_per_family": true,
+    "primary_rules_and_branch_evidence_isolated": true,
+    "right_scope_selected_both_families": true,
+    "same_act_train_and_mixed_repeated_heldout": true,
+    "selected_candidates_pass_heldout": true,
+    "selector_input_opaque": true,
+    "source_positive_controls_pass": true,
+    "source_stable_everywhere": true,
+    "three_derived_guards_and_one_composer": true,
+    "unique_training_winner_matches_term": true
+  },
+  "rows": [
+    {
+      "composer": {
+        "operator": "add_match_guard",
+        "site": "where += Eq(Attr('agent', 'adopted_variant_probe'), True) (a NEW conjunct)",
+        "target": "mrl_offer_due_once"
+      },
+      "cost_ns": {
+        "candidate_generation_heldout": 162631,
+        "candidate_generation_train": 159801,
+        "composer_heldout": 34910349,
+        "composer_train": 36125026,
+        "context_setup_heldout": 6192357,
+        "context_setup_train": 6047506,
+        "control_decisions": 644213,
+        "heldout_all_candidates": 47626605,
+        "selection": 785025,
+        "source_controls_heldout": 10542284,
+        "source_controls_train": 10230282,
+        "training_all_candidates": 47395843,
+        "worker_heldout_stage": 405745261,
+        "worker_train_stage": 364946084
+      },
+      "derived_sites": [
+        [
+          "out",
+          "agent",
+          "observed",
+          null
+        ],
+        [
+          "out",
+          "candidate",
+          "has_mint_offer",
+          null
+        ],
+        [
+          "out",
+          "episode",
+          "has_mint_offer",
+          null
+        ]
+      ],
+      "family": "recurrence",
+      "heldout_candidate_outcomes": [
+        {
+          "label": "composer:add_match_guard",
+          "proposal_id": "sha256:a0e3249b07a997e5a606ed8b15f4f72b0dabbbe72f8a1b993667a7ce1010a492",
+          "trials": [
+            {
+              "correct": false,
+              "episode_wall_ns": 6042016,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-0-heldout_0-0-0",
+                "bidir-0-heldout_0-0-1"
+              ],
+              "output_counts": [
+                0,
+                0
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                1,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                1,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "correct": false,
+              "episode_wall_ns": 6060227,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-0-heldout_0-1-0",
+                "bidir-0-heldout_0-1-1"
+              ],
+              "output_counts": [
+                0,
+                0
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                1,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                1,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "label": "edge_once:out:agent:observed:any_target",
+          "proposal_id": "sha256:b4748673cb93a284227cf0782dc86457cf5732e6e3817ae170df77df3a5233b5",
+          "trials": [
+            {
+              "correct": false,
+              "episode_wall_ns": 6061226,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-0-heldout_0-0-0",
+                "bidir-0-heldout_0-0-1"
+              ],
+              "output_counts": [
+                1,
+                0
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                1,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "correct": false,
+              "episode_wall_ns": 6172547,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-0-heldout_0-1-0",
+                "bidir-0-heldout_0-1-1"
+              ],
+              "output_counts": [
+                1,
+                0
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                1,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "label": "edge_once:out:candidate:has_mint_offer:any_target",
+          "proposal_id": "sha256:febb968ea31a93a59efd981856b416790b803c6e1fd63f40eaa6880e8b35ea99",
+          "trials": [
+            {
+              "correct": true,
+              "episode_wall_ns": 5830305,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-0-heldout_0-0-0",
+                "bidir-0-heldout_0-0-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "correct": true,
+              "episode_wall_ns": 5331592,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-0-heldout_0-1-0",
+                "bidir-0-heldout_0-1-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "label": "edge_once:out:episode:has_mint_offer:any_target",
+          "proposal_id": "sha256:e8ff48aabc1cd06e0197c1ad63e4c3f03f138bef6d76ce49901618141f4e0a5a",
+          "trials": [
+            {
+              "correct": false,
+              "episode_wall_ns": 6357768,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-0-heldout_0-0-0",
+                "bidir-0-heldout_0-0-1"
+              ],
+              "output_counts": [
+                1,
+                0
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                1,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "correct": false,
+              "episode_wall_ns": 5770924,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-0-heldout_0-1-0",
+                "bidir-0-heldout_0-1-1"
+              ],
+              "output_counts": [
+                1,
+                0
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                1,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        }
+      ],
+      "selected_label": "edge_once:out:candidate:has_mint_offer:any_target",
+      "source_heldout": [
+        {
+          "correct": true,
+          "fixedpoint_progress": 0,
+          "keys": [
+            "bidir-0-heldout_source_0-0-0",
+            "bidir-0-heldout_source_0-0-1"
+          ],
+          "output_counts": [
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "stage0_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ],
+          "stage1_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "correct": true,
+          "fixedpoint_progress": 0,
+          "keys": [
+            "bidir-0-heldout_source_0-1-0",
+            "bidir-0-heldout_source_0-1-1"
+          ],
+          "output_counts": [
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "stage0_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ],
+          "stage1_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      ],
+      "training_correct_counts": {
+        "sha256:a0e3249b07a997e5a606ed8b15f4f72b0dabbbe72f8a1b993667a7ce1010a492": 0,
+        "sha256:b4748673cb93a284227cf0782dc86457cf5732e6e3817ae170df77df3a5233b5": 0,
+        "sha256:e8ff48aabc1cd06e0197c1ad63e4c3f03f138bef6d76ce49901618141f4e0a5a": 0,
+        "sha256:febb968ea31a93a59efd981856b416790b803c6e1fd63f40eaa6880e8b35ea99": 2
+      },
+      "worker": 0
+    },
+    {
+      "composer": {
+        "operator": "add_match_guard",
+        "site": "where += Eq(Attr('m', 'adopted_variant_probe'), True) (a NEW conjunct)",
+        "target": "reply_to_adjacency_pair"
+      },
+      "cost_ns": {
+        "candidate_generation_heldout": 113601,
+        "candidate_generation_train": 114171,
+        "composer_heldout": 29166255,
+        "composer_train": 29969419,
+        "context_setup_heldout": 16196747,
+        "context_setup_train": 16824181,
+        "control_decisions": 673904,
+        "heldout_all_candidates": 144960818,
+        "selection": 465743,
+        "source_controls_heldout": 18939444,
+        "source_controls_train": 19109734,
+        "training_all_candidates": 97223371,
+        "worker_heldout_stage": 405745261,
+        "worker_train_stage": 364946084
+      },
+      "derived_sites": [
+        [
+          "in",
+          "r",
+          "has_speech_act",
+          null
+        ],
+        [
+          "in",
+          "m",
+          "responds_to",
+          null
+        ],
+        [
+          "out",
+          "agent",
+          "sent",
+          null
+        ]
+      ],
+      "family": "conversation",
+      "heldout_candidate_outcomes": [
+        {
+          "label": "composer:add_match_guard",
+          "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d",
+          "trials": [
+            {
+              "correct": false,
+              "episode_wall_ns": 28436940,
+              "expected_counts": [
+                1,
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#489",
+                "#493"
+              ],
+              "output_counts": [
+                0,
+                0,
+                0
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 18776893
+            },
+            {
+              "correct": false,
+              "episode_wall_ns": 10203621,
+              "expected_counts": [
+                1,
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#489",
+                "#493"
+              ],
+              "output_counts": [
+                0,
+                0,
+                0
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 453062
+            }
+          ]
+        },
+        {
+          "label": "edge_once:in:r:has_speech_act:any_target",
+          "proposal_id": "sha256:92166eb379ff2efe698220215f4c126d8051bb47cdc7e19d13f4234775abf39c",
+          "trials": [
+            {
+              "correct": false,
+              "episode_wall_ns": 9984070,
+              "expected_counts": [
+                1,
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#492",
+                "#496"
+              ],
+              "output_counts": [
+                1,
+                0,
+                0
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 476163
+            },
+            {
+              "correct": false,
+              "episode_wall_ns": 11397628,
+              "expected_counts": [
+                1,
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#492",
+                "#496"
+              ],
+              "output_counts": [
+                1,
+                0,
+                0
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 641144
+            }
+          ]
+        },
+        {
+          "label": "edge_once:out:agent:sent:any_target",
+          "proposal_id": "sha256:af4eb625863a571aa9cc20ec21e48265d75bb25ebda0574d16da0053e8a79f81",
+          "trials": [
+            {
+              "correct": false,
+              "episode_wall_ns": 36973532,
+              "expected_counts": [
+                1,
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#492",
+                "#496"
+              ],
+              "output_counts": [
+                1,
+                0,
+                0
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 670204
+            },
+            {
+              "correct": false,
+              "episode_wall_ns": 23731622,
+              "expected_counts": [
+                1,
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#492",
+                "#496"
+              ],
+              "output_counts": [
+                1,
+                0,
+                0
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 670674
+            }
+          ]
+        },
+        {
+          "label": "edge_once:in:m:responds_to:any_target",
+          "proposal_id": "sha256:bf06df0cd4584f1b11d7f3fd75654dc7d8e1665477f97bf41e4228611ee0f9b3",
+          "trials": [
+            {
+              "correct": true,
+              "episode_wall_ns": 14063324,
+              "expected_counts": [
+                1,
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#492",
+                "#499"
+              ],
+              "output_counts": [
+                1,
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 578633
+            },
+            {
+              "correct": true,
+              "episode_wall_ns": 10170081,
+              "expected_counts": [
+                1,
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#492",
+                "#499"
+              ],
+              "output_counts": [
+                1,
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 542373
+            }
+          ]
+        }
+      ],
+      "selected_label": "edge_once:in:m:responds_to:any_target",
+      "source_heldout": [
+        {
+          "correct": true,
+          "expected_counts": [
+            1,
+            1,
+            1
+          ],
+          "input_ids": [
+            "#482",
+            "#492",
+            "#499"
+          ],
+          "output_counts": [
+            1,
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "sequence_runtime_ns": 541933
+        },
+        {
+          "correct": true,
+          "expected_counts": [
+            1,
+            1,
+            1
+          ],
+          "input_ids": [
+            "#482",
+            "#492",
+            "#499"
+          ],
+          "output_counts": [
+            1,
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "sequence_runtime_ns": 548074
+        }
+      ],
+      "training_correct_counts": {
+        "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d": 0,
+        "sha256:92166eb379ff2efe698220215f4c126d8051bb47cdc7e19d13f4234775abf39c": 0,
+        "sha256:af4eb625863a571aa9cc20ec21e48265d75bb25ebda0574d16da0053e8a79f81": 0,
+        "sha256:bf06df0cd4584f1b11d7f3fd75654dc7d8e1665477f97bf41e4228611ee0f9b3": 2
+      },
+      "worker": 0
+    },
+    {
+      "composer": {
+        "operator": "add_match_guard",
+        "site": "where += Eq(Attr('agent', 'adopted_variant_probe'), True) (a NEW conjunct)",
+        "target": "mrl_offer_due_once"
+      },
+      "cost_ns": {
+        "candidate_generation_heldout": 155531,
+        "candidate_generation_train": 225712,
+        "composer_heldout": 35220281,
+        "composer_train": 38054227,
+        "context_setup_heldout": 6038186,
+        "context_setup_train": 13593461,
+        "control_decisions": 623913,
+        "heldout_all_candidates": 48094077,
+        "selection": 769055,
+        "source_controls_heldout": 10636554,
+        "source_controls_train": 10493904,
+        "training_all_candidates": 47441724,
+        "worker_heldout_stage": 363792909,
+        "worker_train_stage": 384222509
+      },
+      "derived_sites": [
+        [
+          "out",
+          "agent",
+          "observed",
+          null
+        ],
+        [
+          "out",
+          "candidate",
+          "has_mint_offer",
+          null
+        ],
+        [
+          "out",
+          "episode",
+          "has_mint_offer",
+          null
+        ]
+      ],
+      "family": "recurrence",
+      "heldout_candidate_outcomes": [
+        {
+          "label": "edge_once:out:candidate:has_mint_offer:any_target",
+          "proposal_id": "sha256:febb968ea31a93a59efd981856b416790b803c6e1fd63f40eaa6880e8b35ea99",
+          "trials": [
+            {
+              "correct": true,
+              "episode_wall_ns": 6189336,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-1-heldout_1-0-0",
+                "bidir-1-heldout_1-0-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "correct": true,
+              "episode_wall_ns": 5909235,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-1-heldout_1-1-0",
+                "bidir-1-heldout_1-1-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "label": "edge_once:out:episode:has_mint_offer:any_target",
+          "proposal_id": "sha256:e8ff48aabc1cd06e0197c1ad63e4c3f03f138bef6d76ce49901618141f4e0a5a",
+          "trials": [
+            {
+              "correct": false,
+              "episode_wall_ns": 5830755,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-1-heldout_1-0-0",
+                "bidir-1-heldout_1-0-1"
+              ],
+              "output_counts": [
+                1,
+                0
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                1,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "correct": false,
+              "episode_wall_ns": 5874185,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-1-heldout_1-1-0",
+                "bidir-1-heldout_1-1-1"
+              ],
+              "output_counts": [
+                1,
+                0
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                1,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "label": "edge_once:out:agent:observed:any_target",
+          "proposal_id": "sha256:b4748673cb93a284227cf0782dc86457cf5732e6e3817ae170df77df3a5233b5",
+          "trials": [
+            {
+              "correct": false,
+              "episode_wall_ns": 5984886,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-1-heldout_1-0-0",
+                "bidir-1-heldout_1-0-1"
+              ],
+              "output_counts": [
+                1,
+                0
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                1,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "correct": false,
+              "episode_wall_ns": 6069817,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-1-heldout_1-1-0",
+                "bidir-1-heldout_1-1-1"
+              ],
+              "output_counts": [
+                1,
+                0
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                1,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "label": "composer:add_match_guard",
+          "proposal_id": "sha256:a0e3249b07a997e5a606ed8b15f4f72b0dabbbe72f8a1b993667a7ce1010a492",
+          "trials": [
+            {
+              "correct": false,
+              "episode_wall_ns": 6263627,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-1-heldout_1-0-0",
+                "bidir-1-heldout_1-0-1"
+              ],
+              "output_counts": [
+                0,
+                0
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                1,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                1,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "correct": false,
+              "episode_wall_ns": 5972236,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-1-heldout_1-1-0",
+                "bidir-1-heldout_1-1-1"
+              ],
+              "output_counts": [
+                0,
+                0
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                1,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                1,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        }
+      ],
+      "selected_label": "edge_once:out:candidate:has_mint_offer:any_target",
+      "source_heldout": [
+        {
+          "correct": true,
+          "fixedpoint_progress": 0,
+          "keys": [
+            "bidir-1-heldout_source_1-0-0",
+            "bidir-1-heldout_source_1-0-1"
+          ],
+          "output_counts": [
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "stage0_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ],
+          "stage1_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "correct": true,
+          "fixedpoint_progress": 0,
+          "keys": [
+            "bidir-1-heldout_source_1-1-0",
+            "bidir-1-heldout_source_1-1-1"
+          ],
+          "output_counts": [
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "stage0_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ],
+          "stage1_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      ],
+      "training_correct_counts": {
+        "sha256:a0e3249b07a997e5a606ed8b15f4f72b0dabbbe72f8a1b993667a7ce1010a492": 0,
+        "sha256:b4748673cb93a284227cf0782dc86457cf5732e6e3817ae170df77df3a5233b5": 0,
+        "sha256:e8ff48aabc1cd06e0197c1ad63e4c3f03f138bef6d76ce49901618141f4e0a5a": 0,
+        "sha256:febb968ea31a93a59efd981856b416790b803c6e1fd63f40eaa6880e8b35ea99": 2
+      },
+      "worker": 1
+    },
+    {
+      "composer": {
+        "operator": "add_match_guard",
+        "site": "where += Eq(Attr('m', 'adopted_variant_probe'), True) (a NEW conjunct)",
+        "target": "reply_to_adjacency_pair"
+      },
+      "cost_ns": {
+        "candidate_generation_heldout": 112310,
+        "candidate_generation_train": 115201,
+        "composer_heldout": 28907773,
+        "composer_train": 28909083,
+        "context_setup_heldout": 17706506,
+        "context_setup_train": 15776854,
+        "control_decisions": 663184,
+        "heldout_all_candidates": 102338783,
+        "selection": 466903,
+        "source_controls_heldout": 18720042,
+        "source_controls_train": 18066938,
+        "training_all_candidates": 98411028,
+        "worker_heldout_stage": 363792909,
+        "worker_train_stage": 384222509
+      },
+      "derived_sites": [
+        [
+          "in",
+          "r",
+          "has_speech_act",
+          null
+        ],
+        [
+          "in",
+          "m",
+          "responds_to",
+          null
+        ],
+        [
+          "out",
+          "agent",
+          "sent",
+          null
+        ]
+      ],
+      "family": "conversation",
+      "heldout_candidate_outcomes": [
+        {
+          "label": "composer:add_match_guard",
+          "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d",
+          "trials": [
+            {
+              "correct": false,
+              "episode_wall_ns": 28852063,
+              "expected_counts": [
+                1,
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#489",
+                "#493"
+              ],
+              "output_counts": [
+                0,
+                0,
+                0
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 19273574
+            },
+            {
+              "correct": false,
+              "episode_wall_ns": 10324642,
+              "expected_counts": [
+                1,
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#489",
+                "#493"
+              ],
+              "output_counts": [
+                0,
+                0,
+                0
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 458173
+            }
+          ]
+        },
+        {
+          "label": "edge_once:in:r:has_speech_act:any_target",
+          "proposal_id": "sha256:92166eb379ff2efe698220215f4c126d8051bb47cdc7e19d13f4234775abf39c",
+          "trials": [
+            {
+              "correct": false,
+              "episode_wall_ns": 10649943,
+              "expected_counts": [
+                1,
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#492",
+                "#496"
+              ],
+              "output_counts": [
+                1,
+                0,
+                0
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 712524
+            },
+            {
+              "correct": false,
+              "episode_wall_ns": 9848939,
+              "expected_counts": [
+                1,
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#492",
+                "#496"
+              ],
+              "output_counts": [
+                1,
+                0,
+                0
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 513994
+            }
+          ]
+        },
+        {
+          "label": "edge_once:out:agent:sent:any_target",
+          "proposal_id": "sha256:af4eb625863a571aa9cc20ec21e48265d75bb25ebda0574d16da0053e8a79f81",
+          "trials": [
+            {
+              "correct": false,
+              "episode_wall_ns": 10934516,
+              "expected_counts": [
+                1,
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#492",
+                "#496"
+              ],
+              "output_counts": [
+                1,
+                0,
+                0
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 545663
+            },
+            {
+              "correct": false,
+              "episode_wall_ns": 10378682,
+              "expected_counts": [
+                1,
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#492",
+                "#496"
+              ],
+              "output_counts": [
+                1,
+                0,
+                0
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 626844
+            }
+          ]
+        },
+        {
+          "label": "edge_once:in:m:responds_to:any_target",
+          "proposal_id": "sha256:bf06df0cd4584f1b11d7f3fd75654dc7d8e1665477f97bf41e4228611ee0f9b3",
+          "trials": [
+            {
+              "correct": true,
+              "episode_wall_ns": 11117217,
+              "expected_counts": [
+                1,
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#492",
+                "#499"
+              ],
+              "output_counts": [
+                1,
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 565174
+            },
+            {
+              "correct": true,
+              "episode_wall_ns": 10232781,
+              "expected_counts": [
+                1,
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#492",
+                "#499"
+              ],
+              "output_counts": [
+                1,
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 547203
+            }
+          ]
+        }
+      ],
+      "selected_label": "edge_once:in:m:responds_to:any_target",
+      "source_heldout": [
+        {
+          "correct": true,
+          "expected_counts": [
+            1,
+            1,
+            1
+          ],
+          "input_ids": [
+            "#482",
+            "#492",
+            "#499"
+          ],
+          "output_counts": [
+            1,
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "sequence_runtime_ns": 526472
+        },
+        {
+          "correct": true,
+          "expected_counts": [
+            1,
+            1,
+            1
+          ],
+          "input_ids": [
+            "#482",
+            "#492",
+            "#499"
+          ],
+          "output_counts": [
+            1,
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "sequence_runtime_ns": 555023
+        }
+      ],
+      "training_correct_counts": {
+        "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d": 0,
+        "sha256:92166eb379ff2efe698220215f4c126d8051bb47cdc7e19d13f4234775abf39c": 0,
+        "sha256:af4eb625863a571aa9cc20ec21e48265d75bb25ebda0574d16da0053e8a79f81": 0,
+        "sha256:bf06df0cd4584f1b11d7f3fd75654dc7d8e1665477f97bf41e4228611ee0f9b3": 2
+      },
+      "worker": 1
+    },
+    {
+      "composer": {
+        "operator": "add_match_guard",
+        "site": "where += Eq(Attr('agent', 'adopted_variant_probe'), True) (a NEW conjunct)",
+        "target": "mrl_offer_due_once"
+      },
+      "cost_ns": {
+        "candidate_generation_heldout": 160001,
+        "candidate_generation_train": 161311,
+        "composer_heldout": 35777814,
+        "composer_train": 35911675,
+        "context_setup_heldout": 6114976,
+        "context_setup_train": 5944676,
+        "control_decisions": 616784,
+        "heldout_all_candidates": 47634226,
+        "selection": 769224,
+        "source_controls_heldout": 10517463,
+        "source_controls_train": 10354812,
+        "training_all_candidates": 46779010,
+        "worker_heldout_stage": 365482370,
+        "worker_train_stage": 359812103
+      },
+      "derived_sites": [
+        [
+          "out",
+          "agent",
+          "observed",
+          null
+        ],
+        [
+          "out",
+          "candidate",
+          "has_mint_offer",
+          null
+        ],
+        [
+          "out",
+          "episode",
+          "has_mint_offer",
+          null
+        ]
+      ],
+      "family": "recurrence",
+      "heldout_candidate_outcomes": [
+        {
+          "label": "edge_once:out:candidate:has_mint_offer:any_target",
+          "proposal_id": "sha256:febb968ea31a93a59efd981856b416790b803c6e1fd63f40eaa6880e8b35ea99",
+          "trials": [
+            {
+              "correct": true,
+              "episode_wall_ns": 6201998,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-2-heldout_2-0-0",
+                "bidir-2-heldout_2-0-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "correct": true,
+              "episode_wall_ns": 5961825,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-2-heldout_2-1-0",
+                "bidir-2-heldout_2-1-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "label": "composer:add_match_guard",
+          "proposal_id": "sha256:a0e3249b07a997e5a606ed8b15f4f72b0dabbbe72f8a1b993667a7ce1010a492",
+          "trials": [
+            {
+              "correct": false,
+              "episode_wall_ns": 5961246,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-2-heldout_2-0-0",
+                "bidir-2-heldout_2-0-1"
+              ],
+              "output_counts": [
+                0,
+                0
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                1,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                1,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "correct": false,
+              "episode_wall_ns": 5970416,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-2-heldout_2-1-0",
+                "bidir-2-heldout_2-1-1"
+              ],
+              "output_counts": [
+                0,
+                0
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                1,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                1,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "label": "edge_once:out:episode:has_mint_offer:any_target",
+          "proposal_id": "sha256:e8ff48aabc1cd06e0197c1ad63e4c3f03f138bef6d76ce49901618141f4e0a5a",
+          "trials": [
+            {
+              "correct": false,
+              "episode_wall_ns": 5921425,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-2-heldout_2-0-0",
+                "bidir-2-heldout_2-0-1"
+              ],
+              "output_counts": [
+                1,
+                0
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                1,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "correct": false,
+              "episode_wall_ns": 5775865,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-2-heldout_2-1-0",
+                "bidir-2-heldout_2-1-1"
+              ],
+              "output_counts": [
+                1,
+                0
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                1,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "label": "edge_once:out:agent:observed:any_target",
+          "proposal_id": "sha256:b4748673cb93a284227cf0782dc86457cf5732e6e3817ae170df77df3a5233b5",
+          "trials": [
+            {
+              "correct": false,
+              "episode_wall_ns": 5728904,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-2-heldout_2-0-0",
+                "bidir-2-heldout_2-0-1"
+              ],
+              "output_counts": [
+                1,
+                0
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                1,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "correct": false,
+              "episode_wall_ns": 6112547,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-2-heldout_2-1-0",
+                "bidir-2-heldout_2-1-1"
+              ],
+              "output_counts": [
+                1,
+                0
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                1,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        }
+      ],
+      "selected_label": "edge_once:out:candidate:has_mint_offer:any_target",
+      "source_heldout": [
+        {
+          "correct": true,
+          "fixedpoint_progress": 0,
+          "keys": [
+            "bidir-2-heldout_source_2-0-0",
+            "bidir-2-heldout_source_2-0-1"
+          ],
+          "output_counts": [
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "stage0_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ],
+          "stage1_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "correct": true,
+          "fixedpoint_progress": 0,
+          "keys": [
+            "bidir-2-heldout_source_2-1-0",
+            "bidir-2-heldout_source_2-1-1"
+          ],
+          "output_counts": [
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "stage0_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ],
+          "stage1_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      ],
+      "training_correct_counts": {
+        "sha256:a0e3249b07a997e5a606ed8b15f4f72b0dabbbe72f8a1b993667a7ce1010a492": 0,
+        "sha256:b4748673cb93a284227cf0782dc86457cf5732e6e3817ae170df77df3a5233b5": 0,
+        "sha256:e8ff48aabc1cd06e0197c1ad63e4c3f03f138bef6d76ce49901618141f4e0a5a": 0,
+        "sha256:febb968ea31a93a59efd981856b416790b803c6e1fd63f40eaa6880e8b35ea99": 2
+      },
+      "worker": 2
+    },
+    {
+      "composer": {
+        "operator": "add_match_guard",
+        "site": "where += Eq(Attr('m', 'adopted_variant_probe'), True) (a NEW conjunct)",
+        "target": "reply_to_adjacency_pair"
+      },
+      "cost_ns": {
+        "candidate_generation_heldout": 122571,
+        "candidate_generation_train": 111640,
+        "composer_heldout": 29335456,
+        "composer_train": 29074824,
+        "context_setup_heldout": 17327344,
+        "context_setup_train": 16341028,
+        "control_decisions": 641304,
+        "heldout_all_candidates": 102952047,
+        "selection": 453192,
+        "source_controls_heldout": 18972253,
+        "source_controls_train": 19195215,
+        "training_all_candidates": 98476560,
+        "worker_heldout_stage": 365482370,
+        "worker_train_stage": 359812103
+      },
+      "derived_sites": [
+        [
+          "in",
+          "r",
+          "has_speech_act",
+          null
+        ],
+        [
+          "in",
+          "m",
+          "responds_to",
+          null
+        ],
+        [
+          "out",
+          "agent",
+          "sent",
+          null
+        ]
+      ],
+      "family": "conversation",
+      "heldout_candidate_outcomes": [
+        {
+          "label": "composer:add_match_guard",
+          "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d",
+          "trials": [
+            {
+              "correct": false,
+              "episode_wall_ns": 30414552,
+              "expected_counts": [
+                1,
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#489",
+                "#493"
+              ],
+              "output_counts": [
+                0,
+                0,
+                0
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 20608103
+            },
+            {
+              "correct": false,
+              "episode_wall_ns": 11173417,
+              "expected_counts": [
+                1,
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#489",
+                "#493"
+              ],
+              "output_counts": [
+                0,
+                0,
+                0
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 501513
+            }
+          ]
+        },
+        {
+          "label": "edge_once:out:agent:sent:any_target",
+          "proposal_id": "sha256:af4eb625863a571aa9cc20ec21e48265d75bb25ebda0574d16da0053e8a79f81",
+          "trials": [
+            {
+              "correct": false,
+              "episode_wall_ns": 10298122,
+              "expected_counts": [
+                1,
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#492",
+                "#496"
+              ],
+              "output_counts": [
+                1,
+                0,
+                0
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 510583
+            },
+            {
+              "correct": false,
+              "episode_wall_ns": 10346391,
+              "expected_counts": [
+                1,
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#492",
+                "#496"
+              ],
+              "output_counts": [
+                1,
+                0,
+                0
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 492204
+            }
+          ]
+        },
+        {
+          "label": "edge_once:in:m:responds_to:any_target",
+          "proposal_id": "sha256:bf06df0cd4584f1b11d7f3fd75654dc7d8e1665477f97bf41e4228611ee0f9b3",
+          "trials": [
+            {
+              "correct": true,
+              "episode_wall_ns": 10064131,
+              "expected_counts": [
+                1,
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#492",
+                "#499"
+              ],
+              "output_counts": [
+                1,
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 533693
+            },
+            {
+              "correct": true,
+              "episode_wall_ns": 10164311,
+              "expected_counts": [
+                1,
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#492",
+                "#499"
+              ],
+              "output_counts": [
+                1,
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 576964
+            }
+          ]
+        },
+        {
+          "label": "edge_once:in:r:has_speech_act:any_target",
+          "proposal_id": "sha256:92166eb379ff2efe698220215f4c126d8051bb47cdc7e19d13f4234775abf39c",
+          "trials": [
+            {
+              "correct": false,
+              "episode_wall_ns": 10611023,
+              "expected_counts": [
+                1,
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#492",
+                "#496"
+              ],
+              "output_counts": [
+                1,
+                0,
+                0
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 478813
+            },
+            {
+              "correct": false,
+              "episode_wall_ns": 9880100,
+              "expected_counts": [
+                1,
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#492",
+                "#496"
+              ],
+              "output_counts": [
+                1,
+                0,
+                0
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 462492
+            }
+          ]
+        }
+      ],
+      "selected_label": "edge_once:in:m:responds_to:any_target",
+      "source_heldout": [
+        {
+          "correct": true,
+          "expected_counts": [
+            1,
+            1,
+            1
+          ],
+          "input_ids": [
+            "#482",
+            "#492",
+            "#499"
+          ],
+          "output_counts": [
+            1,
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "sequence_runtime_ns": 565824
+        },
+        {
+          "correct": true,
+          "expected_counts": [
+            1,
+            1,
+            1
+          ],
+          "input_ids": [
+            "#482",
+            "#492",
+            "#499"
+          ],
+          "output_counts": [
+            1,
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "sequence_runtime_ns": 589623
+        }
+      ],
+      "training_correct_counts": {
+        "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d": 0,
+        "sha256:92166eb379ff2efe698220215f4c126d8051bb47cdc7e19d13f4234775abf39c": 0,
+        "sha256:af4eb625863a571aa9cc20ec21e48265d75bb25ebda0574d16da0053e8a79f81": 0,
+        "sha256:bf06df0cd4584f1b11d7f3fd75654dc7d8e1665477f97bf41e4228611ee0f9b3": 2
+      },
+      "worker": 2
+    },
+    {
+      "composer": {
+        "operator": "add_match_guard",
+        "site": "where += Eq(Attr('agent', 'adopted_variant_probe'), True) (a NEW conjunct)",
+        "target": "mrl_offer_due_once"
+      },
+      "cost_ns": {
+        "candidate_generation_heldout": 160631,
+        "candidate_generation_train": 157791,
+        "composer_heldout": 34979280,
+        "composer_train": 35542502,
+        "context_setup_heldout": 6105517,
+        "context_setup_train": 6099026,
+        "control_decisions": 900355,
+        "heldout_all_candidates": 47276124,
+        "selection": 1015376,
+        "source_controls_heldout": 10256411,
+        "source_controls_train": 29618438,
+        "training_all_candidates": 51629510,
+        "worker_heldout_stage": 373043965,
+        "worker_train_stage": 414530911
+      },
+      "derived_sites": [
+        [
+          "out",
+          "agent",
+          "observed",
+          null
+        ],
+        [
+          "out",
+          "candidate",
+          "has_mint_offer",
+          null
+        ],
+        [
+          "out",
+          "episode",
+          "has_mint_offer",
+          null
+        ]
+      ],
+      "family": "recurrence",
+      "heldout_candidate_outcomes": [
+        {
+          "label": "edge_once:out:episode:has_mint_offer:any_target",
+          "proposal_id": "sha256:e8ff48aabc1cd06e0197c1ad63e4c3f03f138bef6d76ce49901618141f4e0a5a",
+          "trials": [
+            {
+              "correct": false,
+              "episode_wall_ns": 6167237,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-3-heldout_3-0-0",
+                "bidir-3-heldout_3-0-1"
+              ],
+              "output_counts": [
+                1,
+                0
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                1,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "correct": false,
+              "episode_wall_ns": 6061526,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-3-heldout_3-1-0",
+                "bidir-3-heldout_3-1-1"
+              ],
+              "output_counts": [
+                1,
+                0
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                1,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "label": "edge_once:out:agent:observed:any_target",
+          "proposal_id": "sha256:b4748673cb93a284227cf0782dc86457cf5732e6e3817ae170df77df3a5233b5",
+          "trials": [
+            {
+              "correct": false,
+              "episode_wall_ns": 5822075,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-3-heldout_3-0-0",
+                "bidir-3-heldout_3-0-1"
+              ],
+              "output_counts": [
+                1,
+                0
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                1,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "correct": false,
+              "episode_wall_ns": 5917196,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-3-heldout_3-1-0",
+                "bidir-3-heldout_3-1-1"
+              ],
+              "output_counts": [
+                1,
+                0
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                1,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "label": "composer:add_match_guard",
+          "proposal_id": "sha256:a0e3249b07a997e5a606ed8b15f4f72b0dabbbe72f8a1b993667a7ce1010a492",
+          "trials": [
+            {
+              "correct": false,
+              "episode_wall_ns": 5908125,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-3-heldout_3-0-0",
+                "bidir-3-heldout_3-0-1"
+              ],
+              "output_counts": [
+                0,
+                0
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                1,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                1,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "correct": false,
+              "episode_wall_ns": 5810855,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-3-heldout_3-1-0",
+                "bidir-3-heldout_3-1-1"
+              ],
+              "output_counts": [
+                0,
+                0
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                1,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                1,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "label": "edge_once:out:candidate:has_mint_offer:any_target",
+          "proposal_id": "sha256:febb968ea31a93a59efd981856b416790b803c6e1fd63f40eaa6880e8b35ea99",
+          "trials": [
+            {
+              "correct": true,
+              "episode_wall_ns": 5773055,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-3-heldout_3-0-0",
+                "bidir-3-heldout_3-0-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "correct": true,
+              "episode_wall_ns": 5816055,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-3-heldout_3-1-0",
+                "bidir-3-heldout_3-1-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        }
+      ],
+      "selected_label": "edge_once:out:candidate:has_mint_offer:any_target",
+      "source_heldout": [
+        {
+          "correct": true,
+          "fixedpoint_progress": 0,
+          "keys": [
+            "bidir-3-heldout_source_3-0-0",
+            "bidir-3-heldout_source_3-0-1"
+          ],
+          "output_counts": [
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "stage0_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ],
+          "stage1_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "correct": true,
+          "fixedpoint_progress": 0,
+          "keys": [
+            "bidir-3-heldout_source_3-1-0",
+            "bidir-3-heldout_source_3-1-1"
+          ],
+          "output_counts": [
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "stage0_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ],
+          "stage1_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      ],
+      "training_correct_counts": {
+        "sha256:a0e3249b07a997e5a606ed8b15f4f72b0dabbbe72f8a1b993667a7ce1010a492": 0,
+        "sha256:b4748673cb93a284227cf0782dc86457cf5732e6e3817ae170df77df3a5233b5": 0,
+        "sha256:e8ff48aabc1cd06e0197c1ad63e4c3f03f138bef6d76ce49901618141f4e0a5a": 0,
+        "sha256:febb968ea31a93a59efd981856b416790b803c6e1fd63f40eaa6880e8b35ea99": 2
+      },
+      "worker": 3
+    },
+    {
+      "composer": {
+        "operator": "add_match_guard",
+        "site": "where += Eq(Attr('m', 'adopted_variant_probe'), True) (a NEW conjunct)",
+        "target": "reply_to_adjacency_pair"
+      },
+      "cost_ns": {
+        "candidate_generation_heldout": 115120,
+        "candidate_generation_train": 121041,
+        "composer_heldout": 29968189,
+        "composer_train": 29560807,
+        "context_setup_heldout": 16643930,
+        "context_setup_train": 39510186,
+        "control_decisions": 683194,
+        "heldout_all_candidates": 100943094,
+        "selection": 462473,
+        "source_controls_heldout": 20256152,
+        "source_controls_train": 18542471,
+        "training_all_candidates": 98707510,
+        "worker_heldout_stage": 373043965,
+        "worker_train_stage": 414530911
+      },
+      "derived_sites": [
+        [
+          "in",
+          "r",
+          "has_speech_act",
+          null
+        ],
+        [
+          "in",
+          "m",
+          "responds_to",
+          null
+        ],
+        [
+          "out",
+          "agent",
+          "sent",
+          null
+        ]
+      ],
+      "family": "conversation",
+      "heldout_candidate_outcomes": [
+        {
+          "label": "edge_once:in:r:has_speech_act:any_target",
+          "proposal_id": "sha256:92166eb379ff2efe698220215f4c126d8051bb47cdc7e19d13f4234775abf39c",
+          "trials": [
+            {
+              "correct": false,
+              "episode_wall_ns": 29504147,
+              "expected_counts": [
+                1,
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#492",
+                "#496"
+              ],
+              "output_counts": [
+                1,
+                0,
+                0
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 19658327
+            },
+            {
+              "correct": false,
+              "episode_wall_ns": 10600434,
+              "expected_counts": [
+                1,
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#492",
+                "#496"
+              ],
+              "output_counts": [
+                1,
+                0,
+                0
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 556884
+            }
+          ]
+        },
+        {
+          "label": "edge_once:out:agent:sent:any_target",
+          "proposal_id": "sha256:af4eb625863a571aa9cc20ec21e48265d75bb25ebda0574d16da0053e8a79f81",
+          "trials": [
+            {
+              "correct": false,
+              "episode_wall_ns": 10289671,
+              "expected_counts": [
+                1,
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#492",
+                "#496"
+              ],
+              "output_counts": [
+                1,
+                0,
+                0
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 526264
+            },
+            {
+              "correct": false,
+              "episode_wall_ns": 10365233,
+              "expected_counts": [
+                1,
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#492",
+                "#496"
+              ],
+              "output_counts": [
+                1,
+                0,
+                0
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 516954
+            }
+          ]
+        },
+        {
+          "label": "composer:add_match_guard",
+          "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d",
+          "trials": [
+            {
+              "correct": false,
+              "episode_wall_ns": 10226881,
+              "expected_counts": [
+                1,
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#489",
+                "#493"
+              ],
+              "output_counts": [
+                0,
+                0,
+                0
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 456693
+            },
+            {
+              "correct": false,
+              "episode_wall_ns": 9957979,
+              "expected_counts": [
+                1,
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#489",
+                "#493"
+              ],
+              "output_counts": [
+                0,
+                0,
+                0
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 452533
+            }
+          ]
+        },
+        {
+          "label": "edge_once:in:m:responds_to:any_target",
+          "proposal_id": "sha256:bf06df0cd4584f1b11d7f3fd75654dc7d8e1665477f97bf41e4228611ee0f9b3",
+          "trials": [
+            {
+              "correct": true,
+              "episode_wall_ns": 9990230,
+              "expected_counts": [
+                1,
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#492",
+                "#499"
+              ],
+              "output_counts": [
+                1,
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 557154
+            },
+            {
+              "correct": true,
+              "episode_wall_ns": 10008519,
+              "expected_counts": [
+                1,
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#492",
+                "#499"
+              ],
+              "output_counts": [
+                1,
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 604183
+            }
+          ]
+        }
+      ],
+      "selected_label": "edge_once:in:m:responds_to:any_target",
+      "source_heldout": [
+        {
+          "correct": true,
+          "expected_counts": [
+            1,
+            1,
+            1
+          ],
+          "input_ids": [
+            "#482",
+            "#492",
+            "#499"
+          ],
+          "output_counts": [
+            1,
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "sequence_runtime_ns": 563483
+        },
+        {
+          "correct": true,
+          "expected_counts": [
+            1,
+            1,
+            1
+          ],
+          "input_ids": [
+            "#482",
+            "#492",
+            "#499"
+          ],
+          "output_counts": [
+            1,
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "sequence_runtime_ns": 533912
+        }
+      ],
+      "training_correct_counts": {
+        "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d": 0,
+        "sha256:92166eb379ff2efe698220215f4c126d8051bb47cdc7e19d13f4234775abf39c": 0,
+        "sha256:af4eb625863a571aa9cc20ec21e48265d75bb25ebda0574d16da0053e8a79f81": 0,
+        "sha256:bf06df0cd4584f1b11d7f3fd75654dc7d8e1665477f97bf41e4228611ee0f9b3": 2
+      },
+      "worker": 3
+    }
+  ],
+  "schema": "ThoughtexperimentBidirectionalEdgeIdentityGuardsV1_1Analysis"
+}

@@ -1,0 +1,22 @@
+{
+  "checks": {
+    "all_four_regression_triggers_fail": true,
+    "all_four_rollbacks_restore_source_and_recover": true,
+    "eight_two_batch_same_substrate_runs": true,
+    "selected_repairs_work_in_both_batches": true,
+    "source_lock_stable": true
+  },
+  "limitations": [
+    "two authored task families and four workers per family",
+    "fault, candidate choice and task oracle are harness supplied",
+    "rollback trigger is an observed failure on a deliberately known-bad candidate",
+    "no autonomous trigger threshold or long-run natural workload"
+  ],
+  "medians_ms": {
+    "rollback": 0.163691,
+    "selected_activation": 0.188776
+  },
+  "passed": 5,
+  "schema": "ThoughtexperimentPersistentAdoptionV1Analysis",
+  "total": 5
+}

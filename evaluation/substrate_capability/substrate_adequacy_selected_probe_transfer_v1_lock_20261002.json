@@ -1,0 +1,1116 @@
+{
+  "active": {
+    "domains/adequacy_probe_selection.py": "b8d75708d4e193f16bd071861af08658a907d020281d3c9106a9582c82e8acd9",
+    "domains/adequacy_provider_auth.py": "a5388de538b1af3303babcd0c382a46b3d2819796819be7741b603ca679e4768",
+    "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+    "domains/code_write_growth.py": "d4a2460f9e41bb8370dc9f352cec2d46ff596d1872e329d7e05d0f33af219079",
+    "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+    "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+    "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+    "domains_tree": "dd5870b35b92c94818af18b0d8b3ef55aa3eed0bce927417bbde8a4a55bb5f4e",
+    "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+    "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+    "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+    "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+    "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+    "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+    "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+    "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+    "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+    "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c",
+    "substrate_tree": "0fd9dee0bc92c33d541854fce3122826fa1fb21769ab3422aad001b42486bf96"
+  },
+  "design": {
+    "cases": {
+      "clamp_alias_wrong": {
+        "candidate_name": "identity",
+        "candidate_source": "def identity(value, lower, upper):\n    return value\n",
+        "challenger_name": "clamp_value",
+        "challenger_source": "def clamp_value(value, lower, upper):\n    return lower if value < lower else (upper if value > upper else value)\n",
+        "domain": [
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": -4
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": 2
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": 8
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 1
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 3
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 5
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -9
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -6
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -2
+          }
+        ],
+        "heldout": [
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": -9
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": -4
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": -3
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": 2
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": 7
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": 8
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": 13
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": -4
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 1
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 2
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 3
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 4
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 5
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 10
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -14
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -9
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -8
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -6
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -3
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -2
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": 3
+          }
+        ],
+        "target": false,
+        "task": "clamp"
+      },
+      "clamp_correct_broad": {
+        "candidate_name": "clamp_value",
+        "candidate_source": "def clamp_value(value, lower, upper):\n    return lower if value < lower else (upper if value > upper else value)\n",
+        "challenger_name": "identity",
+        "challenger_source": "def identity(value, lower, upper):\n    return value\n",
+        "domain": [
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": -7
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": -4
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": 2
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": 8
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": 11
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": -2
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 1
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 3
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 5
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 8
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -12
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -9
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -6
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -2
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": 1
+          }
+        ],
+        "heldout": [
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": -9
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": -4
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": -3
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": 2
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": 7
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": 8
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": 13
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": -4
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 1
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 2
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 3
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 4
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 5
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 10
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -14
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -9
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -8
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -6
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -3
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -2
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": 3
+          }
+        ],
+        "target": true,
+        "task": "clamp"
+      },
+      "clamp_distinguish_wrong": {
+        "candidate_name": "identity",
+        "candidate_source": "def identity(value, lower, upper):\n    return value\n",
+        "challenger_name": "clamp_value",
+        "challenger_source": "def clamp_value(value, lower, upper):\n    return lower if value < lower else (upper if value > upper else value)\n",
+        "domain": [
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": -7
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": -4
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": 2
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": 8
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": 11
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": -2
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 1
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 3
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 5
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 8
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -12
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -9
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -6
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -2
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": 1
+          }
+        ],
+        "heldout": [
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": -9
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": -4
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": -3
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": 2
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": 7
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": 8
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": 13
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": -4
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 1
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 2
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 3
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 4
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 5
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 10
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -14
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -9
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -8
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -6
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -3
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -2
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": 3
+          }
+        ],
+        "target": false,
+        "task": "clamp"
+      },
+      "parity_alias_wrong": {
+        "candidate_name": "always_false",
+        "candidate_source": "def always_false(value):\n    return False\n",
+        "challenger_name": "parity",
+        "challenger_source": "def parity(value):\n    return value % 2 == 0\n",
+        "domain": [
+          {
+            "value": -7
+          },
+          {
+            "value": -5
+          },
+          {
+            "value": -3
+          },
+          {
+            "value": -1
+          },
+          {
+            "value": 1
+          },
+          {
+            "value": 3
+          },
+          {
+            "value": 5
+          },
+          {
+            "value": 7
+          }
+        ],
+        "heldout": [
+          {
+            "value": -20
+          },
+          {
+            "value": -19
+          },
+          {
+            "value": -18
+          },
+          {
+            "value": -17
+          },
+          {
+            "value": -16
+          },
+          {
+            "value": -15
+          },
+          {
+            "value": -14
+          },
+          {
+            "value": -13
+          },
+          {
+            "value": -12
+          },
+          {
+            "value": -11
+          },
+          {
+            "value": -10
+          },
+          {
+            "value": -9
+          },
+          {
+            "value": -8
+          },
+          {
+            "value": -7
+          },
+          {
+            "value": -6
+          },
+          {
+            "value": -5
+          },
+          {
+            "value": -4
+          },
+          {
+            "value": -3
+          },
+          {
+            "value": -2
+          },
+          {
+            "value": -1
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 1
+          },
+          {
+            "value": 2
+          },
+          {
+            "value": 3
+          },
+          {
+            "value": 4
+          },
+          {
+            "value": 5
+          },
+          {
+            "value": 6
+          },
+          {
+            "value": 7
+          },
+          {
+            "value": 8
+          },
+          {
+            "value": 9
+          },
+          {
+            "value": 10
+          },
+          {
+            "value": 11
+          },
+          {
+            "value": 12
+          },
+          {
+            "value": 13
+          },
+          {
+            "value": 14
+          },
+          {
+            "value": 15
+          },
+          {
+            "value": 16
+          },
+          {
+            "value": 17
+          },
+          {
+            "value": 18
+          },
+          {
+            "value": 19
+          },
+          {
+            "value": 20
+          }
+        ],
+        "target": false,
+        "task": "parity"
+      },
+      "parity_correct_broad": {
+        "candidate_name": "parity",
+        "candidate_source": "def parity(value):\n    return value % 2 == 0\n",
+        "challenger_name": "always_false",
+        "challenger_source": "def always_false(value):\n    return False\n",
+        "domain": [
+          {
+            "value": -8
+          },
+          {
+            "value": -7
+          },
+          {
+            "value": -6
+          },
+          {
+            "value": -5
+          },
+          {
+            "value": -4
+          },
+          {
+            "value": -3
+          },
+          {
+            "value": -2
+          },
+          {
+            "value": -1
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 1
+          },
+          {
+            "value": 2
+          },
+          {
+            "value": 3
+          },
+          {
+            "value": 4
+          },
+          {
+            "value": 5
+          },
+          {
+            "value": 6
+          },
+          {
+            "value": 7
+          },
+          {
+            "value": 8
+          }
+        ],
+        "heldout": [
+          {
+            "value": -20
+          },
+          {
+            "value": -19
+          },
+          {
+            "value": -18
+          },
+          {
+            "value": -17
+          },
+          {
+            "value": -16
+          },
+          {
+            "value": -15
+          },
+          {
+            "value": -14
+          },
+          {
+            "value": -13
+          },
+          {
+            "value": -12
+          },
+          {
+            "value": -11
+          },
+          {
+            "value": -10
+          },
+          {
+            "value": -9
+          },
+          {
+            "value": -8
+          },
+          {
+            "value": -7
+          },
+          {
+            "value": -6
+          },
+          {
+            "value": -5
+          },
+          {
+            "value": -4
+          },
+          {
+            "value": -3
+          },
+          {
+            "value": -2
+          },
+          {
+            "value": -1
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 1
+          },
+          {
+            "value": 2
+          },
+          {
+            "value": 3
+          },
+          {
+            "value": 4
+          },
+          {
+            "value": 5
+          },
+          {
+            "value": 6
+          },
+          {
+            "value": 7
+          },
+          {
+            "value": 8
+          },
+          {
+            "value": 9
+          },
+          {
+            "value": 10
+          },
+          {
+            "value": 11
+          },
+          {
+            "value": 12
+          },
+          {
+            "value": 13
+          },
+          {
+            "value": 14
+          },
+          {
+            "value": 15
+          },
+          {
+            "value": 16
+          },
+          {
+            "value": 17
+          },
+          {
+            "value": 18
+          },
+          {
+            "value": 19
+          },
+          {
+            "value": 20
+          }
+        ],
+        "target": true,
+        "task": "parity"
+      },
+      "parity_distinguish_wrong": {
+        "candidate_name": "always_false",
+        "candidate_source": "def always_false(value):\n    return False\n",
+        "challenger_name": "parity",
+        "challenger_source": "def parity(value):\n    return value % 2 == 0\n",
+        "domain": [
+          {
+            "value": -8
+          },
+          {
+            "value": -7
+          },
+          {
+            "value": -6
+          },
+          {
+            "value": -5
+          },
+          {
+            "value": -4
+          },
+          {
+            "value": -3
+          },
+          {
+            "value": -2
+          },
+          {
+            "value": -1
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 1
+          },
+          {
+            "value": 2
+          },
+          {
+            "value": 3
+          },
+          {
+            "value": 4
+          },
+          {
+            "value": 5
+          },
+          {
+            "value": 6
+          },
+          {
+            "value": 7
+          },
+          {
+            "value": 8
+          }
+        ],
+        "heldout": [
+          {
+            "value": -20
+          },
+          {
+            "value": -19
+          },
+          {
+            "value": -18
+          },
+          {
+            "value": -17
+          },
+          {
+            "value": -16
+          },
+          {
+            "value": -15
+          },
+          {
+            "value": -14
+          },
+          {
+            "value": -13
+          },
+          {
+            "value": -12
+          },
+          {
+            "value": -11
+          },
+          {
+            "value": -10
+          },
+          {
+            "value": -9
+          },
+          {
+            "value": -8
+          },
+          {
+            "value": -7
+          },
+          {
+            "value": -6
+          },
+          {
+            "value": -5
+          },
+          {
+            "value": -4
+          },
+          {
+            "value": -3
+          },
+          {
+            "value": -2
+          },
+          {
+            "value": -1
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 1
+          },
+          {
+            "value": 2
+          },
+          {
+            "value": 3
+          },
+          {
+            "value": 4
+          },
+          {
+            "value": 5
+          },
+          {
+            "value": 6
+          },
+          {
+            "value": 7
+          },
+          {
+            "value": 8
+          },
+          {
+            "value": 9
+          },
+          {
+            "value": 10
+          },
+          {
+            "value": 11
+          },
+          {
+            "value": 12
+          },
+          {
+            "value": 13
+          },
+          {
+            "value": 14
+          },
+          {
+            "value": 15
+          },
+          {
+            "value": 16
+          },
+          {
+            "value": 17
+          },
+          {
+            "value": 18
+          },
+          {
+            "value": 19
+          },
+          {
+            "value": 20
+          }
+        ],
+        "target": false,
+        "task": "parity"
+      }
+    },
+    "oracle": "independent_codewrite_oracles.label",
+    "provider": "selected-probe-transfer-oracle",
+    "repeats": 3,
+    "selection": "maximum entropy over candidate and one independently read challenger Term",
+    "test_key_sha256": "89149145d51684e2815407ac9017f6833cae9ad9650f87bd1ecaa755e49083aa"
+  },
+  "files": {
+    "docs/research/engine_substrate/SUBSTRATE_ADEQUACY_SELECTED_PROBE_TRANSFER_V1_PREREG_20261002.md": "91063a91777ea6adaa6bfe900a9bffdeb860e6c75d5b8ec35691df13e9110bcd",
+    "evaluation/substrate_capability/independent_codewrite_oracles.py": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+    "evaluation/substrate_capability/substrate_adequacy_selected_probe_transfer_v1.py": "f2c80bd5c7246a4684305be467f55aae218ec6cc3ea5af40bbcee34ee5281d6b"
+  },
+  "git_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+  "schema": "SubstrateAdequacySelectedProbeTransferV1Lock"
+}

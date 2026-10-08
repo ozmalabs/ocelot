@@ -1,0 +1,925 @@
+{
+  "cases": [
+    {
+      "elapsed_seconds": 0.010672247968614101,
+      "gate_state": {
+        "claim_attrs": {
+          "g_discriminates": 1.0,
+          "g_grounded": 1.0,
+          "g_no_regression": 1.0,
+          "grounded": 1.0,
+          "no_regression": 1.0,
+          "text": "the composed pipeline faculty fills the gap (unhandled item -> handled)",
+          "verdict": 1.0
+        },
+        "graph_claim_count": 1,
+        "graph_gate_rule_count": 1,
+        "graph_probe_count": 1,
+        "native_gate_rule_count": 1,
+        "native_gate_rule_names": [
+          "self_verify_gate"
+        ],
+        "probe_attrs": {
+          "n_control_cases": 2.0,
+          "n_prior_cases": 1.0,
+          "real_pass": 1.0,
+          "twin_pass": 0.0
+        }
+      },
+      "kind": "composed_pipeline",
+      "outcome": {
+        "accepted": true,
+        "composition": true,
+        "concern_key": "gap_verification_gate_probe",
+        "gap": "#9",
+        "how": "I GROUND the gap by composing a WHOLE FACULTY \u2014 a multi-rule CHAIN, not a single rule: the grounded stage relations select the stages (classify -> route -> finalize), and each stage's precondition is the previous stage's output (route fires on stage==classified, finalize on the routed_to edge + stage==routed), so run_rules drives the whole pipeline to fixpoint and an unhandled item becomes handled. Every part is a held primitive (match/where/set_attr/add_node/add_edge) \u2014 a composition, not an invented primitive. Installed live.",
+        "n_rules": 3,
+        "outcome": "composed",
+        "path": "compose_faculty_pipeline",
+        "rules": [
+          {
+            "effects": [
+              [
+                "set_attr",
+                "it",
+                "stage",
+                "classified"
+              ]
+            ],
+            "match": [
+              [
+                "hub",
+                "has_item",
+                "it"
+              ]
+            ],
+            "name": "pl_classify_gap_verification_gate_probe",
+            "where": {
+              "a": {
+                "key": "stage",
+                "node": {
+                  "name": "it",
+                  "type": "Var"
+                },
+                "type": "Attr"
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "effects": [
+              [
+                "add_node",
+                "h",
+                "Handler",
+                {
+                  "kind": "handler"
+                }
+              ],
+              [
+                "add_edge",
+                "it",
+                "routed_to",
+                "h"
+              ],
+              [
+                "set_attr",
+                "it",
+                "stage",
+                "routed"
+              ]
+            ],
+            "match": [
+              [
+                "hub",
+                "has_item",
+                "it"
+              ]
+            ],
+            "name": "pl_route_gap_verification_gate_probe",
+            "where": {
+              "a": {
+                "key": "stage",
+                "node": {
+                  "name": "it",
+                  "type": "Var"
+                },
+                "type": "Attr"
+              },
+              "b": {
+                "type": "Lit",
+                "value": "classified"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "effects": [
+              [
+                "set_attr",
+                "it",
+                "handled",
+                1.0
+              ],
+              [
+                "set_attr",
+                "it",
+                "stage",
+                "done"
+              ]
+            ],
+            "match": [
+              [
+                "it",
+                "routed_to",
+                "h"
+              ]
+            ],
+            "name": "pl_finalize_gap_verification_gate_probe",
+            "where": {
+              "a": {
+                "key": "stage",
+                "node": {
+                  "name": "it",
+                  "type": "Var"
+                },
+                "type": "Attr"
+              },
+              "b": {
+                "type": "Lit",
+                "value": "routed"
+              },
+              "type": "Eq"
+            }
+          }
+        ],
+        "served_by": "python",
+        "verified": {
+          "accepted": true,
+          "anchors": [
+            "SensorAnchor"
+          ],
+          "claim_node": "#72",
+          "discriminates": true,
+          "grounded": true,
+          "no_regression": true,
+          "probe_node": "#73",
+          "real_pass": true,
+          "reason": "ACCEPTED: control discriminates (mechanism survives 2 held-out case(s); the known-fake twin FAILS it), no regression, grounded in ['SensorAnchor'].",
+          "twin_pass": false,
+          "verdict": 1.0
+        }
+      },
+      "replicate": 1
+    },
+    {
+      "elapsed_seconds": 0.009337680996395648,
+      "gate_state": {
+        "claim_attrs": {
+          "g_discriminates": 1.0,
+          "g_grounded": 1.0,
+          "g_no_regression": 1.0,
+          "grounded": 1.0,
+          "no_regression": 1.0,
+          "text": "the composed pipeline faculty fills the gap (unhandled item -> handled)",
+          "verdict": 1.0
+        },
+        "graph_claim_count": 1,
+        "graph_gate_rule_count": 1,
+        "graph_probe_count": 1,
+        "native_gate_rule_count": 1,
+        "native_gate_rule_names": [
+          "self_verify_gate"
+        ],
+        "probe_attrs": {
+          "n_control_cases": 2.0,
+          "n_prior_cases": 1.0,
+          "real_pass": 1.0,
+          "twin_pass": 0.0
+        }
+      },
+      "kind": "composed_pipeline",
+      "outcome": {
+        "accepted": true,
+        "composition": true,
+        "concern_key": "gap_verification_gate_probe",
+        "gap": "#9",
+        "how": "I GROUND the gap by composing a WHOLE FACULTY \u2014 a multi-rule CHAIN, not a single rule: the grounded stage relations select the stages (classify -> route -> finalize), and each stage's precondition is the previous stage's output (route fires on stage==classified, finalize on the routed_to edge + stage==routed), so run_rules drives the whole pipeline to fixpoint and an unhandled item becomes handled. Every part is a held primitive (match/where/set_attr/add_node/add_edge) \u2014 a composition, not an invented primitive. Installed live.",
+        "n_rules": 3,
+        "outcome": "composed",
+        "path": "compose_faculty_pipeline",
+        "rules": [
+          {
+            "effects": [
+              [
+                "set_attr",
+                "it",
+                "stage",
+                "classified"
+              ]
+            ],
+            "match": [
+              [
+                "hub",
+                "has_item",
+                "it"
+              ]
+            ],
+            "name": "pl_classify_gap_verification_gate_probe",
+            "where": {
+              "a": {
+                "key": "stage",
+                "node": {
+                  "name": "it",
+                  "type": "Var"
+                },
+                "type": "Attr"
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "effects": [
+              [
+                "add_node",
+                "h",
+                "Handler",
+                {
+                  "kind": "handler"
+                }
+              ],
+              [
+                "add_edge",
+                "it",
+                "routed_to",
+                "h"
+              ],
+              [
+                "set_attr",
+                "it",
+                "stage",
+                "routed"
+              ]
+            ],
+            "match": [
+              [
+                "hub",
+                "has_item",
+                "it"
+              ]
+            ],
+            "name": "pl_route_gap_verification_gate_probe",
+            "where": {
+              "a": {
+                "key": "stage",
+                "node": {
+                  "name": "it",
+                  "type": "Var"
+                },
+                "type": "Attr"
+              },
+              "b": {
+                "type": "Lit",
+                "value": "classified"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "effects": [
+              [
+                "set_attr",
+                "it",
+                "handled",
+                1.0
+              ],
+              [
+                "set_attr",
+                "it",
+                "stage",
+                "done"
+              ]
+            ],
+            "match": [
+              [
+                "it",
+                "routed_to",
+                "h"
+              ]
+            ],
+            "name": "pl_finalize_gap_verification_gate_probe",
+            "where": {
+              "a": {
+                "key": "stage",
+                "node": {
+                  "name": "it",
+                  "type": "Var"
+                },
+                "type": "Attr"
+              },
+              "b": {
+                "type": "Lit",
+                "value": "routed"
+              },
+              "type": "Eq"
+            }
+          }
+        ],
+        "served_by": "python",
+        "verified": {
+          "accepted": true,
+          "anchors": [
+            "SensorAnchor"
+          ],
+          "claim_node": "#72",
+          "discriminates": true,
+          "grounded": true,
+          "no_regression": true,
+          "probe_node": "#73",
+          "real_pass": true,
+          "reason": "ACCEPTED: control discriminates (mechanism survives 2 held-out case(s); the known-fake twin FAILS it), no regression, grounded in ['SensorAnchor'].",
+          "twin_pass": false,
+          "verdict": 1.0
+        }
+      },
+      "replicate": 2
+    },
+    {
+      "elapsed_seconds": 0.009081510012038052,
+      "gate_state": {
+        "claim_attrs": {
+          "g_discriminates": 1.0,
+          "g_grounded": 1.0,
+          "g_no_regression": 1.0,
+          "grounded": 1.0,
+          "no_regression": 1.0,
+          "text": "the composed pipeline faculty fills the gap (unhandled item -> handled)",
+          "verdict": 1.0
+        },
+        "graph_claim_count": 1,
+        "graph_gate_rule_count": 1,
+        "graph_probe_count": 1,
+        "native_gate_rule_count": 1,
+        "native_gate_rule_names": [
+          "self_verify_gate"
+        ],
+        "probe_attrs": {
+          "n_control_cases": 2.0,
+          "n_prior_cases": 1.0,
+          "real_pass": 1.0,
+          "twin_pass": 0.0
+        }
+      },
+      "kind": "composed_pipeline",
+      "outcome": {
+        "accepted": true,
+        "composition": true,
+        "concern_key": "gap_verification_gate_probe",
+        "gap": "#9",
+        "how": "I GROUND the gap by composing a WHOLE FACULTY \u2014 a multi-rule CHAIN, not a single rule: the grounded stage relations select the stages (classify -> route -> finalize), and each stage's precondition is the previous stage's output (route fires on stage==classified, finalize on the routed_to edge + stage==routed), so run_rules drives the whole pipeline to fixpoint and an unhandled item becomes handled. Every part is a held primitive (match/where/set_attr/add_node/add_edge) \u2014 a composition, not an invented primitive. Installed live.",
+        "n_rules": 3,
+        "outcome": "composed",
+        "path": "compose_faculty_pipeline",
+        "rules": [
+          {
+            "effects": [
+              [
+                "set_attr",
+                "it",
+                "stage",
+                "classified"
+              ]
+            ],
+            "match": [
+              [
+                "hub",
+                "has_item",
+                "it"
+              ]
+            ],
+            "name": "pl_classify_gap_verification_gate_probe",
+            "where": {
+              "a": {
+                "key": "stage",
+                "node": {
+                  "name": "it",
+                  "type": "Var"
+                },
+                "type": "Attr"
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "effects": [
+              [
+                "add_node",
+                "h",
+                "Handler",
+                {
+                  "kind": "handler"
+                }
+              ],
+              [
+                "add_edge",
+                "it",
+                "routed_to",
+                "h"
+              ],
+              [
+                "set_attr",
+                "it",
+                "stage",
+                "routed"
+              ]
+            ],
+            "match": [
+              [
+                "hub",
+                "has_item",
+                "it"
+              ]
+            ],
+            "name": "pl_route_gap_verification_gate_probe",
+            "where": {
+              "a": {
+                "key": "stage",
+                "node": {
+                  "name": "it",
+                  "type": "Var"
+                },
+                "type": "Attr"
+              },
+              "b": {
+                "type": "Lit",
+                "value": "classified"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "effects": [
+              [
+                "set_attr",
+                "it",
+                "handled",
+                1.0
+              ],
+              [
+                "set_attr",
+                "it",
+                "stage",
+                "done"
+              ]
+            ],
+            "match": [
+              [
+                "it",
+                "routed_to",
+                "h"
+              ]
+            ],
+            "name": "pl_finalize_gap_verification_gate_probe",
+            "where": {
+              "a": {
+                "key": "stage",
+                "node": {
+                  "name": "it",
+                  "type": "Var"
+                },
+                "type": "Attr"
+              },
+              "b": {
+                "type": "Lit",
+                "value": "routed"
+              },
+              "type": "Eq"
+            }
+          }
+        ],
+        "served_by": "python",
+        "verified": {
+          "accepted": true,
+          "anchors": [
+            "SensorAnchor"
+          ],
+          "claim_node": "#72",
+          "discriminates": true,
+          "grounded": true,
+          "no_regression": true,
+          "probe_node": "#73",
+          "real_pass": true,
+          "reason": "ACCEPTED: control discriminates (mechanism survives 2 held-out case(s); the known-fake twin FAILS it), no regression, grounded in ['SensorAnchor'].",
+          "twin_pass": false,
+          "verdict": 1.0
+        }
+      },
+      "replicate": 3
+    },
+    {
+      "elapsed_seconds": 0.000883094035089016,
+      "gate_state": {
+        "claim_attrs": {
+          "g_discriminates": 0.0,
+          "g_grounded": 1.0,
+          "g_no_regression": 1.0,
+          "grounded": 1.0,
+          "no_regression": 1.0,
+          "text": "known fake threshold on held values",
+          "verdict": 0.0
+        },
+        "graph_claim_count": 1,
+        "graph_gate_rule_count": 1,
+        "graph_probe_count": 1,
+        "native_gate_rule_count": 1,
+        "native_gate_rule_names": [
+          "self_verify_gate"
+        ],
+        "probe_attrs": {
+          "n_control_cases": 2.0,
+          "n_prior_cases": 2.0,
+          "real_pass": 0.0,
+          "twin_pass": 0.0
+        }
+      },
+      "kind": "known_fake",
+      "replicate": 1,
+      "result": {
+        "accepted": false,
+        "anchors": [
+          "SensorAnchor"
+        ],
+        "claim_node": "#9",
+        "discriminates": false,
+        "grounded": true,
+        "no_regression": true,
+        "probe_node": "#10",
+        "real_pass": false,
+        "reason": "REJECTED: control does NOT survive the mechanism (held-out/ambiguous case fails \u2014 a tuned/overfit pass, not real structure).",
+        "twin_pass": false,
+        "verdict": 0.0
+      }
+    },
+    {
+      "elapsed_seconds": 0.0007307930500246584,
+      "gate_state": {
+        "claim_attrs": {
+          "g_discriminates": 0.0,
+          "g_grounded": 1.0,
+          "g_no_regression": 1.0,
+          "grounded": 1.0,
+          "no_regression": 1.0,
+          "text": "known fake threshold on held values",
+          "verdict": 0.0
+        },
+        "graph_claim_count": 1,
+        "graph_gate_rule_count": 1,
+        "graph_probe_count": 1,
+        "native_gate_rule_count": 1,
+        "native_gate_rule_names": [
+          "self_verify_gate"
+        ],
+        "probe_attrs": {
+          "n_control_cases": 2.0,
+          "n_prior_cases": 2.0,
+          "real_pass": 0.0,
+          "twin_pass": 0.0
+        }
+      },
+      "kind": "known_fake",
+      "replicate": 2,
+      "result": {
+        "accepted": false,
+        "anchors": [
+          "SensorAnchor"
+        ],
+        "claim_node": "#9",
+        "discriminates": false,
+        "grounded": true,
+        "no_regression": true,
+        "probe_node": "#10",
+        "real_pass": false,
+        "reason": "REJECTED: control does NOT survive the mechanism (held-out/ambiguous case fails \u2014 a tuned/overfit pass, not real structure).",
+        "twin_pass": false,
+        "verdict": 0.0
+      }
+    },
+    {
+      "elapsed_seconds": 0.0007682729628868401,
+      "gate_state": {
+        "claim_attrs": {
+          "g_discriminates": 0.0,
+          "g_grounded": 1.0,
+          "g_no_regression": 1.0,
+          "grounded": 1.0,
+          "no_regression": 1.0,
+          "text": "known fake threshold on held values",
+          "verdict": 0.0
+        },
+        "graph_claim_count": 1,
+        "graph_gate_rule_count": 1,
+        "graph_probe_count": 1,
+        "native_gate_rule_count": 1,
+        "native_gate_rule_names": [
+          "self_verify_gate"
+        ],
+        "probe_attrs": {
+          "n_control_cases": 2.0,
+          "n_prior_cases": 2.0,
+          "real_pass": 0.0,
+          "twin_pass": 0.0
+        }
+      },
+      "kind": "known_fake",
+      "replicate": 3,
+      "result": {
+        "accepted": false,
+        "anchors": [
+          "SensorAnchor"
+        ],
+        "claim_node": "#9",
+        "discriminates": false,
+        "grounded": true,
+        "no_regression": true,
+        "probe_node": "#10",
+        "real_pass": false,
+        "reason": "REJECTED: control does NOT survive the mechanism (held-out/ambiguous case fails \u2014 a tuned/overfit pass, not real structure).",
+        "twin_pass": false,
+        "verdict": 0.0
+      }
+    }
+  ],
+  "input_lock": {
+    "gap_fixture": {
+      "faculty": "verification_gate_probe",
+      "observation": [
+        [
+          "classify the item",
+          "self",
+          "input"
+        ],
+        [
+          "route to a handler",
+          "input",
+          "handler"
+        ],
+        [
+          "mark handled",
+          "handler",
+          "done"
+        ]
+      ],
+      "status": "perceived"
+    },
+    "git_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "held": [
+      [
+        5,
+        "low"
+      ],
+      [
+        12,
+        "high"
+      ]
+    ],
+    "prior": [
+      [
+        20,
+        "high"
+      ],
+      [
+        1,
+        "low"
+      ]
+    ],
+    "protocol": {
+      "bytes": 784,
+      "path": "docs/research/engine_substrate/SUBSTRATE_SELF_VERIFICATION_ADAPTER_GATE_V1_1_PREREG_20260929.md",
+      "sha256": "04e318dc6a289c0a4b339773a92a0139de06233e88a21385800ff7986dde75b4"
+    },
+    "replicates": [
+      1,
+      2,
+      3
+    ],
+    "runner": {
+      "bytes": 6199,
+      "path": "evaluation/substrate_capability/self_verification_adapter_gate_v1_1.py",
+      "sha256": "0780e4505dd91422ee5159d4b2304a11b48e4f5c75f00e41246ddcb35ad97baa"
+    },
+    "schema_version": 1,
+    "sources": [
+      {
+        "bytes": 13625,
+        "path": "domains/self_verification.py",
+        "sha256": "4cf1282b2cdfb0c6c9a0820e7b96c550059e6b3e2dafd11b0dc0eed1a378af8a"
+      },
+      {
+        "bytes": 34191,
+        "path": "domains/substrate_extension.py",
+        "sha256": "d62ddaea0712005e5efd1ab531336a7d7f7315243b85334081ee38d4aa05eff9"
+      },
+      {
+        "bytes": 513738,
+        "path": "domains/reflective_faculty.py",
+        "sha256": "2792e5355c2a78cc23790e7a591ba0c0cb0ef2a249743d2b2da57fefadbd4c9f"
+      },
+      {
+        "bytes": 16454,
+        "path": "domains/grounding_reach.py",
+        "sha256": "d4970bf37f16d8b314659f8a90149af4f2bce086a5524f7009777350fc188cf2"
+      },
+      {
+        "bytes": 7251,
+        "path": "substrate/boot_core.py",
+        "sha256": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+      },
+      {
+        "bytes": 999516,
+        "path": "substrate/world_adapter.py",
+        "sha256": "9e83162f72fa5b1c88f0e7bb5f09e937d1819029cb9df311109f86f14a26bc27"
+      },
+      {
+        "bytes": 22070,
+        "path": "substrate/graph.py",
+        "sha256": "edebfafd619d07e4755a6f189d0e3904ec096e6add311f629c88730c0d547c4f"
+      },
+      {
+        "bytes": 10438,
+        "path": "substrate/seed_loader.py",
+        "sha256": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+      },
+      {
+        "bytes": 2490,
+        "path": "seeds/composer_faculty_pipeline.json",
+        "sha256": "39c2f594bd92d56669db5b647a03ae58409aae95abd3700e80040ee646338dfb"
+      },
+      {
+        "bytes": 96537,
+        "path": "seeds/shape_decode_loop.json",
+        "sha256": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6"
+      },
+      {
+        "bytes": 493382,
+        "path": "runners/dsl/src/shape_decode.rs",
+        "sha256": "0e178705d0df8bef0a9d08d5a2efabd1131386b783e87546f33b8601b682ac2c"
+      },
+      {
+        "bytes": 10327104,
+        "path": "runners/dsl/python/substrate_rs/_native.abi3.so",
+        "sha256": "54a6481b26ec28a240fe8f33360a93b8e0e7e621b396a81d36e69dae0291ed1c"
+      },
+      {
+        "bytes": 11019,
+        "path": "runners/dsl/python/substrate_rs/_native.build.json",
+        "sha256": "ec39e77e757c994b923c4549c96d7bc7480ab924b158d606f3b49d8c25ecdbd5"
+      }
+    ]
+  },
+  "post_run_input_lock": {
+    "gap_fixture": {
+      "faculty": "verification_gate_probe",
+      "observation": [
+        [
+          "classify the item",
+          "self",
+          "input"
+        ],
+        [
+          "route to a handler",
+          "input",
+          "handler"
+        ],
+        [
+          "mark handled",
+          "handler",
+          "done"
+        ]
+      ],
+      "status": "perceived"
+    },
+    "git_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "held": [
+      [
+        5,
+        "low"
+      ],
+      [
+        12,
+        "high"
+      ]
+    ],
+    "prior": [
+      [
+        20,
+        "high"
+      ],
+      [
+        1,
+        "low"
+      ]
+    ],
+    "protocol": {
+      "bytes": 784,
+      "path": "docs/research/engine_substrate/SUBSTRATE_SELF_VERIFICATION_ADAPTER_GATE_V1_1_PREREG_20260929.md",
+      "sha256": "04e318dc6a289c0a4b339773a92a0139de06233e88a21385800ff7986dde75b4"
+    },
+    "replicates": [
+      1,
+      2,
+      3
+    ],
+    "runner": {
+      "bytes": 6199,
+      "path": "evaluation/substrate_capability/self_verification_adapter_gate_v1_1.py",
+      "sha256": "0780e4505dd91422ee5159d4b2304a11b48e4f5c75f00e41246ddcb35ad97baa"
+    },
+    "schema_version": 1,
+    "sources": [
+      {
+        "bytes": 13625,
+        "path": "domains/self_verification.py",
+        "sha256": "4cf1282b2cdfb0c6c9a0820e7b96c550059e6b3e2dafd11b0dc0eed1a378af8a"
+      },
+      {
+        "bytes": 34191,
+        "path": "domains/substrate_extension.py",
+        "sha256": "d62ddaea0712005e5efd1ab531336a7d7f7315243b85334081ee38d4aa05eff9"
+      },
+      {
+        "bytes": 513738,
+        "path": "domains/reflective_faculty.py",
+        "sha256": "2792e5355c2a78cc23790e7a591ba0c0cb0ef2a249743d2b2da57fefadbd4c9f"
+      },
+      {
+        "bytes": 16454,
+        "path": "domains/grounding_reach.py",
+        "sha256": "d4970bf37f16d8b314659f8a90149af4f2bce086a5524f7009777350fc188cf2"
+      },
+      {
+        "bytes": 7251,
+        "path": "substrate/boot_core.py",
+        "sha256": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+      },
+      {
+        "bytes": 999516,
+        "path": "substrate/world_adapter.py",
+        "sha256": "9e83162f72fa5b1c88f0e7bb5f09e937d1819029cb9df311109f86f14a26bc27"
+      },
+      {
+        "bytes": 22070,
+        "path": "substrate/graph.py",
+        "sha256": "edebfafd619d07e4755a6f189d0e3904ec096e6add311f629c88730c0d547c4f"
+      },
+      {
+        "bytes": 10438,
+        "path": "substrate/seed_loader.py",
+        "sha256": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+      },
+      {
+        "bytes": 2490,
+        "path": "seeds/composer_faculty_pipeline.json",
+        "sha256": "39c2f594bd92d56669db5b647a03ae58409aae95abd3700e80040ee646338dfb"
+      },
+      {
+        "bytes": 96537,
+        "path": "seeds/shape_decode_loop.json",
+        "sha256": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6"
+      },
+      {
+        "bytes": 493382,
+        "path": "runners/dsl/src/shape_decode.rs",
+        "sha256": "0e178705d0df8bef0a9d08d5a2efabd1131386b783e87546f33b8601b682ac2c"
+      },
+      {
+        "bytes": 10327104,
+        "path": "runners/dsl/python/substrate_rs/_native.abi3.so",
+        "sha256": "54a6481b26ec28a240fe8f33360a93b8e0e7e621b396a81d36e69dae0291ed1c"
+      },
+      {
+        "bytes": 11019,
+        "path": "runners/dsl/python/substrate_rs/_native.build.json",
+        "sha256": "ec39e77e757c994b923c4549c96d7bc7480ab924b158d606f3b49d8c25ecdbd5"
+      }
+    ]
+  },
+  "process": {
+    "cpu_seconds": 0.130956296,
+    "wall_seconds": 0.13256989902583882
+  },
+  "run_id": "self-verification-adapter-gate-v1.1-20260929",
+  "schema_version": 1,
+  "status": "complete"
+}

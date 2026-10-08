@@ -1,0 +1,81 @@
+{
+  "analyzer_sha256": "a3f467c60bc1ad2407c2eee8fd7d137edbce231058214e6fa79b9aa8bf4d1658",
+  "capture_sha256": "fd2977d7cc2134473e22ffdbaf4f3a4ae80c38485b569a3d757be6862deb9b4c",
+  "checks": {
+    "all_mode_measurements_present": true,
+    "analyzer_hash_matches_lock": true,
+    "event_assignments_independently_recomputed": true,
+    "event_before_values_match_ordered_replay": true,
+    "event_replay_details": [
+      {
+        "complete": true,
+        "event_before_values_match_ordered_replay": true,
+        "replayed_final_edges_match": true,
+        "replayed_final_nodes_match": true
+      },
+      {
+        "complete": true,
+        "event_before_values_match_ordered_replay": true,
+        "replayed_final_edges_match": true,
+        "replayed_final_nodes_match": true
+      },
+      {
+        "complete": true,
+        "event_before_values_match_ordered_replay": true,
+        "replayed_final_edges_match": true,
+        "replayed_final_nodes_match": true
+      }
+    ],
+    "event_replay_matches_final_graph": true,
+    "event_snapshot_json_measured": true,
+    "event_values_complete": true,
+    "expected_direct_and_deferred_writers_observed": true,
+    "fixture_set_exact": true,
+    "independent_analyzer_stable": true,
+    "lock_matches_capture": true,
+    "no_events_dropped": true,
+    "ordinary_traced_exact_modes_match": true,
+    "overlap_last_writer_identified": true,
+    "overlap_transition_detail": [
+      [
+        "writer_one",
+        0,
+        1
+      ],
+      [
+        "writer_two",
+        1,
+        2
+      ]
+    ],
+    "overlap_value_chain_exact": true,
+    "runner_hash_matches_lock": true,
+    "schema_correct": true,
+    "snapshot_field_deltas_independently_recomputed": true,
+    "source_lock_stable": true,
+    "three_distinct_workers": true,
+    "workers_semantically_replicate": true
+  },
+  "claim_limit": "Independent graph-snapshot reconstruction and target-event matching are validated for these bounded fixtures. Ambiguous overlaps remain unresolved; this is not native event-local attribution, causal necessity, diagnosis, or general self-repair.",
+  "lock_sha256": "5d2d658b205b321808a3642df89ed68a34dba72374dcf8c37b107de227e66a35",
+  "passed": true,
+  "schema": "ThoughtexperimentEventValueAttributionV1_2_1Analysis",
+  "summary": {
+    "all_fields_uniquely_attributed": false,
+    "ambiguous_fields": 1,
+    "changed_fields": 9,
+    "distinct_pids": 3,
+    "fixtures": 3,
+    "observed_writers": [
+      "direct_writer",
+      "trace_direct_control",
+      "trans_frame_identity_assignment",
+      "writer_one",
+      "writer_two"
+    ],
+    "progress_budget": 3,
+    "uncovered_fields": 0,
+    "uniquely_attributed_fields": 8,
+    "workers": 3
+  }
+}

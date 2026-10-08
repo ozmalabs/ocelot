@@ -1,0 +1,925 @@
+{
+  "checks": {
+    "all_repeats_stable": true,
+    "both_input_captures_pass": true,
+    "expected_connected_topologies": true,
+    "expected_minima": true,
+    "source_stable": true,
+    "three_fresh_workers": true,
+    "worker_locks_stable": true
+  },
+  "lock_sha256": "64464711802e30b9e37cf0b30731f96b42a112bd33329fcf39a8869edee8e3b1",
+  "post_run_sources": {
+    "artifacts": [
+      {
+        "bytes": 2727,
+        "path": "docs/research/engine_substrate/TASK_GRAPH_SEPARATOR_DISCOVERY_AUDIT_V1_PREREG_20261002.md",
+        "sha256": "95f7f5c60b0107f6670306352446ff35c885af6869aaa73d953952809d540ebf"
+      },
+      {
+        "bytes": 6384,
+        "path": "evaluation/substrate_capability/task_graph_separator_discovery_audit_v1.py",
+        "sha256": "6a3c072dd2a9cefdd8ff3ccbcbe9c705350b8e4c1dead03b3cb5ef71f7ed6f23"
+      },
+      {
+        "bytes": 4128,
+        "path": "evaluation/substrate_capability/analyze_task_graph_separator_discovery_audit_v1.py",
+        "sha256": "812cbaa4f40398d2fb769112b159290fffe8f1e2b16dd64ba6e2ea0161a5a247"
+      },
+      {
+        "bytes": 116637,
+        "path": "evaluation/reports/llm_mode_neuron_task_graph_inference_census_v1_20261002.json",
+        "sha256": "e9a407261aea64f92e59e7d95f7e131d24b447c86ce2fc371abf83f4420d256c"
+      },
+      {
+        "bytes": 2901,
+        "path": "evaluation/substrate_capability/llm_mode_neuron_task_graph_inference_census_v1_lock_20261002.json",
+        "sha256": "c4eb5c8df160a1834384606f1f5105b6b2b9b89074da1865b4ce658c66a422a0"
+      },
+      {
+        "bytes": 130187,
+        "path": "evaluation/reports/llm_transport_task_graph_exact_census_v1_1_20261002.json",
+        "sha256": "b70d35060c2c177391b7022b781e832a53d016cf37393b1ffa0e7d4307164008"
+      },
+      {
+        "bytes": 2710,
+        "path": "evaluation/substrate_capability/llm_transport_task_graph_exact_census_v1_1_lock_20261002.json",
+        "sha256": "98ff5ef97278189f6efe46c93ebe0e8c11c2debea8858c7106043c3d8833e73e"
+      },
+      {
+        "bytes": 125268,
+        "path": "evaluation/reports/llm_transport_role_separator_v1_2_20261002.json",
+        "sha256": "7c72adc235f3d32f432cf767af4d7a827d848afab8528f9eb1c6b72a3b64251f"
+      },
+      {
+        "bytes": 4989,
+        "path": "evaluation/reports/llm_transport_role_separator_v1_2_analysis_20261002.json",
+        "sha256": "966dad4db480271b34d131111688550f2848a94348305ea62acd8c9bac4bdb23"
+      },
+      {
+        "bytes": 4002,
+        "path": "evaluation/substrate_capability/llm_transport_role_separator_v1_2_lock_20261002.json",
+        "sha256": "089106e4ef8d51d42514227da884c35f1e3642c24e4580d44cf6f516c5f3961e"
+      }
+    ],
+    "search_repeats": 3,
+    "workers": 3
+  },
+  "runs": [
+    {
+      "graphs": {
+        "K4_8": {
+          "connected_before_removal": true,
+          "edge_count": 32,
+          "edge_count_expected": true,
+          "node_count": 12,
+          "repeat_results_stable": true,
+          "repeat_times_ns": [
+            5788226,
+            5803516,
+            5746096
+          ],
+          "search_result": {
+            "elapsed_ns": 5746096,
+            "minimum_separators": [
+              {
+                "components": [
+                  [
+                    4
+                  ],
+                  [
+                    5
+                  ],
+                  [
+                    6
+                  ],
+                  [
+                    7
+                  ],
+                  [
+                    8
+                  ],
+                  [
+                    9
+                  ],
+                  [
+                    10
+                  ],
+                  [
+                    11
+                  ]
+                ],
+                "removed": [
+                  0,
+                  1,
+                  2,
+                  3
+                ]
+              }
+            ],
+            "minimum_size": 4,
+            "tested_subsets": 794
+          }
+        },
+        "K8_8": {
+          "connected_before_removal": true,
+          "edge_count": 64,
+          "edge_count_expected": true,
+          "node_count": 16,
+          "repeat_results_stable": true,
+          "repeat_times_ns": [
+            361141515,
+            379322167,
+            356568906
+          ],
+          "search_result": {
+            "elapsed_ns": 356568906,
+            "minimum_separators": [
+              {
+                "components": [
+                  [
+                    8
+                  ],
+                  [
+                    9
+                  ],
+                  [
+                    10
+                  ],
+                  [
+                    11
+                  ],
+                  [
+                    12
+                  ],
+                  [
+                    13
+                  ],
+                  [
+                    14
+                  ],
+                  [
+                    15
+                  ]
+                ],
+                "removed": [
+                  0,
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  6,
+                  7
+                ]
+              },
+              {
+                "components": [
+                  [
+                    0
+                  ],
+                  [
+                    1
+                  ],
+                  [
+                    2
+                  ],
+                  [
+                    3
+                  ],
+                  [
+                    4
+                  ],
+                  [
+                    5
+                  ],
+                  [
+                    6
+                  ],
+                  [
+                    7
+                  ]
+                ],
+                "removed": [
+                  8,
+                  9,
+                  10,
+                  11,
+                  12,
+                  13,
+                  14,
+                  15
+                ]
+              }
+            ],
+            "minimum_size": 8,
+            "tested_subsets": 39203
+          }
+        }
+      },
+      "pid": 5,
+      "replicate": 0,
+      "source_end": {
+        "artifacts": [
+          {
+            "bytes": 2727,
+            "path": "docs/research/engine_substrate/TASK_GRAPH_SEPARATOR_DISCOVERY_AUDIT_V1_PREREG_20261002.md",
+            "sha256": "95f7f5c60b0107f6670306352446ff35c885af6869aaa73d953952809d540ebf"
+          },
+          {
+            "bytes": 6384,
+            "path": "evaluation/substrate_capability/task_graph_separator_discovery_audit_v1.py",
+            "sha256": "6a3c072dd2a9cefdd8ff3ccbcbe9c705350b8e4c1dead03b3cb5ef71f7ed6f23"
+          },
+          {
+            "bytes": 4128,
+            "path": "evaluation/substrate_capability/analyze_task_graph_separator_discovery_audit_v1.py",
+            "sha256": "812cbaa4f40398d2fb769112b159290fffe8f1e2b16dd64ba6e2ea0161a5a247"
+          },
+          {
+            "bytes": 116637,
+            "path": "evaluation/reports/llm_mode_neuron_task_graph_inference_census_v1_20261002.json",
+            "sha256": "e9a407261aea64f92e59e7d95f7e131d24b447c86ce2fc371abf83f4420d256c"
+          },
+          {
+            "bytes": 2901,
+            "path": "evaluation/substrate_capability/llm_mode_neuron_task_graph_inference_census_v1_lock_20261002.json",
+            "sha256": "c4eb5c8df160a1834384606f1f5105b6b2b9b89074da1865b4ce658c66a422a0"
+          },
+          {
+            "bytes": 130187,
+            "path": "evaluation/reports/llm_transport_task_graph_exact_census_v1_1_20261002.json",
+            "sha256": "b70d35060c2c177391b7022b781e832a53d016cf37393b1ffa0e7d4307164008"
+          },
+          {
+            "bytes": 2710,
+            "path": "evaluation/substrate_capability/llm_transport_task_graph_exact_census_v1_1_lock_20261002.json",
+            "sha256": "98ff5ef97278189f6efe46c93ebe0e8c11c2debea8858c7106043c3d8833e73e"
+          },
+          {
+            "bytes": 125268,
+            "path": "evaluation/reports/llm_transport_role_separator_v1_2_20261002.json",
+            "sha256": "7c72adc235f3d32f432cf767af4d7a827d848afab8528f9eb1c6b72a3b64251f"
+          },
+          {
+            "bytes": 4989,
+            "path": "evaluation/reports/llm_transport_role_separator_v1_2_analysis_20261002.json",
+            "sha256": "966dad4db480271b34d131111688550f2848a94348305ea62acd8c9bac4bdb23"
+          },
+          {
+            "bytes": 4002,
+            "path": "evaluation/substrate_capability/llm_transport_role_separator_v1_2_lock_20261002.json",
+            "sha256": "089106e4ef8d51d42514227da884c35f1e3642c24e4580d44cf6f516c5f3961e"
+          }
+        ],
+        "search_repeats": 3,
+        "workers": 3
+      },
+      "source_start": {
+        "artifacts": [
+          {
+            "bytes": 2727,
+            "path": "docs/research/engine_substrate/TASK_GRAPH_SEPARATOR_DISCOVERY_AUDIT_V1_PREREG_20261002.md",
+            "sha256": "95f7f5c60b0107f6670306352446ff35c885af6869aaa73d953952809d540ebf"
+          },
+          {
+            "bytes": 6384,
+            "path": "evaluation/substrate_capability/task_graph_separator_discovery_audit_v1.py",
+            "sha256": "6a3c072dd2a9cefdd8ff3ccbcbe9c705350b8e4c1dead03b3cb5ef71f7ed6f23"
+          },
+          {
+            "bytes": 4128,
+            "path": "evaluation/substrate_capability/analyze_task_graph_separator_discovery_audit_v1.py",
+            "sha256": "812cbaa4f40398d2fb769112b159290fffe8f1e2b16dd64ba6e2ea0161a5a247"
+          },
+          {
+            "bytes": 116637,
+            "path": "evaluation/reports/llm_mode_neuron_task_graph_inference_census_v1_20261002.json",
+            "sha256": "e9a407261aea64f92e59e7d95f7e131d24b447c86ce2fc371abf83f4420d256c"
+          },
+          {
+            "bytes": 2901,
+            "path": "evaluation/substrate_capability/llm_mode_neuron_task_graph_inference_census_v1_lock_20261002.json",
+            "sha256": "c4eb5c8df160a1834384606f1f5105b6b2b9b89074da1865b4ce658c66a422a0"
+          },
+          {
+            "bytes": 130187,
+            "path": "evaluation/reports/llm_transport_task_graph_exact_census_v1_1_20261002.json",
+            "sha256": "b70d35060c2c177391b7022b781e832a53d016cf37393b1ffa0e7d4307164008"
+          },
+          {
+            "bytes": 2710,
+            "path": "evaluation/substrate_capability/llm_transport_task_graph_exact_census_v1_1_lock_20261002.json",
+            "sha256": "98ff5ef97278189f6efe46c93ebe0e8c11c2debea8858c7106043c3d8833e73e"
+          },
+          {
+            "bytes": 125268,
+            "path": "evaluation/reports/llm_transport_role_separator_v1_2_20261002.json",
+            "sha256": "7c72adc235f3d32f432cf767af4d7a827d848afab8528f9eb1c6b72a3b64251f"
+          },
+          {
+            "bytes": 4989,
+            "path": "evaluation/reports/llm_transport_role_separator_v1_2_analysis_20261002.json",
+            "sha256": "966dad4db480271b34d131111688550f2848a94348305ea62acd8c9bac4bdb23"
+          },
+          {
+            "bytes": 4002,
+            "path": "evaluation/substrate_capability/llm_transport_role_separator_v1_2_lock_20261002.json",
+            "sha256": "089106e4ef8d51d42514227da884c35f1e3642c24e4580d44cf6f516c5f3961e"
+          }
+        ],
+        "search_repeats": 3,
+        "workers": 3
+      }
+    },
+    {
+      "graphs": {
+        "K4_8": {
+          "connected_before_removal": true,
+          "edge_count": 32,
+          "edge_count_expected": true,
+          "node_count": 12,
+          "repeat_results_stable": true,
+          "repeat_times_ns": [
+            5768886,
+            5689306,
+            5652285
+          ],
+          "search_result": {
+            "elapsed_ns": 5652285,
+            "minimum_separators": [
+              {
+                "components": [
+                  [
+                    4
+                  ],
+                  [
+                    5
+                  ],
+                  [
+                    6
+                  ],
+                  [
+                    7
+                  ],
+                  [
+                    8
+                  ],
+                  [
+                    9
+                  ],
+                  [
+                    10
+                  ],
+                  [
+                    11
+                  ]
+                ],
+                "removed": [
+                  0,
+                  1,
+                  2,
+                  3
+                ]
+              }
+            ],
+            "minimum_size": 4,
+            "tested_subsets": 794
+          }
+        },
+        "K8_8": {
+          "connected_before_removal": true,
+          "edge_count": 64,
+          "edge_count_expected": true,
+          "node_count": 16,
+          "repeat_results_stable": true,
+          "repeat_times_ns": [
+            348415395,
+            366766070,
+            342413347
+          ],
+          "search_result": {
+            "elapsed_ns": 342413347,
+            "minimum_separators": [
+              {
+                "components": [
+                  [
+                    8
+                  ],
+                  [
+                    9
+                  ],
+                  [
+                    10
+                  ],
+                  [
+                    11
+                  ],
+                  [
+                    12
+                  ],
+                  [
+                    13
+                  ],
+                  [
+                    14
+                  ],
+                  [
+                    15
+                  ]
+                ],
+                "removed": [
+                  0,
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  6,
+                  7
+                ]
+              },
+              {
+                "components": [
+                  [
+                    0
+                  ],
+                  [
+                    1
+                  ],
+                  [
+                    2
+                  ],
+                  [
+                    3
+                  ],
+                  [
+                    4
+                  ],
+                  [
+                    5
+                  ],
+                  [
+                    6
+                  ],
+                  [
+                    7
+                  ]
+                ],
+                "removed": [
+                  8,
+                  9,
+                  10,
+                  11,
+                  12,
+                  13,
+                  14,
+                  15
+                ]
+              }
+            ],
+            "minimum_size": 8,
+            "tested_subsets": 39203
+          }
+        }
+      },
+      "pid": 6,
+      "replicate": 1,
+      "source_end": {
+        "artifacts": [
+          {
+            "bytes": 2727,
+            "path": "docs/research/engine_substrate/TASK_GRAPH_SEPARATOR_DISCOVERY_AUDIT_V1_PREREG_20261002.md",
+            "sha256": "95f7f5c60b0107f6670306352446ff35c885af6869aaa73d953952809d540ebf"
+          },
+          {
+            "bytes": 6384,
+            "path": "evaluation/substrate_capability/task_graph_separator_discovery_audit_v1.py",
+            "sha256": "6a3c072dd2a9cefdd8ff3ccbcbe9c705350b8e4c1dead03b3cb5ef71f7ed6f23"
+          },
+          {
+            "bytes": 4128,
+            "path": "evaluation/substrate_capability/analyze_task_graph_separator_discovery_audit_v1.py",
+            "sha256": "812cbaa4f40398d2fb769112b159290fffe8f1e2b16dd64ba6e2ea0161a5a247"
+          },
+          {
+            "bytes": 116637,
+            "path": "evaluation/reports/llm_mode_neuron_task_graph_inference_census_v1_20261002.json",
+            "sha256": "e9a407261aea64f92e59e7d95f7e131d24b447c86ce2fc371abf83f4420d256c"
+          },
+          {
+            "bytes": 2901,
+            "path": "evaluation/substrate_capability/llm_mode_neuron_task_graph_inference_census_v1_lock_20261002.json",
+            "sha256": "c4eb5c8df160a1834384606f1f5105b6b2b9b89074da1865b4ce658c66a422a0"
+          },
+          {
+            "bytes": 130187,
+            "path": "evaluation/reports/llm_transport_task_graph_exact_census_v1_1_20261002.json",
+            "sha256": "b70d35060c2c177391b7022b781e832a53d016cf37393b1ffa0e7d4307164008"
+          },
+          {
+            "bytes": 2710,
+            "path": "evaluation/substrate_capability/llm_transport_task_graph_exact_census_v1_1_lock_20261002.json",
+            "sha256": "98ff5ef97278189f6efe46c93ebe0e8c11c2debea8858c7106043c3d8833e73e"
+          },
+          {
+            "bytes": 125268,
+            "path": "evaluation/reports/llm_transport_role_separator_v1_2_20261002.json",
+            "sha256": "7c72adc235f3d32f432cf767af4d7a827d848afab8528f9eb1c6b72a3b64251f"
+          },
+          {
+            "bytes": 4989,
+            "path": "evaluation/reports/llm_transport_role_separator_v1_2_analysis_20261002.json",
+            "sha256": "966dad4db480271b34d131111688550f2848a94348305ea62acd8c9bac4bdb23"
+          },
+          {
+            "bytes": 4002,
+            "path": "evaluation/substrate_capability/llm_transport_role_separator_v1_2_lock_20261002.json",
+            "sha256": "089106e4ef8d51d42514227da884c35f1e3642c24e4580d44cf6f516c5f3961e"
+          }
+        ],
+        "search_repeats": 3,
+        "workers": 3
+      },
+      "source_start": {
+        "artifacts": [
+          {
+            "bytes": 2727,
+            "path": "docs/research/engine_substrate/TASK_GRAPH_SEPARATOR_DISCOVERY_AUDIT_V1_PREREG_20261002.md",
+            "sha256": "95f7f5c60b0107f6670306352446ff35c885af6869aaa73d953952809d540ebf"
+          },
+          {
+            "bytes": 6384,
+            "path": "evaluation/substrate_capability/task_graph_separator_discovery_audit_v1.py",
+            "sha256": "6a3c072dd2a9cefdd8ff3ccbcbe9c705350b8e4c1dead03b3cb5ef71f7ed6f23"
+          },
+          {
+            "bytes": 4128,
+            "path": "evaluation/substrate_capability/analyze_task_graph_separator_discovery_audit_v1.py",
+            "sha256": "812cbaa4f40398d2fb769112b159290fffe8f1e2b16dd64ba6e2ea0161a5a247"
+          },
+          {
+            "bytes": 116637,
+            "path": "evaluation/reports/llm_mode_neuron_task_graph_inference_census_v1_20261002.json",
+            "sha256": "e9a407261aea64f92e59e7d95f7e131d24b447c86ce2fc371abf83f4420d256c"
+          },
+          {
+            "bytes": 2901,
+            "path": "evaluation/substrate_capability/llm_mode_neuron_task_graph_inference_census_v1_lock_20261002.json",
+            "sha256": "c4eb5c8df160a1834384606f1f5105b6b2b9b89074da1865b4ce658c66a422a0"
+          },
+          {
+            "bytes": 130187,
+            "path": "evaluation/reports/llm_transport_task_graph_exact_census_v1_1_20261002.json",
+            "sha256": "b70d35060c2c177391b7022b781e832a53d016cf37393b1ffa0e7d4307164008"
+          },
+          {
+            "bytes": 2710,
+            "path": "evaluation/substrate_capability/llm_transport_task_graph_exact_census_v1_1_lock_20261002.json",
+            "sha256": "98ff5ef97278189f6efe46c93ebe0e8c11c2debea8858c7106043c3d8833e73e"
+          },
+          {
+            "bytes": 125268,
+            "path": "evaluation/reports/llm_transport_role_separator_v1_2_20261002.json",
+            "sha256": "7c72adc235f3d32f432cf767af4d7a827d848afab8528f9eb1c6b72a3b64251f"
+          },
+          {
+            "bytes": 4989,
+            "path": "evaluation/reports/llm_transport_role_separator_v1_2_analysis_20261002.json",
+            "sha256": "966dad4db480271b34d131111688550f2848a94348305ea62acd8c9bac4bdb23"
+          },
+          {
+            "bytes": 4002,
+            "path": "evaluation/substrate_capability/llm_transport_role_separator_v1_2_lock_20261002.json",
+            "sha256": "089106e4ef8d51d42514227da884c35f1e3642c24e4580d44cf6f516c5f3961e"
+          }
+        ],
+        "search_repeats": 3,
+        "workers": 3
+      }
+    },
+    {
+      "graphs": {
+        "K4_8": {
+          "connected_before_removal": true,
+          "edge_count": 32,
+          "edge_count_expected": true,
+          "node_count": 12,
+          "repeat_results_stable": true,
+          "repeat_times_ns": [
+            5917147,
+            5815376,
+            5783646
+          ],
+          "search_result": {
+            "elapsed_ns": 5783646,
+            "minimum_separators": [
+              {
+                "components": [
+                  [
+                    4
+                  ],
+                  [
+                    5
+                  ],
+                  [
+                    6
+                  ],
+                  [
+                    7
+                  ],
+                  [
+                    8
+                  ],
+                  [
+                    9
+                  ],
+                  [
+                    10
+                  ],
+                  [
+                    11
+                  ]
+                ],
+                "removed": [
+                  0,
+                  1,
+                  2,
+                  3
+                ]
+              }
+            ],
+            "minimum_size": 4,
+            "tested_subsets": 794
+          }
+        },
+        "K8_8": {
+          "connected_before_removal": true,
+          "edge_count": 64,
+          "edge_count_expected": true,
+          "node_count": 16,
+          "repeat_results_stable": true,
+          "repeat_times_ns": [
+            377707248,
+            353720488,
+            352534320
+          ],
+          "search_result": {
+            "elapsed_ns": 352534320,
+            "minimum_separators": [
+              {
+                "components": [
+                  [
+                    8
+                  ],
+                  [
+                    9
+                  ],
+                  [
+                    10
+                  ],
+                  [
+                    11
+                  ],
+                  [
+                    12
+                  ],
+                  [
+                    13
+                  ],
+                  [
+                    14
+                  ],
+                  [
+                    15
+                  ]
+                ],
+                "removed": [
+                  0,
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  6,
+                  7
+                ]
+              },
+              {
+                "components": [
+                  [
+                    0
+                  ],
+                  [
+                    1
+                  ],
+                  [
+                    2
+                  ],
+                  [
+                    3
+                  ],
+                  [
+                    4
+                  ],
+                  [
+                    5
+                  ],
+                  [
+                    6
+                  ],
+                  [
+                    7
+                  ]
+                ],
+                "removed": [
+                  8,
+                  9,
+                  10,
+                  11,
+                  12,
+                  13,
+                  14,
+                  15
+                ]
+              }
+            ],
+            "minimum_size": 8,
+            "tested_subsets": 39203
+          }
+        }
+      },
+      "pid": 7,
+      "replicate": 2,
+      "source_end": {
+        "artifacts": [
+          {
+            "bytes": 2727,
+            "path": "docs/research/engine_substrate/TASK_GRAPH_SEPARATOR_DISCOVERY_AUDIT_V1_PREREG_20261002.md",
+            "sha256": "95f7f5c60b0107f6670306352446ff35c885af6869aaa73d953952809d540ebf"
+          },
+          {
+            "bytes": 6384,
+            "path": "evaluation/substrate_capability/task_graph_separator_discovery_audit_v1.py",
+            "sha256": "6a3c072dd2a9cefdd8ff3ccbcbe9c705350b8e4c1dead03b3cb5ef71f7ed6f23"
+          },
+          {
+            "bytes": 4128,
+            "path": "evaluation/substrate_capability/analyze_task_graph_separator_discovery_audit_v1.py",
+            "sha256": "812cbaa4f40398d2fb769112b159290fffe8f1e2b16dd64ba6e2ea0161a5a247"
+          },
+          {
+            "bytes": 116637,
+            "path": "evaluation/reports/llm_mode_neuron_task_graph_inference_census_v1_20261002.json",
+            "sha256": "e9a407261aea64f92e59e7d95f7e131d24b447c86ce2fc371abf83f4420d256c"
+          },
+          {
+            "bytes": 2901,
+            "path": "evaluation/substrate_capability/llm_mode_neuron_task_graph_inference_census_v1_lock_20261002.json",
+            "sha256": "c4eb5c8df160a1834384606f1f5105b6b2b9b89074da1865b4ce658c66a422a0"
+          },
+          {
+            "bytes": 130187,
+            "path": "evaluation/reports/llm_transport_task_graph_exact_census_v1_1_20261002.json",
+            "sha256": "b70d35060c2c177391b7022b781e832a53d016cf37393b1ffa0e7d4307164008"
+          },
+          {
+            "bytes": 2710,
+            "path": "evaluation/substrate_capability/llm_transport_task_graph_exact_census_v1_1_lock_20261002.json",
+            "sha256": "98ff5ef97278189f6efe46c93ebe0e8c11c2debea8858c7106043c3d8833e73e"
+          },
+          {
+            "bytes": 125268,
+            "path": "evaluation/reports/llm_transport_role_separator_v1_2_20261002.json",
+            "sha256": "7c72adc235f3d32f432cf767af4d7a827d848afab8528f9eb1c6b72a3b64251f"
+          },
+          {
+            "bytes": 4989,
+            "path": "evaluation/reports/llm_transport_role_separator_v1_2_analysis_20261002.json",
+            "sha256": "966dad4db480271b34d131111688550f2848a94348305ea62acd8c9bac4bdb23"
+          },
+          {
+            "bytes": 4002,
+            "path": "evaluation/substrate_capability/llm_transport_role_separator_v1_2_lock_20261002.json",
+            "sha256": "089106e4ef8d51d42514227da884c35f1e3642c24e4580d44cf6f516c5f3961e"
+          }
+        ],
+        "search_repeats": 3,
+        "workers": 3
+      },
+      "source_start": {
+        "artifacts": [
+          {
+            "bytes": 2727,
+            "path": "docs/research/engine_substrate/TASK_GRAPH_SEPARATOR_DISCOVERY_AUDIT_V1_PREREG_20261002.md",
+            "sha256": "95f7f5c60b0107f6670306352446ff35c885af6869aaa73d953952809d540ebf"
+          },
+          {
+            "bytes": 6384,
+            "path": "evaluation/substrate_capability/task_graph_separator_discovery_audit_v1.py",
+            "sha256": "6a3c072dd2a9cefdd8ff3ccbcbe9c705350b8e4c1dead03b3cb5ef71f7ed6f23"
+          },
+          {
+            "bytes": 4128,
+            "path": "evaluation/substrate_capability/analyze_task_graph_separator_discovery_audit_v1.py",
+            "sha256": "812cbaa4f40398d2fb769112b159290fffe8f1e2b16dd64ba6e2ea0161a5a247"
+          },
+          {
+            "bytes": 116637,
+            "path": "evaluation/reports/llm_mode_neuron_task_graph_inference_census_v1_20261002.json",
+            "sha256": "e9a407261aea64f92e59e7d95f7e131d24b447c86ce2fc371abf83f4420d256c"
+          },
+          {
+            "bytes": 2901,
+            "path": "evaluation/substrate_capability/llm_mode_neuron_task_graph_inference_census_v1_lock_20261002.json",
+            "sha256": "c4eb5c8df160a1834384606f1f5105b6b2b9b89074da1865b4ce658c66a422a0"
+          },
+          {
+            "bytes": 130187,
+            "path": "evaluation/reports/llm_transport_task_graph_exact_census_v1_1_20261002.json",
+            "sha256": "b70d35060c2c177391b7022b781e832a53d016cf37393b1ffa0e7d4307164008"
+          },
+          {
+            "bytes": 2710,
+            "path": "evaluation/substrate_capability/llm_transport_task_graph_exact_census_v1_1_lock_20261002.json",
+            "sha256": "98ff5ef97278189f6efe46c93ebe0e8c11c2debea8858c7106043c3d8833e73e"
+          },
+          {
+            "bytes": 125268,
+            "path": "evaluation/reports/llm_transport_role_separator_v1_2_20261002.json",
+            "sha256": "7c72adc235f3d32f432cf767af4d7a827d848afab8528f9eb1c6b72a3b64251f"
+          },
+          {
+            "bytes": 4989,
+            "path": "evaluation/reports/llm_transport_role_separator_v1_2_analysis_20261002.json",
+            "sha256": "966dad4db480271b34d131111688550f2848a94348305ea62acd8c9bac4bdb23"
+          },
+          {
+            "bytes": 4002,
+            "path": "evaluation/substrate_capability/llm_transport_role_separator_v1_2_lock_20261002.json",
+            "sha256": "089106e4ef8d51d42514227da884c35f1e3642c24e4580d44cf6f516c5f3961e"
+          }
+        ],
+        "search_repeats": 3,
+        "workers": 3
+      }
+    }
+  ],
+  "schema": "TaskGraphSeparatorDiscoveryAuditV1Capture",
+  "sources": {
+    "artifacts": [
+      {
+        "bytes": 2727,
+        "path": "docs/research/engine_substrate/TASK_GRAPH_SEPARATOR_DISCOVERY_AUDIT_V1_PREREG_20261002.md",
+        "sha256": "95f7f5c60b0107f6670306352446ff35c885af6869aaa73d953952809d540ebf"
+      },
+      {
+        "bytes": 6384,
+        "path": "evaluation/substrate_capability/task_graph_separator_discovery_audit_v1.py",
+        "sha256": "6a3c072dd2a9cefdd8ff3ccbcbe9c705350b8e4c1dead03b3cb5ef71f7ed6f23"
+      },
+      {
+        "bytes": 4128,
+        "path": "evaluation/substrate_capability/analyze_task_graph_separator_discovery_audit_v1.py",
+        "sha256": "812cbaa4f40398d2fb769112b159290fffe8f1e2b16dd64ba6e2ea0161a5a247"
+      },
+      {
+        "bytes": 116637,
+        "path": "evaluation/reports/llm_mode_neuron_task_graph_inference_census_v1_20261002.json",
+        "sha256": "e9a407261aea64f92e59e7d95f7e131d24b447c86ce2fc371abf83f4420d256c"
+      },
+      {
+        "bytes": 2901,
+        "path": "evaluation/substrate_capability/llm_mode_neuron_task_graph_inference_census_v1_lock_20261002.json",
+        "sha256": "c4eb5c8df160a1834384606f1f5105b6b2b9b89074da1865b4ce658c66a422a0"
+      },
+      {
+        "bytes": 130187,
+        "path": "evaluation/reports/llm_transport_task_graph_exact_census_v1_1_20261002.json",
+        "sha256": "b70d35060c2c177391b7022b781e832a53d016cf37393b1ffa0e7d4307164008"
+      },
+      {
+        "bytes": 2710,
+        "path": "evaluation/substrate_capability/llm_transport_task_graph_exact_census_v1_1_lock_20261002.json",
+        "sha256": "98ff5ef97278189f6efe46c93ebe0e8c11c2debea8858c7106043c3d8833e73e"
+      },
+      {
+        "bytes": 125268,
+        "path": "evaluation/reports/llm_transport_role_separator_v1_2_20261002.json",
+        "sha256": "7c72adc235f3d32f432cf767af4d7a827d848afab8528f9eb1c6b72a3b64251f"
+      },
+      {
+        "bytes": 4989,
+        "path": "evaluation/reports/llm_transport_role_separator_v1_2_analysis_20261002.json",
+        "sha256": "966dad4db480271b34d131111688550f2848a94348305ea62acd8c9bac4bdb23"
+      },
+      {
+        "bytes": 4002,
+        "path": "evaluation/substrate_capability/llm_transport_role_separator_v1_2_lock_20261002.json",
+        "sha256": "089106e4ef8d51d42514227da884c35f1e3642c24e4580d44cf6f516c5f3961e"
+      }
+    ],
+    "search_repeats": 3,
+    "workers": 3
+  }
+}

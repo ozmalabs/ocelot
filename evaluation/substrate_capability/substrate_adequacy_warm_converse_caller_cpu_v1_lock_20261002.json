@@ -1,0 +1,700 @@
+{
+  "sample_interval_ms": 5,
+  "schedule": [
+    [
+      "default",
+      1
+    ],
+    [
+      "one_thread",
+      2
+    ],
+    [
+      "one_thread",
+      3
+    ],
+    [
+      "default",
+      4
+    ],
+    [
+      "default",
+      5
+    ],
+    [
+      "one_thread",
+      6
+    ]
+  ],
+  "schema": "WarmConverseCallerCpuV1Lock",
+  "sources": {
+    "analyzer": "a85176770753773960ffff4893046d59ad46085acd8b6bb979bc480daa85b58c",
+    "base_lock_file": "e489d0b38641e9ae06e481954fd09b3091e426dac98aba74c79078164063833e",
+    "base_runner": "1749a20264f392386edc7b2d389815a729813d5b9b956030054f6ce6829b108a",
+    "base_runtime_lock": {
+      "active": {
+        "domain_tree": "dd5870b35b92c94818af18b0d8b3ef55aa3eed0bce927417bbde8a4a55bb5f4e",
+        "files": {
+          "domains/adequacy_probe_selection.py": "b8d75708d4e193f16bd071861af08658a907d020281d3c9106a9582c82e8acd9",
+          "domains/adequacy_provider_auth.py": "a5388de538b1af3303babcd0c382a46b3d2819796819be7741b603ca679e4768",
+          "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+          "domains/code_write_growth.py": "d4a2460f9e41bb8370dc9f352cec2d46ff596d1872e329d7e05d0f33af219079",
+          "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+          "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+          "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+          "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+          "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+          "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+          "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+          "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+          "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c"
+        },
+        "native": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+        "rust_fingerprint": "7244b6779deed6b3155cabe14118abb01607de1c756c3ea8397e0179edd720e7",
+        "rust_tree": "5430e6fadce25f3812e498030347e1607777a8cc7a1a876f9a3957818aa92805",
+        "substrate_tree": "0fd9dee0bc92c33d541854fce3122826fa1fb21769ab3422aad001b42486bf96"
+      },
+      "design": {
+        "conditions": [
+          "truthful_adoption",
+          "missing_evidence"
+        ],
+        "fixtures": {
+          "clamp": {
+            "domain": [
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": -6
+              },
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": -4
+              },
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": -3
+              },
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": 2
+              },
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": 8
+              },
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": 10
+              },
+              {
+                "lower": 1,
+                "upper": 5,
+                "value": -1
+              },
+              {
+                "lower": 1,
+                "upper": 5,
+                "value": 1
+              },
+              {
+                "lower": 1,
+                "upper": 5,
+                "value": 2
+              },
+              {
+                "lower": 1,
+                "upper": 5,
+                "value": 3
+              },
+              {
+                "lower": 1,
+                "upper": 5,
+                "value": 5
+              },
+              {
+                "lower": 1,
+                "upper": 5,
+                "value": 7
+              },
+              {
+                "lower": -9,
+                "upper": -2,
+                "value": -11
+              },
+              {
+                "lower": -9,
+                "upper": -2,
+                "value": -9
+              },
+              {
+                "lower": -9,
+                "upper": -2,
+                "value": -8
+              },
+              {
+                "lower": -9,
+                "upper": -2,
+                "value": -6
+              },
+              {
+                "lower": -9,
+                "upper": -2,
+                "value": -2
+              },
+              {
+                "lower": -9,
+                "upper": -2,
+                "value": 0
+              }
+            ],
+            "heldout": [
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": -20
+              },
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": -4
+              },
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": -3
+              },
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": 0
+              },
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": 7
+              },
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": 8
+              },
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": 9
+              },
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": 20
+              },
+              {
+                "lower": -9,
+                "upper": -2,
+                "value": -9
+              },
+              {
+                "lower": -9,
+                "upper": -2,
+                "value": -10
+              },
+              {
+                "lower": -9,
+                "upper": -2,
+                "value": -5
+              },
+              {
+                "lower": -9,
+                "upper": -2,
+                "value": -2
+              },
+              {
+                "lower": -9,
+                "upper": -2,
+                "value": 0
+              },
+              {
+                "lower": -9,
+                "upper": -2,
+                "value": 12
+              },
+              {
+                "lower": 1,
+                "upper": 5,
+                "value": 2
+              },
+              {
+                "lower": 1,
+                "upper": 5,
+                "value": 1
+              },
+              {
+                "lower": 1,
+                "upper": 5,
+                "value": 3
+              },
+              {
+                "lower": 1,
+                "upper": 5,
+                "value": 5
+              },
+              {
+                "lower": 1,
+                "upper": 5,
+                "value": 7
+              },
+              {
+                "lower": 1,
+                "upper": 5,
+                "value": -1
+              }
+            ],
+            "known": [
+              {
+                "expected": -4,
+                "inputs": {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": -10
+                }
+              },
+              {
+                "expected": 0,
+                "inputs": {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": 0
+                }
+              },
+              {
+                "expected": 8,
+                "inputs": {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": 12
+                }
+              }
+            ],
+            "name": "clamp_value",
+            "source": "def clamp_value(value, lower, upper):\n    return lower if value < lower else (upper if value > upper else value)\n"
+          },
+          "negative": {
+            "domain": [
+              {
+                "x": 0
+              },
+              {
+                "x": 1
+              },
+              {
+                "x": 2
+              },
+              {
+                "x": 3
+              },
+              {
+                "x": 4
+              },
+              {
+                "x": 5
+              }
+            ],
+            "known": [
+              {
+                "expected": 1,
+                "inputs": {
+                  "x": 1
+                }
+              }
+            ],
+            "name": "identity",
+            "source": "def identity(x):\n    return x\n",
+            "task": "square"
+          },
+          "parity": {
+            "domain": [
+              {
+                "value": -5
+              },
+              {
+                "value": -4
+              },
+              {
+                "value": -3
+              },
+              {
+                "value": -2
+              },
+              {
+                "value": -1
+              },
+              {
+                "value": 0
+              },
+              {
+                "value": 1
+              },
+              {
+                "value": 2
+              },
+              {
+                "value": 3
+              },
+              {
+                "value": 4
+              },
+              {
+                "value": 5
+              }
+            ],
+            "heldout": [
+              {
+                "value": -20
+              },
+              {
+                "value": -19
+              },
+              {
+                "value": -18
+              },
+              {
+                "value": -17
+              },
+              {
+                "value": -16
+              },
+              {
+                "value": -15
+              },
+              {
+                "value": -14
+              },
+              {
+                "value": -13
+              },
+              {
+                "value": -12
+              },
+              {
+                "value": -11
+              },
+              {
+                "value": -10
+              },
+              {
+                "value": -9
+              },
+              {
+                "value": -8
+              },
+              {
+                "value": -7
+              },
+              {
+                "value": -6
+              },
+              {
+                "value": -5
+              },
+              {
+                "value": -4
+              },
+              {
+                "value": -3
+              },
+              {
+                "value": -2
+              },
+              {
+                "value": -1
+              },
+              {
+                "value": 0
+              },
+              {
+                "value": 1
+              },
+              {
+                "value": 2
+              },
+              {
+                "value": 3
+              },
+              {
+                "value": 4
+              },
+              {
+                "value": 5
+              },
+              {
+                "value": 6
+              },
+              {
+                "value": 7
+              },
+              {
+                "value": 8
+              },
+              {
+                "value": 9
+              },
+              {
+                "value": 10
+              },
+              {
+                "value": 11
+              },
+              {
+                "value": 12
+              },
+              {
+                "value": 13
+              },
+              {
+                "value": 14
+              },
+              {
+                "value": 15
+              },
+              {
+                "value": 16
+              },
+              {
+                "value": 17
+              },
+              {
+                "value": 18
+              },
+              {
+                "value": 19
+              },
+              {
+                "value": 20
+              }
+            ],
+            "known": [
+              {
+                "expected": true,
+                "inputs": {
+                  "value": 0
+                }
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": 1
+                }
+              }
+            ],
+            "name": "parity",
+            "source": "def parity(value):\n    return value % 2 == 0\n"
+          },
+          "square": {
+            "domain": [
+              {
+                "x": -5
+              },
+              {
+                "x": -4
+              },
+              {
+                "x": -3
+              },
+              {
+                "x": -2
+              },
+              {
+                "x": -1
+              },
+              {
+                "x": 0
+              },
+              {
+                "x": 1
+              },
+              {
+                "x": 2
+              },
+              {
+                "x": 3
+              },
+              {
+                "x": 4
+              },
+              {
+                "x": 5
+              }
+            ],
+            "heldout": [
+              {
+                "x": -20
+              },
+              {
+                "x": -19
+              },
+              {
+                "x": -18
+              },
+              {
+                "x": -17
+              },
+              {
+                "x": -16
+              },
+              {
+                "x": -15
+              },
+              {
+                "x": -14
+              },
+              {
+                "x": -13
+              },
+              {
+                "x": -12
+              },
+              {
+                "x": -11
+              },
+              {
+                "x": -10
+              },
+              {
+                "x": -9
+              },
+              {
+                "x": -8
+              },
+              {
+                "x": -7
+              },
+              {
+                "x": -6
+              },
+              {
+                "x": -5
+              },
+              {
+                "x": -4
+              },
+              {
+                "x": -3
+              },
+              {
+                "x": -2
+              },
+              {
+                "x": -1
+              },
+              {
+                "x": 0
+              },
+              {
+                "x": 1
+              },
+              {
+                "x": 2
+              },
+              {
+                "x": 3
+              },
+              {
+                "x": 4
+              },
+              {
+                "x": 5
+              },
+              {
+                "x": 6
+              },
+              {
+                "x": 7
+              },
+              {
+                "x": 8
+              },
+              {
+                "x": 9
+              },
+              {
+                "x": 10
+              },
+              {
+                "x": 11
+              },
+              {
+                "x": 12
+              },
+              {
+                "x": 13
+              },
+              {
+                "x": 14
+              },
+              {
+                "x": 15
+              },
+              {
+                "x": 16
+              },
+              {
+                "x": 17
+              },
+              {
+                "x": 18
+              },
+              {
+                "x": 19
+              },
+              {
+                "x": 20
+              }
+            ],
+            "known": [
+              {
+                "expected": 0,
+                "inputs": {
+                  "x": 0
+                }
+              }
+            ],
+            "name": "square",
+            "source": "def square(x):\n    return x * x\n"
+          }
+        },
+        "provider": "audit:warmed-route-provider",
+        "repeats": 3,
+        "requests": {
+          "clamp": "Write a function that clamps a value between lower and upper bounds.",
+          "parity": "Write a function that returns the parity of an integer.",
+          "square": "Write a function that squares an integer."
+        },
+        "tasks": [
+          "parity",
+          "clamp",
+          "square"
+        ]
+      },
+      "files": {
+        "docs/research/engine_substrate/SUBSTRATE_ADEQUACY_WARM_CONVERSE_COST_V1_PREREG_20261002.md": "8227de12b80f593ad9540f7597ed7f20ac15e771150d92dccf5266a3ebe2ad68",
+        "evaluation/substrate_capability/analyze_substrate_adequacy_warm_converse_cost_v1.py": "ca3f810b49e8442240e5db40049e415370b994d7ea6c43b1f154d4740ba3a5c5",
+        "evaluation/substrate_capability/independent_codewrite_oracles.py": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+        "evaluation/substrate_capability/substrate_adequacy_warm_converse_cost_v1.py": "1749a20264f392386edc7b2d389815a729813d5b9b956030054f6ce6829b108a",
+        "evaluation/substrate_capability/substrate_independent_adequacy_codewrite_transfer_v1.py": "4df60f2b25381a778d4e1b6aa20889a8645d7993d0e8f57054d38179e6db57a5"
+      },
+      "git_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+      "schema": "SubstrateAdequacyWarmConverseCostV1Lock"
+    },
+    "pool_lock": "a14b88aa62a6e2bdb30bce98e063403d21d8d37456fc32ee4c0fa51d2d5bd151",
+    "pool_runner": "93f7d9e3fc7b100fd02395201e7001caf26faa0c5bcdfb08ff2c791cae50363a",
+    "protocol": "e80153763c0642dae395fa81e46fe41e955b16b2c40653b14df9945c254dbce7",
+    "runner": "16458a7a476facd96cee063be5ecc5a35a653d514d6d77f00a04993ca5d10a8b"
+  }
+}

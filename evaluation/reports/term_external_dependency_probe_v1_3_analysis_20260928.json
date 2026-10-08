@@ -1,0 +1,58 @@
+{
+  "analysis_id": "term_external_dependency_probe_v1_3_analysis_20260928",
+  "checks": {
+    "a_then_b_schedule_matches_frozen_outcome": true,
+    "b_then_a_schedule_matches_frozen_outcome": true,
+    "child_commands_and_stream_hashes_verify": true,
+    "current_inputs_match_lock_and_raw": true,
+    "no_trace_drops": true,
+    "rule_order_selects_winning_marker": true,
+    "three_unique_fresh_workers": true,
+    "two_orders_per_worker": true,
+    "within_schedule_results_replicate": true,
+    "worker_inputs_match_lock": true
+  },
+  "claim_boundary": "The result covers only this two-rule shared callback fixture and replay schedule; it does not establish general scheduler ordering or external-effect semantics.",
+  "lock_sha256": "c20864b29e6422d77da9fd2a6d6aef13da3f31a9076342d188c35c4ad3618dae",
+  "raw_sha256": "3e8be1693aae9a53faeda6f4162fdba12087661e156eeee3ab10808dfbb7bc5e",
+  "summary": {
+    "first_settle_call_counts": [
+      3,
+      3,
+      3,
+      3,
+      3,
+      3
+    ],
+    "rule_a_first_winner": [
+      {
+        "rule_a": 1
+      },
+      {
+        "rule_a": 1
+      },
+      {
+        "rule_a": 1
+      }
+    ],
+    "rule_b_first_winner": [
+      {
+        "rule_b": 1
+      },
+      {
+        "rule_b": 1
+      },
+      {
+        "rule_b": 1
+      }
+    ],
+    "second_settle_call_counts_after_external_reset": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  }
+}

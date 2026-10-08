@@ -1,0 +1,1714 @@
+{
+  "aggregate": {
+    "ambiguous_site_abstentions": 4,
+    "analysis_check_count": 14,
+    "no_overlap_abstentions": 4,
+    "summary": {
+      "actor_recipient_edge": {
+        "heldout_correct": 0,
+        "median_composition_ms": 26.0170955,
+        "median_heldout_ms": 4.2693645,
+        "median_training_ms": 4.3968705,
+        "proposals": 4
+      },
+      "actor_recipient_identity": {
+        "heldout_correct": 8,
+        "median_composition_ms": 20.2450105,
+        "median_heldout_ms": 4.484776,
+        "median_training_ms": 4.5031465,
+        "proposals": 4
+      },
+      "conversation": {
+        "heldout_correct": 8,
+        "median_composition_ms": 30.9080445,
+        "median_heldout_ms": 49.246316,
+        "median_training_ms": 38.173444,
+        "proposals": 4
+      },
+      "recurrence": {
+        "heldout_correct": 8,
+        "median_composition_ms": 37.6822955,
+        "median_heldout_ms": 61.2540095,
+        "median_training_ms": 12.8997045,
+        "proposals": 4
+      }
+    },
+    "workers": 4
+  },
+  "all_checks_pass": true,
+  "checks": {
+    "ambiguous_site_abstains": true,
+    "attribute_identity_guard_repairs_false_suppression": true,
+    "both_families_present": true,
+    "current_source_lock": true,
+    "exact_workers_and_stage_linkage": true,
+    "harness_has_no_edge_scanner_or_candidate_generator": true,
+    "heldout_transfer_and_source_controls": true,
+    "no_overlap_abstains": true,
+    "phase_timings_complete": true,
+    "primary_target_preserved": true,
+    "relation_only_actor_guard_false_suppression": true,
+    "source_stable_everywhere": true,
+    "training_utility_and_source_controls": true,
+    "unique_expected_proposal_and_semantic_change": true
+  },
+  "rows": [
+    {
+      "family": "recurrence",
+      "heldout_outcomes": [
+        {
+          "correct": true,
+          "fixedpoint_progress": 0,
+          "keys": [
+            "bidir-0-heldout_0-0-0",
+            "bidir-0-heldout_0-0-1"
+          ],
+          "output_counts": [
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "stage0_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ],
+          "stage1_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "correct": true,
+          "fixedpoint_progress": 0,
+          "keys": [
+            "bidir-0-heldout_0-1-0",
+            "bidir-0-heldout_0-1-1"
+          ],
+          "output_counts": [
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "stage0_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ],
+          "stage1_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      ],
+      "operator": "add_edge_identity_guard",
+      "proposal_digest": "sha256:b63b0f29aa232a0c5d92da634ef729dd6a28091b2967ec2644d9426997405a9c",
+      "site": "out candidate has_mint_offer any endpoint",
+      "source_rule_digest": "sha256:04479af4f59ef2139cb2d69c4af6c7eb363fc081b494f6d788c1a58bf5a16af1",
+      "target": "mrl_offer_due_once",
+      "timing_ns": {
+        "composition": 36946756,
+        "heldout_scoring": 60701481,
+        "source_heldout": 10485233,
+        "source_training": 13154381,
+        "training_scoring": 14244379
+      },
+      "training_outcomes": [
+        {
+          "correct": true,
+          "fixedpoint_progress": 0,
+          "keys": [
+            "bidir-0-train_0-0-0",
+            "bidir-0-train_0-0-1"
+          ],
+          "output_counts": [
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "stage0_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ],
+          "stage1_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "correct": true,
+          "fixedpoint_progress": 0,
+          "keys": [
+            "bidir-0-train_0-1-0",
+            "bidir-0-train_0-1-1"
+          ],
+          "output_counts": [
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "stage0_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ],
+          "stage1_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      ],
+      "worker": 0
+    },
+    {
+      "family": "conversation",
+      "heldout_outcomes": [
+        {
+          "correct": true,
+          "expected_counts": [
+            1,
+            1,
+            1
+          ],
+          "input_ids": [
+            "#482",
+            "#492",
+            "#499"
+          ],
+          "output_counts": [
+            1,
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "sequence_runtime_ns": 22192804
+        },
+        {
+          "correct": true,
+          "expected_counts": [
+            1,
+            1,
+            1
+          ],
+          "input_ids": [
+            "#482",
+            "#492",
+            "#499"
+          ],
+          "output_counts": [
+            1,
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "sequence_runtime_ns": 548784
+        }
+      ],
+      "operator": "add_edge_identity_guard",
+      "proposal_digest": "sha256:2142f383a9a699868b40da8a7afe5d0c2f526ec9d7fb63aaf784031ba3b55555",
+      "site": "in m responds_to any endpoint",
+      "source_rule_digest": "sha256:b0ce645cf9092f626aa86ca2417cf5f6c4a6bcd4645c03a28b2b0c5c116ca758",
+      "target": "reply_to_adjacency_pair",
+      "timing_ns": {
+        "composition": 31122066,
+        "heldout_scoring": 49087190,
+        "source_heldout": 17787363,
+        "source_training": 17824624,
+        "training_scoring": 37533900
+      },
+      "training_outcomes": [
+        {
+          "correct": true,
+          "expected_counts": [
+            1,
+            1
+          ],
+          "input_ids": [
+            "#482",
+            "#491"
+          ],
+          "output_counts": [
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "sequence_runtime_ns": 18388157
+        },
+        {
+          "correct": true,
+          "expected_counts": [
+            1,
+            1
+          ],
+          "input_ids": [
+            "#482",
+            "#491"
+          ],
+          "output_counts": [
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "sequence_runtime_ns": 381762
+        }
+      ],
+      "worker": 0
+    },
+    {
+      "family": "actor_recipient_edge",
+      "heldout_outcomes": [
+        {
+          "correct": false,
+          "expected_counts": [
+            1,
+            1
+          ],
+          "fixedpoint_progress": 0,
+          "input_sweeps": [
+            1,
+            0
+          ],
+          "output_counts": [
+            1,
+            0
+          ],
+          "rule_store_stable": true,
+          "verbs": [
+            "sing",
+            "dance"
+          ]
+        },
+        {
+          "correct": false,
+          "expected_counts": [
+            1,
+            1
+          ],
+          "fixedpoint_progress": 0,
+          "input_sweeps": [
+            1,
+            0
+          ],
+          "output_counts": [
+            1,
+            0
+          ],
+          "rule_store_stable": true,
+          "verbs": [
+            "sing",
+            "dance"
+          ]
+        }
+      ],
+      "operator": "add_edge_identity_guard",
+      "proposal_digest": "sha256:6b8a662f087d34240137a8fb327325757b992f529a3b82cfddb5637cfc227e48",
+      "site": "out agent has_actor_goal any endpoint",
+      "source_rule_digest": "sha256:fb1929256756cc2c0a70e90c386f9a271aa5dff082e3cd555baa391b67211816",
+      "target": "mint_actor_goal_recipient",
+      "timing_ns": {
+        "composition": 25659798,
+        "heldout_scoring": 4285090,
+        "source_heldout": 2980720,
+        "source_training": 3022141,
+        "training_scoring": 4269660
+      },
+      "training_outcomes": [
+        {
+          "correct": true,
+          "expected_counts": [
+            1
+          ],
+          "fixedpoint_progress": 0,
+          "input_sweeps": [
+            1
+          ],
+          "output_counts": [
+            1
+          ],
+          "rule_store_stable": true,
+          "verbs": [
+            "sing"
+          ]
+        },
+        {
+          "correct": true,
+          "expected_counts": [
+            1
+          ],
+          "fixedpoint_progress": 0,
+          "input_sweeps": [
+            1
+          ],
+          "output_counts": [
+            1
+          ],
+          "rule_store_stable": true,
+          "verbs": [
+            "sing"
+          ]
+        }
+      ],
+      "worker": 0
+    },
+    {
+      "family": "actor_recipient_identity",
+      "heldout_outcomes": [
+        {
+          "correct": true,
+          "expected_counts": [
+            1,
+            1
+          ],
+          "fixedpoint_progress": 0,
+          "input_sweeps": [
+            1,
+            1
+          ],
+          "output_counts": [
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "verbs": [
+            "sing",
+            "dance"
+          ]
+        },
+        {
+          "correct": true,
+          "expected_counts": [
+            1,
+            1
+          ],
+          "fixedpoint_progress": 0,
+          "input_sweeps": [
+            1,
+            1
+          ],
+          "output_counts": [
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "verbs": [
+            "sing",
+            "dance"
+          ]
+        }
+      ],
+      "operator": "add_edge_identity_guard",
+      "proposal_digest": "sha256:df99935a3168656d4d9d365d2bf76fdb5a8a86c510f7158e410bc0523ff08678",
+      "site": "out agent has_actor_goal attributes actor+verb",
+      "source_rule_digest": "sha256:fb1929256756cc2c0a70e90c386f9a271aa5dff082e3cd555baa391b67211816",
+      "target": "mint_actor_goal_recipient",
+      "timing_ns": {
+        "composition": 15688419,
+        "heldout_scoring": 5067105,
+        "source_heldout": 5321207,
+        "source_training": 3852146,
+        "training_scoring": 4346480
+      },
+      "training_outcomes": [
+        {
+          "correct": true,
+          "expected_counts": [
+            1
+          ],
+          "fixedpoint_progress": 0,
+          "input_sweeps": [
+            1
+          ],
+          "output_counts": [
+            1
+          ],
+          "rule_store_stable": true,
+          "verbs": [
+            "sing"
+          ]
+        },
+        {
+          "correct": true,
+          "expected_counts": [
+            1
+          ],
+          "fixedpoint_progress": 0,
+          "input_sweeps": [
+            1
+          ],
+          "output_counts": [
+            1
+          ],
+          "rule_store_stable": true,
+          "verbs": [
+            "sing"
+          ]
+        }
+      ],
+      "worker": 0
+    },
+    {
+      "family": "recurrence",
+      "heldout_outcomes": [
+        {
+          "correct": true,
+          "fixedpoint_progress": 0,
+          "keys": [
+            "bidir-1-heldout_1-0-0",
+            "bidir-1-heldout_1-0-1"
+          ],
+          "output_counts": [
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "stage0_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ],
+          "stage1_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "correct": true,
+          "fixedpoint_progress": 0,
+          "keys": [
+            "bidir-1-heldout_1-1-0",
+            "bidir-1-heldout_1-1-1"
+          ],
+          "output_counts": [
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "stage0_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ],
+          "stage1_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      ],
+      "operator": "add_edge_identity_guard",
+      "proposal_digest": "sha256:b63b0f29aa232a0c5d92da634ef729dd6a28091b2967ec2644d9426997405a9c",
+      "site": "out candidate has_mint_offer any endpoint",
+      "source_rule_digest": "sha256:04479af4f59ef2139cb2d69c4af6c7eb363fc081b494f6d788c1a58bf5a16af1",
+      "target": "mrl_offer_due_once",
+      "timing_ns": {
+        "composition": 38835419,
+        "heldout_scoring": 63101547,
+        "source_heldout": 10837755,
+        "source_training": 11059256,
+        "training_scoring": 12058564
+      },
+      "training_outcomes": [
+        {
+          "correct": true,
+          "fixedpoint_progress": 0,
+          "keys": [
+            "bidir-1-train_1-0-0",
+            "bidir-1-train_1-0-1"
+          ],
+          "output_counts": [
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "stage0_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ],
+          "stage1_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "correct": true,
+          "fixedpoint_progress": 0,
+          "keys": [
+            "bidir-1-train_1-1-0",
+            "bidir-1-train_1-1-1"
+          ],
+          "output_counts": [
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "stage0_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ],
+          "stage1_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      ],
+      "worker": 1
+    },
+    {
+      "family": "conversation",
+      "heldout_outcomes": [
+        {
+          "correct": true,
+          "expected_counts": [
+            1,
+            1,
+            1
+          ],
+          "input_ids": [
+            "#482",
+            "#492",
+            "#499"
+          ],
+          "output_counts": [
+            1,
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "sequence_runtime_ns": 23668064
+        },
+        {
+          "correct": true,
+          "expected_counts": [
+            1,
+            1,
+            1
+          ],
+          "input_ids": [
+            "#482",
+            "#492",
+            "#499"
+          ],
+          "output_counts": [
+            1,
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "sequence_runtime_ns": 567353
+        }
+      ],
+      "operator": "add_edge_identity_guard",
+      "proposal_digest": "sha256:2142f383a9a699868b40da8a7afe5d0c2f526ec9d7fb63aaf784031ba3b55555",
+      "site": "in m responds_to any endpoint",
+      "source_rule_digest": "sha256:b0ce645cf9092f626aa86ca2417cf5f6c4a6bcd4645c03a28b2b0c5c116ca758",
+      "target": "reply_to_adjacency_pair",
+      "timing_ns": {
+        "composition": 30694023,
+        "heldout_scoring": 49002299,
+        "source_heldout": 15856810,
+        "source_training": 20987525,
+        "training_scoring": 42152272
+      },
+      "training_outcomes": [
+        {
+          "correct": true,
+          "expected_counts": [
+            1,
+            1
+          ],
+          "input_ids": [
+            "#482",
+            "#491"
+          ],
+          "output_counts": [
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "sequence_runtime_ns": 20776374
+        },
+        {
+          "correct": true,
+          "expected_counts": [
+            1,
+            1
+          ],
+          "input_ids": [
+            "#482",
+            "#491"
+          ],
+          "output_counts": [
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "sequence_runtime_ns": 538474
+        }
+      ],
+      "worker": 1
+    },
+    {
+      "family": "actor_recipient_edge",
+      "heldout_outcomes": [
+        {
+          "correct": false,
+          "expected_counts": [
+            1,
+            1
+          ],
+          "fixedpoint_progress": 0,
+          "input_sweeps": [
+            1,
+            0
+          ],
+          "output_counts": [
+            1,
+            0
+          ],
+          "rule_store_stable": true,
+          "verbs": [
+            "sing",
+            "dance"
+          ]
+        },
+        {
+          "correct": false,
+          "expected_counts": [
+            1,
+            1
+          ],
+          "fixedpoint_progress": 0,
+          "input_sweeps": [
+            1,
+            0
+          ],
+          "output_counts": [
+            1,
+            0
+          ],
+          "rule_store_stable": true,
+          "verbs": [
+            "sing",
+            "dance"
+          ]
+        }
+      ],
+      "operator": "add_edge_identity_guard",
+      "proposal_digest": "sha256:6b8a662f087d34240137a8fb327325757b992f529a3b82cfddb5637cfc227e48",
+      "site": "out agent has_actor_goal any endpoint",
+      "source_rule_digest": "sha256:fb1929256756cc2c0a70e90c386f9a271aa5dff082e3cd555baa391b67211816",
+      "target": "mint_actor_goal_recipient",
+      "timing_ns": {
+        "composition": 26430613,
+        "heldout_scoring": 3937127,
+        "source_heldout": 2956521,
+        "source_training": 8267457,
+        "training_scoring": 4480901
+      },
+      "training_outcomes": [
+        {
+          "correct": true,
+          "expected_counts": [
+            1
+          ],
+          "fixedpoint_progress": 0,
+          "input_sweeps": [
+            1
+          ],
+          "output_counts": [
+            1
+          ],
+          "rule_store_stable": true,
+          "verbs": [
+            "sing"
+          ]
+        },
+        {
+          "correct": true,
+          "expected_counts": [
+            1
+          ],
+          "fixedpoint_progress": 0,
+          "input_sweeps": [
+            1
+          ],
+          "output_counts": [
+            1
+          ],
+          "rule_store_stable": true,
+          "verbs": [
+            "sing"
+          ]
+        }
+      ],
+      "worker": 1
+    },
+    {
+      "family": "actor_recipient_identity",
+      "heldout_outcomes": [
+        {
+          "correct": true,
+          "expected_counts": [
+            1,
+            1
+          ],
+          "fixedpoint_progress": 0,
+          "input_sweeps": [
+            1,
+            1
+          ],
+          "output_counts": [
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "verbs": [
+            "sing",
+            "dance"
+          ]
+        },
+        {
+          "correct": true,
+          "expected_counts": [
+            1,
+            1
+          ],
+          "fixedpoint_progress": 0,
+          "input_sweeps": [
+            1,
+            1
+          ],
+          "output_counts": [
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "verbs": [
+            "sing",
+            "dance"
+          ]
+        }
+      ],
+      "operator": "add_edge_identity_guard",
+      "proposal_digest": "sha256:df99935a3168656d4d9d365d2bf76fdb5a8a86c510f7158e410bc0523ff08678",
+      "site": "out agent has_actor_goal attributes actor+verb",
+      "source_rule_digest": "sha256:fb1929256756cc2c0a70e90c386f9a271aa5dff082e3cd555baa391b67211816",
+      "target": "mint_actor_goal_recipient",
+      "timing_ns": {
+        "composition": 24327959,
+        "heldout_scoring": 4452531,
+        "source_heldout": 6696536,
+        "source_training": 4125519,
+        "training_scoring": 19127662
+      },
+      "training_outcomes": [
+        {
+          "correct": true,
+          "expected_counts": [
+            1
+          ],
+          "fixedpoint_progress": 0,
+          "input_sweeps": [
+            1
+          ],
+          "output_counts": [
+            1
+          ],
+          "rule_store_stable": true,
+          "verbs": [
+            "sing"
+          ]
+        },
+        {
+          "correct": true,
+          "expected_counts": [
+            1
+          ],
+          "fixedpoint_progress": 0,
+          "input_sweeps": [
+            1
+          ],
+          "output_counts": [
+            1
+          ],
+          "rule_store_stable": true,
+          "verbs": [
+            "sing"
+          ]
+        }
+      ],
+      "worker": 1
+    },
+    {
+      "family": "recurrence",
+      "heldout_outcomes": [
+        {
+          "correct": true,
+          "fixedpoint_progress": 0,
+          "keys": [
+            "bidir-2-heldout_2-0-0",
+            "bidir-2-heldout_2-0-1"
+          ],
+          "output_counts": [
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "stage0_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ],
+          "stage1_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "correct": true,
+          "fixedpoint_progress": 0,
+          "keys": [
+            "bidir-2-heldout_2-1-0",
+            "bidir-2-heldout_2-1-1"
+          ],
+          "output_counts": [
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "stage0_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ],
+          "stage1_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      ],
+      "operator": "add_edge_identity_guard",
+      "proposal_digest": "sha256:b63b0f29aa232a0c5d92da634ef729dd6a28091b2967ec2644d9426997405a9c",
+      "site": "out candidate has_mint_offer any endpoint",
+      "source_rule_digest": "sha256:04479af4f59ef2139cb2d69c4af6c7eb363fc081b494f6d788c1a58bf5a16af1",
+      "target": "mrl_offer_due_once",
+      "timing_ns": {
+        "composition": 37680110,
+        "heldout_scoring": 58316723,
+        "source_heldout": 9199724,
+        "source_training": 10613984,
+        "training_scoring": 13740845
+      },
+      "training_outcomes": [
+        {
+          "correct": true,
+          "fixedpoint_progress": 0,
+          "keys": [
+            "bidir-2-train_2-0-0",
+            "bidir-2-train_2-0-1"
+          ],
+          "output_counts": [
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "stage0_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ],
+          "stage1_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "correct": true,
+          "fixedpoint_progress": 0,
+          "keys": [
+            "bidir-2-train_2-1-0",
+            "bidir-2-train_2-1-1"
+          ],
+          "output_counts": [
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "stage0_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ],
+          "stage1_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      ],
+      "worker": 2
+    },
+    {
+      "family": "conversation",
+      "heldout_outcomes": [
+        {
+          "correct": true,
+          "expected_counts": [
+            1,
+            1,
+            1
+          ],
+          "input_ids": [
+            "#482",
+            "#492",
+            "#499"
+          ],
+          "output_counts": [
+            1,
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "sequence_runtime_ns": 46010899
+        },
+        {
+          "correct": true,
+          "expected_counts": [
+            1,
+            1,
+            1
+          ],
+          "input_ids": [
+            "#482",
+            "#492",
+            "#499"
+          ],
+          "output_counts": [
+            1,
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "sequence_runtime_ns": 642064
+        }
+      ],
+      "operator": "add_edge_identity_guard",
+      "proposal_digest": "sha256:2142f383a9a699868b40da8a7afe5d0c2f526ec9d7fb63aaf784031ba3b55555",
+      "site": "in m responds_to any endpoint",
+      "source_rule_digest": "sha256:b0ce645cf9092f626aa86ca2417cf5f6c4a6bcd4645c03a28b2b0c5c116ca758",
+      "target": "reply_to_adjacency_pair",
+      "timing_ns": {
+        "composition": 29949518,
+        "heldout_scoring": 110115533,
+        "source_heldout": 18845301,
+        "source_training": 18411038,
+        "training_scoring": 37733961
+      },
+      "training_outcomes": [
+        {
+          "correct": true,
+          "expected_counts": [
+            1,
+            1
+          ],
+          "input_ids": [
+            "#482",
+            "#491"
+          ],
+          "output_counts": [
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "sequence_runtime_ns": 18552599
+        },
+        {
+          "correct": true,
+          "expected_counts": [
+            1,
+            1
+          ],
+          "input_ids": [
+            "#482",
+            "#491"
+          ],
+          "output_counts": [
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "sequence_runtime_ns": 402773
+        }
+      ],
+      "worker": 2
+    },
+    {
+      "family": "actor_recipient_edge",
+      "heldout_outcomes": [
+        {
+          "correct": false,
+          "expected_counts": [
+            1,
+            1
+          ],
+          "fixedpoint_progress": 0,
+          "input_sweeps": [
+            1,
+            0
+          ],
+          "output_counts": [
+            1,
+            0
+          ],
+          "rule_store_stable": true,
+          "verbs": [
+            "sing",
+            "dance"
+          ]
+        },
+        {
+          "correct": false,
+          "expected_counts": [
+            1,
+            1
+          ],
+          "fixedpoint_progress": 0,
+          "input_sweeps": [
+            1,
+            0
+          ],
+          "output_counts": [
+            1,
+            0
+          ],
+          "rule_store_stable": true,
+          "verbs": [
+            "sing",
+            "dance"
+          ]
+        }
+      ],
+      "operator": "add_edge_identity_guard",
+      "proposal_digest": "sha256:6b8a662f087d34240137a8fb327325757b992f529a3b82cfddb5637cfc227e48",
+      "site": "out agent has_actor_goal any endpoint",
+      "source_rule_digest": "sha256:fb1929256756cc2c0a70e90c386f9a271aa5dff082e3cd555baa391b67211816",
+      "target": "mint_actor_goal_recipient",
+      "timing_ns": {
+        "composition": 24360179,
+        "heldout_scoring": 4659682,
+        "source_heldout": 3127811,
+        "source_training": 3102442,
+        "training_scoring": 4312840
+      },
+      "training_outcomes": [
+        {
+          "correct": true,
+          "expected_counts": [
+            1
+          ],
+          "fixedpoint_progress": 0,
+          "input_sweeps": [
+            1
+          ],
+          "output_counts": [
+            1
+          ],
+          "rule_store_stable": true,
+          "verbs": [
+            "sing"
+          ]
+        },
+        {
+          "correct": true,
+          "expected_counts": [
+            1
+          ],
+          "fixedpoint_progress": 0,
+          "input_sweeps": [
+            1
+          ],
+          "output_counts": [
+            1
+          ],
+          "rule_store_stable": true,
+          "verbs": [
+            "sing"
+          ]
+        }
+      ],
+      "worker": 2
+    },
+    {
+      "family": "actor_recipient_identity",
+      "heldout_outcomes": [
+        {
+          "correct": true,
+          "expected_counts": [
+            1,
+            1
+          ],
+          "fixedpoint_progress": 0,
+          "input_sweeps": [
+            1,
+            1
+          ],
+          "output_counts": [
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "verbs": [
+            "sing",
+            "dance"
+          ]
+        },
+        {
+          "correct": true,
+          "expected_counts": [
+            1,
+            1
+          ],
+          "fixedpoint_progress": 0,
+          "input_sweeps": [
+            1,
+            1
+          ],
+          "output_counts": [
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "verbs": [
+            "sing",
+            "dance"
+          ]
+        }
+      ],
+      "operator": "add_edge_identity_guard",
+      "proposal_digest": "sha256:df99935a3168656d4d9d365d2bf76fdb5a8a86c510f7158e410bc0523ff08678",
+      "site": "out agent has_actor_goal attributes actor+verb",
+      "source_rule_digest": "sha256:fb1929256756cc2c0a70e90c386f9a271aa5dff082e3cd555baa391b67211816",
+      "target": "mint_actor_goal_recipient",
+      "timing_ns": {
+        "composition": 16162062,
+        "heldout_scoring": 4384791,
+        "source_heldout": 5473757,
+        "source_training": 3390984,
+        "training_scoring": 4629612
+      },
+      "training_outcomes": [
+        {
+          "correct": true,
+          "expected_counts": [
+            1
+          ],
+          "fixedpoint_progress": 0,
+          "input_sweeps": [
+            1
+          ],
+          "output_counts": [
+            1
+          ],
+          "rule_store_stable": true,
+          "verbs": [
+            "sing"
+          ]
+        },
+        {
+          "correct": true,
+          "expected_counts": [
+            1
+          ],
+          "fixedpoint_progress": 0,
+          "input_sweeps": [
+            1
+          ],
+          "output_counts": [
+            1
+          ],
+          "rule_store_stable": true,
+          "verbs": [
+            "sing"
+          ]
+        }
+      ],
+      "worker": 2
+    },
+    {
+      "family": "recurrence",
+      "heldout_outcomes": [
+        {
+          "correct": true,
+          "fixedpoint_progress": 0,
+          "keys": [
+            "bidir-3-heldout_3-0-0",
+            "bidir-3-heldout_3-0-1"
+          ],
+          "output_counts": [
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "stage0_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ],
+          "stage1_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "correct": true,
+          "fixedpoint_progress": 0,
+          "keys": [
+            "bidir-3-heldout_3-1-0",
+            "bidir-3-heldout_3-1-1"
+          ],
+          "output_counts": [
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "stage0_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ],
+          "stage1_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      ],
+      "operator": "add_edge_identity_guard",
+      "proposal_digest": "sha256:b63b0f29aa232a0c5d92da634ef729dd6a28091b2967ec2644d9426997405a9c",
+      "site": "out candidate has_mint_offer any endpoint",
+      "source_rule_digest": "sha256:04479af4f59ef2139cb2d69c4af6c7eb363fc081b494f6d788c1a58bf5a16af1",
+      "target": "mrl_offer_due_once",
+      "timing_ns": {
+        "composition": 37684481,
+        "heldout_scoring": 61806538,
+        "source_heldout": 10447002,
+        "source_training": 10663263,
+        "training_scoring": 11765052
+      },
+      "training_outcomes": [
+        {
+          "correct": true,
+          "fixedpoint_progress": 0,
+          "keys": [
+            "bidir-3-train_3-0-0",
+            "bidir-3-train_3-0-1"
+          ],
+          "output_counts": [
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "stage0_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ],
+          "stage1_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "correct": true,
+          "fixedpoint_progress": 0,
+          "keys": [
+            "bidir-3-train_3-1-0",
+            "bidir-3-train_3-1-1"
+          ],
+          "output_counts": [
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "stage0_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ],
+          "stage1_sweeps": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      ],
+      "worker": 3
+    },
+    {
+      "family": "conversation",
+      "heldout_outcomes": [
+        {
+          "correct": true,
+          "expected_counts": [
+            1,
+            1,
+            1
+          ],
+          "input_ids": [
+            "#482",
+            "#492",
+            "#499"
+          ],
+          "output_counts": [
+            1,
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "sequence_runtime_ns": 23121499
+        },
+        {
+          "correct": true,
+          "expected_counts": [
+            1,
+            1,
+            1
+          ],
+          "input_ids": [
+            "#482",
+            "#492",
+            "#499"
+          ],
+          "output_counts": [
+            1,
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "sequence_runtime_ns": 543484
+        }
+      ],
+      "operator": "add_edge_identity_guard",
+      "proposal_digest": "sha256:2142f383a9a699868b40da8a7afe5d0c2f526ec9d7fb63aaf784031ba3b55555",
+      "site": "in m responds_to any endpoint",
+      "source_rule_digest": "sha256:b0ce645cf9092f626aa86ca2417cf5f6c4a6bcd4645c03a28b2b0c5c116ca758",
+      "target": "reply_to_adjacency_pair",
+      "timing_ns": {
+        "composition": 31963461,
+        "heldout_scoring": 49405442,
+        "source_heldout": 18384188,
+        "source_training": 21878692,
+        "training_scoring": 38612927
+      },
+      "training_outcomes": [
+        {
+          "correct": true,
+          "expected_counts": [
+            1,
+            1
+          ],
+          "input_ids": [
+            "#482",
+            "#491"
+          ],
+          "output_counts": [
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "sequence_runtime_ns": 19051581
+        },
+        {
+          "correct": true,
+          "expected_counts": [
+            1,
+            1
+          ],
+          "input_ids": [
+            "#482",
+            "#491"
+          ],
+          "output_counts": [
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "sequence_runtime_ns": 390003
+        }
+      ],
+      "worker": 3
+    },
+    {
+      "family": "actor_recipient_edge",
+      "heldout_outcomes": [
+        {
+          "correct": false,
+          "expected_counts": [
+            1,
+            1
+          ],
+          "fixedpoint_progress": 0,
+          "input_sweeps": [
+            1,
+            0
+          ],
+          "output_counts": [
+            1,
+            0
+          ],
+          "rule_store_stable": true,
+          "verbs": [
+            "sing",
+            "dance"
+          ]
+        },
+        {
+          "correct": false,
+          "expected_counts": [
+            1,
+            1
+          ],
+          "fixedpoint_progress": 0,
+          "input_sweeps": [
+            1,
+            0
+          ],
+          "output_counts": [
+            1,
+            0
+          ],
+          "rule_store_stable": true,
+          "verbs": [
+            "sing",
+            "dance"
+          ]
+        }
+      ],
+      "operator": "add_edge_identity_guard",
+      "proposal_digest": "sha256:6b8a662f087d34240137a8fb327325757b992f529a3b82cfddb5637cfc227e48",
+      "site": "out agent has_actor_goal any endpoint",
+      "source_rule_digest": "sha256:fb1929256756cc2c0a70e90c386f9a271aa5dff082e3cd555baa391b67211816",
+      "target": "mint_actor_goal_recipient",
+      "timing_ns": {
+        "composition": 26374393,
+        "heldout_scoring": 4253639,
+        "source_heldout": 3032891,
+        "source_training": 14524531,
+        "training_scoring": 26317802
+      },
+      "training_outcomes": [
+        {
+          "correct": true,
+          "expected_counts": [
+            1
+          ],
+          "fixedpoint_progress": 0,
+          "input_sweeps": [
+            1
+          ],
+          "output_counts": [
+            1
+          ],
+          "rule_store_stable": true,
+          "verbs": [
+            "sing"
+          ]
+        },
+        {
+          "correct": true,
+          "expected_counts": [
+            1
+          ],
+          "fixedpoint_progress": 0,
+          "input_sweeps": [
+            1
+          ],
+          "output_counts": [
+            1
+          ],
+          "rule_store_stable": true,
+          "verbs": [
+            "sing"
+          ]
+        }
+      ],
+      "worker": 3
+    },
+    {
+      "family": "actor_recipient_identity",
+      "heldout_outcomes": [
+        {
+          "correct": true,
+          "expected_counts": [
+            1,
+            1
+          ],
+          "fixedpoint_progress": 0,
+          "input_sweeps": [
+            1,
+            1
+          ],
+          "output_counts": [
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "verbs": [
+            "sing",
+            "dance"
+          ]
+        },
+        {
+          "correct": true,
+          "expected_counts": [
+            1,
+            1
+          ],
+          "fixedpoint_progress": 0,
+          "input_sweeps": [
+            1,
+            1
+          ],
+          "output_counts": [
+            1,
+            1
+          ],
+          "rule_store_stable": true,
+          "verbs": [
+            "sing",
+            "dance"
+          ]
+        }
+      ],
+      "operator": "add_edge_identity_guard",
+      "proposal_digest": "sha256:df99935a3168656d4d9d365d2bf76fdb5a8a86c510f7158e410bc0523ff08678",
+      "site": "out agent has_actor_goal attributes actor+verb",
+      "source_rule_digest": "sha256:fb1929256756cc2c0a70e90c386f9a271aa5dff082e3cd555baa391b67211816",
+      "target": "mint_actor_goal_recipient",
+      "timing_ns": {
+        "composition": 27898923,
+        "heldout_scoring": 4517021,
+        "source_heldout": 5149636,
+        "source_training": 3116211,
+        "training_scoring": 4376681
+      },
+      "training_outcomes": [
+        {
+          "correct": true,
+          "expected_counts": [
+            1
+          ],
+          "fixedpoint_progress": 0,
+          "input_sweeps": [
+            1
+          ],
+          "output_counts": [
+            1
+          ],
+          "rule_store_stable": true,
+          "verbs": [
+            "sing"
+          ]
+        },
+        {
+          "correct": true,
+          "expected_counts": [
+            1
+          ],
+          "fixedpoint_progress": 0,
+          "input_sweeps": [
+            1
+          ],
+          "output_counts": [
+            1
+          ],
+          "rule_store_stable": true,
+          "verbs": [
+            "sing"
+          ]
+        }
+      ],
+      "worker": 3
+    }
+  ],
+  "schema": "SubstrateEdgeAttributeIdentityCurrentSourceV1Analysis"
+}

@@ -1,0 +1,1146 @@
+{
+  "elapsed_s": 6.700650669983588,
+  "environment": {
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+  },
+  "lock": {
+    "build_manifest_sha256": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "design": {
+      "candidate_limit": 200000,
+      "entrypoint": "ensure_program_synthesis -> ingest_spec -> pump",
+      "explicit_ops": null,
+      "factorial_in_native_op_table": false,
+      "repetitions": 5,
+      "request": "write a function mapping each integer input to its output from examples",
+      "seed": 20261001,
+      "tasks": {
+        "factorial": {
+          "heldout": [
+            6,
+            7,
+            8
+          ],
+          "target": "x!",
+          "train": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        "modulo": {
+          "heldout": [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11
+          ],
+          "target": "x % 2",
+          "train": [
+            0,
+            1,
+            2,
+            3
+          ]
+        }
+      }
+    },
+    "engine_provenance": {
+      "ambiguous": false,
+      "engine_source_fingerprint": "efb434f37559574e97cc9c027be4a429d0e4dd555da4e798ff422e40f4234b47",
+      "engine_tree": "/home/matt/ozmadev/ocelot",
+      "mtime": 1790851852.7283769,
+      "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+      "other_resolvable": [],
+      "sha256": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+      "short": "3816b4fb5d57",
+      "source_fingerprint": "efb434f37559574e97cc9c027be4a429d0e4dd555da4e798ff422e40f4234b47",
+      "source_match": "own",
+      "stale_rust": [],
+      "this_tree": "/home/matt/ozmadev/ocelot"
+    },
+    "native": {
+      "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+      "sha256": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54"
+    },
+    "rust_source_fingerprint": "efb434f37559574e97cc9c027be4a429d0e4dd555da4e798ff422e40f4234b47",
+    "schema": "production_gamma_operator_selection_v1_20261001",
+    "source_sha256": {
+      "docs/research/engine_substrate/SUBSTRATE_PRODUCTION_GAMMA_OPERATOR_SELECTION_V1_PREREG_20261001.md": "6cc0a8ee885777d19c7dd2616ed196bdef20610a4b2fe24b23e0961f30322b3e",
+      "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+      "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+      "domains/prog_exact.py": "8a60ad7e11e01423ab9d482df39a0aa2205065dc5ce8e594b6ecd51cd6ddbdd6",
+      "domains/prog_moves.py": "941d70e5b99d98f39420db71a85f9c8b45735f0bc94ed101c68a58140e1db60b",
+      "domains/prog_retrieval.py": "c726c87171ece5ae722105da74dd5afde66e0d9a02e4138f06df2dfd777e2055",
+      "domains/prog_synthesis.py": "52c01df0e08483b3ad5b35c45da27f92b70805957f068995fbfbd8c57b9cae2b",
+      "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+      "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+      "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+      "runners/dsl/src/prog_eval.rs": "d419bda3288c534cbc8c35a3bccc29b67171b8297ecf8aeb43a474f77f0e1451",
+      "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+      "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+      "runners/dsl/src/synth_enumerate.rs": "f3ae5dd0b15f0fef1713fa92ccb563e4b573dd94b626f0bfed58413298ee6203",
+      "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+      "scripts/analyze_substrate_production_gamma_operator_selection_v1.py": "7f5b8ebcb93b8c383ce58ca6adb70145d98b5560c0f702118eaaba1b7c8cb7da",
+      "scripts/substrate_production_gamma_operator_selection_v1.py": "4a285ef976b507cbc786e552a20fd0010a90abef36c427abc6ef2d1fc22ab768",
+      "seeds/code_write_request_cues.json": "13e0cbeace3d712a20b2dd7a6abbb9c910b0cbfbac61ce1d978f89a987e8c36d",
+      "seeds/exact_families.json": "19c7e564a8712d173b37c76f0c2a5d3fde3fcdc68993d79d0857fe283587900a",
+      "seeds/program_synthesis.json": "9d657f4409e470626f3bb9adc1236b7c6c59976a7a1b16b38e566813324916bd",
+      "seeds/program_synthesis_grounding.json": "ec68c2e577cc6dc5c87ca1ac9a05b9f11966c9a7147894f216f1eb2cbe25ddea",
+      "seeds/program_synthesis_opgrammar.json": "8e747abefc9c4814a2b7bff1cce73acdef34d765e93dc1855d0a12dfc44042eb"
+    }
+  },
+  "protocol": "production_gamma_operator_selection_v1_20261001",
+  "schedule": [
+    [
+      "modulo",
+      1
+    ],
+    [
+      "modulo",
+      2
+    ],
+    [
+      "modulo",
+      0
+    ],
+    [
+      "factorial",
+      4
+    ],
+    [
+      "factorial",
+      2
+    ],
+    [
+      "modulo",
+      4
+    ],
+    [
+      "factorial",
+      1
+    ],
+    [
+      "factorial",
+      3
+    ],
+    [
+      "factorial",
+      0
+    ],
+    [
+      "modulo",
+      3
+    ]
+  ],
+  "workers": [
+    {
+      "candidate_count": 257,
+      "engine_provenance": {
+        "ambiguous": false,
+        "engine_source_fingerprint": "efb434f37559574e97cc9c027be4a429d0e4dd555da4e798ff422e40f4234b47",
+        "engine_tree": "/home/matt/ozmadev/ocelot",
+        "mtime": 1790851852.7283769,
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "other_resolvable": [],
+        "sha256": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "short": "3816b4fb5d57",
+        "source_fingerprint": "efb434f37559574e97cc9c027be4a429d0e4dd555da4e798ff422e40f4234b47",
+        "source_match": "own",
+        "stale_rust": [],
+        "this_tree": "/home/matt/ozmadev/ocelot"
+      },
+      "enumerate_outcome": "ok",
+      "gamma_ops": [
+        "Plus",
+        "Times",
+        "Minus",
+        "Div",
+        "Min",
+        "Max",
+        "Abs",
+        "Neg",
+        "Gt",
+        "Lt",
+        "Eq",
+        "IfThenElse",
+        "Mod",
+        "Sqrt"
+      ],
+      "gamma_used": true,
+      "gap_reason": null,
+      "heldout": [
+        {
+          "exact": true,
+          "expected": 0,
+          "predicted": 0,
+          "trap": null,
+          "x": 4
+        },
+        {
+          "exact": true,
+          "expected": 1,
+          "predicted": 1,
+          "trap": null,
+          "x": 5
+        },
+        {
+          "exact": true,
+          "expected": 0,
+          "predicted": 0,
+          "trap": null,
+          "x": 6
+        },
+        {
+          "exact": true,
+          "expected": 1,
+          "predicted": 1,
+          "trap": null,
+          "x": 7
+        },
+        {
+          "exact": true,
+          "expected": 0,
+          "predicted": 0,
+          "trap": null,
+          "x": 8
+        },
+        {
+          "exact": true,
+          "expected": 1,
+          "predicted": 1,
+          "trap": null,
+          "x": 9
+        },
+        {
+          "exact": true,
+          "expected": 0,
+          "predicted": 0,
+          "trap": null,
+          "x": 10
+        },
+        {
+          "exact": true,
+          "expected": 1,
+          "predicted": 1,
+          "trap": null,
+          "x": 11
+        }
+      ],
+      "ir": {
+        "stmts": [
+          {
+            "default": null,
+            "name": "value",
+            "type": "ProgDefFnParam"
+          },
+          {
+            "type": "ProgReturn",
+            "value": {
+              "a": {
+                "name": "value",
+                "type": "Var"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 2
+              },
+              "type": "Mod"
+            }
+          }
+        ],
+        "type": "ProgSeq"
+      },
+      "ir_root_count": 1,
+      "kind": "worker",
+      "message_explicit_ops": null,
+      "peak_rss_bytes": 43900928,
+      "pid": 6,
+      "program_count": 1,
+      "program_json": "{\"type\": \"ProgSeq\", \"stmts\": [{\"type\": \"ProgDefFnParam\", \"name\": \"value\", \"default\": null}, {\"type\": \"ProgReturn\", \"value\": {\"a\": {\"name\": \"value\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 2}, \"type\": \"Mod\"}}]}",
+      "pump_cpu_ns": 16634944,
+      "pump_wall_ns": 14078612,
+      "repetition": 1,
+      "request": "write a function mapping each integer input to its output from examples",
+      "rungs": {
+        "codebook": null,
+        "descend": null,
+        "enumerate": 1.0,
+        "exact": null,
+        "lattice": null
+      },
+      "solution_size": 3,
+      "stable": true,
+      "status": "accepted",
+      "task": "modulo"
+    },
+    {
+      "candidate_count": 257,
+      "engine_provenance": {
+        "ambiguous": false,
+        "engine_source_fingerprint": "efb434f37559574e97cc9c027be4a429d0e4dd555da4e798ff422e40f4234b47",
+        "engine_tree": "/home/matt/ozmadev/ocelot",
+        "mtime": 1790851852.7283769,
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "other_resolvable": [],
+        "sha256": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "short": "3816b4fb5d57",
+        "source_fingerprint": "efb434f37559574e97cc9c027be4a429d0e4dd555da4e798ff422e40f4234b47",
+        "source_match": "own",
+        "stale_rust": [],
+        "this_tree": "/home/matt/ozmadev/ocelot"
+      },
+      "enumerate_outcome": "ok",
+      "gamma_ops": [
+        "Plus",
+        "Times",
+        "Minus",
+        "Div",
+        "Min",
+        "Max",
+        "Abs",
+        "Neg",
+        "Gt",
+        "Lt",
+        "Eq",
+        "IfThenElse",
+        "Mod",
+        "Sqrt"
+      ],
+      "gamma_used": true,
+      "gap_reason": null,
+      "heldout": [
+        {
+          "exact": true,
+          "expected": 0,
+          "predicted": 0,
+          "trap": null,
+          "x": 4
+        },
+        {
+          "exact": true,
+          "expected": 1,
+          "predicted": 1,
+          "trap": null,
+          "x": 5
+        },
+        {
+          "exact": true,
+          "expected": 0,
+          "predicted": 0,
+          "trap": null,
+          "x": 6
+        },
+        {
+          "exact": true,
+          "expected": 1,
+          "predicted": 1,
+          "trap": null,
+          "x": 7
+        },
+        {
+          "exact": true,
+          "expected": 0,
+          "predicted": 0,
+          "trap": null,
+          "x": 8
+        },
+        {
+          "exact": true,
+          "expected": 1,
+          "predicted": 1,
+          "trap": null,
+          "x": 9
+        },
+        {
+          "exact": true,
+          "expected": 0,
+          "predicted": 0,
+          "trap": null,
+          "x": 10
+        },
+        {
+          "exact": true,
+          "expected": 1,
+          "predicted": 1,
+          "trap": null,
+          "x": 11
+        }
+      ],
+      "ir": {
+        "stmts": [
+          {
+            "default": null,
+            "name": "value",
+            "type": "ProgDefFnParam"
+          },
+          {
+            "type": "ProgReturn",
+            "value": {
+              "a": {
+                "name": "value",
+                "type": "Var"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 2
+              },
+              "type": "Mod"
+            }
+          }
+        ],
+        "type": "ProgSeq"
+      },
+      "ir_root_count": 1,
+      "kind": "worker",
+      "message_explicit_ops": null,
+      "peak_rss_bytes": 43229184,
+      "pid": 100,
+      "program_count": 1,
+      "program_json": "{\"type\": \"ProgSeq\", \"stmts\": [{\"type\": \"ProgDefFnParam\", \"name\": \"value\", \"default\": null}, {\"type\": \"ProgReturn\", \"value\": {\"a\": {\"name\": \"value\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 2}, \"type\": \"Mod\"}}]}",
+      "pump_cpu_ns": 21953236,
+      "pump_wall_ns": 20521103,
+      "repetition": 2,
+      "request": "write a function mapping each integer input to its output from examples",
+      "rungs": {
+        "codebook": null,
+        "descend": null,
+        "enumerate": 1.0,
+        "exact": null,
+        "lattice": null
+      },
+      "solution_size": 3,
+      "stable": true,
+      "status": "accepted",
+      "task": "modulo"
+    },
+    {
+      "candidate_count": 257,
+      "engine_provenance": {
+        "ambiguous": false,
+        "engine_source_fingerprint": "efb434f37559574e97cc9c027be4a429d0e4dd555da4e798ff422e40f4234b47",
+        "engine_tree": "/home/matt/ozmadev/ocelot",
+        "mtime": 1790851852.7283769,
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "other_resolvable": [],
+        "sha256": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "short": "3816b4fb5d57",
+        "source_fingerprint": "efb434f37559574e97cc9c027be4a429d0e4dd555da4e798ff422e40f4234b47",
+        "source_match": "own",
+        "stale_rust": [],
+        "this_tree": "/home/matt/ozmadev/ocelot"
+      },
+      "enumerate_outcome": "ok",
+      "gamma_ops": [
+        "Plus",
+        "Times",
+        "Minus",
+        "Div",
+        "Min",
+        "Max",
+        "Abs",
+        "Neg",
+        "Gt",
+        "Lt",
+        "Eq",
+        "IfThenElse",
+        "Mod",
+        "Sqrt"
+      ],
+      "gamma_used": true,
+      "gap_reason": null,
+      "heldout": [
+        {
+          "exact": true,
+          "expected": 0,
+          "predicted": 0,
+          "trap": null,
+          "x": 4
+        },
+        {
+          "exact": true,
+          "expected": 1,
+          "predicted": 1,
+          "trap": null,
+          "x": 5
+        },
+        {
+          "exact": true,
+          "expected": 0,
+          "predicted": 0,
+          "trap": null,
+          "x": 6
+        },
+        {
+          "exact": true,
+          "expected": 1,
+          "predicted": 1,
+          "trap": null,
+          "x": 7
+        },
+        {
+          "exact": true,
+          "expected": 0,
+          "predicted": 0,
+          "trap": null,
+          "x": 8
+        },
+        {
+          "exact": true,
+          "expected": 1,
+          "predicted": 1,
+          "trap": null,
+          "x": 9
+        },
+        {
+          "exact": true,
+          "expected": 0,
+          "predicted": 0,
+          "trap": null,
+          "x": 10
+        },
+        {
+          "exact": true,
+          "expected": 1,
+          "predicted": 1,
+          "trap": null,
+          "x": 11
+        }
+      ],
+      "ir": {
+        "stmts": [
+          {
+            "default": null,
+            "name": "value",
+            "type": "ProgDefFnParam"
+          },
+          {
+            "type": "ProgReturn",
+            "value": {
+              "a": {
+                "name": "value",
+                "type": "Var"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 2
+              },
+              "type": "Mod"
+            }
+          }
+        ],
+        "type": "ProgSeq"
+      },
+      "ir_root_count": 1,
+      "kind": "worker",
+      "message_explicit_ops": null,
+      "peak_rss_bytes": 43671552,
+      "pid": 194,
+      "program_count": 1,
+      "program_json": "{\"type\": \"ProgSeq\", \"stmts\": [{\"type\": \"ProgDefFnParam\", \"name\": \"value\", \"default\": null}, {\"type\": \"ProgReturn\", \"value\": {\"a\": {\"name\": \"value\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 2}, \"type\": \"Mod\"}}]}",
+      "pump_cpu_ns": 19051775,
+      "pump_wall_ns": 18142148,
+      "repetition": 0,
+      "request": "write a function mapping each integer input to its output from examples",
+      "rungs": {
+        "codebook": null,
+        "descend": null,
+        "enumerate": 1.0,
+        "exact": null,
+        "lattice": null
+      },
+      "solution_size": 3,
+      "stable": true,
+      "status": "accepted",
+      "task": "modulo"
+    },
+    {
+      "candidate_count": 200000,
+      "engine_provenance": {
+        "ambiguous": false,
+        "engine_source_fingerprint": "efb434f37559574e97cc9c027be4a429d0e4dd555da4e798ff422e40f4234b47",
+        "engine_tree": "/home/matt/ozmadev/ocelot",
+        "mtime": 1790851852.7283769,
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "other_resolvable": [],
+        "sha256": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "short": "3816b4fb5d57",
+        "source_fingerprint": "efb434f37559574e97cc9c027be4a429d0e4dd555da4e798ff422e40f4234b47",
+        "source_match": "own",
+        "stale_rust": [],
+        "this_tree": "/home/matt/ozmadev/ocelot"
+      },
+      "enumerate_outcome": "failed",
+      "gamma_ops": [
+        "Plus",
+        "Times",
+        "Minus",
+        "Div",
+        "Min",
+        "Max",
+        "Abs",
+        "Neg",
+        "Gt",
+        "Lt",
+        "Eq",
+        "IfThenElse",
+        "Mod",
+        "Sqrt"
+      ],
+      "gamma_used": true,
+      "gap_reason": "enumerate_failed",
+      "heldout": [],
+      "ir": null,
+      "ir_root_count": 0,
+      "kind": "worker",
+      "message_explicit_ops": null,
+      "peak_rss_bytes": 72085504,
+      "pid": 288,
+      "program_count": 0,
+      "program_json": null,
+      "pump_cpu_ns": 384989873,
+      "pump_wall_ns": 383621349,
+      "repetition": 4,
+      "request": "write a function mapping each integer input to its output from examples",
+      "rungs": {
+        "codebook": null,
+        "descend": null,
+        "enumerate": 1.0,
+        "exact": null,
+        "lattice": null
+      },
+      "solution_size": null,
+      "stable": true,
+      "status": "gapped",
+      "task": "factorial"
+    },
+    {
+      "candidate_count": 200000,
+      "engine_provenance": {
+        "ambiguous": false,
+        "engine_source_fingerprint": "efb434f37559574e97cc9c027be4a429d0e4dd555da4e798ff422e40f4234b47",
+        "engine_tree": "/home/matt/ozmadev/ocelot",
+        "mtime": 1790851852.7283769,
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "other_resolvable": [],
+        "sha256": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "short": "3816b4fb5d57",
+        "source_fingerprint": "efb434f37559574e97cc9c027be4a429d0e4dd555da4e798ff422e40f4234b47",
+        "source_match": "own",
+        "stale_rust": [],
+        "this_tree": "/home/matt/ozmadev/ocelot"
+      },
+      "enumerate_outcome": "failed",
+      "gamma_ops": [
+        "Plus",
+        "Times",
+        "Minus",
+        "Div",
+        "Min",
+        "Max",
+        "Abs",
+        "Neg",
+        "Gt",
+        "Lt",
+        "Eq",
+        "IfThenElse",
+        "Mod",
+        "Sqrt"
+      ],
+      "gamma_used": true,
+      "gap_reason": "enumerate_failed",
+      "heldout": [],
+      "ir": null,
+      "ir_root_count": 0,
+      "kind": "worker",
+      "message_explicit_ops": null,
+      "peak_rss_bytes": 71364608,
+      "pid": 376,
+      "program_count": 0,
+      "program_json": null,
+      "pump_cpu_ns": 370529641,
+      "pump_wall_ns": 373598074,
+      "repetition": 2,
+      "request": "write a function mapping each integer input to its output from examples",
+      "rungs": {
+        "codebook": null,
+        "descend": null,
+        "enumerate": 1.0,
+        "exact": null,
+        "lattice": null
+      },
+      "solution_size": null,
+      "stable": true,
+      "status": "gapped",
+      "task": "factorial"
+    },
+    {
+      "candidate_count": 257,
+      "engine_provenance": {
+        "ambiguous": false,
+        "engine_source_fingerprint": "efb434f37559574e97cc9c027be4a429d0e4dd555da4e798ff422e40f4234b47",
+        "engine_tree": "/home/matt/ozmadev/ocelot",
+        "mtime": 1790851852.7283769,
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "other_resolvable": [],
+        "sha256": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "short": "3816b4fb5d57",
+        "source_fingerprint": "efb434f37559574e97cc9c027be4a429d0e4dd555da4e798ff422e40f4234b47",
+        "source_match": "own",
+        "stale_rust": [],
+        "this_tree": "/home/matt/ozmadev/ocelot"
+      },
+      "enumerate_outcome": "ok",
+      "gamma_ops": [
+        "Plus",
+        "Times",
+        "Minus",
+        "Div",
+        "Min",
+        "Max",
+        "Abs",
+        "Neg",
+        "Gt",
+        "Lt",
+        "Eq",
+        "IfThenElse",
+        "Mod",
+        "Sqrt"
+      ],
+      "gamma_used": true,
+      "gap_reason": null,
+      "heldout": [
+        {
+          "exact": true,
+          "expected": 0,
+          "predicted": 0,
+          "trap": null,
+          "x": 4
+        },
+        {
+          "exact": true,
+          "expected": 1,
+          "predicted": 1,
+          "trap": null,
+          "x": 5
+        },
+        {
+          "exact": true,
+          "expected": 0,
+          "predicted": 0,
+          "trap": null,
+          "x": 6
+        },
+        {
+          "exact": true,
+          "expected": 1,
+          "predicted": 1,
+          "trap": null,
+          "x": 7
+        },
+        {
+          "exact": true,
+          "expected": 0,
+          "predicted": 0,
+          "trap": null,
+          "x": 8
+        },
+        {
+          "exact": true,
+          "expected": 1,
+          "predicted": 1,
+          "trap": null,
+          "x": 9
+        },
+        {
+          "exact": true,
+          "expected": 0,
+          "predicted": 0,
+          "trap": null,
+          "x": 10
+        },
+        {
+          "exact": true,
+          "expected": 1,
+          "predicted": 1,
+          "trap": null,
+          "x": 11
+        }
+      ],
+      "ir": {
+        "stmts": [
+          {
+            "default": null,
+            "name": "value",
+            "type": "ProgDefFnParam"
+          },
+          {
+            "type": "ProgReturn",
+            "value": {
+              "a": {
+                "name": "value",
+                "type": "Var"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 2
+              },
+              "type": "Mod"
+            }
+          }
+        ],
+        "type": "ProgSeq"
+      },
+      "ir_root_count": 1,
+      "kind": "worker",
+      "message_explicit_ops": null,
+      "peak_rss_bytes": 43012096,
+      "pid": 464,
+      "program_count": 1,
+      "program_json": "{\"type\": \"ProgSeq\", \"stmts\": [{\"type\": \"ProgDefFnParam\", \"name\": \"value\", \"default\": null}, {\"type\": \"ProgReturn\", \"value\": {\"a\": {\"name\": \"value\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 2}, \"type\": \"Mod\"}}]}",
+      "pump_cpu_ns": 14986746,
+      "pump_wall_ns": 12570991,
+      "repetition": 4,
+      "request": "write a function mapping each integer input to its output from examples",
+      "rungs": {
+        "codebook": null,
+        "descend": null,
+        "enumerate": 1.0,
+        "exact": null,
+        "lattice": null
+      },
+      "solution_size": 3,
+      "stable": true,
+      "status": "accepted",
+      "task": "modulo"
+    },
+    {
+      "candidate_count": 200000,
+      "engine_provenance": {
+        "ambiguous": false,
+        "engine_source_fingerprint": "efb434f37559574e97cc9c027be4a429d0e4dd555da4e798ff422e40f4234b47",
+        "engine_tree": "/home/matt/ozmadev/ocelot",
+        "mtime": 1790851852.7283769,
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "other_resolvable": [],
+        "sha256": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "short": "3816b4fb5d57",
+        "source_fingerprint": "efb434f37559574e97cc9c027be4a429d0e4dd555da4e798ff422e40f4234b47",
+        "source_match": "own",
+        "stale_rust": [],
+        "this_tree": "/home/matt/ozmadev/ocelot"
+      },
+      "enumerate_outcome": "failed",
+      "gamma_ops": [
+        "Plus",
+        "Times",
+        "Minus",
+        "Div",
+        "Min",
+        "Max",
+        "Abs",
+        "Neg",
+        "Gt",
+        "Lt",
+        "Eq",
+        "IfThenElse",
+        "Mod",
+        "Sqrt"
+      ],
+      "gamma_used": true,
+      "gap_reason": "enumerate_failed",
+      "heldout": [],
+      "ir": null,
+      "ir_root_count": 0,
+      "kind": "worker",
+      "message_explicit_ops": null,
+      "peak_rss_bytes": 72425472,
+      "pid": 558,
+      "program_count": 0,
+      "program_json": null,
+      "pump_cpu_ns": 355303415,
+      "pump_wall_ns": 354202979,
+      "repetition": 1,
+      "request": "write a function mapping each integer input to its output from examples",
+      "rungs": {
+        "codebook": null,
+        "descend": null,
+        "enumerate": 1.0,
+        "exact": null,
+        "lattice": null
+      },
+      "solution_size": null,
+      "stable": true,
+      "status": "gapped",
+      "task": "factorial"
+    },
+    {
+      "candidate_count": 200000,
+      "engine_provenance": {
+        "ambiguous": false,
+        "engine_source_fingerprint": "efb434f37559574e97cc9c027be4a429d0e4dd555da4e798ff422e40f4234b47",
+        "engine_tree": "/home/matt/ozmadev/ocelot",
+        "mtime": 1790851852.7283769,
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "other_resolvable": [],
+        "sha256": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "short": "3816b4fb5d57",
+        "source_fingerprint": "efb434f37559574e97cc9c027be4a429d0e4dd555da4e798ff422e40f4234b47",
+        "source_match": "own",
+        "stale_rust": [],
+        "this_tree": "/home/matt/ozmadev/ocelot"
+      },
+      "enumerate_outcome": "failed",
+      "gamma_ops": [
+        "Plus",
+        "Times",
+        "Minus",
+        "Div",
+        "Min",
+        "Max",
+        "Abs",
+        "Neg",
+        "Gt",
+        "Lt",
+        "Eq",
+        "IfThenElse",
+        "Mod",
+        "Sqrt"
+      ],
+      "gamma_used": true,
+      "gap_reason": "enumerate_failed",
+      "heldout": [],
+      "ir": null,
+      "ir_root_count": 0,
+      "kind": "worker",
+      "message_explicit_ops": null,
+      "peak_rss_bytes": 71720960,
+      "pid": 646,
+      "program_count": 0,
+      "program_json": null,
+      "pump_cpu_ns": 368826079,
+      "pump_wall_ns": 369266206,
+      "repetition": 3,
+      "request": "write a function mapping each integer input to its output from examples",
+      "rungs": {
+        "codebook": null,
+        "descend": null,
+        "enumerate": 1.0,
+        "exact": null,
+        "lattice": null
+      },
+      "solution_size": null,
+      "stable": true,
+      "status": "gapped",
+      "task": "factorial"
+    },
+    {
+      "candidate_count": 200000,
+      "engine_provenance": {
+        "ambiguous": false,
+        "engine_source_fingerprint": "efb434f37559574e97cc9c027be4a429d0e4dd555da4e798ff422e40f4234b47",
+        "engine_tree": "/home/matt/ozmadev/ocelot",
+        "mtime": 1790851852.7283769,
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "other_resolvable": [],
+        "sha256": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "short": "3816b4fb5d57",
+        "source_fingerprint": "efb434f37559574e97cc9c027be4a429d0e4dd555da4e798ff422e40f4234b47",
+        "source_match": "own",
+        "stale_rust": [],
+        "this_tree": "/home/matt/ozmadev/ocelot"
+      },
+      "enumerate_outcome": "failed",
+      "gamma_ops": [
+        "Plus",
+        "Times",
+        "Minus",
+        "Div",
+        "Min",
+        "Max",
+        "Abs",
+        "Neg",
+        "Gt",
+        "Lt",
+        "Eq",
+        "IfThenElse",
+        "Mod",
+        "Sqrt"
+      ],
+      "gamma_used": true,
+      "gap_reason": "enumerate_failed",
+      "heldout": [],
+      "ir": null,
+      "ir_root_count": 0,
+      "kind": "worker",
+      "message_explicit_ops": null,
+      "peak_rss_bytes": 71962624,
+      "pid": 734,
+      "program_count": 0,
+      "program_json": null,
+      "pump_cpu_ns": 399798261,
+      "pump_wall_ns": 403419418,
+      "repetition": 0,
+      "request": "write a function mapping each integer input to its output from examples",
+      "rungs": {
+        "codebook": null,
+        "descend": null,
+        "enumerate": 1.0,
+        "exact": null,
+        "lattice": null
+      },
+      "solution_size": null,
+      "stable": true,
+      "status": "gapped",
+      "task": "factorial"
+    },
+    {
+      "candidate_count": 257,
+      "engine_provenance": {
+        "ambiguous": false,
+        "engine_source_fingerprint": "efb434f37559574e97cc9c027be4a429d0e4dd555da4e798ff422e40f4234b47",
+        "engine_tree": "/home/matt/ozmadev/ocelot",
+        "mtime": 1790851852.7283769,
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "other_resolvable": [],
+        "sha256": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "short": "3816b4fb5d57",
+        "source_fingerprint": "efb434f37559574e97cc9c027be4a429d0e4dd555da4e798ff422e40f4234b47",
+        "source_match": "own",
+        "stale_rust": [],
+        "this_tree": "/home/matt/ozmadev/ocelot"
+      },
+      "enumerate_outcome": "ok",
+      "gamma_ops": [
+        "Plus",
+        "Times",
+        "Minus",
+        "Div",
+        "Min",
+        "Max",
+        "Abs",
+        "Neg",
+        "Gt",
+        "Lt",
+        "Eq",
+        "IfThenElse",
+        "Mod",
+        "Sqrt"
+      ],
+      "gamma_used": true,
+      "gap_reason": null,
+      "heldout": [
+        {
+          "exact": true,
+          "expected": 0,
+          "predicted": 0,
+          "trap": null,
+          "x": 4
+        },
+        {
+          "exact": true,
+          "expected": 1,
+          "predicted": 1,
+          "trap": null,
+          "x": 5
+        },
+        {
+          "exact": true,
+          "expected": 0,
+          "predicted": 0,
+          "trap": null,
+          "x": 6
+        },
+        {
+          "exact": true,
+          "expected": 1,
+          "predicted": 1,
+          "trap": null,
+          "x": 7
+        },
+        {
+          "exact": true,
+          "expected": 0,
+          "predicted": 0,
+          "trap": null,
+          "x": 8
+        },
+        {
+          "exact": true,
+          "expected": 1,
+          "predicted": 1,
+          "trap": null,
+          "x": 9
+        },
+        {
+          "exact": true,
+          "expected": 0,
+          "predicted": 0,
+          "trap": null,
+          "x": 10
+        },
+        {
+          "exact": true,
+          "expected": 1,
+          "predicted": 1,
+          "trap": null,
+          "x": 11
+        }
+      ],
+      "ir": {
+        "stmts": [
+          {
+            "default": null,
+            "name": "value",
+            "type": "ProgDefFnParam"
+          },
+          {
+            "type": "ProgReturn",
+            "value": {
+              "a": {
+                "name": "value",
+                "type": "Var"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 2
+              },
+              "type": "Mod"
+            }
+          }
+        ],
+        "type": "ProgSeq"
+      },
+      "ir_root_count": 1,
+      "kind": "worker",
+      "message_explicit_ops": null,
+      "peak_rss_bytes": 43315200,
+      "pid": 822,
+      "program_count": 1,
+      "program_json": "{\"type\": \"ProgSeq\", \"stmts\": [{\"type\": \"ProgDefFnParam\", \"name\": \"value\", \"default\": null}, {\"type\": \"ProgReturn\", \"value\": {\"a\": {\"name\": \"value\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 2}, \"type\": \"Mod\"}}]}",
+      "pump_cpu_ns": 18064023,
+      "pump_wall_ns": 20603004,
+      "repetition": 3,
+      "request": "write a function mapping each integer input to its output from examples",
+      "rungs": {
+        "codebook": null,
+        "descend": null,
+        "enumerate": 1.0,
+        "exact": null,
+        "lattice": null
+      },
+      "solution_size": 3,
+      "stable": true,
+      "status": "accepted",
+      "task": "modulo"
+    }
+  ]
+}

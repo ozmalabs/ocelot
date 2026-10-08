@@ -1,0 +1,124 @@
+{
+  "access_set_exact": true,
+  "all_checks_pass": true,
+  "checks": {
+    "access_set_exact": true,
+    "classifier_accepts": true,
+    "exact_expected_state": true,
+    "progress_within_bound": true,
+    "reports_reach_fixed_point": true,
+    "triggered_progress_is_two": true
+  },
+  "claim_limit": "one native-loaded synthetic rule and one post-install edge mutation; not general scheduler completeness",
+  "classifier": {
+    "accepted": true,
+    "bound_basis": "Each AddNodeIfAbsent with one fixed literal type/key signature can insert at most one node; empty-attribute AddEdge can insert only one directed triple per endpoint pair and edge type. Positive matching and insertion-only effects preserve a finite graph universe. The bound is a coarse O((N+R)^2 E) upper bound on progressing firings, for fixed rules.",
+    "edge_type_count": 1,
+    "fragment": "monotone_finite_key_insertions_v0",
+    "initial_edge_fact_count": 0,
+    "initial_node_count": 2,
+    "not_claimed": [
+      "weak acyclicity",
+      "arbitrary computed keys",
+      "constructed fresh values",
+      "deletion or replacement effects",
+      "hard CPU/wall-time bound",
+      "polynomial matching cost per firing"
+    ],
+    "possible_edge_fact_count_upper_bound": 9,
+    "possible_node_count_upper_bound": 3,
+    "progress_steps_upper_bound": 10,
+    "reasons": [],
+    "unique_mint_signatures": 1
+  },
+  "empty_state_report": {
+    "budget_overshoot": 0,
+    "cycle_detection_enabled": false,
+    "passes_completed": 1,
+    "progress_steps": 0,
+    "requested_progress_budget": 100,
+    "status": "fixed_point"
+  },
+  "expected_access": {
+    "reads": [
+      "edge:link",
+      "type:Witness"
+    ],
+    "reads_any": false,
+    "term_edge_reads": [],
+    "writes": [
+      "attr:tag",
+      "edge:link",
+      "type:Witness"
+    ],
+    "writes_any": false
+  },
+  "final_state": {
+    "edge_count": 3,
+    "expected_edge_count": 3,
+    "expected_edges_present": true,
+    "expected_node_count": 3,
+    "node_count": 3
+  },
+  "native_access": {
+    "active": true,
+    "name": "recursive_finite_key",
+    "reads": [
+      "edge:link",
+      "type:Witness"
+    ],
+    "reads_any": false,
+    "term_edge_reads": [],
+    "writes": [
+      "attr:tag",
+      "edge:link",
+      "type:Witness"
+    ],
+    "writes_any": false
+  },
+  "native_rule_index": 0,
+  "native_sha256": "4152737c6f6a88e44632ffb786350c5702529417b5f489d4ab5cc44bef9f20bc",
+  "observed_progress_within_bound": true,
+  "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+  "post_mutation_report": {
+    "budget_overshoot": 0,
+    "cycle_detection_enabled": false,
+    "passes_completed": 3,
+    "progress_steps": 2,
+    "requested_progress_budget": 100,
+    "status": "fixed_point"
+  },
+  "progress_bound": 10,
+  "python": "3.13.5",
+  "rule_spec": {
+    "effects": [
+      [
+        "add_node_if_absent",
+        "w",
+        "Witness",
+        {
+          "tag": "shared"
+        }
+      ],
+      [
+        "add_edge",
+        "y",
+        "link",
+        "w",
+        {}
+      ]
+    ],
+    "match": [
+      [
+        "x",
+        "link",
+        "y"
+      ]
+    ],
+    "name": "recursive_finite_key"
+  },
+  "run_id": "mint-native-parity-20260924T234429Z",
+  "runner_sha256": "64681c390234a90b8208ade07aa942b61672e3e92aac5e4532c14f5886aa4def",
+  "schema_version": 1,
+  "source_commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87"
+}

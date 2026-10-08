@@ -1,0 +1,57 @@
+{
+  "gates": {
+    "heldouts_match_oracle": true,
+    "missing_evidence_no_codebook_growth": true,
+    "pool_setting_observed": true,
+    "runtime_sources_stable": true,
+    "schedule_matches_preregistration": true,
+    "six_unique_fresh_processes": true,
+    "source_lock_stable": true,
+    "thread_observations_complete": true,
+    "tooling_lock_matches": true
+  },
+  "interpretation": "Diagnostic only: pool size is known, but process-thread ownership and per-thread CPU are not measured.",
+  "lock_sha256": "a14b88aa62a6e2bdb30bce98e063403d21d8d37456fc32ee4c0fa51d2d5bd151",
+  "raw_sha256": "e087dd3874e07069060d9fdb66c700434aa5dd2f60b847f4677af9993b9ba162",
+  "schema": "WarmConverseRayonPoolV1Analysis",
+  "summary": {
+    "default": {
+      "median_cpu_wall_ratio": 15.194387777072599,
+      "median_os_threads_by_phase": {
+        "after_adapter_init": 1,
+        "after_pool_query_before_target": 25,
+        "after_target_after_pool_query": 48,
+        "after_target_before_pool_query": 48,
+        "after_warm_after_pool_query": 25,
+        "after_warm_before_pool_query": 1,
+        "before_target": 25
+      },
+      "median_peak_os_threads_sampled": 49,
+      "median_target_process_cpu_ms": 1664.175152,
+      "median_target_wall_ms": 107.656712,
+      "n": 3,
+      "rayon_pool_threads": [
+        24
+      ]
+    },
+    "one_thread": {
+      "median_cpu_wall_ratio": 15.109063619553586,
+      "median_os_threads_by_phase": {
+        "after_adapter_init": 1,
+        "after_pool_query_before_target": 2,
+        "after_target_after_pool_query": 25,
+        "after_target_before_pool_query": 25,
+        "after_warm_after_pool_query": 2,
+        "after_warm_before_pool_query": 1,
+        "before_target": 2
+      },
+      "median_peak_os_threads_sampled": 26,
+      "median_target_process_cpu_ms": 1675.670323,
+      "median_target_wall_ms": 111.480588,
+      "n": 3,
+      "rayon_pool_threads": [
+        1
+      ]
+    }
+  }
+}

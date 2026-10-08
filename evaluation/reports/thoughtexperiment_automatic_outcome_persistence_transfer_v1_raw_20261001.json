@@ -1,0 +1,786 @@
+{
+  "captured_utc": "2026-10-01T08:16:49Z",
+  "engine_fingerprint": "4036d3738ccc0e1f0fa3a6ef00ab3e271c1205921ca074a3f02334919a46d6ee",
+  "gates": {
+    "both_rank_programs_present": true,
+    "branch_primary_isolation": true,
+    "cold_fork_has_no_history": true,
+    "cold_ranking_error": true,
+    "experience_passes_in_one_trial": true,
+    "inherited_history_ranks_correct_fix": true,
+    "one_ready_training_impasse": true,
+    "stable_sources": true,
+    "three_fresh_workers": true,
+    "trained_fork_inherits_exact_records": true,
+    "training_adopts_and_persists_outcomes": true
+  },
+  "native_binary": {
+    "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+    "sha256": "b9f398c75ceb12a5d519235efb6b3ec403d1b153a576aad6def528c2d48a7617"
+  },
+  "protocol": {
+    "branch_backend": "native full-copy experiment",
+    "control": "fork before correction",
+    "task_oracle": "one recurrence offer per candidate, zero-progress fixedpoint",
+    "training": "production scan_and_self_correct persists outcome nodes",
+    "treatment": "fork after correction from the same trained primary",
+    "workers": 3
+  },
+  "schema": "ThoughtexperimentAutomaticOutcomePersistenceTransferV1",
+  "source_hashes": {
+    "domains/collapse_model.py": "97aaa5c26e6cb3f2682f6d9ee7aa9f0fbbc622e27063b1947edab26fa0ef4ea7",
+    "domains/collapse_watch.py": "de8acb4e4fd6da6cba263c09f7f07f65055ea180343615eb8724c7ddf6b46799",
+    "domains/reflective_faculty.py": "8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+    "domains/self_correct_dispatch.py": "6aa0759fb39c7b6ff754b669f1699d6badeb90beb48e90e5f7e5b3d1f8a5464f",
+    "domains/self_correction.py": "682c4fda4d18bf2e7655988c6ef8e52dc6ab7bae143851d804c122a0dbeb8a2d",
+    "evaluation/substrate_capability/thoughtexperiment_automatic_outcome_persistence_transfer_v1.py": "a8b9d59db35df31f705ecda8d8b338a59778eddab3792ac208ac8612456c2318",
+    "evaluation/substrate_capability/thoughtexperiment_graph_authored_correction_rank_v1.py": "9a46f1b90dd12a577d86e28b57a256dc5e091bb93f8563aa6fc4178e40ab9fed",
+    "seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+    "seeds/composer_collapse_watch_graph.json": "7afd9f795f05933873e4b8595558b6a9a2587d6f9e4cfde9f8862eba3511f9c5",
+    "seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+    "seeds/composer_self_correct_graph.json": "84c3f6ca601b4e62f6c2de46e1da98289821444ee9118dbdbd2a85d655c19e20",
+    "seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+    "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+    "seeds/shape_decode_loop.json": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+    "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+  },
+  "summary": [
+    {
+      "arm": "cold",
+      "first_candidate": [
+        "episode_scoped_offer_guard",
+        "episode_scoped_offer_guard",
+        "episode_scoped_offer_guard"
+      ],
+      "first_oracle_output": [
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          0
+        ]
+      ],
+      "history_count": [
+        0,
+        0,
+        0
+      ],
+      "oracle_passes": 3,
+      "trials_to_oracle": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "arm": "experience",
+      "first_candidate": [
+        "dedup_identity_fix",
+        "dedup_identity_fix",
+        "dedup_identity_fix"
+      ],
+      "first_oracle_output": [
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      "history_count": [
+        2,
+        2,
+        2
+      ],
+      "oracle_passes": 3,
+      "trials_to_oracle": [
+        1,
+        1,
+        1
+      ]
+    }
+  ],
+  "workers": [
+    {
+      "cold": {
+        "arm": "cold",
+        "candidate_order": [
+          "episode_scoped_offer_guard",
+          "dedup_identity_fix",
+          "drop_match_edge",
+          "add_match_guard(control)",
+          "swap_term_leaf:capability_key->latest_segment_ordinal",
+          "swap_term_leaf:capability_key->persistence",
+          "swap_term_leaf:capability_key->structural_signature",
+          "swap_term_leaf:latest_segment_ordinal->capability_key"
+        ],
+        "history_count": 0,
+        "history_records": [],
+        "primary_preserved": true,
+        "program_present": true,
+        "success": true,
+        "trials": [
+          {
+            "fixedpoint_progress": 0,
+            "label": "episode_scoped_offer_guard",
+            "offer_counts": [
+              1,
+              0
+            ],
+            "rank_trace": {
+              "attempt_tag": "db2f0fd0847b",
+              "candidate_digest": "sha256:2d64b2a7b0b97c8441e27d7b7a63ad3a31cf800d4942cf94b8f902a111b2797b",
+              "outcome_class": "episode_scoped_idempotence",
+              "prior_failures": 0.0,
+              "prior_successes": 0.0,
+              "structural_cost": 23.0,
+              "target_rule": "mrl_offer_due_once"
+            },
+            "sweep_progress": [
+              14,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              0
+            ],
+            "task_oracle": false
+          },
+          {
+            "fixedpoint_progress": 0,
+            "label": "dedup_identity_fix",
+            "offer_counts": [
+              1,
+              1
+            ],
+            "rank_trace": {
+              "attempt_tag": "db2f0fd0847b",
+              "candidate_digest": "sha256:86ecca39c9d62440cc315614c331450e6710d8ca5c86f30baa56b3e313534758",
+              "outcome_class": "idempotent_mint_guard",
+              "prior_failures": 0.0,
+              "prior_successes": 0.0,
+              "structural_cost": 29.0,
+              "target_rule": "mrl_offer_due_once"
+            },
+            "sweep_progress": [
+              14,
+              0,
+              0,
+              0,
+              0,
+              9,
+              0,
+              0,
+              0,
+              0
+            ],
+            "task_oracle": true
+          }
+        ]
+      },
+      "experience": {
+        "arm": "warm",
+        "candidate_order": [
+          "dedup_identity_fix",
+          "episode_scoped_offer_guard",
+          "drop_match_edge",
+          "add_match_guard(control)",
+          "swap_term_leaf:capability_key->latest_segment_ordinal",
+          "swap_term_leaf:capability_key->persistence",
+          "swap_term_leaf:capability_key->structural_signature",
+          "swap_term_leaf:latest_segment_ordinal->capability_key"
+        ],
+        "history_count": 2,
+        "history_records": [
+          {
+            "adopted": false,
+            "candidate_digest": "sha256:ccd1ccf8faaf3c488286535c0c809ce25b111df42d22e610a204792fd4f799b2",
+            "candidate_label": "swap_term_leaf:signature->residual",
+            "converges_in_rehearsal": false,
+            "outcome_class": "",
+            "rank_attempt_tag": "5d9ce0bc528f",
+            "selected": false,
+            "target_rule": "sd_mint_quantum",
+            "task_utility": 0.0
+          },
+          {
+            "adopted": true,
+            "candidate_digest": "sha256:5a41e6559f8390e5fd57a0b85a004e25db5137c31f7c3836d70eceabbcc76ae3",
+            "candidate_label": "dedup_identity_fix",
+            "converges_in_rehearsal": true,
+            "outcome_class": "idempotent_mint_guard",
+            "rank_attempt_tag": "5d9ce0bc528f",
+            "selected": true,
+            "target_rule": "sd_mint_quantum",
+            "task_utility": 1.0
+          }
+        ],
+        "primary_preserved": true,
+        "program_present": true,
+        "success": true,
+        "trials": [
+          {
+            "fixedpoint_progress": 0,
+            "label": "dedup_identity_fix",
+            "offer_counts": [
+              1,
+              1
+            ],
+            "rank_trace": {
+              "attempt_tag": "31800df918fd",
+              "candidate_digest": "sha256:752691c4199cb9be726f3d2bd43b14fc8aa1f19f9074e567f73259367dafe6b2",
+              "outcome_class": "idempotent_mint_guard",
+              "prior_failures": 0.0,
+              "prior_successes": 1.0,
+              "structural_cost": 29.0,
+              "target_rule": "mrl_offer_due_once"
+            },
+            "sweep_progress": [
+              14,
+              0,
+              0,
+              0,
+              0,
+              9,
+              0,
+              0,
+              0,
+              0
+            ],
+            "task_oracle": true
+          }
+        ]
+      },
+      "pid": 3,
+      "ready_impasse_count": 1,
+      "source_after": {
+        "domains/collapse_model.py": "97aaa5c26e6cb3f2682f6d9ee7aa9f0fbbc622e27063b1947edab26fa0ef4ea7",
+        "domains/collapse_watch.py": "de8acb4e4fd6da6cba263c09f7f07f65055ea180343615eb8724c7ddf6b46799",
+        "domains/reflective_faculty.py": "8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/self_correct_dispatch.py": "6aa0759fb39c7b6ff754b669f1699d6badeb90beb48e90e5f7e5b3d1f8a5464f",
+        "domains/self_correction.py": "682c4fda4d18bf2e7655988c6ef8e52dc6ab7bae143851d804c122a0dbeb8a2d",
+        "evaluation/substrate_capability/thoughtexperiment_automatic_outcome_persistence_transfer_v1.py": "a8b9d59db35df31f705ecda8d8b338a59778eddab3792ac208ac8612456c2318",
+        "evaluation/substrate_capability/thoughtexperiment_graph_authored_correction_rank_v1.py": "9a46f1b90dd12a577d86e28b57a256dc5e091bb93f8563aa6fc4178e40ab9fed",
+        "seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "seeds/composer_collapse_watch_graph.json": "7afd9f795f05933873e4b8595558b6a9a2587d6f9e4cfde9f8862eba3511f9c5",
+        "seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "seeds/composer_self_correct_graph.json": "84c3f6ca601b4e62f6c2de46e1da98289821444ee9118dbdbd2a85d655c19e20",
+        "seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "seeds/shape_decode_loop.json": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+      },
+      "source_before": {
+        "domains/collapse_model.py": "97aaa5c26e6cb3f2682f6d9ee7aa9f0fbbc622e27063b1947edab26fa0ef4ea7",
+        "domains/collapse_watch.py": "de8acb4e4fd6da6cba263c09f7f07f65055ea180343615eb8724c7ddf6b46799",
+        "domains/reflective_faculty.py": "8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/self_correct_dispatch.py": "6aa0759fb39c7b6ff754b669f1699d6badeb90beb48e90e5f7e5b3d1f8a5464f",
+        "domains/self_correction.py": "682c4fda4d18bf2e7655988c6ef8e52dc6ab7bae143851d804c122a0dbeb8a2d",
+        "evaluation/substrate_capability/thoughtexperiment_automatic_outcome_persistence_transfer_v1.py": "a8b9d59db35df31f705ecda8d8b338a59778eddab3792ac208ac8612456c2318",
+        "evaluation/substrate_capability/thoughtexperiment_graph_authored_correction_rank_v1.py": "9a46f1b90dd12a577d86e28b57a256dc5e091bb93f8563aa6fc4178e40ab9fed",
+        "seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "seeds/composer_collapse_watch_graph.json": "7afd9f795f05933873e4b8595558b6a9a2587d6f9e4cfde9f8862eba3511f9c5",
+        "seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "seeds/composer_self_correct_graph.json": "84c3f6ca601b4e62f6c2de46e1da98289821444ee9118dbdbd2a85d655c19e20",
+        "seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "seeds/shape_decode_loop.json": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+      },
+      "source_stable": true,
+      "training": {
+        "adopted": true,
+        "attempt_count": 1,
+        "chosen": "dedup_identity_fix",
+        "model_final_converged": true,
+        "persisted": [
+          {
+            "adopted": false,
+            "candidate_digest": "sha256:ccd1ccf8faaf3c488286535c0c809ce25b111df42d22e610a204792fd4f799b2",
+            "candidate_label": "swap_term_leaf:signature->residual",
+            "converges_in_rehearsal": false,
+            "outcome_class": "",
+            "rank_attempt_tag": "5d9ce0bc528f",
+            "selected": false,
+            "target_rule": "sd_mint_quantum",
+            "task_utility": 0.0
+          },
+          {
+            "adopted": true,
+            "candidate_digest": "sha256:5a41e6559f8390e5fd57a0b85a004e25db5137c31f7c3836d70eceabbcc76ae3",
+            "candidate_label": "dedup_identity_fix",
+            "converges_in_rehearsal": true,
+            "outcome_class": "idempotent_mint_guard",
+            "rank_attempt_tag": "5d9ce0bc528f",
+            "selected": true,
+            "target_rule": "sd_mint_quantum",
+            "task_utility": 1.0
+          }
+        ],
+        "target": "sd_mint_quantum"
+      }
+    },
+    {
+      "cold": {
+        "arm": "cold",
+        "candidate_order": [
+          "episode_scoped_offer_guard",
+          "dedup_identity_fix",
+          "drop_match_edge",
+          "add_match_guard(control)",
+          "swap_term_leaf:capability_key->latest_segment_ordinal",
+          "swap_term_leaf:capability_key->persistence",
+          "swap_term_leaf:capability_key->structural_signature",
+          "swap_term_leaf:latest_segment_ordinal->capability_key"
+        ],
+        "history_count": 0,
+        "history_records": [],
+        "primary_preserved": true,
+        "program_present": true,
+        "success": true,
+        "trials": [
+          {
+            "fixedpoint_progress": 0,
+            "label": "episode_scoped_offer_guard",
+            "offer_counts": [
+              1,
+              0
+            ],
+            "rank_trace": {
+              "attempt_tag": "85c996cbe64a",
+              "candidate_digest": "sha256:d34a2ecfd12750716455b94c26e4f187b618c2b05efbe2d8d9368504a90025c7",
+              "outcome_class": "episode_scoped_idempotence",
+              "prior_failures": 0.0,
+              "prior_successes": 0.0,
+              "structural_cost": 23.0,
+              "target_rule": "mrl_offer_due_once"
+            },
+            "sweep_progress": [
+              14,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              0
+            ],
+            "task_oracle": false
+          },
+          {
+            "fixedpoint_progress": 0,
+            "label": "dedup_identity_fix",
+            "offer_counts": [
+              1,
+              1
+            ],
+            "rank_trace": {
+              "attempt_tag": "85c996cbe64a",
+              "candidate_digest": "sha256:84849c390b70c90b1888be083c66a458ddbf067459304630431970b54c6bde44",
+              "outcome_class": "idempotent_mint_guard",
+              "prior_failures": 0.0,
+              "prior_successes": 0.0,
+              "structural_cost": 29.0,
+              "target_rule": "mrl_offer_due_once"
+            },
+            "sweep_progress": [
+              14,
+              0,
+              0,
+              0,
+              0,
+              9,
+              0,
+              0,
+              0,
+              0
+            ],
+            "task_oracle": true
+          }
+        ]
+      },
+      "experience": {
+        "arm": "warm",
+        "candidate_order": [
+          "dedup_identity_fix",
+          "episode_scoped_offer_guard",
+          "drop_match_edge",
+          "add_match_guard(control)",
+          "swap_term_leaf:capability_key->latest_segment_ordinal",
+          "swap_term_leaf:capability_key->persistence",
+          "swap_term_leaf:capability_key->structural_signature",
+          "swap_term_leaf:latest_segment_ordinal->capability_key"
+        ],
+        "history_count": 2,
+        "history_records": [
+          {
+            "adopted": false,
+            "candidate_digest": "sha256:758a3cd2687ea6041174f6cfa144b1d8ea4bd9dbf82da0c4a1711ba51241f874",
+            "candidate_label": "swap_term_leaf:signature->residual",
+            "converges_in_rehearsal": false,
+            "outcome_class": "",
+            "rank_attempt_tag": "39b9e2599767",
+            "selected": false,
+            "target_rule": "sd_mint_quantum",
+            "task_utility": 0.0
+          },
+          {
+            "adopted": true,
+            "candidate_digest": "sha256:cee7e1ad3e6f3ae7e6689db8f7aa9c0fae160f880b131eff834750f4d33253f3",
+            "candidate_label": "dedup_identity_fix",
+            "converges_in_rehearsal": true,
+            "outcome_class": "idempotent_mint_guard",
+            "rank_attempt_tag": "39b9e2599767",
+            "selected": true,
+            "target_rule": "sd_mint_quantum",
+            "task_utility": 1.0
+          }
+        ],
+        "primary_preserved": true,
+        "program_present": true,
+        "success": true,
+        "trials": [
+          {
+            "fixedpoint_progress": 0,
+            "label": "dedup_identity_fix",
+            "offer_counts": [
+              1,
+              1
+            ],
+            "rank_trace": {
+              "attempt_tag": "1e41bc3966f6",
+              "candidate_digest": "sha256:32384af3b56ae2965b72ae9f7c453c6d78a5b160c9e016f7fdfb97357ef71f21",
+              "outcome_class": "idempotent_mint_guard",
+              "prior_failures": 0.0,
+              "prior_successes": 1.0,
+              "structural_cost": 29.0,
+              "target_rule": "mrl_offer_due_once"
+            },
+            "sweep_progress": [
+              14,
+              0,
+              0,
+              0,
+              0,
+              9,
+              0,
+              0,
+              0,
+              0
+            ],
+            "task_oracle": true
+          }
+        ]
+      },
+      "pid": 3083,
+      "ready_impasse_count": 1,
+      "source_after": {
+        "domains/collapse_model.py": "97aaa5c26e6cb3f2682f6d9ee7aa9f0fbbc622e27063b1947edab26fa0ef4ea7",
+        "domains/collapse_watch.py": "de8acb4e4fd6da6cba263c09f7f07f65055ea180343615eb8724c7ddf6b46799",
+        "domains/reflective_faculty.py": "8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/self_correct_dispatch.py": "6aa0759fb39c7b6ff754b669f1699d6badeb90beb48e90e5f7e5b3d1f8a5464f",
+        "domains/self_correction.py": "682c4fda4d18bf2e7655988c6ef8e52dc6ab7bae143851d804c122a0dbeb8a2d",
+        "evaluation/substrate_capability/thoughtexperiment_automatic_outcome_persistence_transfer_v1.py": "a8b9d59db35df31f705ecda8d8b338a59778eddab3792ac208ac8612456c2318",
+        "evaluation/substrate_capability/thoughtexperiment_graph_authored_correction_rank_v1.py": "9a46f1b90dd12a577d86e28b57a256dc5e091bb93f8563aa6fc4178e40ab9fed",
+        "seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "seeds/composer_collapse_watch_graph.json": "7afd9f795f05933873e4b8595558b6a9a2587d6f9e4cfde9f8862eba3511f9c5",
+        "seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "seeds/composer_self_correct_graph.json": "84c3f6ca601b4e62f6c2de46e1da98289821444ee9118dbdbd2a85d655c19e20",
+        "seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "seeds/shape_decode_loop.json": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+      },
+      "source_before": {
+        "domains/collapse_model.py": "97aaa5c26e6cb3f2682f6d9ee7aa9f0fbbc622e27063b1947edab26fa0ef4ea7",
+        "domains/collapse_watch.py": "de8acb4e4fd6da6cba263c09f7f07f65055ea180343615eb8724c7ddf6b46799",
+        "domains/reflective_faculty.py": "8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/self_correct_dispatch.py": "6aa0759fb39c7b6ff754b669f1699d6badeb90beb48e90e5f7e5b3d1f8a5464f",
+        "domains/self_correction.py": "682c4fda4d18bf2e7655988c6ef8e52dc6ab7bae143851d804c122a0dbeb8a2d",
+        "evaluation/substrate_capability/thoughtexperiment_automatic_outcome_persistence_transfer_v1.py": "a8b9d59db35df31f705ecda8d8b338a59778eddab3792ac208ac8612456c2318",
+        "evaluation/substrate_capability/thoughtexperiment_graph_authored_correction_rank_v1.py": "9a46f1b90dd12a577d86e28b57a256dc5e091bb93f8563aa6fc4178e40ab9fed",
+        "seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "seeds/composer_collapse_watch_graph.json": "7afd9f795f05933873e4b8595558b6a9a2587d6f9e4cfde9f8862eba3511f9c5",
+        "seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "seeds/composer_self_correct_graph.json": "84c3f6ca601b4e62f6c2de46e1da98289821444ee9118dbdbd2a85d655c19e20",
+        "seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "seeds/shape_decode_loop.json": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+      },
+      "source_stable": true,
+      "training": {
+        "adopted": true,
+        "attempt_count": 1,
+        "chosen": "dedup_identity_fix",
+        "model_final_converged": true,
+        "persisted": [
+          {
+            "adopted": false,
+            "candidate_digest": "sha256:758a3cd2687ea6041174f6cfa144b1d8ea4bd9dbf82da0c4a1711ba51241f874",
+            "candidate_label": "swap_term_leaf:signature->residual",
+            "converges_in_rehearsal": false,
+            "outcome_class": "",
+            "rank_attempt_tag": "39b9e2599767",
+            "selected": false,
+            "target_rule": "sd_mint_quantum",
+            "task_utility": 0.0
+          },
+          {
+            "adopted": true,
+            "candidate_digest": "sha256:cee7e1ad3e6f3ae7e6689db8f7aa9c0fae160f880b131eff834750f4d33253f3",
+            "candidate_label": "dedup_identity_fix",
+            "converges_in_rehearsal": true,
+            "outcome_class": "idempotent_mint_guard",
+            "rank_attempt_tag": "39b9e2599767",
+            "selected": true,
+            "target_rule": "sd_mint_quantum",
+            "task_utility": 1.0
+          }
+        ],
+        "target": "sd_mint_quantum"
+      }
+    },
+    {
+      "cold": {
+        "arm": "cold",
+        "candidate_order": [
+          "episode_scoped_offer_guard",
+          "dedup_identity_fix",
+          "drop_match_edge",
+          "add_match_guard(control)",
+          "swap_term_leaf:capability_key->latest_segment_ordinal",
+          "swap_term_leaf:capability_key->persistence",
+          "swap_term_leaf:capability_key->structural_signature",
+          "swap_term_leaf:latest_segment_ordinal->capability_key"
+        ],
+        "history_count": 0,
+        "history_records": [],
+        "primary_preserved": true,
+        "program_present": true,
+        "success": true,
+        "trials": [
+          {
+            "fixedpoint_progress": 0,
+            "label": "episode_scoped_offer_guard",
+            "offer_counts": [
+              1,
+              0
+            ],
+            "rank_trace": {
+              "attempt_tag": "76a01ff2af8e",
+              "candidate_digest": "sha256:64f44f975d30ff0672ce0eea2e5a7206587da5ee0397c2ac0d821a89ba299532",
+              "outcome_class": "episode_scoped_idempotence",
+              "prior_failures": 0.0,
+              "prior_successes": 0.0,
+              "structural_cost": 23.0,
+              "target_rule": "mrl_offer_due_once"
+            },
+            "sweep_progress": [
+              14,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              0
+            ],
+            "task_oracle": false
+          },
+          {
+            "fixedpoint_progress": 0,
+            "label": "dedup_identity_fix",
+            "offer_counts": [
+              1,
+              1
+            ],
+            "rank_trace": {
+              "attempt_tag": "76a01ff2af8e",
+              "candidate_digest": "sha256:40164dd30a9573734bb7361ea94174502a3ab27ff16e3dd7bb668751337c16c1",
+              "outcome_class": "idempotent_mint_guard",
+              "prior_failures": 0.0,
+              "prior_successes": 0.0,
+              "structural_cost": 29.0,
+              "target_rule": "mrl_offer_due_once"
+            },
+            "sweep_progress": [
+              14,
+              0,
+              0,
+              0,
+              0,
+              9,
+              0,
+              0,
+              0,
+              0
+            ],
+            "task_oracle": true
+          }
+        ]
+      },
+      "experience": {
+        "arm": "warm",
+        "candidate_order": [
+          "dedup_identity_fix",
+          "episode_scoped_offer_guard",
+          "drop_match_edge",
+          "add_match_guard(control)",
+          "swap_term_leaf:capability_key->latest_segment_ordinal",
+          "swap_term_leaf:capability_key->persistence",
+          "swap_term_leaf:capability_key->structural_signature",
+          "swap_term_leaf:latest_segment_ordinal->capability_key"
+        ],
+        "history_count": 2,
+        "history_records": [
+          {
+            "adopted": false,
+            "candidate_digest": "sha256:efa802d7effde71ff00e8017365f31ef33c429baf7aee1bc7140c87b96a7b432",
+            "candidate_label": "swap_term_leaf:signature->residual",
+            "converges_in_rehearsal": false,
+            "outcome_class": "",
+            "rank_attempt_tag": "d04214d1fa93",
+            "selected": false,
+            "target_rule": "sd_mint_quantum",
+            "task_utility": 0.0
+          },
+          {
+            "adopted": true,
+            "candidate_digest": "sha256:a20284fa0f54b556c224643537870be9bdbae997cacba6960db69bc89904c24c",
+            "candidate_label": "dedup_identity_fix",
+            "converges_in_rehearsal": true,
+            "outcome_class": "idempotent_mint_guard",
+            "rank_attempt_tag": "d04214d1fa93",
+            "selected": true,
+            "target_rule": "sd_mint_quantum",
+            "task_utility": 1.0
+          }
+        ],
+        "primary_preserved": true,
+        "program_present": true,
+        "success": true,
+        "trials": [
+          {
+            "fixedpoint_progress": 0,
+            "label": "dedup_identity_fix",
+            "offer_counts": [
+              1,
+              1
+            ],
+            "rank_trace": {
+              "attempt_tag": "286a3b1cf239",
+              "candidate_digest": "sha256:a1347f96108884089d92b1ebac49dbbab257adabcdc3999c08e1142a08e24636",
+              "outcome_class": "idempotent_mint_guard",
+              "prior_failures": 0.0,
+              "prior_successes": 1.0,
+              "structural_cost": 29.0,
+              "target_rule": "mrl_offer_due_once"
+            },
+            "sweep_progress": [
+              14,
+              0,
+              0,
+              0,
+              0,
+              9,
+              0,
+              0,
+              0,
+              0
+            ],
+            "task_oracle": true
+          }
+        ]
+      },
+      "pid": 6163,
+      "ready_impasse_count": 1,
+      "source_after": {
+        "domains/collapse_model.py": "97aaa5c26e6cb3f2682f6d9ee7aa9f0fbbc622e27063b1947edab26fa0ef4ea7",
+        "domains/collapse_watch.py": "de8acb4e4fd6da6cba263c09f7f07f65055ea180343615eb8724c7ddf6b46799",
+        "domains/reflective_faculty.py": "8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/self_correct_dispatch.py": "6aa0759fb39c7b6ff754b669f1699d6badeb90beb48e90e5f7e5b3d1f8a5464f",
+        "domains/self_correction.py": "682c4fda4d18bf2e7655988c6ef8e52dc6ab7bae143851d804c122a0dbeb8a2d",
+        "evaluation/substrate_capability/thoughtexperiment_automatic_outcome_persistence_transfer_v1.py": "a8b9d59db35df31f705ecda8d8b338a59778eddab3792ac208ac8612456c2318",
+        "evaluation/substrate_capability/thoughtexperiment_graph_authored_correction_rank_v1.py": "9a46f1b90dd12a577d86e28b57a256dc5e091bb93f8563aa6fc4178e40ab9fed",
+        "seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "seeds/composer_collapse_watch_graph.json": "7afd9f795f05933873e4b8595558b6a9a2587d6f9e4cfde9f8862eba3511f9c5",
+        "seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "seeds/composer_self_correct_graph.json": "84c3f6ca601b4e62f6c2de46e1da98289821444ee9118dbdbd2a85d655c19e20",
+        "seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "seeds/shape_decode_loop.json": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+      },
+      "source_before": {
+        "domains/collapse_model.py": "97aaa5c26e6cb3f2682f6d9ee7aa9f0fbbc622e27063b1947edab26fa0ef4ea7",
+        "domains/collapse_watch.py": "de8acb4e4fd6da6cba263c09f7f07f65055ea180343615eb8724c7ddf6b46799",
+        "domains/reflective_faculty.py": "8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/self_correct_dispatch.py": "6aa0759fb39c7b6ff754b669f1699d6badeb90beb48e90e5f7e5b3d1f8a5464f",
+        "domains/self_correction.py": "682c4fda4d18bf2e7655988c6ef8e52dc6ab7bae143851d804c122a0dbeb8a2d",
+        "evaluation/substrate_capability/thoughtexperiment_automatic_outcome_persistence_transfer_v1.py": "a8b9d59db35df31f705ecda8d8b338a59778eddab3792ac208ac8612456c2318",
+        "evaluation/substrate_capability/thoughtexperiment_graph_authored_correction_rank_v1.py": "9a46f1b90dd12a577d86e28b57a256dc5e091bb93f8563aa6fc4178e40ab9fed",
+        "seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "seeds/composer_collapse_watch_graph.json": "7afd9f795f05933873e4b8595558b6a9a2587d6f9e4cfde9f8862eba3511f9c5",
+        "seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "seeds/composer_self_correct_graph.json": "84c3f6ca601b4e62f6c2de46e1da98289821444ee9118dbdbd2a85d655c19e20",
+        "seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "seeds/shape_decode_loop.json": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+      },
+      "source_stable": true,
+      "training": {
+        "adopted": true,
+        "attempt_count": 1,
+        "chosen": "dedup_identity_fix",
+        "model_final_converged": true,
+        "persisted": [
+          {
+            "adopted": false,
+            "candidate_digest": "sha256:efa802d7effde71ff00e8017365f31ef33c429baf7aee1bc7140c87b96a7b432",
+            "candidate_label": "swap_term_leaf:signature->residual",
+            "converges_in_rehearsal": false,
+            "outcome_class": "",
+            "rank_attempt_tag": "d04214d1fa93",
+            "selected": false,
+            "target_rule": "sd_mint_quantum",
+            "task_utility": 0.0
+          },
+          {
+            "adopted": true,
+            "candidate_digest": "sha256:a20284fa0f54b556c224643537870be9bdbae997cacba6960db69bc89904c24c",
+            "candidate_label": "dedup_identity_fix",
+            "converges_in_rehearsal": true,
+            "outcome_class": "idempotent_mint_guard",
+            "rank_attempt_tag": "d04214d1fa93",
+            "selected": true,
+            "target_rule": "sd_mint_quantum",
+            "task_utility": 1.0
+          }
+        ],
+        "target": "sd_mint_quantum"
+      }
+    }
+  ]
+}

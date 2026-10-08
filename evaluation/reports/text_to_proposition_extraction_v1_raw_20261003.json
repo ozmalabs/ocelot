@@ -1,0 +1,849 @@
+{
+  "case_count": 7,
+  "complete_proposition_exact_count": 0,
+  "integrity_errors": [],
+  "interpretation": "Direct comprehension-front-end measurement on raw text with an empty graph. The output relation is compared with a locked target proposition; a recovered value alone is not counted as a correctly extracted proposition. The query target is a parser dispatch result, not evidence of memory retrieval.",
+  "locked_inputs": {
+    "domains/comprehend_question.py": "f184a960bb10c83b862dffc2420215bab0eedeadeb1c3e67fe1a7d73d47ac9c4",
+    "domains/comprehend_text.py": "536174e6bba7ce02c3a40975b6d5ac251d427f4b98c504cab548f5a5307da88b",
+    "domains/construction_grammar.py": "3068ecb6df7a548eb8cd79c30ab16224e8cd133838f1f3131957d4cab5b60cb1",
+    "domains/forward_segmentation.py": "d5207b57cb7ae7ceba63ba3adacdd0e52b089e3b2ac044ca3be8ce5f977ca8d4",
+    "domains/instruction_reading.py": "cc0372f1ddaec2135f7cebc2d2626294f090e83d5253f7a34057b08eb4c575f3",
+    "domains/language_faculty_ops.py": "c5bc8be94397b2def677fb952e1b71f2751f3a2e4e5364c0c03d5ea7322c8323",
+    "domains/preposition_roles.py": "fa3a277e4db2175ec1e4036be6788a21d47856e74cfc314dbc7119bdae85d6f1",
+    "domains/self_model.py": "2861ac8715ecfba1539dfc45b5f0d26179cefe76c18944072c08c9b28f18c8ab",
+    "domains/wordplay.py": "7255fb00b18ab4067c558ec9a9e16e2af82fca24b77be12651dc1e4fc13b9b60",
+    "evaluation/substrate_capability/text_to_proposition_extraction_v1.py": "2402a5d0b8595a91656fa69c70d806f1699200424d52826870b91c9f30b0193b",
+    "evaluation/substrate_capability/text_to_proposition_extraction_v1_cases_20261003.json": "bf6083cb9d21457482d2fa6b30da0f38e23fa0ec11cea0256bd334f5ae587e55",
+    "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+    "runners/dsl/python/substrate_rs/_native.abi3.so": "a4c30df0aff2e8e0723a3d957142e4e9a5bc321592d40295ec863310ca2c5af8",
+    "runners/dsl/python/substrate_rs/ext.py": "eb24354f3c500a2394cba96a1522d18ebdd2a3bf1df13676c5a989f8acae998a",
+    "seeds/communication_concepts.json": "1ccac89e4d7beda914c598903b1714c0a1933a971a82a442106d3cf073ad87fa",
+    "seeds/constructions.json": "2b38a611e746c410aa62945ede6ed0e808b36a5d50376cfce0da66eaa2bb4e54",
+    "seeds/question_targets.json": "3a969754ff57decff2c093f16ce3e4642dab83cc28c8c4ea0b2102e6ec14a656",
+    "seeds/speech_act_classify.json": "7d72f8c7fb6de42e7e1ec9935341699c1cb0bbc407630df4293e24760f4759c2",
+    "substrate/graph.py": "edebfafd619d07e4755a6f189d0e3904ec096e6add311f629c88730c0d547c4f",
+    "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+    "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c"
+  },
+  "passed_integrity": true,
+  "polarity_exact_count": 0,
+  "polarity_scored_count": 18,
+  "post_run_inputs": {
+    "domains/comprehend_question.py": "f184a960bb10c83b862dffc2420215bab0eedeadeb1c3e67fe1a7d73d47ac9c4",
+    "domains/comprehend_text.py": "536174e6bba7ce02c3a40975b6d5ac251d427f4b98c504cab548f5a5307da88b",
+    "domains/construction_grammar.py": "3068ecb6df7a548eb8cd79c30ab16224e8cd133838f1f3131957d4cab5b60cb1",
+    "domains/forward_segmentation.py": "d5207b57cb7ae7ceba63ba3adacdd0e52b089e3b2ac044ca3be8ce5f977ca8d4",
+    "domains/instruction_reading.py": "cc0372f1ddaec2135f7cebc2d2626294f090e83d5253f7a34057b08eb4c575f3",
+    "domains/language_faculty_ops.py": "c5bc8be94397b2def677fb952e1b71f2751f3a2e4e5364c0c03d5ea7322c8323",
+    "domains/preposition_roles.py": "fa3a277e4db2175ec1e4036be6788a21d47856e74cfc314dbc7119bdae85d6f1",
+    "domains/self_model.py": "2861ac8715ecfba1539dfc45b5f0d26179cefe76c18944072c08c9b28f18c8ab",
+    "domains/wordplay.py": "7255fb00b18ab4067c558ec9a9e16e2af82fca24b77be12651dc1e4fc13b9b60",
+    "evaluation/substrate_capability/text_to_proposition_extraction_v1.py": "2402a5d0b8595a91656fa69c70d806f1699200424d52826870b91c9f30b0193b",
+    "evaluation/substrate_capability/text_to_proposition_extraction_v1_cases_20261003.json": "bf6083cb9d21457482d2fa6b30da0f38e23fa0ec11cea0256bd334f5ae587e55",
+    "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+    "runners/dsl/python/substrate_rs/_native.abi3.so": "a4c30df0aff2e8e0723a3d957142e4e9a5bc321592d40295ec863310ca2c5af8",
+    "runners/dsl/python/substrate_rs/ext.py": "eb24354f3c500a2394cba96a1522d18ebdd2a3bf1df13676c5a989f8acae998a",
+    "seeds/communication_concepts.json": "1ccac89e4d7beda914c598903b1714c0a1933a971a82a442106d3cf073ad87fa",
+    "seeds/constructions.json": "2b38a611e746c410aa62945ede6ed0e808b36a5d50376cfce0da66eaa2bb4e54",
+    "seeds/question_targets.json": "3a969754ff57decff2c093f16ce3e4642dab83cc28c8c4ea0b2102e6ec14a656",
+    "seeds/speech_act_classify.json": "7d72f8c7fb6de42e7e1ec9935341699c1cb0bbc407630df4293e24760f4759c2",
+    "substrate/graph.py": "edebfafd619d07e4755a6f189d0e3904ec096e6add311f629c88730c0d547c4f",
+    "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+    "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c"
+  },
+  "predicate_exact_count": 0,
+  "query_scored_count": 3,
+  "query_target_exact_count": 3,
+  "repeat_count_per_case": 3,
+  "row_count": 21,
+  "rows": [
+    {
+      "case_id": "value_14_period",
+      "dispatch_path": "statement",
+      "expected_polarity": "affirmed",
+      "expected_value": "14",
+      "gaps": [
+        {
+          "pos": "noun",
+          "surface": "secret"
+        },
+        {
+          "pos": "verb",
+          "surface": "code"
+        },
+        {
+          "pos": "noun",
+          "surface": "14."
+        }
+      ],
+      "handoff_stage": "parser_only",
+      "kind": "statement",
+      "language_evidence": null,
+      "normalized_object": "14",
+      "object": "14.",
+      "pid": 2,
+      "polarity_exact": false,
+      "predicate": "code",
+      "predicate_exact": false,
+      "query_target": null,
+      "query_target_exact": null,
+      "relation_focus": "polar",
+      "relation_polarity": null,
+      "replicate": 0,
+      "subject": "secret",
+      "subject_exact": false,
+      "text": "My secret code is 14.",
+      "value_exact": true
+    },
+    {
+      "case_id": "value_14_period",
+      "dispatch_path": "statement",
+      "expected_polarity": "affirmed",
+      "expected_value": "14",
+      "gaps": [
+        {
+          "pos": "noun",
+          "surface": "secret"
+        },
+        {
+          "pos": "verb",
+          "surface": "code"
+        },
+        {
+          "pos": "noun",
+          "surface": "14."
+        }
+      ],
+      "handoff_stage": "parser_only",
+      "kind": "statement",
+      "language_evidence": null,
+      "normalized_object": "14",
+      "object": "14.",
+      "pid": 2,
+      "polarity_exact": false,
+      "predicate": "code",
+      "predicate_exact": false,
+      "query_target": null,
+      "query_target_exact": null,
+      "relation_focus": "polar",
+      "relation_polarity": null,
+      "replicate": 1,
+      "subject": "secret",
+      "subject_exact": false,
+      "text": "My secret code is 14.",
+      "value_exact": true
+    },
+    {
+      "case_id": "value_14_period",
+      "dispatch_path": "statement",
+      "expected_polarity": "affirmed",
+      "expected_value": "14",
+      "gaps": [
+        {
+          "pos": "noun",
+          "surface": "secret"
+        },
+        {
+          "pos": "verb",
+          "surface": "code"
+        },
+        {
+          "pos": "noun",
+          "surface": "14."
+        }
+      ],
+      "handoff_stage": "parser_only",
+      "kind": "statement",
+      "language_evidence": null,
+      "normalized_object": "14",
+      "object": "14.",
+      "pid": 2,
+      "polarity_exact": false,
+      "predicate": "code",
+      "predicate_exact": false,
+      "query_target": null,
+      "query_target_exact": null,
+      "relation_focus": "polar",
+      "relation_polarity": null,
+      "replicate": 2,
+      "subject": "secret",
+      "subject_exact": false,
+      "text": "My secret code is 14.",
+      "value_exact": true
+    },
+    {
+      "case_id": "value_29_period",
+      "dispatch_path": "statement",
+      "expected_polarity": "affirmed",
+      "expected_value": "29",
+      "gaps": [
+        {
+          "pos": "noun",
+          "surface": "secret"
+        },
+        {
+          "pos": "verb",
+          "surface": "code"
+        },
+        {
+          "pos": "by-position",
+          "surface": "29."
+        }
+      ],
+      "handoff_stage": "parser_only",
+      "kind": "statement",
+      "language_evidence": null,
+      "normalized_object": null,
+      "object": null,
+      "pid": 2,
+      "polarity_exact": false,
+      "predicate": "code",
+      "predicate_exact": false,
+      "query_target": null,
+      "query_target_exact": null,
+      "relation_focus": "polar",
+      "relation_polarity": null,
+      "replicate": 0,
+      "subject": "secret",
+      "subject_exact": false,
+      "text": "My secret code is 29.",
+      "value_exact": false
+    },
+    {
+      "case_id": "value_29_period",
+      "dispatch_path": "statement",
+      "expected_polarity": "affirmed",
+      "expected_value": "29",
+      "gaps": [
+        {
+          "pos": "noun",
+          "surface": "secret"
+        },
+        {
+          "pos": "verb",
+          "surface": "code"
+        },
+        {
+          "pos": "by-position",
+          "surface": "29."
+        }
+      ],
+      "handoff_stage": "parser_only",
+      "kind": "statement",
+      "language_evidence": null,
+      "normalized_object": null,
+      "object": null,
+      "pid": 2,
+      "polarity_exact": false,
+      "predicate": "code",
+      "predicate_exact": false,
+      "query_target": null,
+      "query_target_exact": null,
+      "relation_focus": "polar",
+      "relation_polarity": null,
+      "replicate": 1,
+      "subject": "secret",
+      "subject_exact": false,
+      "text": "My secret code is 29.",
+      "value_exact": false
+    },
+    {
+      "case_id": "value_29_period",
+      "dispatch_path": "statement",
+      "expected_polarity": "affirmed",
+      "expected_value": "29",
+      "gaps": [
+        {
+          "pos": "noun",
+          "surface": "secret"
+        },
+        {
+          "pos": "verb",
+          "surface": "code"
+        },
+        {
+          "pos": "by-position",
+          "surface": "29."
+        }
+      ],
+      "handoff_stage": "parser_only",
+      "kind": "statement",
+      "language_evidence": null,
+      "normalized_object": null,
+      "object": null,
+      "pid": 2,
+      "polarity_exact": false,
+      "predicate": "code",
+      "predicate_exact": false,
+      "query_target": null,
+      "query_target_exact": null,
+      "relation_focus": "polar",
+      "relation_polarity": null,
+      "replicate": 2,
+      "subject": "secret",
+      "subject_exact": false,
+      "text": "My secret code is 29.",
+      "value_exact": false
+    },
+    {
+      "case_id": "value_14_no_period",
+      "dispatch_path": "statement",
+      "expected_polarity": "affirmed",
+      "expected_value": "14",
+      "gaps": [
+        {
+          "pos": "noun",
+          "surface": "secret"
+        },
+        {
+          "pos": "verb",
+          "surface": "code"
+        },
+        {
+          "pos": "noun",
+          "surface": "14"
+        }
+      ],
+      "handoff_stage": "parser_only",
+      "kind": "statement",
+      "language_evidence": null,
+      "normalized_object": "14",
+      "object": "14",
+      "pid": 2,
+      "polarity_exact": false,
+      "predicate": "code",
+      "predicate_exact": false,
+      "query_target": null,
+      "query_target_exact": null,
+      "relation_focus": "polar",
+      "relation_polarity": null,
+      "replicate": 0,
+      "subject": "secret",
+      "subject_exact": false,
+      "text": "My secret code is 14",
+      "value_exact": true
+    },
+    {
+      "case_id": "value_14_no_period",
+      "dispatch_path": "statement",
+      "expected_polarity": "affirmed",
+      "expected_value": "14",
+      "gaps": [
+        {
+          "pos": "noun",
+          "surface": "secret"
+        },
+        {
+          "pos": "verb",
+          "surface": "code"
+        },
+        {
+          "pos": "noun",
+          "surface": "14"
+        }
+      ],
+      "handoff_stage": "parser_only",
+      "kind": "statement",
+      "language_evidence": null,
+      "normalized_object": "14",
+      "object": "14",
+      "pid": 2,
+      "polarity_exact": false,
+      "predicate": "code",
+      "predicate_exact": false,
+      "query_target": null,
+      "query_target_exact": null,
+      "relation_focus": "polar",
+      "relation_polarity": null,
+      "replicate": 1,
+      "subject": "secret",
+      "subject_exact": false,
+      "text": "My secret code is 14",
+      "value_exact": true
+    },
+    {
+      "case_id": "value_14_no_period",
+      "dispatch_path": "statement",
+      "expected_polarity": "affirmed",
+      "expected_value": "14",
+      "gaps": [
+        {
+          "pos": "noun",
+          "surface": "secret"
+        },
+        {
+          "pos": "verb",
+          "surface": "code"
+        },
+        {
+          "pos": "noun",
+          "surface": "14"
+        }
+      ],
+      "handoff_stage": "parser_only",
+      "kind": "statement",
+      "language_evidence": null,
+      "normalized_object": "14",
+      "object": "14",
+      "pid": 2,
+      "polarity_exact": false,
+      "predicate": "code",
+      "predicate_exact": false,
+      "query_target": null,
+      "query_target_exact": null,
+      "relation_focus": "polar",
+      "relation_polarity": null,
+      "replicate": 2,
+      "subject": "secret",
+      "subject_exact": false,
+      "text": "My secret code is 14",
+      "value_exact": true
+    },
+    {
+      "case_id": "value_14_definite_paraphrase",
+      "dispatch_path": "statement",
+      "expected_polarity": "affirmed",
+      "expected_value": "14",
+      "gaps": [
+        {
+          "pos": "noun",
+          "surface": "secret"
+        },
+        {
+          "pos": "verb",
+          "surface": "code"
+        },
+        {
+          "pos": "noun",
+          "surface": "14."
+        }
+      ],
+      "handoff_stage": "parser_only",
+      "kind": "statement",
+      "language_evidence": null,
+      "normalized_object": "14",
+      "object": "14.",
+      "pid": 2,
+      "polarity_exact": false,
+      "predicate": "code",
+      "predicate_exact": false,
+      "query_target": null,
+      "query_target_exact": null,
+      "relation_focus": "polar",
+      "relation_polarity": null,
+      "replicate": 0,
+      "subject": "secret",
+      "subject_exact": false,
+      "text": "The secret code is 14.",
+      "value_exact": true
+    },
+    {
+      "case_id": "value_14_definite_paraphrase",
+      "dispatch_path": "statement",
+      "expected_polarity": "affirmed",
+      "expected_value": "14",
+      "gaps": [
+        {
+          "pos": "noun",
+          "surface": "secret"
+        },
+        {
+          "pos": "verb",
+          "surface": "code"
+        },
+        {
+          "pos": "noun",
+          "surface": "14."
+        }
+      ],
+      "handoff_stage": "parser_only",
+      "kind": "statement",
+      "language_evidence": null,
+      "normalized_object": "14",
+      "object": "14.",
+      "pid": 2,
+      "polarity_exact": false,
+      "predicate": "code",
+      "predicate_exact": false,
+      "query_target": null,
+      "query_target_exact": null,
+      "relation_focus": "polar",
+      "relation_polarity": null,
+      "replicate": 1,
+      "subject": "secret",
+      "subject_exact": false,
+      "text": "The secret code is 14.",
+      "value_exact": true
+    },
+    {
+      "case_id": "value_14_definite_paraphrase",
+      "dispatch_path": "statement",
+      "expected_polarity": "affirmed",
+      "expected_value": "14",
+      "gaps": [
+        {
+          "pos": "noun",
+          "surface": "secret"
+        },
+        {
+          "pos": "verb",
+          "surface": "code"
+        },
+        {
+          "pos": "noun",
+          "surface": "14."
+        }
+      ],
+      "handoff_stage": "parser_only",
+      "kind": "statement",
+      "language_evidence": null,
+      "normalized_object": "14",
+      "object": "14.",
+      "pid": 2,
+      "polarity_exact": false,
+      "predicate": "code",
+      "predicate_exact": false,
+      "query_target": null,
+      "query_target_exact": null,
+      "relation_focus": "polar",
+      "relation_polarity": null,
+      "replicate": 2,
+      "subject": "secret",
+      "subject_exact": false,
+      "text": "The secret code is 14.",
+      "value_exact": true
+    },
+    {
+      "case_id": "value_14_active_paraphrase",
+      "dispatch_path": "statement",
+      "expected_polarity": "affirmed",
+      "expected_value": "14",
+      "gaps": [
+        {
+          "pos": "verb",
+          "surface": "use"
+        },
+        {
+          "pos": "noun",
+          "surface": "14"
+        },
+        {
+          "pos": "noun",
+          "surface": "secret"
+        },
+        {
+          "pos": "verb",
+          "surface": "code."
+        }
+      ],
+      "handoff_stage": "parser_only",
+      "kind": "statement",
+      "language_evidence": null,
+      "normalized_object": "14",
+      "object": "14",
+      "pid": 2,
+      "polarity_exact": false,
+      "predicate": "use",
+      "predicate_exact": false,
+      "query_target": null,
+      "query_target_exact": null,
+      "relation_focus": "polar",
+      "relation_polarity": null,
+      "replicate": 0,
+      "subject": "I",
+      "subject_exact": false,
+      "text": "I use 14 as my secret code.",
+      "value_exact": true
+    },
+    {
+      "case_id": "value_14_active_paraphrase",
+      "dispatch_path": "statement",
+      "expected_polarity": "affirmed",
+      "expected_value": "14",
+      "gaps": [
+        {
+          "pos": "verb",
+          "surface": "use"
+        },
+        {
+          "pos": "noun",
+          "surface": "14"
+        },
+        {
+          "pos": "noun",
+          "surface": "secret"
+        },
+        {
+          "pos": "verb",
+          "surface": "code."
+        }
+      ],
+      "handoff_stage": "parser_only",
+      "kind": "statement",
+      "language_evidence": null,
+      "normalized_object": "14",
+      "object": "14",
+      "pid": 2,
+      "polarity_exact": false,
+      "predicate": "use",
+      "predicate_exact": false,
+      "query_target": null,
+      "query_target_exact": null,
+      "relation_focus": "polar",
+      "relation_polarity": null,
+      "replicate": 1,
+      "subject": "I",
+      "subject_exact": false,
+      "text": "I use 14 as my secret code.",
+      "value_exact": true
+    },
+    {
+      "case_id": "value_14_active_paraphrase",
+      "dispatch_path": "statement",
+      "expected_polarity": "affirmed",
+      "expected_value": "14",
+      "gaps": [
+        {
+          "pos": "verb",
+          "surface": "use"
+        },
+        {
+          "pos": "noun",
+          "surface": "14"
+        },
+        {
+          "pos": "noun",
+          "surface": "secret"
+        },
+        {
+          "pos": "verb",
+          "surface": "code."
+        }
+      ],
+      "handoff_stage": "parser_only",
+      "kind": "statement",
+      "language_evidence": null,
+      "normalized_object": "14",
+      "object": "14",
+      "pid": 2,
+      "polarity_exact": false,
+      "predicate": "use",
+      "predicate_exact": false,
+      "query_target": null,
+      "query_target_exact": null,
+      "relation_focus": "polar",
+      "relation_polarity": null,
+      "replicate": 2,
+      "subject": "I",
+      "subject_exact": false,
+      "text": "I use 14 as my secret code.",
+      "value_exact": true
+    },
+    {
+      "case_id": "value_14_negated",
+      "dispatch_path": "statement",
+      "expected_polarity": "negated",
+      "expected_value": "14",
+      "gaps": [
+        {
+          "pos": "noun",
+          "surface": "secret"
+        },
+        {
+          "pos": "verb",
+          "surface": "code"
+        },
+        {
+          "pos": "adv",
+          "surface": "not"
+        },
+        {
+          "pos": "noun",
+          "surface": "14."
+        }
+      ],
+      "handoff_stage": "parser_only",
+      "kind": "statement",
+      "language_evidence": null,
+      "normalized_object": "14",
+      "object": "14.",
+      "pid": 2,
+      "polarity_exact": false,
+      "predicate": "code",
+      "predicate_exact": false,
+      "query_target": null,
+      "query_target_exact": null,
+      "relation_focus": "polar",
+      "relation_polarity": null,
+      "replicate": 0,
+      "subject": "secret",
+      "subject_exact": false,
+      "text": "My secret code is not 14.",
+      "value_exact": true
+    },
+    {
+      "case_id": "value_14_negated",
+      "dispatch_path": "statement",
+      "expected_polarity": "negated",
+      "expected_value": "14",
+      "gaps": [
+        {
+          "pos": "noun",
+          "surface": "secret"
+        },
+        {
+          "pos": "verb",
+          "surface": "code"
+        },
+        {
+          "pos": "adv",
+          "surface": "not"
+        },
+        {
+          "pos": "noun",
+          "surface": "14."
+        }
+      ],
+      "handoff_stage": "parser_only",
+      "kind": "statement",
+      "language_evidence": null,
+      "normalized_object": "14",
+      "object": "14.",
+      "pid": 2,
+      "polarity_exact": false,
+      "predicate": "code",
+      "predicate_exact": false,
+      "query_target": null,
+      "query_target_exact": null,
+      "relation_focus": "polar",
+      "relation_polarity": null,
+      "replicate": 1,
+      "subject": "secret",
+      "subject_exact": false,
+      "text": "My secret code is not 14.",
+      "value_exact": true
+    },
+    {
+      "case_id": "value_14_negated",
+      "dispatch_path": "statement",
+      "expected_polarity": "negated",
+      "expected_value": "14",
+      "gaps": [
+        {
+          "pos": "noun",
+          "surface": "secret"
+        },
+        {
+          "pos": "verb",
+          "surface": "code"
+        },
+        {
+          "pos": "adv",
+          "surface": "not"
+        },
+        {
+          "pos": "noun",
+          "surface": "14."
+        }
+      ],
+      "handoff_stage": "parser_only",
+      "kind": "statement",
+      "language_evidence": null,
+      "normalized_object": "14",
+      "object": "14.",
+      "pid": 2,
+      "polarity_exact": false,
+      "predicate": "code",
+      "predicate_exact": false,
+      "query_target": null,
+      "query_target_exact": null,
+      "relation_focus": "polar",
+      "relation_polarity": null,
+      "replicate": 2,
+      "subject": "secret",
+      "subject_exact": false,
+      "text": "My secret code is not 14.",
+      "value_exact": true
+    },
+    {
+      "case_id": "secret_code_query",
+      "dispatch_path": "table",
+      "expected_polarity": null,
+      "expected_value": null,
+      "gaps": [],
+      "handoff_stage": "parser_only",
+      "kind": "question",
+      "language_evidence": null,
+      "normalized_object": null,
+      "object": null,
+      "pid": 2,
+      "polarity_exact": null,
+      "predicate": null,
+      "predicate_exact": null,
+      "query_target": "my secret code",
+      "query_target_exact": true,
+      "relation_focus": null,
+      "relation_polarity": null,
+      "replicate": 0,
+      "subject": null,
+      "subject_exact": null,
+      "text": "What is my secret code?",
+      "value_exact": null
+    },
+    {
+      "case_id": "secret_code_query",
+      "dispatch_path": "table",
+      "expected_polarity": null,
+      "expected_value": null,
+      "gaps": [],
+      "handoff_stage": "parser_only",
+      "kind": "question",
+      "language_evidence": null,
+      "normalized_object": null,
+      "object": null,
+      "pid": 2,
+      "polarity_exact": null,
+      "predicate": null,
+      "predicate_exact": null,
+      "query_target": "my secret code",
+      "query_target_exact": true,
+      "relation_focus": null,
+      "relation_polarity": null,
+      "replicate": 1,
+      "subject": null,
+      "subject_exact": null,
+      "text": "What is my secret code?",
+      "value_exact": null
+    },
+    {
+      "case_id": "secret_code_query",
+      "dispatch_path": "table",
+      "expected_polarity": null,
+      "expected_value": null,
+      "gaps": [],
+      "handoff_stage": "parser_only",
+      "kind": "question",
+      "language_evidence": null,
+      "normalized_object": null,
+      "object": null,
+      "pid": 2,
+      "polarity_exact": null,
+      "predicate": null,
+      "predicate_exact": null,
+      "query_target": "my secret code",
+      "query_target_exact": true,
+      "relation_focus": null,
+      "relation_polarity": null,
+      "replicate": 2,
+      "subject": null,
+      "subject_exact": null,
+      "text": "What is my secret code?",
+      "value_exact": null
+    }
+  ],
+  "schema": "text_to_proposition_extraction_v1",
+  "subject_exact_count": 0,
+  "value_exact_count": 15,
+  "value_scored_count": 18
+}

@@ -1,0 +1,3130 @@
+{
+  "orders_sha256": "1d9f185b63df023efd9edb1d5f49f4f12aa2d14747c4574368deda0fb484934b",
+  "schema": "AttributeSiteActiveChoiceV2Scores",
+  "workers": [
+    {
+      "controls": {
+        "duplicate_namespace_rejected": true,
+        "duplicate_reason": "experiment_id is already present in this substrate",
+        "incomplete_coverage_rejected": true,
+        "incomplete_reason": "every proposal must have evidence for every supplied probe",
+        "incomplete_rejection_did_not_mutate_graph": true,
+        "tie_abstains": false,
+        "tie_reason": null,
+        "zero_match_abstains": true,
+        "zero_reason": "no unique proposal has positive matching evidence"
+      },
+      "heldout": [
+        {
+          "env": {
+            "bad_score": -2.0,
+            "good_score": 2.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "held_0"
+          },
+          "expected": [
+            "HOT",
+            1.0
+          ],
+          "predictions": {
+            "fault": [
+              "COLD",
+              1.0
+            ],
+            "forward": [
+              "HOT",
+              1.0
+            ],
+            "reverse": [
+              "COLD",
+              1.0
+            ]
+          }
+        },
+        {
+          "env": {
+            "bad_score": 2.0,
+            "good_score": -2.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "held_1"
+          },
+          "expected": [
+            "COLD",
+            1.0
+          ],
+          "predictions": {
+            "fault": [
+              "HOT",
+              1.0
+            ],
+            "forward": [
+              "COLD",
+              1.0
+            ],
+            "reverse": [
+              "HOT",
+              1.0
+            ]
+          }
+        },
+        {
+          "env": {
+            "bad_score": 0.0,
+            "good_score": 0.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "held_2"
+          },
+          "expected": [
+            "COLD",
+            1.0
+          ],
+          "predictions": {
+            "fault": [
+              "COLD",
+              1.0
+            ],
+            "forward": [
+              "COLD",
+              1.0
+            ],
+            "reverse": [
+              "COLD",
+              1.0
+            ]
+          }
+        },
+        {
+          "env": {
+            "bad_score": -3.0,
+            "good_score": 3.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "held_3"
+          },
+          "expected": [
+            "HOT",
+            1.0
+          ],
+          "predictions": {
+            "fault": [
+              "COLD",
+              1.0
+            ],
+            "forward": [
+              "HOT",
+              1.0
+            ],
+            "reverse": [
+              "COLD",
+              1.0
+            ]
+          }
+        },
+        {
+          "env": {
+            "bad_score": 3.0,
+            "good_score": -3.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "held_4"
+          },
+          "expected": [
+            "COLD",
+            1.0
+          ],
+          "predictions": {
+            "fault": [
+              "HOT",
+              1.0
+            ],
+            "forward": [
+              "COLD",
+              1.0
+            ],
+            "reverse": [
+              "HOT",
+              1.0
+            ]
+          }
+        }
+      ],
+      "meta": {
+        "candidate_labels": [
+          "add_match_guard(control)",
+          "drop_match_edge",
+          "flip_comparison",
+          "swap_term_leaf:bad_score->good_score",
+          "swap_term_leaf:bad_score->negative",
+          "swap_term_leaf:bad_score->positive",
+          "swap_term_leaf:good_score->bad_score"
+        ],
+        "composer_ns": 0,
+        "composition_built": null,
+        "composition_wall": null,
+        "enumerator_ns": 427084,
+        "primary_unchanged": true,
+        "proposal_digests": {
+          "fault": "65578eb8abc539f285312a1a006b170501db1cfa6f28f2ebaa0dd16f0310b811",
+          "forward": "1eaa4b9e3df44a38d915a53715aa3dc6cb943bff4a2fa8561e9fba568a8c3e96",
+          "reverse": "dd6ab851beade1bc1a9b4df89a68d2a1ef1ee6453e06b37670b4562e3fd1281b"
+        }
+      },
+      "primary_preserved": false,
+      "results": [
+        {
+          "alias_rate_percent": 0,
+          "expected": [
+            "HOT",
+            1.0
+          ],
+          "graph_decision": {
+            "matching_evidence_count": 1,
+            "ok": true,
+            "probe_count": 1,
+            "proposal_count": 3,
+            "proposal_id": "forward",
+            "proposal_label": "forward"
+          },
+          "graph_decision_ns": 203081,
+          "mode": "cow_snapshot",
+          "predictions": {
+            "fault": [
+              "COLD",
+              1.0
+            ],
+            "forward": [
+              "HOT",
+              1.0
+            ],
+            "reverse": [
+              "COLD",
+              1.0
+            ]
+          },
+          "query": {
+            "bad_score": -1.0,
+            "good_score": 1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w0_r0_i68"
+          },
+          "random_probe": {
+            "env": {
+              "bad_score": 1.0,
+              "good_score": -1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w0_r0_i47"
+            },
+            "expected": [
+              "COLD",
+              1.0
+            ],
+            "predictions": {
+              "fault": [
+                "HOT",
+                1.0
+              ],
+              "forward": [
+                "COLD",
+                1.0
+              ],
+              "reverse": [
+                "HOT",
+                1.0
+              ]
+            },
+            "survivors": [
+              "forward"
+            ]
+          },
+          "survivors": [
+            "forward"
+          ]
+        },
+        {
+          "alias_rate_percent": 50,
+          "expected": [
+            "HOT",
+            1.0
+          ],
+          "graph_decision": {
+            "matching_evidence_count": 1,
+            "ok": true,
+            "probe_count": 1,
+            "proposal_count": 3,
+            "proposal_id": "forward",
+            "proposal_label": "forward"
+          },
+          "graph_decision_ns": 178471,
+          "mode": "cow_snapshot",
+          "predictions": {
+            "fault": [
+              "COLD",
+              1.0
+            ],
+            "forward": [
+              "HOT",
+              1.0
+            ],
+            "reverse": [
+              "COLD",
+              1.0
+            ]
+          },
+          "query": {
+            "bad_score": -1.0,
+            "good_score": 1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w0_r50_i28"
+          },
+          "random_probe": {
+            "env": {
+              "bad_score": 1.0,
+              "good_score": 1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w0_r50_i72"
+            },
+            "expected": [
+              "HOT",
+              1.0
+            ],
+            "predictions": {
+              "fault": [
+                "HOT",
+                1.0
+              ],
+              "forward": [
+                "HOT",
+                1.0
+              ],
+              "reverse": [
+                "HOT",
+                1.0
+              ]
+            },
+            "survivors": [
+              "fault",
+              "forward",
+              "reverse"
+            ]
+          },
+          "survivors": [
+            "forward"
+          ]
+        },
+        {
+          "alias_rate_percent": 90,
+          "expected": [
+            "HOT",
+            1.0
+          ],
+          "graph_decision": {
+            "matching_evidence_count": 1,
+            "ok": true,
+            "probe_count": 1,
+            "proposal_count": 3,
+            "proposal_id": "forward",
+            "proposal_label": "forward"
+          },
+          "graph_decision_ns": 181852,
+          "mode": "cow_snapshot",
+          "predictions": {
+            "fault": [
+              "COLD",
+              1.0
+            ],
+            "forward": [
+              "HOT",
+              1.0
+            ],
+            "reverse": [
+              "COLD",
+              1.0
+            ]
+          },
+          "query": {
+            "bad_score": -1.0,
+            "good_score": 1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w0_r90_i8"
+          },
+          "random_probe": {
+            "env": {
+              "bad_score": -1.0,
+              "good_score": -1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w0_r90_i89"
+            },
+            "expected": [
+              "COLD",
+              1.0
+            ],
+            "predictions": {
+              "fault": [
+                "COLD",
+                1.0
+              ],
+              "forward": [
+                "COLD",
+                1.0
+              ],
+              "reverse": [
+                "COLD",
+                1.0
+              ]
+            },
+            "survivors": [
+              "fault",
+              "forward",
+              "reverse"
+            ]
+          },
+          "survivors": [
+            "forward"
+          ]
+        },
+        {
+          "alias_rate_percent": 99,
+          "expected": [
+            "HOT",
+            1.0
+          ],
+          "graph_decision": {
+            "matching_evidence_count": 1,
+            "ok": true,
+            "probe_count": 1,
+            "proposal_count": 3,
+            "proposal_id": "forward",
+            "proposal_label": "forward"
+          },
+          "graph_decision_ns": 210682,
+          "mode": "cow_snapshot",
+          "predictions": {
+            "fault": [
+              "COLD",
+              1.0
+            ],
+            "forward": [
+              "HOT",
+              1.0
+            ],
+            "reverse": [
+              "COLD",
+              1.0
+            ]
+          },
+          "query": {
+            "bad_score": -1.0,
+            "good_score": 1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w0_r99_i0"
+          },
+          "random_probe": {
+            "env": {
+              "bad_score": 1.0,
+              "good_score": 1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w0_r99_i36"
+            },
+            "expected": [
+              "HOT",
+              1.0
+            ],
+            "predictions": {
+              "fault": [
+                "HOT",
+                1.0
+              ],
+              "forward": [
+                "HOT",
+                1.0
+              ],
+              "reverse": [
+                "HOT",
+                1.0
+              ]
+            },
+            "survivors": [
+              "fault",
+              "forward",
+              "reverse"
+            ]
+          },
+          "survivors": [
+            "forward"
+          ]
+        },
+        {
+          "alias_rate_percent": 0,
+          "expected": [
+            "HOT",
+            1.0
+          ],
+          "graph_decision": {
+            "matching_evidence_count": 1,
+            "ok": true,
+            "probe_count": 1,
+            "proposal_count": 3,
+            "proposal_id": "forward",
+            "proposal_label": "forward"
+          },
+          "graph_decision_ns": 196812,
+          "mode": "full_copy",
+          "predictions": {
+            "fault": [
+              "COLD",
+              1.0
+            ],
+            "forward": [
+              "HOT",
+              1.0
+            ],
+            "reverse": [
+              "COLD",
+              1.0
+            ]
+          },
+          "query": {
+            "bad_score": -1.0,
+            "good_score": 1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w0_r0_i68"
+          },
+          "random_probe": {
+            "env": {
+              "bad_score": 1.0,
+              "good_score": -1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w0_r0_i47"
+            },
+            "expected": [
+              "COLD",
+              1.0
+            ],
+            "predictions": {
+              "fault": [
+                "HOT",
+                1.0
+              ],
+              "forward": [
+                "COLD",
+                1.0
+              ],
+              "reverse": [
+                "HOT",
+                1.0
+              ]
+            },
+            "survivors": [
+              "forward"
+            ]
+          },
+          "survivors": [
+            "forward"
+          ]
+        },
+        {
+          "alias_rate_percent": 50,
+          "expected": [
+            "HOT",
+            1.0
+          ],
+          "graph_decision": {
+            "matching_evidence_count": 1,
+            "ok": true,
+            "probe_count": 1,
+            "proposal_count": 3,
+            "proposal_id": "forward",
+            "proposal_label": "forward"
+          },
+          "graph_decision_ns": 210632,
+          "mode": "full_copy",
+          "predictions": {
+            "fault": [
+              "COLD",
+              1.0
+            ],
+            "forward": [
+              "HOT",
+              1.0
+            ],
+            "reverse": [
+              "COLD",
+              1.0
+            ]
+          },
+          "query": {
+            "bad_score": -1.0,
+            "good_score": 1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w0_r50_i28"
+          },
+          "random_probe": {
+            "env": {
+              "bad_score": 1.0,
+              "good_score": 1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w0_r50_i72"
+            },
+            "expected": [
+              "HOT",
+              1.0
+            ],
+            "predictions": {
+              "fault": [
+                "HOT",
+                1.0
+              ],
+              "forward": [
+                "HOT",
+                1.0
+              ],
+              "reverse": [
+                "HOT",
+                1.0
+              ]
+            },
+            "survivors": [
+              "fault",
+              "forward",
+              "reverse"
+            ]
+          },
+          "survivors": [
+            "forward"
+          ]
+        },
+        {
+          "alias_rate_percent": 90,
+          "expected": [
+            "HOT",
+            1.0
+          ],
+          "graph_decision": {
+            "matching_evidence_count": 1,
+            "ok": true,
+            "probe_count": 1,
+            "proposal_count": 3,
+            "proposal_id": "forward",
+            "proposal_label": "forward"
+          },
+          "graph_decision_ns": 226622,
+          "mode": "full_copy",
+          "predictions": {
+            "fault": [
+              "COLD",
+              1.0
+            ],
+            "forward": [
+              "HOT",
+              1.0
+            ],
+            "reverse": [
+              "COLD",
+              1.0
+            ]
+          },
+          "query": {
+            "bad_score": -1.0,
+            "good_score": 1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w0_r90_i8"
+          },
+          "random_probe": {
+            "env": {
+              "bad_score": -1.0,
+              "good_score": -1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w0_r90_i89"
+            },
+            "expected": [
+              "COLD",
+              1.0
+            ],
+            "predictions": {
+              "fault": [
+                "COLD",
+                1.0
+              ],
+              "forward": [
+                "COLD",
+                1.0
+              ],
+              "reverse": [
+                "COLD",
+                1.0
+              ]
+            },
+            "survivors": [
+              "fault",
+              "forward",
+              "reverse"
+            ]
+          },
+          "survivors": [
+            "forward"
+          ]
+        },
+        {
+          "alias_rate_percent": 99,
+          "expected": [
+            "HOT",
+            1.0
+          ],
+          "graph_decision": {
+            "matching_evidence_count": 1,
+            "ok": true,
+            "probe_count": 1,
+            "proposal_count": 3,
+            "proposal_id": "forward",
+            "proposal_label": "forward"
+          },
+          "graph_decision_ns": 226812,
+          "mode": "full_copy",
+          "predictions": {
+            "fault": [
+              "COLD",
+              1.0
+            ],
+            "forward": [
+              "HOT",
+              1.0
+            ],
+            "reverse": [
+              "COLD",
+              1.0
+            ]
+          },
+          "query": {
+            "bad_score": -1.0,
+            "good_score": 1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w0_r99_i0"
+          },
+          "random_probe": {
+            "env": {
+              "bad_score": 1.0,
+              "good_score": 1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w0_r99_i36"
+            },
+            "expected": [
+              "HOT",
+              1.0
+            ],
+            "predictions": {
+              "fault": [
+                "HOT",
+                1.0
+              ],
+              "forward": [
+                "HOT",
+                1.0
+              ],
+              "reverse": [
+                "HOT",
+                1.0
+              ]
+            },
+            "survivors": [
+              "fault",
+              "forward",
+              "reverse"
+            ]
+          },
+          "survivors": [
+            "forward"
+          ]
+        }
+      ],
+      "source_hashes": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_ATTRIBUTE_SITE_GRAPH_SELECTION_V2_PREREG_20261002.md": "f30cae99fc51d24c739b375076d3b219825ca39de1a58d063cd954aefacdb387",
+        "domains/contract_query.py": "5861f25467e2fed9905fa325816a3dc60822d4a79004b8b7b095511c3806b9a6",
+        "domains/edit_ops.py": "5fef079eff6c47e6feb7cd35a92e39913312835acd82c151ca726319c4e9da1c",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/reflective_faculty.py": "30951ff474cf00dba5cf9dfc01589a61104f2a05120f530c941d1fbd40c0d845",
+        "domains/self_correction.py": "7c4f28e21afc4c334328d03146c56d5c46c80a9ec5c21aa22e1ee29f12deb2dd",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_attribute_site_active_choice_v2.py": "a9439fc30e88edadca9c4e12f465057d39c05af4e8f079507f0deca9c5e1d426",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_attribute_site_active_query_v1.py": "881a0078c2f6fcbf01736d7d29b16051a641ccf02dd83db58068a36cb89ed4e8",
+        "evaluation/substrate_capability/thoughtexperiment_attribute_site_active_choice_v2.py": "8ed18144f38f6ff5fda44a41cb360522b06d5845576aa619ad06d355b0158b8d",
+        "evaluation/substrate_capability/thoughtexperiment_attribute_site_active_query_v1.py": "981a7d33a94be11938bed0bb80237e9dd3ea92e4e875d60072c9be82d1652754",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+      },
+      "worker": 0
+    },
+    {
+      "controls": {
+        "duplicate_namespace_rejected": true,
+        "duplicate_reason": "experiment_id is already present in this substrate",
+        "incomplete_coverage_rejected": true,
+        "incomplete_reason": "every proposal must have evidence for every supplied probe",
+        "incomplete_rejection_did_not_mutate_graph": true,
+        "tie_abstains": false,
+        "tie_reason": null,
+        "zero_match_abstains": true,
+        "zero_reason": "no unique proposal has positive matching evidence"
+      },
+      "heldout": [
+        {
+          "env": {
+            "bad_score": -2.0,
+            "good_score": 2.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "held_0"
+          },
+          "expected": [
+            "HOT",
+            1.0
+          ],
+          "predictions": {
+            "fault": [
+              "COLD",
+              1.0
+            ],
+            "forward": [
+              "HOT",
+              1.0
+            ],
+            "reverse": [
+              "COLD",
+              1.0
+            ]
+          }
+        },
+        {
+          "env": {
+            "bad_score": 2.0,
+            "good_score": -2.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "held_1"
+          },
+          "expected": [
+            "COLD",
+            1.0
+          ],
+          "predictions": {
+            "fault": [
+              "HOT",
+              1.0
+            ],
+            "forward": [
+              "COLD",
+              1.0
+            ],
+            "reverse": [
+              "HOT",
+              1.0
+            ]
+          }
+        },
+        {
+          "env": {
+            "bad_score": 0.0,
+            "good_score": 0.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "held_2"
+          },
+          "expected": [
+            "COLD",
+            1.0
+          ],
+          "predictions": {
+            "fault": [
+              "COLD",
+              1.0
+            ],
+            "forward": [
+              "COLD",
+              1.0
+            ],
+            "reverse": [
+              "COLD",
+              1.0
+            ]
+          }
+        },
+        {
+          "env": {
+            "bad_score": -3.0,
+            "good_score": 3.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "held_3"
+          },
+          "expected": [
+            "HOT",
+            1.0
+          ],
+          "predictions": {
+            "fault": [
+              "COLD",
+              1.0
+            ],
+            "forward": [
+              "HOT",
+              1.0
+            ],
+            "reverse": [
+              "COLD",
+              1.0
+            ]
+          }
+        },
+        {
+          "env": {
+            "bad_score": 3.0,
+            "good_score": -3.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "held_4"
+          },
+          "expected": [
+            "COLD",
+            1.0
+          ],
+          "predictions": {
+            "fault": [
+              "HOT",
+              1.0
+            ],
+            "forward": [
+              "COLD",
+              1.0
+            ],
+            "reverse": [
+              "HOT",
+              1.0
+            ]
+          }
+        }
+      ],
+      "meta": {
+        "candidate_labels": [
+          "add_match_guard(control)",
+          "drop_match_edge",
+          "flip_comparison",
+          "swap_term_leaf:bad_score->good_score",
+          "swap_term_leaf:bad_score->negative",
+          "swap_term_leaf:bad_score->positive",
+          "swap_term_leaf:good_score->bad_score"
+        ],
+        "composer_ns": 0,
+        "composition_built": null,
+        "composition_wall": null,
+        "enumerator_ns": 435723,
+        "primary_unchanged": true,
+        "proposal_digests": {
+          "fault": "65578eb8abc539f285312a1a006b170501db1cfa6f28f2ebaa0dd16f0310b811",
+          "forward": "1eaa4b9e3df44a38d915a53715aa3dc6cb943bff4a2fa8561e9fba568a8c3e96",
+          "reverse": "dd6ab851beade1bc1a9b4df89a68d2a1ef1ee6453e06b37670b4562e3fd1281b"
+        }
+      },
+      "primary_preserved": false,
+      "results": [
+        {
+          "alias_rate_percent": 0,
+          "expected": [
+            "HOT",
+            1.0
+          ],
+          "graph_decision": {
+            "matching_evidence_count": 1,
+            "ok": true,
+            "probe_count": 1,
+            "proposal_count": 3,
+            "proposal_id": "forward",
+            "proposal_label": "forward"
+          },
+          "graph_decision_ns": 204441,
+          "mode": "cow_snapshot",
+          "predictions": {
+            "fault": [
+              "COLD",
+              1.0
+            ],
+            "forward": [
+              "HOT",
+              1.0
+            ],
+            "reverse": [
+              "COLD",
+              1.0
+            ]
+          },
+          "query": {
+            "bad_score": -1.0,
+            "good_score": 1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w1_r0_i47"
+          },
+          "random_probe": {
+            "env": {
+              "bad_score": 1.0,
+              "good_score": -1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w1_r0_i42"
+            },
+            "expected": [
+              "COLD",
+              1.0
+            ],
+            "predictions": {
+              "fault": [
+                "HOT",
+                1.0
+              ],
+              "forward": [
+                "COLD",
+                1.0
+              ],
+              "reverse": [
+                "HOT",
+                1.0
+              ]
+            },
+            "survivors": [
+              "forward"
+            ]
+          },
+          "survivors": [
+            "forward"
+          ]
+        },
+        {
+          "alias_rate_percent": 50,
+          "expected": [
+            "HOT",
+            1.0
+          ],
+          "graph_decision": {
+            "matching_evidence_count": 1,
+            "ok": true,
+            "probe_count": 1,
+            "proposal_count": 3,
+            "proposal_id": "forward",
+            "proposal_label": "forward"
+          },
+          "graph_decision_ns": 176342,
+          "mode": "cow_snapshot",
+          "predictions": {
+            "fault": [
+              "COLD",
+              1.0
+            ],
+            "forward": [
+              "HOT",
+              1.0
+            ],
+            "reverse": [
+              "COLD",
+              1.0
+            ]
+          },
+          "query": {
+            "bad_score": -1.0,
+            "good_score": 1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w1_r50_i23"
+          },
+          "random_probe": {
+            "env": {
+              "bad_score": 1.0,
+              "good_score": 1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w1_r50_i87"
+            },
+            "expected": [
+              "HOT",
+              1.0
+            ],
+            "predictions": {
+              "fault": [
+                "HOT",
+                1.0
+              ],
+              "forward": [
+                "HOT",
+                1.0
+              ],
+              "reverse": [
+                "HOT",
+                1.0
+              ]
+            },
+            "survivors": [
+              "fault",
+              "forward",
+              "reverse"
+            ]
+          },
+          "survivors": [
+            "forward"
+          ]
+        },
+        {
+          "alias_rate_percent": 90,
+          "expected": [
+            "COLD",
+            1.0
+          ],
+          "graph_decision": {
+            "matching_evidence_count": 1,
+            "ok": true,
+            "probe_count": 1,
+            "proposal_count": 3,
+            "proposal_id": "forward",
+            "proposal_label": "forward"
+          },
+          "graph_decision_ns": 208821,
+          "mode": "cow_snapshot",
+          "predictions": {
+            "fault": [
+              "HOT",
+              1.0
+            ],
+            "forward": [
+              "COLD",
+              1.0
+            ],
+            "reverse": [
+              "HOT",
+              1.0
+            ]
+          },
+          "query": {
+            "bad_score": 1.0,
+            "good_score": -1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w1_r90_i2"
+          },
+          "random_probe": {
+            "env": {
+              "bad_score": -1.0,
+              "good_score": -1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w1_r90_i36"
+            },
+            "expected": [
+              "COLD",
+              1.0
+            ],
+            "predictions": {
+              "fault": [
+                "COLD",
+                1.0
+              ],
+              "forward": [
+                "COLD",
+                1.0
+              ],
+              "reverse": [
+                "COLD",
+                1.0
+              ]
+            },
+            "survivors": [
+              "fault",
+              "forward",
+              "reverse"
+            ]
+          },
+          "survivors": [
+            "forward"
+          ]
+        },
+        {
+          "alias_rate_percent": 99,
+          "expected": [
+            "COLD",
+            1.0
+          ],
+          "graph_decision": {
+            "matching_evidence_count": 1,
+            "ok": true,
+            "probe_count": 1,
+            "proposal_count": 3,
+            "proposal_id": "forward",
+            "proposal_label": "forward"
+          },
+          "graph_decision_ns": 191382,
+          "mode": "cow_snapshot",
+          "predictions": {
+            "fault": [
+              "HOT",
+              1.0
+            ],
+            "forward": [
+              "COLD",
+              1.0
+            ],
+            "reverse": [
+              "HOT",
+              1.0
+            ]
+          },
+          "query": {
+            "bad_score": 1.0,
+            "good_score": -1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w1_r99_i0"
+          },
+          "random_probe": {
+            "env": {
+              "bad_score": 1.0,
+              "good_score": 1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w1_r99_i13"
+            },
+            "expected": [
+              "HOT",
+              1.0
+            ],
+            "predictions": {
+              "fault": [
+                "HOT",
+                1.0
+              ],
+              "forward": [
+                "HOT",
+                1.0
+              ],
+              "reverse": [
+                "HOT",
+                1.0
+              ]
+            },
+            "survivors": [
+              "fault",
+              "forward",
+              "reverse"
+            ]
+          },
+          "survivors": [
+            "forward"
+          ]
+        },
+        {
+          "alias_rate_percent": 0,
+          "expected": [
+            "HOT",
+            1.0
+          ],
+          "graph_decision": {
+            "matching_evidence_count": 1,
+            "ok": true,
+            "probe_count": 1,
+            "proposal_count": 3,
+            "proposal_id": "forward",
+            "proposal_label": "forward"
+          },
+          "graph_decision_ns": 197712,
+          "mode": "full_copy",
+          "predictions": {
+            "fault": [
+              "COLD",
+              1.0
+            ],
+            "forward": [
+              "HOT",
+              1.0
+            ],
+            "reverse": [
+              "COLD",
+              1.0
+            ]
+          },
+          "query": {
+            "bad_score": -1.0,
+            "good_score": 1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w1_r0_i47"
+          },
+          "random_probe": {
+            "env": {
+              "bad_score": 1.0,
+              "good_score": -1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w1_r0_i42"
+            },
+            "expected": [
+              "COLD",
+              1.0
+            ],
+            "predictions": {
+              "fault": [
+                "HOT",
+                1.0
+              ],
+              "forward": [
+                "COLD",
+                1.0
+              ],
+              "reverse": [
+                "HOT",
+                1.0
+              ]
+            },
+            "survivors": [
+              "forward"
+            ]
+          },
+          "survivors": [
+            "forward"
+          ]
+        },
+        {
+          "alias_rate_percent": 50,
+          "expected": [
+            "HOT",
+            1.0
+          ],
+          "graph_decision": {
+            "matching_evidence_count": 1,
+            "ok": true,
+            "probe_count": 1,
+            "proposal_count": 3,
+            "proposal_id": "forward",
+            "proposal_label": "forward"
+          },
+          "graph_decision_ns": 204452,
+          "mode": "full_copy",
+          "predictions": {
+            "fault": [
+              "COLD",
+              1.0
+            ],
+            "forward": [
+              "HOT",
+              1.0
+            ],
+            "reverse": [
+              "COLD",
+              1.0
+            ]
+          },
+          "query": {
+            "bad_score": -1.0,
+            "good_score": 1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w1_r50_i23"
+          },
+          "random_probe": {
+            "env": {
+              "bad_score": 1.0,
+              "good_score": 1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w1_r50_i87"
+            },
+            "expected": [
+              "HOT",
+              1.0
+            ],
+            "predictions": {
+              "fault": [
+                "HOT",
+                1.0
+              ],
+              "forward": [
+                "HOT",
+                1.0
+              ],
+              "reverse": [
+                "HOT",
+                1.0
+              ]
+            },
+            "survivors": [
+              "fault",
+              "forward",
+              "reverse"
+            ]
+          },
+          "survivors": [
+            "forward"
+          ]
+        },
+        {
+          "alias_rate_percent": 90,
+          "expected": [
+            "COLD",
+            1.0
+          ],
+          "graph_decision": {
+            "matching_evidence_count": 1,
+            "ok": true,
+            "probe_count": 1,
+            "proposal_count": 3,
+            "proposal_id": "forward",
+            "proposal_label": "forward"
+          },
+          "graph_decision_ns": 221212,
+          "mode": "full_copy",
+          "predictions": {
+            "fault": [
+              "HOT",
+              1.0
+            ],
+            "forward": [
+              "COLD",
+              1.0
+            ],
+            "reverse": [
+              "HOT",
+              1.0
+            ]
+          },
+          "query": {
+            "bad_score": 1.0,
+            "good_score": -1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w1_r90_i2"
+          },
+          "random_probe": {
+            "env": {
+              "bad_score": -1.0,
+              "good_score": -1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w1_r90_i36"
+            },
+            "expected": [
+              "COLD",
+              1.0
+            ],
+            "predictions": {
+              "fault": [
+                "COLD",
+                1.0
+              ],
+              "forward": [
+                "COLD",
+                1.0
+              ],
+              "reverse": [
+                "COLD",
+                1.0
+              ]
+            },
+            "survivors": [
+              "fault",
+              "forward",
+              "reverse"
+            ]
+          },
+          "survivors": [
+            "forward"
+          ]
+        },
+        {
+          "alias_rate_percent": 99,
+          "expected": [
+            "COLD",
+            1.0
+          ],
+          "graph_decision": {
+            "matching_evidence_count": 1,
+            "ok": true,
+            "probe_count": 1,
+            "proposal_count": 3,
+            "proposal_id": "forward",
+            "proposal_label": "forward"
+          },
+          "graph_decision_ns": 220382,
+          "mode": "full_copy",
+          "predictions": {
+            "fault": [
+              "HOT",
+              1.0
+            ],
+            "forward": [
+              "COLD",
+              1.0
+            ],
+            "reverse": [
+              "HOT",
+              1.0
+            ]
+          },
+          "query": {
+            "bad_score": 1.0,
+            "good_score": -1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w1_r99_i0"
+          },
+          "random_probe": {
+            "env": {
+              "bad_score": 1.0,
+              "good_score": 1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w1_r99_i13"
+            },
+            "expected": [
+              "HOT",
+              1.0
+            ],
+            "predictions": {
+              "fault": [
+                "HOT",
+                1.0
+              ],
+              "forward": [
+                "HOT",
+                1.0
+              ],
+              "reverse": [
+                "HOT",
+                1.0
+              ]
+            },
+            "survivors": [
+              "fault",
+              "forward",
+              "reverse"
+            ]
+          },
+          "survivors": [
+            "forward"
+          ]
+        }
+      ],
+      "source_hashes": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_ATTRIBUTE_SITE_GRAPH_SELECTION_V2_PREREG_20261002.md": "f30cae99fc51d24c739b375076d3b219825ca39de1a58d063cd954aefacdb387",
+        "domains/contract_query.py": "5861f25467e2fed9905fa325816a3dc60822d4a79004b8b7b095511c3806b9a6",
+        "domains/edit_ops.py": "5fef079eff6c47e6feb7cd35a92e39913312835acd82c151ca726319c4e9da1c",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/reflective_faculty.py": "30951ff474cf00dba5cf9dfc01589a61104f2a05120f530c941d1fbd40c0d845",
+        "domains/self_correction.py": "7c4f28e21afc4c334328d03146c56d5c46c80a9ec5c21aa22e1ee29f12deb2dd",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_attribute_site_active_choice_v2.py": "a9439fc30e88edadca9c4e12f465057d39c05af4e8f079507f0deca9c5e1d426",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_attribute_site_active_query_v1.py": "881a0078c2f6fcbf01736d7d29b16051a641ccf02dd83db58068a36cb89ed4e8",
+        "evaluation/substrate_capability/thoughtexperiment_attribute_site_active_choice_v2.py": "8ed18144f38f6ff5fda44a41cb360522b06d5845576aa619ad06d355b0158b8d",
+        "evaluation/substrate_capability/thoughtexperiment_attribute_site_active_query_v1.py": "981a7d33a94be11938bed0bb80237e9dd3ea92e4e875d60072c9be82d1652754",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+      },
+      "worker": 1
+    },
+    {
+      "controls": {
+        "duplicate_namespace_rejected": true,
+        "duplicate_reason": "experiment_id is already present in this substrate",
+        "incomplete_coverage_rejected": true,
+        "incomplete_reason": "every proposal must have evidence for every supplied probe",
+        "incomplete_rejection_did_not_mutate_graph": true,
+        "tie_abstains": false,
+        "tie_reason": null,
+        "zero_match_abstains": true,
+        "zero_reason": "no unique proposal has positive matching evidence"
+      },
+      "heldout": [
+        {
+          "env": {
+            "bad_score": -2.0,
+            "good_score": 2.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "held_0"
+          },
+          "expected": [
+            "HOT",
+            1.0
+          ],
+          "predictions": {
+            "fault": [
+              "COLD",
+              1.0
+            ],
+            "forward": [
+              "HOT",
+              1.0
+            ],
+            "reverse": [
+              "COLD",
+              1.0
+            ]
+          }
+        },
+        {
+          "env": {
+            "bad_score": 2.0,
+            "good_score": -2.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "held_1"
+          },
+          "expected": [
+            "COLD",
+            1.0
+          ],
+          "predictions": {
+            "fault": [
+              "HOT",
+              1.0
+            ],
+            "forward": [
+              "COLD",
+              1.0
+            ],
+            "reverse": [
+              "HOT",
+              1.0
+            ]
+          }
+        },
+        {
+          "env": {
+            "bad_score": 0.0,
+            "good_score": 0.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "held_2"
+          },
+          "expected": [
+            "COLD",
+            1.0
+          ],
+          "predictions": {
+            "fault": [
+              "COLD",
+              1.0
+            ],
+            "forward": [
+              "COLD",
+              1.0
+            ],
+            "reverse": [
+              "COLD",
+              1.0
+            ]
+          }
+        },
+        {
+          "env": {
+            "bad_score": -3.0,
+            "good_score": 3.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "held_3"
+          },
+          "expected": [
+            "HOT",
+            1.0
+          ],
+          "predictions": {
+            "fault": [
+              "COLD",
+              1.0
+            ],
+            "forward": [
+              "HOT",
+              1.0
+            ],
+            "reverse": [
+              "COLD",
+              1.0
+            ]
+          }
+        },
+        {
+          "env": {
+            "bad_score": 3.0,
+            "good_score": -3.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "held_4"
+          },
+          "expected": [
+            "COLD",
+            1.0
+          ],
+          "predictions": {
+            "fault": [
+              "HOT",
+              1.0
+            ],
+            "forward": [
+              "COLD",
+              1.0
+            ],
+            "reverse": [
+              "HOT",
+              1.0
+            ]
+          }
+        }
+      ],
+      "meta": {
+        "candidate_labels": [
+          "add_match_guard(control)",
+          "drop_match_edge",
+          "flip_comparison",
+          "swap_term_leaf:bad_score->good_score",
+          "swap_term_leaf:bad_score->negative",
+          "swap_term_leaf:bad_score->positive",
+          "swap_term_leaf:good_score->bad_score"
+        ],
+        "composer_ns": 0,
+        "composition_built": null,
+        "composition_wall": null,
+        "enumerator_ns": 394083,
+        "primary_unchanged": true,
+        "proposal_digests": {
+          "fault": "65578eb8abc539f285312a1a006b170501db1cfa6f28f2ebaa0dd16f0310b811",
+          "forward": "1eaa4b9e3df44a38d915a53715aa3dc6cb943bff4a2fa8561e9fba568a8c3e96",
+          "reverse": "dd6ab851beade1bc1a9b4df89a68d2a1ef1ee6453e06b37670b4562e3fd1281b"
+        }
+      },
+      "primary_preserved": false,
+      "results": [
+        {
+          "alias_rate_percent": 0,
+          "expected": [
+            "HOT",
+            1.0
+          ],
+          "graph_decision": {
+            "matching_evidence_count": 1,
+            "ok": true,
+            "probe_count": 1,
+            "proposal_count": 3,
+            "proposal_id": "forward",
+            "proposal_label": "forward"
+          },
+          "graph_decision_ns": 210961,
+          "mode": "cow_snapshot",
+          "predictions": {
+            "fault": [
+              "COLD",
+              1.0
+            ],
+            "forward": [
+              "HOT",
+              1.0
+            ],
+            "reverse": [
+              "COLD",
+              1.0
+            ]
+          },
+          "query": {
+            "bad_score": -1.0,
+            "good_score": 1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w2_r0_i58"
+          },
+          "random_probe": {
+            "env": {
+              "bad_score": -1.0,
+              "good_score": 1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w2_r0_i42"
+            },
+            "expected": [
+              "HOT",
+              1.0
+            ],
+            "predictions": {
+              "fault": [
+                "COLD",
+                1.0
+              ],
+              "forward": [
+                "HOT",
+                1.0
+              ],
+              "reverse": [
+                "COLD",
+                1.0
+              ]
+            },
+            "survivors": [
+              "forward"
+            ]
+          },
+          "survivors": [
+            "forward"
+          ]
+        },
+        {
+          "alias_rate_percent": 50,
+          "expected": [
+            "HOT",
+            1.0
+          ],
+          "graph_decision": {
+            "matching_evidence_count": 1,
+            "ok": true,
+            "probe_count": 1,
+            "proposal_count": 3,
+            "proposal_id": "forward",
+            "proposal_label": "forward"
+          },
+          "graph_decision_ns": 186981,
+          "mode": "cow_snapshot",
+          "predictions": {
+            "fault": [
+              "COLD",
+              1.0
+            ],
+            "forward": [
+              "HOT",
+              1.0
+            ],
+            "reverse": [
+              "COLD",
+              1.0
+            ]
+          },
+          "query": {
+            "bad_score": -1.0,
+            "good_score": 1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w2_r50_i12"
+          },
+          "random_probe": {
+            "env": {
+              "bad_score": -1.0,
+              "good_score": 1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w2_r50_i30"
+            },
+            "expected": [
+              "HOT",
+              1.0
+            ],
+            "predictions": {
+              "fault": [
+                "COLD",
+                1.0
+              ],
+              "forward": [
+                "HOT",
+                1.0
+              ],
+              "reverse": [
+                "COLD",
+                1.0
+              ]
+            },
+            "survivors": [
+              "forward"
+            ]
+          },
+          "survivors": [
+            "forward"
+          ]
+        },
+        {
+          "alias_rate_percent": 90,
+          "expected": [
+            "COLD",
+            1.0
+          ],
+          "graph_decision": {
+            "matching_evidence_count": 1,
+            "ok": true,
+            "probe_count": 1,
+            "proposal_count": 3,
+            "proposal_id": "forward",
+            "proposal_label": "forward"
+          },
+          "graph_decision_ns": 189911,
+          "mode": "cow_snapshot",
+          "predictions": {
+            "fault": [
+              "HOT",
+              1.0
+            ],
+            "forward": [
+              "COLD",
+              1.0
+            ],
+            "reverse": [
+              "HOT",
+              1.0
+            ]
+          },
+          "query": {
+            "bad_score": 1.0,
+            "good_score": -1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w2_r90_i5"
+          },
+          "random_probe": {
+            "env": {
+              "bad_score": -1.0,
+              "good_score": -1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w2_r90_i95"
+            },
+            "expected": [
+              "COLD",
+              1.0
+            ],
+            "predictions": {
+              "fault": [
+                "COLD",
+                1.0
+              ],
+              "forward": [
+                "COLD",
+                1.0
+              ],
+              "reverse": [
+                "COLD",
+                1.0
+              ]
+            },
+            "survivors": [
+              "fault",
+              "forward",
+              "reverse"
+            ]
+          },
+          "survivors": [
+            "forward"
+          ]
+        },
+        {
+          "alias_rate_percent": 99,
+          "expected": [
+            "HOT",
+            1.0
+          ],
+          "graph_decision": {
+            "matching_evidence_count": 1,
+            "ok": true,
+            "probe_count": 1,
+            "proposal_count": 3,
+            "proposal_id": "forward",
+            "proposal_label": "forward"
+          },
+          "graph_decision_ns": 191212,
+          "mode": "cow_snapshot",
+          "predictions": {
+            "fault": [
+              "COLD",
+              1.0
+            ],
+            "forward": [
+              "HOT",
+              1.0
+            ],
+            "reverse": [
+              "COLD",
+              1.0
+            ]
+          },
+          "query": {
+            "bad_score": -1.0,
+            "good_score": 1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w2_r99_i0"
+          },
+          "random_probe": {
+            "env": {
+              "bad_score": -1.0,
+              "good_score": -1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w2_r99_i9"
+            },
+            "expected": [
+              "COLD",
+              1.0
+            ],
+            "predictions": {
+              "fault": [
+                "COLD",
+                1.0
+              ],
+              "forward": [
+                "COLD",
+                1.0
+              ],
+              "reverse": [
+                "COLD",
+                1.0
+              ]
+            },
+            "survivors": [
+              "fault",
+              "forward",
+              "reverse"
+            ]
+          },
+          "survivors": [
+            "forward"
+          ]
+        },
+        {
+          "alias_rate_percent": 0,
+          "expected": [
+            "HOT",
+            1.0
+          ],
+          "graph_decision": {
+            "matching_evidence_count": 1,
+            "ok": true,
+            "probe_count": 1,
+            "proposal_count": 3,
+            "proposal_id": "forward",
+            "proposal_label": "forward"
+          },
+          "graph_decision_ns": 215152,
+          "mode": "full_copy",
+          "predictions": {
+            "fault": [
+              "COLD",
+              1.0
+            ],
+            "forward": [
+              "HOT",
+              1.0
+            ],
+            "reverse": [
+              "COLD",
+              1.0
+            ]
+          },
+          "query": {
+            "bad_score": -1.0,
+            "good_score": 1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w2_r0_i58"
+          },
+          "random_probe": {
+            "env": {
+              "bad_score": -1.0,
+              "good_score": 1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w2_r0_i42"
+            },
+            "expected": [
+              "HOT",
+              1.0
+            ],
+            "predictions": {
+              "fault": [
+                "COLD",
+                1.0
+              ],
+              "forward": [
+                "HOT",
+                1.0
+              ],
+              "reverse": [
+                "COLD",
+                1.0
+              ]
+            },
+            "survivors": [
+              "forward"
+            ]
+          },
+          "survivors": [
+            "forward"
+          ]
+        },
+        {
+          "alias_rate_percent": 50,
+          "expected": [
+            "HOT",
+            1.0
+          ],
+          "graph_decision": {
+            "matching_evidence_count": 1,
+            "ok": true,
+            "probe_count": 1,
+            "proposal_count": 3,
+            "proposal_id": "forward",
+            "proposal_label": "forward"
+          },
+          "graph_decision_ns": 205101,
+          "mode": "full_copy",
+          "predictions": {
+            "fault": [
+              "COLD",
+              1.0
+            ],
+            "forward": [
+              "HOT",
+              1.0
+            ],
+            "reverse": [
+              "COLD",
+              1.0
+            ]
+          },
+          "query": {
+            "bad_score": -1.0,
+            "good_score": 1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w2_r50_i12"
+          },
+          "random_probe": {
+            "env": {
+              "bad_score": -1.0,
+              "good_score": 1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w2_r50_i30"
+            },
+            "expected": [
+              "HOT",
+              1.0
+            ],
+            "predictions": {
+              "fault": [
+                "COLD",
+                1.0
+              ],
+              "forward": [
+                "HOT",
+                1.0
+              ],
+              "reverse": [
+                "COLD",
+                1.0
+              ]
+            },
+            "survivors": [
+              "forward"
+            ]
+          },
+          "survivors": [
+            "forward"
+          ]
+        },
+        {
+          "alias_rate_percent": 90,
+          "expected": [
+            "COLD",
+            1.0
+          ],
+          "graph_decision": {
+            "matching_evidence_count": 1,
+            "ok": true,
+            "probe_count": 1,
+            "proposal_count": 3,
+            "proposal_id": "forward",
+            "proposal_label": "forward"
+          },
+          "graph_decision_ns": 210242,
+          "mode": "full_copy",
+          "predictions": {
+            "fault": [
+              "HOT",
+              1.0
+            ],
+            "forward": [
+              "COLD",
+              1.0
+            ],
+            "reverse": [
+              "HOT",
+              1.0
+            ]
+          },
+          "query": {
+            "bad_score": 1.0,
+            "good_score": -1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w2_r90_i5"
+          },
+          "random_probe": {
+            "env": {
+              "bad_score": -1.0,
+              "good_score": -1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w2_r90_i95"
+            },
+            "expected": [
+              "COLD",
+              1.0
+            ],
+            "predictions": {
+              "fault": [
+                "COLD",
+                1.0
+              ],
+              "forward": [
+                "COLD",
+                1.0
+              ],
+              "reverse": [
+                "COLD",
+                1.0
+              ]
+            },
+            "survivors": [
+              "fault",
+              "forward",
+              "reverse"
+            ]
+          },
+          "survivors": [
+            "forward"
+          ]
+        },
+        {
+          "alias_rate_percent": 99,
+          "expected": [
+            "HOT",
+            1.0
+          ],
+          "graph_decision": {
+            "matching_evidence_count": 1,
+            "ok": true,
+            "probe_count": 1,
+            "proposal_count": 3,
+            "proposal_id": "forward",
+            "proposal_label": "forward"
+          },
+          "graph_decision_ns": 225772,
+          "mode": "full_copy",
+          "predictions": {
+            "fault": [
+              "COLD",
+              1.0
+            ],
+            "forward": [
+              "HOT",
+              1.0
+            ],
+            "reverse": [
+              "COLD",
+              1.0
+            ]
+          },
+          "query": {
+            "bad_score": -1.0,
+            "good_score": 1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w2_r99_i0"
+          },
+          "random_probe": {
+            "env": {
+              "bad_score": -1.0,
+              "good_score": -1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w2_r99_i9"
+            },
+            "expected": [
+              "COLD",
+              1.0
+            ],
+            "predictions": {
+              "fault": [
+                "COLD",
+                1.0
+              ],
+              "forward": [
+                "COLD",
+                1.0
+              ],
+              "reverse": [
+                "COLD",
+                1.0
+              ]
+            },
+            "survivors": [
+              "fault",
+              "forward",
+              "reverse"
+            ]
+          },
+          "survivors": [
+            "forward"
+          ]
+        }
+      ],
+      "source_hashes": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_ATTRIBUTE_SITE_GRAPH_SELECTION_V2_PREREG_20261002.md": "f30cae99fc51d24c739b375076d3b219825ca39de1a58d063cd954aefacdb387",
+        "domains/contract_query.py": "5861f25467e2fed9905fa325816a3dc60822d4a79004b8b7b095511c3806b9a6",
+        "domains/edit_ops.py": "5fef079eff6c47e6feb7cd35a92e39913312835acd82c151ca726319c4e9da1c",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/reflective_faculty.py": "30951ff474cf00dba5cf9dfc01589a61104f2a05120f530c941d1fbd40c0d845",
+        "domains/self_correction.py": "7c4f28e21afc4c334328d03146c56d5c46c80a9ec5c21aa22e1ee29f12deb2dd",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_attribute_site_active_choice_v2.py": "a9439fc30e88edadca9c4e12f465057d39c05af4e8f079507f0deca9c5e1d426",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_attribute_site_active_query_v1.py": "881a0078c2f6fcbf01736d7d29b16051a641ccf02dd83db58068a36cb89ed4e8",
+        "evaluation/substrate_capability/thoughtexperiment_attribute_site_active_choice_v2.py": "8ed18144f38f6ff5fda44a41cb360522b06d5845576aa619ad06d355b0158b8d",
+        "evaluation/substrate_capability/thoughtexperiment_attribute_site_active_query_v1.py": "981a7d33a94be11938bed0bb80237e9dd3ea92e4e875d60072c9be82d1652754",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+      },
+      "worker": 2
+    },
+    {
+      "controls": {
+        "duplicate_namespace_rejected": true,
+        "duplicate_reason": "experiment_id is already present in this substrate",
+        "incomplete_coverage_rejected": true,
+        "incomplete_reason": "every proposal must have evidence for every supplied probe",
+        "incomplete_rejection_did_not_mutate_graph": true,
+        "tie_abstains": false,
+        "tie_reason": null,
+        "zero_match_abstains": true,
+        "zero_reason": "no unique proposal has positive matching evidence"
+      },
+      "heldout": [
+        {
+          "env": {
+            "bad_score": -2.0,
+            "good_score": 2.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "held_0"
+          },
+          "expected": [
+            "HOT",
+            1.0
+          ],
+          "predictions": {
+            "fault": [
+              "COLD",
+              1.0
+            ],
+            "forward": [
+              "HOT",
+              1.0
+            ],
+            "reverse": [
+              "COLD",
+              1.0
+            ]
+          }
+        },
+        {
+          "env": {
+            "bad_score": 2.0,
+            "good_score": -2.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "held_1"
+          },
+          "expected": [
+            "COLD",
+            1.0
+          ],
+          "predictions": {
+            "fault": [
+              "HOT",
+              1.0
+            ],
+            "forward": [
+              "COLD",
+              1.0
+            ],
+            "reverse": [
+              "HOT",
+              1.0
+            ]
+          }
+        },
+        {
+          "env": {
+            "bad_score": 0.0,
+            "good_score": 0.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "held_2"
+          },
+          "expected": [
+            "COLD",
+            1.0
+          ],
+          "predictions": {
+            "fault": [
+              "COLD",
+              1.0
+            ],
+            "forward": [
+              "COLD",
+              1.0
+            ],
+            "reverse": [
+              "COLD",
+              1.0
+            ]
+          }
+        },
+        {
+          "env": {
+            "bad_score": -3.0,
+            "good_score": 3.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "held_3"
+          },
+          "expected": [
+            "HOT",
+            1.0
+          ],
+          "predictions": {
+            "fault": [
+              "COLD",
+              1.0
+            ],
+            "forward": [
+              "HOT",
+              1.0
+            ],
+            "reverse": [
+              "COLD",
+              1.0
+            ]
+          }
+        },
+        {
+          "env": {
+            "bad_score": 3.0,
+            "good_score": -3.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "held_4"
+          },
+          "expected": [
+            "COLD",
+            1.0
+          ],
+          "predictions": {
+            "fault": [
+              "HOT",
+              1.0
+            ],
+            "forward": [
+              "COLD",
+              1.0
+            ],
+            "reverse": [
+              "HOT",
+              1.0
+            ]
+          }
+        }
+      ],
+      "meta": {
+        "candidate_labels": [
+          "add_match_guard(control)",
+          "drop_match_edge",
+          "flip_comparison",
+          "swap_term_leaf:bad_score->good_score",
+          "swap_term_leaf:bad_score->negative",
+          "swap_term_leaf:bad_score->positive",
+          "swap_term_leaf:good_score->bad_score"
+        ],
+        "composer_ns": 0,
+        "composition_built": null,
+        "composition_wall": null,
+        "enumerator_ns": 408204,
+        "primary_unchanged": true,
+        "proposal_digests": {
+          "fault": "65578eb8abc539f285312a1a006b170501db1cfa6f28f2ebaa0dd16f0310b811",
+          "forward": "1eaa4b9e3df44a38d915a53715aa3dc6cb943bff4a2fa8561e9fba568a8c3e96",
+          "reverse": "dd6ab851beade1bc1a9b4df89a68d2a1ef1ee6453e06b37670b4562e3fd1281b"
+        }
+      },
+      "primary_preserved": false,
+      "results": [
+        {
+          "alias_rate_percent": 0,
+          "expected": [
+            "COLD",
+            1.0
+          ],
+          "graph_decision": {
+            "matching_evidence_count": 1,
+            "ok": true,
+            "probe_count": 1,
+            "proposal_count": 3,
+            "proposal_id": "forward",
+            "proposal_label": "forward"
+          },
+          "graph_decision_ns": 254252,
+          "mode": "cow_snapshot",
+          "predictions": {
+            "fault": [
+              "HOT",
+              1.0
+            ],
+            "forward": [
+              "COLD",
+              1.0
+            ],
+            "reverse": [
+              "HOT",
+              1.0
+            ]
+          },
+          "query": {
+            "bad_score": 1.0,
+            "good_score": -1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w3_r0_i32"
+          },
+          "random_probe": {
+            "env": {
+              "bad_score": 1.0,
+              "good_score": -1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w3_r0_i16"
+            },
+            "expected": [
+              "COLD",
+              1.0
+            ],
+            "predictions": {
+              "fault": [
+                "HOT",
+                1.0
+              ],
+              "forward": [
+                "COLD",
+                1.0
+              ],
+              "reverse": [
+                "HOT",
+                1.0
+              ]
+            },
+            "survivors": [
+              "forward"
+            ]
+          },
+          "survivors": [
+            "forward"
+          ]
+        },
+        {
+          "alias_rate_percent": 50,
+          "expected": [
+            "HOT",
+            1.0
+          ],
+          "graph_decision": {
+            "matching_evidence_count": 1,
+            "ok": true,
+            "probe_count": 1,
+            "proposal_count": 3,
+            "proposal_id": "forward",
+            "proposal_label": "forward"
+          },
+          "graph_decision_ns": 183862,
+          "mode": "cow_snapshot",
+          "predictions": {
+            "fault": [
+              "COLD",
+              1.0
+            ],
+            "forward": [
+              "HOT",
+              1.0
+            ],
+            "reverse": [
+              "COLD",
+              1.0
+            ]
+          },
+          "query": {
+            "bad_score": -1.0,
+            "good_score": 1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w3_r50_i3"
+          },
+          "random_probe": {
+            "env": {
+              "bad_score": -1.0,
+              "good_score": 1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w3_r50_i39"
+            },
+            "expected": [
+              "HOT",
+              1.0
+            ],
+            "predictions": {
+              "fault": [
+                "COLD",
+                1.0
+              ],
+              "forward": [
+                "HOT",
+                1.0
+              ],
+              "reverse": [
+                "COLD",
+                1.0
+              ]
+            },
+            "survivors": [
+              "forward"
+            ]
+          },
+          "survivors": [
+            "forward"
+          ]
+        },
+        {
+          "alias_rate_percent": 90,
+          "expected": [
+            "COLD",
+            1.0
+          ],
+          "graph_decision": {
+            "matching_evidence_count": 1,
+            "ok": true,
+            "probe_count": 1,
+            "proposal_count": 3,
+            "proposal_id": "forward",
+            "proposal_label": "forward"
+          },
+          "graph_decision_ns": 184991,
+          "mode": "cow_snapshot",
+          "predictions": {
+            "fault": [
+              "HOT",
+              1.0
+            ],
+            "forward": [
+              "COLD",
+              1.0
+            ],
+            "reverse": [
+              "HOT",
+              1.0
+            ]
+          },
+          "query": {
+            "bad_score": 1.0,
+            "good_score": -1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w3_r90_i6"
+          },
+          "random_probe": {
+            "env": {
+              "bad_score": -1.0,
+              "good_score": -1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w3_r90_i92"
+            },
+            "expected": [
+              "COLD",
+              1.0
+            ],
+            "predictions": {
+              "fault": [
+                "COLD",
+                1.0
+              ],
+              "forward": [
+                "COLD",
+                1.0
+              ],
+              "reverse": [
+                "COLD",
+                1.0
+              ]
+            },
+            "survivors": [
+              "fault",
+              "forward",
+              "reverse"
+            ]
+          },
+          "survivors": [
+            "forward"
+          ]
+        },
+        {
+          "alias_rate_percent": 99,
+          "expected": [
+            "COLD",
+            1.0
+          ],
+          "graph_decision": {
+            "matching_evidence_count": 1,
+            "ok": true,
+            "probe_count": 1,
+            "proposal_count": 3,
+            "proposal_id": "forward",
+            "proposal_label": "forward"
+          },
+          "graph_decision_ns": 222812,
+          "mode": "cow_snapshot",
+          "predictions": {
+            "fault": [
+              "HOT",
+              1.0
+            ],
+            "forward": [
+              "COLD",
+              1.0
+            ],
+            "reverse": [
+              "HOT",
+              1.0
+            ]
+          },
+          "query": {
+            "bad_score": 1.0,
+            "good_score": -1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w3_r99_i0"
+          },
+          "random_probe": {
+            "env": {
+              "bad_score": -1.0,
+              "good_score": -1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w3_r99_i58"
+            },
+            "expected": [
+              "COLD",
+              1.0
+            ],
+            "predictions": {
+              "fault": [
+                "COLD",
+                1.0
+              ],
+              "forward": [
+                "COLD",
+                1.0
+              ],
+              "reverse": [
+                "COLD",
+                1.0
+              ]
+            },
+            "survivors": [
+              "fault",
+              "forward",
+              "reverse"
+            ]
+          },
+          "survivors": [
+            "forward"
+          ]
+        },
+        {
+          "alias_rate_percent": 0,
+          "expected": [
+            "COLD",
+            1.0
+          ],
+          "graph_decision": {
+            "matching_evidence_count": 1,
+            "ok": true,
+            "probe_count": 1,
+            "proposal_count": 3,
+            "proposal_id": "forward",
+            "proposal_label": "forward"
+          },
+          "graph_decision_ns": 199782,
+          "mode": "full_copy",
+          "predictions": {
+            "fault": [
+              "HOT",
+              1.0
+            ],
+            "forward": [
+              "COLD",
+              1.0
+            ],
+            "reverse": [
+              "HOT",
+              1.0
+            ]
+          },
+          "query": {
+            "bad_score": 1.0,
+            "good_score": -1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w3_r0_i32"
+          },
+          "random_probe": {
+            "env": {
+              "bad_score": 1.0,
+              "good_score": -1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w3_r0_i16"
+            },
+            "expected": [
+              "COLD",
+              1.0
+            ],
+            "predictions": {
+              "fault": [
+                "HOT",
+                1.0
+              ],
+              "forward": [
+                "COLD",
+                1.0
+              ],
+              "reverse": [
+                "HOT",
+                1.0
+              ]
+            },
+            "survivors": [
+              "forward"
+            ]
+          },
+          "survivors": [
+            "forward"
+          ]
+        },
+        {
+          "alias_rate_percent": 50,
+          "expected": [
+            "HOT",
+            1.0
+          ],
+          "graph_decision": {
+            "matching_evidence_count": 1,
+            "ok": true,
+            "probe_count": 1,
+            "proposal_count": 3,
+            "proposal_id": "forward",
+            "proposal_label": "forward"
+          },
+          "graph_decision_ns": 247733,
+          "mode": "full_copy",
+          "predictions": {
+            "fault": [
+              "COLD",
+              1.0
+            ],
+            "forward": [
+              "HOT",
+              1.0
+            ],
+            "reverse": [
+              "COLD",
+              1.0
+            ]
+          },
+          "query": {
+            "bad_score": -1.0,
+            "good_score": 1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w3_r50_i3"
+          },
+          "random_probe": {
+            "env": {
+              "bad_score": -1.0,
+              "good_score": 1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w3_r50_i39"
+            },
+            "expected": [
+              "HOT",
+              1.0
+            ],
+            "predictions": {
+              "fault": [
+                "COLD",
+                1.0
+              ],
+              "forward": [
+                "HOT",
+                1.0
+              ],
+              "reverse": [
+                "COLD",
+                1.0
+              ]
+            },
+            "survivors": [
+              "forward"
+            ]
+          },
+          "survivors": [
+            "forward"
+          ]
+        },
+        {
+          "alias_rate_percent": 90,
+          "expected": [
+            "COLD",
+            1.0
+          ],
+          "graph_decision": {
+            "matching_evidence_count": 1,
+            "ok": true,
+            "probe_count": 1,
+            "proposal_count": 3,
+            "proposal_id": "forward",
+            "proposal_label": "forward"
+          },
+          "graph_decision_ns": 222082,
+          "mode": "full_copy",
+          "predictions": {
+            "fault": [
+              "HOT",
+              1.0
+            ],
+            "forward": [
+              "COLD",
+              1.0
+            ],
+            "reverse": [
+              "HOT",
+              1.0
+            ]
+          },
+          "query": {
+            "bad_score": 1.0,
+            "good_score": -1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w3_r90_i6"
+          },
+          "random_probe": {
+            "env": {
+              "bad_score": -1.0,
+              "good_score": -1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w3_r90_i92"
+            },
+            "expected": [
+              "COLD",
+              1.0
+            ],
+            "predictions": {
+              "fault": [
+                "COLD",
+                1.0
+              ],
+              "forward": [
+                "COLD",
+                1.0
+              ],
+              "reverse": [
+                "COLD",
+                1.0
+              ]
+            },
+            "survivors": [
+              "fault",
+              "forward",
+              "reverse"
+            ]
+          },
+          "survivors": [
+            "forward"
+          ]
+        },
+        {
+          "alias_rate_percent": 99,
+          "expected": [
+            "COLD",
+            1.0
+          ],
+          "graph_decision": {
+            "matching_evidence_count": 1,
+            "ok": true,
+            "probe_count": 1,
+            "proposal_count": 3,
+            "proposal_id": "forward",
+            "proposal_label": "forward"
+          },
+          "graph_decision_ns": 223162,
+          "mode": "full_copy",
+          "predictions": {
+            "fault": [
+              "HOT",
+              1.0
+            ],
+            "forward": [
+              "COLD",
+              1.0
+            ],
+            "reverse": [
+              "HOT",
+              1.0
+            ]
+          },
+          "query": {
+            "bad_score": 1.0,
+            "good_score": -1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w3_r99_i0"
+          },
+          "random_probe": {
+            "env": {
+              "bad_score": -1.0,
+              "good_score": -1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w3_r99_i58"
+            },
+            "expected": [
+              "COLD",
+              1.0
+            ],
+            "predictions": {
+              "fault": [
+                "COLD",
+                1.0
+              ],
+              "forward": [
+                "COLD",
+                1.0
+              ],
+              "reverse": [
+                "COLD",
+                1.0
+              ]
+            },
+            "survivors": [
+              "fault",
+              "forward",
+              "reverse"
+            ]
+          },
+          "survivors": [
+            "forward"
+          ]
+        }
+      ],
+      "source_hashes": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_ATTRIBUTE_SITE_GRAPH_SELECTION_V2_PREREG_20261002.md": "f30cae99fc51d24c739b375076d3b219825ca39de1a58d063cd954aefacdb387",
+        "domains/contract_query.py": "5861f25467e2fed9905fa325816a3dc60822d4a79004b8b7b095511c3806b9a6",
+        "domains/edit_ops.py": "5fef079eff6c47e6feb7cd35a92e39913312835acd82c151ca726319c4e9da1c",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/reflective_faculty.py": "30951ff474cf00dba5cf9dfc01589a61104f2a05120f530c941d1fbd40c0d845",
+        "domains/self_correction.py": "7c4f28e21afc4c334328d03146c56d5c46c80a9ec5c21aa22e1ee29f12deb2dd",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_attribute_site_active_choice_v2.py": "a9439fc30e88edadca9c4e12f465057d39c05af4e8f079507f0deca9c5e1d426",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_attribute_site_active_query_v1.py": "881a0078c2f6fcbf01736d7d29b16051a641ccf02dd83db58068a36cb89ed4e8",
+        "evaluation/substrate_capability/thoughtexperiment_attribute_site_active_choice_v2.py": "8ed18144f38f6ff5fda44a41cb360522b06d5845576aa619ad06d355b0158b8d",
+        "evaluation/substrate_capability/thoughtexperiment_attribute_site_active_query_v1.py": "981a7d33a94be11938bed0bb80237e9dd3ea92e4e875d60072c9be82d1652754",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+      },
+      "worker": 3
+    }
+  ]
+}

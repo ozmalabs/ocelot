@@ -1,0 +1,93 @@
+{
+  "episodes": 24,
+  "gates": {
+    "all_adopted_primary_states_match_producing_branches": true,
+    "all_per_event_canonical_graphs_and_progress_match": true,
+    "all_three_lifecycle_rules_active": true,
+    "source_lock_stable": true,
+    "task_goals_and_epistemic_residual_match": true,
+    "terminal_fixed_point_and_empty_receipts": true,
+    "unique_fresh_worker_processes": true,
+    "wire_order_reported_separately": true
+  },
+  "limits": [
+    "one existing authored mixed-act task fixture",
+    "one host",
+    "canonical parity does not imply serialized edge-order parity",
+    "no concurrent writer or serving-runtime evidence"
+  ],
+  "per_event_semantic_comparisons": 160,
+  "raw_capture": "evaluation/reports/thoughtexperiment_mixed_act_task_receipt_transfer_v1_1_raw_20261001.json",
+  "receipt_activity": {
+    "eager_receipt": {
+      "nonempty_receipt_count": 48,
+      "receipt_count": 128,
+      "total_effect_count": 512
+    },
+    "shared_snapshot_receipt": {
+      "nonempty_receipt_count": 48,
+      "receipt_count": 128,
+      "total_effect_count": 512
+    }
+  },
+  "schema": "MixedActTaskReceiptTransferV1_1Analysis",
+  "timing": {
+    "direct": {
+      "max_route_ms": 13.737415,
+      "median_route_ms": 6.0293515,
+      "min_route_ms": 5.489644,
+      "stage_median_ms": {
+        "adapter_seed_setup_ns": 3.8532770000000003,
+        "branch_setup_ns": 0.0,
+        "event_construction_ns": 1.7217585,
+        "fixture_load_ns": 0.097851,
+        "journal_readout_ns": 0.0,
+        "receipt_adoption_ns": 0.0,
+        "rule_closure_ns": 0.2559625,
+        "terminal_probe_ns": 0.0215555
+      }
+    },
+    "eager_receipt": {
+      "max_route_ms": 35.426466,
+      "median_route_ms": 22.1534675,
+      "min_route_ms": 17.231382,
+      "stage_median_ms": {
+        "adapter_seed_setup_ns": 5.041302,
+        "branch_setup_ns": 1.961755,
+        "event_construction_ns": 0.6435415,
+        "fixture_load_ns": 0.08602599999999999,
+        "journal_readout_ns": 1.295161,
+        "receipt_adoption_ns": 3.3277335,
+        "rule_closure_ns": 1.17314,
+        "terminal_probe_ns": 6.394493499999999
+      }
+    },
+    "shared_snapshot_receipt": {
+      "max_route_ms": 26.638233,
+      "median_route_ms": 20.410929000000003,
+      "min_route_ms": 14.118007,
+      "stage_median_ms": {
+        "adapter_seed_setup_ns": 5.95807,
+        "branch_setup_ns": 0.9733085,
+        "event_construction_ns": 0.7450654999999999,
+        "fixture_load_ns": 0.111611,
+        "journal_readout_ns": 1.4415915,
+        "receipt_adoption_ns": 3.8930425,
+        "rule_closure_ns": 1.530467,
+        "terminal_probe_ns": 4.0485690000000005
+      }
+    }
+  },
+  "wire_order": {
+    "eager_receipt": {
+      "comparisons": 80,
+      "mismatches_vs_direct": 72
+    },
+    "shared_snapshot_receipt": {
+      "comparisons": 80,
+      "mismatches_vs_direct": 72
+    }
+  },
+  "worker_module_import_ms_median": 85.506786,
+  "workers": 8
+}

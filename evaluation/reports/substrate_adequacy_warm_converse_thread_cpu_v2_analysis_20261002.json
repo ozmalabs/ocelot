@@ -1,0 +1,115 @@
+{
+  "gates": {
+    "finite_nonnegative_thread_runtime": true,
+    "parent_sample_minimum_and_unique_thread_keys": false,
+    "rayon_size_matches_setting": true,
+    "sampled_cpu_under_process_cpu_tolerance": true,
+    "schedule_matches_lock": true,
+    "semantic_refusal_and_oracle_controls": true,
+    "six_unique_fresh_processes": true,
+    "source_stable": true,
+    "tooling_source_lock_matches": true
+  },
+  "interpretation": "External per-thread scheduler counters estimate sampled CPU by thread instance; they do not attribute operations or source call stacks.",
+  "lock_sha256": "808c95ac8b341128c9b3d3de1588ed0a57a8000f1cf19ab3869fee1400b8f689",
+  "raw_sha256": "113f05929fb6f0dcb463e4e8e387c1b18e98c39547912cceced39c6a0d4ca75d",
+  "schema": "WarmConverseThreadCpuV2Analysis",
+  "summary": {
+    "default": {
+      "median_caller_cpu_ms": 100.82896,
+      "median_parent_samples": 15,
+      "median_process_cpu_ms": 1242.399979,
+      "median_sampled_cpu_fraction_of_process": 0.8616679269392681,
+      "median_sampled_thread_cpu_ms": 1022.177481,
+      "median_target_wall_ms": 137.101158,
+      "median_thread_instances": 48,
+      "n": 3,
+      "top_thread_cpu_ms_by_worker": [
+        [
+          99.45,
+          66.32,
+          60.45,
+          55.35,
+          54.61,
+          50.46,
+          48.8,
+          48.16,
+          42.31,
+          42.15
+        ],
+        [
+          109.45,
+          58.1,
+          57.49,
+          57.16,
+          56.5,
+          56.14,
+          55.87,
+          55.66,
+          53.97,
+          51.05
+        ],
+        [
+          99.97,
+          64.83,
+          64.8,
+          64.67,
+          64.65,
+          62.55,
+          62.04,
+          61.37,
+          60.83,
+          58.64
+        ]
+      ]
+    },
+    "one_thread": {
+      "median_caller_cpu_ms": 102.48046,
+      "median_parent_samples": 25,
+      "median_process_cpu_ms": 1200.975763,
+      "median_sampled_cpu_fraction_of_process": 0.9299643276814404,
+      "median_sampled_thread_cpu_ms": 1116.864618,
+      "median_target_wall_ms": 136.228311,
+      "median_thread_instances": 25,
+      "n": 3,
+      "top_thread_cpu_ms_by_worker": [
+        [
+          108.54,
+          69.83,
+          66.0,
+          65.43,
+          63.46,
+          62.73,
+          57.12,
+          57.05,
+          57.01,
+          56.33
+        ],
+        [
+          96.64,
+          71.89,
+          67.99,
+          67.31,
+          66.83,
+          64.95,
+          64.09,
+          61.75,
+          58.36,
+          54.99
+        ],
+        [
+          98.8,
+          69.17,
+          67.95,
+          66.66,
+          61.53,
+          61.42,
+          59.65,
+          57.38,
+          57.38,
+          52.56
+        ]
+      ]
+    }
+  }
+}

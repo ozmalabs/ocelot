@@ -1,0 +1,979 @@
+{
+  "claim_boundary": "one firing queues RulePatch, TrackIdentity, and NetCollapse; caller global fallback only",
+  "locked_inputs": {
+    "analyzer": "7ff77afb71e886affc8b2d7a9e7fb6cb0899138c9336142f27b4089f4c829b8f",
+    "graph_rules": "852c51d7011c60aabce9a9cf30e06d2162cceaf9c8cab04b9a9c548f91f8ea3d",
+    "native_build_manifest": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+    "net_forward": "b99e8728d9b98e3137718e56bdfcefe1b37db4b359fa51f6e5f37fa7c9aebe73",
+    "protocol": "4228fcec54d46bc89a407693df405b151ac0f2fd9c01e5fb83718eaa5440df02",
+    "py_binding": "034e606b055938e952fd5ff42cda66c563a37ca89a50761b62f6662282499ca9",
+    "rewrite": "4b7aa6ada5d555357795b94277dbac46c16cd39ab67ad666e1acfb8db463839c",
+    "runner": "bcfb275d32806eebce587a49e12a6f49d9be5a60a901cfc90c219b59671e34b7",
+    "substrate": "cfd2d8aebe01be73780a326334ec011b42a144dfe175883a0216e86ef4531c19",
+    "term": "043a0ea442125df2a77c04b47fe82790c53222f281d24afe4b77e4fccd7c3610"
+  },
+  "run_id": "mixed-deferred-queue-fallback-v1-20260926",
+  "runs": [
+    {
+      "arm": "full",
+      "count": 1,
+      "global_report": {
+        "budget_overshoot": 0,
+        "cycle_detection_enabled": false,
+        "passes_completed": 3,
+        "progress_steps": 2,
+        "requested_progress_budget": 20000,
+        "status": "fixed_point"
+      },
+      "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+      "pid": 709089,
+      "replicate": 0,
+      "scoped_report": null,
+      "state": {
+        "identities": {
+          "current": [
+            5
+          ],
+          "previous": [
+            5
+          ]
+        },
+        "observation_status": "consumed",
+        "outputs": [
+          true
+        ],
+        "patch_reason": "ok",
+        "patch_result_revision": 1,
+        "patch_status": "committed",
+        "surprise": 0.15,
+        "target_content_hash": 5927251937629756515,
+        "target_revision": 1,
+        "trigger_fired": true,
+        "weights": {
+          "W2": [
+            [
+              0.05
+            ]
+          ],
+          "b2": [
+            0.05
+          ]
+        }
+      },
+      "terminal_progress": 0,
+      "terminal_status": "fixed_point"
+    },
+    {
+      "arm": "scoped_only",
+      "count": 1,
+      "global_report": null,
+      "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+      "pid": 709115,
+      "replicate": 0,
+      "scoped_report": {
+        "deferred_effects_pending": true,
+        "hit_progress_budget": true,
+        "progress_steps": 1
+      },
+      "state": {
+        "identities": {
+          "current": [
+            null
+          ],
+          "previous": [
+            null
+          ]
+        },
+        "observation_status": "consumed",
+        "outputs": [
+          false
+        ],
+        "patch_reason": null,
+        "patch_result_revision": null,
+        "patch_status": "pending",
+        "surprise": 0.0,
+        "target_content_hash": 8901692549051697090,
+        "target_revision": 0,
+        "trigger_fired": true,
+        "weights": {
+          "W2": [
+            [
+              0.0
+            ]
+          ],
+          "b2": [
+            0.0
+          ]
+        }
+      },
+      "terminal_progress": null,
+      "terminal_status": null
+    },
+    {
+      "arm": "scoped_fallback",
+      "count": 1,
+      "global_report": {
+        "budget_overshoot": 0,
+        "cycle_detection_enabled": false,
+        "passes_completed": 2,
+        "progress_steps": 1,
+        "requested_progress_budget": 20000,
+        "status": "fixed_point"
+      },
+      "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+      "pid": 709119,
+      "replicate": 0,
+      "scoped_report": {
+        "deferred_effects_pending": true,
+        "hit_progress_budget": true,
+        "progress_steps": 1
+      },
+      "state": {
+        "identities": {
+          "current": [
+            5
+          ],
+          "previous": [
+            5
+          ]
+        },
+        "observation_status": "consumed",
+        "outputs": [
+          true
+        ],
+        "patch_reason": "ok",
+        "patch_result_revision": 1,
+        "patch_status": "committed",
+        "surprise": 0.15,
+        "target_content_hash": 5927251937629756515,
+        "target_revision": 1,
+        "trigger_fired": true,
+        "weights": {
+          "W2": [
+            [
+              0.05
+            ]
+          ],
+          "b2": [
+            0.05
+          ]
+        }
+      },
+      "terminal_progress": 0,
+      "terminal_status": "fixed_point"
+    },
+    {
+      "arm": "full",
+      "count": 1,
+      "global_report": {
+        "budget_overshoot": 0,
+        "cycle_detection_enabled": false,
+        "passes_completed": 3,
+        "progress_steps": 2,
+        "requested_progress_budget": 20000,
+        "status": "fixed_point"
+      },
+      "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+      "pid": 709122,
+      "replicate": 1,
+      "scoped_report": null,
+      "state": {
+        "identities": {
+          "current": [
+            5
+          ],
+          "previous": [
+            5
+          ]
+        },
+        "observation_status": "consumed",
+        "outputs": [
+          true
+        ],
+        "patch_reason": "ok",
+        "patch_result_revision": 1,
+        "patch_status": "committed",
+        "surprise": 0.15,
+        "target_content_hash": 5927251937629756515,
+        "target_revision": 1,
+        "trigger_fired": true,
+        "weights": {
+          "W2": [
+            [
+              0.05
+            ]
+          ],
+          "b2": [
+            0.05
+          ]
+        }
+      },
+      "terminal_progress": 0,
+      "terminal_status": "fixed_point"
+    },
+    {
+      "arm": "scoped_only",
+      "count": 1,
+      "global_report": null,
+      "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+      "pid": 709125,
+      "replicate": 1,
+      "scoped_report": {
+        "deferred_effects_pending": true,
+        "hit_progress_budget": true,
+        "progress_steps": 1
+      },
+      "state": {
+        "identities": {
+          "current": [
+            null
+          ],
+          "previous": [
+            null
+          ]
+        },
+        "observation_status": "consumed",
+        "outputs": [
+          false
+        ],
+        "patch_reason": null,
+        "patch_result_revision": null,
+        "patch_status": "pending",
+        "surprise": 0.0,
+        "target_content_hash": 8901692549051697090,
+        "target_revision": 0,
+        "trigger_fired": true,
+        "weights": {
+          "W2": [
+            [
+              0.0
+            ]
+          ],
+          "b2": [
+            0.0
+          ]
+        }
+      },
+      "terminal_progress": null,
+      "terminal_status": null
+    },
+    {
+      "arm": "scoped_fallback",
+      "count": 1,
+      "global_report": {
+        "budget_overshoot": 0,
+        "cycle_detection_enabled": false,
+        "passes_completed": 2,
+        "progress_steps": 1,
+        "requested_progress_budget": 20000,
+        "status": "fixed_point"
+      },
+      "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+      "pid": 709128,
+      "replicate": 1,
+      "scoped_report": {
+        "deferred_effects_pending": true,
+        "hit_progress_budget": true,
+        "progress_steps": 1
+      },
+      "state": {
+        "identities": {
+          "current": [
+            5
+          ],
+          "previous": [
+            5
+          ]
+        },
+        "observation_status": "consumed",
+        "outputs": [
+          true
+        ],
+        "patch_reason": "ok",
+        "patch_result_revision": 1,
+        "patch_status": "committed",
+        "surprise": 0.15,
+        "target_content_hash": 5927251937629756515,
+        "target_revision": 1,
+        "trigger_fired": true,
+        "weights": {
+          "W2": [
+            [
+              0.05
+            ]
+          ],
+          "b2": [
+            0.05
+          ]
+        }
+      },
+      "terminal_progress": 0,
+      "terminal_status": "fixed_point"
+    },
+    {
+      "arm": "full",
+      "count": 2,
+      "global_report": {
+        "budget_overshoot": 0,
+        "cycle_detection_enabled": false,
+        "passes_completed": 3,
+        "progress_steps": 2,
+        "requested_progress_budget": 20000,
+        "status": "fixed_point"
+      },
+      "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+      "pid": 709135,
+      "replicate": 0,
+      "scoped_report": null,
+      "state": {
+        "identities": {
+          "current": [
+            5,
+            10
+          ],
+          "previous": [
+            5,
+            10
+          ]
+        },
+        "observation_status": "consumed",
+        "outputs": [
+          true,
+          true
+        ],
+        "patch_reason": "ok",
+        "patch_result_revision": 1,
+        "patch_status": "committed",
+        "surprise": 0.15,
+        "target_content_hash": 5927251937629756515,
+        "target_revision": 1,
+        "trigger_fired": true,
+        "weights": {
+          "W2": [
+            [
+              0.05
+            ]
+          ],
+          "b2": [
+            0.05
+          ]
+        }
+      },
+      "terminal_progress": 0,
+      "terminal_status": "fixed_point"
+    },
+    {
+      "arm": "scoped_only",
+      "count": 2,
+      "global_report": null,
+      "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+      "pid": 709161,
+      "replicate": 0,
+      "scoped_report": {
+        "deferred_effects_pending": true,
+        "hit_progress_budget": true,
+        "progress_steps": 1
+      },
+      "state": {
+        "identities": {
+          "current": [
+            null,
+            null
+          ],
+          "previous": [
+            null,
+            null
+          ]
+        },
+        "observation_status": "consumed",
+        "outputs": [
+          false,
+          false
+        ],
+        "patch_reason": null,
+        "patch_result_revision": null,
+        "patch_status": "pending",
+        "surprise": 0.0,
+        "target_content_hash": 8901692549051697090,
+        "target_revision": 0,
+        "trigger_fired": true,
+        "weights": {
+          "W2": [
+            [
+              0.0
+            ]
+          ],
+          "b2": [
+            0.0
+          ]
+        }
+      },
+      "terminal_progress": null,
+      "terminal_status": null
+    },
+    {
+      "arm": "scoped_fallback",
+      "count": 2,
+      "global_report": {
+        "budget_overshoot": 0,
+        "cycle_detection_enabled": false,
+        "passes_completed": 2,
+        "progress_steps": 1,
+        "requested_progress_budget": 20000,
+        "status": "fixed_point"
+      },
+      "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+      "pid": 709164,
+      "replicate": 0,
+      "scoped_report": {
+        "deferred_effects_pending": true,
+        "hit_progress_budget": true,
+        "progress_steps": 1
+      },
+      "state": {
+        "identities": {
+          "current": [
+            5,
+            10
+          ],
+          "previous": [
+            5,
+            10
+          ]
+        },
+        "observation_status": "consumed",
+        "outputs": [
+          true,
+          true
+        ],
+        "patch_reason": "ok",
+        "patch_result_revision": 1,
+        "patch_status": "committed",
+        "surprise": 0.15,
+        "target_content_hash": 5927251937629756515,
+        "target_revision": 1,
+        "trigger_fired": true,
+        "weights": {
+          "W2": [
+            [
+              0.05
+            ]
+          ],
+          "b2": [
+            0.05
+          ]
+        }
+      },
+      "terminal_progress": 0,
+      "terminal_status": "fixed_point"
+    },
+    {
+      "arm": "full",
+      "count": 2,
+      "global_report": {
+        "budget_overshoot": 0,
+        "cycle_detection_enabled": false,
+        "passes_completed": 3,
+        "progress_steps": 2,
+        "requested_progress_budget": 20000,
+        "status": "fixed_point"
+      },
+      "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+      "pid": 709168,
+      "replicate": 1,
+      "scoped_report": null,
+      "state": {
+        "identities": {
+          "current": [
+            5,
+            10
+          ],
+          "previous": [
+            5,
+            10
+          ]
+        },
+        "observation_status": "consumed",
+        "outputs": [
+          true,
+          true
+        ],
+        "patch_reason": "ok",
+        "patch_result_revision": 1,
+        "patch_status": "committed",
+        "surprise": 0.15,
+        "target_content_hash": 5927251937629756515,
+        "target_revision": 1,
+        "trigger_fired": true,
+        "weights": {
+          "W2": [
+            [
+              0.05
+            ]
+          ],
+          "b2": [
+            0.05
+          ]
+        }
+      },
+      "terminal_progress": 0,
+      "terminal_status": "fixed_point"
+    },
+    {
+      "arm": "scoped_only",
+      "count": 2,
+      "global_report": null,
+      "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+      "pid": 709193,
+      "replicate": 1,
+      "scoped_report": {
+        "deferred_effects_pending": true,
+        "hit_progress_budget": true,
+        "progress_steps": 1
+      },
+      "state": {
+        "identities": {
+          "current": [
+            null,
+            null
+          ],
+          "previous": [
+            null,
+            null
+          ]
+        },
+        "observation_status": "consumed",
+        "outputs": [
+          false,
+          false
+        ],
+        "patch_reason": null,
+        "patch_result_revision": null,
+        "patch_status": "pending",
+        "surprise": 0.0,
+        "target_content_hash": 8901692549051697090,
+        "target_revision": 0,
+        "trigger_fired": true,
+        "weights": {
+          "W2": [
+            [
+              0.0
+            ]
+          ],
+          "b2": [
+            0.0
+          ]
+        }
+      },
+      "terminal_progress": null,
+      "terminal_status": null
+    },
+    {
+      "arm": "scoped_fallback",
+      "count": 2,
+      "global_report": {
+        "budget_overshoot": 0,
+        "cycle_detection_enabled": false,
+        "passes_completed": 2,
+        "progress_steps": 1,
+        "requested_progress_budget": 20000,
+        "status": "fixed_point"
+      },
+      "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+      "pid": 709206,
+      "replicate": 1,
+      "scoped_report": {
+        "deferred_effects_pending": true,
+        "hit_progress_budget": true,
+        "progress_steps": 1
+      },
+      "state": {
+        "identities": {
+          "current": [
+            5,
+            10
+          ],
+          "previous": [
+            5,
+            10
+          ]
+        },
+        "observation_status": "consumed",
+        "outputs": [
+          true,
+          true
+        ],
+        "patch_reason": "ok",
+        "patch_result_revision": 1,
+        "patch_status": "committed",
+        "surprise": 0.15,
+        "target_content_hash": 5927251937629756515,
+        "target_revision": 1,
+        "trigger_fired": true,
+        "weights": {
+          "W2": [
+            [
+              0.05
+            ]
+          ],
+          "b2": [
+            0.05
+          ]
+        }
+      },
+      "terminal_progress": 0,
+      "terminal_status": "fixed_point"
+    },
+    {
+      "arm": "full",
+      "count": 4,
+      "global_report": {
+        "budget_overshoot": 0,
+        "cycle_detection_enabled": false,
+        "passes_completed": 3,
+        "progress_steps": 2,
+        "requested_progress_budget": 20000,
+        "status": "fixed_point"
+      },
+      "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+      "pid": 709209,
+      "replicate": 0,
+      "scoped_report": null,
+      "state": {
+        "identities": {
+          "current": [
+            5,
+            10,
+            15,
+            20
+          ],
+          "previous": [
+            5,
+            10,
+            15,
+            20
+          ]
+        },
+        "observation_status": "consumed",
+        "outputs": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "patch_reason": "ok",
+        "patch_result_revision": 1,
+        "patch_status": "committed",
+        "surprise": 0.15,
+        "target_content_hash": 5927251937629756515,
+        "target_revision": 1,
+        "trigger_fired": true,
+        "weights": {
+          "W2": [
+            [
+              0.05
+            ]
+          ],
+          "b2": [
+            0.05
+          ]
+        }
+      },
+      "terminal_progress": 0,
+      "terminal_status": "fixed_point"
+    },
+    {
+      "arm": "scoped_only",
+      "count": 4,
+      "global_report": null,
+      "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+      "pid": 709212,
+      "replicate": 0,
+      "scoped_report": {
+        "deferred_effects_pending": true,
+        "hit_progress_budget": true,
+        "progress_steps": 1
+      },
+      "state": {
+        "identities": {
+          "current": [
+            null,
+            null,
+            null,
+            null
+          ],
+          "previous": [
+            null,
+            null,
+            null,
+            null
+          ]
+        },
+        "observation_status": "consumed",
+        "outputs": [
+          false,
+          false,
+          false,
+          false
+        ],
+        "patch_reason": null,
+        "patch_result_revision": null,
+        "patch_status": "pending",
+        "surprise": 0.0,
+        "target_content_hash": 8901692549051697090,
+        "target_revision": 0,
+        "trigger_fired": true,
+        "weights": {
+          "W2": [
+            [
+              0.0
+            ]
+          ],
+          "b2": [
+            0.0
+          ]
+        }
+      },
+      "terminal_progress": null,
+      "terminal_status": null
+    },
+    {
+      "arm": "scoped_fallback",
+      "count": 4,
+      "global_report": {
+        "budget_overshoot": 0,
+        "cycle_detection_enabled": false,
+        "passes_completed": 2,
+        "progress_steps": 1,
+        "requested_progress_budget": 20000,
+        "status": "fixed_point"
+      },
+      "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+      "pid": 709217,
+      "replicate": 0,
+      "scoped_report": {
+        "deferred_effects_pending": true,
+        "hit_progress_budget": true,
+        "progress_steps": 1
+      },
+      "state": {
+        "identities": {
+          "current": [
+            5,
+            10,
+            15,
+            20
+          ],
+          "previous": [
+            5,
+            10,
+            15,
+            20
+          ]
+        },
+        "observation_status": "consumed",
+        "outputs": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "patch_reason": "ok",
+        "patch_result_revision": 1,
+        "patch_status": "committed",
+        "surprise": 0.15,
+        "target_content_hash": 5927251937629756515,
+        "target_revision": 1,
+        "trigger_fired": true,
+        "weights": {
+          "W2": [
+            [
+              0.05
+            ]
+          ],
+          "b2": [
+            0.05
+          ]
+        }
+      },
+      "terminal_progress": 0,
+      "terminal_status": "fixed_point"
+    },
+    {
+      "arm": "full",
+      "count": 4,
+      "global_report": {
+        "budget_overshoot": 0,
+        "cycle_detection_enabled": false,
+        "passes_completed": 3,
+        "progress_steps": 2,
+        "requested_progress_budget": 20000,
+        "status": "fixed_point"
+      },
+      "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+      "pid": 709220,
+      "replicate": 1,
+      "scoped_report": null,
+      "state": {
+        "identities": {
+          "current": [
+            5,
+            10,
+            15,
+            20
+          ],
+          "previous": [
+            5,
+            10,
+            15,
+            20
+          ]
+        },
+        "observation_status": "consumed",
+        "outputs": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "patch_reason": "ok",
+        "patch_result_revision": 1,
+        "patch_status": "committed",
+        "surprise": 0.15,
+        "target_content_hash": 5927251937629756515,
+        "target_revision": 1,
+        "trigger_fired": true,
+        "weights": {
+          "W2": [
+            [
+              0.05
+            ]
+          ],
+          "b2": [
+            0.05
+          ]
+        }
+      },
+      "terminal_progress": 0,
+      "terminal_status": "fixed_point"
+    },
+    {
+      "arm": "scoped_only",
+      "count": 4,
+      "global_report": null,
+      "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+      "pid": 709223,
+      "replicate": 1,
+      "scoped_report": {
+        "deferred_effects_pending": true,
+        "hit_progress_budget": true,
+        "progress_steps": 1
+      },
+      "state": {
+        "identities": {
+          "current": [
+            null,
+            null,
+            null,
+            null
+          ],
+          "previous": [
+            null,
+            null,
+            null,
+            null
+          ]
+        },
+        "observation_status": "consumed",
+        "outputs": [
+          false,
+          false,
+          false,
+          false
+        ],
+        "patch_reason": null,
+        "patch_result_revision": null,
+        "patch_status": "pending",
+        "surprise": 0.0,
+        "target_content_hash": 8901692549051697090,
+        "target_revision": 0,
+        "trigger_fired": true,
+        "weights": {
+          "W2": [
+            [
+              0.0
+            ]
+          ],
+          "b2": [
+            0.0
+          ]
+        }
+      },
+      "terminal_progress": null,
+      "terminal_status": null
+    },
+    {
+      "arm": "scoped_fallback",
+      "count": 4,
+      "global_report": {
+        "budget_overshoot": 0,
+        "cycle_detection_enabled": false,
+        "passes_completed": 2,
+        "progress_steps": 1,
+        "requested_progress_budget": 20000,
+        "status": "fixed_point"
+      },
+      "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+      "pid": 709227,
+      "replicate": 1,
+      "scoped_report": {
+        "deferred_effects_pending": true,
+        "hit_progress_budget": true,
+        "progress_steps": 1
+      },
+      "state": {
+        "identities": {
+          "current": [
+            5,
+            10,
+            15,
+            20
+          ],
+          "previous": [
+            5,
+            10,
+            15,
+            20
+          ]
+        },
+        "observation_status": "consumed",
+        "outputs": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "patch_reason": "ok",
+        "patch_result_revision": 1,
+        "patch_status": "committed",
+        "surprise": 0.15,
+        "target_content_hash": 5927251937629756515,
+        "target_revision": 1,
+        "trigger_fired": true,
+        "weights": {
+          "W2": [
+            [
+              0.05
+            ]
+          ],
+          "b2": [
+            0.05
+          ]
+        }
+      },
+      "terminal_progress": 0,
+      "terminal_status": "fixed_point"
+    }
+  ],
+  "schema_version": 1
+}

@@ -1,0 +1,151 @@
+{
+  "checks": {
+    "attribute_and_edge_write_events_present": true,
+    "attribute_read_event_present": true,
+    "both_terminal_probes_settled": true,
+    "enabled_and_disabled_graphs_match": true,
+    "enabled_and_disabled_progress_match": true,
+    "events_are_attributed_to_stable_rule_uid": true,
+    "no_events_dropped": true,
+    "no_trace_events_when_disabled": true,
+    "pattern_edge_event_present": true
+  },
+  "claim_boundary": "Instrumentation smoke and enabled/disabled parity on one graph. Not evidence of complete access coverage, low tracing overhead, natural frame locality, or CAN/conversation behavior. JIT and aggregate Terms are not covered.",
+  "environment": {
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+  },
+  "provenance": {
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "dirty_worktree": true,
+    "native_build_manifest_sha256": "26286dea6e8b319e73bbc82ca76149249cfe4d5d21f091063f967fc3cbfd7205",
+    "native_extension_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+    "native_extension_sha256": "7ca048d29d448f88cd6acf34b99c25134e2249567a5f70682cf6fe7cc6997bd7",
+    "source_sha256": {
+      "runners/dsl/src/access_trace.rs": "a97aed55271b991af6175c1a688de63f1d92447477c8afd3d5c6e650ca7f8b95",
+      "runners/dsl/src/lib.rs": "b64e59e7f95a9bbc169a333fbd48afd1432d258f893b32843364b12b7c2cb5d1",
+      "runners/dsl/src/py.rs": "5c00da4ffd186773f432680424fc19d954f5e6909e7f5f2bc934a773d384a08e",
+      "runners/dsl/src/rewrite.rs": "c35ba9b658ec6bc8451706b6a6f852124124f8dcef5c3013246a8e7be542e21b",
+      "runners/dsl/src/term.rs": "2c412d181496cbde0bcbbce088a3a455b6856fb0b2ae99e29f74b766a6d3b688",
+      "scripts/substrate_runtime_access_trace_smoke_v1.py": "6a250f58ee1fe67beb11fcd3ea821354d8c3f8180a6934e6a950ffb475fae9ab"
+    }
+  },
+  "run_id": "substrate-runtime-access-trace-smoke-v1-20260925",
+  "schema_version": 1,
+  "scope": "one native rule with one pattern edge, a where Attr read, an effect Attr read, SetAttr, and AddEdge",
+  "traced": {
+    "dropped_events": 0,
+    "events": [
+      [
+        1,
+        "pattern_edge",
+        0,
+        "trigger",
+        1,
+        1
+      ],
+      [
+        1,
+        "term_attr_read",
+        0,
+        "watched",
+        null,
+        2
+      ],
+      [
+        1,
+        "effect_attr_write",
+        1,
+        "observed",
+        null,
+        1
+      ],
+      [
+        1,
+        "effect_edge_upsert",
+        0,
+        "derived",
+        1,
+        1
+      ]
+    ],
+    "graph": {
+      "edges": [
+        {
+          "attrs": {},
+          "src": 0,
+          "tgt": 1,
+          "type": "trigger"
+        },
+        {
+          "attrs": {},
+          "src": 0,
+          "tgt": 1,
+          "type": "derived"
+        }
+      ],
+      "next_id": 2,
+      "nodes": [
+        {
+          "attrs": {
+            "watched": 5
+          },
+          "id": 0,
+          "type": "TraceRoot"
+        },
+        {
+          "attrs": {
+            "observed": 5
+          },
+          "id": 1,
+          "type": "TraceTarget"
+        }
+      ]
+    },
+    "progress": 1,
+    "rule_uid": 1,
+    "terminal_progress": 0,
+    "trace_enabled": true
+  },
+  "untraced": {
+    "dropped_events": 0,
+    "events": [],
+    "graph": {
+      "edges": [
+        {
+          "attrs": {},
+          "src": 0,
+          "tgt": 1,
+          "type": "trigger"
+        },
+        {
+          "attrs": {},
+          "src": 0,
+          "tgt": 1,
+          "type": "derived"
+        }
+      ],
+      "next_id": 2,
+      "nodes": [
+        {
+          "attrs": {
+            "watched": 5
+          },
+          "id": 0,
+          "type": "TraceRoot"
+        },
+        {
+          "attrs": {
+            "observed": 5
+          },
+          "id": 1,
+          "type": "TraceTarget"
+        }
+      ]
+    },
+    "progress": 1,
+    "rule_uid": 1,
+    "terminal_progress": 0,
+    "trace_enabled": false
+  }
+}

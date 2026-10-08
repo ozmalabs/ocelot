@@ -1,0 +1,5 @@
+{
+  "failure": "All worker computations completed, but the top-level validity gate raised KeyError: base before writing the aggregate capture. The base/goal are nested under the positive-call record.",
+  "reproduction": "PYTHONPATH=runners/dsl/python:. python3 scripts/substrate_geninfer_bound_scaling_v1.py",
+  "correction": "Gate now compares positive.goal with transform(positive.base). No workload, expected outcomes, or scoring thresholds changed."
+}

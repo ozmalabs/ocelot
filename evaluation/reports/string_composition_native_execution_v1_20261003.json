@@ -1,0 +1,2626 @@
+{
+  "captured_utc": "2026-10-03T08:51:00Z",
+  "elapsed_ns": 37716712,
+  "host": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+  "lock_sha256": "6a175ab498a19021a278a9179c0921c2bcc030a88366e1bdfc8c5b5c7d22f10f",
+  "schema": "StringCompositionNativeExecutionV1Results",
+  "sources": {
+    "engine": "1e816eee5847e87bca0ac52c07235b4f84ad5da263d0eb9aac3ebeb2ddb8f36b",
+    "files": {
+      "docs/research/engine_substrate/STRING_COMPOSITION_NATIVE_EXECUTION_AUDIT_V1_PREREG_20261003.md": "7a1e562bf80e6c7bfb0e2538fd0c0c42ce28d7f293f71127dffe64f1edc76f0d",
+      "domains/prog_synthesis.py": "52c01df0e08483b3ad5b35c45da27f92b70805957f068995fbfbd8c57b9cae2b",
+      "evaluation/reports/string_composition_fresh_pbe_v1_20261003.json": "71215ac22dc139959bd2d0ef762a0cb784c9670e5e5375da66fe1a63456c88a6",
+      "evaluation/substrate_capability/analyze_string_composition_native_execution_v1.py": "89a98507b2d6c51d1343092e623d47f104d38ff9f5d1bf9ef8d6bb999e3eeb61",
+      "evaluation/substrate_capability/audit_string_composition_native_execution_v1.py": "1fb8dea79e1154400e27bd52999e04c2464472d1c8fa8915f631e2342641fbd9",
+      "evaluation/substrate_capability/string_composition_fresh_pbe_v1_lock_20261003.json": "820b1e4322f8f3a8a467f02ac60f89d1f7ee622875b1623e2207a077c55df4cf",
+      "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+      "runners/dsl/python/substrate_rs/_native.build.json": "64e45893f9005846a1c53dcaac562fb9c9fb280292f411cfc839f929a68eabf7",
+      "runners/dsl/src/prog_eval.rs": "d419bda3288c534cbc8c35a3bccc29b67171b8297ecf8aeb43a474f77f0e1451",
+      "runners/dsl/src/py.rs": "de22673d04a0fa617bc2319b2d890aacfa6011c0b9199834a6f0352ad412d0fb",
+      "runners/dsl/src/term.rs": "f6605bc2aa97e3784bee57ab24bccf6b6375b2dae1e650182dcb5c35d7108e61",
+      "scripts/prog_synthesis_battery.py": "0cdaf29c0db08c36ac50e18a1a99e5c2eaed77a26cd68e5e5952a451a94b3df5",
+      "tests/fixtures/substrate_string_composition_fresh/build_tasks.py": "d33b3a06140b1a8d803629dd527805ba4508e36c2b204038cc0c6b79916f5c59",
+      "tests/fixtures/substrate_string_composition_fresh/tasks.json": "525dd3c5a7d1ca8e0d75c3845428857a66fd219688bcc6009b8af41787255f47"
+    },
+    "native": {
+      "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+      "sha256": "6f060694601cf8266b68d083bce201d4da8710cc4d5b1ebbcb548952b8de4397"
+    }
+  },
+  "summary": {
+    "all_row_exact_tasks": 18,
+    "evaluation_errors": 0,
+    "heldout_exact_tasks": 18,
+    "rows_checked": 126,
+    "task_count": 18
+  },
+  "tasks": [
+    {
+      "exact": true,
+      "family": "casefold_count",
+      "heldout_exact": true,
+      "ir": {
+        "stmts": [
+          {
+            "default": null,
+            "name": "s",
+            "type": "ProgDefFnParam"
+          },
+          {
+            "type": "ProgReturn",
+            "value": {
+              "sub": {
+                "type": "Lit",
+                "value": "ab"
+              },
+              "text": {
+                "text": {
+                  "name": "s",
+                  "type": "Var"
+                },
+                "type": "CaseFold"
+              },
+              "type": "StrCount"
+            }
+          }
+        ],
+        "type": "ProgSeq"
+      },
+      "rows": [
+        {
+          "exact": true,
+          "expected": 0,
+          "got": 0,
+          "halted": true,
+          "inputs": {
+            "s": " c-! dxbec-ye-"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": 1,
+          "got": 1,
+          "halted": true,
+          "inputs": {
+            "s": "a-cD -dE,Cex--Bab"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": 0,
+          "got": 0,
+          "halted": true,
+          "inputs": {
+            "s": " dEDDe??,ED,BcdxBB"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": 0,
+          "got": 0,
+          "halted": true,
+          "inputs": {
+            "s": "-xy__Eb?ya-,C??D"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": 0,
+          "got": 0,
+          "halted": true,
+          "inputs": {
+            "s": "-_?Ayc,z_-bDb-"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": 0,
+          "got": 0,
+          "halted": true,
+          "inputs": {
+            "s": " bbbac-zy,!!ba"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": 0,
+          "got": 0,
+          "halted": true,
+          "inputs": {
+            "s": "x?,Ddec_-Ee-dBC-"
+          },
+          "trap": null
+        }
+      ],
+      "task_id": "fresh_casefold_count_01"
+    },
+    {
+      "exact": true,
+      "family": "casefold_count",
+      "heldout_exact": true,
+      "ir": {
+        "stmts": [
+          {
+            "default": null,
+            "name": "s",
+            "type": "ProgDefFnParam"
+          },
+          {
+            "type": "ProgReturn",
+            "value": {
+              "sub": {
+                "type": "Lit",
+                "value": "xy"
+              },
+              "text": {
+                "text": {
+                  "name": "s",
+                  "type": "Var"
+                },
+                "type": "CaseFold"
+              },
+              "type": "StrCount"
+            }
+          }
+        ],
+        "type": "ProgSeq"
+      },
+      "rows": [
+        {
+          "exact": true,
+          "expected": 0,
+          "got": 0,
+          "halted": true,
+          "inputs": {
+            "s": "x?ByACx,C__D?D"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": 0,
+          "got": 0,
+          "halted": true,
+          "inputs": {
+            "s": "de_-AbBE-"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": 0,
+          "got": 0,
+          "halted": true,
+          "inputs": {
+            "s": "zad?DCza?yx,C!b,"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": 0,
+          "got": 0,
+          "halted": true,
+          "inputs": {
+            "s": "C_bABB!b"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": 0,
+          "got": 0,
+          "halted": true,
+          "inputs": {
+            "s": "A!y_ Ea-D-ae,!b"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": 0,
+          "got": 0,
+          "halted": true,
+          "inputs": {
+            "s": "ab!AC-a,yb_-!-_ "
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": 0,
+          "got": 0,
+          "halted": true,
+          "inputs": {
+            "s": "BCBa,zAzaBd"
+          },
+          "trap": null
+        }
+      ],
+      "task_id": "fresh_casefold_count_02"
+    },
+    {
+      "exact": true,
+      "family": "casefold_count",
+      "heldout_exact": true,
+      "ir": {
+        "stmts": [
+          {
+            "default": null,
+            "name": "s",
+            "type": "ProgDefFnParam"
+          },
+          {
+            "type": "ProgReturn",
+            "value": {
+              "sub": {
+                "type": "Lit",
+                "value": "cd"
+              },
+              "text": {
+                "text": {
+                  "name": "s",
+                  "type": "Var"
+                },
+                "type": "CaseFold"
+              },
+              "type": "StrCount"
+            }
+          }
+        ],
+        "type": "ProgSeq"
+      },
+      "rows": [
+        {
+          "exact": true,
+          "expected": 0,
+          "got": 0,
+          "halted": true,
+          "inputs": {
+            "s": "zy,-xca?Bxy!! D"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": 0,
+          "got": 0,
+          "halted": true,
+          "inputs": {
+            "s": "ecC ABByaCz_AAc"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": 1,
+          "got": 1,
+          "halted": true,
+          "inputs": {
+            "s": "D!daBxc,EdbaCdEaz"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": 1,
+          "got": 1,
+          "halted": true,
+          "inputs": {
+            "s": "dDc?Ee,,exyCde!"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": 0,
+          "got": 0,
+          "halted": true,
+          "inputs": {
+            "s": "DAx-AcxCzE"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": 0,
+          "got": 0,
+          "halted": true,
+          "inputs": {
+            "s": "_!B-Bb_-E?_az"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": 0,
+          "got": 0,
+          "halted": true,
+          "inputs": {
+            "s": "zeADzaeED?zC___"
+          },
+          "trap": null
+        }
+      ],
+      "task_id": "fresh_casefold_count_03"
+    },
+    {
+      "exact": true,
+      "family": "casefold_split",
+      "heldout_exact": true,
+      "ir": {
+        "stmts": [
+          {
+            "default": null,
+            "name": "s",
+            "type": "ProgDefFnParam"
+          },
+          {
+            "type": "ProgReturn",
+            "value": {
+              "sep": {
+                "type": "Lit",
+                "value": "a"
+              },
+              "text": {
+                "text": {
+                  "name": "s",
+                  "type": "Var"
+                },
+                "type": "CaseFold"
+              },
+              "type": "Split"
+            }
+          }
+        ],
+        "type": "ProgSeq"
+      },
+      "rows": [
+        {
+          "exact": true,
+          "expected": [
+            " ",
+            "c",
+            "",
+            "y zd ",
+            "xb",
+            " bd",
+            ""
+          ],
+          "got": [
+            " ",
+            "c",
+            "",
+            "y zd ",
+            "xb",
+            " bd",
+            ""
+          ],
+          "halted": true,
+          "inputs": {
+            "s": " aCAay zd axbA bDa"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            " e",
+            "dedzzb",
+            "",
+            "x",
+            "",
+            "ezcey"
+          ],
+          "got": [
+            " e",
+            "dedzzb",
+            "",
+            "x",
+            "",
+            "ezcey"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": " eADedzzbaaxaAEzCey"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "b ceb",
+            "",
+            "bdcyc",
+            " bx",
+            "y"
+          ],
+          "got": [
+            "b ceb",
+            "",
+            "bdcyc",
+            " bx",
+            "y"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "b CEBaaBDcycA bxay"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "",
+            " ybb",
+            "bxx"
+          ],
+          "got": [
+            "",
+            " ybb",
+            "bxx"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "A yBBabxx"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            " x",
+            "ybdz",
+            "bxyzy",
+            " dd",
+            "ec",
+            "xc",
+            "e ec"
+          ],
+          "got": [
+            " x",
+            "ybdz",
+            "bxyzy",
+            " dd",
+            "ec",
+            "xc",
+            "e ec"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": " xaybDzabxyzya dDaECaxcAE EC"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "zxdx",
+            "ydce ",
+            "",
+            "xbb",
+            "c",
+            "zc",
+            ""
+          ],
+          "got": [
+            "zxdx",
+            "ydce ",
+            "",
+            "xbb",
+            "c",
+            "zc",
+            ""
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "zxDxAydCE aAxBBAcazCa"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "d",
+            "db",
+            "ee"
+          ],
+          "got": [
+            "d",
+            "db",
+            "ee"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "DadBAEE"
+          },
+          "trap": null
+        }
+      ],
+      "task_id": "fresh_casefold_split_01"
+    },
+    {
+      "exact": true,
+      "family": "casefold_split",
+      "heldout_exact": true,
+      "ir": {
+        "stmts": [
+          {
+            "default": null,
+            "name": "s",
+            "type": "ProgDefFnParam"
+          },
+          {
+            "type": "ProgReturn",
+            "value": {
+              "sep": {
+                "type": "Lit",
+                "value": "b"
+              },
+              "text": {
+                "text": {
+                  "name": "s",
+                  "type": "Var"
+                },
+                "type": "CaseFold"
+              },
+              "type": "Split"
+            }
+          }
+        ],
+        "type": "ProgSeq"
+      },
+      "rows": [
+        {
+          "exact": true,
+          "expected": [
+            "yzxxacy",
+            "eac",
+            "ece"
+          ],
+          "got": [
+            "yzxxacy",
+            "eac",
+            "ece"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "yzxxacybEAcbece"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "xeaa e",
+            "",
+            "dacaaay",
+            "d",
+            "d"
+          ],
+          "got": [
+            "xeaa e",
+            "",
+            "dacaaay",
+            "d",
+            "d"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "xEAa ebBDAcAaAyBDbD"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "czz",
+            "cey d"
+          ],
+          "got": [
+            "czz",
+            "cey d"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "CzzBcEy d"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "",
+            "zzec",
+            "dz"
+          ],
+          "got": [
+            "",
+            "zzec",
+            "dz"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "bzzecbdz"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "",
+            "zx",
+            "ee",
+            "",
+            "caax",
+            "adae",
+            ""
+          ],
+          "got": [
+            "",
+            "zx",
+            "ee",
+            "",
+            "caax",
+            "adae",
+            ""
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "bzxBeebbcAAxbaDAeb"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "cad ",
+            "xy",
+            "addcad",
+            ""
+          ],
+          "got": [
+            "cad ",
+            "xy",
+            "addcad",
+            ""
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "cad BxybadDCaDb"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "daa",
+            "",
+            "z",
+            "",
+            "cy",
+            "",
+            "aee"
+          ],
+          "got": [
+            "daa",
+            "",
+            "z",
+            "",
+            "cy",
+            "",
+            "aee"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "daabBzBBcybBaEE"
+          },
+          "trap": null
+        }
+      ],
+      "task_id": "fresh_casefold_split_02"
+    },
+    {
+      "exact": true,
+      "family": "casefold_split",
+      "heldout_exact": true,
+      "ir": {
+        "stmts": [
+          {
+            "default": null,
+            "name": "s",
+            "type": "ProgDefFnParam"
+          },
+          {
+            "type": "ProgReturn",
+            "value": {
+              "sep": {
+                "type": "Lit",
+                "value": "c"
+              },
+              "text": {
+                "text": {
+                  "name": "s",
+                  "type": "Var"
+                },
+                "type": "CaseFold"
+              },
+              "type": "Split"
+            }
+          }
+        ],
+        "type": "ProgSeq"
+      },
+      "rows": [
+        {
+          "exact": true,
+          "expected": [
+            "b  ",
+            "beda",
+            "edee",
+            "ba",
+            "b by"
+          ],
+          "got": [
+            "b  ",
+            "beda",
+            "edee",
+            "ba",
+            "b by"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "b  cbeDaCEDEEcbaCB by"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "",
+            "a",
+            "xe",
+            "",
+            "xabax ",
+            "day",
+            "eeede"
+          ],
+          "got": [
+            "",
+            "a",
+            "xe",
+            "",
+            "xabax ",
+            "day",
+            "eeede"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "CAcxEccxabAx CdayCeEedE"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "bb",
+            "az",
+            "abea",
+            "ydbzxa"
+          ],
+          "got": [
+            "bb",
+            "az",
+            "abea",
+            "ydbzxa"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "bbCAzCAbEaCyDBzxa"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "bx",
+            "",
+            "edddxee",
+            "baa",
+            "deddx"
+          ],
+          "got": [
+            "bx",
+            "",
+            "edddxee",
+            "baa",
+            "deddx"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "BxcCEdddxEeCbAacDEdDx"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "  d",
+            "",
+            "e",
+            "abb",
+            "ab",
+            "b",
+            "aaey",
+            "a",
+            "",
+            "b",
+            ""
+          ],
+          "got": [
+            "  d",
+            "",
+            "e",
+            "abb",
+            "ab",
+            "b",
+            "aaey",
+            "a",
+            "",
+            "b",
+            ""
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "  dccecabbcabcBCaAeycACcbc"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "ey ",
+            "ad xby"
+          ],
+          "got": [
+            "ey ",
+            "ad xby"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "ey cAd xby"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "",
+            "a",
+            "b",
+            "zeed",
+            "yz"
+          ],
+          "got": [
+            "",
+            "a",
+            "b",
+            "zeed",
+            "yz"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "CaCbCzEEDCyz"
+          },
+          "trap": null
+        }
+      ],
+      "task_id": "fresh_casefold_split_03"
+    },
+    {
+      "exact": true,
+      "family": "reverse_then_split",
+      "heldout_exact": true,
+      "ir": {
+        "stmts": [
+          {
+            "default": null,
+            "name": "s",
+            "type": "ProgDefFnParam"
+          },
+          {
+            "type": "ProgReturn",
+            "value": {
+              "sep": {
+                "type": "Lit",
+                "value": "|"
+              },
+              "text": {
+                "seq": {
+                  "name": "s",
+                  "type": "Var"
+                },
+                "type": "Reverse"
+              },
+              "type": "Split"
+            }
+          }
+        ],
+        "type": "ProgSeq"
+      },
+      "rows": [
+        {
+          "exact": true,
+          "expected": [
+            "vcXvfa",
+            "Zb",
+            "evYX"
+          ],
+          "got": [
+            "vcXvfa",
+            "Zb",
+            "evYX"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "XYve|bZ|afvXcv"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "bvcd",
+            "eadevc",
+            "ffva",
+            "vvu"
+          ],
+          "got": [
+            "bvcd",
+            "eadevc",
+            "ffva",
+            "vvu"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "uvv|avff|cvedae|dcvb"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "dbvXXe",
+            "effcZf",
+            "avdY"
+          ],
+          "got": [
+            "dbvXXe",
+            "effcZf",
+            "avdY"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "Ydva|fZcffe|eXXvbd"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "bbwafu",
+            "avdwXf",
+            "XaYdcu",
+            "YfwucwZ"
+          ],
+          "got": [
+            "bbwafu",
+            "avdwXf",
+            "XaYdcu",
+            "YfwucwZ"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "ZwcuwfY|ucdYaX|fXwdva|ufawbb"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "cYeacw",
+            "uwcedeX",
+            "uXeew"
+          ],
+          "got": [
+            "cYeacw",
+            "uwcedeX",
+            "uXeew"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "weeXu|Xedecwu|wcaeYc"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "Yv",
+            "vdvYd"
+          ],
+          "got": [
+            "Yv",
+            "vdvYd"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "dYvdv|vY"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "Zef",
+            "fY"
+          ],
+          "got": [
+            "Zef",
+            "fY"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "Yf|feZ"
+          },
+          "trap": null
+        }
+      ],
+      "task_id": "fresh_reverse_then_split_01"
+    },
+    {
+      "exact": true,
+      "family": "reverse_then_split",
+      "heldout_exact": true,
+      "ir": {
+        "stmts": [
+          {
+            "default": null,
+            "name": "s",
+            "type": "ProgDefFnParam"
+          },
+          {
+            "type": "ProgReturn",
+            "value": {
+              "sep": {
+                "type": "Lit",
+                "value": ","
+              },
+              "text": {
+                "seq": {
+                  "name": "s",
+                  "type": "Var"
+                },
+                "type": "Reverse"
+              },
+              "type": "Split"
+            }
+          }
+        ],
+        "type": "ProgSeq"
+      },
+      "rows": [
+        {
+          "exact": true,
+          "expected": [
+            "ecbfav",
+            "Zwewa",
+            "cvuud"
+          ],
+          "got": [
+            "ecbfav",
+            "Zwewa",
+            "cvuud"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "duuvc,awewZ,vafbce"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "uecdf",
+            "YXewa",
+            "uZXwa",
+            "dd"
+          ],
+          "got": [
+            "uecdf",
+            "YXewa",
+            "uZXwa",
+            "dd"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "dd,awXZu,aweXY,fdceu"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "fud",
+            "ew",
+            "vbfXfYc",
+            "ewXdua"
+          ],
+          "got": [
+            "fud",
+            "ew",
+            "vbfXfYc",
+            "ewXdua"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "audXwe,cYfXfbv,we,duf"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "ueYcXue",
+            "daceX"
+          ],
+          "got": [
+            "ueYcXue",
+            "daceX"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "Xecad,euXcYeu"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "Yda",
+            "wXe",
+            "wawYfd",
+            "dfXY"
+          ],
+          "got": [
+            "Yda",
+            "wXe",
+            "wawYfd",
+            "dfXY"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "YXfd,dfYwaw,eXw,adY"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "ad",
+            "Yau"
+          ],
+          "got": [
+            "ad",
+            "Yau"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "uaY,da"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "XXewXY",
+            "uwZYc",
+            "cefd",
+            "bbYXX"
+          ],
+          "got": [
+            "XXewXY",
+            "uwZYc",
+            "cefd",
+            "bbYXX"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "XXYbb,dfec,cYZwu,YXweXX"
+          },
+          "trap": null
+        }
+      ],
+      "task_id": "fresh_reverse_then_split_02"
+    },
+    {
+      "exact": true,
+      "family": "reverse_then_split",
+      "heldout_exact": true,
+      "ir": {
+        "stmts": [
+          {
+            "default": null,
+            "name": "s",
+            "type": "ProgDefFnParam"
+          },
+          {
+            "type": "ProgReturn",
+            "value": {
+              "sep": {
+                "type": "Lit",
+                "value": ";"
+              },
+              "text": {
+                "seq": {
+                  "name": "s",
+                  "type": "Var"
+                },
+                "type": "Reverse"
+              },
+              "type": "Split"
+            }
+          }
+        ],
+        "type": "ProgSeq"
+      },
+      "rows": [
+        {
+          "exact": true,
+          "expected": [
+            "ZwaXbX",
+            "dv",
+            "vav",
+            "wYcwff"
+          ],
+          "got": [
+            "ZwaXbX",
+            "dv",
+            "vav",
+            "wYcwff"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "ffwcYw;vav;vd;XbXawZ"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "Xvfc",
+            "cbbXZfb",
+            "XeYf"
+          ],
+          "got": [
+            "Xvfc",
+            "cbbXZfb",
+            "XeYf"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "fYeX;bfZXbbc;cfvX"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "fdfdXb",
+            "euew",
+            "vve"
+          ],
+          "got": [
+            "fdfdXb",
+            "euew",
+            "vve"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "evv;weue;bXdfdf"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "YfXa",
+            "faa"
+          ],
+          "got": [
+            "YfXa",
+            "faa"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "aaf;aXfY"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "aw",
+            "bf",
+            "aw",
+            "Xwuafdc"
+          ],
+          "got": [
+            "aw",
+            "bf",
+            "aw",
+            "Xwuafdc"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "cdfauwX;wa;fb;wa"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "eXY",
+            "fwXbaee",
+            "cfcuau",
+            "wYecf"
+          ],
+          "got": [
+            "eXY",
+            "fwXbaee",
+            "cfcuau",
+            "wYecf"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "fceYw;uaucfc;eeabXwf;YXe"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "ddXYZew",
+            "fdYuYuw"
+          ],
+          "got": [
+            "ddXYZew",
+            "fdYuYuw"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "wuYuYdf;weZYXdd"
+          },
+          "trap": null
+        }
+      ],
+      "task_id": "fresh_reverse_then_split_03"
+    },
+    {
+      "exact": true,
+      "family": "remove_separator",
+      "heldout_exact": true,
+      "ir": {
+        "stmts": [
+          {
+            "default": null,
+            "name": "s",
+            "type": "ProgDefFnParam"
+          },
+          {
+            "type": "ProgReturn",
+            "value": {
+              "acc_name": "acc",
+              "body": {
+                "parts": [
+                  {
+                    "name": "acc",
+                    "type": "Var"
+                  },
+                  {
+                    "name": "piece",
+                    "type": "Var"
+                  }
+                ],
+                "type": "StringConcat"
+              },
+              "init": {
+                "type": "Lit",
+                "value": ""
+              },
+              "source": {
+                "sep": {
+                  "type": "Lit",
+                  "value": "-"
+                },
+                "text": {
+                  "name": "s",
+                  "type": "Var"
+                },
+                "type": "Split"
+              },
+              "type": "Fold",
+              "var_name": "piece"
+            }
+          }
+        ],
+        "type": "ProgSeq"
+      },
+      "rows": [
+        {
+          "exact": true,
+          "expected": "cufXbaYcYeYww",
+          "got": "cufXbaYcYeYww",
+          "halted": true,
+          "inputs": {
+            "s": "cufXb-aYcYe-Yww"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": "eXaYuaZcwYXudbaeXbbeZ",
+          "got": "eXaYuaZcwYXudbaeXbbeZ",
+          "halted": true,
+          "inputs": {
+            "s": "eXaYuaZ-cw-YXudb-aeXbbeZ"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": "afbZbducvcucwvX",
+          "got": "afbZbducvcucwvX",
+          "halted": true,
+          "inputs": {
+            "s": "afbZbd-ucvcu-cwvX"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": "YXfcedZcwYXZZeZcbXww",
+          "got": "YXfcedZcwYXZZeZcbXww",
+          "halted": true,
+          "inputs": {
+            "s": "YXfce-dZcwYXZ-ZeZc-bXww"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": "YdXYXaadeZZeed",
+          "got": "YdXYXaadeZZeed",
+          "halted": true,
+          "inputs": {
+            "s": "Yd-XY-XaadeZ-Zeed"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": "ffbbuYZZcbfwewdaea",
+          "got": "ffbbuYZZcbfwewdaea",
+          "halted": true,
+          "inputs": {
+            "s": "ffbbuYZ-Zc-bfwe-wdaea"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": "vfYvabYccadewddYZaaw",
+          "got": "vfYvabYccadewddYZaaw",
+          "halted": true,
+          "inputs": {
+            "s": "vfYvab-Ycca-dewdd-YZaaw"
+          },
+          "trap": null
+        }
+      ],
+      "task_id": "fresh_remove_separator_01"
+    },
+    {
+      "exact": true,
+      "family": "remove_separator",
+      "heldout_exact": true,
+      "ir": {
+        "stmts": [
+          {
+            "default": null,
+            "name": "s",
+            "type": "ProgDefFnParam"
+          },
+          {
+            "type": "ProgReturn",
+            "value": {
+              "acc_name": "acc",
+              "body": {
+                "parts": [
+                  {
+                    "name": "acc",
+                    "type": "Var"
+                  },
+                  {
+                    "name": "piece",
+                    "type": "Var"
+                  }
+                ],
+                "type": "StringConcat"
+              },
+              "init": {
+                "type": "Lit",
+                "value": ""
+              },
+              "source": {
+                "sep": {
+                  "type": "Lit",
+                  "value": "_"
+                },
+                "text": {
+                  "name": "s",
+                  "type": "Var"
+                },
+                "type": "Split"
+              },
+              "type": "Fold",
+              "var_name": "piece"
+            }
+          }
+        ],
+        "type": "ProgSeq"
+      },
+      "rows": [
+        {
+          "exact": true,
+          "expected": "avcawZuwZfwuu",
+          "got": "avcawZuwZfwuu",
+          "halted": true,
+          "inputs": {
+            "s": "av_cawZuw_Zfwuu"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": "vdfZZfwa",
+          "got": "vdfZZfwa",
+          "halted": true,
+          "inputs": {
+            "s": "vd_fZZfwa"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": "awcYeedXvY",
+          "got": "awcYeedXvY",
+          "halted": true,
+          "inputs": {
+            "s": "aw_cYeedX_vY"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": "cfuwfXbeuv",
+          "got": "cfuwfXbeuv",
+          "halted": true,
+          "inputs": {
+            "s": "cfuwfX_beuv"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": "cdeZevucfevcvw",
+          "got": "cdeZevucfevcvw",
+          "halted": true,
+          "inputs": {
+            "s": "cdeZ_evucfev_cvw"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": "cvdavvwXbwbeee",
+          "got": "cvdavvwXbwbeee",
+          "halted": true,
+          "inputs": {
+            "s": "cvdavvw_Xb_wbeee"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": "YecYveadw",
+          "got": "YecYveadw",
+          "halted": true,
+          "inputs": {
+            "s": "Yec_Yveadw"
+          },
+          "trap": null
+        }
+      ],
+      "task_id": "fresh_remove_separator_02"
+    },
+    {
+      "exact": true,
+      "family": "remove_separator",
+      "heldout_exact": true,
+      "ir": {
+        "stmts": [
+          {
+            "default": null,
+            "name": "s",
+            "type": "ProgDefFnParam"
+          },
+          {
+            "type": "ProgReturn",
+            "value": {
+              "acc_name": "acc",
+              "body": {
+                "parts": [
+                  {
+                    "name": "acc",
+                    "type": "Var"
+                  },
+                  {
+                    "name": "piece",
+                    "type": "Var"
+                  }
+                ],
+                "type": "StringConcat"
+              },
+              "init": {
+                "type": "Lit",
+                "value": ""
+              },
+              "source": {
+                "sep": {
+                  "type": "Lit",
+                  "value": ":"
+                },
+                "text": {
+                  "name": "s",
+                  "type": "Var"
+                },
+                "type": "Split"
+              },
+              "type": "Fold",
+              "var_name": "piece"
+            }
+          }
+        ],
+        "type": "ProgSeq"
+      },
+      "rows": [
+        {
+          "exact": true,
+          "expected": "udXXvf",
+          "got": "udXXvf",
+          "halted": true,
+          "inputs": {
+            "s": "udX:Xvf"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": "bffeafeZbefwYeaeXcbv",
+          "got": "bffeafeZbefwYeaeXcbv",
+          "halted": true,
+          "inputs": {
+            "s": "bffeaf:eZb:efwYe:aeXcbv"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": "uvewZwYcfwcefXYZ",
+          "got": "uvewZwYcfwcefXYZ",
+          "halted": true,
+          "inputs": {
+            "s": "uvewZ:wYcfw:ce:fXYZ"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": "dYZuabYYfedXwdfv",
+          "got": "dYZuabYYfedXwdfv",
+          "halted": true,
+          "inputs": {
+            "s": "dYZuab:YY:fedX:wdfv"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": "XbeXYYXvdu",
+          "got": "XbeXYYXvdu",
+          "halted": true,
+          "inputs": {
+            "s": "XbeXYY:Xvdu"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": "fvaZcavfXZuZYcaf",
+          "got": "fvaZcavfXZuZYcaf",
+          "halted": true,
+          "inputs": {
+            "s": "fvaZca:vfXZ:uZY:caf"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": "uZaZwYfdabvddcfabdb",
+          "got": "uZaZwYfdabvddcfabdb",
+          "halted": true,
+          "inputs": {
+            "s": "uZ:aZwYfda:bvddcfa:bdb"
+          },
+          "trap": null
+        }
+      ],
+      "task_id": "fresh_remove_separator_03"
+    },
+    {
+      "exact": true,
+      "family": "reverse_then_replace",
+      "heldout_exact": true,
+      "ir": {
+        "stmts": [
+          {
+            "default": null,
+            "name": "s",
+            "type": "ProgDefFnParam"
+          },
+          {
+            "type": "ProgReturn",
+            "value": {
+              "new": {
+                "type": "Lit",
+                "value": "X"
+              },
+              "old": {
+                "type": "Lit",
+                "value": "a"
+              },
+              "text": {
+                "seq": {
+                  "name": "s",
+                  "type": "Var"
+                },
+                "type": "Reverse"
+              },
+              "type": "Replace"
+            }
+          }
+        ],
+        "type": "ProgSeq"
+      },
+      "rows": [
+        {
+          "exact": true,
+          "expected": "yB_ zDzX-,",
+          "got": "yB_ zDzX-,",
+          "halted": true,
+          "inputs": {
+            "s": ",-azDz _By"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": "BxEzyBey A_BDXbzx",
+          "got": "BxEzyBey A_BDXbzx",
+          "halted": true,
+          "inputs": {
+            "s": "xzbaDB_A yeByzExB"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": "EAyyCB_!-",
+          "got": "EAyyCB_!-",
+          "halted": true,
+          "inputs": {
+            "s": "-!_BCyyAE"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": "?-y yC!_ye?,,AzB-D",
+          "got": "?-y yC!_ye?,,AzB-D",
+          "halted": true,
+          "inputs": {
+            "s": "D-BzA,,?ey_!Cy y-?"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": "?xC!z?Cbe-XDz yz",
+          "got": "?xC!z?Cbe-XDz yz",
+          "halted": true,
+          "inputs": {
+            "s": "zy zDa-ebC?z!Cx?"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": "Cz!ececb",
+          "got": "Cz!ececb",
+          "halted": true,
+          "inputs": {
+            "s": "bcece!zC"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": "zX,!X d,Eb_y",
+          "got": "zX,!X d,Eb_y",
+          "halted": true,
+          "inputs": {
+            "s": "y_bE,d a!,az"
+          },
+          "trap": null
+        }
+      ],
+      "task_id": "fresh_reverse_then_replace_01"
+    },
+    {
+      "exact": true,
+      "family": "reverse_then_replace",
+      "heldout_exact": true,
+      "ir": {
+        "stmts": [
+          {
+            "default": null,
+            "name": "s",
+            "type": "ProgDefFnParam"
+          },
+          {
+            "type": "ProgReturn",
+            "value": {
+              "new": {
+                "type": "Lit",
+                "value": "Q"
+              },
+              "old": {
+                "type": "Lit",
+                "value": "e"
+              },
+              "text": {
+                "seq": {
+                  "name": "s",
+                  "type": "Var"
+                },
+                "type": "Reverse"
+              },
+              "type": "Replace"
+            }
+          }
+        ],
+        "type": "ProgSeq"
+      },
+      "rows": [
+        {
+          "exact": true,
+          "expected": " BQ-BDBQ,dC-D!d",
+          "got": " BQ-BDBQ,dC-D!d",
+          "halted": true,
+          "inputs": {
+            "s": "d!D-Cd,eBDB-eB "
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": "? d-zxC-z?E",
+          "got": "? d-zxC-z?E",
+          "halted": true,
+          "inputs": {
+            "s": "E?z-Cxz-d ?"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": "Dd Ca_CQQ!!a?C",
+          "got": "Dd Ca_CQQ!!a?C",
+          "halted": true,
+          "inputs": {
+            "s": "C?a!!eeC_aC dD"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": "zC_a,xDc!aDaE_yyEz",
+          "got": "zC_a,xDc!aDaE_yyEz",
+          "halted": true,
+          "inputs": {
+            "s": "zEyy_EaDa!cDx,a_Cz"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": "x-!?DxdD?y?c-xE",
+          "got": "x-!?DxdD?y?c-xE",
+          "halted": true,
+          "inputs": {
+            "s": "Ex-c?y?DdxD?!-x"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": "CyzzBzAC db?-E",
+          "got": "CyzzBzAC db?-E",
+          "halted": true,
+          "inputs": {
+            "s": "E-?bd CAzBzzyC"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": "DCCD!b?c!",
+          "got": "DCCD!b?c!",
+          "halted": true,
+          "inputs": {
+            "s": "!c?b!DCCD"
+          },
+          "trap": null
+        }
+      ],
+      "task_id": "fresh_reverse_then_replace_02"
+    },
+    {
+      "exact": true,
+      "family": "reverse_then_replace",
+      "heldout_exact": true,
+      "ir": {
+        "stmts": [
+          {
+            "default": null,
+            "name": "s",
+            "type": "ProgDefFnParam"
+          },
+          {
+            "type": "ProgReturn",
+            "value": {
+              "new": {
+                "type": "Lit",
+                "value": "_"
+              },
+              "old": {
+                "type": "Lit",
+                "value": "-"
+              },
+              "text": {
+                "seq": {
+                  "name": "s",
+                  "type": "Var"
+                },
+                "type": "Reverse"
+              },
+              "type": "Replace"
+            }
+          }
+        ],
+        "type": "ProgSeq"
+      },
+      "rows": [
+        {
+          "exact": true,
+          "expected": "bAEByze,bBaA",
+          "got": "bAEByze,bBaA",
+          "halted": true,
+          "inputs": {
+            "s": "AaBb,ezyBEAb"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": "_c_,_ya zaz  z",
+          "got": "_c_,_ya zaz  z",
+          "halted": true,
+          "inputs": {
+            "s": "z  zaz ay-,-c-"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": "BCDA!E_C",
+          "got": "BCDA!E_C",
+          "halted": true,
+          "inputs": {
+            "s": "C-E!ADCB"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": "bCyE__,dd_C! D_D",
+          "got": "bCyE__,dd_C! D_D",
+          "halted": true,
+          "inputs": {
+            "s": "D_D !C-dd,_-EyCb"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": "Db,?ECaA?cy_AycxBc",
+          "got": "Db,?ECaA?cy_AycxBc",
+          "halted": true,
+          "inputs": {
+            "s": "cBxcyA-yc?AaCE?,bD"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": "ab!bB?cEc,xzBD",
+          "got": "ab!bB?cEc,xzBD",
+          "halted": true,
+          "inputs": {
+            "s": "DBzx,cEc?Bb!ba"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": "E ??AaCBaE_y!",
+          "got": "E ??AaCBaE_y!",
+          "halted": true,
+          "inputs": {
+            "s": "!y-EaBCaA?? E"
+          },
+          "trap": null
+        }
+      ],
+      "task_id": "fresh_reverse_then_replace_03"
+    },
+    {
+      "exact": true,
+      "family": "split_reverse_tokens",
+      "heldout_exact": true,
+      "ir": {
+        "stmts": [
+          {
+            "default": null,
+            "name": "s",
+            "type": "ProgDefFnParam"
+          },
+          {
+            "type": "ProgReturn",
+            "value": {
+              "source": {
+                "sep": {
+                  "type": "Lit",
+                  "value": ":"
+                },
+                "text": {
+                  "name": "s",
+                  "type": "Var"
+                },
+                "type": "Split"
+              },
+              "type": "MapList",
+              "value": {
+                "seq": {
+                  "name": "piece",
+                  "type": "Var"
+                },
+                "type": "Reverse"
+              },
+              "var_name": "piece"
+            }
+          }
+        ],
+        "type": "ProgSeq"
+      },
+      "rows": [
+        {
+          "exact": true,
+          "expected": [
+            "wcv",
+            "Zfwdfb",
+            "ewwa"
+          ],
+          "got": [
+            "wcv",
+            "Zfwdfb",
+            "ewwa"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "vcw:bfdwfZ:awwe"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "wZcwae",
+            "wa"
+          ],
+          "got": [
+            "wZcwae",
+            "wa"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "eawcZw:aw"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "XbeYXuZ",
+            "bXvv",
+            "fawdueY",
+            "dwv"
+          ],
+          "got": [
+            "XbeYXuZ",
+            "bXvv",
+            "fawdueY",
+            "dwv"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "ZuXYebX:vvXb:Yeudwaf:vwd"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "YYc",
+            "wee",
+            "ba",
+            "dZucfZ"
+          ],
+          "got": [
+            "YYc",
+            "wee",
+            "ba",
+            "dZucfZ"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "cYY:eew:ab:ZfcuZd"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "waf",
+            "adffZ",
+            "ad"
+          ],
+          "got": [
+            "waf",
+            "adffZ",
+            "ad"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "faw:Zffda:da"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "udZXYe",
+            "uwXd",
+            "ueceY"
+          ],
+          "got": [
+            "udZXYe",
+            "uwXd",
+            "ueceY"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "eYXZdu:dXwu:Yeceu"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "ffY",
+            "wvYcYeu",
+            "efaY"
+          ],
+          "got": [
+            "ffY",
+            "wvYcYeu",
+            "efaY"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "Yff:ueYcYvw:Yafe"
+          },
+          "trap": null
+        }
+      ],
+      "task_id": "fresh_split_reverse_tokens_01"
+    },
+    {
+      "exact": true,
+      "family": "split_reverse_tokens",
+      "heldout_exact": true,
+      "ir": {
+        "stmts": [
+          {
+            "default": null,
+            "name": "s",
+            "type": "ProgDefFnParam"
+          },
+          {
+            "type": "ProgReturn",
+            "value": {
+              "source": {
+                "sep": {
+                  "type": "Lit",
+                  "value": "|"
+                },
+                "text": {
+                  "name": "s",
+                  "type": "Var"
+                },
+                "type": "Split"
+              },
+              "type": "MapList",
+              "value": {
+                "seq": {
+                  "name": "piece",
+                  "type": "Var"
+                },
+                "type": "Reverse"
+              },
+              "var_name": "piece"
+            }
+          }
+        ],
+        "type": "ProgSeq"
+      },
+      "rows": [
+        {
+          "exact": true,
+          "expected": [
+            "fbccdv",
+            "cevuYf",
+            "cdYdcb",
+            "fZZYb"
+          ],
+          "got": [
+            "fbccdv",
+            "cevuYf",
+            "cdYdcb",
+            "fZZYb"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "vdccbf|fYuvec|bcdYdc|bYZZf"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "uea",
+            "cdb",
+            "cafZXe",
+            "ea"
+          ],
+          "got": [
+            "uea",
+            "cdb",
+            "cafZXe",
+            "ea"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "aeu|bdc|eXZfac|ae"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "bZwc",
+            "XY",
+            "XbeZufd"
+          ],
+          "got": [
+            "bZwc",
+            "XY",
+            "XbeZufd"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "cwZb|YX|dfuZebX"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "Ybaf",
+            "bZau",
+            "ceZw"
+          ],
+          "got": [
+            "Ybaf",
+            "bZau",
+            "ceZw"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "fabY|uaZb|wZec"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "uZXfX",
+            "af"
+          ],
+          "got": [
+            "uZXfX",
+            "af"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "XfXZu|fa"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "vdu",
+            "Ye"
+          ],
+          "got": [
+            "vdu",
+            "Ye"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "udv|eY"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "ZYfaad",
+            "uYX",
+            "wveZZYX",
+            "wdXbX"
+          ],
+          "got": [
+            "ZYfaad",
+            "uYX",
+            "wveZZYX",
+            "wdXbX"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "daafYZ|XYu|XYZZevw|XbXdw"
+          },
+          "trap": null
+        }
+      ],
+      "task_id": "fresh_split_reverse_tokens_02"
+    },
+    {
+      "exact": true,
+      "family": "split_reverse_tokens",
+      "heldout_exact": true,
+      "ir": {
+        "stmts": [
+          {
+            "default": null,
+            "name": "s",
+            "type": "ProgDefFnParam"
+          },
+          {
+            "type": "ProgReturn",
+            "value": {
+              "source": {
+                "sep": {
+                  "type": "Lit",
+                  "value": ";"
+                },
+                "text": {
+                  "name": "s",
+                  "type": "Var"
+                },
+                "type": "Split"
+              },
+              "type": "MapList",
+              "value": {
+                "seq": {
+                  "name": "piece",
+                  "type": "Var"
+                },
+                "type": "Reverse"
+              },
+              "var_name": "piece"
+            }
+          }
+        ],
+        "type": "ProgSeq"
+      },
+      "rows": [
+        {
+          "exact": true,
+          "expected": [
+            "YeXe",
+            "auv",
+            "ubdZf"
+          ],
+          "got": [
+            "YeXe",
+            "auv",
+            "ubdZf"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "eXeY;vua;fZdbu"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "Xu",
+            "vv"
+          ],
+          "got": [
+            "Xu",
+            "vv"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "uX;vv"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "ZueeefX",
+            "Ybdu",
+            "cuaaZ",
+            "ucb"
+          ],
+          "got": [
+            "ZueeefX",
+            "Ybdu",
+            "cuaaZ",
+            "ucb"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "XfeeeuZ;udbY;Zaauc;bcu"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "fdXw",
+            "XcaXd"
+          ],
+          "got": [
+            "fdXw",
+            "XcaXd"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "wXdf;dXacX"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "cceaXv",
+            "ZZwd",
+            "YYXZd"
+          ],
+          "got": [
+            "cceaXv",
+            "ZZwd",
+            "YYXZd"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "vXaecc;dwZZ;dZXYY"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "ffudfvb",
+            "dZe",
+            "fYd",
+            "YXuca"
+          ],
+          "got": [
+            "ffudfvb",
+            "dZe",
+            "fYd",
+            "YXuca"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "bvfduff;eZd;dYf;acuXY"
+          },
+          "trap": null
+        },
+        {
+          "exact": true,
+          "expected": [
+            "feZfc",
+            "Xc",
+            "beub"
+          ],
+          "got": [
+            "feZfc",
+            "Xc",
+            "beub"
+          ],
+          "halted": true,
+          "inputs": {
+            "s": "cfZef;cX;bueb"
+          },
+          "trap": null
+        }
+      ],
+      "task_id": "fresh_split_reverse_tokens_03"
+    }
+  ]
+}

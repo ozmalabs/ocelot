@@ -1,0 +1,2826 @@
+{
+  "after": {
+    "domains/contract_query.py": "9e42a16541e95fb0de8a051aebb654c39cf22fd5c5d7c610b58711692e789b37",
+    "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+    "domains/generator.py": "c80b06458695dcdf897d41eb9cfd3193b1d907e5fb548ff2dc843af2cdedee5f",
+    "domains/query_selection.py": "b61ac3e1560ca4cf83a3fb25fb35e49ef07a3028f7ac3115310b507053baf441",
+    "native": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+    "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+    "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+    "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+    "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+    "scripts/cegis_faculty_on_sum_of_n.py": "3d410849ea4690d278244d2ba135232227c67dd66426f7bc05ac65d38deb0628",
+    "scripts/jabberwock_closes_the_euler_tie.py": "ccfa038e32874cec66ae369a64fd624ef963a902168828efec9e9a51b6bf0bf2"
+  },
+  "before": {
+    "domains/contract_query.py": "9e42a16541e95fb0de8a051aebb654c39cf22fd5c5d7c610b58711692e789b37",
+    "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+    "domains/generator.py": "c80b06458695dcdf897d41eb9cfd3193b1d907e5fb548ff2dc843af2cdedee5f",
+    "domains/query_selection.py": "b61ac3e1560ca4cf83a3fb25fb35e49ef07a3028f7ac3115310b507053baf441",
+    "native": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+    "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+    "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+    "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+    "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+    "scripts/cegis_faculty_on_sum_of_n.py": "3d410849ea4690d278244d2ba135232227c67dd66426f7bc05ac65d38deb0628",
+    "scripts/jabberwock_closes_the_euler_tie.py": "ccfa038e32874cec66ae369a64fd624ef963a902168828efec9e9a51b6bf0bf2"
+  },
+  "cases": [
+    {
+      "audit_rows": [
+        {
+          "answer": 5151.0,
+          "env": {
+            "n": 101.0
+          },
+          "name": "audit-101"
+        },
+        {
+          "answer": 9453.0,
+          "env": {
+            "n": 137.0
+          },
+          "name": "audit-137"
+        },
+        {
+          "answer": 22366.0,
+          "env": {
+            "n": 211.0
+          },
+          "name": "audit-211"
+        },
+        {
+          "answer": 129795.0,
+          "env": {
+            "n": 509.0
+          },
+          "name": "audit-509"
+        }
+      ],
+      "budgets": {
+        "0": {
+          "native_calls": 0,
+          "predictions": [],
+          "status": "accepted",
+          "wall_seconds": 1.5700934454798698e-06
+        },
+        "1": {
+          "native_calls": 1,
+          "predictions": [
+            {
+              "answer": 5151.0,
+              "name": "audit-101",
+              "native_prediction": 5151.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 0.00019015104044228792
+        },
+        "2": {
+          "native_calls": 2,
+          "predictions": [
+            {
+              "answer": 5151.0,
+              "name": "audit-101",
+              "native_prediction": 5151.0
+            },
+            {
+              "answer": 9453.0,
+              "name": "audit-137",
+              "native_prediction": 9453.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 2.4099950678646564e-05
+        },
+        "4": {
+          "native_calls": 4,
+          "predictions": [
+            {
+              "answer": 5151.0,
+              "name": "audit-101",
+              "native_prediction": 5151.0
+            },
+            {
+              "answer": 9453.0,
+              "name": "audit-137",
+              "native_prediction": 9453.0
+            },
+            {
+              "answer": 22366.0,
+              "name": "audit-211",
+              "native_prediction": 22366.0
+            },
+            {
+              "answer": 129795.0,
+              "name": "audit-509",
+              "native_prediction": 129795.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 3.846001345664263e-05
+        }
+      },
+      "candidate_id": "p7",
+      "capture": "generated_pool",
+      "initially_empty": false,
+      "rep": 3,
+      "task": "triangular",
+      "term": {
+        "items": [
+          {
+            "name": "n",
+            "type": "Var"
+          },
+          {
+            "a": {
+              "items": [
+                {
+                  "name": "n",
+                  "type": "Var"
+                },
+                {
+                  "type": "Lit",
+                  "value": 1
+                }
+              ],
+              "type": "Plus"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 2
+            },
+            "type": "Div"
+          }
+        ],
+        "type": "Times"
+      }
+    },
+    {
+      "audit_rows": [
+        {
+          "answer": 5151.0,
+          "env": {
+            "n": 101.0
+          },
+          "name": "audit-101"
+        },
+        {
+          "answer": 9453.0,
+          "env": {
+            "n": 137.0
+          },
+          "name": "audit-137"
+        },
+        {
+          "answer": 22366.0,
+          "env": {
+            "n": 211.0
+          },
+          "name": "audit-211"
+        },
+        {
+          "answer": 129795.0,
+          "env": {
+            "n": 509.0
+          },
+          "name": "audit-509"
+        }
+      ],
+      "budgets": {
+        "0": {
+          "native_calls": 0,
+          "predictions": [],
+          "status": "accepted",
+          "wall_seconds": 5.400506779551506e-07
+        },
+        "1": {
+          "native_calls": 1,
+          "predictions": [
+            {
+              "answer": 5151.0,
+              "name": "audit-101",
+              "native_prediction": 5151.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 1.1409982107579708e-05
+        },
+        "2": {
+          "native_calls": 2,
+          "predictions": [
+            {
+              "answer": 5151.0,
+              "name": "audit-101",
+              "native_prediction": 5151.0
+            },
+            {
+              "answer": 9453.0,
+              "name": "audit-137",
+              "native_prediction": 9453.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 1.9329949282109737e-05
+        },
+        "4": {
+          "native_calls": 4,
+          "predictions": [
+            {
+              "answer": 5151.0,
+              "name": "audit-101",
+              "native_prediction": 5151.0
+            },
+            {
+              "answer": 9453.0,
+              "name": "audit-137",
+              "native_prediction": 9453.0
+            },
+            {
+              "answer": 22366.0,
+              "name": "audit-211",
+              "native_prediction": 22366.0
+            },
+            {
+              "answer": 129795.0,
+              "name": "audit-509",
+              "native_prediction": 129795.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 3.7649995647370815e-05
+        }
+      },
+      "candidate_id": "p7",
+      "capture": "generated_pool",
+      "initially_empty": false,
+      "rep": 2,
+      "task": "triangular",
+      "term": {
+        "items": [
+          {
+            "name": "n",
+            "type": "Var"
+          },
+          {
+            "a": {
+              "items": [
+                {
+                  "name": "n",
+                  "type": "Var"
+                },
+                {
+                  "type": "Lit",
+                  "value": 1
+                }
+              ],
+              "type": "Plus"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 2
+            },
+            "type": "Div"
+          }
+        ],
+        "type": "Times"
+      }
+    },
+    {
+      "audit_rows": [
+        {
+          "answer": 5151.0,
+          "env": {
+            "n": 101.0
+          },
+          "name": "audit-101"
+        },
+        {
+          "answer": 9453.0,
+          "env": {
+            "n": 137.0
+          },
+          "name": "audit-137"
+        },
+        {
+          "answer": 22366.0,
+          "env": {
+            "n": 211.0
+          },
+          "name": "audit-211"
+        },
+        {
+          "answer": 129795.0,
+          "env": {
+            "n": 509.0
+          },
+          "name": "audit-509"
+        }
+      ],
+      "budgets": {
+        "0": {
+          "native_calls": 0,
+          "predictions": [],
+          "status": "accepted",
+          "wall_seconds": 3.7997961044311523e-07
+        },
+        "1": {
+          "native_calls": 1,
+          "predictions": [
+            {
+              "answer": 5151.0,
+              "name": "audit-101",
+              "native_prediction": 5151.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 1.058995258063078e-05
+        },
+        "2": {
+          "native_calls": 2,
+          "predictions": [
+            {
+              "answer": 5151.0,
+              "name": "audit-101",
+              "native_prediction": 5151.0
+            },
+            {
+              "answer": 9453.0,
+              "name": "audit-137",
+              "native_prediction": 9453.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 1.9149971194565296e-05
+        },
+        "4": {
+          "native_calls": 4,
+          "predictions": [
+            {
+              "answer": 5151.0,
+              "name": "audit-101",
+              "native_prediction": 5151.0
+            },
+            {
+              "answer": 9453.0,
+              "name": "audit-137",
+              "native_prediction": 9453.0
+            },
+            {
+              "answer": 22366.0,
+              "name": "audit-211",
+              "native_prediction": 22366.0
+            },
+            {
+              "answer": 129795.0,
+              "name": "audit-509",
+              "native_prediction": 129795.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 3.6721001379191875e-05
+        }
+      },
+      "candidate_id": "p7",
+      "capture": "generated_pool",
+      "initially_empty": false,
+      "rep": 1,
+      "task": "triangular",
+      "term": {
+        "items": [
+          {
+            "name": "n",
+            "type": "Var"
+          },
+          {
+            "a": {
+              "items": [
+                {
+                  "name": "n",
+                  "type": "Var"
+                },
+                {
+                  "type": "Lit",
+                  "value": 1
+                }
+              ],
+              "type": "Plus"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 2
+            },
+            "type": "Div"
+          }
+        ],
+        "type": "Times"
+      }
+    },
+    {
+      "audit_rows": [
+        {
+          "answer": 10201.0,
+          "env": {
+            "x": 101.0
+          },
+          "name": "audit-101"
+        },
+        {
+          "answer": 18769.0,
+          "env": {
+            "x": 137.0
+          },
+          "name": "audit-137"
+        },
+        {
+          "answer": 44521.0,
+          "env": {
+            "x": 211.0
+          },
+          "name": "audit-211"
+        },
+        {
+          "answer": 259081.0,
+          "env": {
+            "x": 509.0
+          },
+          "name": "audit-509"
+        }
+      ],
+      "budgets": {
+        "0": {
+          "native_calls": 0,
+          "predictions": [],
+          "status": "accepted",
+          "wall_seconds": 4.899920895695686e-07
+        },
+        "1": {
+          "native_calls": 1,
+          "predictions": [
+            {
+              "answer": 10201.0,
+              "name": "audit-101",
+              "native_prediction": 10201.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 6.949994713068008e-06
+        },
+        "2": {
+          "native_calls": 2,
+          "predictions": [
+            {
+              "answer": 10201.0,
+              "name": "audit-101",
+              "native_prediction": 10201.0
+            },
+            {
+              "answer": 18769.0,
+              "name": "audit-137",
+              "native_prediction": 18769.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 1.1869939044117928e-05
+        },
+        "4": {
+          "native_calls": 4,
+          "predictions": [
+            {
+              "answer": 10201.0,
+              "name": "audit-101",
+              "native_prediction": 10201.0
+            },
+            {
+              "answer": 18769.0,
+              "name": "audit-137",
+              "native_prediction": 18769.0
+            },
+            {
+              "answer": 44521.0,
+              "name": "audit-211",
+              "native_prediction": 44521.0
+            },
+            {
+              "answer": 259081.0,
+              "name": "audit-509",
+              "native_prediction": 259081.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 2.320006024092436e-05
+        }
+      },
+      "candidate_id": "p0",
+      "capture": "generated_pool",
+      "initially_empty": false,
+      "rep": 2,
+      "task": "square",
+      "term": {
+        "items": [
+          {
+            "name": "x",
+            "type": "Var"
+          },
+          {
+            "name": "x",
+            "type": "Var"
+          }
+        ],
+        "type": "Times"
+      }
+    },
+    {
+      "audit_rows": [
+        {
+          "answer": 10201.0,
+          "env": {
+            "x": 101.0
+          },
+          "name": "audit-101"
+        },
+        {
+          "answer": 18769.0,
+          "env": {
+            "x": 137.0
+          },
+          "name": "audit-137"
+        },
+        {
+          "answer": 44521.0,
+          "env": {
+            "x": 211.0
+          },
+          "name": "audit-211"
+        },
+        {
+          "answer": 259081.0,
+          "env": {
+            "x": 509.0
+          },
+          "name": "audit-509"
+        }
+      ],
+      "budgets": {
+        "0": {
+          "native_calls": 0,
+          "predictions": [],
+          "status": "accepted",
+          "wall_seconds": 4.800967872142792e-07
+        },
+        "1": {
+          "native_calls": 1,
+          "predictions": [
+            {
+              "answer": 10201.0,
+              "name": "audit-101",
+              "native_prediction": 10201.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 6.229965947568417e-06
+        },
+        "2": {
+          "native_calls": 2,
+          "predictions": [
+            {
+              "answer": 10201.0,
+              "name": "audit-101",
+              "native_prediction": 10201.0
+            },
+            {
+              "answer": 18769.0,
+              "name": "audit-137",
+              "native_prediction": 18769.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 1.1710100807249546e-05
+        },
+        "4": {
+          "native_calls": 4,
+          "predictions": [
+            {
+              "answer": 10201.0,
+              "name": "audit-101",
+              "native_prediction": 10201.0
+            },
+            {
+              "answer": 18769.0,
+              "name": "audit-137",
+              "native_prediction": 18769.0
+            },
+            {
+              "answer": 44521.0,
+              "name": "audit-211",
+              "native_prediction": 44521.0
+            },
+            {
+              "answer": 259081.0,
+              "name": "audit-509",
+              "native_prediction": 259081.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 2.168002538383007e-05
+        }
+      },
+      "candidate_id": "p0",
+      "capture": "generated_pool",
+      "initially_empty": false,
+      "rep": 1,
+      "task": "square",
+      "term": {
+        "items": [
+          {
+            "name": "x",
+            "type": "Var"
+          },
+          {
+            "name": "x",
+            "type": "Var"
+          }
+        ],
+        "type": "Times"
+      }
+    },
+    {
+      "audit_rows": [
+        {
+          "answer": 10201.0,
+          "env": {
+            "x": 101.0
+          },
+          "name": "audit-101"
+        },
+        {
+          "answer": 18769.0,
+          "env": {
+            "x": 137.0
+          },
+          "name": "audit-137"
+        },
+        {
+          "answer": 44521.0,
+          "env": {
+            "x": 211.0
+          },
+          "name": "audit-211"
+        },
+        {
+          "answer": 259081.0,
+          "env": {
+            "x": 509.0
+          },
+          "name": "audit-509"
+        }
+      ],
+      "budgets": {
+        "0": {
+          "native_calls": 0,
+          "predictions": [],
+          "status": "accepted",
+          "wall_seconds": 3.400491550564766e-07
+        },
+        "1": {
+          "native_calls": 1,
+          "predictions": [
+            {
+              "answer": 10201.0,
+              "name": "audit-101",
+              "native_prediction": 10201.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 6.070011295378208e-06
+        },
+        "2": {
+          "native_calls": 2,
+          "predictions": [
+            {
+              "answer": 10201.0,
+              "name": "audit-101",
+              "native_prediction": 10201.0
+            },
+            {
+              "answer": 18769.0,
+              "name": "audit-137",
+              "native_prediction": 18769.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 1.1309981346130371e-05
+        },
+        "4": {
+          "native_calls": 4,
+          "predictions": [
+            {
+              "answer": 10201.0,
+              "name": "audit-101",
+              "native_prediction": 10201.0
+            },
+            {
+              "answer": 18769.0,
+              "name": "audit-137",
+              "native_prediction": 18769.0
+            },
+            {
+              "answer": 44521.0,
+              "name": "audit-211",
+              "native_prediction": 44521.0
+            },
+            {
+              "answer": 259081.0,
+              "name": "audit-509",
+              "native_prediction": 259081.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 2.2400054149329662e-05
+        }
+      },
+      "candidate_id": "p0",
+      "capture": "generated_pool",
+      "initially_empty": false,
+      "rep": 3,
+      "task": "square",
+      "term": {
+        "items": [
+          {
+            "name": "x",
+            "type": "Var"
+          },
+          {
+            "name": "x",
+            "type": "Var"
+          }
+        ],
+        "type": "Times"
+      }
+    },
+    {
+      "audit_rows": [
+        {
+          "answer": 1.0,
+          "env": {
+            "E": 4,
+            "F": 0,
+            "V": 5,
+            "maxface": 2,
+            "ncells": 4
+          },
+          "name": "path-5"
+        },
+        {
+          "answer": 0.0,
+          "env": {
+            "E": 7,
+            "F": 0,
+            "V": 7,
+            "maxface": 2,
+            "ncells": 7
+          },
+          "name": "cycle-7"
+        },
+        {
+          "answer": 1.0,
+          "env": {
+            "E": 6,
+            "F": 2,
+            "V": 5,
+            "maxface": 3,
+            "ncells": 2
+          },
+          "name": "two-triangles-sharing-vertex"
+        },
+        {
+          "answer": 1.0,
+          "env": {
+            "E": 9,
+            "F": 3,
+            "V": 7,
+            "maxface": 3,
+            "ncells": 3
+          },
+          "name": "three-triangles-sharing-vertex"
+        }
+      ],
+      "budgets": {
+        "0": {
+          "native_calls": 0,
+          "predictions": [],
+          "status": "accepted",
+          "wall_seconds": 3.700843080878258e-07
+        },
+        "1": {
+          "native_calls": 1,
+          "predictions": [
+            {
+              "answer": 1.0,
+              "name": "path-5",
+              "native_prediction": 1.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 1.2500095181167126e-05
+        },
+        "2": {
+          "native_calls": 2,
+          "predictions": [
+            {
+              "answer": 1.0,
+              "name": "path-5",
+              "native_prediction": 1.0
+            },
+            {
+              "answer": 0.0,
+              "name": "cycle-7",
+              "native_prediction": 0.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 1.6200006939470768e-05
+        },
+        "4": {
+          "native_calls": 4,
+          "predictions": [
+            {
+              "answer": 1.0,
+              "name": "path-5",
+              "native_prediction": 1.0
+            },
+            {
+              "answer": 0.0,
+              "name": "cycle-7",
+              "native_prediction": 0.0
+            },
+            {
+              "answer": 1.0,
+              "name": "two-triangles-sharing-vertex",
+              "native_prediction": 1.0
+            },
+            {
+              "answer": 1.0,
+              "name": "three-triangles-sharing-vertex",
+              "native_prediction": 1.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 3.071990795433521e-05
+        }
+      },
+      "candidate_id": "p7",
+      "capture": "generated_pool",
+      "initially_empty": false,
+      "rep": 3,
+      "task": "euler",
+      "term": {
+        "items": [
+          {
+            "name": "F",
+            "type": "Var"
+          },
+          {
+            "a": {
+              "name": "V",
+              "type": "Var"
+            },
+            "b": {
+              "name": "E",
+              "type": "Var"
+            },
+            "type": "Minus"
+          }
+        ],
+        "type": "Plus"
+      }
+    },
+    {
+      "audit_rows": [
+        {
+          "answer": 1.0,
+          "env": {
+            "E": 4,
+            "F": 0,
+            "V": 5,
+            "maxface": 2,
+            "ncells": 4
+          },
+          "name": "path-5"
+        },
+        {
+          "answer": 0.0,
+          "env": {
+            "E": 7,
+            "F": 0,
+            "V": 7,
+            "maxface": 2,
+            "ncells": 7
+          },
+          "name": "cycle-7"
+        },
+        {
+          "answer": 1.0,
+          "env": {
+            "E": 6,
+            "F": 2,
+            "V": 5,
+            "maxface": 3,
+            "ncells": 2
+          },
+          "name": "two-triangles-sharing-vertex"
+        },
+        {
+          "answer": 1.0,
+          "env": {
+            "E": 9,
+            "F": 3,
+            "V": 7,
+            "maxface": 3,
+            "ncells": 3
+          },
+          "name": "three-triangles-sharing-vertex"
+        }
+      ],
+      "budgets": {
+        "0": {
+          "native_calls": 0,
+          "predictions": [],
+          "status": "accepted",
+          "wall_seconds": 3.7997961044311523e-07
+        },
+        "1": {
+          "native_calls": 1,
+          "predictions": [
+            {
+              "answer": 1.0,
+              "name": "path-5",
+              "native_prediction": 1.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 9.480048902332783e-06
+        },
+        "2": {
+          "native_calls": 2,
+          "predictions": [
+            {
+              "answer": 1.0,
+              "name": "path-5",
+              "native_prediction": 1.0
+            },
+            {
+              "answer": 0.0,
+              "name": "cycle-7",
+              "native_prediction": 0.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 1.6230042092502117e-05
+        },
+        "4": {
+          "native_calls": 4,
+          "predictions": [
+            {
+              "answer": 1.0,
+              "name": "path-5",
+              "native_prediction": 1.0
+            },
+            {
+              "answer": 0.0,
+              "name": "cycle-7",
+              "native_prediction": 0.0
+            },
+            {
+              "answer": 1.0,
+              "name": "two-triangles-sharing-vertex",
+              "native_prediction": 1.0
+            },
+            {
+              "answer": 1.0,
+              "name": "three-triangles-sharing-vertex",
+              "native_prediction": 1.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 3.108999226242304e-05
+        }
+      },
+      "candidate_id": "p7",
+      "capture": "generated_pool",
+      "initially_empty": false,
+      "rep": 2,
+      "task": "euler",
+      "term": {
+        "items": [
+          {
+            "name": "F",
+            "type": "Var"
+          },
+          {
+            "a": {
+              "name": "V",
+              "type": "Var"
+            },
+            "b": {
+              "name": "E",
+              "type": "Var"
+            },
+            "type": "Minus"
+          }
+        ],
+        "type": "Plus"
+      }
+    },
+    {
+      "audit_rows": [
+        {
+          "answer": 1.0,
+          "env": {
+            "E": 4,
+            "F": 0,
+            "V": 5,
+            "maxface": 2,
+            "ncells": 4
+          },
+          "name": "path-5"
+        },
+        {
+          "answer": 0.0,
+          "env": {
+            "E": 7,
+            "F": 0,
+            "V": 7,
+            "maxface": 2,
+            "ncells": 7
+          },
+          "name": "cycle-7"
+        },
+        {
+          "answer": 1.0,
+          "env": {
+            "E": 6,
+            "F": 2,
+            "V": 5,
+            "maxface": 3,
+            "ncells": 2
+          },
+          "name": "two-triangles-sharing-vertex"
+        },
+        {
+          "answer": 1.0,
+          "env": {
+            "E": 9,
+            "F": 3,
+            "V": 7,
+            "maxface": 3,
+            "ncells": 3
+          },
+          "name": "three-triangles-sharing-vertex"
+        }
+      ],
+      "budgets": {
+        "0": {
+          "native_calls": 0,
+          "predictions": [],
+          "status": "accepted",
+          "wall_seconds": 3.6996789276599884e-07
+        },
+        "1": {
+          "native_calls": 1,
+          "predictions": [
+            {
+              "answer": 1.0,
+              "name": "path-5",
+              "native_prediction": 1.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 9.37003642320633e-06
+        },
+        "2": {
+          "native_calls": 2,
+          "predictions": [
+            {
+              "answer": 1.0,
+              "name": "path-5",
+              "native_prediction": 1.0
+            },
+            {
+              "answer": 0.0,
+              "name": "cycle-7",
+              "native_prediction": 0.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 1.6020960174500942e-05
+        },
+        "4": {
+          "native_calls": 4,
+          "predictions": [
+            {
+              "answer": 1.0,
+              "name": "path-5",
+              "native_prediction": 1.0
+            },
+            {
+              "answer": 0.0,
+              "name": "cycle-7",
+              "native_prediction": 0.0
+            },
+            {
+              "answer": 1.0,
+              "name": "two-triangles-sharing-vertex",
+              "native_prediction": 1.0
+            },
+            {
+              "answer": 1.0,
+              "name": "three-triangles-sharing-vertex",
+              "native_prediction": 1.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 3.0240043997764587e-05
+        }
+      },
+      "candidate_id": "p7",
+      "capture": "generated_pool",
+      "initially_empty": false,
+      "rep": 1,
+      "task": "euler",
+      "term": {
+        "items": [
+          {
+            "name": "F",
+            "type": "Var"
+          },
+          {
+            "a": {
+              "name": "V",
+              "type": "Var"
+            },
+            "b": {
+              "name": "E",
+              "type": "Var"
+            },
+            "type": "Minus"
+          }
+        ],
+        "type": "Plus"
+      }
+    },
+    {
+      "audit_rows": [
+        {
+          "answer": 1030301.0,
+          "env": {
+            "x": 101.0
+          },
+          "name": "audit-101"
+        },
+        {
+          "answer": 2571353.0,
+          "env": {
+            "x": 137.0
+          },
+          "name": "audit-137"
+        },
+        {
+          "answer": 9393931.0,
+          "env": {
+            "x": 211.0
+          },
+          "name": "audit-211"
+        },
+        {
+          "answer": 131872229.0,
+          "env": {
+            "x": 509.0
+          },
+          "name": "audit-509"
+        }
+      ],
+      "budgets": {
+        "0": {
+          "native_calls": 0,
+          "predictions": [],
+          "status": "accepted",
+          "wall_seconds": 3.6996789276599884e-07
+        },
+        "1": {
+          "native_calls": 1,
+          "predictions": [
+            {
+              "answer": 1030301.0,
+              "name": "audit-101",
+              "native_prediction": 1030301.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 9.229988791048527e-06
+        },
+        "2": {
+          "native_calls": 2,
+          "predictions": [
+            {
+              "answer": 1030301.0,
+              "name": "audit-101",
+              "native_prediction": 1030301.0
+            },
+            {
+              "answer": 2571353.0,
+              "name": "audit-137",
+              "native_prediction": 2571353.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 1.5750061720609665e-05
+        },
+        "4": {
+          "native_calls": 4,
+          "predictions": [
+            {
+              "answer": 1030301.0,
+              "name": "audit-101",
+              "native_prediction": 1030301.0
+            },
+            {
+              "answer": 2571353.0,
+              "name": "audit-137",
+              "native_prediction": 2571353.0
+            },
+            {
+              "answer": 9393931.0,
+              "name": "audit-211",
+              "native_prediction": 9393931.0
+            },
+            {
+              "answer": 131872229.0,
+              "name": "audit-509",
+              "native_prediction": 131872229.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 2.9920018278062344e-05
+        }
+      },
+      "candidate_id": "p4",
+      "capture": "cubic_transfer",
+      "initially_empty": false,
+      "rep": 1,
+      "task": "cubic",
+      "term": {
+        "items": [
+          {
+            "name": "x",
+            "type": "Var"
+          },
+          {
+            "items": [
+              {
+                "name": "x",
+                "type": "Var"
+              },
+              {
+                "name": "x",
+                "type": "Var"
+              }
+            ],
+            "type": "Times"
+          }
+        ],
+        "type": "Times"
+      }
+    },
+    {
+      "audit_rows": [
+        {
+          "answer": 1030301.0,
+          "env": {
+            "x": 101.0
+          },
+          "name": "audit-101"
+        },
+        {
+          "answer": 2571353.0,
+          "env": {
+            "x": 137.0
+          },
+          "name": "audit-137"
+        },
+        {
+          "answer": 9393931.0,
+          "env": {
+            "x": 211.0
+          },
+          "name": "audit-211"
+        },
+        {
+          "answer": 131872229.0,
+          "env": {
+            "x": 509.0
+          },
+          "name": "audit-509"
+        }
+      ],
+      "budgets": {
+        "0": {
+          "native_calls": 0,
+          "predictions": [],
+          "status": "accepted",
+          "wall_seconds": 4.700850695371628e-07
+        },
+        "1": {
+          "native_calls": 1,
+          "predictions": [
+            {
+              "answer": 1030301.0,
+              "name": "audit-101",
+              "native_prediction": 1030301.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 7.959897629916668e-06
+        },
+        "2": {
+          "native_calls": 2,
+          "predictions": [
+            {
+              "answer": 1030301.0,
+              "name": "audit-101",
+              "native_prediction": 1030301.0
+            },
+            {
+              "answer": 2571353.0,
+              "name": "audit-137",
+              "native_prediction": 2571353.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 1.5089986845850945e-05
+        },
+        "4": {
+          "native_calls": 4,
+          "predictions": [
+            {
+              "answer": 1030301.0,
+              "name": "audit-101",
+              "native_prediction": 1030301.0
+            },
+            {
+              "answer": 2571353.0,
+              "name": "audit-137",
+              "native_prediction": 2571353.0
+            },
+            {
+              "answer": 9393931.0,
+              "name": "audit-211",
+              "native_prediction": 9393931.0
+            },
+            {
+              "answer": 131872229.0,
+              "name": "audit-509",
+              "native_prediction": 131872229.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 3.774103242903948e-05
+        }
+      },
+      "candidate_id": "p4",
+      "capture": "cubic_transfer",
+      "initially_empty": false,
+      "rep": 2,
+      "task": "cubic",
+      "term": {
+        "items": [
+          {
+            "name": "x",
+            "type": "Var"
+          },
+          {
+            "items": [
+              {
+                "name": "x",
+                "type": "Var"
+              },
+              {
+                "name": "x",
+                "type": "Var"
+              }
+            ],
+            "type": "Times"
+          }
+        ],
+        "type": "Times"
+      }
+    },
+    {
+      "audit_rows": [
+        {
+          "answer": 1030301.0,
+          "env": {
+            "x": 101.0
+          },
+          "name": "audit-101"
+        },
+        {
+          "answer": 2571353.0,
+          "env": {
+            "x": 137.0
+          },
+          "name": "audit-137"
+        },
+        {
+          "answer": 9393931.0,
+          "env": {
+            "x": 211.0
+          },
+          "name": "audit-211"
+        },
+        {
+          "answer": 131872229.0,
+          "env": {
+            "x": 509.0
+          },
+          "name": "audit-509"
+        }
+      ],
+      "budgets": {
+        "0": {
+          "native_calls": 0,
+          "predictions": [],
+          "status": "accepted",
+          "wall_seconds": 3.8999132812023163e-07
+        },
+        "1": {
+          "native_calls": 1,
+          "predictions": [
+            {
+              "answer": 1030301.0,
+              "name": "audit-101",
+              "native_prediction": 1030301.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 8.809962309896946e-06
+        },
+        "2": {
+          "native_calls": 2,
+          "predictions": [
+            {
+              "answer": 1030301.0,
+              "name": "audit-101",
+              "native_prediction": 1030301.0
+            },
+            {
+              "answer": 2571353.0,
+              "name": "audit-137",
+              "native_prediction": 2571353.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 1.537997741252184e-05
+        },
+        "4": {
+          "native_calls": 4,
+          "predictions": [
+            {
+              "answer": 1030301.0,
+              "name": "audit-101",
+              "native_prediction": 1030301.0
+            },
+            {
+              "answer": 2571353.0,
+              "name": "audit-137",
+              "native_prediction": 2571353.0
+            },
+            {
+              "answer": 9393931.0,
+              "name": "audit-211",
+              "native_prediction": 9393931.0
+            },
+            {
+              "answer": 131872229.0,
+              "name": "audit-509",
+              "native_prediction": 131872229.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 3.0220020562410355e-05
+        }
+      },
+      "candidate_id": "p4",
+      "capture": "cubic_transfer",
+      "initially_empty": false,
+      "rep": 3,
+      "task": "cubic",
+      "term": {
+        "items": [
+          {
+            "name": "x",
+            "type": "Var"
+          },
+          {
+            "items": [
+              {
+                "name": "x",
+                "type": "Var"
+              },
+              {
+                "name": "x",
+                "type": "Var"
+              }
+            ],
+            "type": "Times"
+          }
+        ],
+        "type": "Times"
+      }
+    },
+    {
+      "audit_rows": [
+        {
+          "answer": 1030301.0,
+          "env": {
+            "x": 101.0
+          },
+          "name": "audit-101"
+        },
+        {
+          "answer": 2571353.0,
+          "env": {
+            "x": 137.0
+          },
+          "name": "audit-137"
+        },
+        {
+          "answer": 9393931.0,
+          "env": {
+            "x": 211.0
+          },
+          "name": "audit-211"
+        },
+        {
+          "answer": 131872229.0,
+          "env": {
+            "x": 509.0
+          },
+          "name": "audit-509"
+        }
+      ],
+      "budgets": {
+        "0": {
+          "native_calls": 0,
+          "predictions": [],
+          "status": "accepted",
+          "wall_seconds": 3.6996789276599884e-07
+        },
+        "1": {
+          "native_calls": 1,
+          "predictions": [
+            {
+              "answer": 1030301.0,
+              "name": "audit-101",
+              "native_prediction": 1030301.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 8.12998041510582e-06
+        },
+        "2": {
+          "native_calls": 2,
+          "predictions": [
+            {
+              "answer": 1030301.0,
+              "name": "audit-101",
+              "native_prediction": 1030301.0
+            },
+            {
+              "answer": 2571353.0,
+              "name": "audit-137",
+              "native_prediction": 2571353.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 1.525005791336298e-05
+        },
+        "4": {
+          "native_calls": 4,
+          "predictions": [
+            {
+              "answer": 1030301.0,
+              "name": "audit-101",
+              "native_prediction": 1030301.0
+            },
+            {
+              "answer": 2571353.0,
+              "name": "audit-137",
+              "native_prediction": 2571353.0
+            },
+            {
+              "answer": 9393931.0,
+              "name": "audit-211",
+              "native_prediction": 9393931.0
+            },
+            {
+              "answer": 131872229.0,
+              "name": "audit-509",
+              "native_prediction": 131872229.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 3.042106982320547e-05
+        }
+      },
+      "candidate_id": "p4",
+      "capture": "grid_misspec",
+      "initially_empty": false,
+      "rep": 3,
+      "task": "cubic_deep",
+      "term": {
+        "items": [
+          {
+            "name": "x",
+            "type": "Var"
+          },
+          {
+            "items": [
+              {
+                "name": "x",
+                "type": "Var"
+              },
+              {
+                "name": "x",
+                "type": "Var"
+              }
+            ],
+            "type": "Times"
+          }
+        ],
+        "type": "Times"
+      }
+    },
+    {
+      "audit_rows": [
+        {
+          "answer": 1030301.0,
+          "env": {
+            "x": 101.0
+          },
+          "name": "audit-101"
+        },
+        {
+          "answer": 2571353.0,
+          "env": {
+            "x": 137.0
+          },
+          "name": "audit-137"
+        },
+        {
+          "answer": 9393931.0,
+          "env": {
+            "x": 211.0
+          },
+          "name": "audit-211"
+        },
+        {
+          "answer": 131872229.0,
+          "env": {
+            "x": 509.0
+          },
+          "name": "audit-509"
+        }
+      ],
+      "budgets": {
+        "0": {
+          "native_calls": 0,
+          "predictions": [],
+          "status": "accepted",
+          "wall_seconds": 4.200264811515808e-07
+        },
+        "1": {
+          "native_calls": 1,
+          "predictions": [
+            {
+              "answer": 1030301.0,
+              "name": "audit-101",
+              "native_prediction": 1030301.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 7.870025001466274e-06
+        },
+        "2": {
+          "native_calls": 2,
+          "predictions": [
+            {
+              "answer": 1030301.0,
+              "name": "audit-101",
+              "native_prediction": 1030301.0
+            },
+            {
+              "answer": 2571353.0,
+              "name": "audit-137",
+              "native_prediction": 2571353.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 1.5420024283230305e-05
+        },
+        "4": {
+          "native_calls": 4,
+          "predictions": [
+            {
+              "answer": 1030301.0,
+              "name": "audit-101",
+              "native_prediction": 1030301.0
+            },
+            {
+              "answer": 2571353.0,
+              "name": "audit-137",
+              "native_prediction": 2571353.0
+            },
+            {
+              "answer": 9393931.0,
+              "name": "audit-211",
+              "native_prediction": 9393931.0
+            },
+            {
+              "answer": 131872229.0,
+              "name": "audit-509",
+              "native_prediction": 131872229.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 3.014993853867054e-05
+        }
+      },
+      "candidate_id": "p4",
+      "capture": "grid_misspec",
+      "initially_empty": false,
+      "rep": 2,
+      "task": "cubic_deep",
+      "term": {
+        "items": [
+          {
+            "name": "x",
+            "type": "Var"
+          },
+          {
+            "items": [
+              {
+                "name": "x",
+                "type": "Var"
+              },
+              {
+                "name": "x",
+                "type": "Var"
+              }
+            ],
+            "type": "Times"
+          }
+        ],
+        "type": "Times"
+      }
+    },
+    {
+      "audit_rows": [
+        {
+          "answer": 1030301.0,
+          "env": {
+            "x": 101.0
+          },
+          "name": "audit-101"
+        },
+        {
+          "answer": 2571353.0,
+          "env": {
+            "x": 137.0
+          },
+          "name": "audit-137"
+        },
+        {
+          "answer": 9393931.0,
+          "env": {
+            "x": 211.0
+          },
+          "name": "audit-211"
+        },
+        {
+          "answer": 131872229.0,
+          "env": {
+            "x": 509.0
+          },
+          "name": "audit-509"
+        }
+      ],
+      "budgets": {
+        "0": {
+          "native_calls": 0,
+          "predictions": [],
+          "status": "accepted",
+          "wall_seconds": 3.8999132812023163e-07
+        },
+        "1": {
+          "native_calls": 1,
+          "predictions": [
+            {
+              "answer": 1030301.0,
+              "name": "audit-101",
+              "native_prediction": 1030301.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 8.410075679421425e-06
+        },
+        "2": {
+          "native_calls": 2,
+          "predictions": [
+            {
+              "answer": 1030301.0,
+              "name": "audit-101",
+              "native_prediction": 1030301.0
+            },
+            {
+              "answer": 2571353.0,
+              "name": "audit-137",
+              "native_prediction": 2571353.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 1.5120021998882294e-05
+        },
+        "4": {
+          "native_calls": 4,
+          "predictions": [
+            {
+              "answer": 1030301.0,
+              "name": "audit-101",
+              "native_prediction": 1030301.0
+            },
+            {
+              "answer": 2571353.0,
+              "name": "audit-137",
+              "native_prediction": 2571353.0
+            },
+            {
+              "answer": 9393931.0,
+              "name": "audit-211",
+              "native_prediction": 9393931.0
+            },
+            {
+              "answer": 131872229.0,
+              "name": "audit-509",
+              "native_prediction": 131872229.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 2.9189977794885635e-05
+        }
+      },
+      "candidate_id": "p4",
+      "capture": "grid_misspec",
+      "initially_empty": false,
+      "rep": 1,
+      "task": "cubic_deep",
+      "term": {
+        "items": [
+          {
+            "name": "x",
+            "type": "Var"
+          },
+          {
+            "items": [
+              {
+                "name": "x",
+                "type": "Var"
+              },
+              {
+                "name": "x",
+                "type": "Var"
+              }
+            ],
+            "type": "Times"
+          }
+        ],
+        "type": "Times"
+      }
+    },
+    {
+      "audit_rows": [
+        {
+          "answer": 1030301.0,
+          "env": {
+            "x": 101.0
+          },
+          "name": "audit-101"
+        },
+        {
+          "answer": 2571353.0,
+          "env": {
+            "x": 137.0
+          },
+          "name": "audit-137"
+        },
+        {
+          "answer": 9393931.0,
+          "env": {
+            "x": 211.0
+          },
+          "name": "audit-211"
+        },
+        {
+          "answer": 131872229.0,
+          "env": {
+            "x": 509.0
+          },
+          "name": "audit-509"
+        }
+      ],
+      "budgets": {
+        "0": {
+          "native_calls": 0,
+          "predictions": [],
+          "status": "accepted",
+          "wall_seconds": 3.8999132812023163e-07
+        },
+        "1": {
+          "native_calls": 1,
+          "predictions": [
+            {
+              "answer": 1030301.0,
+              "name": "audit-101",
+              "native_prediction": 1030301.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 8.629984222352505e-06
+        },
+        "2": {
+          "native_calls": 2,
+          "predictions": [
+            {
+              "answer": 1030301.0,
+              "name": "audit-101",
+              "native_prediction": 1030301.0
+            },
+            {
+              "answer": 2571353.0,
+              "name": "audit-137",
+              "native_prediction": 2571353.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 1.5191035345196724e-05
+        },
+        "4": {
+          "native_calls": 4,
+          "predictions": [
+            {
+              "answer": 1030301.0,
+              "name": "audit-101",
+              "native_prediction": 1030301.0
+            },
+            {
+              "answer": 2571353.0,
+              "name": "audit-137",
+              "native_prediction": 2571353.0
+            },
+            {
+              "answer": 9393931.0,
+              "name": "audit-211",
+              "native_prediction": 9393931.0
+            },
+            {
+              "answer": 131872229.0,
+              "name": "audit-509",
+              "native_prediction": 131872229.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 2.981000579893589e-05
+        }
+      },
+      "candidate_id": "p4",
+      "capture": "grid_misspec",
+      "initially_empty": false,
+      "rep": 2,
+      "task": "cubic_sparse",
+      "term": {
+        "items": [
+          {
+            "name": "x",
+            "type": "Var"
+          },
+          {
+            "items": [
+              {
+                "name": "x",
+                "type": "Var"
+              },
+              {
+                "name": "x",
+                "type": "Var"
+              }
+            ],
+            "type": "Times"
+          }
+        ],
+        "type": "Times"
+      }
+    },
+    {
+      "audit_rows": [
+        {
+          "answer": 1030301.0,
+          "env": {
+            "x": 101.0
+          },
+          "name": "audit-101"
+        },
+        {
+          "answer": 2571353.0,
+          "env": {
+            "x": 137.0
+          },
+          "name": "audit-137"
+        },
+        {
+          "answer": 9393931.0,
+          "env": {
+            "x": 211.0
+          },
+          "name": "audit-211"
+        },
+        {
+          "answer": 131872229.0,
+          "env": {
+            "x": 509.0
+          },
+          "name": "audit-509"
+        }
+      ],
+      "budgets": {
+        "0": {
+          "native_calls": 0,
+          "predictions": [],
+          "status": "accepted",
+          "wall_seconds": 3.6996789276599884e-07
+        },
+        "1": {
+          "native_calls": 1,
+          "predictions": [
+            {
+              "answer": 1030301.0,
+              "name": "audit-101",
+              "native_prediction": 1030301.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 8.220085874199867e-06
+        },
+        "2": {
+          "native_calls": 2,
+          "predictions": [
+            {
+              "answer": 1030301.0,
+              "name": "audit-101",
+              "native_prediction": 1030301.0
+            },
+            {
+              "answer": 2571353.0,
+              "name": "audit-137",
+              "native_prediction": 2571353.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 1.5339930541813374e-05
+        },
+        "4": {
+          "native_calls": 4,
+          "predictions": [
+            {
+              "answer": 1030301.0,
+              "name": "audit-101",
+              "native_prediction": 1030301.0
+            },
+            {
+              "answer": 2571353.0,
+              "name": "audit-137",
+              "native_prediction": 2571353.0
+            },
+            {
+              "answer": 9393931.0,
+              "name": "audit-211",
+              "native_prediction": 9393931.0
+            },
+            {
+              "answer": 131872229.0,
+              "name": "audit-509",
+              "native_prediction": 131872229.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 2.9820017516613007e-05
+        }
+      },
+      "candidate_id": "p4",
+      "capture": "grid_misspec",
+      "initially_empty": false,
+      "rep": 1,
+      "task": "cubic_sparse",
+      "term": {
+        "items": [
+          {
+            "name": "x",
+            "type": "Var"
+          },
+          {
+            "items": [
+              {
+                "name": "x",
+                "type": "Var"
+              },
+              {
+                "name": "x",
+                "type": "Var"
+              }
+            ],
+            "type": "Times"
+          }
+        ],
+        "type": "Times"
+      }
+    },
+    {
+      "audit_rows": [
+        {
+          "answer": 1030301.0,
+          "env": {
+            "x": 101.0
+          },
+          "name": "audit-101"
+        },
+        {
+          "answer": 2571353.0,
+          "env": {
+            "x": 137.0
+          },
+          "name": "audit-137"
+        },
+        {
+          "answer": 9393931.0,
+          "env": {
+            "x": 211.0
+          },
+          "name": "audit-211"
+        },
+        {
+          "answer": 131872229.0,
+          "env": {
+            "x": 509.0
+          },
+          "name": "audit-509"
+        }
+      ],
+      "budgets": {
+        "0": {
+          "native_calls": 0,
+          "predictions": [],
+          "status": "accepted",
+          "wall_seconds": 4.2992178350687027e-07
+        },
+        "1": {
+          "native_calls": 1,
+          "predictions": [
+            {
+              "answer": 1030301.0,
+              "name": "audit-101",
+              "native_prediction": 1030301.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 7.91007187217474e-06
+        },
+        "2": {
+          "native_calls": 2,
+          "predictions": [
+            {
+              "answer": 1030301.0,
+              "name": "audit-101",
+              "native_prediction": 1030301.0
+            },
+            {
+              "answer": 2571353.0,
+              "name": "audit-137",
+              "native_prediction": 2571353.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 1.5569967217743397e-05
+        },
+        "4": {
+          "native_calls": 4,
+          "predictions": [
+            {
+              "answer": 1030301.0,
+              "name": "audit-101",
+              "native_prediction": 1030301.0
+            },
+            {
+              "answer": 2571353.0,
+              "name": "audit-137",
+              "native_prediction": 2571353.0
+            },
+            {
+              "answer": 9393931.0,
+              "name": "audit-211",
+              "native_prediction": 9393931.0
+            },
+            {
+              "answer": 131872229.0,
+              "name": "audit-509",
+              "native_prediction": 131872229.0
+            }
+          ],
+          "status": "accepted",
+          "wall_seconds": 3.0000926926732063e-05
+        }
+      },
+      "candidate_id": "p4",
+      "capture": "grid_misspec",
+      "initially_empty": false,
+      "rep": 3,
+      "task": "cubic_sparse",
+      "term": {
+        "items": [
+          {
+            "name": "x",
+            "type": "Var"
+          },
+          {
+            "items": [
+              {
+                "name": "x",
+                "type": "Var"
+              },
+              {
+                "name": "x",
+                "type": "Var"
+              }
+            ],
+            "type": "Times"
+          }
+        ],
+        "type": "Times"
+      }
+    },
+    {
+      "audit_rows": [
+        {
+          "answer": 8.0,
+          "env": {
+            "x": 2.0
+          },
+          "name": "audit-2"
+        },
+        {
+          "answer": 343.0,
+          "env": {
+            "x": 7.0
+          },
+          "name": "audit-7"
+        },
+        {
+          "answer": 1331.0,
+          "env": {
+            "x": 11.0
+          },
+          "name": "audit-11"
+        },
+        {
+          "answer": 2197.0,
+          "env": {
+            "x": 13.0
+          },
+          "name": "audit-13"
+        }
+      ],
+      "budgets": {
+        "0": {
+          "native_calls": 0,
+          "predictions": [],
+          "status": "accepted",
+          "wall_seconds": 3.8999132812023163e-07
+        },
+        "1": {
+          "native_calls": 1,
+          "predictions": [
+            {
+              "answer": 8.0,
+              "name": "audit-2",
+              "native_prediction": 2.0
+            }
+          ],
+          "status": "rejected",
+          "wall_seconds": 4.090019501745701e-06
+        },
+        "2": {
+          "native_calls": 2,
+          "predictions": [
+            {
+              "answer": 8.0,
+              "name": "audit-2",
+              "native_prediction": 2.0
+            },
+            {
+              "answer": 343.0,
+              "name": "audit-7",
+              "native_prediction": 7.0
+            }
+          ],
+          "status": "rejected",
+          "wall_seconds": 7.279915735125542e-06
+        },
+        "4": {
+          "native_calls": 4,
+          "predictions": [
+            {
+              "answer": 8.0,
+              "name": "audit-2",
+              "native_prediction": 2.0
+            },
+            {
+              "answer": 343.0,
+              "name": "audit-7",
+              "native_prediction": 7.0
+            },
+            {
+              "answer": 1331.0,
+              "name": "audit-11",
+              "native_prediction": 11.0
+            },
+            {
+              "answer": 2197.0,
+              "name": "audit-13",
+              "native_prediction": 13.0
+            }
+          ],
+          "status": "rejected",
+          "wall_seconds": 1.3720011338591576e-05
+        }
+      },
+      "candidate_id": "p0",
+      "capture": "cubic_alias",
+      "initially_empty": false,
+      "rep": 1,
+      "task": "cubic_alias",
+      "term": {
+        "name": "x",
+        "type": "Var"
+      }
+    },
+    {
+      "audit_rows": [
+        {
+          "answer": 8.0,
+          "env": {
+            "x": 2.0
+          },
+          "name": "audit-2"
+        },
+        {
+          "answer": 343.0,
+          "env": {
+            "x": 7.0
+          },
+          "name": "audit-7"
+        },
+        {
+          "answer": 1331.0,
+          "env": {
+            "x": 11.0
+          },
+          "name": "audit-11"
+        },
+        {
+          "answer": 2197.0,
+          "env": {
+            "x": 13.0
+          },
+          "name": "audit-13"
+        }
+      ],
+      "budgets": {
+        "0": {
+          "native_calls": 0,
+          "predictions": [],
+          "status": "accepted",
+          "wall_seconds": 3.300374373793602e-07
+        },
+        "1": {
+          "native_calls": 1,
+          "predictions": [
+            {
+              "answer": 8.0,
+              "name": "audit-2",
+              "native_prediction": 2.0
+            }
+          ],
+          "status": "rejected",
+          "wall_seconds": 3.830064088106155e-06
+        },
+        "2": {
+          "native_calls": 2,
+          "predictions": [
+            {
+              "answer": 8.0,
+              "name": "audit-2",
+              "native_prediction": 2.0
+            },
+            {
+              "answer": 343.0,
+              "name": "audit-7",
+              "native_prediction": 7.0
+            }
+          ],
+          "status": "rejected",
+          "wall_seconds": 7.00994860380888e-06
+        },
+        "4": {
+          "native_calls": 4,
+          "predictions": [
+            {
+              "answer": 8.0,
+              "name": "audit-2",
+              "native_prediction": 2.0
+            },
+            {
+              "answer": 343.0,
+              "name": "audit-7",
+              "native_prediction": 7.0
+            },
+            {
+              "answer": 1331.0,
+              "name": "audit-11",
+              "native_prediction": 11.0
+            },
+            {
+              "answer": 2197.0,
+              "name": "audit-13",
+              "native_prediction": 13.0
+            }
+          ],
+          "status": "rejected",
+          "wall_seconds": 1.392001286149025e-05
+        }
+      },
+      "candidate_id": "p0",
+      "capture": "cubic_alias",
+      "initially_empty": false,
+      "rep": 2,
+      "task": "cubic_alias",
+      "term": {
+        "name": "x",
+        "type": "Var"
+      }
+    },
+    {
+      "audit_rows": [
+        {
+          "answer": 8.0,
+          "env": {
+            "x": 2.0
+          },
+          "name": "audit-2"
+        },
+        {
+          "answer": 343.0,
+          "env": {
+            "x": 7.0
+          },
+          "name": "audit-7"
+        },
+        {
+          "answer": 1331.0,
+          "env": {
+            "x": 11.0
+          },
+          "name": "audit-11"
+        },
+        {
+          "answer": 2197.0,
+          "env": {
+            "x": 13.0
+          },
+          "name": "audit-13"
+        }
+      ],
+      "budgets": {
+        "0": {
+          "native_calls": 0,
+          "predictions": [],
+          "status": "accepted",
+          "wall_seconds": 4.6996865421533585e-07
+        },
+        "1": {
+          "native_calls": 1,
+          "predictions": [
+            {
+              "answer": 8.0,
+              "name": "audit-2",
+              "native_prediction": 2.0
+            }
+          ],
+          "status": "rejected",
+          "wall_seconds": 3.949971869587898e-06
+        },
+        "2": {
+          "native_calls": 2,
+          "predictions": [
+            {
+              "answer": 8.0,
+              "name": "audit-2",
+              "native_prediction": 2.0
+            },
+            {
+              "answer": 343.0,
+              "name": "audit-7",
+              "native_prediction": 7.0
+            }
+          ],
+          "status": "rejected",
+          "wall_seconds": 7.119961082935333e-06
+        },
+        "4": {
+          "native_calls": 4,
+          "predictions": [
+            {
+              "answer": 8.0,
+              "name": "audit-2",
+              "native_prediction": 2.0
+            },
+            {
+              "answer": 343.0,
+              "name": "audit-7",
+              "native_prediction": 7.0
+            },
+            {
+              "answer": 1331.0,
+              "name": "audit-11",
+              "native_prediction": 11.0
+            },
+            {
+              "answer": 2197.0,
+              "name": "audit-13",
+              "native_prediction": 13.0
+            }
+          ],
+          "status": "rejected",
+          "wall_seconds": 1.3669952750205994e-05
+        }
+      },
+      "candidate_id": "p0",
+      "capture": "cubic_alias",
+      "initially_empty": false,
+      "rep": 3,
+      "task": "cubic_alias",
+      "term": {
+        "name": "x",
+        "type": "Var"
+      }
+    },
+    {
+      "audit_rows": [],
+      "budgets": {
+        "0": {
+          "native_calls": 0,
+          "predictions": [],
+          "status": "refused_empty",
+          "wall_seconds": 0.0
+        },
+        "1": {
+          "native_calls": 0,
+          "predictions": [],
+          "status": "refused_empty",
+          "wall_seconds": 0.0
+        },
+        "2": {
+          "native_calls": 0,
+          "predictions": [],
+          "status": "refused_empty",
+          "wall_seconds": 0.0
+        },
+        "4": {
+          "native_calls": 0,
+          "predictions": [],
+          "status": "refused_empty",
+          "wall_seconds": 0.0
+        }
+      },
+      "candidate_id": null,
+      "capture": "grid_misspec",
+      "initially_empty": true,
+      "rep": 3,
+      "task": "absolute_value",
+      "term": null
+    },
+    {
+      "audit_rows": [],
+      "budgets": {
+        "0": {
+          "native_calls": 0,
+          "predictions": [],
+          "status": "refused_empty",
+          "wall_seconds": 0.0
+        },
+        "1": {
+          "native_calls": 0,
+          "predictions": [],
+          "status": "refused_empty",
+          "wall_seconds": 0.0
+        },
+        "2": {
+          "native_calls": 0,
+          "predictions": [],
+          "status": "refused_empty",
+          "wall_seconds": 0.0
+        },
+        "4": {
+          "native_calls": 0,
+          "predictions": [],
+          "status": "refused_empty",
+          "wall_seconds": 0.0
+        }
+      },
+      "candidate_id": null,
+      "capture": "grid_misspec",
+      "initially_empty": true,
+      "rep": 2,
+      "task": "absolute_value",
+      "term": null
+    },
+    {
+      "audit_rows": [],
+      "budgets": {
+        "0": {
+          "native_calls": 0,
+          "predictions": [],
+          "status": "refused_empty",
+          "wall_seconds": 0.0
+        },
+        "1": {
+          "native_calls": 0,
+          "predictions": [],
+          "status": "refused_empty",
+          "wall_seconds": 0.0
+        },
+        "2": {
+          "native_calls": 0,
+          "predictions": [],
+          "status": "refused_empty",
+          "wall_seconds": 0.0
+        },
+        "4": {
+          "native_calls": 0,
+          "predictions": [],
+          "status": "refused_empty",
+          "wall_seconds": 0.0
+        }
+      },
+      "candidate_id": null,
+      "capture": "grid_misspec",
+      "initially_empty": true,
+      "rep": 1,
+      "task": "absolute_value",
+      "term": null
+    }
+  ],
+  "elapsed_seconds": 0.06359134602826089,
+  "host": {
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+  },
+  "lock": {
+    "active": {
+      "domains/contract_query.py": "9e42a16541e95fb0de8a051aebb654c39cf22fd5c5d7c610b58711692e789b37",
+      "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+      "domains/generator.py": "c80b06458695dcdf897d41eb9cfd3193b1d907e5fb548ff2dc843af2cdedee5f",
+      "domains/query_selection.py": "b61ac3e1560ca4cf83a3fb25fb35e49ef07a3028f7ac3115310b507053baf441",
+      "native": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+      "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+      "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+      "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+      "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+      "scripts/cegis_faculty_on_sum_of_n.py": "3d410849ea4690d278244d2ba135232227c67dd66426f7bc05ac65d38deb0628",
+      "scripts/jabberwock_closes_the_euler_tie.py": "ccfa038e32874cec66ae369a64fd624ef963a902168828efec9e9a51b6bf0bf2"
+    },
+    "design": {
+      "audit_order": "frozen protocol order; prefix by k",
+      "budgets": [
+        0,
+        1,
+        2,
+        4
+      ],
+      "gate": "accept iff every supplied fresh labeled audit row matches",
+      "source_captures": {
+        "cubic_alias": "evaluation/reports/substrate_contract_query_generated_cubic_alias_v1_raw_20261002.json",
+        "cubic_transfer": "evaluation/reports/substrate_contract_query_generated_cubic_transfer_v1_raw_20261002.json",
+        "generated_pool": "evaluation/reports/substrate_contract_query_generated_pool_transfer_v1_raw_20261002.json",
+        "grid_misspec": "evaluation/reports/substrate_contract_query_generated_grid_misspec_v1_raw_20261002.json"
+      }
+    },
+    "files": {
+      "docs/research/engine_substrate/SUBSTRATE_CONTRACT_QUERY_INDEPENDENT_ADEQUACY_GATE_V1_PREREG_20261002.md": "9a46b8f3461811233d3ff6b761f635d36f6aba93f1e38d3e23fdfeda2dfe32c5",
+      "evaluation/substrate_capability/analyze_substrate_query_independent_adequacy_gate_v1.py": "8da144959196b1d24b41132dac412054ed264c2d43c32778a5486722ffd44432",
+      "evaluation/substrate_capability/substrate_contract_query_independent_adequacy_gate_v1.py": "cf940e571f14a781d164916a44c5eceee53326a5c2ccb604f92779209605740e"
+    },
+    "git_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "parent_inputs": {
+      "cubic_alias": "b76e91c9619f655457e51e5cd16bf1c5e3b7f89ede39955ef3887ec4a096c394",
+      "cubic_alias_lock": "6df81eaba8f7d852e4e93ed1089260dee081e8cef6383af0b1076f5db8c0f737",
+      "cubic_alias_source_SUBSTRATE_CONTRACT_QUERY_GENERATED_CUBIC_ALIAS_V1_PREREG_20261002.md": "e43e2c0a035b3291334aa8a96ae9d5ef2111b6b4a3ce5434dccf020b479e2201",
+      "cubic_alias_source_analyze_substrate_query_generated_cubic_alias_v1.py": "fc14989141fa3ab739d47d9d5a94346d17e5691ea4fe80edcd3dfe2d7c0b5aaf",
+      "cubic_alias_source_substrate_contract_query_generated_cubic_alias_v1.py": "b5ec354e4442715205d27b0c0d368b9f78b2cc06bdc9a8ce6294d08f2ee9f127",
+      "cubic_transfer": "713bcb39301f029af44f9c5af4e31bc2d6b3c64a980b78708374d422d03356ec",
+      "cubic_transfer_lock": "885683bf40c4e04a76bf5b3a57b1317acb0acc87e19439bbb24b8469d72320ee",
+      "cubic_transfer_source_SUBSTRATE_CONTRACT_QUERY_GENERATED_CUBIC_TRANSFER_V1_PREREG_20261002.md": "0ed66119c65e1859a17544d43f2893cfe2be34d280cee02b7508547f1dca9f24",
+      "cubic_transfer_source_analyze_substrate_query_generated_cubic_transfer_v1.py": "2b25d64a6cc2c5497ef26103a4735bd21ba1bc80340308788628200c6dac4db6",
+      "cubic_transfer_source_substrate_contract_query_generated_cubic_transfer_v1.py": "eee2117eca0fecee7cd93987c473a4c62b59ca431bb0a6d256b3032c3626ca07",
+      "generated_pool": "89b2ce119a9ee20c9742d201c79455f9ee72bf31466476fa2c98ad6630a26998",
+      "generated_pool_lock": "9b7fb7a225c2c7808493d7b3eca30c5178750f3b762284c5168ff52be37ba182",
+      "generated_pool_source_SUBSTRATE_CONTRACT_QUERY_GENERATED_POOL_TRANSFER_V1_PREREG_20261002.md": "16b0badb25067a9ee9f0cc9c682861030ffb7cffc3efba7172ea74ce0bd0c56b",
+      "generated_pool_source_analyze_substrate_query_generated_pool_transfer_v1.py": "42176489f46e48e02b098697a6f2b092387ef858a9b56a314120892ff10171e1",
+      "generated_pool_source_substrate_contract_query_generated_pool_transfer_v1.py": "5ce86fdbea05db5eeb062ebc97854cc4ad1516fbb6112e35a48db51629f10b5f",
+      "grid_misspec": "a267427532d2765c872ff1e1118b0cd3544608db02f4dddd58b3cb0a5c57baf4",
+      "grid_misspec_lock": "9d13b26272868a1b38351a91aaec88fd525f35141d6f144ef294e90f97ccb1fc",
+      "grid_misspec_source_SUBSTRATE_CONTRACT_QUERY_GENERATED_GRID_MISSPEC_V1_PREREG_20261002.md": "60ab9a124003fc3aacc30a2046ab0d833f717406b5dc25cddee806f99fb7743d",
+      "grid_misspec_source_analyze_substrate_query_generated_grid_misspec_v1.py": "9a7428f4a3eec7cc98da4937f3b17fac7abcb70eed880b06b0a5e62de3eb480b",
+      "grid_misspec_source_substrate_contract_query_generated_grid_misspec_v1.py": "5a752a231e89ee44ffb90dd5a9528fc61fcae19d69785b1b0cd2e991023618f4"
+    },
+    "schema": "SubstrateContractQueryIndependentAdequacyGateV1Lock"
+  },
+  "post_lock": {
+    "active": {
+      "domains/contract_query.py": "9e42a16541e95fb0de8a051aebb654c39cf22fd5c5d7c610b58711692e789b37",
+      "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+      "domains/generator.py": "c80b06458695dcdf897d41eb9cfd3193b1d907e5fb548ff2dc843af2cdedee5f",
+      "domains/query_selection.py": "b61ac3e1560ca4cf83a3fb25fb35e49ef07a3028f7ac3115310b507053baf441",
+      "native": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+      "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+      "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+      "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+      "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+      "scripts/cegis_faculty_on_sum_of_n.py": "3d410849ea4690d278244d2ba135232227c67dd66426f7bc05ac65d38deb0628",
+      "scripts/jabberwock_closes_the_euler_tie.py": "ccfa038e32874cec66ae369a64fd624ef963a902168828efec9e9a51b6bf0bf2"
+    },
+    "design": {
+      "audit_order": "frozen protocol order; prefix by k",
+      "budgets": [
+        0,
+        1,
+        2,
+        4
+      ],
+      "gate": "accept iff every supplied fresh labeled audit row matches",
+      "source_captures": {
+        "cubic_alias": "evaluation/reports/substrate_contract_query_generated_cubic_alias_v1_raw_20261002.json",
+        "cubic_transfer": "evaluation/reports/substrate_contract_query_generated_cubic_transfer_v1_raw_20261002.json",
+        "generated_pool": "evaluation/reports/substrate_contract_query_generated_pool_transfer_v1_raw_20261002.json",
+        "grid_misspec": "evaluation/reports/substrate_contract_query_generated_grid_misspec_v1_raw_20261002.json"
+      }
+    },
+    "files": {
+      "docs/research/engine_substrate/SUBSTRATE_CONTRACT_QUERY_INDEPENDENT_ADEQUACY_GATE_V1_PREREG_20261002.md": "9a46b8f3461811233d3ff6b761f635d36f6aba93f1e38d3e23fdfeda2dfe32c5",
+      "evaluation/substrate_capability/analyze_substrate_query_independent_adequacy_gate_v1.py": "8da144959196b1d24b41132dac412054ed264c2d43c32778a5486722ffd44432",
+      "evaluation/substrate_capability/substrate_contract_query_independent_adequacy_gate_v1.py": "cf940e571f14a781d164916a44c5eceee53326a5c2ccb604f92779209605740e"
+    },
+    "git_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "parent_inputs": {
+      "cubic_alias": "b76e91c9619f655457e51e5cd16bf1c5e3b7f89ede39955ef3887ec4a096c394",
+      "cubic_alias_lock": "6df81eaba8f7d852e4e93ed1089260dee081e8cef6383af0b1076f5db8c0f737",
+      "cubic_alias_source_SUBSTRATE_CONTRACT_QUERY_GENERATED_CUBIC_ALIAS_V1_PREREG_20261002.md": "e43e2c0a035b3291334aa8a96ae9d5ef2111b6b4a3ce5434dccf020b479e2201",
+      "cubic_alias_source_analyze_substrate_query_generated_cubic_alias_v1.py": "fc14989141fa3ab739d47d9d5a94346d17e5691ea4fe80edcd3dfe2d7c0b5aaf",
+      "cubic_alias_source_substrate_contract_query_generated_cubic_alias_v1.py": "b5ec354e4442715205d27b0c0d368b9f78b2cc06bdc9a8ce6294d08f2ee9f127",
+      "cubic_transfer": "713bcb39301f029af44f9c5af4e31bc2d6b3c64a980b78708374d422d03356ec",
+      "cubic_transfer_lock": "885683bf40c4e04a76bf5b3a57b1317acb0acc87e19439bbb24b8469d72320ee",
+      "cubic_transfer_source_SUBSTRATE_CONTRACT_QUERY_GENERATED_CUBIC_TRANSFER_V1_PREREG_20261002.md": "0ed66119c65e1859a17544d43f2893cfe2be34d280cee02b7508547f1dca9f24",
+      "cubic_transfer_source_analyze_substrate_query_generated_cubic_transfer_v1.py": "2b25d64a6cc2c5497ef26103a4735bd21ba1bc80340308788628200c6dac4db6",
+      "cubic_transfer_source_substrate_contract_query_generated_cubic_transfer_v1.py": "eee2117eca0fecee7cd93987c473a4c62b59ca431bb0a6d256b3032c3626ca07",
+      "generated_pool": "89b2ce119a9ee20c9742d201c79455f9ee72bf31466476fa2c98ad6630a26998",
+      "generated_pool_lock": "9b7fb7a225c2c7808493d7b3eca30c5178750f3b762284c5168ff52be37ba182",
+      "generated_pool_source_SUBSTRATE_CONTRACT_QUERY_GENERATED_POOL_TRANSFER_V1_PREREG_20261002.md": "16b0badb25067a9ee9f0cc9c682861030ffb7cffc3efba7172ea74ce0bd0c56b",
+      "generated_pool_source_analyze_substrate_query_generated_pool_transfer_v1.py": "42176489f46e48e02b098697a6f2b092387ef858a9b56a314120892ff10171e1",
+      "generated_pool_source_substrate_contract_query_generated_pool_transfer_v1.py": "5ce86fdbea05db5eeb062ebc97854cc4ad1516fbb6112e35a48db51629f10b5f",
+      "grid_misspec": "a267427532d2765c872ff1e1118b0cd3544608db02f4dddd58b3cb0a5c57baf4",
+      "grid_misspec_lock": "9d13b26272868a1b38351a91aaec88fd525f35141d6f144ef294e90f97ccb1fc",
+      "grid_misspec_source_SUBSTRATE_CONTRACT_QUERY_GENERATED_GRID_MISSPEC_V1_PREREG_20261002.md": "60ab9a124003fc3aacc30a2046ab0d833f717406b5dc25cddee806f99fb7743d",
+      "grid_misspec_source_analyze_substrate_query_generated_grid_misspec_v1.py": "9a7428f4a3eec7cc98da4937f3b17fac7abcb70eed880b06b0a5e62de3eb480b",
+      "grid_misspec_source_substrate_contract_query_generated_grid_misspec_v1.py": "5a752a231e89ee44ffb90dd5a9528fc61fcae19d69785b1b0cd2e991023618f4"
+    },
+    "schema": "SubstrateContractQueryIndependentAdequacyGateV1Lock"
+  },
+  "schema": "SubstrateContractQueryIndependentAdequacyGateV1Capture"
+}

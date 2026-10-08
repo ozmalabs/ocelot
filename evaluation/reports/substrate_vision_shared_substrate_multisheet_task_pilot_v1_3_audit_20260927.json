@@ -1,0 +1,152 @@
+{
+  "blank_replay_max_abs_delta": {
+    "global": 0.0,
+    "root_scoped": 0.0
+  },
+  "checks": {
+    "B_input_and_retinal_channels_verified": true,
+    "all_executable_rules_tagged": true,
+    "all_presentations_terminal_under_registered_bound": true,
+    "batch_frame_writes_equivalent": true,
+    "blank_restore_replay_exact": true,
+    "both_scope_captures_complete": true,
+    "capture_source_stable": true,
+    "development_and_calibration_valid": true,
+    "global_scope_A_response_changes_with_B": false,
+    "osi_independently_recomputed": true,
+    "readout_weights_unchanged": true,
+    "response_curves_finite_nonzero_16_by_12": true,
+    "root_scoped_A_response_invariant": true,
+    "two_full_disjoint_roots_and_singletons": true
+  },
+  "fixture_valid": true,
+  "legacy_driver_gate_issue": "The captured driver used all(manifest_tag_counts.values() > 0), which falsely rejects vision_compose (zero rules with a match field). Independent source check confirms zero executable vision_compose rules and exact tag-count equality for every seed.",
+  "limitations": [
+    "B retinal ON/OFF channels and actual B retinal input bursts were verified, but B SUnit response was not separately measured.",
+    "One seed and one two-sheet vision fixture; no prevalence or general scope-safety claim.",
+    "The run is valid for independent audit but the legacy driver pass bit is false due solely to the zero-rule manifest gate; preserve that original raw field."
+  ],
+  "locked_analyzer_sha256": "9e5d4e5f99674282fb641afefe44a505fcffb97f454b2f29da938cacfb4a227a",
+  "locked_runner_sha256": "99756b6e38503be4e4928de263e96267e6aef748edc9eddad03b465216cf4242",
+  "manifest_executable_counts": {
+    "vision_compose": 0,
+    "vision_lateral": 4,
+    "vision_onoff": 8,
+    "vision_settle": 4,
+    "vision_waves": 15
+  },
+  "pass_fixture_audit": true,
+  "pass_task_prediction": false,
+  "raw_sha256": "fd8834b8ea2153859d95c9865634888188e6f0afdd9de4dcfac740d97c023947",
+  "run_id": "vision-shared-substrate-multisheet-task-pilot-v1.3-independent-audit-20260927",
+  "schema_version": 1,
+  "task_contrast": {
+    "global_A_tuning_max_abs_delta_blank_vs_B_grating": 0.0,
+    "global_interference_prediction_supported": false,
+    "interpretation": "No A tuning change was detected in either scope when B received the registered grating. This is a negative result for the predicted global-versus-root-scoped interference contrast on this fixture; it does not establish general scope safety.",
+    "root_scoped_A_tuning_max_abs_delta_blank_vs_B_grating": 0.0
+  },
+  "topology_audit": [
+    {
+      "manifest_executable_counts": {
+        "vision_compose": 0,
+        "vision_lateral": 4,
+        "vision_onoff": 8,
+        "vision_settle": 4,
+        "vision_waves": 15
+      },
+      "manifest_tag_counts": {
+        "vision_compose": 0,
+        "vision_lateral": 4,
+        "vision_onoff": 8,
+        "vision_settle": 4,
+        "vision_waves": 15
+      },
+      "manifest_tag_counts_match_executable_rules": true,
+      "retina_count": 2,
+      "root_membership_counts": [
+        16,
+        16
+      ],
+      "scope": "global",
+      "selected_rule_latency_classes": {
+        "lat_bipolar": "hard_realtime",
+        "lat_pool": "hard_realtime",
+        "lat_residual": "hard_realtime",
+        "oo_sunit_activate": "hard_realtime",
+        "oo_sunit_rate": "hard_realtime",
+        "st_commit": "hard_realtime",
+        "st_settle": "hard_realtime"
+      },
+      "singleton_counts": {
+        "ComposeParams": 1,
+        "LatParams": 1,
+        "OnOffParams": 1,
+        "SettleParams": 1
+      },
+      "unit_count_per_root": [
+        16,
+        16
+      ],
+      "unit_roots_disjoint": true
+    },
+    {
+      "manifest_executable_counts": {
+        "vision_compose": 0,
+        "vision_lateral": 4,
+        "vision_onoff": 8,
+        "vision_settle": 4,
+        "vision_waves": 15
+      },
+      "manifest_tag_counts": {
+        "vision_compose": 0,
+        "vision_lateral": 4,
+        "vision_onoff": 8,
+        "vision_settle": 4,
+        "vision_waves": 15
+      },
+      "manifest_tag_counts_match_executable_rules": true,
+      "retina_count": 2,
+      "root_membership_counts": [
+        16,
+        16
+      ],
+      "scope": "root_scoped",
+      "selected_rule_latency_classes": {
+        "lat_bipolar": "hard_realtime",
+        "lat_pool": "hard_realtime",
+        "lat_residual": "hard_realtime",
+        "oo_sunit_activate": "hard_realtime",
+        "oo_sunit_rate": "hard_realtime",
+        "st_commit": "hard_realtime",
+        "st_settle_root_scoped_benchmark": "hard_realtime"
+      },
+      "singleton_counts": {
+        "ComposeParams": 1,
+        "LatParams": 1,
+        "OnOffParams": 1,
+        "SettleParams": 1
+      },
+      "unit_count_per_root": [
+        16,
+        16
+      ],
+      "unit_roots_disjoint": true
+    }
+  ],
+  "work_audit": {
+    "budget_retry_events": [
+      {
+        "attempt_count": 2,
+        "call": 213,
+        "cumulative_progress": 238132,
+        "final_status": "repeated_graph_state",
+        "intermediate_budget_hits": 1,
+        "phase": "adaptation",
+        "scope": "global"
+      }
+    ],
+    "max_cumulative_progress": 238132,
+    "presentation_records": 6880
+  }
+}

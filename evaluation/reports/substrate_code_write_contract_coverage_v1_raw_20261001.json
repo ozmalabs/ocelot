@@ -1,0 +1,1030 @@
+{
+  "elapsed_seconds": 63.67071542306803,
+  "environment": {
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+  },
+  "lock": {
+    "active": {
+      "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+      "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+      "domains/code_write_growth.py": "65aed07ea9408ed2fd4fd4cc387a99d8c29234924cedebe8ec46e1fa44b60e23",
+      "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+      "domains/teach.py": "86a4d03373dfd57a724d328844d10003d5c2eb23faf64a715b82cbef9a6ce9f1",
+      "native": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+      "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+      "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+      "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+      "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+      "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+      "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+      "seeds/code_constructions.json": "4e3d8e8d2939023dd3c0546fcee3adc4c66b43fe2b0a5a13ba83b58d21744b68",
+      "seeds/code_write_constructions.json": "75c348342ba24e312e75ecd0b6931b3e7dc57ec6323f929e1a83ef1281a836b7",
+      "seeds/code_write_gap.json": "40fb2195fbb1c409df65c93929e0bec76f947ebc6eab9ad47b0113264906a3df",
+      "seeds/code_write_request_cues.json": "13e0cbeace3d712a20b2dd7a6abbb9c910b0cbfbac61ce1d978f89a987e8c36d",
+      "seeds/gap_awareness.json": "5bc5d6a18bd5aba9ff1bdd59e2666e4ea08fcc9756b33922561c96552286c8ca",
+      "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+      "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+      "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+      "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023"
+    },
+    "design": {
+      "arms": [
+        "aliasing_narrow",
+        "discriminating_wide"
+      ],
+      "heldout": [
+        {
+          "value": -3
+        },
+        {
+          "value": -2
+        },
+        {
+          "value": 2
+        },
+        {
+          "value": 3
+        }
+      ],
+      "narrow": [
+        {
+          "expected": 0,
+          "inputs": {
+            "value": 0
+          }
+        },
+        {
+          "expected": 1,
+          "inputs": {
+            "value": 1
+          }
+        }
+      ],
+      "repetitions": 2,
+      "request": "Write a function that squares an integer.",
+      "seed": 20261023,
+      "source": "def identity(value):\n    return value\n",
+      "wide": [
+        {
+          "expected": 0,
+          "inputs": {
+            "value": 0
+          }
+        },
+        {
+          "expected": 1,
+          "inputs": {
+            "value": 1
+          }
+        },
+        {
+          "expected": 4,
+          "inputs": {
+            "value": 2
+          }
+        }
+      ]
+    },
+    "files": {
+      "docs/research/engine_substrate/SUBSTRATE_CODE_WRITE_CONTRACT_COVERAGE_V1_PREREG_20261001.md": "1e7b27a13a23d3e4320052e5ab7b9fead9424a70a66df787c596131696b39b90",
+      "evaluation/substrate_capability/analyze_substrate_code_write_contract_coverage_v1.py": "5aed26218665ee8fed2fd494b32bb4ce5fb33ce7ed55ff1acf2a001cb4ce7003",
+      "evaluation/substrate_capability/substrate_code_write_contract_coverage_v1.py": "99ec2453227517f5c036be861fd6e3a404549e8a3136e8b09ed7ea1dd24c7cf4"
+    },
+    "git_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "schema": "SubstrateCodeWriteContractCoverageV1Lock",
+    "trees": {
+      "domains": "5da18788502d158eb13a7723016e1e0a8a2032aa77eca8d136884df3036ed304",
+      "python_native": "4d4cb4aaaed3c395638b0485fc0d871749150149aded5e81491b42c7fdeb5402",
+      "rust": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+      "seed_manifests": "f1098a8168c0663746dffb253eb7230435957b3f8f8aa6d5c8197d224cf946b1",
+      "substrate": "206c8d6c975998dae706c64fe23be1ae7af659fd749577d978aafa1c30d7fdba"
+    }
+  },
+  "post_lock": {
+    "active": {
+      "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+      "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+      "domains/code_write_growth.py": "65aed07ea9408ed2fd4fd4cc387a99d8c29234924cedebe8ec46e1fa44b60e23",
+      "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+      "domains/teach.py": "86a4d03373dfd57a724d328844d10003d5c2eb23faf64a715b82cbef9a6ce9f1",
+      "native": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+      "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+      "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+      "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+      "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+      "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+      "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+      "seeds/code_constructions.json": "4e3d8e8d2939023dd3c0546fcee3adc4c66b43fe2b0a5a13ba83b58d21744b68",
+      "seeds/code_write_constructions.json": "75c348342ba24e312e75ecd0b6931b3e7dc57ec6323f929e1a83ef1281a836b7",
+      "seeds/code_write_gap.json": "40fb2195fbb1c409df65c93929e0bec76f947ebc6eab9ad47b0113264906a3df",
+      "seeds/code_write_request_cues.json": "13e0cbeace3d712a20b2dd7a6abbb9c910b0cbfbac61ce1d978f89a987e8c36d",
+      "seeds/gap_awareness.json": "5bc5d6a18bd5aba9ff1bdd59e2666e4ea08fcc9756b33922561c96552286c8ca",
+      "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+      "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+      "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+      "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023"
+    },
+    "design": {
+      "arms": [
+        "aliasing_narrow",
+        "discriminating_wide"
+      ],
+      "heldout": [
+        {
+          "value": -3
+        },
+        {
+          "value": -2
+        },
+        {
+          "value": 2
+        },
+        {
+          "value": 3
+        }
+      ],
+      "narrow": [
+        {
+          "expected": 0,
+          "inputs": {
+            "value": 0
+          }
+        },
+        {
+          "expected": 1,
+          "inputs": {
+            "value": 1
+          }
+        }
+      ],
+      "repetitions": 2,
+      "request": "Write a function that squares an integer.",
+      "seed": 20261023,
+      "source": "def identity(value):\n    return value\n",
+      "wide": [
+        {
+          "expected": 0,
+          "inputs": {
+            "value": 0
+          }
+        },
+        {
+          "expected": 1,
+          "inputs": {
+            "value": 1
+          }
+        },
+        {
+          "expected": 4,
+          "inputs": {
+            "value": 2
+          }
+        }
+      ]
+    },
+    "files": {
+      "docs/research/engine_substrate/SUBSTRATE_CODE_WRITE_CONTRACT_COVERAGE_V1_PREREG_20261001.md": "1e7b27a13a23d3e4320052e5ab7b9fead9424a70a66df787c596131696b39b90",
+      "evaluation/substrate_capability/analyze_substrate_code_write_contract_coverage_v1.py": "5aed26218665ee8fed2fd494b32bb4ce5fb33ce7ed55ff1acf2a001cb4ce7003",
+      "evaluation/substrate_capability/substrate_code_write_contract_coverage_v1.py": "99ec2453227517f5c036be861fd6e3a404549e8a3136e8b09ed7ea1dd24c7cf4"
+    },
+    "git_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "schema": "SubstrateCodeWriteContractCoverageV1Lock",
+    "trees": {
+      "domains": "5da18788502d158eb13a7723016e1e0a8a2032aa77eca8d136884df3036ed304",
+      "python_native": "4d4cb4aaaed3c395638b0485fc0d871749150149aded5e81491b42c7fdeb5402",
+      "rust": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+      "seed_manifests": "f1098a8168c0663746dffb253eb7230435957b3f8f8aa6d5c8197d224cf946b1",
+      "substrate": "206c8d6c975998dae706c64fe23be1ae7af659fd749577d978aafa1c30d7fdba"
+    }
+  },
+  "schedule": [
+    {
+      "arm": "discriminating_wide",
+      "rep": 2
+    },
+    {
+      "arm": "aliasing_narrow",
+      "rep": 1
+    },
+    {
+      "arm": "aliasing_narrow",
+      "rep": 2
+    },
+    {
+      "arm": "discriminating_wide",
+      "rep": 1
+    }
+  ],
+  "schema": "SubstrateCodeWriteContractCoverageV1Capture",
+  "workers": [
+    {
+      "acquire_ns": 68170780,
+      "after": {
+        "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "65aed07ea9408ed2fd4fd4cc387a99d8c29234924cedebe8ec46e1fa44b60e23",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/teach.py": "86a4d03373dfd57a724d328844d10003d5c2eb23faf64a715b82cbef9a6ce9f1",
+        "native": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/code_constructions.json": "4e3d8e8d2939023dd3c0546fcee3adc4c66b43fe2b0a5a13ba83b58d21744b68",
+        "seeds/code_write_constructions.json": "75c348342ba24e312e75ecd0b6931b3e7dc57ec6323f929e1a83ef1281a836b7",
+        "seeds/code_write_gap.json": "40fb2195fbb1c409df65c93929e0bec76f947ebc6eab9ad47b0113264906a3df",
+        "seeds/code_write_request_cues.json": "13e0cbeace3d712a20b2dd7a6abbb9c910b0cbfbac61ce1d978f89a987e8c36d",
+        "seeds/gap_awareness.json": "5bc5d6a18bd5aba9ff1bdd59e2666e4ea08fcc9756b33922561c96552286c8ca",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023"
+      },
+      "arm": "discriminating_wide",
+      "before": {
+        "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "65aed07ea9408ed2fd4fd4cc387a99d8c29234924cedebe8ec46e1fa44b60e23",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/teach.py": "86a4d03373dfd57a724d328844d10003d5c2eb23faf64a715b82cbef9a6ce9f1",
+        "native": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/code_constructions.json": "4e3d8e8d2939023dd3c0546fcee3adc4c66b43fe2b0a5a13ba83b58d21744b68",
+        "seeds/code_write_constructions.json": "75c348342ba24e312e75ecd0b6931b3e7dc57ec6323f929e1a83ef1281a836b7",
+        "seeds/code_write_gap.json": "40fb2195fbb1c409df65c93929e0bec76f947ebc6eab9ad47b0113264906a3df",
+        "seeds/code_write_request_cues.json": "13e0cbeace3d712a20b2dd7a6abbb9c910b0cbfbac61ce1d978f89a987e8c36d",
+        "seeds/gap_awareness.json": "5bc5d6a18bd5aba9ff1bdd59e2666e4ea08fcc9756b33922561c96552286c8ca",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023"
+      },
+      "boot_ns": 17574245908,
+      "compose": {
+        "ok": false,
+        "reason": "no held shape for this request",
+        "residual": [
+          [
+            "SQUARES"
+          ],
+          [
+            "INTEGER"
+          ]
+        ],
+        "tokens": [
+          "SQUARES",
+          "INTEGER"
+        ]
+      },
+      "heldout": [
+        {
+          "input": {
+            "value": -3
+          },
+          "native": null,
+          "python": null
+        },
+        {
+          "input": {
+            "value": -2
+          },
+          "native": null,
+          "python": null
+        },
+        {
+          "input": {
+            "value": 2
+          },
+          "native": null,
+          "python": null
+        },
+        {
+          "input": {
+            "value": 3
+          },
+          "native": null,
+          "python": null
+        }
+      ],
+      "kind": "worker",
+      "peak_rss_bytes": 1805537280,
+      "pid": 6,
+      "rep": 2,
+      "shape_count_after": 34,
+      "shape_count_before": 26,
+      "source_stable": true,
+      "taught_identity_present": false,
+      "teach": {
+        "contract_validation": {
+          "checked": [
+            {
+              "expected": 0,
+              "index": 0,
+              "inputs": {
+                "value": 0
+              },
+              "native_match": true,
+              "native_output": 0,
+              "python_match": true,
+              "python_output": 0
+            },
+            {
+              "expected": 1,
+              "index": 1,
+              "inputs": {
+                "value": 1
+              },
+              "native_match": true,
+              "native_output": 1,
+              "python_match": true,
+              "python_output": 1
+            },
+            {
+              "expected": 4,
+              "index": 2,
+              "inputs": {
+                "value": 2
+              },
+              "native_match": false,
+              "native_output": 2,
+              "python_match": false,
+              "python_output": 2
+            }
+          ],
+          "expected": 4,
+          "failed_index": 2,
+          "native_output": 2,
+          "ok": false,
+          "python_output": 2
+        },
+        "ok": false,
+        "reading": {
+          "agreement": {
+            "code_only": [
+              "value"
+            ],
+            "comment_only": [],
+            "shared": [],
+            "verdict": "diverge"
+          },
+          "args": [
+            "value"
+          ],
+          "comment": {
+            "construction": null,
+            "content_words": "set()",
+            "predications": [],
+            "sentence": null
+          },
+          "construction": "learned_code_name",
+          "docstring": null,
+          "emit_error": null,
+          "minted": true,
+          "name": "identity",
+          "names": [
+            "value"
+          ],
+          "rendered_python": "value",
+          "residual": [],
+          "shape_fit": 1,
+          "skeleton": [
+            [
+              "NAME"
+            ]
+          ],
+          "term": {
+            "name": "value",
+            "type": "Var"
+          },
+          "what_does": "a name-shaped code construction, over value"
+        },
+        "reason": "contract example 2 did not match expected output",
+        "validate": {
+          "agree": true,
+          "expected": 2,
+          "observed": 2,
+          "ran": true
+        }
+      },
+      "written": {
+        "construction": null,
+        "ok": false,
+        "sample_ok": null,
+        "source": null
+      }
+    },
+    {
+      "acquire_ns": 64410324,
+      "after": {
+        "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "65aed07ea9408ed2fd4fd4cc387a99d8c29234924cedebe8ec46e1fa44b60e23",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/teach.py": "86a4d03373dfd57a724d328844d10003d5c2eb23faf64a715b82cbef9a6ce9f1",
+        "native": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/code_constructions.json": "4e3d8e8d2939023dd3c0546fcee3adc4c66b43fe2b0a5a13ba83b58d21744b68",
+        "seeds/code_write_constructions.json": "75c348342ba24e312e75ecd0b6931b3e7dc57ec6323f929e1a83ef1281a836b7",
+        "seeds/code_write_gap.json": "40fb2195fbb1c409df65c93929e0bec76f947ebc6eab9ad47b0113264906a3df",
+        "seeds/code_write_request_cues.json": "13e0cbeace3d712a20b2dd7a6abbb9c910b0cbfbac61ce1d978f89a987e8c36d",
+        "seeds/gap_awareness.json": "5bc5d6a18bd5aba9ff1bdd59e2666e4ea08fcc9756b33922561c96552286c8ca",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023"
+      },
+      "arm": "aliasing_narrow",
+      "before": {
+        "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "65aed07ea9408ed2fd4fd4cc387a99d8c29234924cedebe8ec46e1fa44b60e23",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/teach.py": "86a4d03373dfd57a724d328844d10003d5c2eb23faf64a715b82cbef9a6ce9f1",
+        "native": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/code_constructions.json": "4e3d8e8d2939023dd3c0546fcee3adc4c66b43fe2b0a5a13ba83b58d21744b68",
+        "seeds/code_write_constructions.json": "75c348342ba24e312e75ecd0b6931b3e7dc57ec6323f929e1a83ef1281a836b7",
+        "seeds/code_write_gap.json": "40fb2195fbb1c409df65c93929e0bec76f947ebc6eab9ad47b0113264906a3df",
+        "seeds/code_write_request_cues.json": "13e0cbeace3d712a20b2dd7a6abbb9c910b0cbfbac61ce1d978f89a987e8c36d",
+        "seeds/gap_awareness.json": "5bc5d6a18bd5aba9ff1bdd59e2666e4ea08fcc9756b33922561c96552286c8ca",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023"
+      },
+      "boot_ns": 17380440643,
+      "compose": {
+        "args": [
+          "value"
+        ],
+        "construction": "taught_identity",
+        "desc": "a name-shaped code construction, over value",
+        "ok": true,
+        "shape_fit": 2,
+        "term": {
+          "name": "value",
+          "type": "Var"
+        },
+        "tokens": [
+          "SQUARES",
+          "INTEGER"
+        ]
+      },
+      "heldout": [
+        {
+          "input": {
+            "value": -3
+          },
+          "native": -3,
+          "python": -3
+        },
+        {
+          "input": {
+            "value": -2
+          },
+          "native": -2,
+          "python": -2
+        },
+        {
+          "input": {
+            "value": 2
+          },
+          "native": 2,
+          "python": 2
+        },
+        {
+          "input": {
+            "value": 3
+          },
+          "native": 3,
+          "python": 3
+        }
+      ],
+      "kind": "worker",
+      "peak_rss_bytes": 1805414400,
+      "pid": 2346,
+      "rep": 1,
+      "shape_count_after": 35,
+      "shape_count_before": 26,
+      "source_stable": true,
+      "taught_identity_present": true,
+      "teach": {
+        "contract_validation": {
+          "checked": [
+            {
+              "expected": 0,
+              "index": 0,
+              "inputs": {
+                "value": 0
+              },
+              "native_match": true,
+              "native_output": 0,
+              "python_match": true,
+              "python_output": 0
+            },
+            {
+              "expected": 1,
+              "index": 1,
+              "inputs": {
+                "value": 1
+              },
+              "native_match": true,
+              "native_output": 1,
+              "python_match": true,
+              "python_output": 1
+            }
+          ],
+          "ok": true
+        },
+        "ok": true,
+        "reading": {
+          "agreement": {
+            "code_only": [
+              "value"
+            ],
+            "comment_only": [],
+            "shared": [],
+            "verdict": "diverge"
+          },
+          "args": [
+            "value"
+          ],
+          "comment": {
+            "construction": null,
+            "content_words": "set()",
+            "predications": [],
+            "sentence": null
+          },
+          "construction": "learned_code_name",
+          "docstring": null,
+          "emit_error": null,
+          "minted": true,
+          "name": "identity",
+          "names": [
+            "value"
+          ],
+          "rendered_python": "value",
+          "residual": [],
+          "shape_fit": 1,
+          "skeleton": [
+            [
+              "NAME"
+            ]
+          ],
+          "term": {
+            "name": "value",
+            "type": "Var"
+          },
+          "what_does": "a name-shaped code construction, over value"
+        },
+        "shape": "taught_identity",
+        "teach": {
+          "category": "code_write_constructions",
+          "node": "#25151",
+          "persisted": false,
+          "saved": false,
+          "seed": "/home/matt/ozmadev/ocelot/seeds/code_write_constructions.json"
+        },
+        "tokens": [
+          "SQUARES",
+          "INTEGER"
+        ],
+        "validate": {
+          "agree": true,
+          "expected": 2,
+          "observed": 2,
+          "ran": true
+        },
+        "written_source": "def identity(value):\n    return value\n"
+      },
+      "written": {
+        "construction": "taught_identity",
+        "ok": true,
+        "sample_ok": true,
+        "source": "def candidate(value):\n    \"\"\"A name-shaped code construction, over value.\"\"\"\n    return value\n"
+      }
+    },
+    {
+      "acquire_ns": 52659024,
+      "after": {
+        "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "65aed07ea9408ed2fd4fd4cc387a99d8c29234924cedebe8ec46e1fa44b60e23",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/teach.py": "86a4d03373dfd57a724d328844d10003d5c2eb23faf64a715b82cbef9a6ce9f1",
+        "native": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/code_constructions.json": "4e3d8e8d2939023dd3c0546fcee3adc4c66b43fe2b0a5a13ba83b58d21744b68",
+        "seeds/code_write_constructions.json": "75c348342ba24e312e75ecd0b6931b3e7dc57ec6323f929e1a83ef1281a836b7",
+        "seeds/code_write_gap.json": "40fb2195fbb1c409df65c93929e0bec76f947ebc6eab9ad47b0113264906a3df",
+        "seeds/code_write_request_cues.json": "13e0cbeace3d712a20b2dd7a6abbb9c910b0cbfbac61ce1d978f89a987e8c36d",
+        "seeds/gap_awareness.json": "5bc5d6a18bd5aba9ff1bdd59e2666e4ea08fcc9756b33922561c96552286c8ca",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023"
+      },
+      "arm": "aliasing_narrow",
+      "before": {
+        "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "65aed07ea9408ed2fd4fd4cc387a99d8c29234924cedebe8ec46e1fa44b60e23",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/teach.py": "86a4d03373dfd57a724d328844d10003d5c2eb23faf64a715b82cbef9a6ce9f1",
+        "native": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/code_constructions.json": "4e3d8e8d2939023dd3c0546fcee3adc4c66b43fe2b0a5a13ba83b58d21744b68",
+        "seeds/code_write_constructions.json": "75c348342ba24e312e75ecd0b6931b3e7dc57ec6323f929e1a83ef1281a836b7",
+        "seeds/code_write_gap.json": "40fb2195fbb1c409df65c93929e0bec76f947ebc6eab9ad47b0113264906a3df",
+        "seeds/code_write_request_cues.json": "13e0cbeace3d712a20b2dd7a6abbb9c910b0cbfbac61ce1d978f89a987e8c36d",
+        "seeds/gap_awareness.json": "5bc5d6a18bd5aba9ff1bdd59e2666e4ea08fcc9756b33922561c96552286c8ca",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023"
+      },
+      "boot_ns": 14277354897,
+      "compose": {
+        "args": [
+          "value"
+        ],
+        "construction": "taught_identity",
+        "desc": "a name-shaped code construction, over value",
+        "ok": true,
+        "shape_fit": 2,
+        "term": {
+          "name": "value",
+          "type": "Var"
+        },
+        "tokens": [
+          "SQUARES",
+          "INTEGER"
+        ]
+      },
+      "heldout": [
+        {
+          "input": {
+            "value": -3
+          },
+          "native": -3,
+          "python": -3
+        },
+        {
+          "input": {
+            "value": -2
+          },
+          "native": -2,
+          "python": -2
+        },
+        {
+          "input": {
+            "value": 2
+          },
+          "native": 2,
+          "python": 2
+        },
+        {
+          "input": {
+            "value": 3
+          },
+          "native": 3,
+          "python": 3
+        }
+      ],
+      "kind": "worker",
+      "peak_rss_bytes": 1805496320,
+      "pid": 4686,
+      "rep": 2,
+      "shape_count_after": 35,
+      "shape_count_before": 26,
+      "source_stable": true,
+      "taught_identity_present": true,
+      "teach": {
+        "contract_validation": {
+          "checked": [
+            {
+              "expected": 0,
+              "index": 0,
+              "inputs": {
+                "value": 0
+              },
+              "native_match": true,
+              "native_output": 0,
+              "python_match": true,
+              "python_output": 0
+            },
+            {
+              "expected": 1,
+              "index": 1,
+              "inputs": {
+                "value": 1
+              },
+              "native_match": true,
+              "native_output": 1,
+              "python_match": true,
+              "python_output": 1
+            }
+          ],
+          "ok": true
+        },
+        "ok": true,
+        "reading": {
+          "agreement": {
+            "code_only": [
+              "value"
+            ],
+            "comment_only": [],
+            "shared": [],
+            "verdict": "diverge"
+          },
+          "args": [
+            "value"
+          ],
+          "comment": {
+            "construction": null,
+            "content_words": "set()",
+            "predications": [],
+            "sentence": null
+          },
+          "construction": "learned_code_name",
+          "docstring": null,
+          "emit_error": null,
+          "minted": true,
+          "name": "identity",
+          "names": [
+            "value"
+          ],
+          "rendered_python": "value",
+          "residual": [],
+          "shape_fit": 1,
+          "skeleton": [
+            [
+              "NAME"
+            ]
+          ],
+          "term": {
+            "name": "value",
+            "type": "Var"
+          },
+          "what_does": "a name-shaped code construction, over value"
+        },
+        "shape": "taught_identity",
+        "teach": {
+          "category": "code_write_constructions",
+          "node": "#25151",
+          "persisted": false,
+          "saved": false,
+          "seed": "/home/matt/ozmadev/ocelot/seeds/code_write_constructions.json"
+        },
+        "tokens": [
+          "SQUARES",
+          "INTEGER"
+        ],
+        "validate": {
+          "agree": true,
+          "expected": 2,
+          "observed": 2,
+          "ran": true
+        },
+        "written_source": "def identity(value):\n    return value\n"
+      },
+      "written": {
+        "construction": "taught_identity",
+        "ok": true,
+        "sample_ok": true,
+        "source": "def candidate(value):\n    \"\"\"A name-shaped code construction, over value.\"\"\"\n    return value\n"
+      }
+    },
+    {
+      "acquire_ns": 40973694,
+      "after": {
+        "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "65aed07ea9408ed2fd4fd4cc387a99d8c29234924cedebe8ec46e1fa44b60e23",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/teach.py": "86a4d03373dfd57a724d328844d10003d5c2eb23faf64a715b82cbef9a6ce9f1",
+        "native": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/code_constructions.json": "4e3d8e8d2939023dd3c0546fcee3adc4c66b43fe2b0a5a13ba83b58d21744b68",
+        "seeds/code_write_constructions.json": "75c348342ba24e312e75ecd0b6931b3e7dc57ec6323f929e1a83ef1281a836b7",
+        "seeds/code_write_gap.json": "40fb2195fbb1c409df65c93929e0bec76f947ebc6eab9ad47b0113264906a3df",
+        "seeds/code_write_request_cues.json": "13e0cbeace3d712a20b2dd7a6abbb9c910b0cbfbac61ce1d978f89a987e8c36d",
+        "seeds/gap_awareness.json": "5bc5d6a18bd5aba9ff1bdd59e2666e4ea08fcc9756b33922561c96552286c8ca",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023"
+      },
+      "arm": "discriminating_wide",
+      "before": {
+        "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "65aed07ea9408ed2fd4fd4cc387a99d8c29234924cedebe8ec46e1fa44b60e23",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/teach.py": "86a4d03373dfd57a724d328844d10003d5c2eb23faf64a715b82cbef9a6ce9f1",
+        "native": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/code_constructions.json": "4e3d8e8d2939023dd3c0546fcee3adc4c66b43fe2b0a5a13ba83b58d21744b68",
+        "seeds/code_write_constructions.json": "75c348342ba24e312e75ecd0b6931b3e7dc57ec6323f929e1a83ef1281a836b7",
+        "seeds/code_write_gap.json": "40fb2195fbb1c409df65c93929e0bec76f947ebc6eab9ad47b0113264906a3df",
+        "seeds/code_write_request_cues.json": "13e0cbeace3d712a20b2dd7a6abbb9c910b0cbfbac61ce1d978f89a987e8c36d",
+        "seeds/gap_awareness.json": "5bc5d6a18bd5aba9ff1bdd59e2666e4ea08fcc9756b33922561c96552286c8ca",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023"
+      },
+      "boot_ns": 12169172673,
+      "compose": {
+        "ok": false,
+        "reason": "no held shape for this request",
+        "residual": [
+          [
+            "SQUARES"
+          ],
+          [
+            "INTEGER"
+          ]
+        ],
+        "tokens": [
+          "SQUARES",
+          "INTEGER"
+        ]
+      },
+      "heldout": [
+        {
+          "input": {
+            "value": -3
+          },
+          "native": null,
+          "python": null
+        },
+        {
+          "input": {
+            "value": -2
+          },
+          "native": null,
+          "python": null
+        },
+        {
+          "input": {
+            "value": 2
+          },
+          "native": null,
+          "python": null
+        },
+        {
+          "input": {
+            "value": 3
+          },
+          "native": null,
+          "python": null
+        }
+      ],
+      "kind": "worker",
+      "peak_rss_bytes": 1805369344,
+      "pid": 7026,
+      "rep": 1,
+      "shape_count_after": 34,
+      "shape_count_before": 26,
+      "source_stable": true,
+      "taught_identity_present": false,
+      "teach": {
+        "contract_validation": {
+          "checked": [
+            {
+              "expected": 0,
+              "index": 0,
+              "inputs": {
+                "value": 0
+              },
+              "native_match": true,
+              "native_output": 0,
+              "python_match": true,
+              "python_output": 0
+            },
+            {
+              "expected": 1,
+              "index": 1,
+              "inputs": {
+                "value": 1
+              },
+              "native_match": true,
+              "native_output": 1,
+              "python_match": true,
+              "python_output": 1
+            },
+            {
+              "expected": 4,
+              "index": 2,
+              "inputs": {
+                "value": 2
+              },
+              "native_match": false,
+              "native_output": 2,
+              "python_match": false,
+              "python_output": 2
+            }
+          ],
+          "expected": 4,
+          "failed_index": 2,
+          "native_output": 2,
+          "ok": false,
+          "python_output": 2
+        },
+        "ok": false,
+        "reading": {
+          "agreement": {
+            "code_only": [
+              "value"
+            ],
+            "comment_only": [],
+            "shared": [],
+            "verdict": "diverge"
+          },
+          "args": [
+            "value"
+          ],
+          "comment": {
+            "construction": null,
+            "content_words": "set()",
+            "predications": [],
+            "sentence": null
+          },
+          "construction": "learned_code_name",
+          "docstring": null,
+          "emit_error": null,
+          "minted": true,
+          "name": "identity",
+          "names": [
+            "value"
+          ],
+          "rendered_python": "value",
+          "residual": [],
+          "shape_fit": 1,
+          "skeleton": [
+            [
+              "NAME"
+            ]
+          ],
+          "term": {
+            "name": "value",
+            "type": "Var"
+          },
+          "what_does": "a name-shaped code construction, over value"
+        },
+        "reason": "contract example 2 did not match expected output",
+        "validate": {
+          "agree": true,
+          "expected": 2,
+          "observed": 2,
+          "ran": true
+        }
+      },
+      "written": {
+        "construction": null,
+        "ok": false,
+        "sample_ok": null,
+        "source": null
+      }
+    }
+  ]
+}

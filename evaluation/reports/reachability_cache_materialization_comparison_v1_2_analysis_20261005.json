@@ -1,0 +1,322 @@
+{
+  "analyzer_sha256": "d50fa9f23c393a08de15ab09a04c05aba16a5a5669c5ae7e5d30b05baf56b407",
+  "capture_sha256": "74f29c373502fcc88c7cbc4cd2c7b2e26726dff3b48112f122c68d30ffcc6a96",
+  "checks": {
+    "all_query_counts_match_independent_dfs": true,
+    "analyzer_hash_stable": true,
+    "arm_order_and_three_arm_coverage": true,
+    "cache_off_zero_and_cache_on_exact_reuse_counts": true,
+    "independent_complete_case_matrix": true,
+    "injective_match_count_recomputed": true,
+    "materialized_relation_and_progress_bound": true,
+    "reader_rules_fixed_point_one_pass": true,
+    "restricted_checker_and_negative_control": true,
+    "source_lock_and_capture_current": true
+  },
+  "claim_limit": "controlled native no-op rule workload; comparison is not natural task prevalence or general cache policy",
+  "errors": [],
+  "passed": true,
+  "schema": "ReachabilityCacheMaterializationComparisonV1_2Analysis",
+  "summary": {
+    "binary_tree:N=128:readers=1": {
+      "direct_cache_off": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.205382,
+        "median_total_wall_ms": 1.158289
+      },
+      "direct_cache_on": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 127,
+        "median_cache_payload_bytes": 31324,
+        "median_reader_wall_ms": 0.144211,
+        "median_total_wall_ms": 0.671065
+      },
+      "materialized_profile": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.075001,
+        "median_total_wall_ms": 2.62244
+      },
+      "ratios_cache_on_over_cache_off": 0.5793588646702162,
+      "ratios_profile_over_cache_on": 3.9078777763703965
+    },
+    "binary_tree:N=128:readers=16": {
+      "direct_cache_off": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 1.868764,
+        "median_total_wall_ms": 4.961678
+      },
+      "direct_cache_on": {
+        "median_cache_hits": 1905,
+        "median_cache_misses": 127,
+        "median_cache_payload_bytes": 31324,
+        "median_reader_wall_ms": 0.916097,
+        "median_total_wall_ms": 3.515567
+      },
+      "materialized_profile": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.672765,
+        "median_total_wall_ms": 5.430092
+      },
+      "ratios_cache_on_over_cache_off": 0.7085439643604442,
+      "ratios_profile_over_cache_on": 1.5445849844420545
+    },
+    "binary_tree:N=128:readers=4": {
+      "direct_cache_off": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.423554,
+        "median_total_wall_ms": 1.676953
+      },
+      "direct_cache_on": {
+        "median_cache_hits": 381,
+        "median_cache_misses": 127,
+        "median_cache_payload_bytes": 31324,
+        "median_reader_wall_ms": 0.373583,
+        "median_total_wall_ms": 1.674283
+      },
+      "materialized_profile": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.143981,
+        "median_total_wall_ms": 2.915753
+      },
+      "ratios_cache_on_over_cache_off": 0.9984078265759386,
+      "ratios_profile_over_cache_on": 1.741493522899056
+    },
+    "binary_tree:N=64:readers=1": {
+      "direct_cache_off": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.075991,
+        "median_total_wall_ms": 0.385813
+      },
+      "direct_cache_on": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 63,
+        "median_cache_payload_bytes": 13892,
+        "median_reader_wall_ms": 0.08954,
+        "median_total_wall_ms": 0.488784
+      },
+      "materialized_profile": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.04371,
+        "median_total_wall_ms": 1.627082
+      },
+      "ratios_cache_on_over_cache_off": 1.2668935468737446,
+      "ratios_profile_over_cache_on": 3.3288364594585746
+    },
+    "binary_tree:N=64:readers=16": {
+      "direct_cache_off": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.692975,
+        "median_total_wall_ms": 2.769531
+      },
+      "direct_cache_on": {
+        "median_cache_hits": 945,
+        "median_cache_misses": 63,
+        "median_cache_payload_bytes": 13892,
+        "median_reader_wall_ms": 0.428663,
+        "median_total_wall_ms": 2.425729
+      },
+      "materialized_profile": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.280692,
+        "median_total_wall_ms": 3.263726
+      },
+      "ratios_cache_on_over_cache_off": 0.8758627363261143,
+      "ratios_profile_over_cache_on": 1.3454619209318106
+    },
+    "binary_tree:N=64:readers=4": {
+      "direct_cache_off": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.187491,
+        "median_total_wall_ms": 0.864117
+      },
+      "direct_cache_on": {
+        "median_cache_hits": 189,
+        "median_cache_misses": 63,
+        "median_cache_payload_bytes": 13892,
+        "median_reader_wall_ms": 0.148561,
+        "median_total_wall_ms": 0.900736
+      },
+      "materialized_profile": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.120861,
+        "median_total_wall_ms": 2.461088
+      },
+      "ratios_cache_on_over_cache_off": 1.0423773632505784,
+      "ratios_profile_over_cache_on": 2.7323078016200086
+    },
+    "ternary_tree:N=128:readers=1": {
+      "direct_cache_off": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.150721,
+        "median_total_wall_ms": 0.801147
+      },
+      "direct_cache_on": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 127,
+        "median_cache_payload_bytes": 26348,
+        "median_reader_wall_ms": 0.146981,
+        "median_total_wall_ms": 0.818936
+      },
+      "materialized_profile": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.05619,
+        "median_total_wall_ms": 1.826634
+      },
+      "ratios_cache_on_over_cache_off": 1.022204414420824,
+      "ratios_profile_over_cache_on": 2.2304966444264265
+    },
+    "ternary_tree:N=128:readers=16": {
+      "direct_cache_off": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 1.933845,
+        "median_total_wall_ms": 4.826507
+      },
+      "direct_cache_on": {
+        "median_cache_hits": 1905,
+        "median_cache_misses": 127,
+        "median_cache_payload_bytes": 26348,
+        "median_reader_wall_ms": 0.774166,
+        "median_total_wall_ms": 3.143074
+      },
+      "materialized_profile": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.510284,
+        "median_total_wall_ms": 4.081432
+      },
+      "ratios_cache_on_over_cache_off": 0.6512109067696369,
+      "ratios_profile_over_cache_on": 1.2985478547434774
+    },
+    "ternary_tree:N=128:readers=4": {
+      "direct_cache_off": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.407173,
+        "median_total_wall_ms": 1.256949
+      },
+      "direct_cache_on": {
+        "median_cache_hits": 381,
+        "median_cache_misses": 127,
+        "median_cache_payload_bytes": 26348,
+        "median_reader_wall_ms": 0.318763,
+        "median_total_wall_ms": 1.357991
+      },
+      "materialized_profile": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.141311,
+        "median_total_wall_ms": 2.214717
+      },
+      "ratios_cache_on_over_cache_off": 1.0803867141785386,
+      "ratios_profile_over_cache_on": 1.6308775242251237
+    },
+    "ternary_tree:N=64:readers=1": {
+      "direct_cache_off": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.06194,
+        "median_total_wall_ms": 0.363573
+      },
+      "direct_cache_on": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 63,
+        "median_cache_payload_bytes": 12132,
+        "median_reader_wall_ms": 0.101281,
+        "median_total_wall_ms": 0.585505
+      },
+      "materialized_profile": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.03788,
+        "median_total_wall_ms": 1.033898
+      },
+      "ratios_cache_on_over_cache_off": 1.6104193655744516,
+      "ratios_profile_over_cache_on": 1.7658226659037923
+    },
+    "ternary_tree:N=64:readers=16": {
+      "direct_cache_off": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.886726,
+        "median_total_wall_ms": 2.843602
+      },
+      "direct_cache_on": {
+        "median_cache_hits": 945,
+        "median_cache_misses": 63,
+        "median_cache_payload_bytes": 12132,
+        "median_reader_wall_ms": 0.472094,
+        "median_total_wall_ms": 2.5949
+      },
+      "materialized_profile": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.409733,
+        "median_total_wall_ms": 3.326516
+      },
+      "ratios_cache_on_over_cache_off": 0.9125397998735406,
+      "ratios_profile_over_cache_on": 1.2819438128636942
+    },
+    "ternary_tree:N=64:readers=4": {
+      "direct_cache_off": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.164642,
+        "median_total_wall_ms": 0.822396
+      },
+      "direct_cache_on": {
+        "median_cache_hits": 189,
+        "median_cache_misses": 63,
+        "median_cache_payload_bytes": 12132,
+        "median_reader_wall_ms": 0.129321,
+        "median_total_wall_ms": 0.774316
+      },
+      "materialized_profile": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.082981,
+        "median_total_wall_ms": 1.22426
+      },
+      "ratios_cache_on_over_cache_off": 0.9415366806258785,
+      "ratios_profile_over_cache_on": 1.5810857582692337
+    }
+  }
+}

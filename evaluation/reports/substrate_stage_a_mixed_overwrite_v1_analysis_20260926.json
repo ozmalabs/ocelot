@@ -1,0 +1,16 @@
+{
+  "checks": {
+    "five_binding_sizes_each": true,
+    "mixed_overwrite_enters_stage_a_compare": true,
+    "no_divergence_or_unsound_drain": true,
+    "normal_closure_and_compare_match_exact_oracle": true,
+    "raw_and_lock_match": true,
+    "repeat_projection_stable": true,
+    "three_source_stable_workers": true
+  },
+  "finding": "A mixed SetAttr plus existing-edge attribute replacement rule entered Stage A compare for independent one-variable bindings at 1, 2, 6, 16, and 32 bindings. Every case compared exactly one drain, reported zero divergence and unsoundness, and produced the same complete graph, progress count, terminal result, and independent output oracle as ordinary closure.",
+  "limits": "One self-loop match shape with independent nodes and literal attr keys/values. No contended writes, multi-variable binding, mint/delete, rule-order interaction, concurrency, or workload distribution is covered.",
+  "lock_sha256": "440e03428a025772c84d98d3c8c781b62f880ff81f37d8f477e49cbcd0687e2f",
+  "raw_sha256": "e64f4f711c5b5b39a005ed2ef12092e17de1bfebbbb9aff34bd3ab541d02f3ef",
+  "schema_version": 1
+}

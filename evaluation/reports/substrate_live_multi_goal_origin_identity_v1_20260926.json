@@ -1,0 +1,432 @@
+{
+  "checks": {
+    "all_runs_one_to_one_origin_identity": true,
+    "full_seed_producer_shape_repeats": true,
+    "no_downstream_lifecycle_events_or_transitions": true,
+    "same_recipient_all_runs": true,
+    "three_distinct_fresh_pids": true
+  },
+  "claim_boundary": "Three fresh full-seed runs show distinct same-recipient live instruction Goals bind to their own inbound Message and DiscourseEvent. No later lifecycle events are emitted on this path; no prevalence/general action claim.",
+  "environment": {
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+  },
+  "lock_sha256": "ef8d211bd98f7ab5ce6f94a7354894549a0dc971c1f8b5ba4f7905fa8b1e9008",
+  "locked_inputs": {
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+    "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+    "protocol_sha256": "b5c2e4635d9d2ed8ba81c2a9d7a13e6c7f384489670821a3498267e1bb78969f",
+    "runner_sha256": "a935868840db3141b2a64b471bdc256e199127e96ecb19e6ff1d7561620ed4eb",
+    "source_sha256": {
+      "conversation_action": "9319289a5932fd14637cd3dbad1134e4c17f7e905f50b69a8e3ba0af8a2eb8c8",
+      "discourse_seed": "37e400394bb440606d3661a50e26ee9570583fc912fec723bfa77c00a223451d",
+      "discourse_state": "e9f82407253bc3c1029e8008af2c8796f386b6c0555885f532049b9662a61409",
+      "phase4a_seed": "fff5e65ba7d5d1236781d0e6e41769b6ee7452edef5d75b34554e4f5d7e67bbc",
+      "world_adapter": "08a680664dffe439e42a60ceeaed2c6bafc4f2c42f845a113cbde6f9ff8ee8f2"
+    }
+  },
+  "run_id": "substrate-live-multi-goal-origin-identity-v1-20260926",
+  "runs": [
+    {
+      "boot_ns": 12822972854,
+      "no_goal_transitions": true,
+      "no_lifecycle_events": true,
+      "one_to_one_origin_mapping": true,
+      "pid": 2168421,
+      "records": [
+        {
+          "event_attrs": {
+            "event_index": 0,
+            "expectation": "action",
+            "interaction_mode": "event",
+            "kind": "instruction",
+            "payload": {
+              "dispatch_path": "instruction",
+              "grounding_evidence_path": "CommunicationInterpretation -> Concept.referent",
+              "grounding_status": "candidate_grounded",
+              "interaction_relation": null,
+              "learning_gap_identity": null,
+              "learning_observation_schema": null,
+              "learning_stage": null,
+              "learning_verification_status": null,
+              "literal_form": null,
+              "message_id": 24834,
+              "parsed_topic": "pressure"
+            },
+            "schema": "discourse_event.v1",
+            "topic": "pressure"
+          },
+          "event_for_goal_edges": [],
+          "event_id": 24843,
+          "event_recipients": [
+            0
+          ],
+          "goals": [
+            {
+              "attrs": {
+                "kind": "instruction",
+                "object": "pressure",
+                "origin_turn_id": 24834,
+                "predicate": "Check",
+                "source": "conversation"
+              },
+              "comprehends_message": true,
+              "deliberations": [
+                {
+                  "candidate_source": "discourse_state",
+                  "status": "no_candidate"
+                }
+              ],
+              "goal_id": 24900,
+              "originates_in_event": true,
+              "transition_events": []
+            }
+          ],
+          "message_id": 24834,
+          "new_action_goal_count": 1,
+          "new_discourse_event_count": 1,
+          "reply": "I took on the goal to Check the pressure, but I have no attached world/faculty to carry it out here.",
+          "turn": 0
+        },
+        {
+          "event_attrs": {
+            "event_index": 1,
+            "expectation": "action",
+            "interaction_mode": "event",
+            "kind": "instruction",
+            "payload": {
+              "dispatch_path": "instruction",
+              "grounding_evidence_path": "CommunicationInterpretation -> Concept.referent",
+              "grounding_status": "candidate_grounded",
+              "interaction_relation": null,
+              "learning_gap_identity": null,
+              "learning_observation_schema": null,
+              "learning_stage": null,
+              "learning_verification_status": null,
+              "literal_form": null,
+              "message_id": 24922,
+              "parsed_topic": "pressure"
+            },
+            "schema": "discourse_event.v1",
+            "topic": "pressure"
+          },
+          "event_for_goal_edges": [],
+          "event_id": 24927,
+          "event_recipients": [
+            0
+          ],
+          "goals": [
+            {
+              "attrs": {
+                "kind": "instruction",
+                "object": "pressure",
+                "origin_turn_id": 24922,
+                "predicate": "Check",
+                "source": "conversation"
+              },
+              "comprehends_message": true,
+              "deliberations": [
+                {
+                  "candidate_source": "discourse_state",
+                  "status": "no_candidate"
+                }
+              ],
+              "goal_id": 24936,
+              "originates_in_event": true,
+              "transition_events": []
+            }
+          ],
+          "message_id": 24922,
+          "new_action_goal_count": 1,
+          "new_discourse_event_count": 1,
+          "reply": "I took on the goal to Check the pressure, but I have no attached world/faculty to carry it out here.",
+          "turn": 1
+        }
+      ],
+      "replicate": 1,
+      "same_recipient": true,
+      "state_event_count": 2,
+      "state_event_kind_counts": {
+        "action_result": 0,
+        "execution": 0,
+        "instruction": 2,
+        "selection": 0
+      },
+      "turn_median_ns": 2109437019.0,
+      "turns_ns_total": 4218874038
+    },
+    {
+      "boot_ns": 12193243869,
+      "no_goal_transitions": true,
+      "no_lifecycle_events": true,
+      "one_to_one_origin_mapping": true,
+      "pid": 2175656,
+      "records": [
+        {
+          "event_attrs": {
+            "event_index": 0,
+            "expectation": "action",
+            "interaction_mode": "event",
+            "kind": "instruction",
+            "payload": {
+              "dispatch_path": "instruction",
+              "grounding_evidence_path": "CommunicationInterpretation -> Concept.referent",
+              "grounding_status": "candidate_grounded",
+              "interaction_relation": null,
+              "learning_gap_identity": null,
+              "learning_observation_schema": null,
+              "learning_stage": null,
+              "learning_verification_status": null,
+              "literal_form": null,
+              "message_id": 24834,
+              "parsed_topic": "pressure"
+            },
+            "schema": "discourse_event.v1",
+            "topic": "pressure"
+          },
+          "event_for_goal_edges": [],
+          "event_id": 24843,
+          "event_recipients": [
+            0
+          ],
+          "goals": [
+            {
+              "attrs": {
+                "kind": "instruction",
+                "object": "pressure",
+                "origin_turn_id": 24834,
+                "predicate": "Check",
+                "source": "conversation"
+              },
+              "comprehends_message": true,
+              "deliberations": [
+                {
+                  "candidate_source": "discourse_state",
+                  "status": "no_candidate"
+                }
+              ],
+              "goal_id": 24900,
+              "originates_in_event": true,
+              "transition_events": []
+            }
+          ],
+          "message_id": 24834,
+          "new_action_goal_count": 1,
+          "new_discourse_event_count": 1,
+          "reply": "I took on the goal to Check the pressure, but I have no attached world/faculty to carry it out here.",
+          "turn": 0
+        },
+        {
+          "event_attrs": {
+            "event_index": 1,
+            "expectation": "action",
+            "interaction_mode": "event",
+            "kind": "instruction",
+            "payload": {
+              "dispatch_path": "instruction",
+              "grounding_evidence_path": "CommunicationInterpretation -> Concept.referent",
+              "grounding_status": "candidate_grounded",
+              "interaction_relation": null,
+              "learning_gap_identity": null,
+              "learning_observation_schema": null,
+              "learning_stage": null,
+              "learning_verification_status": null,
+              "literal_form": null,
+              "message_id": 24922,
+              "parsed_topic": "pressure"
+            },
+            "schema": "discourse_event.v1",
+            "topic": "pressure"
+          },
+          "event_for_goal_edges": [],
+          "event_id": 24927,
+          "event_recipients": [
+            0
+          ],
+          "goals": [
+            {
+              "attrs": {
+                "kind": "instruction",
+                "object": "pressure",
+                "origin_turn_id": 24922,
+                "predicate": "Check",
+                "source": "conversation"
+              },
+              "comprehends_message": true,
+              "deliberations": [
+                {
+                  "candidate_source": "discourse_state",
+                  "status": "no_candidate"
+                }
+              ],
+              "goal_id": 24936,
+              "originates_in_event": true,
+              "transition_events": []
+            }
+          ],
+          "message_id": 24922,
+          "new_action_goal_count": 1,
+          "new_discourse_event_count": 1,
+          "reply": "I took on the goal to Check the pressure, but I have no attached world/faculty to carry it out here.",
+          "turn": 1
+        }
+      ],
+      "replicate": 2,
+      "same_recipient": true,
+      "state_event_count": 2,
+      "state_event_kind_counts": {
+        "action_result": 0,
+        "execution": 0,
+        "instruction": 2,
+        "selection": 0
+      },
+      "turn_median_ns": 2067106426.0,
+      "turns_ns_total": 4134212852
+    },
+    {
+      "boot_ns": 12269834201,
+      "no_goal_transitions": true,
+      "no_lifecycle_events": true,
+      "one_to_one_origin_mapping": true,
+      "pid": 2182927,
+      "records": [
+        {
+          "event_attrs": {
+            "event_index": 0,
+            "expectation": "action",
+            "interaction_mode": "event",
+            "kind": "instruction",
+            "payload": {
+              "dispatch_path": "instruction",
+              "grounding_evidence_path": "CommunicationInterpretation -> Concept.referent",
+              "grounding_status": "candidate_grounded",
+              "interaction_relation": null,
+              "learning_gap_identity": null,
+              "learning_observation_schema": null,
+              "learning_stage": null,
+              "learning_verification_status": null,
+              "literal_form": null,
+              "message_id": 24834,
+              "parsed_topic": "pressure"
+            },
+            "schema": "discourse_event.v1",
+            "topic": "pressure"
+          },
+          "event_for_goal_edges": [],
+          "event_id": 24843,
+          "event_recipients": [
+            0
+          ],
+          "goals": [
+            {
+              "attrs": {
+                "kind": "instruction",
+                "object": "pressure",
+                "origin_turn_id": 24834,
+                "predicate": "Check",
+                "source": "conversation"
+              },
+              "comprehends_message": true,
+              "deliberations": [
+                {
+                  "candidate_source": "discourse_state",
+                  "status": "no_candidate"
+                }
+              ],
+              "goal_id": 24900,
+              "originates_in_event": true,
+              "transition_events": []
+            }
+          ],
+          "message_id": 24834,
+          "new_action_goal_count": 1,
+          "new_discourse_event_count": 1,
+          "reply": "I took on the goal to Check the pressure, but I have no attached world/faculty to carry it out here.",
+          "turn": 0
+        },
+        {
+          "event_attrs": {
+            "event_index": 1,
+            "expectation": "action",
+            "interaction_mode": "event",
+            "kind": "instruction",
+            "payload": {
+              "dispatch_path": "instruction",
+              "grounding_evidence_path": "CommunicationInterpretation -> Concept.referent",
+              "grounding_status": "candidate_grounded",
+              "interaction_relation": null,
+              "learning_gap_identity": null,
+              "learning_observation_schema": null,
+              "learning_stage": null,
+              "learning_verification_status": null,
+              "literal_form": null,
+              "message_id": 24922,
+              "parsed_topic": "pressure"
+            },
+            "schema": "discourse_event.v1",
+            "topic": "pressure"
+          },
+          "event_for_goal_edges": [],
+          "event_id": 24927,
+          "event_recipients": [
+            0
+          ],
+          "goals": [
+            {
+              "attrs": {
+                "kind": "instruction",
+                "object": "pressure",
+                "origin_turn_id": 24922,
+                "predicate": "Check",
+                "source": "conversation"
+              },
+              "comprehends_message": true,
+              "deliberations": [
+                {
+                  "candidate_source": "discourse_state",
+                  "status": "no_candidate"
+                }
+              ],
+              "goal_id": 24936,
+              "originates_in_event": true,
+              "transition_events": []
+            }
+          ],
+          "message_id": 24922,
+          "new_action_goal_count": 1,
+          "new_discourse_event_count": 1,
+          "reply": "I took on the goal to Check the pressure, but I have no attached world/faculty to carry it out here.",
+          "turn": 1
+        }
+      ],
+      "replicate": 0,
+      "same_recipient": true,
+      "state_event_count": 2,
+      "state_event_kind_counts": {
+        "action_result": 0,
+        "execution": 0,
+        "instruction": 2,
+        "selection": 0
+      },
+      "turn_median_ns": 2081575635.0,
+      "turns_ns_total": 4163151270
+    }
+  ],
+  "schedule": [
+    1,
+    2,
+    0
+  ],
+  "schema_version": 1,
+  "summary": {
+    "boot_ns_median": 12269834201,
+    "operation_event_counts": {
+      "action_result": 0,
+      "execution": 0,
+      "instruction": 2,
+      "selection": 0
+    },
+    "turn_median_ns_median": 2081575635.0
+  }
+}

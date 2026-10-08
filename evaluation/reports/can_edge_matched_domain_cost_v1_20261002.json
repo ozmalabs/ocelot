@@ -1,0 +1,1658 @@
+{
+  "captured_utc": "2026-10-02T10:54:37Z",
+  "checks": {
+    "certificate_width_q": true,
+    "complete_paired_cells": true,
+    "domain_matches_mode": true,
+    "edge_counts": true,
+    "exact_extraction": true,
+    "fresh_worker_pids": true,
+    "no_mutation": true,
+    "oracle_parity": true,
+    "pre_post_source_match": true,
+    "same_fixture_across_modes": true,
+    "worker_count": true
+  },
+  "claim_boundary": "paired exact MAP domain-cardinality cost at q<=6 on two synthetic binary pairwise graph families; no natural domain or topology prevalence estimate",
+  "configuration": {
+    "families": [
+      "grid",
+      "sparse_partial_qtree"
+    ],
+    "modes": {
+      "2state": [
+        -1.0,
+        1.0
+      ],
+      "3state": [
+        -1.0,
+        0.0,
+        1.0
+      ]
+    },
+    "nodes": 120,
+    "replicates": 3,
+    "widths": [
+      4,
+      5,
+      6
+    ]
+  },
+  "host": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+  "lock_sha256": "9f5d86fb518e205098c64714c6bf6f4db6d817f25ccd06fd477af016635152d2",
+  "post_run_sources": {
+    "analyzer": {
+      "bytes": 3792,
+      "path": "evaluation/substrate_capability/analyze_can_edge_matched_domain_cost_v1.py",
+      "sha256": "c5f68249296780dee76ec3e85619fe358698f230485bd01e2804408d3fcaf0c5"
+    },
+    "base_protocol": {
+      "bytes": 2026,
+      "path": "docs/research/engine_substrate/CAN_EDGE_MATCHED_INFERENCE_COST_V1_3_PREREG_20261002.md",
+      "sha256": "eae15a7dd355965b7f8cc59e790a3e69373bfefc4b9d34f377a6e781ea2cec2c"
+    },
+    "base_runner": {
+      "bytes": 12302,
+      "path": "evaluation/substrate_capability/can_edge_matched_inference_cost_v1_3.py",
+      "sha256": "09bdc6f61b52ba5d0441ac458397634ee53fb3d320f3afda678d4e170cafd192"
+    },
+    "families": [
+      "grid",
+      "sparse_partial_qtree"
+    ],
+    "generator": {
+      "bytes": 7662,
+      "path": "evaluation/substrate_capability/can_edge_matched_width_topology_v1.py",
+      "sha256": "102370d5b06312455018dfff9ebcdccb0df89ff2f8e90c2dddaeeca76650a2b8"
+    },
+    "modes": {
+      "2state": [
+        -1.0,
+        1.0
+      ],
+      "3state": [
+        -1.0,
+        0.0,
+        1.0
+      ]
+    },
+    "native_binary": {
+      "bytes": 10599400,
+      "path": "runners/dsl/python/substrate_rs/_native.abi3.so",
+      "sha256": "7148f66f4cd307b7b34e03970b6a0c12177973105af8e1f3c6684e2e6132a63e"
+    },
+    "native_build_manifest": {
+      "bytes": 12669,
+      "path": "runners/dsl/python/substrate_rs/_native.build.json",
+      "sha256": "476fdf4408323867341f127b3947f5a528743ebb86ab2a7973442993447f0e82"
+    },
+    "nodes": 120,
+    "protocol": {
+      "bytes": 2500,
+      "path": "docs/research/engine_substrate/CAN_EDGE_MATCHED_DOMAIN_COST_V1_PREREG_20261002.md",
+      "sha256": "ab1387707fcd208b03b1fd92e6cb22f621cc96e2c33775829821a9c9964294e5"
+    },
+    "replicates": 3,
+    "runner": {
+      "bytes": 10269,
+      "path": "evaluation/substrate_capability/can_edge_matched_domain_cost_v1.py",
+      "sha256": "af219dec1b4db5ac7982fbb97cb17c975d250c83acf360d283a0e9a0259208e1"
+    },
+    "solver_sources": [
+      {
+        "bytes": 14856,
+        "path": "domains/can_junction_tree.py",
+        "sha256": "e8d4aa30bfdaced52cda2739f885a56ed50a040b8419cb558b132e5e46206ba7"
+      },
+      {
+        "bytes": 9424,
+        "path": "domains/graph_treewidth.py",
+        "sha256": "e945bea9f54b76098edb3b3dcb784ac5a0ce630de43cd63a9fb5b0f416d543e5"
+      }
+    ],
+    "tolerance": 1e-08,
+    "widths": [
+      4,
+      5,
+      6
+    ]
+  },
+  "runs": [
+    {
+      "certificate_direct_energy": -219.25,
+      "certificate_energy": -219.25,
+      "certificate_width": 4,
+      "edges": 206,
+      "expected_edges": 206,
+      "extraction_exact": true,
+      "family": "grid",
+      "minfill_direct_energy": -219.25,
+      "minfill_energy": -219.25,
+      "minfill_width": 4,
+      "mode": "2state",
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -219.25,
+      "oracle_operations": 13840,
+      "process_peak_rss_kib": 33216,
+      "replicate": 0,
+      "seed": 24260941,
+      "timing_ns": {
+        "graph_construction": 2325824,
+        "jt_certificate_cpu": 64690217,
+        "jt_certificate_wall": 64709358,
+        "jt_minfill_cpu": 61852307,
+        "jt_minfill_wall": 61866420,
+        "minfill_order": 13404870,
+        "oracle": 16542440,
+        "runtime_extraction": 6189457
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 358232,
+        "jt_minfill": 368936
+      },
+      "vocabulary": [
+        -1.0,
+        1.0
+      ],
+      "width": 4,
+      "worker_pid": 3
+    },
+    {
+      "certificate_direct_energy": -219.25,
+      "certificate_energy": -219.25,
+      "certificate_width": 4,
+      "edges": 206,
+      "expected_edges": 206,
+      "extraction_exact": true,
+      "family": "grid",
+      "minfill_direct_energy": -219.25,
+      "minfill_energy": -219.25,
+      "minfill_width": 4,
+      "mode": "3state",
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -219.25,
+      "oracle_operations": 104523,
+      "process_peak_rss_kib": 33216,
+      "replicate": 0,
+      "seed": 24260941,
+      "timing_ns": {
+        "graph_construction": 1365309,
+        "jt_certificate_cpu": 451144002,
+        "jt_certificate_wall": 452825525,
+        "jt_minfill_cpu": 370629660,
+        "jt_minfill_wall": 370693253,
+        "minfill_order": 8943544,
+        "oracle": 62541175,
+        "runtime_extraction": 3428230
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 1669520,
+        "jt_minfill": 1476112
+      },
+      "vocabulary": [
+        -1.0,
+        0.0,
+        1.0
+      ],
+      "width": 4,
+      "worker_pid": 4
+    },
+    {
+      "certificate_direct_energy": -220.75,
+      "certificate_energy": -220.75,
+      "certificate_width": 4,
+      "edges": 206,
+      "expected_edges": 206,
+      "extraction_exact": true,
+      "family": "sparse_partial_qtree",
+      "minfill_direct_energy": -220.75,
+      "minfill_energy": -220.75,
+      "minfill_width": 4,
+      "mode": "2state",
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -220.75,
+      "oracle_operations": 5554,
+      "process_peak_rss_kib": 33216,
+      "replicate": 0,
+      "seed": 24270948,
+      "timing_ns": {
+        "graph_construction": 1412398,
+        "jt_certificate_cpu": 29169258,
+        "jt_certificate_wall": 29180575,
+        "jt_minfill_cpu": 29378798,
+        "jt_minfill_wall": 29395406,
+        "minfill_order": 11770171,
+        "oracle": 5521403,
+        "runtime_extraction": 2289044
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 201272,
+        "jt_minfill": 204264
+      },
+      "vocabulary": [
+        -1.0,
+        1.0
+      ],
+      "width": 4,
+      "worker_pid": 5
+    },
+    {
+      "certificate_direct_energy": -220.75,
+      "certificate_energy": -220.75,
+      "certificate_width": 4,
+      "edges": 206,
+      "expected_edges": 206,
+      "extraction_exact": true,
+      "family": "sparse_partial_qtree",
+      "minfill_direct_energy": -220.75,
+      "minfill_energy": -220.75,
+      "minfill_width": 4,
+      "mode": "3state",
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -220.75,
+      "oracle_operations": 29817,
+      "process_peak_rss_kib": 33216,
+      "replicate": 0,
+      "seed": 24270948,
+      "timing_ns": {
+        "graph_construction": 1464969,
+        "jt_certificate_cpu": 135420706,
+        "jt_certificate_wall": 135431482,
+        "jt_minfill_cpu": 135462756,
+        "jt_minfill_wall": 135476602,
+        "minfill_order": 11538659,
+        "oracle": 17713767,
+        "runtime_extraction": 2259143
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 362568,
+        "jt_minfill": 401728
+      },
+      "vocabulary": [
+        -1.0,
+        0.0,
+        1.0
+      ],
+      "width": 4,
+      "worker_pid": 6
+    },
+    {
+      "certificate_direct_energy": -221.25,
+      "certificate_energy": -221.25,
+      "certificate_width": 4,
+      "edges": 206,
+      "expected_edges": 206,
+      "extraction_exact": true,
+      "family": "grid",
+      "minfill_direct_energy": -221.25,
+      "minfill_energy": -221.25,
+      "minfill_width": 4,
+      "mode": "2state",
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -221.25,
+      "oracle_operations": 13840,
+      "process_peak_rss_kib": 33216,
+      "replicate": 1,
+      "seed": 24326478,
+      "timing_ns": {
+        "graph_construction": 1423949,
+        "jt_certificate_cpu": 60990846,
+        "jt_certificate_wall": 61099947,
+        "jt_minfill_cpu": 56463165,
+        "jt_minfill_wall": 56534439,
+        "minfill_order": 8336110,
+        "oracle": 10557874,
+        "runtime_extraction": 3709672
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 358232,
+        "jt_minfill": 368104
+      },
+      "vocabulary": [
+        -1.0,
+        1.0
+      ],
+      "width": 4,
+      "worker_pid": 7
+    },
+    {
+      "certificate_direct_energy": -221.25,
+      "certificate_energy": -221.25,
+      "certificate_width": 4,
+      "edges": 206,
+      "expected_edges": 206,
+      "extraction_exact": true,
+      "family": "grid",
+      "minfill_direct_energy": -221.25,
+      "minfill_energy": -221.25,
+      "minfill_width": 4,
+      "mode": "3state",
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -221.25,
+      "oracle_operations": 104523,
+      "process_peak_rss_kib": 33216,
+      "replicate": 1,
+      "seed": 24326478,
+      "timing_ns": {
+        "graph_construction": 2272074,
+        "jt_certificate_cpu": 433827817,
+        "jt_certificate_wall": 433878542,
+        "jt_minfill_cpu": 374479231,
+        "jt_minfill_wall": 374594887,
+        "minfill_order": 12747247,
+        "oracle": 73614821,
+        "runtime_extraction": 5299611
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 1669520,
+        "jt_minfill": 1485928
+      },
+      "vocabulary": [
+        -1.0,
+        0.0,
+        1.0
+      ],
+      "width": 4,
+      "worker_pid": 8
+    },
+    {
+      "certificate_direct_energy": -209.25,
+      "certificate_energy": -209.25,
+      "certificate_width": 4,
+      "edges": 206,
+      "expected_edges": 206,
+      "extraction_exact": true,
+      "family": "sparse_partial_qtree",
+      "minfill_direct_energy": -209.25,
+      "minfill_energy": -209.25,
+      "minfill_width": 4,
+      "mode": "2state",
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -209.25,
+      "oracle_operations": 5292,
+      "process_peak_rss_kib": 33216,
+      "replicate": 1,
+      "seed": 24336485,
+      "timing_ns": {
+        "graph_construction": 2178533,
+        "jt_certificate_cpu": 27078667,
+        "jt_certificate_wall": 27082703,
+        "jt_minfill_cpu": 29105808,
+        "jt_minfill_wall": 29120025,
+        "minfill_order": 17077162,
+        "oracle": 8261950,
+        "runtime_extraction": 3509831
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 201232,
+        "jt_minfill": 214768
+      },
+      "vocabulary": [
+        -1.0,
+        1.0
+      ],
+      "width": 4,
+      "worker_pid": 9
+    },
+    {
+      "certificate_direct_energy": -209.25,
+      "certificate_energy": -209.25,
+      "certificate_width": 4,
+      "edges": 206,
+      "expected_edges": 206,
+      "extraction_exact": true,
+      "family": "sparse_partial_qtree",
+      "minfill_direct_energy": -209.25,
+      "minfill_energy": -209.25,
+      "minfill_width": 4,
+      "mode": "3state",
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -209.25,
+      "oracle_operations": 27459,
+      "process_peak_rss_kib": 33216,
+      "replicate": 1,
+      "seed": 24336485,
+      "timing_ns": {
+        "graph_construction": 1381169,
+        "jt_certificate_cpu": 123492364,
+        "jt_certificate_wall": 123549960,
+        "jt_minfill_cpu": 140957888,
+        "jt_minfill_wall": 140994126,
+        "minfill_order": 11491189,
+        "oracle": 16582670,
+        "runtime_extraction": 2204593
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 365272,
+        "jt_minfill": 402720
+      },
+      "vocabulary": [
+        -1.0,
+        0.0,
+        1.0
+      ],
+      "width": 4,
+      "worker_pid": 10
+    },
+    {
+      "certificate_direct_energy": -225.5,
+      "certificate_energy": -225.5,
+      "certificate_width": 4,
+      "edges": 206,
+      "expected_edges": 206,
+      "extraction_exact": true,
+      "family": "grid",
+      "minfill_direct_energy": -225.5,
+      "minfill_energy": -225.5,
+      "minfill_width": 4,
+      "mode": "2state",
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -225.5,
+      "oracle_operations": 13840,
+      "process_peak_rss_kib": 33216,
+      "replicate": 2,
+      "seed": 24392015,
+      "timing_ns": {
+        "graph_construction": 1432159,
+        "jt_certificate_cpu": 63804887,
+        "jt_certificate_wall": 63810473,
+        "jt_minfill_cpu": 58317746,
+        "jt_minfill_wall": 58337100,
+        "minfill_order": 8883754,
+        "oracle": 12454544,
+        "runtime_extraction": 4219085
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 358232,
+        "jt_minfill": 368176
+      },
+      "vocabulary": [
+        -1.0,
+        1.0
+      ],
+      "width": 4,
+      "worker_pid": 11
+    },
+    {
+      "certificate_direct_energy": -225.5,
+      "certificate_energy": -225.5,
+      "certificate_width": 4,
+      "edges": 206,
+      "expected_edges": 206,
+      "extraction_exact": true,
+      "family": "grid",
+      "minfill_direct_energy": -225.5,
+      "minfill_energy": -225.5,
+      "minfill_width": 4,
+      "mode": "3state",
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -225.5,
+      "oracle_operations": 104523,
+      "process_peak_rss_kib": 33216,
+      "replicate": 2,
+      "seed": 24392015,
+      "timing_ns": {
+        "graph_construction": 1423538,
+        "jt_certificate_cpu": 434287377,
+        "jt_certificate_wall": 434349996,
+        "jt_minfill_cpu": 400676949,
+        "jt_minfill_wall": 400792424,
+        "minfill_order": 8660232,
+        "oracle": 61999192,
+        "runtime_extraction": 3650612
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 1669520,
+        "jt_minfill": 1485872
+      },
+      "vocabulary": [
+        -1.0,
+        0.0,
+        1.0
+      ],
+      "width": 4,
+      "worker_pid": 12
+    },
+    {
+      "certificate_direct_energy": -229.0,
+      "certificate_energy": -229.0,
+      "certificate_width": 4,
+      "edges": 206,
+      "expected_edges": 206,
+      "extraction_exact": true,
+      "family": "sparse_partial_qtree",
+      "minfill_direct_energy": -229.0,
+      "minfill_energy": -229.0,
+      "minfill_width": 4,
+      "mode": "2state",
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -229.0,
+      "oracle_operations": 5462,
+      "process_peak_rss_kib": 33216,
+      "replicate": 2,
+      "seed": 24402022,
+      "timing_ns": {
+        "graph_construction": 1437379,
+        "jt_certificate_cpu": 28271137,
+        "jt_certificate_wall": 28292840,
+        "jt_minfill_cpu": 28505578,
+        "jt_minfill_wall": 28540261,
+        "minfill_order": 10809464,
+        "oracle": 5571494,
+        "runtime_extraction": 2269193
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 208000,
+        "jt_minfill": 210464
+      },
+      "vocabulary": [
+        -1.0,
+        1.0
+      ],
+      "width": 4,
+      "worker_pid": 13
+    },
+    {
+      "certificate_direct_energy": -229.0,
+      "certificate_energy": -229.0,
+      "certificate_width": 4,
+      "edges": 206,
+      "expected_edges": 206,
+      "extraction_exact": true,
+      "family": "sparse_partial_qtree",
+      "minfill_direct_energy": -229.0,
+      "minfill_energy": -229.0,
+      "minfill_width": 4,
+      "mode": "3state",
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -229.0,
+      "oracle_operations": 28161,
+      "process_peak_rss_kib": 33216,
+      "replicate": 2,
+      "seed": 24402022,
+      "timing_ns": {
+        "graph_construction": 1421158,
+        "jt_certificate_cpu": 124640224,
+        "jt_certificate_wall": 124660947,
+        "jt_minfill_cpu": 153637020,
+        "jt_minfill_wall": 153892473,
+        "minfill_order": 10952586,
+        "oracle": 18941834,
+        "runtime_extraction": 2300144
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 397008,
+        "jt_minfill": 393592
+      },
+      "vocabulary": [
+        -1.0,
+        0.0,
+        1.0
+      ],
+      "width": 4,
+      "worker_pid": 14
+    },
+    {
+      "certificate_direct_energy": -226.0,
+      "certificate_energy": -226.0,
+      "certificate_width": 5,
+      "edges": 211,
+      "expected_edges": 211,
+      "extraction_exact": true,
+      "family": "grid",
+      "minfill_direct_energy": -226.0,
+      "minfill_energy": -226.0,
+      "minfill_width": 6,
+      "mode": "2state",
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -226.0,
+      "oracle_operations": 27600,
+      "process_peak_rss_kib": 33216,
+      "replicate": 0,
+      "seed": 25260944,
+      "timing_ns": {
+        "graph_construction": 1412369,
+        "jt_certificate_cpu": 135631766,
+        "jt_certificate_wall": 135638264,
+        "jt_minfill_cpu": 113826361,
+        "jt_minfill_wall": 113845473,
+        "minfill_order": 10277182,
+        "oracle": 19371126,
+        "runtime_extraction": 3841563
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 714928,
+        "jt_minfill": 732448
+      },
+      "vocabulary": [
+        -1.0,
+        1.0
+      ],
+      "width": 5,
+      "worker_pid": 15
+    },
+    {
+      "certificate_direct_energy": -226.0,
+      "certificate_energy": -226.0,
+      "certificate_width": 5,
+      "edges": 211,
+      "expected_edges": 211,
+      "extraction_exact": true,
+      "family": "grid",
+      "minfill_direct_energy": -226.0,
+      "minfill_energy": -226.0,
+      "minfill_width": 6,
+      "mode": "3state",
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -226.0,
+      "oracle_operations": 312288,
+      "process_peak_rss_kib": 41800,
+      "replicate": 0,
+      "seed": 25260944,
+      "timing_ns": {
+        "graph_construction": 1447109,
+        "jt_certificate_cpu": 1434587548,
+        "jt_certificate_wall": 1434779652,
+        "jt_minfill_cpu": 1325917399,
+        "jt_minfill_wall": 1326241139,
+        "minfill_order": 9047704,
+        "oracle": 183406481,
+        "runtime_extraction": 4151705
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 5434520,
+        "jt_minfill": 4734208
+      },
+      "vocabulary": [
+        -1.0,
+        0.0,
+        1.0
+      ],
+      "width": 5,
+      "worker_pid": 16
+    },
+    {
+      "certificate_direct_energy": -226.5,
+      "certificate_energy": -226.5,
+      "certificate_width": 5,
+      "edges": 211,
+      "expected_edges": 211,
+      "extraction_exact": true,
+      "family": "sparse_partial_qtree",
+      "minfill_direct_energy": -226.5,
+      "minfill_energy": -226.5,
+      "minfill_width": 5,
+      "mode": "2state",
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -226.5,
+      "oracle_operations": 8000,
+      "process_peak_rss_kib": 33216,
+      "replicate": 0,
+      "seed": 25270951,
+      "timing_ns": {
+        "graph_construction": 1452009,
+        "jt_certificate_cpu": 39339481,
+        "jt_certificate_wall": 39354446,
+        "jt_minfill_cpu": 42751891,
+        "jt_minfill_wall": 42787927,
+        "minfill_order": 11524970,
+        "oracle": 6752961,
+        "runtime_extraction": 2257103
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 248328,
+        "jt_minfill": 246664
+      },
+      "vocabulary": [
+        -1.0,
+        1.0
+      ],
+      "width": 5,
+      "worker_pid": 17
+    },
+    {
+      "certificate_direct_energy": -226.5,
+      "certificate_energy": -226.5,
+      "certificate_width": 5,
+      "edges": 211,
+      "expected_edges": 211,
+      "extraction_exact": true,
+      "family": "sparse_partial_qtree",
+      "minfill_direct_energy": -226.5,
+      "minfill_energy": -226.5,
+      "minfill_width": 5,
+      "mode": "3state",
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -226.5,
+      "oracle_operations": 63120,
+      "process_peak_rss_kib": 33216,
+      "replicate": 0,
+      "seed": 25270951,
+      "timing_ns": {
+        "graph_construction": 2176483,
+        "jt_certificate_cpu": 305892863,
+        "jt_certificate_wall": 306854062,
+        "jt_minfill_cpu": 325161248,
+        "jt_minfill_wall": 325234002,
+        "minfill_order": 18743733,
+        "oracle": 37736436,
+        "runtime_extraction": 3547091
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 629928,
+        "jt_minfill": 591296
+      },
+      "vocabulary": [
+        -1.0,
+        0.0,
+        1.0
+      ],
+      "width": 5,
+      "worker_pid": 18
+    },
+    {
+      "certificate_direct_energy": -246.75,
+      "certificate_energy": -246.75,
+      "certificate_width": 5,
+      "edges": 211,
+      "expected_edges": 211,
+      "extraction_exact": true,
+      "family": "grid",
+      "minfill_direct_energy": -246.75,
+      "minfill_energy": -246.75,
+      "minfill_width": 6,
+      "mode": "2state",
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -246.75,
+      "oracle_operations": 27600,
+      "process_peak_rss_kib": 33216,
+      "replicate": 1,
+      "seed": 25326481,
+      "timing_ns": {
+        "graph_construction": 1379838,
+        "jt_certificate_cpu": 159334943,
+        "jt_certificate_wall": 159356697,
+        "jt_minfill_cpu": 101920248,
+        "jt_minfill_wall": 101946822,
+        "minfill_order": 9500737,
+        "oracle": 19032034,
+        "runtime_extraction": 3569162
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 712552,
+        "jt_minfill": 679928
+      },
+      "vocabulary": [
+        -1.0,
+        1.0
+      ],
+      "width": 5,
+      "worker_pid": 19
+    },
+    {
+      "certificate_direct_energy": -246.75,
+      "certificate_energy": -246.75,
+      "certificate_width": 5,
+      "edges": 211,
+      "expected_edges": 211,
+      "extraction_exact": true,
+      "family": "grid",
+      "minfill_direct_energy": -246.75,
+      "minfill_energy": -246.75,
+      "minfill_width": 6,
+      "mode": "3state",
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -246.75,
+      "oracle_operations": 312288,
+      "process_peak_rss_kib": 42168,
+      "replicate": 1,
+      "seed": 25326481,
+      "timing_ns": {
+        "graph_construction": 1472949,
+        "jt_certificate_cpu": 1455165834,
+        "jt_certificate_wall": 1455268660,
+        "jt_minfill_cpu": 1068913510,
+        "jt_minfill_wall": 1069020179,
+        "minfill_order": 9984310,
+        "oracle": 185901717,
+        "runtime_extraction": 4180735
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 5434520,
+        "jt_minfill": 3777024
+      },
+      "vocabulary": [
+        -1.0,
+        0.0,
+        1.0
+      ],
+      "width": 5,
+      "worker_pid": 20
+    },
+    {
+      "certificate_direct_energy": -229.25,
+      "certificate_energy": -229.25,
+      "certificate_width": 5,
+      "edges": 211,
+      "expected_edges": 211,
+      "extraction_exact": true,
+      "family": "sparse_partial_qtree",
+      "minfill_direct_energy": -229.25,
+      "minfill_energy": -229.25,
+      "minfill_width": 5,
+      "mode": "2state",
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -229.25,
+      "oracle_operations": 7446,
+      "process_peak_rss_kib": 33216,
+      "replicate": 1,
+      "seed": 25336488,
+      "timing_ns": {
+        "graph_construction": 1482449,
+        "jt_certificate_cpu": 36195780,
+        "jt_certificate_wall": 36199968,
+        "jt_minfill_cpu": 38339510,
+        "jt_minfill_wall": 38351310,
+        "minfill_order": 11810291,
+        "oracle": 6474749,
+        "runtime_extraction": 2424515
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 241400,
+        "jt_minfill": 251024
+      },
+      "vocabulary": [
+        -1.0,
+        1.0
+      ],
+      "width": 5,
+      "worker_pid": 21
+    },
+    {
+      "certificate_direct_energy": -229.25,
+      "certificate_energy": -229.25,
+      "certificate_width": 5,
+      "edges": 211,
+      "expected_edges": 211,
+      "extraction_exact": true,
+      "family": "sparse_partial_qtree",
+      "minfill_direct_energy": -229.25,
+      "minfill_energy": -229.25,
+      "minfill_width": 5,
+      "mode": "3state",
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -229.25,
+      "oracle_operations": 55512,
+      "process_peak_rss_kib": 33216,
+      "replicate": 1,
+      "seed": 25336488,
+      "timing_ns": {
+        "graph_construction": 1426738,
+        "jt_certificate_cpu": 266311882,
+        "jt_certificate_wall": 266334180,
+        "jt_minfill_cpu": 285582548,
+        "jt_minfill_wall": 285677776,
+        "minfill_order": 11291268,
+        "oracle": 30575764,
+        "runtime_extraction": 2307774
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 554784,
+        "jt_minfill": 547648
+      },
+      "vocabulary": [
+        -1.0,
+        0.0,
+        1.0
+      ],
+      "width": 5,
+      "worker_pid": 22
+    },
+    {
+      "certificate_direct_energy": -241.25,
+      "certificate_energy": -241.25,
+      "certificate_width": 5,
+      "edges": 211,
+      "expected_edges": 211,
+      "extraction_exact": true,
+      "family": "grid",
+      "minfill_direct_energy": -241.25,
+      "minfill_energy": -241.25,
+      "minfill_width": 6,
+      "mode": "2state",
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -241.25,
+      "oracle_operations": 27600,
+      "process_peak_rss_kib": 33216,
+      "replicate": 2,
+      "seed": 25392018,
+      "timing_ns": {
+        "graph_construction": 1455328,
+        "jt_certificate_cpu": 138442818,
+        "jt_certificate_wall": 138463872,
+        "jt_minfill_cpu": 134261106,
+        "jt_minfill_wall": 137035603,
+        "minfill_order": 9616118,
+        "oracle": 20797125,
+        "runtime_extraction": 4365367
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 714928,
+        "jt_minfill": 692048
+      },
+      "vocabulary": [
+        -1.0,
+        1.0
+      ],
+      "width": 5,
+      "worker_pid": 23
+    },
+    {
+      "certificate_direct_energy": -241.25,
+      "certificate_energy": -241.25,
+      "certificate_width": 5,
+      "edges": 211,
+      "expected_edges": 211,
+      "extraction_exact": true,
+      "family": "grid",
+      "minfill_direct_energy": -241.25,
+      "minfill_energy": -241.25,
+      "minfill_width": 6,
+      "mode": "3state",
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -241.25,
+      "oracle_operations": 312288,
+      "process_peak_rss_kib": 41384,
+      "replicate": 2,
+      "seed": 25392018,
+      "timing_ns": {
+        "graph_construction": 1424298,
+        "jt_certificate_cpu": 1455773634,
+        "jt_certificate_wall": 1456151541,
+        "jt_minfill_cpu": 1178917388,
+        "jt_minfill_wall": 1179409677,
+        "minfill_order": 9407326,
+        "oracle": 187221825,
+        "runtime_extraction": 4106295
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 5434520,
+        "jt_minfill": 4221880
+      },
+      "vocabulary": [
+        -1.0,
+        0.0,
+        1.0
+      ],
+      "width": 5,
+      "worker_pid": 24
+    },
+    {
+      "certificate_direct_energy": -221.75,
+      "certificate_energy": -221.75,
+      "certificate_width": 5,
+      "edges": 211,
+      "expected_edges": 211,
+      "extraction_exact": true,
+      "family": "sparse_partial_qtree",
+      "minfill_direct_energy": -221.75,
+      "minfill_energy": -221.75,
+      "minfill_width": 5,
+      "mode": "2state",
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -221.75,
+      "oracle_operations": 7232,
+      "process_peak_rss_kib": 33216,
+      "replicate": 2,
+      "seed": 25402025,
+      "timing_ns": {
+        "graph_construction": 1410639,
+        "jt_certificate_cpu": 36751780,
+        "jt_certificate_wall": 36755961,
+        "jt_minfill_cpu": 38811771,
+        "jt_minfill_wall": 38847693,
+        "minfill_order": 13003588,
+        "oracle": 6303038,
+        "runtime_extraction": 2324244
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 236272,
+        "jt_minfill": 239832
+      },
+      "vocabulary": [
+        -1.0,
+        1.0
+      ],
+      "width": 5,
+      "worker_pid": 25
+    },
+    {
+      "certificate_direct_energy": -221.75,
+      "certificate_energy": -221.75,
+      "certificate_width": 5,
+      "edges": 211,
+      "expected_edges": 211,
+      "extraction_exact": true,
+      "family": "sparse_partial_qtree",
+      "minfill_direct_energy": -221.75,
+      "minfill_energy": -221.75,
+      "minfill_width": 5,
+      "mode": "3state",
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -221.75,
+      "oracle_operations": 52932,
+      "process_peak_rss_kib": 33216,
+      "replicate": 2,
+      "seed": 25402025,
+      "timing_ns": {
+        "graph_construction": 1431849,
+        "jt_certificate_cpu": 286312178,
+        "jt_certificate_wall": 286323921,
+        "jt_minfill_cpu": 266349032,
+        "jt_minfill_wall": 266365911,
+        "minfill_order": 13006529,
+        "oracle": 34090865,
+        "runtime_extraction": 2348894
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 474272,
+        "jt_minfill": 532912
+      },
+      "vocabulary": [
+        -1.0,
+        0.0,
+        1.0
+      ],
+      "width": 5,
+      "worker_pid": 26
+    },
+    {
+      "certificate_direct_energy": -217.75,
+      "certificate_energy": -217.75,
+      "certificate_width": 6,
+      "edges": 214,
+      "expected_edges": 214,
+      "extraction_exact": true,
+      "family": "grid",
+      "minfill_direct_energy": -217.75,
+      "minfill_energy": -217.75,
+      "minfill_width": 7,
+      "mode": "2state",
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -217.75,
+      "oracle_operations": 54736,
+      "process_peak_rss_kib": 33216,
+      "replicate": 0,
+      "seed": 26260947,
+      "timing_ns": {
+        "graph_construction": 1415478,
+        "jt_certificate_cpu": 275372764,
+        "jt_certificate_wall": 275462016,
+        "jt_minfill_cpu": 190538012,
+        "jt_minfill_wall": 190604346,
+        "minfill_order": 11323798,
+        "oracle": 36926853,
+        "runtime_extraction": 3870014
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 1460112,
+        "jt_minfill": 1217576
+      },
+      "vocabulary": [
+        -1.0,
+        1.0
+      ],
+      "width": 6,
+      "worker_pid": 27
+    },
+    {
+      "certificate_direct_energy": -217.75,
+      "certificate_energy": -217.75,
+      "certificate_width": 6,
+      "edges": 214,
+      "expected_edges": 214,
+      "extraction_exact": true,
+      "family": "grid",
+      "minfill_direct_energy": -217.75,
+      "minfill_energy": -217.75,
+      "minfill_width": 7,
+      "mode": "3state",
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -217.75,
+      "oracle_operations": 928293,
+      "process_peak_rss_kib": 70428,
+      "replicate": 0,
+      "seed": 26260947,
+      "timing_ns": {
+        "graph_construction": 1430098,
+        "jt_certificate_cpu": 4471527660,
+        "jt_certificate_wall": 4473806887,
+        "jt_minfill_cpu": 3302173024,
+        "jt_minfill_wall": 3302555310,
+        "minfill_order": 11688420,
+        "oracle": 590524501,
+        "runtime_extraction": 3424851
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 17788760,
+        "jt_minfill": 10665920
+      },
+      "vocabulary": [
+        -1.0,
+        0.0,
+        1.0
+      ],
+      "width": 6,
+      "worker_pid": 28
+    },
+    {
+      "certificate_direct_energy": -215.25,
+      "certificate_energy": -215.25,
+      "certificate_width": 6,
+      "edges": 214,
+      "expected_edges": 214,
+      "extraction_exact": true,
+      "family": "sparse_partial_qtree",
+      "minfill_direct_energy": -215.25,
+      "minfill_energy": -215.25,
+      "minfill_width": 6,
+      "mode": "2state",
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -215.25,
+      "oracle_operations": 11220,
+      "process_peak_rss_kib": 33216,
+      "replicate": 0,
+      "seed": 26270954,
+      "timing_ns": {
+        "graph_construction": 1546939,
+        "jt_certificate_cpu": 55939055,
+        "jt_certificate_wall": 55961737,
+        "jt_minfill_cpu": 55212265,
+        "jt_minfill_wall": 55249773,
+        "minfill_order": 13517911,
+        "oracle": 9207485,
+        "runtime_extraction": 2498885
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 316400,
+        "jt_minfill": 301272
+      },
+      "vocabulary": [
+        -1.0,
+        1.0
+      ],
+      "width": 6,
+      "worker_pid": 29
+    },
+    {
+      "certificate_direct_energy": -215.25,
+      "certificate_energy": -215.25,
+      "certificate_width": 6,
+      "edges": 214,
+      "expected_edges": 214,
+      "extraction_exact": true,
+      "family": "sparse_partial_qtree",
+      "minfill_direct_energy": -215.25,
+      "minfill_energy": -215.25,
+      "minfill_width": 6,
+      "mode": "3state",
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -215.25,
+      "oracle_operations": 126381,
+      "process_peak_rss_kib": 33216,
+      "replicate": 0,
+      "seed": 26270954,
+      "timing_ns": {
+        "graph_construction": 1487549,
+        "jt_certificate_cpu": 615222487,
+        "jt_certificate_wall": 615510526,
+        "jt_minfill_cpu": 594561511,
+        "jt_minfill_wall": 595563484,
+        "minfill_order": 13329180,
+        "oracle": 66576301,
+        "runtime_extraction": 2424745
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 836464,
+        "jt_minfill": 795352
+      },
+      "vocabulary": [
+        -1.0,
+        0.0,
+        1.0
+      ],
+      "width": 6,
+      "worker_pid": 30
+    },
+    {
+      "certificate_direct_energy": -232.75,
+      "certificate_energy": -232.75,
+      "certificate_width": 6,
+      "edges": 214,
+      "expected_edges": 214,
+      "extraction_exact": true,
+      "family": "grid",
+      "minfill_direct_energy": -232.75,
+      "minfill_energy": -232.75,
+      "minfill_width": 7,
+      "mode": "2state",
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -232.75,
+      "oracle_operations": 54736,
+      "process_peak_rss_kib": 33216,
+      "replicate": 1,
+      "seed": 26326484,
+      "timing_ns": {
+        "graph_construction": 1396279,
+        "jt_certificate_cpu": 275561014,
+        "jt_certificate_wall": 275598290,
+        "jt_minfill_cpu": 196616693,
+        "jt_minfill_wall": 196640253,
+        "minfill_order": 11952332,
+        "oracle": 37623457,
+        "runtime_extraction": 3712152
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 1452512,
+        "jt_minfill": 1235536
+      },
+      "vocabulary": [
+        -1.0,
+        1.0
+      ],
+      "width": 6,
+      "worker_pid": 31
+    },
+    {
+      "certificate_direct_energy": -232.75,
+      "certificate_energy": -232.75,
+      "certificate_width": 6,
+      "edges": 214,
+      "expected_edges": 214,
+      "extraction_exact": true,
+      "family": "grid",
+      "minfill_direct_energy": -232.75,
+      "minfill_energy": -232.75,
+      "minfill_width": 7,
+      "mode": "3state",
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -232.75,
+      "oracle_operations": 928293,
+      "process_peak_rss_kib": 69544,
+      "replicate": 1,
+      "seed": 26326484,
+      "timing_ns": {
+        "graph_construction": 1400918,
+        "jt_certificate_cpu": 4479856702,
+        "jt_certificate_wall": 4482454700,
+        "jt_minfill_cpu": 3354127887,
+        "jt_minfill_wall": 3354992195,
+        "minfill_order": 11344368,
+        "oracle": 580972868,
+        "runtime_extraction": 3750053
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 17788760,
+        "jt_minfill": 10844552
+      },
+      "vocabulary": [
+        -1.0,
+        0.0,
+        1.0
+      ],
+      "width": 6,
+      "worker_pid": 32
+    },
+    {
+      "certificate_direct_energy": -230.75,
+      "certificate_energy": -230.75,
+      "certificate_width": 6,
+      "edges": 214,
+      "expected_edges": 214,
+      "extraction_exact": true,
+      "family": "sparse_partial_qtree",
+      "minfill_direct_energy": -230.75,
+      "minfill_energy": -230.75,
+      "minfill_width": 6,
+      "mode": "2state",
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -230.75,
+      "oracle_operations": 12078,
+      "process_peak_rss_kib": 33216,
+      "replicate": 1,
+      "seed": 26336491,
+      "timing_ns": {
+        "graph_construction": 1404709,
+        "jt_certificate_cpu": 61367227,
+        "jt_certificate_wall": 61466941,
+        "jt_minfill_cpu": 53007804,
+        "jt_minfill_wall": 53027869,
+        "minfill_order": 13553302,
+        "oracle": 8830133,
+        "runtime_extraction": 2398864
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 301448,
+        "jt_minfill": 306568
+      },
+      "vocabulary": [
+        -1.0,
+        1.0
+      ],
+      "width": 6,
+      "worker_pid": 33
+    },
+    {
+      "certificate_direct_energy": -230.75,
+      "certificate_energy": -230.75,
+      "certificate_width": 6,
+      "edges": 214,
+      "expected_edges": 214,
+      "extraction_exact": true,
+      "family": "sparse_partial_qtree",
+      "minfill_direct_energy": -230.75,
+      "minfill_energy": -230.75,
+      "minfill_width": 6,
+      "mode": "3state",
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -230.75,
+      "oracle_operations": 148779,
+      "process_peak_rss_kib": 33216,
+      "replicate": 1,
+      "seed": 26336491,
+      "timing_ns": {
+        "graph_construction": 1410378,
+        "jt_certificate_cpu": 775802440,
+        "jt_certificate_wall": 775996539,
+        "jt_minfill_cpu": 629787671,
+        "jt_minfill_wall": 630055278,
+        "minfill_order": 13249381,
+        "oracle": 75328364,
+        "runtime_extraction": 2318674
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 934248,
+        "jt_minfill": 926856
+      },
+      "vocabulary": [
+        -1.0,
+        0.0,
+        1.0
+      ],
+      "width": 6,
+      "worker_pid": 34
+    },
+    {
+      "certificate_direct_energy": -227.5,
+      "certificate_energy": -227.5,
+      "certificate_width": 6,
+      "edges": 214,
+      "expected_edges": 214,
+      "extraction_exact": true,
+      "family": "grid",
+      "minfill_direct_energy": -227.5,
+      "minfill_energy": -227.5,
+      "minfill_width": 7,
+      "mode": "2state",
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -227.5,
+      "oracle_operations": 54736,
+      "process_peak_rss_kib": 33216,
+      "replicate": 2,
+      "seed": 26392021,
+      "timing_ns": {
+        "graph_construction": 1428999,
+        "jt_certificate_cpu": 278027305,
+        "jt_certificate_wall": 278036317,
+        "jt_minfill_cpu": 189510042,
+        "jt_minfill_wall": 189550923,
+        "minfill_order": 11684611,
+        "oracle": 37673016,
+        "runtime_extraction": 4014914
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 1460112,
+        "jt_minfill": 1193440
+      },
+      "vocabulary": [
+        -1.0,
+        1.0
+      ],
+      "width": 6,
+      "worker_pid": 35
+    },
+    {
+      "certificate_direct_energy": -227.5,
+      "certificate_energy": -227.5,
+      "certificate_width": 6,
+      "edges": 214,
+      "expected_edges": 214,
+      "extraction_exact": true,
+      "family": "grid",
+      "minfill_direct_energy": -227.5,
+      "minfill_energy": -227.5,
+      "minfill_width": 7,
+      "mode": "3state",
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -227.5,
+      "oracle_operations": 928293,
+      "process_peak_rss_kib": 69668,
+      "replicate": 2,
+      "seed": 26392021,
+      "timing_ns": {
+        "graph_construction": 1448768,
+        "jt_certificate_cpu": 4505467910,
+        "jt_certificate_wall": 4508382806,
+        "jt_minfill_cpu": 3216786070,
+        "jt_minfill_wall": 3217970848,
+        "minfill_order": 12192924,
+        "oracle": 573928071,
+        "runtime_extraction": 3697643
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 17788760,
+        "jt_minfill": 10520936
+      },
+      "vocabulary": [
+        -1.0,
+        0.0,
+        1.0
+      ],
+      "width": 6,
+      "worker_pid": 36
+    },
+    {
+      "certificate_direct_energy": -228.0,
+      "certificate_energy": -228.0,
+      "certificate_width": 6,
+      "edges": 214,
+      "expected_edges": 214,
+      "extraction_exact": true,
+      "family": "sparse_partial_qtree",
+      "minfill_direct_energy": -228.0,
+      "minfill_energy": -228.0,
+      "minfill_width": 6,
+      "mode": "2state",
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -228.0,
+      "oracle_operations": 11470,
+      "process_peak_rss_kib": 33216,
+      "replicate": 2,
+      "seed": 26402028,
+      "timing_ns": {
+        "graph_construction": 1455519,
+        "jt_certificate_cpu": 56490035,
+        "jt_certificate_wall": 56513551,
+        "jt_minfill_cpu": 49794453,
+        "jt_minfill_wall": 49808241,
+        "minfill_order": 12287664,
+        "oracle": 8720822,
+        "runtime_extraction": 2347884
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 270400,
+        "jt_minfill": 306296
+      },
+      "vocabulary": [
+        -1.0,
+        1.0
+      ],
+      "width": 6,
+      "worker_pid": 37
+    },
+    {
+      "certificate_direct_energy": -228.0,
+      "certificate_energy": -228.0,
+      "certificate_width": 6,
+      "edges": 214,
+      "expected_edges": 214,
+      "extraction_exact": true,
+      "family": "sparse_partial_qtree",
+      "minfill_direct_energy": -228.0,
+      "minfill_energy": -228.0,
+      "minfill_width": 6,
+      "mode": "3state",
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -228.0,
+      "oracle_operations": 124773,
+      "process_peak_rss_kib": 33216,
+      "replicate": 2,
+      "seed": 26402028,
+      "timing_ns": {
+        "graph_construction": 1612540,
+        "jt_certificate_cpu": 622715829,
+        "jt_certificate_wall": 622745380,
+        "jt_minfill_cpu": 490605893,
+        "jt_minfill_wall": 490796963,
+        "minfill_order": 12809527,
+        "oracle": 65266394,
+        "runtime_extraction": 2336434
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 955872,
+        "jt_minfill": 898048
+      },
+      "vocabulary": [
+        -1.0,
+        0.0,
+        1.0
+      ],
+      "width": 6,
+      "worker_pid": 38
+    }
+  ],
+  "schema": "CanEdgeMatchedDomainCostV1Results",
+  "sources": {
+    "analyzer": {
+      "bytes": 3792,
+      "path": "evaluation/substrate_capability/analyze_can_edge_matched_domain_cost_v1.py",
+      "sha256": "c5f68249296780dee76ec3e85619fe358698f230485bd01e2804408d3fcaf0c5"
+    },
+    "base_protocol": {
+      "bytes": 2026,
+      "path": "docs/research/engine_substrate/CAN_EDGE_MATCHED_INFERENCE_COST_V1_3_PREREG_20261002.md",
+      "sha256": "eae15a7dd355965b7f8cc59e790a3e69373bfefc4b9d34f377a6e781ea2cec2c"
+    },
+    "base_runner": {
+      "bytes": 12302,
+      "path": "evaluation/substrate_capability/can_edge_matched_inference_cost_v1_3.py",
+      "sha256": "09bdc6f61b52ba5d0441ac458397634ee53fb3d320f3afda678d4e170cafd192"
+    },
+    "families": [
+      "grid",
+      "sparse_partial_qtree"
+    ],
+    "generator": {
+      "bytes": 7662,
+      "path": "evaluation/substrate_capability/can_edge_matched_width_topology_v1.py",
+      "sha256": "102370d5b06312455018dfff9ebcdccb0df89ff2f8e90c2dddaeeca76650a2b8"
+    },
+    "modes": {
+      "2state": [
+        -1.0,
+        1.0
+      ],
+      "3state": [
+        -1.0,
+        0.0,
+        1.0
+      ]
+    },
+    "native_binary": {
+      "bytes": 10599400,
+      "path": "runners/dsl/python/substrate_rs/_native.abi3.so",
+      "sha256": "7148f66f4cd307b7b34e03970b6a0c12177973105af8e1f3c6684e2e6132a63e"
+    },
+    "native_build_manifest": {
+      "bytes": 12669,
+      "path": "runners/dsl/python/substrate_rs/_native.build.json",
+      "sha256": "476fdf4408323867341f127b3947f5a528743ebb86ab2a7973442993447f0e82"
+    },
+    "nodes": 120,
+    "protocol": {
+      "bytes": 2500,
+      "path": "docs/research/engine_substrate/CAN_EDGE_MATCHED_DOMAIN_COST_V1_PREREG_20261002.md",
+      "sha256": "ab1387707fcd208b03b1fd92e6cb22f621cc96e2c33775829821a9c9964294e5"
+    },
+    "replicates": 3,
+    "runner": {
+      "bytes": 10269,
+      "path": "evaluation/substrate_capability/can_edge_matched_domain_cost_v1.py",
+      "sha256": "af219dec1b4db5ac7982fbb97cb17c975d250c83acf360d283a0e9a0259208e1"
+    },
+    "solver_sources": [
+      {
+        "bytes": 14856,
+        "path": "domains/can_junction_tree.py",
+        "sha256": "e8d4aa30bfdaced52cda2739f885a56ed50a040b8419cb558b132e5e46206ba7"
+      },
+      {
+        "bytes": 9424,
+        "path": "domains/graph_treewidth.py",
+        "sha256": "e945bea9f54b76098edb3b3dcb784ac5a0ce630de43cd63a9fb5b0f416d543e5"
+      }
+    ],
+    "tolerance": 1e-08,
+    "widths": [
+      4,
+      5,
+      6
+    ]
+  }
+}

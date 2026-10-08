@@ -1,0 +1,49 @@
+{
+  "checks": [
+    {
+      "name": "nine_unique_workers",
+      "pass": true
+    },
+    {
+      "name": "complete_task_repetition_grid",
+      "pass": true
+    },
+    {
+      "name": "worker_source_stability",
+      "pass": true
+    },
+    {
+      "name": "independent_label_and_receipt_replay",
+      "pass": true
+    },
+    {
+      "name": "provider_authentication_replay",
+      "pass": true
+    },
+    {
+      "name": "false_evidence_refusal",
+      "pass": true
+    },
+    {
+      "name": "accepted_transaction_exact_graph_delta",
+      "pass": true
+    },
+    {
+      "name": "native_heldout_matches_oracle",
+      "pass": true
+    }
+  ],
+  "limits": [
+    "one host, three authored tasks, one deterministic provider, three workers per task",
+    "isolates _teach_shape; not full-conversation cost",
+    "authentication does not certify label truth"
+  ],
+  "median_adoption_boundary_ms_by_task": {
+    "clamp": 0.483442,
+    "parity": 0.526192,
+    "square": 0.517632
+  },
+  "passed": 8,
+  "schema": "SubstrateAdequacyAdoptionBoundaryV2Analysis",
+  "total": 8
+}

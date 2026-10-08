@@ -1,0 +1,180 @@
+{
+  "analysis_amendment": "Adds allocator in-use and release summaries omitted from v1; raw capture and original source lock unchanged.",
+  "analysis_script_sha256": "6bec18687ca02ba33e5f0aa5bc5ef19cfa0fcd35cda579801a07f1fd7fe4c3fb",
+  "capture_sha256": "38d5a83f0b28e26a6acf6a6f27d585d338abb348f24af5c687fb22597e6cdcb4",
+  "checks": {
+    "exact_18_cell_schedule": true,
+    "full_copy_100000_three_replicates": true,
+    "full_copy_10000_three_replicates": true,
+    "full_copy_200000_three_replicates": true,
+    "known_graph_size_and_component_conservation": true,
+    "no_failures_unique_pids": true,
+    "only_correct_candidate_grounded": true,
+    "oracle_isolation_revision_and_correct_selection": true,
+    "postrun_sources_stable": true,
+    "prelock_recomputes_and_matches": true,
+    "quiescence_and_instrumentation_counts": true,
+    "shared_graph_pages_100000_three_replicates": true,
+    "shared_graph_pages_10000_three_replicates": true,
+    "shared_graph_pages_200000_three_replicates": true
+  },
+  "claim_boundary": "10k/100k/200k isolated unrelated-node scale, four frames, four candidate branches, three workers per cell; no natural workload or general complexity law.",
+  "interpretation": "In this fixed sparse-edge workload, graph export, canonical digest, and full-copy branch allocation rise approximately in proportion to node count over the sampled range; shared-page fork time and retained allocator growth are much smaller. Instrumentation effects remain uncertain from the prior paired control. This is descriptive for one host/workload.",
+  "schema": "ThoughtexperimentFanoutNodeScaleV1_1Analysis",
+  "summaries": {
+    "full_copy": {
+      "by_noise_nodes": {
+        "10000": {
+          "median_allocator_after_drop_delta_mib": -0.0148468017578125,
+          "median_allocator_baseline_mib": 7.40179443359375,
+          "median_allocator_retained_delta_mib": 10.794021606445312,
+          "median_baseline_pss_mib": 42.5380859375,
+          "median_candidate_forks_ms": 9.654239,
+          "median_digest_ms": 100.053251,
+          "median_edges": 467,
+          "median_graph_export_ms": 302.540491,
+          "median_lifecycle_ms": 476.115181,
+          "median_named_phases_ms": 19.515271,
+          "median_nodes": 10511,
+          "median_peak_rss_mib": 82.10546875,
+          "median_retained_pss_delta_mib": 0.12890625,
+          "median_unattributed_remainder_ms": 55.580671,
+          "workers": 3
+        },
+        "100000": {
+          "median_allocator_after_drop_delta_mib": -0.1092681884765625,
+          "median_allocator_baseline_mib": 20.499374389648438,
+          "median_allocator_retained_delta_mib": 75.79286193847656,
+          "median_baseline_pss_mib": 179.9306640625,
+          "median_candidate_forks_ms": 81.162595,
+          "median_digest_ms": 757.810071,
+          "median_edges": 467,
+          "median_graph_export_ms": 2785.742269,
+          "median_lifecycle_ms": 3782.759476,
+          "median_named_phases_ms": 102.37774,
+          "median_nodes": 100511,
+          "median_peak_rss_mib": 460.453125,
+          "median_retained_pss_delta_mib": 0.1279296875,
+          "median_unattributed_remainder_ms": 139.325445,
+          "workers": 3
+        },
+        "200000": {
+          "median_allocator_after_drop_delta_mib": -0.2299346923828125,
+          "median_allocator_baseline_mib": 35.067535400390625,
+          "median_allocator_retained_delta_mib": 148.0094757080078,
+          "median_baseline_pss_mib": 333.5625,
+          "median_candidate_forks_ms": 159.727751,
+          "median_digest_ms": 1492.373017,
+          "median_edges": 467,
+          "median_graph_export_ms": 5443.686962,
+          "median_lifecycle_ms": 7379.03877,
+          "median_named_phases_ms": 208.454573,
+          "median_nodes": 200511,
+          "median_peak_rss_mib": 881.078125,
+          "median_retained_pss_delta_mib": 0.12890625,
+          "median_unattributed_remainder_ms": 271.378775,
+          "workers": 3
+        }
+      },
+      "scale_ratios": {
+        "median_allocator_retained_delta_mib": {
+          "100k_to_200k": 1.9528155016517483,
+          "10k_to_100k": 7.021744508387793
+        },
+        "median_candidate_forks_ms": {
+          "100k_to_200k": 1.9679970927494372,
+          "10k_to_100k": 8.406938651508419
+        },
+        "median_digest_ms": {
+          "100k_to_200k": 1.9693232831158825,
+          "10k_to_100k": 7.5740674433457436
+        },
+        "median_graph_export_ms": {
+          "100k_to_200k": 1.954124407910185,
+          "10k_to_100k": 9.207832841786457
+        },
+        "median_lifecycle_ms": {
+          "100k_to_200k": 1.95070260660686,
+          "10k_to_100k": 7.9450511702965425
+        }
+      }
+    },
+    "shared_graph_pages": {
+      "by_noise_nodes": {
+        "10000": {
+          "median_allocator_after_drop_delta_mib": -0.0135498046875,
+          "median_allocator_baseline_mib": 7.40179443359375,
+          "median_allocator_retained_delta_mib": 2.8906402587890625,
+          "median_baseline_pss_mib": 42.5439453125,
+          "median_candidate_forks_ms": 0.586284,
+          "median_digest_ms": 92.764608,
+          "median_edges": 467,
+          "median_graph_export_ms": 275.998968,
+          "median_lifecycle_ms": 431.39533,
+          "median_named_phases_ms": 6.234684,
+          "median_nodes": 10511,
+          "median_peak_rss_mib": 74.18359375,
+          "median_retained_pss_delta_mib": 0.12890625,
+          "median_unattributed_remainder_ms": 53.001583,
+          "workers": 3
+        },
+        "100000": {
+          "median_allocator_after_drop_delta_mib": -0.10797119140625,
+          "median_allocator_baseline_mib": 20.499374389648438,
+          "median_allocator_retained_delta_mib": 4.6082611083984375,
+          "median_baseline_pss_mib": 179.9052734375,
+          "median_candidate_forks_ms": 0.765966,
+          "median_digest_ms": 779.778463,
+          "median_edges": 467,
+          "median_graph_export_ms": 2709.211287,
+          "median_lifecycle_ms": 3604.049495,
+          "median_named_phases_ms": 7.015511,
+          "median_nodes": 100511,
+          "median_peak_rss_mib": 389.203125,
+          "median_retained_pss_delta_mib": 0.12890625,
+          "median_unattributed_remainder_ms": 143.891274,
+          "workers": 3
+        },
+        "200000": {
+          "median_allocator_after_drop_delta_mib": -0.228973388671875,
+          "median_allocator_baseline_mib": 35.067535400390625,
+          "median_allocator_retained_delta_mib": 6.5146484375,
+          "median_baseline_pss_mib": 333.5546875,
+          "median_candidate_forks_ms": 0.906626,
+          "median_digest_ms": 1556.874388,
+          "median_edges": 467,
+          "median_graph_export_ms": 5310.061133,
+          "median_lifecycle_ms": 7132.999855,
+          "median_named_phases_ms": 5.690271,
+          "median_nodes": 200511,
+          "median_peak_rss_mib": 739.71875,
+          "median_retained_pss_delta_mib": 0.12890625,
+          "median_unattributed_remainder_ms": 245.145956,
+          "workers": 3
+        }
+      },
+      "scale_ratios": {
+        "median_allocator_retained_delta_mib": {
+          "100k_to_200k": 1.4136890866767988,
+          "10k_to_100k": 1.5942008329770219
+        },
+        "median_candidate_forks_ms": {
+          "100k_to_200k": 1.18363739382688,
+          "10k_to_100k": 1.3064760423276092
+        },
+        "median_digest_ms": {
+          "100k_to_200k": 1.9965598716465192,
+          "10k_to_100k": 8.405991032700747
+        },
+        "median_graph_export_ms": {
+          "100k_to_200k": 1.9600025876460923,
+          "10k_to_100k": 9.816019627290782
+        },
+        "median_lifecycle_ms": {
+          "100k_to_200k": 1.9791625683542395,
+          "10k_to_100k": 8.354400811432058
+        }
+      }
+    }
+  }
+}

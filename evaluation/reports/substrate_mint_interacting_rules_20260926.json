@@ -1,0 +1,498 @@
+{
+  "all_checks_pass": true,
+  "analyzer_sha256": "90fb1945559500e01de780895b9c538b0dc917cd530b7d8e97a28f2cf61bc934",
+  "build_record_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+  "configuration": {
+    "budget": 1000,
+    "case_count": 2,
+    "cycle_detection": false
+  },
+  "dirty_tree": true,
+  "native_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+  "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+  "preregistration": {
+    "path": "docs/research/engine_substrate/SUBSTRATE_MINT_INTERACTING_RULES_PREREG_20260925.md",
+    "sha256": "2b40b3647ef2a8b4c2151ddd5de205258a970ca5c8c8753e8da665dcf1843457"
+  },
+  "python": "3.13.5",
+  "records": [
+    {
+      "checks": {
+        "classifier_accepts": true,
+        "native_fixed_point": true,
+        "native_graph_equals_oracle": true,
+        "native_progress_within_bound": true,
+        "oracle_progress_within_bound": true
+      },
+      "classifier": {
+        "accepted": true,
+        "bound_basis": "Each AddNodeIfAbsent with one fixed literal type/key signature can insert at most one node; empty-attribute AddEdge can insert only one directed triple per endpoint pair and edge type. Positive matching and insertion-only effects preserve a finite graph universe. The bound is a coarse O((N+R)^2 E) upper bound on progressing firings, for fixed rules.",
+        "edge_type_count": 4,
+        "fragment": "monotone_finite_key_insertions_v0",
+        "initial_edge_fact_count": 2,
+        "initial_node_count": 3,
+        "initial_node_ids": [
+          "0",
+          "1",
+          "2"
+        ],
+        "not_claimed": [
+          "weak acyclicity",
+          "arbitrary computed keys",
+          "constructed fresh values",
+          "deletion or replacement effects",
+          "hard CPU/wall-time bound",
+          "polynomial matching cost per firing"
+        ],
+        "possible_edge_fact_count_upper_bound": 100,
+        "possible_node_count_upper_bound": 5,
+        "progress_steps_upper_bound": 100,
+        "reasons": [],
+        "unique_mint_signatures": 2
+      },
+      "cost": {
+        "cpu_time_ns": 79220,
+        "wall_time_ns": 80900
+      },
+      "exact_graph_match": true,
+      "native_access_sets": [
+        [
+          0,
+          "seed_to_witness",
+          true,
+          [
+            "edge:seed_link",
+            "type:Witness"
+          ],
+          [],
+          [
+            "attr:tag",
+            "edge:derived",
+            "type:Witness"
+          ],
+          false,
+          false
+        ],
+        [
+          1,
+          "derived_to_marker",
+          true,
+          [
+            "edge:derived",
+            "type:Marker"
+          ],
+          [],
+          [
+            "attr:tag",
+            "edge:marker",
+            "type:Marker"
+          ],
+          false,
+          false
+        ],
+        [
+          2,
+          "marker_self_loop",
+          true,
+          [
+            "edge:marker"
+          ],
+          [],
+          [
+            "edge:loop"
+          ],
+          false,
+          false
+        ]
+      ],
+      "native_progress_within_bound": true,
+      "native_report": {
+        "budget_overshoot": 0,
+        "cycle_detection_enabled": false,
+        "passes_completed": 2,
+        "progress_steps": 3,
+        "requested_progress_budget": 1000,
+        "status": "fixed_point"
+      },
+      "native_state": {
+        "edge_count": 6,
+        "edge_triples": [
+          [
+            0,
+            "seed_link",
+            1
+          ],
+          [
+            1,
+            "derived",
+            3
+          ],
+          [
+            1,
+            "seed_link",
+            2
+          ],
+          [
+            2,
+            "derived",
+            3
+          ],
+          [
+            3,
+            "marker",
+            4
+          ],
+          [
+            4,
+            "loop",
+            4
+          ]
+        ],
+        "node_count": 5,
+        "type_counts": {
+          "Marker": 1,
+          "Seed": 3,
+          "Witness": 1
+        }
+      },
+      "oracle": {
+        "edge_triples": [
+          [
+            0,
+            "seed_link",
+            1
+          ],
+          [
+            1,
+            "derived",
+            3
+          ],
+          [
+            1,
+            "seed_link",
+            2
+          ],
+          [
+            2,
+            "derived",
+            3
+          ],
+          [
+            3,
+            "marker",
+            4
+          ],
+          [
+            4,
+            "loop",
+            4
+          ]
+        ],
+        "node_types": [
+          "Seed",
+          "Seed",
+          "Seed",
+          "Witness",
+          "Marker"
+        ],
+        "progress_events": 4
+      },
+      "oracle_progress_within_bound": true,
+      "rules": [
+        {
+          "effects": [
+            [
+              "add_node_if_absent",
+              "w",
+              "Witness",
+              {
+                "tag": "shared"
+              }
+            ],
+            [
+              "add_edge",
+              "y",
+              "derived",
+              "w",
+              {}
+            ]
+          ],
+          "match": [
+            [
+              "x",
+              "seed_link",
+              "y"
+            ]
+          ],
+          "name": "seed_to_witness"
+        },
+        {
+          "effects": [
+            [
+              "add_node_if_absent",
+              "m",
+              "Marker",
+              {
+                "tag": "shared"
+              }
+            ],
+            [
+              "add_edge",
+              "w",
+              "marker",
+              "m",
+              {}
+            ]
+          ],
+          "match": [
+            [
+              "y",
+              "derived",
+              "w"
+            ]
+          ],
+          "name": "derived_to_marker"
+        },
+        {
+          "effects": [
+            [
+              "add_edge",
+              "m",
+              "loop",
+              "m",
+              {}
+            ]
+          ],
+          "match": [
+            [
+              "w",
+              "marker",
+              "m"
+            ]
+          ],
+          "name": "marker_self_loop"
+        }
+      ],
+      "static_progress_bound": 100,
+      "workload": "cascade"
+    },
+    {
+      "checks": {
+        "classifier_accepts": true,
+        "native_fixed_point": true,
+        "native_graph_equals_oracle": true,
+        "native_progress_within_bound": true,
+        "oracle_progress_within_bound": true
+      },
+      "classifier": {
+        "accepted": true,
+        "bound_basis": "Each AddNodeIfAbsent with one fixed literal type/key signature can insert at most one node; empty-attribute AddEdge can insert only one directed triple per endpoint pair and edge type. Positive matching and insertion-only effects preserve a finite graph universe. The bound is a coarse O((N+R)^2 E) upper bound on progressing firings, for fixed rules.",
+        "edge_type_count": 2,
+        "fragment": "monotone_finite_key_insertions_v0",
+        "initial_edge_fact_count": 2,
+        "initial_node_count": 3,
+        "initial_node_ids": [
+          "0",
+          "1",
+          "2"
+        ],
+        "not_claimed": [
+          "weak acyclicity",
+          "arbitrary computed keys",
+          "constructed fresh values",
+          "deletion or replacement effects",
+          "hard CPU/wall-time bound",
+          "polynomial matching cost per firing"
+        ],
+        "possible_edge_fact_count_upper_bound": 32,
+        "possible_node_count_upper_bound": 4,
+        "progress_steps_upper_bound": 31,
+        "reasons": [],
+        "unique_mint_signatures": 1
+      },
+      "cost": {
+        "cpu_time_ns": 30230,
+        "wall_time_ns": 30190
+      },
+      "exact_graph_match": true,
+      "native_access_sets": [
+        [
+          0,
+          "seed_to_witness",
+          true,
+          [
+            "edge:seed_link",
+            "type:Witness"
+          ],
+          [],
+          [
+            "attr:tag",
+            "edge:derived",
+            "type:Witness"
+          ],
+          false,
+          false
+        ],
+        [
+          1,
+          "derived_feedback",
+          true,
+          [
+            "edge:derived"
+          ],
+          [],
+          [
+            "edge:seed_link"
+          ],
+          false,
+          false
+        ]
+      ],
+      "native_progress_within_bound": true,
+      "native_report": {
+        "budget_overshoot": 0,
+        "cycle_detection_enabled": false,
+        "passes_completed": 2,
+        "progress_steps": 2,
+        "requested_progress_budget": 1000,
+        "status": "fixed_point"
+      },
+      "native_state": {
+        "edge_count": 6,
+        "edge_triples": [
+          [
+            0,
+            "seed_link",
+            1
+          ],
+          [
+            1,
+            "derived",
+            3
+          ],
+          [
+            1,
+            "seed_link",
+            2
+          ],
+          [
+            2,
+            "derived",
+            3
+          ],
+          [
+            3,
+            "seed_link",
+            1
+          ],
+          [
+            3,
+            "seed_link",
+            2
+          ]
+        ],
+        "node_count": 4,
+        "type_counts": {
+          "Seed": 3,
+          "Witness": 1
+        }
+      },
+      "oracle": {
+        "edge_triples": [
+          [
+            0,
+            "seed_link",
+            1
+          ],
+          [
+            1,
+            "derived",
+            3
+          ],
+          [
+            1,
+            "seed_link",
+            2
+          ],
+          [
+            2,
+            "derived",
+            3
+          ],
+          [
+            3,
+            "seed_link",
+            1
+          ],
+          [
+            3,
+            "seed_link",
+            2
+          ]
+        ],
+        "node_types": [
+          "Seed",
+          "Seed",
+          "Seed",
+          "Witness"
+        ],
+        "progress_events": 4
+      },
+      "oracle_progress_within_bound": true,
+      "rules": [
+        {
+          "effects": [
+            [
+              "add_node_if_absent",
+              "w",
+              "Witness",
+              {
+                "tag": "shared"
+              }
+            ],
+            [
+              "add_edge",
+              "y",
+              "derived",
+              "w",
+              {}
+            ]
+          ],
+          "match": [
+            [
+              "x",
+              "seed_link",
+              "y"
+            ]
+          ],
+          "name": "seed_to_witness"
+        },
+        {
+          "effects": [
+            [
+              "add_edge",
+              "w",
+              "seed_link",
+              "y",
+              {}
+            ]
+          ],
+          "match": [
+            [
+              "y",
+              "derived",
+              "w"
+            ]
+          ],
+          "name": "derived_feedback"
+        }
+      ],
+      "static_progress_bound": 31,
+      "workload": "feedback"
+    }
+  ],
+  "run_id": "mint-interacting-20260925T183219Z",
+  "runner_sha256": "baf7b24eab04127d7b10d1f694230f124335fe297d7cea3b05b5ae298ca80b20",
+  "schema_version": 1,
+  "source_commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87"
+}

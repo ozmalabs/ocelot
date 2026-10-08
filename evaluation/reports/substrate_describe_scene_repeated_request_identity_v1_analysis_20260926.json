@@ -1,0 +1,95 @@
+{
+  "checks": {
+    "no_goal_bound_lifecycle_events": true,
+    "normalized_graph_shape_repeats": true,
+    "raw_capture_lock_sha256_matches": true,
+    "raw_lock_equals_lock_file": true,
+    "replicated_identity_failure_shape": true,
+    "source_stable_all_workers_and_postrun": true,
+    "three_distinct_fresh_processes": true,
+    "two_replies_nonempty_each_worker": true
+  },
+  "interpretation": "The attached-scene describe route returns replies but reuses one scene-level parent Goal for both sequential requests. The Goal comprehends both Messages, has no originated_in event edge, and receives no Goal-bound lifecycle events. This is a replicated identity failure for this route and fixture; it does not establish concurrent behavior.",
+  "lock_sha256": "bf3263efc75885a0e00f77364b29e3840156fa9d10ffb1dc806cf1a75c087984",
+  "normalized_shape": [
+    {
+      "lifecycle_event_count": 0,
+      "matching_goal_count": 1,
+      "matching_goal_shapes": [
+        {
+          "comprehended_message_count": 1,
+          "kind": "describe_scene",
+          "origin_event_count": 0,
+          "subgoal_count": 3
+        }
+      ],
+      "new_goal_count": 6,
+      "origin_event_kind": "instruction",
+      "reply_nonempty": true,
+      "route": "describe_scene",
+      "scene_parent_count": 1,
+      "state_event_kinds": [
+        "instruction"
+      ],
+      "turn": 0
+    },
+    {
+      "lifecycle_event_count": 0,
+      "matching_goal_count": 1,
+      "matching_goal_shapes": [
+        {
+          "comprehended_message_count": 2,
+          "kind": "describe_scene",
+          "origin_event_count": 0,
+          "subgoal_count": 3
+        }
+      ],
+      "new_goal_count": 2,
+      "origin_event_kind": "instruction",
+      "reply_nonempty": true,
+      "route": "describe_scene",
+      "scene_parent_count": 1,
+      "state_event_kinds": [
+        "instruction",
+        "instruction"
+      ],
+      "turn": 1
+    }
+  ],
+  "raw_sha256": "2a9676eeb6a921d5da355a79de4332829a71bcb0fba1afa007267a33485d08e8",
+  "replicates": [
+    {
+      "distinct_parent_identity": false,
+      "no_lifecycle_events": true,
+      "parent_originated_in_no_event": true,
+      "pid": 6,
+      "reused_same_parent_goal": true,
+      "second_goal_comprehends_both_messages": true,
+      "two_replies_nonempty": true
+    },
+    {
+      "distinct_parent_identity": false,
+      "no_lifecycle_events": true,
+      "parent_originated_in_no_event": true,
+      "pid": 5831,
+      "reused_same_parent_goal": true,
+      "second_goal_comprehends_both_messages": true,
+      "two_replies_nonempty": true
+    },
+    {
+      "distinct_parent_identity": false,
+      "no_lifecycle_events": true,
+      "parent_originated_in_no_event": true,
+      "pid": 11656,
+      "reused_same_parent_goal": true,
+      "second_goal_comprehends_both_messages": true,
+      "two_replies_nonempty": true
+    }
+  ],
+  "schema_version": 1,
+  "summary": {
+    "boot_ns_median": 11807817044,
+    "replicates": 3,
+    "turn_ns_median": 6964810658.0
+  }
+}

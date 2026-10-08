@@ -1,0 +1,173 @@
+{
+  "all_checks_pass": true,
+  "analyzer_sha256": "56db2badcb31de6d3f2fe2509509ec6014686b181f7ac9043d901e015c4a893c",
+  "checks": {
+    "canonical_final_graph_parity_all_orders": true,
+    "complete_three_worker_heldout_schedule": true,
+    "exactly_120_unique_heldout_orders": true,
+    "exhaustive_best_and_selected_work_reconciled": true,
+    "heldout_graph_input_stable": true,
+    "historical_can_nonempty_cases_cover_22": true,
+    "historical_capture_locks_valid": true,
+    "historical_retinal_regret_uses_exhaustive_work": true,
+    "instrumented_plain_default_and_selected_parity": true,
+    "productive_guard_and_value_oracle_all_orders": true,
+    "selector_deterministic_across_21_repeats": true,
+    "source_native_and_capture_inputs_stable": true,
+    "terminal_fixed_point_all_orders": true,
+    "three_fresh_processes": true
+  },
+  "checks_passed": 14,
+  "checks_total": 14,
+  "claim_boundary": "Bounded-sample Python selector evaluated on source-locked synthetic CAN/retinal fixtures, including a newly generated N=16 retinal profile; not a production engine integration or natural-workload result.",
+  "heldout": [
+    {
+      "actual_selected_candidate_tests": 92,
+      "default_candidate_tests": 72,
+      "estimated_work": 722.125,
+      "exact_best_candidate_tests": 65,
+      "exact_best_order": [
+        4,
+        3,
+        2,
+        1,
+        0
+      ],
+      "replicate": 0,
+      "selector_index_build_median_us": 74.661,
+      "selector_order": [
+        4,
+        0,
+        2,
+        1,
+        3
+      ],
+      "selector_regret_pct": 41.53846153846155,
+      "selector_search_median_us": 2255.464,
+      "selector_total_median_us": 2330.125,
+      "selector_total_p95_us": 3250.3507
+    },
+    {
+      "actual_selected_candidate_tests": 92,
+      "default_candidate_tests": 72,
+      "estimated_work": 722.125,
+      "exact_best_candidate_tests": 65,
+      "exact_best_order": [
+        4,
+        3,
+        2,
+        1,
+        0
+      ],
+      "replicate": 1,
+      "selector_index_build_median_us": 72.651,
+      "selector_order": [
+        4,
+        0,
+        2,
+        1,
+        3
+      ],
+      "selector_regret_pct": 41.53846153846155,
+      "selector_search_median_us": 2252.925,
+      "selector_total_median_us": 2325.576,
+      "selector_total_p95_us": 2893.167
+    },
+    {
+      "actual_selected_candidate_tests": 92,
+      "default_candidate_tests": 72,
+      "estimated_work": 722.125,
+      "exact_best_candidate_tests": 65,
+      "exact_best_order": [
+        4,
+        3,
+        2,
+        1,
+        0
+      ],
+      "replicate": 2,
+      "selector_index_build_median_us": 72.34,
+      "selector_order": [
+        4,
+        0,
+        2,
+        1,
+        3
+      ],
+      "selector_regret_pct": 41.53846153846155,
+      "selector_search_median_us": 2214.984,
+      "selector_total_median_us": 2287.324,
+      "selector_total_p95_us": 4416.0527999999995
+    }
+  ],
+  "heldout_workers": 3,
+  "historical": {
+    "can_match_measured_best": 22,
+    "can_nonempty_cases": 22,
+    "can_order_mismatches": [],
+    "retinal": [
+      {
+        "best_order": [
+          4,
+          0,
+          1,
+          2,
+          3
+        ],
+        "best_work": 54,
+        "profile": "uniform",
+        "regret_pct": 0.0,
+        "selected_order": [
+          4,
+          0,
+          1,
+          2,
+          3
+        ],
+        "selected_work": 54
+      },
+      {
+        "best_order": [
+          4,
+          0,
+          1,
+          2,
+          3
+        ],
+        "best_work": 364,
+        "profile": "correlated",
+        "regret_pct": 0.0,
+        "selected_order": [
+          4,
+          0,
+          1,
+          2,
+          3
+        ],
+        "selected_work": 364
+      },
+      {
+        "best_order": [
+          4,
+          1,
+          2,
+          3,
+          0
+        ],
+        "best_work": 57,
+        "profile": "rotated",
+        "regret_pct": 1.7543859649122862,
+        "selected_order": [
+          4,
+          1,
+          3,
+          2,
+          0
+        ],
+        "selected_work": 58
+      }
+    ]
+  },
+  "protocol": "PREFIX_COST_SELECTOR_V1",
+  "raw_sha256": "7e98ae976e467e0574ef7b573e55639f269c5d47696c6239110b68e12231d9e0"
+}

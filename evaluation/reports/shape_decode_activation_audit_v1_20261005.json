@@ -1,0 +1,479 @@
+{
+  "claim_boundary": "Activation classifications describe source-declared loader paths. Domain references can be evaluation-only or conditional; loaded manifests and helper calls in one capture do not establish natural-task prevalence.",
+  "classification_counts": {
+    "in_core_boot_closure": 0,
+    "included_by_full_corpus_loader": 10,
+    "on_demand_only_due_to_self_load_only": 1
+  },
+  "core_dependency_closure_count": 17,
+  "core_seed_ids": [
+    "adaptive_control_core",
+    "affective_state_core",
+    "decision_core",
+    "default_mode_core",
+    "dual_process_core",
+    "episodic_working_memory_core",
+    "epistemics_core",
+    "experimentation_core",
+    "generative_world_model",
+    "goal_construction",
+    "learning_core",
+    "memory_core",
+    "motor_core",
+    "perception_core",
+    "reflex_core",
+    "self_monitoring",
+    "theorem_core"
+  ],
+  "full_corpus_seed_count": 742,
+  "loader_contracts": {
+    "core_boot": "substrate.boot_core.CORE_SEEDS plus recursive depends_on closure",
+    "full_corpus": "substrate.boot_all._seed_manifest_paths plus _read_seeds includes top-level and generated seed JSON except self_load_only manifests",
+    "on_demand": "Module source references identify possible explicit workflows; presence is not proof of invocation"
+  },
+  "run_id": "shape-decode-activation-audit-v1-20261005",
+  "runner_path": "evaluation/substrate_capability/audit_shape_decode_activation_v1.py",
+  "runner_sha256": "14916d02aab814208ae51f23bd6e8cbef817586fba4ff6c348dd7cdf3d1a339b",
+  "runtime_evidence": {
+    "shape_decode_loop": {
+      "evidence_path": "evaluation/reports/live_helper_work_capture_v1_4_analysis_20261005.json",
+      "interpretation": "A selected live helper capture observed three calls on the shape_decode_loop route. This is one workflow observation, not a prevalence estimate across ordinary tasks.",
+      "observed_shape_decode_invocations": 3
+    },
+    "vision_verdict_comparator": {
+      "analysis_path": "evaluation/reports/shapedecode_verdict_comparator_cache_v1_analysis_20261005.json",
+      "analysis_sha256": "baf7ef73afe347b19adc8c58016de9982a076cb8cfc3feaeea5f31ef7dfae2a9",
+      "capture_path": "evaluation/reports/shapedecode_verdict_comparator_cache_v1_20261005.json",
+      "capture_sha256": "9d687cc7b71a0fc143e74d4877d582aa89a5b56eed143e756bc31006f7e10d41",
+      "current_seed_matches_capture": true,
+      "current_world_matches_capture": true,
+      "distinct_worker_pids": 80,
+      "interpretation": "Runtime proof that this explicit authored comparator workflow executes the scoped cache route. It is an evaluation workload and does not estimate frequency in ordinary operation.",
+      "seed_sha256_in_capture_manifest": "1d3543be1c71419c9c7ea0c6d7c46a2f600aec0906895718fbf68581d4fcc6a3",
+      "traced_helper_work_by_mode": {
+        "cached": {
+          "dynamic_helper_invocation": 2400,
+          "helper_codebook_cache_hit": 2360,
+          "helper_codebook_cache_miss": 40,
+          "helper_codebook_population_node": 2400
+        },
+        "scan": {
+          "dynamic_helper_invocation": 2400,
+          "helper_codebook_population_node": 217600
+        }
+      },
+      "traced_workers_by_mode": {
+        "cached": 20,
+        "scan": 20
+      },
+      "workers": 80,
+      "workflow_seed": "vision_verdict_comparator",
+      "workflow_source": "domains/verdict_comparator_world.py::VerdictWorld.__init__",
+      "world_sha256_in_capture_manifest": "a37db40e2c4eb39a368a69727b625979da6e191547979d1ff80330ea5f5841a7"
+    }
+  },
+  "schema": "ShapeDecodeActivationAuditV1",
+  "scoped_shape_decode_call_count": 44,
+  "scoped_shape_decode_seed_count": 11,
+  "seeds": [
+    {
+      "core_boot_dependency_closure": false,
+      "depends_on": [
+        "causal_attitude_networks",
+        "shape_decode_loop"
+      ],
+      "description": "Native re-derivation of CAN's concept (CAN_CONCEPT_REIMPLEMENTATION_SPIKE.md, merged main@325c064, verdict: replace) as sd-loop/Gamma-native graph rules -- NO continuous relaxation, NO Boltzmann ensemble, NO iterative mean-field fixed point. Item 3 (evidence propagation): a discrete, asynchronous, Hopfield-style threshold update expressed as ordinary Rules, using run_rules()'s own cold-path fixpoint (one progressing binding per rule per pass, committed immediately) as the asynchrony -- this carries a real Lyapunov convergence guarantee (2-state: textbook; 3-state: empirically checked, no known proof) the OLD synchronous mean-field update (can_ops.rs::mt_mean_field_marginal, even damped) does not structurally have. Items 1-2 (basin/frustration): basin CLASSIFICATION is sd_recognize-shaped decode against a held ShapeSignature codebook of basin configurations (relation tuples ['state', concept, sign]) via the EXISTING ShapeDecode Term; COHERENCE/FRUSTRATION reads the SAME decode's residual size (no basin explains the state) and ordered_parts count (explained only by DRAWING ON MULTIPLE conflicting basins -- torn between them). Item 4 (Hebbian): mint-on-recurrence (edge-CREATION half), the SAME shape blob-edge minting already uses at real scale (BLOB_EDGE_ANALOGY_EXTENSION_RESULTS.md); v1.1.0 (LOGODDS_GENERATOR_RESULTS.md) UNBLOCKS and completes the graded-REWEIGHTING half, confirmed blocked at v1.0.0 on the still-unbuilt logodds mechanism (CAUSAL_LINKAGE_DIMENSION_RESEARCH.md): can_native_note_coactivation now initialises evidence_confirm/evidence_disconfirm/evidence_tick on the Coactivation node it mints; can_native_hebbian_mint additionally bumps evidence_confirm+evidence_tick on the SAME recurrence that mints the edge; a new consolidated rule can_native_hebbian_reweight (ONE rule, not a confirm/disconfirm sibling pair -- deliberately reusing this seed's own Sec3 starvation-fix lesson) bumps whichever counter applies on every strictly-later tick once the edge already exists. The counters are plain in-frame integers (edges cannot carry live-updated attrs in this engine -- confirmed, no set_edge_attr effect exists -- so the existing Coactivation node is the evidence ledger); the cross-frame log-odds RENDER (Laplace-smoothed empirical log-odds from the two counts) is evaluated live via Substrate.evaluate and never stored on any node. Decay still has no native analog proposed anywhere in this arc. Zero new Rust Terms anywhere in this seed, including v1.1.0 -- Sum/Edges/EdgeAttr/Nth/Attr/Gt/Lt/Gte/Lte/Eq/Not/And/Exists/IfThenElse/Plus/Times/ShapeDecode/Log/Div all pre-existed and are reused as-is. See CAN_NATIVE_REIMPLEMENTATION_PREREG.md / _RESULTS.md for items 1-3 and the v1.0.0 Hebbian edge-creation half; LOGODDS_GENERATOR_PREREG.md / _RESULTS.md for the v1.1.0 reweighting completion and the log-odds render. v1.2.0 (CAN_HEBBIAN_MATERIALIZATION_RESULTS.md) adds the Blocker-B POLICY GATE to can_native_hebbian_mint/can_native_hebbian_reweight: both now defer to an Or(mt_allows-equivalent-three-way-switch, plasticity_override>0) predicate before minting/reweighting, mirroring self_improvement_loop.py's mt_allows(\"allow_Hebbian_J\")+plasticity_override transient path exactly, with ONE registered divergence: an Mt carrying NO update_policy attr at all is treated as allowed (legacy/opt-in, preserving the pre-gate unconditional behaviour the existing regression file's Hebbian tests depend on) rather than mt_allows' own conservative frozen-default. can_native_note_coactivation is NOT gated -- it is pure observation/bookkeeping (mints a Coactivation ledger record, no causal_influence edge, no evidence-count mutation), matching self_improvement_loop.py's own relax()-is-never-policy-gated precedent (\"Reading equilibrium isn't policy-gated; only J/h mutations are\"). Zero new Rust, zero new Term kinds -- Eq/IfThenElse/Or/Gt/Not/Attr all pre-exist. ALSO fixes a genuine, pre-existing (confirmed present on an untouched v1.1.0 checkout, not introduced by this patch) dedup-guard defect in can_native_note_coactivation: its \"already noted\" guard compared a coactivated_with edge's target (a Coactivation node) directly against the Concept b -- a type mismatch that was always false, so a pair could get a SECOND, independent Coactivation ledger minted on the tick its edge was minted, silently inflating subsequent evidence counts. Replaced with the correct two-hop existence check (a-coactivated_with->co-coactivation_of->b), matching can_native_hebbian_mint's own match pattern -- zero new Rust, zero new Term kinds (nested Exists/Edges/Nth/Eq, all pre-existing).",
+      "domain_source_references": [
+        {
+          "lines": [
+            394
+          ],
+          "path": "domains/analogy_search.py"
+        },
+        {
+          "lines": [
+            2,
+            41,
+            48,
+            88
+          ],
+          "path": "domains/can_counterfactual.py"
+        },
+        {
+          "lines": [
+            4,
+            11,
+            37,
+            107,
+            162
+          ],
+          "path": "domains/can_native_bp.py"
+        },
+        {
+          "lines": [
+            2,
+            26,
+            41,
+            144
+          ],
+          "path": "domains/can_native_hebbian_bridge.py"
+        },
+        {
+          "lines": [
+            57,
+            113,
+            374
+          ],
+          "path": "domains/can_native_orchestration.py"
+        },
+        {
+          "lines": [
+            9,
+            27,
+            28,
+            415,
+            428,
+            447,
+            453
+          ],
+          "path": "domains/can_self_worth_bridge.py"
+        },
+        {
+          "lines": [
+            303
+          ],
+          "path": "domains/disposition.py"
+        },
+        {
+          "lines": [
+            12
+          ],
+          "path": "domains/llm_knowledge_seed.py"
+        },
+        {
+          "lines": [
+            14
+          ],
+          "path": "domains/mere_exposure_world.py"
+        },
+        {
+          "lines": [
+            4
+          ],
+          "path": "domains/reasoning_can_bridge.py"
+        },
+        {
+          "lines": [
+            227,
+            253,
+            258
+          ],
+          "path": "domains/solver_dispatch.py"
+        }
+      ],
+      "full_corpus_loader_includes": false,
+      "scoped_shape_decode_terms": 2,
+      "seed_id": "can_native_reimplementation",
+      "seed_path": "seeds/can_native_reimplementation.json",
+      "seed_sha256": "3b185987ae810d5e05ab2468b044ab73d8890c8e73ac86dfcaf35b734b9c61d8",
+      "self_load_only": true
+    },
+    {
+      "core_boot_dependency_closure": false,
+      "depends_on": [
+        "decision_core",
+        "cognitive_pareto",
+        "metacognitive_learning",
+        "metacognitive_program_discrimination",
+        "cognitive_supervision",
+        "embodied_program_trajectory",
+        "embodied_physics_proposal"
+      ],
+      "description": "Receipt-grounded developmental capability DAG with a persistent self-directed learning plan, non-scalar Pareto experiment selection, order-N metacognitive plan revision, explicit evidence budgets, causally grounded structural-surprise signals, generic order-N Goal wiring, per-effector consequence subgoals, renewable surprise/time-triggered process leases, capability-keyed delayed retention, and verified similar-morphology transfer.",
+      "domain_source_references": [
+        {
+          "lines": [
+            220
+          ],
+          "path": "domains/seed_registry.py"
+        }
+      ],
+      "full_corpus_loader_includes": true,
+      "scoped_shape_decode_terms": 4,
+      "seed_id": "embodied_development",
+      "seed_path": "seeds/embodied_development.json",
+      "seed_sha256": "47caf38d530c3717a8efdcb8ce5e0d13dfad087f4836cbd9d75c3a5c1ebd7677",
+      "self_load_only": false
+    },
+    {
+      "core_boot_dependency_closure": false,
+      "depends_on": [
+        "embodied_body_ingest",
+        "cognitive_pareto"
+      ],
+      "description": "Integer-only graph-native bootstrap from mechanically observed opaque actuator affordances and topology bundles. Exact tokens and aligned integer weights are preserved for the external humanoid trial boundary; graph-side Pareto and curiosity expose at most one selected program.",
+      "domain_source_references": [],
+      "full_corpus_loader_includes": true,
+      "scoped_shape_decode_terms": 2,
+      "seed_id": "embodied_motor_bootstrap",
+      "seed_path": "seeds/embodied_motor_bootstrap.json",
+      "seed_sha256": "27f2872dfa62f0af9f84df3b3670d19906d6811909bd12bd796b584330d0e46d",
+      "self_load_only": false
+    },
+    {
+      "core_boot_dependency_closure": false,
+      "depends_on": [
+        "metacognitive_learning",
+        "embodied_program_trajectory",
+        "embodied_capability_bootstrap"
+      ],
+      "description": "Morphology-neutral residual-to-physics-question bridge: inverse-by-forward-model kinematic prior, relation-shape analogy, verified analysis-by-synthesis trajectories, six-axis integer Pareto experiments, curiosity collapse, and receipt closure.",
+      "domain_source_references": [],
+      "full_corpus_loader_includes": true,
+      "scoped_shape_decode_terms": 7,
+      "seed_id": "embodied_physics_proposal",
+      "seed_path": "seeds/embodied_physics_proposal.json",
+      "seed_sha256": "bdc83fd200b8d1c41667f27f9462d9ab9ea1899ae210c9359e7003502f324316",
+      "self_load_only": false
+    },
+    {
+      "core_boot_dependency_closure": false,
+      "depends_on": [
+        "decision_core",
+        "embodied_motor_priors",
+        "motor_decision_collapse",
+        "embodied_capability_bootstrap",
+        "cmu_motion_topology_bootstrap"
+      ],
+      "description": "Learn local balance effects for an articulated body through opaque joint twitches and receipt-backed graph mutation, with reflex, adaptive, and consolidation work on distinct graph-held deadline sheets.",
+      "domain_source_references": [],
+      "full_corpus_loader_includes": true,
+      "scoped_shape_decode_terms": 12,
+      "seed_id": "humanoid_adaptation",
+      "seed_path": "seeds/humanoid_adaptation.json",
+      "seed_sha256": "f556855d6cc30c5c3a8411d9c273a783aeaea720330033d698772c287928a6f2",
+      "self_load_only": false
+    },
+    {
+      "core_boot_dependency_closure": false,
+      "depends_on": [
+        "core"
+      ],
+      "description": "",
+      "domain_source_references": [
+        {
+          "lines": [
+            140,
+            142,
+            143,
+            317,
+            334,
+            484
+          ],
+          "path": "domains/analogy_search.py"
+        },
+        {
+          "lines": [
+            43
+          ],
+          "path": "domains/global_workspace.py"
+        },
+        {
+          "lines": [
+            16,
+            57
+          ],
+          "path": "domains/qualia_aperture_world.py"
+        },
+        {
+          "lines": [
+            56,
+            182
+          ],
+          "path": "domains/qualia_navigation.py"
+        },
+        {
+          "lines": [
+            18,
+            34
+          ],
+          "path": "domains/regulated_train_of_thought.py"
+        },
+        {
+          "lines": [
+            1723,
+            1725,
+            1754,
+            1757,
+            1764,
+            1790,
+            1797
+          ],
+          "path": "domains/seed_registry.py"
+        },
+        {
+          "lines": [
+            104,
+            109,
+            145
+          ],
+          "path": "domains/train_of_thought.py"
+        }
+      ],
+      "full_corpus_loader_includes": true,
+      "scoped_shape_decode_terms": 2,
+      "seed_id": "observer_aperture",
+      "seed_path": "seeds/observer_aperture.json",
+      "seed_sha256": "5b69923c61fba6bf94addb991a26ce6492c566db662f28a39334b88b8ad9b64d",
+      "self_load_only": false
+    },
+    {
+      "core_boot_dependency_closure": false,
+      "depends_on": [
+        "tunable_parameter"
+      ],
+      "description": "The PRIMAL LAYER as graph data. A reflex net is a graph-resident authored net (a NetworkAssemblage the native NetForward Term evaluates) wrapped by a ReflexNet node that gates it: the fast path is an ORDINARY Rule whose where checks (a) an `enabled` knob (OFF by default = the layer is optional) and (b) a residual/basin membership EXTERNAL to the net (a grounded gate the confidently-wrong-outside-basin net cannot fake), so it serves a cheap answer only INSIDE its basin and defers to cognition otherwise. Because the fast path IS a Rule and its knobs are TunableParameters, adopt/ablate/tweak reuse the substrate's existing rule spine (add_rule/remove_rule + set_attr) with no new executor. The judge combinator (reflex_trial_judge) is the one genuinely new decision: supported iff regression-free AND faster.",
+      "domain_source_references": [
+        {
+          "lines": [
+            18,
+            34,
+            35
+          ],
+          "path": "domains/modality_reflex.py"
+        },
+        {
+          "lines": [
+            7,
+            19,
+            36,
+            63,
+            64,
+            74
+          ],
+          "path": "domains/reflex_net.py"
+        },
+        {
+          "lines": [
+            515,
+            517,
+            1907
+          ],
+          "path": "domains/seed_registry.py"
+        },
+        {
+          "lines": [
+            28,
+            151
+          ],
+          "path": "domains/training_dispatch.py"
+        }
+      ],
+      "full_corpus_loader_includes": true,
+      "scoped_shape_decode_terms": 1,
+      "seed_id": "reflex_net",
+      "seed_path": "seeds/reflex_net.json",
+      "seed_sha256": "a3a007b4c2d6b9cbe6a78e71d58edc34c3e5915462e18ead3535ca430d5c0c73",
+      "self_load_only": false
+    },
+    {
+      "core_boot_dependency_closure": false,
+      "depends_on": [
+        "embodied_development"
+      ],
+      "description": "Integer-native endogenous spontaneous activity over a discovered effector topology: homeostatic ignition, one-hop wave propagation, refractoriness, single compound collapse and verified reafferent learning, with one-shot structural ignition priors.",
+      "domain_source_references": [
+        {
+          "lines": [
+            219,
+            221
+          ],
+          "path": "domains/seed_registry.py"
+        }
+      ],
+      "full_corpus_loader_includes": true,
+      "scoped_shape_decode_terms": 6,
+      "seed_id": "somatomotor_waves",
+      "seed_path": "seeds/somatomotor_waves.json",
+      "seed_sha256": "607c743bd04aae5c4ea376e6ee039d6d112c6af70ffc3d72976e3810adb0cbf4",
+      "self_load_only": false
+    },
+    {
+      "core_boot_dependency_closure": false,
+      "depends_on": [
+        "shape_decode_loop"
+      ],
+      "description": "CROSS-FRAME IDENTITY (VISION_CROSSFRAME_IDENTITY_PREREG.md, seeds 55000-55999). Decides, for an Observation carrying a pixel-derived relation system, WHICH held ShapeSignature best explains it -- the 16-way identification the cross-frame measurement reads off. Built entirely from existing Terms: NO new Rust, NO new Term, NO new constant. The scoring composition is ShapeDecode's own covered_count with codebook_scope pointed at a SINGLETON name set (the per-net basin affordance seeds/reflex_net.json::reflex_ground_residual already uses), so a whole-codebook decode becomes a PER-CANDIDATE score; MaxOver supplies the best score and Argmax supplies the winning name. On ['cell', r, c, 'v<q>'] tuples ShapeDecode's covers_relation (same arity + same predicate + Covers) makes covered_count exactly the number of cells identical in local position and quantized value. SHIPS OFF (CrossFrameParams.crossframe > 0.5) and is NOT in the default boot set -- the runner loads this manifest explicitly, so every committed result reproduces byte-identically (protocol section 9). The two rules are staged on a PRIVATE status ladder (xf_pending -> xf_scored -> xf_done) that no shape_decode_loop rule matches ('pending' would have collided with sd_decode), so this seed is inert with respect to the sd loop even when both are installed.",
+      "domain_source_references": [
+        {
+          "lines": [
+            7,
+            101
+          ],
+          "path": "domains/crossframe_world.py"
+        }
+      ],
+      "full_corpus_loader_includes": true,
+      "scoped_shape_decode_terms": 3,
+      "seed_id": "vision_crossframe_identity",
+      "seed_path": "seeds/vision_crossframe_identity.json",
+      "seed_sha256": "1adde04885922d9a1cb1c8225c2f905710f91202ab6e3d8ff8b631325a7b2e29",
+      "self_load_only": false
+    },
+    {
+      "core_boot_dependency_closure": false,
+      "depends_on": [
+        "shape_decode_loop"
+      ],
+      "description": "INVARIANT COMPARATOR (VISION_INVARIANT_COMPARATOR_PREREG.md, seeds 57000-57999). The cross-frame rung (VISION_CROSSFRAME_IDENTITY_RESULTS.md) proved its comparator is EXACTLY pixel Hamming overlap and therefore survives ONE pixel of translation. This seed keeps that DECISION -- Argmax over a held codebook by ShapeDecode's covered_count -- and adds a SECOND, GROUP-LEVEL Argmax that QUOTIENTS BY THE NUISANCE GROUP: an observation is presented as an ObsGroup whose members are the same aperture sampled at every translation in the Chebyshev ball of radius rho, and rules 3 and 4 take the max over that orbit and read the winning member's answer. The quotient is performed BY THE GRAPH (a MaxOver and an Argmax over graph-resident orbit members), not by an adapter loop. The group is 2D INTEGER TRANSLATION -- the dominant nuisance of natural video and, unlike D4 on handwriting (VISION_INK_VENTRAL_RESULTS.md, -11.3pp), identity-PRESERVING for an image region. NO new Rust, NO new Term, NO new constant: rho is the independent variable of the measurement, and rho=0 (a group of one member) is EXACTLY the incumbent comparator. THREE DIFFERENCES from vision_crossframe_identity 1.0.0, all declared in the pre-registration: (1) the codebook node type is the PRIVATE 'XfSignature', which closes that rung's own named section-4.1 defect (its Argmax ranged over NodesOfType(ShapeSignature) and therefore over the 17 foreign signatures boot_core + shape_decode_loop install; measured inert there, but a codebook built by adding nodes was not the codebook the rule saw); (2) a private status ladder ic_pending -> ic_scored -> ic_done / icg_pending -> icg_scored -> icg_done that no other seed's rule matches; (3) the group layer itself. SHIPS OFF (InvComparatorParams.invcomp > 0.5) and is NOT in the default boot set -- the runner loads this manifest explicitly, so every committed result reproduces byte-identically (protocol section 9).",
+      "domain_source_references": [
+        {
+          "lines": [
+            7,
+            283
+          ],
+          "path": "domains/invariant_comparator_world.py"
+        },
+        {
+          "lines": [
+            25
+          ],
+          "path": "domains/verdict_comparator_world.py"
+        }
+      ],
+      "full_corpus_loader_includes": true,
+      "scoped_shape_decode_terms": 3,
+      "seed_id": "vision_invariant_comparator",
+      "seed_path": "seeds/vision_invariant_comparator.json",
+      "seed_sha256": "764c7e12965775f30a3f59fd00d2c0d33a835c3a5ca13cd544a412c1fa379d30",
+      "self_load_only": false
+    },
+    {
+      "core_boot_dependency_closure": false,
+      "depends_on": [
+        "shape_decode_loop"
+      ],
+      "description": "VERDICT COMPARATOR (VISION_VERDICT_PREREG.md, seeds 70000-70999). VISION_INVARIANT_COMPARATOR_RESULTS.md measured the orbit-radius knee at rho=2 and named this rung in its section 10: hold the PROPOSAL layer fixed and vary ONLY the VERDICT. This seed holds the incumbent's two-layer structure exactly -- score every candidate, Argmax, then MaxOver the translation orbit and read the winning member's answer -- and swaps ONE thing: the score. Four arms, each isolating exactly one change from the one above it. V0 hamming is ShapeDecode.covered_count over relation tuples, i.e. the published Q2 arm byte-for-byte. V1 ssdq is squared distance on the SAME quantized values (categorical -> graded). V2 ssdg is squared distance on the RAW grey tile (bins -> continuous). V3 ncc is normalized cross-correlation on the raw grey tile (adds invariance to an affine luminance map -- the identity-PRESERVING nuisance of natural video, argued on this domain in the adapter's docstring rather than imported from where it worked). The continuous verdict is architecturally licensed: a comparator is a MAP BETWEEN FRAMES, and CLAUDE.md's frame/continuum invariant puts all real-valued structure there -- in-frame coordinates stay integer, and they do here (region-local r,c and the k=4 levels are unchanged). TWO DELIBERATE DELETIONS from vision_invariant_comparator 1.0.0. (1) THE TIE COUNT IS GONE. That rung pre-registered icg_ntied as its load-bearing diagnostic and its own section 5 retracted it: it counts tied ORBIT MEMBERS not tied REGIONS, is 1 by construction at rho=0, and is computed by the very Argmax it diagnoses. A diagnostic must not be computed by the component it checks, so this seed computes no tie statistic at all -- the rung's tie statistic is the region-level count computed outside the graph under V0's scores and held FIXED across arms. (2) ABSTENTION IS ADDED, and its threshold is MEASURED not chosen (protocol section 13): a group refuses unless its score strictly exceeds the best score THIS SAME ARM achieves on the calibration noise probes presented in the SAME substrate. No constant is written anywhere in this file. The refusal is positive-controlled by a SECOND, independent noise draw (G2t) that did not define the floor, so the control is not the tautology 'the max of a set does not exceed itself'. SHIPS OFF (VerdictParams.verdict is the empty string, matching no arm) and is NOT in the default boot set -- the runner loads this manifest explicitly, so every committed result reproduces byte-identically (protocol section 9).",
+      "domain_source_references": [
+        {
+          "lines": [
+            7,
+            331
+          ],
+          "path": "domains/verdict_comparator_world.py"
+        }
+      ],
+      "full_corpus_loader_includes": true,
+      "scoped_shape_decode_terms": 2,
+      "seed_id": "vision_verdict_comparator",
+      "seed_path": "seeds/vision_verdict_comparator.json",
+      "seed_sha256": "1d3543be1c71419c9c7ea0c6d7c46a2f600aec0906895718fbf68581d4fcc6a3",
+      "self_load_only": false
+    }
+  ],
+  "source_sha256": {
+    "domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+    "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+    "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+  }
+}

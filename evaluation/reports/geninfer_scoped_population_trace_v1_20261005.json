@@ -1,0 +1,5072 @@
+{
+  "captured_utc": "2026-10-04T20:58:55Z",
+  "cases": [
+    {
+      "case": {
+        "id": "unscoped_global_k2_r1",
+        "k": 2,
+        "kind": "positive",
+        "mode": "unscoped_global",
+        "repeat": 1
+      },
+      "closure_cpu_ns": 35601298,
+      "closure_wall_ns": 35630839,
+      "closure_work": 9,
+      "diagnostic_checks": [
+        {
+          "checked": 4800,
+          "frame": 0,
+          "scope_id": null,
+          "state_unchanged": true
+        },
+        {
+          "checked": 4800,
+          "frame": 1,
+          "scope_id": null,
+          "state_unchanged": true
+        }
+      ],
+      "edges_after": 749,
+      "hwm_after_kib": 44840,
+      "hwm_before_kib": 44648,
+      "hwm_delta_kib": 192,
+      "initial_candidate_checks_total": 9600,
+      "linear_generators": [
+        {
+          "matrix": [
+            2,
+            1,
+            1,
+            1
+          ],
+          "name": "genlin_[2,1,1,1]"
+        },
+        {
+          "matrix": [
+            2,
+            -1,
+            1,
+            1
+          ],
+          "name": "genlin_[2,-1,1,1]"
+        }
+      ],
+      "nodes_after": 780,
+      "nodes_before": 774,
+      "outputs": [
+        {
+          "frame": 0,
+          "matrix": [
+            2,
+            1,
+            1,
+            1
+          ],
+          "oracle_exact": true,
+          "quanta_count": 1,
+          "receipts": [
+            {
+              "base": "frame0_base",
+              "dim": "latent:genlin_[2,1,1,1]",
+              "dims": [],
+              "generator": "genlin_[2,1,1,1]",
+              "generators": [
+                "genlin_[2,1,1,1]"
+              ],
+              "k": 1,
+              "ks": [
+                1
+              ],
+              "source": "dim_infer",
+              "transforms": []
+            }
+          ],
+          "status": "recognized_transformed",
+          "target_generator_present": true
+        },
+        {
+          "frame": 1,
+          "matrix": [
+            2,
+            -1,
+            1,
+            1
+          ],
+          "oracle_exact": true,
+          "quanta_count": 1,
+          "receipts": [
+            {
+              "base": "frame1_base",
+              "dim": "latent:genlin_[2,-1,1,1]",
+              "dims": [],
+              "generator": "genlin_[2,-1,1,1]",
+              "generators": [
+                "genlin_[2,-1,1,1]"
+              ],
+              "k": 1,
+              "ks": [
+                1
+              ],
+              "source": "dim_infer",
+              "transforms": []
+            }
+          ],
+          "status": "recognized_transformed",
+          "target_generator_present": true
+        }
+      ],
+      "pid": 3,
+      "replicate": 0,
+      "runtime_work_trace": {
+        "dropped": 0,
+        "rows": [
+          [
+            111048910797512,
+            1,
+            0,
+            "scheduler_pass",
+            null,
+            3
+          ],
+          [
+            111048910797512,
+            1,
+            0,
+            "scheduler_external_poll_slots",
+            null,
+            477
+          ],
+          [
+            111048910797512,
+            1,
+            0,
+            "scheduler_fixedpoint_probe_slots",
+            null,
+            5
+          ],
+          [
+            111048910797512,
+            1,
+            0,
+            "scheduler_dirty_vector_slots",
+            null,
+            477
+          ],
+          [
+            111048910797512,
+            1,
+            0,
+            "scheduler_selected_rules",
+            null,
+            419
+          ],
+          [
+            111048910797512,
+            1,
+            0,
+            "operation_kind",
+            1,
+            1
+          ],
+          [
+            111048910797512,
+            1,
+            137,
+            "dynamic_helper_invocation",
+            1,
+            2
+          ],
+          [
+            111048910797512,
+            1,
+            137,
+            "helper_codebook_population_node",
+            1,
+            38
+          ],
+          [
+            111048910797512,
+            1,
+            137,
+            "helper_node_attribute_examined",
+            1,
+            160
+          ],
+          [
+            111048910797512,
+            1,
+            137,
+            "helper_codebook_part_parsed",
+            1,
+            38
+          ],
+          [
+            111048910797512,
+            1,
+            137,
+            "helper_search_candidate",
+            1,
+            2
+          ],
+          [
+            111048910797512,
+            1,
+            137,
+            "helper_candidate_part_scored",
+            1,
+            74
+          ],
+          [
+            111048910797512,
+            1,
+            138,
+            "dynamic_helper_invocation",
+            2,
+            4
+          ],
+          [
+            111048910797512,
+            1,
+            138,
+            "helper_codebook_population_node",
+            2,
+            76
+          ],
+          [
+            111048910797512,
+            1,
+            138,
+            "helper_node_attribute_examined",
+            2,
+            320
+          ],
+          [
+            111048910797512,
+            1,
+            138,
+            "helper_codebook_part_parsed",
+            2,
+            76
+          ],
+          [
+            111048910797512,
+            1,
+            138,
+            "helper_search_candidate",
+            2,
+            76
+          ],
+          [
+            111048910797512,
+            1,
+            139,
+            "dynamic_helper_invocation",
+            3,
+            4
+          ],
+          [
+            111048910797512,
+            1,
+            139,
+            "helper_codebook_population_node",
+            3,
+            76
+          ],
+          [
+            111048910797512,
+            1,
+            139,
+            "helper_node_attribute_examined",
+            3,
+            320
+          ],
+          [
+            111048910797512,
+            1,
+            139,
+            "helper_codebook_part_parsed",
+            3,
+            76
+          ],
+          [
+            111048910797512,
+            1,
+            139,
+            "helper_search_candidate",
+            3,
+            2760
+          ],
+          [
+            111048910797512,
+            1,
+            139,
+            "helper_auxiliary_population_node",
+            3,
+            24
+          ],
+          [
+            111048910797512,
+            1,
+            142,
+            "dynamic_helper_invocation",
+            4,
+            2
+          ],
+          [
+            111048910797512,
+            1,
+            142,
+            "helper_codebook_population_node",
+            4,
+            38
+          ],
+          [
+            111048910797512,
+            1,
+            142,
+            "helper_node_attribute_examined",
+            4,
+            160
+          ],
+          [
+            111048910797512,
+            1,
+            142,
+            "helper_codebook_part_parsed",
+            4,
+            38
+          ],
+          [
+            111048910797512,
+            1,
+            142,
+            "helper_search_candidate",
+            4,
+            9600
+          ],
+          [
+            111048910797512,
+            1,
+            147,
+            "dynamic_helper_invocation",
+            4,
+            2
+          ],
+          [
+            111048910797512,
+            1,
+            147,
+            "helper_codebook_population_node",
+            4,
+            38
+          ],
+          [
+            111048910797512,
+            1,
+            147,
+            "helper_node_attribute_examined",
+            4,
+            160
+          ],
+          [
+            111048910797512,
+            1,
+            147,
+            "helper_codebook_part_parsed",
+            4,
+            38
+          ],
+          [
+            111048910797512,
+            1,
+            147,
+            "helper_search_candidate",
+            4,
+            9600
+          ],
+          [
+            111048910797512,
+            1,
+            150,
+            "dynamic_helper_invocation",
+            3,
+            2
+          ],
+          [
+            111048910797512,
+            1,
+            150,
+            "helper_codebook_population_node",
+            3,
+            38
+          ],
+          [
+            111048910797512,
+            1,
+            150,
+            "helper_node_attribute_examined",
+            3,
+            160
+          ],
+          [
+            111048910797512,
+            1,
+            150,
+            "helper_codebook_part_parsed",
+            3,
+            38
+          ],
+          [
+            111048910797512,
+            1,
+            150,
+            "helper_search_candidate",
+            3,
+            2172
+          ],
+          [
+            111048910797512,
+            1,
+            150,
+            "helper_auxiliary_population_node",
+            3,
+            14
+          ]
+        ]
+      },
+      "scope_membership": [
+        {
+          "frame": 0,
+          "members_agree": true,
+          "obs_scope_id_attr": null,
+          "part_scope_id_attr": null,
+          "provenance_sha256": "0ee2599327e45dd1a4f2d535134f393fa089871e14a63b4233c66ee35c24b434",
+          "scope_id": "audit-global-unscoped_global_k2_r1-0",
+          "scope_node": "#769"
+        },
+        {
+          "frame": 1,
+          "members_agree": true,
+          "obs_scope_id_attr": null,
+          "part_scope_id_attr": null,
+          "provenance_sha256": "750b8989097321ff3cf99a32fa9f04717ac06652adaf1db8720a918aaa2ceeae",
+          "scope_id": "audit-global-unscoped_global_k2_r1-1",
+          "scope_node": "#772"
+        }
+      ],
+      "source_after": {
+        "engine": "engine 1acf723cf64b @ /home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_build_manifest_sha256": "46331382fddd6ed1ae747e6d6af2b23aaf672bbeafbe82c9bf97862e9f55183a",
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "1acf723cf64b1c7d9c41feab7932d684f860d4078c83530c2d7a13bb78ba2f93",
+        "source_sha256": {
+          "docs/research/engine_substrate/SUBSTRATE_GENINFER_SCOPED_POPULATION_TRACE_V1_PREREG_20261005.md": "ea91625dcc17413619654e06d8afec93f1d68587291a6543218eb593e5eba8cc",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+          "evaluation/substrate_capability/analyze_geninfer_scoped_population_trace_v1.py": "59999cc599f89f2191cdd59b75c606200f127e2d46a8aebd9b74c9a68f6fd5e2",
+          "evaluation/substrate_capability/substrate_geninfer_scoped_population_trace_v1.py": "8ec6b17d6603a57145b84c29d6af3903a670cba52a4b95353b99e01424df6171",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/__init__.py": "b5b0ffab338329a3c9c7f24fbafe8821d89810f6c162c51b564976328e2bf843",
+          "runners/dsl/python/substrate_rs/_native.build.json": "46331382fddd6ed1ae747e6d6af2b23aaf672bbeafbe82c9bf97862e9f55183a",
+          "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+          "runners/dsl/src/graph.rs": "72e0fb8edfd7bd3d435cccc4511ea2481288d1997747d0e538a4ecd16934c58d",
+          "runners/dsl/src/jsonio.rs": "dd6a65282f85d9397f3b3b57d3405fd504612c899020674b0b74a83487de0f71",
+          "runners/dsl/src/lib.rs": "10ae7645d9ed1f7c3c9d4f5fd119406928ce079e4336a5b007df307c685c0826",
+          "runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+          "runners/dsl/src/py.rs": "ad5ced217ff7648a57fbd066a5d2a7dcffefb612e11c32c375c4482dd49b8a49",
+          "runners/dsl/src/reflect.rs": "7d80c39ad2f2a7fabc2cc9469377ba0ccd87a6bb5fe81258d169baf1124f30d1",
+          "runners/dsl/src/rewrite.rs": "a617664517d2a7b654a1ecc3caee6aaafb3d6c41ce0a47667a08497a7978f2ed",
+          "runners/dsl/src/shape_decode.rs": "ae83fe53614a12b60c4bfd6694e4b0faaad6210a3535cab428af701078d2f8aa",
+          "runners/dsl/src/substrate.rs": "866e4dd75fa2c884d95c8d2ccb1b5415bfeb3ba1e928bebbc64e18d3a1b0d577",
+          "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+          "runners/dsl/src/term.rs": "313b5f6dcd820f4ed62f0f6cfd794119379b09258ea7f926915fc0014439d417",
+          "seeds/adaptive_control_core.json": "fc57fe2f6e3f0ab45f4fac84221bdabf5b3a99b64de3bccf62cf7c016b2c9504",
+          "seeds/affective_state_core.json": "9cfd82ff99c780a0ddfb5ec65942fef77ea2275341e6a09f5b78d1910c354990",
+          "seeds/decision_core.json": "a2226728536b18760ffbeac4d699aad4db9d965f4a0f37470f73350c8b202198",
+          "seeds/default_mode_core.json": "10afab5ee8914577580225d192bad8138361e662c17509f34ecfc7f3175d748d",
+          "seeds/dual_process_core.json": "4cace3623596a588eb49b28cff51ee8bf144b0f9005dd8262f5d3910c23bc777",
+          "seeds/episodic_working_memory_core.json": "023050b48704fa75ed8da0c2db64c2e468f355112b5578897a04caa643fd9b57",
+          "seeds/epistemics_core.json": "485d3517bd988d332312fc08b83c2d757bd13a613e0a7d8ad4e1972ddae81e3e",
+          "seeds/experimentation_core.json": "dfbba83b66305e06328a3cc737765da56e0ab3fc66580b45dad7d75b0fb1ff7a",
+          "seeds/generative_world_model.json": "f147432955e1970bae03f1ec8cb1b3238fe8abba1520129e506c3600a07ed0a6",
+          "seeds/goal_construction.json": "598a573afb85beaaaafc90a6259e01f1cde211ffc4ea96acd1f2b9074d2e0e83",
+          "seeds/learning_core.json": "8269692b08f399096fef7d15bc58a207d79477e6954288aa09d3ed5e98bd3141",
+          "seeds/math_capability_shapes.json": "ddb216430ce303f45695998d992159d1c91d149b9bc18f5ab7d48d0ae4350057",
+          "seeds/memory_core.json": "5ec7f07b90f192bc3cea660d87335e34c5074d466a7d484b7381abf651231e6b",
+          "seeds/motor_core.json": "12cbe423bd6f1149fe28801e9172f86eaf34744948975a4bae27e349f7cbd6c3",
+          "seeds/perception_core.json": "7a274b9410bce9503392f0210bb22873273ea91c1558b9007e57885d852ae9bc",
+          "seeds/reflex_core.json": "f760e7821058306a48b6550fb041c871f044b18d0ef1359238fe90d292726c43",
+          "seeds/self_design_axis.json": "1003fb83a9f972747338f4cff35c6a471080ae25f265e1eae512255996731505",
+          "seeds/self_monitoring.json": "17cc07e1460c1505b6d223bdca203b4c3fbe17669971d904a5ffff322032eb58",
+          "seeds/shape_decode_loop.json": "0fb6e5206c6e901d1bae254dc7558c1f9f9171d2dfc8e3e0295593f27c3efa1e",
+          "seeds/theorem_core.json": "5630cfd5bd90a3c23f3346cbbc90af32a8f64848a287913b7688879095a7d332",
+          "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+          "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+        }
+      },
+      "source_before": {
+        "engine": "engine 1acf723cf64b @ /home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_build_manifest_sha256": "46331382fddd6ed1ae747e6d6af2b23aaf672bbeafbe82c9bf97862e9f55183a",
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "1acf723cf64b1c7d9c41feab7932d684f860d4078c83530c2d7a13bb78ba2f93",
+        "source_sha256": {
+          "docs/research/engine_substrate/SUBSTRATE_GENINFER_SCOPED_POPULATION_TRACE_V1_PREREG_20261005.md": "ea91625dcc17413619654e06d8afec93f1d68587291a6543218eb593e5eba8cc",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+          "evaluation/substrate_capability/analyze_geninfer_scoped_population_trace_v1.py": "59999cc599f89f2191cdd59b75c606200f127e2d46a8aebd9b74c9a68f6fd5e2",
+          "evaluation/substrate_capability/substrate_geninfer_scoped_population_trace_v1.py": "8ec6b17d6603a57145b84c29d6af3903a670cba52a4b95353b99e01424df6171",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/__init__.py": "b5b0ffab338329a3c9c7f24fbafe8821d89810f6c162c51b564976328e2bf843",
+          "runners/dsl/python/substrate_rs/_native.build.json": "46331382fddd6ed1ae747e6d6af2b23aaf672bbeafbe82c9bf97862e9f55183a",
+          "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+          "runners/dsl/src/graph.rs": "72e0fb8edfd7bd3d435cccc4511ea2481288d1997747d0e538a4ecd16934c58d",
+          "runners/dsl/src/jsonio.rs": "dd6a65282f85d9397f3b3b57d3405fd504612c899020674b0b74a83487de0f71",
+          "runners/dsl/src/lib.rs": "10ae7645d9ed1f7c3c9d4f5fd119406928ce079e4336a5b007df307c685c0826",
+          "runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+          "runners/dsl/src/py.rs": "ad5ced217ff7648a57fbd066a5d2a7dcffefb612e11c32c375c4482dd49b8a49",
+          "runners/dsl/src/reflect.rs": "7d80c39ad2f2a7fabc2cc9469377ba0ccd87a6bb5fe81258d169baf1124f30d1",
+          "runners/dsl/src/rewrite.rs": "a617664517d2a7b654a1ecc3caee6aaafb3d6c41ce0a47667a08497a7978f2ed",
+          "runners/dsl/src/shape_decode.rs": "ae83fe53614a12b60c4bfd6694e4b0faaad6210a3535cab428af701078d2f8aa",
+          "runners/dsl/src/substrate.rs": "866e4dd75fa2c884d95c8d2ccb1b5415bfeb3ba1e928bebbc64e18d3a1b0d577",
+          "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+          "runners/dsl/src/term.rs": "313b5f6dcd820f4ed62f0f6cfd794119379b09258ea7f926915fc0014439d417",
+          "seeds/adaptive_control_core.json": "fc57fe2f6e3f0ab45f4fac84221bdabf5b3a99b64de3bccf62cf7c016b2c9504",
+          "seeds/affective_state_core.json": "9cfd82ff99c780a0ddfb5ec65942fef77ea2275341e6a09f5b78d1910c354990",
+          "seeds/decision_core.json": "a2226728536b18760ffbeac4d699aad4db9d965f4a0f37470f73350c8b202198",
+          "seeds/default_mode_core.json": "10afab5ee8914577580225d192bad8138361e662c17509f34ecfc7f3175d748d",
+          "seeds/dual_process_core.json": "4cace3623596a588eb49b28cff51ee8bf144b0f9005dd8262f5d3910c23bc777",
+          "seeds/episodic_working_memory_core.json": "023050b48704fa75ed8da0c2db64c2e468f355112b5578897a04caa643fd9b57",
+          "seeds/epistemics_core.json": "485d3517bd988d332312fc08b83c2d757bd13a613e0a7d8ad4e1972ddae81e3e",
+          "seeds/experimentation_core.json": "dfbba83b66305e06328a3cc737765da56e0ab3fc66580b45dad7d75b0fb1ff7a",
+          "seeds/generative_world_model.json": "f147432955e1970bae03f1ec8cb1b3238fe8abba1520129e506c3600a07ed0a6",
+          "seeds/goal_construction.json": "598a573afb85beaaaafc90a6259e01f1cde211ffc4ea96acd1f2b9074d2e0e83",
+          "seeds/learning_core.json": "8269692b08f399096fef7d15bc58a207d79477e6954288aa09d3ed5e98bd3141",
+          "seeds/math_capability_shapes.json": "ddb216430ce303f45695998d992159d1c91d149b9bc18f5ab7d48d0ae4350057",
+          "seeds/memory_core.json": "5ec7f07b90f192bc3cea660d87335e34c5074d466a7d484b7381abf651231e6b",
+          "seeds/motor_core.json": "12cbe423bd6f1149fe28801e9172f86eaf34744948975a4bae27e349f7cbd6c3",
+          "seeds/perception_core.json": "7a274b9410bce9503392f0210bb22873273ea91c1558b9007e57885d852ae9bc",
+          "seeds/reflex_core.json": "f760e7821058306a48b6550fb041c871f044b18d0ef1359238fe90d292726c43",
+          "seeds/self_design_axis.json": "1003fb83a9f972747338f4cff35c6a471080ae25f265e1eae512255996731505",
+          "seeds/self_monitoring.json": "17cc07e1460c1505b6d223bdca203b4c3fbe17669971d904a5ffff322032eb58",
+          "seeds/shape_decode_loop.json": "0fb6e5206c6e901d1bae254dc7558c1f9f9171d2dfc8e3e0295593f27c3efa1e",
+          "seeds/theorem_core.json": "5630cfd5bd90a3c23f3346cbbc90af32a8f64848a287913b7688879095a7d332",
+          "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+          "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+        }
+      },
+      "source_stable": true
+    },
+    {
+      "case": {
+        "id": "explicit_global_k2_r1",
+        "k": 2,
+        "kind": "positive",
+        "mode": "explicit_global",
+        "repeat": 1
+      },
+      "closure_cpu_ns": 49851203,
+      "closure_wall_ns": 49838161,
+      "closure_work": 9,
+      "diagnostic_checks": [
+        {
+          "checked": 4800,
+          "frame": 0,
+          "scope_id": "shared_explicit_global_k2_r1",
+          "state_unchanged": true
+        },
+        {
+          "checked": 4800,
+          "frame": 1,
+          "scope_id": "shared_explicit_global_k2_r1",
+          "state_unchanged": true
+        }
+      ],
+      "edges_after": 749,
+      "hwm_after_kib": 45244,
+      "hwm_before_kib": 45052,
+      "hwm_delta_kib": 192,
+      "initial_candidate_checks_total": 9600,
+      "linear_generators": [
+        {
+          "matrix": [
+            2,
+            1,
+            1,
+            1
+          ],
+          "name": "genlin_[2,1,1,1]"
+        },
+        {
+          "matrix": [
+            2,
+            -1,
+            1,
+            1
+          ],
+          "name": "genlin_[2,-1,1,1]"
+        }
+      ],
+      "nodes_after": 780,
+      "nodes_before": 774,
+      "outputs": [
+        {
+          "frame": 0,
+          "matrix": [
+            2,
+            1,
+            1,
+            1
+          ],
+          "oracle_exact": true,
+          "quanta_count": 1,
+          "receipts": [
+            {
+              "base": "frame0_base",
+              "dim": "latent:genlin_[2,1,1,1]",
+              "dims": [],
+              "generator": "genlin_[2,1,1,1]",
+              "generators": [
+                "genlin_[2,1,1,1]"
+              ],
+              "k": 1,
+              "ks": [
+                1
+              ],
+              "source": "dim_infer",
+              "transforms": []
+            }
+          ],
+          "status": "recognized_transformed",
+          "target_generator_present": true
+        },
+        {
+          "frame": 1,
+          "matrix": [
+            2,
+            -1,
+            1,
+            1
+          ],
+          "oracle_exact": true,
+          "quanta_count": 1,
+          "receipts": [
+            {
+              "base": "frame1_base",
+              "dim": "latent:genlin_[2,-1,1,1]",
+              "dims": [],
+              "generator": "genlin_[2,-1,1,1]",
+              "generators": [
+                "genlin_[2,-1,1,1]"
+              ],
+              "k": 1,
+              "ks": [
+                1
+              ],
+              "source": "dim_infer",
+              "transforms": []
+            }
+          ],
+          "status": "recognized_transformed",
+          "target_generator_present": true
+        }
+      ],
+      "pid": 100,
+      "replicate": 0,
+      "runtime_work_trace": {
+        "dropped": 0,
+        "rows": [
+          [
+            105286591249096,
+            1,
+            0,
+            "scheduler_pass",
+            null,
+            3
+          ],
+          [
+            105286591249096,
+            1,
+            0,
+            "scheduler_external_poll_slots",
+            null,
+            477
+          ],
+          [
+            105286591249096,
+            1,
+            0,
+            "scheduler_fixedpoint_probe_slots",
+            null,
+            5
+          ],
+          [
+            105286591249096,
+            1,
+            0,
+            "scheduler_dirty_vector_slots",
+            null,
+            477
+          ],
+          [
+            105286591249096,
+            1,
+            0,
+            "scheduler_selected_rules",
+            null,
+            419
+          ],
+          [
+            105286591249096,
+            1,
+            0,
+            "operation_kind",
+            1,
+            1
+          ],
+          [
+            105286591249096,
+            1,
+            137,
+            "dynamic_helper_invocation",
+            1,
+            2
+          ],
+          [
+            105286591249096,
+            1,
+            137,
+            "helper_codebook_population_node",
+            1,
+            38
+          ],
+          [
+            105286591249096,
+            1,
+            137,
+            "helper_node_attribute_examined",
+            1,
+            164
+          ],
+          [
+            105286591249096,
+            1,
+            137,
+            "helper_codebook_part_parsed",
+            1,
+            38
+          ],
+          [
+            105286591249096,
+            1,
+            137,
+            "helper_search_candidate",
+            1,
+            2
+          ],
+          [
+            105286591249096,
+            1,
+            137,
+            "helper_candidate_part_scored",
+            1,
+            74
+          ],
+          [
+            105286591249096,
+            1,
+            138,
+            "dynamic_helper_invocation",
+            2,
+            4
+          ],
+          [
+            105286591249096,
+            1,
+            138,
+            "helper_codebook_population_node",
+            2,
+            76
+          ],
+          [
+            105286591249096,
+            1,
+            138,
+            "helper_node_attribute_examined",
+            2,
+            328
+          ],
+          [
+            105286591249096,
+            1,
+            138,
+            "helper_codebook_part_parsed",
+            2,
+            76
+          ],
+          [
+            105286591249096,
+            1,
+            138,
+            "helper_search_candidate",
+            2,
+            76
+          ],
+          [
+            105286591249096,
+            1,
+            139,
+            "dynamic_helper_invocation",
+            3,
+            4
+          ],
+          [
+            105286591249096,
+            1,
+            139,
+            "helper_codebook_population_node",
+            3,
+            76
+          ],
+          [
+            105286591249096,
+            1,
+            139,
+            "helper_node_attribute_examined",
+            3,
+            328
+          ],
+          [
+            105286591249096,
+            1,
+            139,
+            "helper_codebook_part_parsed",
+            3,
+            76
+          ],
+          [
+            105286591249096,
+            1,
+            139,
+            "helper_search_candidate",
+            3,
+            2760
+          ],
+          [
+            105286591249096,
+            1,
+            139,
+            "helper_auxiliary_population_node",
+            3,
+            24
+          ],
+          [
+            105286591249096,
+            1,
+            142,
+            "dynamic_helper_invocation",
+            4,
+            2
+          ],
+          [
+            105286591249096,
+            1,
+            142,
+            "helper_codebook_population_node",
+            4,
+            38
+          ],
+          [
+            105286591249096,
+            1,
+            142,
+            "helper_node_attribute_examined",
+            4,
+            28
+          ],
+          [
+            105286591249096,
+            1,
+            142,
+            "helper_codebook_part_parsed",
+            4,
+            4
+          ],
+          [
+            105286591249096,
+            1,
+            142,
+            "helper_search_candidate",
+            4,
+            9600
+          ],
+          [
+            105286591249096,
+            1,
+            147,
+            "dynamic_helper_invocation",
+            4,
+            2
+          ],
+          [
+            105286591249096,
+            1,
+            147,
+            "helper_codebook_population_node",
+            4,
+            38
+          ],
+          [
+            105286591249096,
+            1,
+            147,
+            "helper_node_attribute_examined",
+            4,
+            28
+          ],
+          [
+            105286591249096,
+            1,
+            147,
+            "helper_codebook_part_parsed",
+            4,
+            4
+          ],
+          [
+            105286591249096,
+            1,
+            147,
+            "helper_search_candidate",
+            4,
+            9600
+          ],
+          [
+            105286591249096,
+            1,
+            150,
+            "dynamic_helper_invocation",
+            3,
+            2
+          ],
+          [
+            105286591249096,
+            1,
+            150,
+            "helper_codebook_population_node",
+            3,
+            38
+          ],
+          [
+            105286591249096,
+            1,
+            150,
+            "helper_node_attribute_examined",
+            3,
+            164
+          ],
+          [
+            105286591249096,
+            1,
+            150,
+            "helper_codebook_part_parsed",
+            3,
+            38
+          ],
+          [
+            105286591249096,
+            1,
+            150,
+            "helper_search_candidate",
+            3,
+            2172
+          ],
+          [
+            105286591249096,
+            1,
+            150,
+            "helper_auxiliary_population_node",
+            3,
+            14
+          ]
+        ]
+      },
+      "scope_membership": [
+        {
+          "frame": 0,
+          "members_agree": true,
+          "obs_scope_id_attr": "shared_explicit_global_k2_r1",
+          "part_scope_id_attr": "shared_explicit_global_k2_r1",
+          "provenance_sha256": "81ab8999f90631d72bf8fe8e870610ee74db31850d13318a98f50eca7a3d8ede",
+          "scope_id": "shared_explicit_global_k2_r1",
+          "scope_node": "#769"
+        },
+        {
+          "frame": 1,
+          "members_agree": true,
+          "obs_scope_id_attr": "shared_explicit_global_k2_r1",
+          "part_scope_id_attr": "shared_explicit_global_k2_r1",
+          "provenance_sha256": "5c2858eb53ad5a8a48ffba439dae1e19a3d7a220f84ba041e3cbb6867a78666a",
+          "scope_id": "shared_explicit_global_k2_r1",
+          "scope_node": "#772"
+        }
+      ],
+      "source_after": {
+        "engine": "engine 1acf723cf64b @ /home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_build_manifest_sha256": "46331382fddd6ed1ae747e6d6af2b23aaf672bbeafbe82c9bf97862e9f55183a",
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "1acf723cf64b1c7d9c41feab7932d684f860d4078c83530c2d7a13bb78ba2f93",
+        "source_sha256": {
+          "docs/research/engine_substrate/SUBSTRATE_GENINFER_SCOPED_POPULATION_TRACE_V1_PREREG_20261005.md": "ea91625dcc17413619654e06d8afec93f1d68587291a6543218eb593e5eba8cc",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+          "evaluation/substrate_capability/analyze_geninfer_scoped_population_trace_v1.py": "59999cc599f89f2191cdd59b75c606200f127e2d46a8aebd9b74c9a68f6fd5e2",
+          "evaluation/substrate_capability/substrate_geninfer_scoped_population_trace_v1.py": "8ec6b17d6603a57145b84c29d6af3903a670cba52a4b95353b99e01424df6171",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/__init__.py": "b5b0ffab338329a3c9c7f24fbafe8821d89810f6c162c51b564976328e2bf843",
+          "runners/dsl/python/substrate_rs/_native.build.json": "46331382fddd6ed1ae747e6d6af2b23aaf672bbeafbe82c9bf97862e9f55183a",
+          "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+          "runners/dsl/src/graph.rs": "72e0fb8edfd7bd3d435cccc4511ea2481288d1997747d0e538a4ecd16934c58d",
+          "runners/dsl/src/jsonio.rs": "dd6a65282f85d9397f3b3b57d3405fd504612c899020674b0b74a83487de0f71",
+          "runners/dsl/src/lib.rs": "10ae7645d9ed1f7c3c9d4f5fd119406928ce079e4336a5b007df307c685c0826",
+          "runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+          "runners/dsl/src/py.rs": "ad5ced217ff7648a57fbd066a5d2a7dcffefb612e11c32c375c4482dd49b8a49",
+          "runners/dsl/src/reflect.rs": "7d80c39ad2f2a7fabc2cc9469377ba0ccd87a6bb5fe81258d169baf1124f30d1",
+          "runners/dsl/src/rewrite.rs": "a617664517d2a7b654a1ecc3caee6aaafb3d6c41ce0a47667a08497a7978f2ed",
+          "runners/dsl/src/shape_decode.rs": "ae83fe53614a12b60c4bfd6694e4b0faaad6210a3535cab428af701078d2f8aa",
+          "runners/dsl/src/substrate.rs": "866e4dd75fa2c884d95c8d2ccb1b5415bfeb3ba1e928bebbc64e18d3a1b0d577",
+          "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+          "runners/dsl/src/term.rs": "313b5f6dcd820f4ed62f0f6cfd794119379b09258ea7f926915fc0014439d417",
+          "seeds/adaptive_control_core.json": "fc57fe2f6e3f0ab45f4fac84221bdabf5b3a99b64de3bccf62cf7c016b2c9504",
+          "seeds/affective_state_core.json": "9cfd82ff99c780a0ddfb5ec65942fef77ea2275341e6a09f5b78d1910c354990",
+          "seeds/decision_core.json": "a2226728536b18760ffbeac4d699aad4db9d965f4a0f37470f73350c8b202198",
+          "seeds/default_mode_core.json": "10afab5ee8914577580225d192bad8138361e662c17509f34ecfc7f3175d748d",
+          "seeds/dual_process_core.json": "4cace3623596a588eb49b28cff51ee8bf144b0f9005dd8262f5d3910c23bc777",
+          "seeds/episodic_working_memory_core.json": "023050b48704fa75ed8da0c2db64c2e468f355112b5578897a04caa643fd9b57",
+          "seeds/epistemics_core.json": "485d3517bd988d332312fc08b83c2d757bd13a613e0a7d8ad4e1972ddae81e3e",
+          "seeds/experimentation_core.json": "dfbba83b66305e06328a3cc737765da56e0ab3fc66580b45dad7d75b0fb1ff7a",
+          "seeds/generative_world_model.json": "f147432955e1970bae03f1ec8cb1b3238fe8abba1520129e506c3600a07ed0a6",
+          "seeds/goal_construction.json": "598a573afb85beaaaafc90a6259e01f1cde211ffc4ea96acd1f2b9074d2e0e83",
+          "seeds/learning_core.json": "8269692b08f399096fef7d15bc58a207d79477e6954288aa09d3ed5e98bd3141",
+          "seeds/math_capability_shapes.json": "ddb216430ce303f45695998d992159d1c91d149b9bc18f5ab7d48d0ae4350057",
+          "seeds/memory_core.json": "5ec7f07b90f192bc3cea660d87335e34c5074d466a7d484b7381abf651231e6b",
+          "seeds/motor_core.json": "12cbe423bd6f1149fe28801e9172f86eaf34744948975a4bae27e349f7cbd6c3",
+          "seeds/perception_core.json": "7a274b9410bce9503392f0210bb22873273ea91c1558b9007e57885d852ae9bc",
+          "seeds/reflex_core.json": "f760e7821058306a48b6550fb041c871f044b18d0ef1359238fe90d292726c43",
+          "seeds/self_design_axis.json": "1003fb83a9f972747338f4cff35c6a471080ae25f265e1eae512255996731505",
+          "seeds/self_monitoring.json": "17cc07e1460c1505b6d223bdca203b4c3fbe17669971d904a5ffff322032eb58",
+          "seeds/shape_decode_loop.json": "0fb6e5206c6e901d1bae254dc7558c1f9f9171d2dfc8e3e0295593f27c3efa1e",
+          "seeds/theorem_core.json": "5630cfd5bd90a3c23f3346cbbc90af32a8f64848a287913b7688879095a7d332",
+          "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+          "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+        }
+      },
+      "source_before": {
+        "engine": "engine 1acf723cf64b @ /home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_build_manifest_sha256": "46331382fddd6ed1ae747e6d6af2b23aaf672bbeafbe82c9bf97862e9f55183a",
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "1acf723cf64b1c7d9c41feab7932d684f860d4078c83530c2d7a13bb78ba2f93",
+        "source_sha256": {
+          "docs/research/engine_substrate/SUBSTRATE_GENINFER_SCOPED_POPULATION_TRACE_V1_PREREG_20261005.md": "ea91625dcc17413619654e06d8afec93f1d68587291a6543218eb593e5eba8cc",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+          "evaluation/substrate_capability/analyze_geninfer_scoped_population_trace_v1.py": "59999cc599f89f2191cdd59b75c606200f127e2d46a8aebd9b74c9a68f6fd5e2",
+          "evaluation/substrate_capability/substrate_geninfer_scoped_population_trace_v1.py": "8ec6b17d6603a57145b84c29d6af3903a670cba52a4b95353b99e01424df6171",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/__init__.py": "b5b0ffab338329a3c9c7f24fbafe8821d89810f6c162c51b564976328e2bf843",
+          "runners/dsl/python/substrate_rs/_native.build.json": "46331382fddd6ed1ae747e6d6af2b23aaf672bbeafbe82c9bf97862e9f55183a",
+          "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+          "runners/dsl/src/graph.rs": "72e0fb8edfd7bd3d435cccc4511ea2481288d1997747d0e538a4ecd16934c58d",
+          "runners/dsl/src/jsonio.rs": "dd6a65282f85d9397f3b3b57d3405fd504612c899020674b0b74a83487de0f71",
+          "runners/dsl/src/lib.rs": "10ae7645d9ed1f7c3c9d4f5fd119406928ce079e4336a5b007df307c685c0826",
+          "runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+          "runners/dsl/src/py.rs": "ad5ced217ff7648a57fbd066a5d2a7dcffefb612e11c32c375c4482dd49b8a49",
+          "runners/dsl/src/reflect.rs": "7d80c39ad2f2a7fabc2cc9469377ba0ccd87a6bb5fe81258d169baf1124f30d1",
+          "runners/dsl/src/rewrite.rs": "a617664517d2a7b654a1ecc3caee6aaafb3d6c41ce0a47667a08497a7978f2ed",
+          "runners/dsl/src/shape_decode.rs": "ae83fe53614a12b60c4bfd6694e4b0faaad6210a3535cab428af701078d2f8aa",
+          "runners/dsl/src/substrate.rs": "866e4dd75fa2c884d95c8d2ccb1b5415bfeb3ba1e928bebbc64e18d3a1b0d577",
+          "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+          "runners/dsl/src/term.rs": "313b5f6dcd820f4ed62f0f6cfd794119379b09258ea7f926915fc0014439d417",
+          "seeds/adaptive_control_core.json": "fc57fe2f6e3f0ab45f4fac84221bdabf5b3a99b64de3bccf62cf7c016b2c9504",
+          "seeds/affective_state_core.json": "9cfd82ff99c780a0ddfb5ec65942fef77ea2275341e6a09f5b78d1910c354990",
+          "seeds/decision_core.json": "a2226728536b18760ffbeac4d699aad4db9d965f4a0f37470f73350c8b202198",
+          "seeds/default_mode_core.json": "10afab5ee8914577580225d192bad8138361e662c17509f34ecfc7f3175d748d",
+          "seeds/dual_process_core.json": "4cace3623596a588eb49b28cff51ee8bf144b0f9005dd8262f5d3910c23bc777",
+          "seeds/episodic_working_memory_core.json": "023050b48704fa75ed8da0c2db64c2e468f355112b5578897a04caa643fd9b57",
+          "seeds/epistemics_core.json": "485d3517bd988d332312fc08b83c2d757bd13a613e0a7d8ad4e1972ddae81e3e",
+          "seeds/experimentation_core.json": "dfbba83b66305e06328a3cc737765da56e0ab3fc66580b45dad7d75b0fb1ff7a",
+          "seeds/generative_world_model.json": "f147432955e1970bae03f1ec8cb1b3238fe8abba1520129e506c3600a07ed0a6",
+          "seeds/goal_construction.json": "598a573afb85beaaaafc90a6259e01f1cde211ffc4ea96acd1f2b9074d2e0e83",
+          "seeds/learning_core.json": "8269692b08f399096fef7d15bc58a207d79477e6954288aa09d3ed5e98bd3141",
+          "seeds/math_capability_shapes.json": "ddb216430ce303f45695998d992159d1c91d149b9bc18f5ab7d48d0ae4350057",
+          "seeds/memory_core.json": "5ec7f07b90f192bc3cea660d87335e34c5074d466a7d484b7381abf651231e6b",
+          "seeds/motor_core.json": "12cbe423bd6f1149fe28801e9172f86eaf34744948975a4bae27e349f7cbd6c3",
+          "seeds/perception_core.json": "7a274b9410bce9503392f0210bb22873273ea91c1558b9007e57885d852ae9bc",
+          "seeds/reflex_core.json": "f760e7821058306a48b6550fb041c871f044b18d0ef1359238fe90d292726c43",
+          "seeds/self_design_axis.json": "1003fb83a9f972747338f4cff35c6a471080ae25f265e1eae512255996731505",
+          "seeds/self_monitoring.json": "17cc07e1460c1505b6d223bdca203b4c3fbe17669971d904a5ffff322032eb58",
+          "seeds/shape_decode_loop.json": "0fb6e5206c6e901d1bae254dc7558c1f9f9171d2dfc8e3e0295593f27c3efa1e",
+          "seeds/theorem_core.json": "5630cfd5bd90a3c23f3346cbbc90af32a8f64848a287913b7688879095a7d332",
+          "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+          "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+        }
+      },
+      "source_stable": true
+    },
+    {
+      "case": {
+        "id": "frame_scoped_k2_r1",
+        "k": 2,
+        "kind": "positive",
+        "mode": "frame_scoped",
+        "repeat": 1
+      },
+      "closure_cpu_ns": 30483719,
+      "closure_wall_ns": 30594061,
+      "closure_work": 9,
+      "diagnostic_checks": [
+        {
+          "checked": 2400,
+          "frame": 0,
+          "scope_id": "scope_frame_scoped_k2_r1_frame0",
+          "state_unchanged": true
+        },
+        {
+          "checked": 2400,
+          "frame": 1,
+          "scope_id": "scope_frame_scoped_k2_r1_frame1",
+          "state_unchanged": true
+        }
+      ],
+      "edges_after": 749,
+      "hwm_after_kib": 44264,
+      "hwm_before_kib": 44072,
+      "hwm_delta_kib": 192,
+      "initial_candidate_checks_total": 4800,
+      "linear_generators": [
+        {
+          "matrix": [
+            2,
+            1,
+            1,
+            1
+          ],
+          "name": "genlin_[2,1,1,1]"
+        },
+        {
+          "matrix": [
+            2,
+            -1,
+            1,
+            1
+          ],
+          "name": "genlin_[2,-1,1,1]"
+        }
+      ],
+      "nodes_after": 780,
+      "nodes_before": 774,
+      "outputs": [
+        {
+          "frame": 0,
+          "matrix": [
+            2,
+            1,
+            1,
+            1
+          ],
+          "oracle_exact": true,
+          "quanta_count": 1,
+          "receipts": [
+            {
+              "base": "frame0_base",
+              "dim": "latent:genlin_[2,1,1,1]",
+              "dims": [],
+              "generator": "genlin_[2,1,1,1]",
+              "generators": [
+                "genlin_[2,1,1,1]"
+              ],
+              "k": 1,
+              "ks": [
+                1
+              ],
+              "source": "dim_infer",
+              "transforms": []
+            }
+          ],
+          "status": "recognized_transformed",
+          "target_generator_present": true
+        },
+        {
+          "frame": 1,
+          "matrix": [
+            2,
+            -1,
+            1,
+            1
+          ],
+          "oracle_exact": true,
+          "quanta_count": 1,
+          "receipts": [
+            {
+              "base": "frame1_base",
+              "dim": "latent:genlin_[2,-1,1,1]",
+              "dims": [],
+              "generator": "genlin_[2,-1,1,1]",
+              "generators": [
+                "genlin_[2,-1,1,1]"
+              ],
+              "k": 1,
+              "ks": [
+                1
+              ],
+              "source": "dim_infer",
+              "transforms": []
+            }
+          ],
+          "status": "recognized_transformed",
+          "target_generator_present": true
+        }
+      ],
+      "pid": 197,
+      "replicate": 0,
+      "runtime_work_trace": {
+        "dropped": 0,
+        "rows": [
+          [
+            100077524912840,
+            1,
+            0,
+            "scheduler_pass",
+            null,
+            3
+          ],
+          [
+            100077524912840,
+            1,
+            0,
+            "scheduler_external_poll_slots",
+            null,
+            477
+          ],
+          [
+            100077524912840,
+            1,
+            0,
+            "scheduler_fixedpoint_probe_slots",
+            null,
+            5
+          ],
+          [
+            100077524912840,
+            1,
+            0,
+            "scheduler_dirty_vector_slots",
+            null,
+            477
+          ],
+          [
+            100077524912840,
+            1,
+            0,
+            "scheduler_selected_rules",
+            null,
+            419
+          ],
+          [
+            100077524912840,
+            1,
+            0,
+            "operation_kind",
+            1,
+            1
+          ],
+          [
+            100077524912840,
+            1,
+            137,
+            "dynamic_helper_invocation",
+            1,
+            2
+          ],
+          [
+            100077524912840,
+            1,
+            137,
+            "helper_codebook_population_node",
+            1,
+            38
+          ],
+          [
+            100077524912840,
+            1,
+            137,
+            "helper_node_attribute_examined",
+            1,
+            164
+          ],
+          [
+            100077524912840,
+            1,
+            137,
+            "helper_codebook_part_parsed",
+            1,
+            38
+          ],
+          [
+            100077524912840,
+            1,
+            137,
+            "helper_search_candidate",
+            1,
+            2
+          ],
+          [
+            100077524912840,
+            1,
+            137,
+            "helper_candidate_part_scored",
+            1,
+            74
+          ],
+          [
+            100077524912840,
+            1,
+            138,
+            "dynamic_helper_invocation",
+            2,
+            4
+          ],
+          [
+            100077524912840,
+            1,
+            138,
+            "helper_codebook_population_node",
+            2,
+            76
+          ],
+          [
+            100077524912840,
+            1,
+            138,
+            "helper_node_attribute_examined",
+            2,
+            328
+          ],
+          [
+            100077524912840,
+            1,
+            138,
+            "helper_codebook_part_parsed",
+            2,
+            76
+          ],
+          [
+            100077524912840,
+            1,
+            138,
+            "helper_search_candidate",
+            2,
+            76
+          ],
+          [
+            100077524912840,
+            1,
+            139,
+            "dynamic_helper_invocation",
+            3,
+            4
+          ],
+          [
+            100077524912840,
+            1,
+            139,
+            "helper_codebook_population_node",
+            3,
+            76
+          ],
+          [
+            100077524912840,
+            1,
+            139,
+            "helper_node_attribute_examined",
+            3,
+            328
+          ],
+          [
+            100077524912840,
+            1,
+            139,
+            "helper_codebook_part_parsed",
+            3,
+            76
+          ],
+          [
+            100077524912840,
+            1,
+            139,
+            "helper_search_candidate",
+            3,
+            2760
+          ],
+          [
+            100077524912840,
+            1,
+            139,
+            "helper_auxiliary_population_node",
+            3,
+            24
+          ],
+          [
+            100077524912840,
+            1,
+            142,
+            "dynamic_helper_invocation",
+            4,
+            2
+          ],
+          [
+            100077524912840,
+            1,
+            142,
+            "helper_codebook_population_node",
+            4,
+            38
+          ],
+          [
+            100077524912840,
+            1,
+            142,
+            "helper_node_attribute_examined",
+            4,
+            14
+          ],
+          [
+            100077524912840,
+            1,
+            142,
+            "helper_codebook_part_parsed",
+            4,
+            2
+          ],
+          [
+            100077524912840,
+            1,
+            142,
+            "helper_search_candidate",
+            4,
+            4800
+          ],
+          [
+            100077524912840,
+            1,
+            147,
+            "dynamic_helper_invocation",
+            4,
+            2
+          ],
+          [
+            100077524912840,
+            1,
+            147,
+            "helper_codebook_population_node",
+            4,
+            38
+          ],
+          [
+            100077524912840,
+            1,
+            147,
+            "helper_node_attribute_examined",
+            4,
+            14
+          ],
+          [
+            100077524912840,
+            1,
+            147,
+            "helper_codebook_part_parsed",
+            4,
+            2
+          ],
+          [
+            100077524912840,
+            1,
+            147,
+            "helper_search_candidate",
+            4,
+            4800
+          ],
+          [
+            100077524912840,
+            1,
+            150,
+            "dynamic_helper_invocation",
+            3,
+            2
+          ],
+          [
+            100077524912840,
+            1,
+            150,
+            "helper_codebook_population_node",
+            3,
+            38
+          ],
+          [
+            100077524912840,
+            1,
+            150,
+            "helper_node_attribute_examined",
+            3,
+            164
+          ],
+          [
+            100077524912840,
+            1,
+            150,
+            "helper_codebook_part_parsed",
+            3,
+            38
+          ],
+          [
+            100077524912840,
+            1,
+            150,
+            "helper_search_candidate",
+            3,
+            2172
+          ],
+          [
+            100077524912840,
+            1,
+            150,
+            "helper_auxiliary_population_node",
+            3,
+            14
+          ]
+        ]
+      },
+      "scope_membership": [
+        {
+          "frame": 0,
+          "members_agree": true,
+          "obs_scope_id_attr": "scope_frame_scoped_k2_r1_frame0",
+          "part_scope_id_attr": "scope_frame_scoped_k2_r1_frame0",
+          "provenance_sha256": "1a9f4f43ec06eb9e69d35465de436958865083b79d62f574fa4a58b67bcf6674",
+          "scope_id": "scope_frame_scoped_k2_r1_frame0",
+          "scope_node": "#769"
+        },
+        {
+          "frame": 1,
+          "members_agree": true,
+          "obs_scope_id_attr": "scope_frame_scoped_k2_r1_frame1",
+          "part_scope_id_attr": "scope_frame_scoped_k2_r1_frame1",
+          "provenance_sha256": "2ee986618750ec61140b9a188e3d024fa4bfa910ddcf4cf2de8a1135f6df37eb",
+          "scope_id": "scope_frame_scoped_k2_r1_frame1",
+          "scope_node": "#772"
+        }
+      ],
+      "source_after": {
+        "engine": "engine 1acf723cf64b @ /home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_build_manifest_sha256": "46331382fddd6ed1ae747e6d6af2b23aaf672bbeafbe82c9bf97862e9f55183a",
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "1acf723cf64b1c7d9c41feab7932d684f860d4078c83530c2d7a13bb78ba2f93",
+        "source_sha256": {
+          "docs/research/engine_substrate/SUBSTRATE_GENINFER_SCOPED_POPULATION_TRACE_V1_PREREG_20261005.md": "ea91625dcc17413619654e06d8afec93f1d68587291a6543218eb593e5eba8cc",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+          "evaluation/substrate_capability/analyze_geninfer_scoped_population_trace_v1.py": "59999cc599f89f2191cdd59b75c606200f127e2d46a8aebd9b74c9a68f6fd5e2",
+          "evaluation/substrate_capability/substrate_geninfer_scoped_population_trace_v1.py": "8ec6b17d6603a57145b84c29d6af3903a670cba52a4b95353b99e01424df6171",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/__init__.py": "b5b0ffab338329a3c9c7f24fbafe8821d89810f6c162c51b564976328e2bf843",
+          "runners/dsl/python/substrate_rs/_native.build.json": "46331382fddd6ed1ae747e6d6af2b23aaf672bbeafbe82c9bf97862e9f55183a",
+          "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+          "runners/dsl/src/graph.rs": "72e0fb8edfd7bd3d435cccc4511ea2481288d1997747d0e538a4ecd16934c58d",
+          "runners/dsl/src/jsonio.rs": "dd6a65282f85d9397f3b3b57d3405fd504612c899020674b0b74a83487de0f71",
+          "runners/dsl/src/lib.rs": "10ae7645d9ed1f7c3c9d4f5fd119406928ce079e4336a5b007df307c685c0826",
+          "runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+          "runners/dsl/src/py.rs": "ad5ced217ff7648a57fbd066a5d2a7dcffefb612e11c32c375c4482dd49b8a49",
+          "runners/dsl/src/reflect.rs": "7d80c39ad2f2a7fabc2cc9469377ba0ccd87a6bb5fe81258d169baf1124f30d1",
+          "runners/dsl/src/rewrite.rs": "a617664517d2a7b654a1ecc3caee6aaafb3d6c41ce0a47667a08497a7978f2ed",
+          "runners/dsl/src/shape_decode.rs": "ae83fe53614a12b60c4bfd6694e4b0faaad6210a3535cab428af701078d2f8aa",
+          "runners/dsl/src/substrate.rs": "866e4dd75fa2c884d95c8d2ccb1b5415bfeb3ba1e928bebbc64e18d3a1b0d577",
+          "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+          "runners/dsl/src/term.rs": "313b5f6dcd820f4ed62f0f6cfd794119379b09258ea7f926915fc0014439d417",
+          "seeds/adaptive_control_core.json": "fc57fe2f6e3f0ab45f4fac84221bdabf5b3a99b64de3bccf62cf7c016b2c9504",
+          "seeds/affective_state_core.json": "9cfd82ff99c780a0ddfb5ec65942fef77ea2275341e6a09f5b78d1910c354990",
+          "seeds/decision_core.json": "a2226728536b18760ffbeac4d699aad4db9d965f4a0f37470f73350c8b202198",
+          "seeds/default_mode_core.json": "10afab5ee8914577580225d192bad8138361e662c17509f34ecfc7f3175d748d",
+          "seeds/dual_process_core.json": "4cace3623596a588eb49b28cff51ee8bf144b0f9005dd8262f5d3910c23bc777",
+          "seeds/episodic_working_memory_core.json": "023050b48704fa75ed8da0c2db64c2e468f355112b5578897a04caa643fd9b57",
+          "seeds/epistemics_core.json": "485d3517bd988d332312fc08b83c2d757bd13a613e0a7d8ad4e1972ddae81e3e",
+          "seeds/experimentation_core.json": "dfbba83b66305e06328a3cc737765da56e0ab3fc66580b45dad7d75b0fb1ff7a",
+          "seeds/generative_world_model.json": "f147432955e1970bae03f1ec8cb1b3238fe8abba1520129e506c3600a07ed0a6",
+          "seeds/goal_construction.json": "598a573afb85beaaaafc90a6259e01f1cde211ffc4ea96acd1f2b9074d2e0e83",
+          "seeds/learning_core.json": "8269692b08f399096fef7d15bc58a207d79477e6954288aa09d3ed5e98bd3141",
+          "seeds/math_capability_shapes.json": "ddb216430ce303f45695998d992159d1c91d149b9bc18f5ab7d48d0ae4350057",
+          "seeds/memory_core.json": "5ec7f07b90f192bc3cea660d87335e34c5074d466a7d484b7381abf651231e6b",
+          "seeds/motor_core.json": "12cbe423bd6f1149fe28801e9172f86eaf34744948975a4bae27e349f7cbd6c3",
+          "seeds/perception_core.json": "7a274b9410bce9503392f0210bb22873273ea91c1558b9007e57885d852ae9bc",
+          "seeds/reflex_core.json": "f760e7821058306a48b6550fb041c871f044b18d0ef1359238fe90d292726c43",
+          "seeds/self_design_axis.json": "1003fb83a9f972747338f4cff35c6a471080ae25f265e1eae512255996731505",
+          "seeds/self_monitoring.json": "17cc07e1460c1505b6d223bdca203b4c3fbe17669971d904a5ffff322032eb58",
+          "seeds/shape_decode_loop.json": "0fb6e5206c6e901d1bae254dc7558c1f9f9171d2dfc8e3e0295593f27c3efa1e",
+          "seeds/theorem_core.json": "5630cfd5bd90a3c23f3346cbbc90af32a8f64848a287913b7688879095a7d332",
+          "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+          "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+        }
+      },
+      "source_before": {
+        "engine": "engine 1acf723cf64b @ /home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_build_manifest_sha256": "46331382fddd6ed1ae747e6d6af2b23aaf672bbeafbe82c9bf97862e9f55183a",
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "1acf723cf64b1c7d9c41feab7932d684f860d4078c83530c2d7a13bb78ba2f93",
+        "source_sha256": {
+          "docs/research/engine_substrate/SUBSTRATE_GENINFER_SCOPED_POPULATION_TRACE_V1_PREREG_20261005.md": "ea91625dcc17413619654e06d8afec93f1d68587291a6543218eb593e5eba8cc",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+          "evaluation/substrate_capability/analyze_geninfer_scoped_population_trace_v1.py": "59999cc599f89f2191cdd59b75c606200f127e2d46a8aebd9b74c9a68f6fd5e2",
+          "evaluation/substrate_capability/substrate_geninfer_scoped_population_trace_v1.py": "8ec6b17d6603a57145b84c29d6af3903a670cba52a4b95353b99e01424df6171",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/__init__.py": "b5b0ffab338329a3c9c7f24fbafe8821d89810f6c162c51b564976328e2bf843",
+          "runners/dsl/python/substrate_rs/_native.build.json": "46331382fddd6ed1ae747e6d6af2b23aaf672bbeafbe82c9bf97862e9f55183a",
+          "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+          "runners/dsl/src/graph.rs": "72e0fb8edfd7bd3d435cccc4511ea2481288d1997747d0e538a4ecd16934c58d",
+          "runners/dsl/src/jsonio.rs": "dd6a65282f85d9397f3b3b57d3405fd504612c899020674b0b74a83487de0f71",
+          "runners/dsl/src/lib.rs": "10ae7645d9ed1f7c3c9d4f5fd119406928ce079e4336a5b007df307c685c0826",
+          "runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+          "runners/dsl/src/py.rs": "ad5ced217ff7648a57fbd066a5d2a7dcffefb612e11c32c375c4482dd49b8a49",
+          "runners/dsl/src/reflect.rs": "7d80c39ad2f2a7fabc2cc9469377ba0ccd87a6bb5fe81258d169baf1124f30d1",
+          "runners/dsl/src/rewrite.rs": "a617664517d2a7b654a1ecc3caee6aaafb3d6c41ce0a47667a08497a7978f2ed",
+          "runners/dsl/src/shape_decode.rs": "ae83fe53614a12b60c4bfd6694e4b0faaad6210a3535cab428af701078d2f8aa",
+          "runners/dsl/src/substrate.rs": "866e4dd75fa2c884d95c8d2ccb1b5415bfeb3ba1e928bebbc64e18d3a1b0d577",
+          "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+          "runners/dsl/src/term.rs": "313b5f6dcd820f4ed62f0f6cfd794119379b09258ea7f926915fc0014439d417",
+          "seeds/adaptive_control_core.json": "fc57fe2f6e3f0ab45f4fac84221bdabf5b3a99b64de3bccf62cf7c016b2c9504",
+          "seeds/affective_state_core.json": "9cfd82ff99c780a0ddfb5ec65942fef77ea2275341e6a09f5b78d1910c354990",
+          "seeds/decision_core.json": "a2226728536b18760ffbeac4d699aad4db9d965f4a0f37470f73350c8b202198",
+          "seeds/default_mode_core.json": "10afab5ee8914577580225d192bad8138361e662c17509f34ecfc7f3175d748d",
+          "seeds/dual_process_core.json": "4cace3623596a588eb49b28cff51ee8bf144b0f9005dd8262f5d3910c23bc777",
+          "seeds/episodic_working_memory_core.json": "023050b48704fa75ed8da0c2db64c2e468f355112b5578897a04caa643fd9b57",
+          "seeds/epistemics_core.json": "485d3517bd988d332312fc08b83c2d757bd13a613e0a7d8ad4e1972ddae81e3e",
+          "seeds/experimentation_core.json": "dfbba83b66305e06328a3cc737765da56e0ab3fc66580b45dad7d75b0fb1ff7a",
+          "seeds/generative_world_model.json": "f147432955e1970bae03f1ec8cb1b3238fe8abba1520129e506c3600a07ed0a6",
+          "seeds/goal_construction.json": "598a573afb85beaaaafc90a6259e01f1cde211ffc4ea96acd1f2b9074d2e0e83",
+          "seeds/learning_core.json": "8269692b08f399096fef7d15bc58a207d79477e6954288aa09d3ed5e98bd3141",
+          "seeds/math_capability_shapes.json": "ddb216430ce303f45695998d992159d1c91d149b9bc18f5ab7d48d0ae4350057",
+          "seeds/memory_core.json": "5ec7f07b90f192bc3cea660d87335e34c5074d466a7d484b7381abf651231e6b",
+          "seeds/motor_core.json": "12cbe423bd6f1149fe28801e9172f86eaf34744948975a4bae27e349f7cbd6c3",
+          "seeds/perception_core.json": "7a274b9410bce9503392f0210bb22873273ea91c1558b9007e57885d852ae9bc",
+          "seeds/reflex_core.json": "f760e7821058306a48b6550fb041c871f044b18d0ef1359238fe90d292726c43",
+          "seeds/self_design_axis.json": "1003fb83a9f972747338f4cff35c6a471080ae25f265e1eae512255996731505",
+          "seeds/self_monitoring.json": "17cc07e1460c1505b6d223bdca203b4c3fbe17669971d904a5ffff322032eb58",
+          "seeds/shape_decode_loop.json": "0fb6e5206c6e901d1bae254dc7558c1f9f9171d2dfc8e3e0295593f27c3efa1e",
+          "seeds/theorem_core.json": "5630cfd5bd90a3c23f3346cbbc90af32a8f64848a287913b7688879095a7d332",
+          "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+          "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+        }
+      },
+      "source_stable": true
+    },
+    {
+      "case": {
+        "id": "unscoped_global_k2_r1",
+        "k": 2,
+        "kind": "positive",
+        "mode": "unscoped_global",
+        "repeat": 1
+      },
+      "closure_cpu_ns": 36446970,
+      "closure_wall_ns": 36436113,
+      "closure_work": 9,
+      "diagnostic_checks": [
+        {
+          "checked": 4800,
+          "frame": 0,
+          "scope_id": null,
+          "state_unchanged": true
+        },
+        {
+          "checked": 4800,
+          "frame": 1,
+          "scope_id": null,
+          "state_unchanged": true
+        }
+      ],
+      "edges_after": 749,
+      "hwm_after_kib": 44616,
+      "hwm_before_kib": 44232,
+      "hwm_delta_kib": 384,
+      "initial_candidate_checks_total": 9600,
+      "linear_generators": [
+        {
+          "matrix": [
+            2,
+            1,
+            1,
+            1
+          ],
+          "name": "genlin_[2,1,1,1]"
+        },
+        {
+          "matrix": [
+            2,
+            -1,
+            1,
+            1
+          ],
+          "name": "genlin_[2,-1,1,1]"
+        }
+      ],
+      "nodes_after": 780,
+      "nodes_before": 774,
+      "outputs": [
+        {
+          "frame": 0,
+          "matrix": [
+            2,
+            1,
+            1,
+            1
+          ],
+          "oracle_exact": true,
+          "quanta_count": 1,
+          "receipts": [
+            {
+              "base": "frame0_base",
+              "dim": "latent:genlin_[2,1,1,1]",
+              "dims": [],
+              "generator": "genlin_[2,1,1,1]",
+              "generators": [
+                "genlin_[2,1,1,1]"
+              ],
+              "k": 1,
+              "ks": [
+                1
+              ],
+              "source": "dim_infer",
+              "transforms": []
+            }
+          ],
+          "status": "recognized_transformed",
+          "target_generator_present": true
+        },
+        {
+          "frame": 1,
+          "matrix": [
+            2,
+            -1,
+            1,
+            1
+          ],
+          "oracle_exact": true,
+          "quanta_count": 1,
+          "receipts": [
+            {
+              "base": "frame1_base",
+              "dim": "latent:genlin_[2,-1,1,1]",
+              "dims": [],
+              "generator": "genlin_[2,-1,1,1]",
+              "generators": [
+                "genlin_[2,-1,1,1]"
+              ],
+              "k": 1,
+              "ks": [
+                1
+              ],
+              "source": "dim_infer",
+              "transforms": []
+            }
+          ],
+          "status": "recognized_transformed",
+          "target_generator_present": true
+        }
+      ],
+      "pid": 294,
+      "replicate": 1,
+      "runtime_work_trace": {
+        "dropped": 0,
+        "rows": [
+          [
+            99331727174344,
+            1,
+            0,
+            "scheduler_pass",
+            null,
+            3
+          ],
+          [
+            99331727174344,
+            1,
+            0,
+            "scheduler_external_poll_slots",
+            null,
+            477
+          ],
+          [
+            99331727174344,
+            1,
+            0,
+            "scheduler_fixedpoint_probe_slots",
+            null,
+            5
+          ],
+          [
+            99331727174344,
+            1,
+            0,
+            "scheduler_dirty_vector_slots",
+            null,
+            477
+          ],
+          [
+            99331727174344,
+            1,
+            0,
+            "scheduler_selected_rules",
+            null,
+            419
+          ],
+          [
+            99331727174344,
+            1,
+            0,
+            "operation_kind",
+            1,
+            1
+          ],
+          [
+            99331727174344,
+            1,
+            137,
+            "dynamic_helper_invocation",
+            1,
+            2
+          ],
+          [
+            99331727174344,
+            1,
+            137,
+            "helper_codebook_population_node",
+            1,
+            38
+          ],
+          [
+            99331727174344,
+            1,
+            137,
+            "helper_node_attribute_examined",
+            1,
+            160
+          ],
+          [
+            99331727174344,
+            1,
+            137,
+            "helper_codebook_part_parsed",
+            1,
+            38
+          ],
+          [
+            99331727174344,
+            1,
+            137,
+            "helper_search_candidate",
+            1,
+            2
+          ],
+          [
+            99331727174344,
+            1,
+            137,
+            "helper_candidate_part_scored",
+            1,
+            74
+          ],
+          [
+            99331727174344,
+            1,
+            138,
+            "dynamic_helper_invocation",
+            2,
+            4
+          ],
+          [
+            99331727174344,
+            1,
+            138,
+            "helper_codebook_population_node",
+            2,
+            76
+          ],
+          [
+            99331727174344,
+            1,
+            138,
+            "helper_node_attribute_examined",
+            2,
+            320
+          ],
+          [
+            99331727174344,
+            1,
+            138,
+            "helper_codebook_part_parsed",
+            2,
+            76
+          ],
+          [
+            99331727174344,
+            1,
+            138,
+            "helper_search_candidate",
+            2,
+            76
+          ],
+          [
+            99331727174344,
+            1,
+            139,
+            "dynamic_helper_invocation",
+            3,
+            4
+          ],
+          [
+            99331727174344,
+            1,
+            139,
+            "helper_codebook_population_node",
+            3,
+            76
+          ],
+          [
+            99331727174344,
+            1,
+            139,
+            "helper_node_attribute_examined",
+            3,
+            320
+          ],
+          [
+            99331727174344,
+            1,
+            139,
+            "helper_codebook_part_parsed",
+            3,
+            76
+          ],
+          [
+            99331727174344,
+            1,
+            139,
+            "helper_search_candidate",
+            3,
+            2760
+          ],
+          [
+            99331727174344,
+            1,
+            139,
+            "helper_auxiliary_population_node",
+            3,
+            24
+          ],
+          [
+            99331727174344,
+            1,
+            142,
+            "dynamic_helper_invocation",
+            4,
+            2
+          ],
+          [
+            99331727174344,
+            1,
+            142,
+            "helper_codebook_population_node",
+            4,
+            38
+          ],
+          [
+            99331727174344,
+            1,
+            142,
+            "helper_node_attribute_examined",
+            4,
+            160
+          ],
+          [
+            99331727174344,
+            1,
+            142,
+            "helper_codebook_part_parsed",
+            4,
+            38
+          ],
+          [
+            99331727174344,
+            1,
+            142,
+            "helper_search_candidate",
+            4,
+            9600
+          ],
+          [
+            99331727174344,
+            1,
+            147,
+            "dynamic_helper_invocation",
+            4,
+            2
+          ],
+          [
+            99331727174344,
+            1,
+            147,
+            "helper_codebook_population_node",
+            4,
+            38
+          ],
+          [
+            99331727174344,
+            1,
+            147,
+            "helper_node_attribute_examined",
+            4,
+            160
+          ],
+          [
+            99331727174344,
+            1,
+            147,
+            "helper_codebook_part_parsed",
+            4,
+            38
+          ],
+          [
+            99331727174344,
+            1,
+            147,
+            "helper_search_candidate",
+            4,
+            9600
+          ],
+          [
+            99331727174344,
+            1,
+            150,
+            "dynamic_helper_invocation",
+            3,
+            2
+          ],
+          [
+            99331727174344,
+            1,
+            150,
+            "helper_codebook_population_node",
+            3,
+            38
+          ],
+          [
+            99331727174344,
+            1,
+            150,
+            "helper_node_attribute_examined",
+            3,
+            160
+          ],
+          [
+            99331727174344,
+            1,
+            150,
+            "helper_codebook_part_parsed",
+            3,
+            38
+          ],
+          [
+            99331727174344,
+            1,
+            150,
+            "helper_search_candidate",
+            3,
+            2172
+          ],
+          [
+            99331727174344,
+            1,
+            150,
+            "helper_auxiliary_population_node",
+            3,
+            14
+          ]
+        ]
+      },
+      "scope_membership": [
+        {
+          "frame": 0,
+          "members_agree": true,
+          "obs_scope_id_attr": null,
+          "part_scope_id_attr": null,
+          "provenance_sha256": "0ee2599327e45dd1a4f2d535134f393fa089871e14a63b4233c66ee35c24b434",
+          "scope_id": "audit-global-unscoped_global_k2_r1-0",
+          "scope_node": "#769"
+        },
+        {
+          "frame": 1,
+          "members_agree": true,
+          "obs_scope_id_attr": null,
+          "part_scope_id_attr": null,
+          "provenance_sha256": "750b8989097321ff3cf99a32fa9f04717ac06652adaf1db8720a918aaa2ceeae",
+          "scope_id": "audit-global-unscoped_global_k2_r1-1",
+          "scope_node": "#772"
+        }
+      ],
+      "source_after": {
+        "engine": "engine 1acf723cf64b @ /home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_build_manifest_sha256": "46331382fddd6ed1ae747e6d6af2b23aaf672bbeafbe82c9bf97862e9f55183a",
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "1acf723cf64b1c7d9c41feab7932d684f860d4078c83530c2d7a13bb78ba2f93",
+        "source_sha256": {
+          "docs/research/engine_substrate/SUBSTRATE_GENINFER_SCOPED_POPULATION_TRACE_V1_PREREG_20261005.md": "ea91625dcc17413619654e06d8afec93f1d68587291a6543218eb593e5eba8cc",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+          "evaluation/substrate_capability/analyze_geninfer_scoped_population_trace_v1.py": "59999cc599f89f2191cdd59b75c606200f127e2d46a8aebd9b74c9a68f6fd5e2",
+          "evaluation/substrate_capability/substrate_geninfer_scoped_population_trace_v1.py": "8ec6b17d6603a57145b84c29d6af3903a670cba52a4b95353b99e01424df6171",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/__init__.py": "b5b0ffab338329a3c9c7f24fbafe8821d89810f6c162c51b564976328e2bf843",
+          "runners/dsl/python/substrate_rs/_native.build.json": "46331382fddd6ed1ae747e6d6af2b23aaf672bbeafbe82c9bf97862e9f55183a",
+          "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+          "runners/dsl/src/graph.rs": "72e0fb8edfd7bd3d435cccc4511ea2481288d1997747d0e538a4ecd16934c58d",
+          "runners/dsl/src/jsonio.rs": "dd6a65282f85d9397f3b3b57d3405fd504612c899020674b0b74a83487de0f71",
+          "runners/dsl/src/lib.rs": "10ae7645d9ed1f7c3c9d4f5fd119406928ce079e4336a5b007df307c685c0826",
+          "runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+          "runners/dsl/src/py.rs": "ad5ced217ff7648a57fbd066a5d2a7dcffefb612e11c32c375c4482dd49b8a49",
+          "runners/dsl/src/reflect.rs": "7d80c39ad2f2a7fabc2cc9469377ba0ccd87a6bb5fe81258d169baf1124f30d1",
+          "runners/dsl/src/rewrite.rs": "a617664517d2a7b654a1ecc3caee6aaafb3d6c41ce0a47667a08497a7978f2ed",
+          "runners/dsl/src/shape_decode.rs": "ae83fe53614a12b60c4bfd6694e4b0faaad6210a3535cab428af701078d2f8aa",
+          "runners/dsl/src/substrate.rs": "866e4dd75fa2c884d95c8d2ccb1b5415bfeb3ba1e928bebbc64e18d3a1b0d577",
+          "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+          "runners/dsl/src/term.rs": "313b5f6dcd820f4ed62f0f6cfd794119379b09258ea7f926915fc0014439d417",
+          "seeds/adaptive_control_core.json": "fc57fe2f6e3f0ab45f4fac84221bdabf5b3a99b64de3bccf62cf7c016b2c9504",
+          "seeds/affective_state_core.json": "9cfd82ff99c780a0ddfb5ec65942fef77ea2275341e6a09f5b78d1910c354990",
+          "seeds/decision_core.json": "a2226728536b18760ffbeac4d699aad4db9d965f4a0f37470f73350c8b202198",
+          "seeds/default_mode_core.json": "10afab5ee8914577580225d192bad8138361e662c17509f34ecfc7f3175d748d",
+          "seeds/dual_process_core.json": "4cace3623596a588eb49b28cff51ee8bf144b0f9005dd8262f5d3910c23bc777",
+          "seeds/episodic_working_memory_core.json": "023050b48704fa75ed8da0c2db64c2e468f355112b5578897a04caa643fd9b57",
+          "seeds/epistemics_core.json": "485d3517bd988d332312fc08b83c2d757bd13a613e0a7d8ad4e1972ddae81e3e",
+          "seeds/experimentation_core.json": "dfbba83b66305e06328a3cc737765da56e0ab3fc66580b45dad7d75b0fb1ff7a",
+          "seeds/generative_world_model.json": "f147432955e1970bae03f1ec8cb1b3238fe8abba1520129e506c3600a07ed0a6",
+          "seeds/goal_construction.json": "598a573afb85beaaaafc90a6259e01f1cde211ffc4ea96acd1f2b9074d2e0e83",
+          "seeds/learning_core.json": "8269692b08f399096fef7d15bc58a207d79477e6954288aa09d3ed5e98bd3141",
+          "seeds/math_capability_shapes.json": "ddb216430ce303f45695998d992159d1c91d149b9bc18f5ab7d48d0ae4350057",
+          "seeds/memory_core.json": "5ec7f07b90f192bc3cea660d87335e34c5074d466a7d484b7381abf651231e6b",
+          "seeds/motor_core.json": "12cbe423bd6f1149fe28801e9172f86eaf34744948975a4bae27e349f7cbd6c3",
+          "seeds/perception_core.json": "7a274b9410bce9503392f0210bb22873273ea91c1558b9007e57885d852ae9bc",
+          "seeds/reflex_core.json": "f760e7821058306a48b6550fb041c871f044b18d0ef1359238fe90d292726c43",
+          "seeds/self_design_axis.json": "1003fb83a9f972747338f4cff35c6a471080ae25f265e1eae512255996731505",
+          "seeds/self_monitoring.json": "17cc07e1460c1505b6d223bdca203b4c3fbe17669971d904a5ffff322032eb58",
+          "seeds/shape_decode_loop.json": "0fb6e5206c6e901d1bae254dc7558c1f9f9171d2dfc8e3e0295593f27c3efa1e",
+          "seeds/theorem_core.json": "5630cfd5bd90a3c23f3346cbbc90af32a8f64848a287913b7688879095a7d332",
+          "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+          "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+        }
+      },
+      "source_before": {
+        "engine": "engine 1acf723cf64b @ /home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_build_manifest_sha256": "46331382fddd6ed1ae747e6d6af2b23aaf672bbeafbe82c9bf97862e9f55183a",
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "1acf723cf64b1c7d9c41feab7932d684f860d4078c83530c2d7a13bb78ba2f93",
+        "source_sha256": {
+          "docs/research/engine_substrate/SUBSTRATE_GENINFER_SCOPED_POPULATION_TRACE_V1_PREREG_20261005.md": "ea91625dcc17413619654e06d8afec93f1d68587291a6543218eb593e5eba8cc",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+          "evaluation/substrate_capability/analyze_geninfer_scoped_population_trace_v1.py": "59999cc599f89f2191cdd59b75c606200f127e2d46a8aebd9b74c9a68f6fd5e2",
+          "evaluation/substrate_capability/substrate_geninfer_scoped_population_trace_v1.py": "8ec6b17d6603a57145b84c29d6af3903a670cba52a4b95353b99e01424df6171",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/__init__.py": "b5b0ffab338329a3c9c7f24fbafe8821d89810f6c162c51b564976328e2bf843",
+          "runners/dsl/python/substrate_rs/_native.build.json": "46331382fddd6ed1ae747e6d6af2b23aaf672bbeafbe82c9bf97862e9f55183a",
+          "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+          "runners/dsl/src/graph.rs": "72e0fb8edfd7bd3d435cccc4511ea2481288d1997747d0e538a4ecd16934c58d",
+          "runners/dsl/src/jsonio.rs": "dd6a65282f85d9397f3b3b57d3405fd504612c899020674b0b74a83487de0f71",
+          "runners/dsl/src/lib.rs": "10ae7645d9ed1f7c3c9d4f5fd119406928ce079e4336a5b007df307c685c0826",
+          "runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+          "runners/dsl/src/py.rs": "ad5ced217ff7648a57fbd066a5d2a7dcffefb612e11c32c375c4482dd49b8a49",
+          "runners/dsl/src/reflect.rs": "7d80c39ad2f2a7fabc2cc9469377ba0ccd87a6bb5fe81258d169baf1124f30d1",
+          "runners/dsl/src/rewrite.rs": "a617664517d2a7b654a1ecc3caee6aaafb3d6c41ce0a47667a08497a7978f2ed",
+          "runners/dsl/src/shape_decode.rs": "ae83fe53614a12b60c4bfd6694e4b0faaad6210a3535cab428af701078d2f8aa",
+          "runners/dsl/src/substrate.rs": "866e4dd75fa2c884d95c8d2ccb1b5415bfeb3ba1e928bebbc64e18d3a1b0d577",
+          "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+          "runners/dsl/src/term.rs": "313b5f6dcd820f4ed62f0f6cfd794119379b09258ea7f926915fc0014439d417",
+          "seeds/adaptive_control_core.json": "fc57fe2f6e3f0ab45f4fac84221bdabf5b3a99b64de3bccf62cf7c016b2c9504",
+          "seeds/affective_state_core.json": "9cfd82ff99c780a0ddfb5ec65942fef77ea2275341e6a09f5b78d1910c354990",
+          "seeds/decision_core.json": "a2226728536b18760ffbeac4d699aad4db9d965f4a0f37470f73350c8b202198",
+          "seeds/default_mode_core.json": "10afab5ee8914577580225d192bad8138361e662c17509f34ecfc7f3175d748d",
+          "seeds/dual_process_core.json": "4cace3623596a588eb49b28cff51ee8bf144b0f9005dd8262f5d3910c23bc777",
+          "seeds/episodic_working_memory_core.json": "023050b48704fa75ed8da0c2db64c2e468f355112b5578897a04caa643fd9b57",
+          "seeds/epistemics_core.json": "485d3517bd988d332312fc08b83c2d757bd13a613e0a7d8ad4e1972ddae81e3e",
+          "seeds/experimentation_core.json": "dfbba83b66305e06328a3cc737765da56e0ab3fc66580b45dad7d75b0fb1ff7a",
+          "seeds/generative_world_model.json": "f147432955e1970bae03f1ec8cb1b3238fe8abba1520129e506c3600a07ed0a6",
+          "seeds/goal_construction.json": "598a573afb85beaaaafc90a6259e01f1cde211ffc4ea96acd1f2b9074d2e0e83",
+          "seeds/learning_core.json": "8269692b08f399096fef7d15bc58a207d79477e6954288aa09d3ed5e98bd3141",
+          "seeds/math_capability_shapes.json": "ddb216430ce303f45695998d992159d1c91d149b9bc18f5ab7d48d0ae4350057",
+          "seeds/memory_core.json": "5ec7f07b90f192bc3cea660d87335e34c5074d466a7d484b7381abf651231e6b",
+          "seeds/motor_core.json": "12cbe423bd6f1149fe28801e9172f86eaf34744948975a4bae27e349f7cbd6c3",
+          "seeds/perception_core.json": "7a274b9410bce9503392f0210bb22873273ea91c1558b9007e57885d852ae9bc",
+          "seeds/reflex_core.json": "f760e7821058306a48b6550fb041c871f044b18d0ef1359238fe90d292726c43",
+          "seeds/self_design_axis.json": "1003fb83a9f972747338f4cff35c6a471080ae25f265e1eae512255996731505",
+          "seeds/self_monitoring.json": "17cc07e1460c1505b6d223bdca203b4c3fbe17669971d904a5ffff322032eb58",
+          "seeds/shape_decode_loop.json": "0fb6e5206c6e901d1bae254dc7558c1f9f9171d2dfc8e3e0295593f27c3efa1e",
+          "seeds/theorem_core.json": "5630cfd5bd90a3c23f3346cbbc90af32a8f64848a287913b7688879095a7d332",
+          "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+          "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+        }
+      },
+      "source_stable": true
+    },
+    {
+      "case": {
+        "id": "explicit_global_k2_r1",
+        "k": 2,
+        "kind": "positive",
+        "mode": "explicit_global",
+        "repeat": 1
+      },
+      "closure_cpu_ns": 40927981,
+      "closure_wall_ns": 40915009,
+      "closure_work": 9,
+      "diagnostic_checks": [
+        {
+          "checked": 4800,
+          "frame": 0,
+          "scope_id": "shared_explicit_global_k2_r1",
+          "state_unchanged": true
+        },
+        {
+          "checked": 4800,
+          "frame": 1,
+          "scope_id": "shared_explicit_global_k2_r1",
+          "state_unchanged": true
+        }
+      ],
+      "edges_after": 749,
+      "hwm_after_kib": 45168,
+      "hwm_before_kib": 44784,
+      "hwm_delta_kib": 384,
+      "initial_candidate_checks_total": 9600,
+      "linear_generators": [
+        {
+          "matrix": [
+            2,
+            1,
+            1,
+            1
+          ],
+          "name": "genlin_[2,1,1,1]"
+        },
+        {
+          "matrix": [
+            2,
+            -1,
+            1,
+            1
+          ],
+          "name": "genlin_[2,-1,1,1]"
+        }
+      ],
+      "nodes_after": 780,
+      "nodes_before": 774,
+      "outputs": [
+        {
+          "frame": 0,
+          "matrix": [
+            2,
+            1,
+            1,
+            1
+          ],
+          "oracle_exact": true,
+          "quanta_count": 1,
+          "receipts": [
+            {
+              "base": "frame0_base",
+              "dim": "latent:genlin_[2,1,1,1]",
+              "dims": [],
+              "generator": "genlin_[2,1,1,1]",
+              "generators": [
+                "genlin_[2,1,1,1]"
+              ],
+              "k": 1,
+              "ks": [
+                1
+              ],
+              "source": "dim_infer",
+              "transforms": []
+            }
+          ],
+          "status": "recognized_transformed",
+          "target_generator_present": true
+        },
+        {
+          "frame": 1,
+          "matrix": [
+            2,
+            -1,
+            1,
+            1
+          ],
+          "oracle_exact": true,
+          "quanta_count": 1,
+          "receipts": [
+            {
+              "base": "frame1_base",
+              "dim": "latent:genlin_[2,-1,1,1]",
+              "dims": [],
+              "generator": "genlin_[2,-1,1,1]",
+              "generators": [
+                "genlin_[2,-1,1,1]"
+              ],
+              "k": 1,
+              "ks": [
+                1
+              ],
+              "source": "dim_infer",
+              "transforms": []
+            }
+          ],
+          "status": "recognized_transformed",
+          "target_generator_present": true
+        }
+      ],
+      "pid": 391,
+      "replicate": 1,
+      "runtime_work_trace": {
+        "dropped": 0,
+        "rows": [
+          [
+            94218496498376,
+            1,
+            0,
+            "scheduler_pass",
+            null,
+            3
+          ],
+          [
+            94218496498376,
+            1,
+            0,
+            "scheduler_external_poll_slots",
+            null,
+            477
+          ],
+          [
+            94218496498376,
+            1,
+            0,
+            "scheduler_fixedpoint_probe_slots",
+            null,
+            5
+          ],
+          [
+            94218496498376,
+            1,
+            0,
+            "scheduler_dirty_vector_slots",
+            null,
+            477
+          ],
+          [
+            94218496498376,
+            1,
+            0,
+            "scheduler_selected_rules",
+            null,
+            419
+          ],
+          [
+            94218496498376,
+            1,
+            0,
+            "operation_kind",
+            1,
+            1
+          ],
+          [
+            94218496498376,
+            1,
+            137,
+            "dynamic_helper_invocation",
+            1,
+            2
+          ],
+          [
+            94218496498376,
+            1,
+            137,
+            "helper_codebook_population_node",
+            1,
+            38
+          ],
+          [
+            94218496498376,
+            1,
+            137,
+            "helper_node_attribute_examined",
+            1,
+            164
+          ],
+          [
+            94218496498376,
+            1,
+            137,
+            "helper_codebook_part_parsed",
+            1,
+            38
+          ],
+          [
+            94218496498376,
+            1,
+            137,
+            "helper_search_candidate",
+            1,
+            2
+          ],
+          [
+            94218496498376,
+            1,
+            137,
+            "helper_candidate_part_scored",
+            1,
+            74
+          ],
+          [
+            94218496498376,
+            1,
+            138,
+            "dynamic_helper_invocation",
+            2,
+            4
+          ],
+          [
+            94218496498376,
+            1,
+            138,
+            "helper_codebook_population_node",
+            2,
+            76
+          ],
+          [
+            94218496498376,
+            1,
+            138,
+            "helper_node_attribute_examined",
+            2,
+            328
+          ],
+          [
+            94218496498376,
+            1,
+            138,
+            "helper_codebook_part_parsed",
+            2,
+            76
+          ],
+          [
+            94218496498376,
+            1,
+            138,
+            "helper_search_candidate",
+            2,
+            76
+          ],
+          [
+            94218496498376,
+            1,
+            139,
+            "dynamic_helper_invocation",
+            3,
+            4
+          ],
+          [
+            94218496498376,
+            1,
+            139,
+            "helper_codebook_population_node",
+            3,
+            76
+          ],
+          [
+            94218496498376,
+            1,
+            139,
+            "helper_node_attribute_examined",
+            3,
+            328
+          ],
+          [
+            94218496498376,
+            1,
+            139,
+            "helper_codebook_part_parsed",
+            3,
+            76
+          ],
+          [
+            94218496498376,
+            1,
+            139,
+            "helper_search_candidate",
+            3,
+            2760
+          ],
+          [
+            94218496498376,
+            1,
+            139,
+            "helper_auxiliary_population_node",
+            3,
+            24
+          ],
+          [
+            94218496498376,
+            1,
+            142,
+            "dynamic_helper_invocation",
+            4,
+            2
+          ],
+          [
+            94218496498376,
+            1,
+            142,
+            "helper_codebook_population_node",
+            4,
+            38
+          ],
+          [
+            94218496498376,
+            1,
+            142,
+            "helper_node_attribute_examined",
+            4,
+            28
+          ],
+          [
+            94218496498376,
+            1,
+            142,
+            "helper_codebook_part_parsed",
+            4,
+            4
+          ],
+          [
+            94218496498376,
+            1,
+            142,
+            "helper_search_candidate",
+            4,
+            9600
+          ],
+          [
+            94218496498376,
+            1,
+            147,
+            "dynamic_helper_invocation",
+            4,
+            2
+          ],
+          [
+            94218496498376,
+            1,
+            147,
+            "helper_codebook_population_node",
+            4,
+            38
+          ],
+          [
+            94218496498376,
+            1,
+            147,
+            "helper_node_attribute_examined",
+            4,
+            28
+          ],
+          [
+            94218496498376,
+            1,
+            147,
+            "helper_codebook_part_parsed",
+            4,
+            4
+          ],
+          [
+            94218496498376,
+            1,
+            147,
+            "helper_search_candidate",
+            4,
+            9600
+          ],
+          [
+            94218496498376,
+            1,
+            150,
+            "dynamic_helper_invocation",
+            3,
+            2
+          ],
+          [
+            94218496498376,
+            1,
+            150,
+            "helper_codebook_population_node",
+            3,
+            38
+          ],
+          [
+            94218496498376,
+            1,
+            150,
+            "helper_node_attribute_examined",
+            3,
+            164
+          ],
+          [
+            94218496498376,
+            1,
+            150,
+            "helper_codebook_part_parsed",
+            3,
+            38
+          ],
+          [
+            94218496498376,
+            1,
+            150,
+            "helper_search_candidate",
+            3,
+            2172
+          ],
+          [
+            94218496498376,
+            1,
+            150,
+            "helper_auxiliary_population_node",
+            3,
+            14
+          ]
+        ]
+      },
+      "scope_membership": [
+        {
+          "frame": 0,
+          "members_agree": true,
+          "obs_scope_id_attr": "shared_explicit_global_k2_r1",
+          "part_scope_id_attr": "shared_explicit_global_k2_r1",
+          "provenance_sha256": "81ab8999f90631d72bf8fe8e870610ee74db31850d13318a98f50eca7a3d8ede",
+          "scope_id": "shared_explicit_global_k2_r1",
+          "scope_node": "#769"
+        },
+        {
+          "frame": 1,
+          "members_agree": true,
+          "obs_scope_id_attr": "shared_explicit_global_k2_r1",
+          "part_scope_id_attr": "shared_explicit_global_k2_r1",
+          "provenance_sha256": "5c2858eb53ad5a8a48ffba439dae1e19a3d7a220f84ba041e3cbb6867a78666a",
+          "scope_id": "shared_explicit_global_k2_r1",
+          "scope_node": "#772"
+        }
+      ],
+      "source_after": {
+        "engine": "engine 1acf723cf64b @ /home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_build_manifest_sha256": "46331382fddd6ed1ae747e6d6af2b23aaf672bbeafbe82c9bf97862e9f55183a",
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "1acf723cf64b1c7d9c41feab7932d684f860d4078c83530c2d7a13bb78ba2f93",
+        "source_sha256": {
+          "docs/research/engine_substrate/SUBSTRATE_GENINFER_SCOPED_POPULATION_TRACE_V1_PREREG_20261005.md": "ea91625dcc17413619654e06d8afec93f1d68587291a6543218eb593e5eba8cc",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+          "evaluation/substrate_capability/analyze_geninfer_scoped_population_trace_v1.py": "59999cc599f89f2191cdd59b75c606200f127e2d46a8aebd9b74c9a68f6fd5e2",
+          "evaluation/substrate_capability/substrate_geninfer_scoped_population_trace_v1.py": "8ec6b17d6603a57145b84c29d6af3903a670cba52a4b95353b99e01424df6171",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/__init__.py": "b5b0ffab338329a3c9c7f24fbafe8821d89810f6c162c51b564976328e2bf843",
+          "runners/dsl/python/substrate_rs/_native.build.json": "46331382fddd6ed1ae747e6d6af2b23aaf672bbeafbe82c9bf97862e9f55183a",
+          "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+          "runners/dsl/src/graph.rs": "72e0fb8edfd7bd3d435cccc4511ea2481288d1997747d0e538a4ecd16934c58d",
+          "runners/dsl/src/jsonio.rs": "dd6a65282f85d9397f3b3b57d3405fd504612c899020674b0b74a83487de0f71",
+          "runners/dsl/src/lib.rs": "10ae7645d9ed1f7c3c9d4f5fd119406928ce079e4336a5b007df307c685c0826",
+          "runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+          "runners/dsl/src/py.rs": "ad5ced217ff7648a57fbd066a5d2a7dcffefb612e11c32c375c4482dd49b8a49",
+          "runners/dsl/src/reflect.rs": "7d80c39ad2f2a7fabc2cc9469377ba0ccd87a6bb5fe81258d169baf1124f30d1",
+          "runners/dsl/src/rewrite.rs": "a617664517d2a7b654a1ecc3caee6aaafb3d6c41ce0a47667a08497a7978f2ed",
+          "runners/dsl/src/shape_decode.rs": "ae83fe53614a12b60c4bfd6694e4b0faaad6210a3535cab428af701078d2f8aa",
+          "runners/dsl/src/substrate.rs": "866e4dd75fa2c884d95c8d2ccb1b5415bfeb3ba1e928bebbc64e18d3a1b0d577",
+          "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+          "runners/dsl/src/term.rs": "313b5f6dcd820f4ed62f0f6cfd794119379b09258ea7f926915fc0014439d417",
+          "seeds/adaptive_control_core.json": "fc57fe2f6e3f0ab45f4fac84221bdabf5b3a99b64de3bccf62cf7c016b2c9504",
+          "seeds/affective_state_core.json": "9cfd82ff99c780a0ddfb5ec65942fef77ea2275341e6a09f5b78d1910c354990",
+          "seeds/decision_core.json": "a2226728536b18760ffbeac4d699aad4db9d965f4a0f37470f73350c8b202198",
+          "seeds/default_mode_core.json": "10afab5ee8914577580225d192bad8138361e662c17509f34ecfc7f3175d748d",
+          "seeds/dual_process_core.json": "4cace3623596a588eb49b28cff51ee8bf144b0f9005dd8262f5d3910c23bc777",
+          "seeds/episodic_working_memory_core.json": "023050b48704fa75ed8da0c2db64c2e468f355112b5578897a04caa643fd9b57",
+          "seeds/epistemics_core.json": "485d3517bd988d332312fc08b83c2d757bd13a613e0a7d8ad4e1972ddae81e3e",
+          "seeds/experimentation_core.json": "dfbba83b66305e06328a3cc737765da56e0ab3fc66580b45dad7d75b0fb1ff7a",
+          "seeds/generative_world_model.json": "f147432955e1970bae03f1ec8cb1b3238fe8abba1520129e506c3600a07ed0a6",
+          "seeds/goal_construction.json": "598a573afb85beaaaafc90a6259e01f1cde211ffc4ea96acd1f2b9074d2e0e83",
+          "seeds/learning_core.json": "8269692b08f399096fef7d15bc58a207d79477e6954288aa09d3ed5e98bd3141",
+          "seeds/math_capability_shapes.json": "ddb216430ce303f45695998d992159d1c91d149b9bc18f5ab7d48d0ae4350057",
+          "seeds/memory_core.json": "5ec7f07b90f192bc3cea660d87335e34c5074d466a7d484b7381abf651231e6b",
+          "seeds/motor_core.json": "12cbe423bd6f1149fe28801e9172f86eaf34744948975a4bae27e349f7cbd6c3",
+          "seeds/perception_core.json": "7a274b9410bce9503392f0210bb22873273ea91c1558b9007e57885d852ae9bc",
+          "seeds/reflex_core.json": "f760e7821058306a48b6550fb041c871f044b18d0ef1359238fe90d292726c43",
+          "seeds/self_design_axis.json": "1003fb83a9f972747338f4cff35c6a471080ae25f265e1eae512255996731505",
+          "seeds/self_monitoring.json": "17cc07e1460c1505b6d223bdca203b4c3fbe17669971d904a5ffff322032eb58",
+          "seeds/shape_decode_loop.json": "0fb6e5206c6e901d1bae254dc7558c1f9f9171d2dfc8e3e0295593f27c3efa1e",
+          "seeds/theorem_core.json": "5630cfd5bd90a3c23f3346cbbc90af32a8f64848a287913b7688879095a7d332",
+          "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+          "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+        }
+      },
+      "source_before": {
+        "engine": "engine 1acf723cf64b @ /home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_build_manifest_sha256": "46331382fddd6ed1ae747e6d6af2b23aaf672bbeafbe82c9bf97862e9f55183a",
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "1acf723cf64b1c7d9c41feab7932d684f860d4078c83530c2d7a13bb78ba2f93",
+        "source_sha256": {
+          "docs/research/engine_substrate/SUBSTRATE_GENINFER_SCOPED_POPULATION_TRACE_V1_PREREG_20261005.md": "ea91625dcc17413619654e06d8afec93f1d68587291a6543218eb593e5eba8cc",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+          "evaluation/substrate_capability/analyze_geninfer_scoped_population_trace_v1.py": "59999cc599f89f2191cdd59b75c606200f127e2d46a8aebd9b74c9a68f6fd5e2",
+          "evaluation/substrate_capability/substrate_geninfer_scoped_population_trace_v1.py": "8ec6b17d6603a57145b84c29d6af3903a670cba52a4b95353b99e01424df6171",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/__init__.py": "b5b0ffab338329a3c9c7f24fbafe8821d89810f6c162c51b564976328e2bf843",
+          "runners/dsl/python/substrate_rs/_native.build.json": "46331382fddd6ed1ae747e6d6af2b23aaf672bbeafbe82c9bf97862e9f55183a",
+          "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+          "runners/dsl/src/graph.rs": "72e0fb8edfd7bd3d435cccc4511ea2481288d1997747d0e538a4ecd16934c58d",
+          "runners/dsl/src/jsonio.rs": "dd6a65282f85d9397f3b3b57d3405fd504612c899020674b0b74a83487de0f71",
+          "runners/dsl/src/lib.rs": "10ae7645d9ed1f7c3c9d4f5fd119406928ce079e4336a5b007df307c685c0826",
+          "runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+          "runners/dsl/src/py.rs": "ad5ced217ff7648a57fbd066a5d2a7dcffefb612e11c32c375c4482dd49b8a49",
+          "runners/dsl/src/reflect.rs": "7d80c39ad2f2a7fabc2cc9469377ba0ccd87a6bb5fe81258d169baf1124f30d1",
+          "runners/dsl/src/rewrite.rs": "a617664517d2a7b654a1ecc3caee6aaafb3d6c41ce0a47667a08497a7978f2ed",
+          "runners/dsl/src/shape_decode.rs": "ae83fe53614a12b60c4bfd6694e4b0faaad6210a3535cab428af701078d2f8aa",
+          "runners/dsl/src/substrate.rs": "866e4dd75fa2c884d95c8d2ccb1b5415bfeb3ba1e928bebbc64e18d3a1b0d577",
+          "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+          "runners/dsl/src/term.rs": "313b5f6dcd820f4ed62f0f6cfd794119379b09258ea7f926915fc0014439d417",
+          "seeds/adaptive_control_core.json": "fc57fe2f6e3f0ab45f4fac84221bdabf5b3a99b64de3bccf62cf7c016b2c9504",
+          "seeds/affective_state_core.json": "9cfd82ff99c780a0ddfb5ec65942fef77ea2275341e6a09f5b78d1910c354990",
+          "seeds/decision_core.json": "a2226728536b18760ffbeac4d699aad4db9d965f4a0f37470f73350c8b202198",
+          "seeds/default_mode_core.json": "10afab5ee8914577580225d192bad8138361e662c17509f34ecfc7f3175d748d",
+          "seeds/dual_process_core.json": "4cace3623596a588eb49b28cff51ee8bf144b0f9005dd8262f5d3910c23bc777",
+          "seeds/episodic_working_memory_core.json": "023050b48704fa75ed8da0c2db64c2e468f355112b5578897a04caa643fd9b57",
+          "seeds/epistemics_core.json": "485d3517bd988d332312fc08b83c2d757bd13a613e0a7d8ad4e1972ddae81e3e",
+          "seeds/experimentation_core.json": "dfbba83b66305e06328a3cc737765da56e0ab3fc66580b45dad7d75b0fb1ff7a",
+          "seeds/generative_world_model.json": "f147432955e1970bae03f1ec8cb1b3238fe8abba1520129e506c3600a07ed0a6",
+          "seeds/goal_construction.json": "598a573afb85beaaaafc90a6259e01f1cde211ffc4ea96acd1f2b9074d2e0e83",
+          "seeds/learning_core.json": "8269692b08f399096fef7d15bc58a207d79477e6954288aa09d3ed5e98bd3141",
+          "seeds/math_capability_shapes.json": "ddb216430ce303f45695998d992159d1c91d149b9bc18f5ab7d48d0ae4350057",
+          "seeds/memory_core.json": "5ec7f07b90f192bc3cea660d87335e34c5074d466a7d484b7381abf651231e6b",
+          "seeds/motor_core.json": "12cbe423bd6f1149fe28801e9172f86eaf34744948975a4bae27e349f7cbd6c3",
+          "seeds/perception_core.json": "7a274b9410bce9503392f0210bb22873273ea91c1558b9007e57885d852ae9bc",
+          "seeds/reflex_core.json": "f760e7821058306a48b6550fb041c871f044b18d0ef1359238fe90d292726c43",
+          "seeds/self_design_axis.json": "1003fb83a9f972747338f4cff35c6a471080ae25f265e1eae512255996731505",
+          "seeds/self_monitoring.json": "17cc07e1460c1505b6d223bdca203b4c3fbe17669971d904a5ffff322032eb58",
+          "seeds/shape_decode_loop.json": "0fb6e5206c6e901d1bae254dc7558c1f9f9171d2dfc8e3e0295593f27c3efa1e",
+          "seeds/theorem_core.json": "5630cfd5bd90a3c23f3346cbbc90af32a8f64848a287913b7688879095a7d332",
+          "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+          "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+        }
+      },
+      "source_stable": true
+    },
+    {
+      "case": {
+        "id": "frame_scoped_k2_r1",
+        "k": 2,
+        "kind": "positive",
+        "mode": "frame_scoped",
+        "repeat": 1
+      },
+      "closure_cpu_ns": 30536359,
+      "closure_wall_ns": 30564211,
+      "closure_work": 9,
+      "diagnostic_checks": [
+        {
+          "checked": 2400,
+          "frame": 0,
+          "scope_id": "scope_frame_scoped_k2_r1_frame0",
+          "state_unchanged": true
+        },
+        {
+          "checked": 2400,
+          "frame": 1,
+          "scope_id": "scope_frame_scoped_k2_r1_frame1",
+          "state_unchanged": true
+        }
+      ],
+      "edges_after": 749,
+      "hwm_after_kib": 44864,
+      "hwm_before_kib": 44480,
+      "hwm_delta_kib": 384,
+      "initial_candidate_checks_total": 4800,
+      "linear_generators": [
+        {
+          "matrix": [
+            2,
+            1,
+            1,
+            1
+          ],
+          "name": "genlin_[2,1,1,1]"
+        },
+        {
+          "matrix": [
+            2,
+            -1,
+            1,
+            1
+          ],
+          "name": "genlin_[2,-1,1,1]"
+        }
+      ],
+      "nodes_after": 780,
+      "nodes_before": 774,
+      "outputs": [
+        {
+          "frame": 0,
+          "matrix": [
+            2,
+            1,
+            1,
+            1
+          ],
+          "oracle_exact": true,
+          "quanta_count": 1,
+          "receipts": [
+            {
+              "base": "frame0_base",
+              "dim": "latent:genlin_[2,1,1,1]",
+              "dims": [],
+              "generator": "genlin_[2,1,1,1]",
+              "generators": [
+                "genlin_[2,1,1,1]"
+              ],
+              "k": 1,
+              "ks": [
+                1
+              ],
+              "source": "dim_infer",
+              "transforms": []
+            }
+          ],
+          "status": "recognized_transformed",
+          "target_generator_present": true
+        },
+        {
+          "frame": 1,
+          "matrix": [
+            2,
+            -1,
+            1,
+            1
+          ],
+          "oracle_exact": true,
+          "quanta_count": 1,
+          "receipts": [
+            {
+              "base": "frame1_base",
+              "dim": "latent:genlin_[2,-1,1,1]",
+              "dims": [],
+              "generator": "genlin_[2,-1,1,1]",
+              "generators": [
+                "genlin_[2,-1,1,1]"
+              ],
+              "k": 1,
+              "ks": [
+                1
+              ],
+              "source": "dim_infer",
+              "transforms": []
+            }
+          ],
+          "status": "recognized_transformed",
+          "target_generator_present": true
+        }
+      ],
+      "pid": 488,
+      "replicate": 1,
+      "runtime_work_trace": {
+        "dropped": 0,
+        "rows": [
+          [
+            99089874488008,
+            1,
+            0,
+            "scheduler_pass",
+            null,
+            3
+          ],
+          [
+            99089874488008,
+            1,
+            0,
+            "scheduler_external_poll_slots",
+            null,
+            477
+          ],
+          [
+            99089874488008,
+            1,
+            0,
+            "scheduler_fixedpoint_probe_slots",
+            null,
+            5
+          ],
+          [
+            99089874488008,
+            1,
+            0,
+            "scheduler_dirty_vector_slots",
+            null,
+            477
+          ],
+          [
+            99089874488008,
+            1,
+            0,
+            "scheduler_selected_rules",
+            null,
+            419
+          ],
+          [
+            99089874488008,
+            1,
+            0,
+            "operation_kind",
+            1,
+            1
+          ],
+          [
+            99089874488008,
+            1,
+            137,
+            "dynamic_helper_invocation",
+            1,
+            2
+          ],
+          [
+            99089874488008,
+            1,
+            137,
+            "helper_codebook_population_node",
+            1,
+            38
+          ],
+          [
+            99089874488008,
+            1,
+            137,
+            "helper_node_attribute_examined",
+            1,
+            164
+          ],
+          [
+            99089874488008,
+            1,
+            137,
+            "helper_codebook_part_parsed",
+            1,
+            38
+          ],
+          [
+            99089874488008,
+            1,
+            137,
+            "helper_search_candidate",
+            1,
+            2
+          ],
+          [
+            99089874488008,
+            1,
+            137,
+            "helper_candidate_part_scored",
+            1,
+            74
+          ],
+          [
+            99089874488008,
+            1,
+            138,
+            "dynamic_helper_invocation",
+            2,
+            4
+          ],
+          [
+            99089874488008,
+            1,
+            138,
+            "helper_codebook_population_node",
+            2,
+            76
+          ],
+          [
+            99089874488008,
+            1,
+            138,
+            "helper_node_attribute_examined",
+            2,
+            328
+          ],
+          [
+            99089874488008,
+            1,
+            138,
+            "helper_codebook_part_parsed",
+            2,
+            76
+          ],
+          [
+            99089874488008,
+            1,
+            138,
+            "helper_search_candidate",
+            2,
+            76
+          ],
+          [
+            99089874488008,
+            1,
+            139,
+            "dynamic_helper_invocation",
+            3,
+            4
+          ],
+          [
+            99089874488008,
+            1,
+            139,
+            "helper_codebook_population_node",
+            3,
+            76
+          ],
+          [
+            99089874488008,
+            1,
+            139,
+            "helper_node_attribute_examined",
+            3,
+            328
+          ],
+          [
+            99089874488008,
+            1,
+            139,
+            "helper_codebook_part_parsed",
+            3,
+            76
+          ],
+          [
+            99089874488008,
+            1,
+            139,
+            "helper_search_candidate",
+            3,
+            2760
+          ],
+          [
+            99089874488008,
+            1,
+            139,
+            "helper_auxiliary_population_node",
+            3,
+            24
+          ],
+          [
+            99089874488008,
+            1,
+            142,
+            "dynamic_helper_invocation",
+            4,
+            2
+          ],
+          [
+            99089874488008,
+            1,
+            142,
+            "helper_codebook_population_node",
+            4,
+            38
+          ],
+          [
+            99089874488008,
+            1,
+            142,
+            "helper_node_attribute_examined",
+            4,
+            14
+          ],
+          [
+            99089874488008,
+            1,
+            142,
+            "helper_codebook_part_parsed",
+            4,
+            2
+          ],
+          [
+            99089874488008,
+            1,
+            142,
+            "helper_search_candidate",
+            4,
+            4800
+          ],
+          [
+            99089874488008,
+            1,
+            147,
+            "dynamic_helper_invocation",
+            4,
+            2
+          ],
+          [
+            99089874488008,
+            1,
+            147,
+            "helper_codebook_population_node",
+            4,
+            38
+          ],
+          [
+            99089874488008,
+            1,
+            147,
+            "helper_node_attribute_examined",
+            4,
+            14
+          ],
+          [
+            99089874488008,
+            1,
+            147,
+            "helper_codebook_part_parsed",
+            4,
+            2
+          ],
+          [
+            99089874488008,
+            1,
+            147,
+            "helper_search_candidate",
+            4,
+            4800
+          ],
+          [
+            99089874488008,
+            1,
+            150,
+            "dynamic_helper_invocation",
+            3,
+            2
+          ],
+          [
+            99089874488008,
+            1,
+            150,
+            "helper_codebook_population_node",
+            3,
+            38
+          ],
+          [
+            99089874488008,
+            1,
+            150,
+            "helper_node_attribute_examined",
+            3,
+            164
+          ],
+          [
+            99089874488008,
+            1,
+            150,
+            "helper_codebook_part_parsed",
+            3,
+            38
+          ],
+          [
+            99089874488008,
+            1,
+            150,
+            "helper_search_candidate",
+            3,
+            2172
+          ],
+          [
+            99089874488008,
+            1,
+            150,
+            "helper_auxiliary_population_node",
+            3,
+            14
+          ]
+        ]
+      },
+      "scope_membership": [
+        {
+          "frame": 0,
+          "members_agree": true,
+          "obs_scope_id_attr": "scope_frame_scoped_k2_r1_frame0",
+          "part_scope_id_attr": "scope_frame_scoped_k2_r1_frame0",
+          "provenance_sha256": "1a9f4f43ec06eb9e69d35465de436958865083b79d62f574fa4a58b67bcf6674",
+          "scope_id": "scope_frame_scoped_k2_r1_frame0",
+          "scope_node": "#769"
+        },
+        {
+          "frame": 1,
+          "members_agree": true,
+          "obs_scope_id_attr": "scope_frame_scoped_k2_r1_frame1",
+          "part_scope_id_attr": "scope_frame_scoped_k2_r1_frame1",
+          "provenance_sha256": "2ee986618750ec61140b9a188e3d024fa4bfa910ddcf4cf2de8a1135f6df37eb",
+          "scope_id": "scope_frame_scoped_k2_r1_frame1",
+          "scope_node": "#772"
+        }
+      ],
+      "source_after": {
+        "engine": "engine 1acf723cf64b @ /home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_build_manifest_sha256": "46331382fddd6ed1ae747e6d6af2b23aaf672bbeafbe82c9bf97862e9f55183a",
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "1acf723cf64b1c7d9c41feab7932d684f860d4078c83530c2d7a13bb78ba2f93",
+        "source_sha256": {
+          "docs/research/engine_substrate/SUBSTRATE_GENINFER_SCOPED_POPULATION_TRACE_V1_PREREG_20261005.md": "ea91625dcc17413619654e06d8afec93f1d68587291a6543218eb593e5eba8cc",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+          "evaluation/substrate_capability/analyze_geninfer_scoped_population_trace_v1.py": "59999cc599f89f2191cdd59b75c606200f127e2d46a8aebd9b74c9a68f6fd5e2",
+          "evaluation/substrate_capability/substrate_geninfer_scoped_population_trace_v1.py": "8ec6b17d6603a57145b84c29d6af3903a670cba52a4b95353b99e01424df6171",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/__init__.py": "b5b0ffab338329a3c9c7f24fbafe8821d89810f6c162c51b564976328e2bf843",
+          "runners/dsl/python/substrate_rs/_native.build.json": "46331382fddd6ed1ae747e6d6af2b23aaf672bbeafbe82c9bf97862e9f55183a",
+          "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+          "runners/dsl/src/graph.rs": "72e0fb8edfd7bd3d435cccc4511ea2481288d1997747d0e538a4ecd16934c58d",
+          "runners/dsl/src/jsonio.rs": "dd6a65282f85d9397f3b3b57d3405fd504612c899020674b0b74a83487de0f71",
+          "runners/dsl/src/lib.rs": "10ae7645d9ed1f7c3c9d4f5fd119406928ce079e4336a5b007df307c685c0826",
+          "runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+          "runners/dsl/src/py.rs": "ad5ced217ff7648a57fbd066a5d2a7dcffefb612e11c32c375c4482dd49b8a49",
+          "runners/dsl/src/reflect.rs": "7d80c39ad2f2a7fabc2cc9469377ba0ccd87a6bb5fe81258d169baf1124f30d1",
+          "runners/dsl/src/rewrite.rs": "a617664517d2a7b654a1ecc3caee6aaafb3d6c41ce0a47667a08497a7978f2ed",
+          "runners/dsl/src/shape_decode.rs": "ae83fe53614a12b60c4bfd6694e4b0faaad6210a3535cab428af701078d2f8aa",
+          "runners/dsl/src/substrate.rs": "866e4dd75fa2c884d95c8d2ccb1b5415bfeb3ba1e928bebbc64e18d3a1b0d577",
+          "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+          "runners/dsl/src/term.rs": "313b5f6dcd820f4ed62f0f6cfd794119379b09258ea7f926915fc0014439d417",
+          "seeds/adaptive_control_core.json": "fc57fe2f6e3f0ab45f4fac84221bdabf5b3a99b64de3bccf62cf7c016b2c9504",
+          "seeds/affective_state_core.json": "9cfd82ff99c780a0ddfb5ec65942fef77ea2275341e6a09f5b78d1910c354990",
+          "seeds/decision_core.json": "a2226728536b18760ffbeac4d699aad4db9d965f4a0f37470f73350c8b202198",
+          "seeds/default_mode_core.json": "10afab5ee8914577580225d192bad8138361e662c17509f34ecfc7f3175d748d",
+          "seeds/dual_process_core.json": "4cace3623596a588eb49b28cff51ee8bf144b0f9005dd8262f5d3910c23bc777",
+          "seeds/episodic_working_memory_core.json": "023050b48704fa75ed8da0c2db64c2e468f355112b5578897a04caa643fd9b57",
+          "seeds/epistemics_core.json": "485d3517bd988d332312fc08b83c2d757bd13a613e0a7d8ad4e1972ddae81e3e",
+          "seeds/experimentation_core.json": "dfbba83b66305e06328a3cc737765da56e0ab3fc66580b45dad7d75b0fb1ff7a",
+          "seeds/generative_world_model.json": "f147432955e1970bae03f1ec8cb1b3238fe8abba1520129e506c3600a07ed0a6",
+          "seeds/goal_construction.json": "598a573afb85beaaaafc90a6259e01f1cde211ffc4ea96acd1f2b9074d2e0e83",
+          "seeds/learning_core.json": "8269692b08f399096fef7d15bc58a207d79477e6954288aa09d3ed5e98bd3141",
+          "seeds/math_capability_shapes.json": "ddb216430ce303f45695998d992159d1c91d149b9bc18f5ab7d48d0ae4350057",
+          "seeds/memory_core.json": "5ec7f07b90f192bc3cea660d87335e34c5074d466a7d484b7381abf651231e6b",
+          "seeds/motor_core.json": "12cbe423bd6f1149fe28801e9172f86eaf34744948975a4bae27e349f7cbd6c3",
+          "seeds/perception_core.json": "7a274b9410bce9503392f0210bb22873273ea91c1558b9007e57885d852ae9bc",
+          "seeds/reflex_core.json": "f760e7821058306a48b6550fb041c871f044b18d0ef1359238fe90d292726c43",
+          "seeds/self_design_axis.json": "1003fb83a9f972747338f4cff35c6a471080ae25f265e1eae512255996731505",
+          "seeds/self_monitoring.json": "17cc07e1460c1505b6d223bdca203b4c3fbe17669971d904a5ffff322032eb58",
+          "seeds/shape_decode_loop.json": "0fb6e5206c6e901d1bae254dc7558c1f9f9171d2dfc8e3e0295593f27c3efa1e",
+          "seeds/theorem_core.json": "5630cfd5bd90a3c23f3346cbbc90af32a8f64848a287913b7688879095a7d332",
+          "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+          "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+        }
+      },
+      "source_before": {
+        "engine": "engine 1acf723cf64b @ /home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_build_manifest_sha256": "46331382fddd6ed1ae747e6d6af2b23aaf672bbeafbe82c9bf97862e9f55183a",
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "1acf723cf64b1c7d9c41feab7932d684f860d4078c83530c2d7a13bb78ba2f93",
+        "source_sha256": {
+          "docs/research/engine_substrate/SUBSTRATE_GENINFER_SCOPED_POPULATION_TRACE_V1_PREREG_20261005.md": "ea91625dcc17413619654e06d8afec93f1d68587291a6543218eb593e5eba8cc",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+          "evaluation/substrate_capability/analyze_geninfer_scoped_population_trace_v1.py": "59999cc599f89f2191cdd59b75c606200f127e2d46a8aebd9b74c9a68f6fd5e2",
+          "evaluation/substrate_capability/substrate_geninfer_scoped_population_trace_v1.py": "8ec6b17d6603a57145b84c29d6af3903a670cba52a4b95353b99e01424df6171",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/__init__.py": "b5b0ffab338329a3c9c7f24fbafe8821d89810f6c162c51b564976328e2bf843",
+          "runners/dsl/python/substrate_rs/_native.build.json": "46331382fddd6ed1ae747e6d6af2b23aaf672bbeafbe82c9bf97862e9f55183a",
+          "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+          "runners/dsl/src/graph.rs": "72e0fb8edfd7bd3d435cccc4511ea2481288d1997747d0e538a4ecd16934c58d",
+          "runners/dsl/src/jsonio.rs": "dd6a65282f85d9397f3b3b57d3405fd504612c899020674b0b74a83487de0f71",
+          "runners/dsl/src/lib.rs": "10ae7645d9ed1f7c3c9d4f5fd119406928ce079e4336a5b007df307c685c0826",
+          "runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+          "runners/dsl/src/py.rs": "ad5ced217ff7648a57fbd066a5d2a7dcffefb612e11c32c375c4482dd49b8a49",
+          "runners/dsl/src/reflect.rs": "7d80c39ad2f2a7fabc2cc9469377ba0ccd87a6bb5fe81258d169baf1124f30d1",
+          "runners/dsl/src/rewrite.rs": "a617664517d2a7b654a1ecc3caee6aaafb3d6c41ce0a47667a08497a7978f2ed",
+          "runners/dsl/src/shape_decode.rs": "ae83fe53614a12b60c4bfd6694e4b0faaad6210a3535cab428af701078d2f8aa",
+          "runners/dsl/src/substrate.rs": "866e4dd75fa2c884d95c8d2ccb1b5415bfeb3ba1e928bebbc64e18d3a1b0d577",
+          "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+          "runners/dsl/src/term.rs": "313b5f6dcd820f4ed62f0f6cfd794119379b09258ea7f926915fc0014439d417",
+          "seeds/adaptive_control_core.json": "fc57fe2f6e3f0ab45f4fac84221bdabf5b3a99b64de3bccf62cf7c016b2c9504",
+          "seeds/affective_state_core.json": "9cfd82ff99c780a0ddfb5ec65942fef77ea2275341e6a09f5b78d1910c354990",
+          "seeds/decision_core.json": "a2226728536b18760ffbeac4d699aad4db9d965f4a0f37470f73350c8b202198",
+          "seeds/default_mode_core.json": "10afab5ee8914577580225d192bad8138361e662c17509f34ecfc7f3175d748d",
+          "seeds/dual_process_core.json": "4cace3623596a588eb49b28cff51ee8bf144b0f9005dd8262f5d3910c23bc777",
+          "seeds/episodic_working_memory_core.json": "023050b48704fa75ed8da0c2db64c2e468f355112b5578897a04caa643fd9b57",
+          "seeds/epistemics_core.json": "485d3517bd988d332312fc08b83c2d757bd13a613e0a7d8ad4e1972ddae81e3e",
+          "seeds/experimentation_core.json": "dfbba83b66305e06328a3cc737765da56e0ab3fc66580b45dad7d75b0fb1ff7a",
+          "seeds/generative_world_model.json": "f147432955e1970bae03f1ec8cb1b3238fe8abba1520129e506c3600a07ed0a6",
+          "seeds/goal_construction.json": "598a573afb85beaaaafc90a6259e01f1cde211ffc4ea96acd1f2b9074d2e0e83",
+          "seeds/learning_core.json": "8269692b08f399096fef7d15bc58a207d79477e6954288aa09d3ed5e98bd3141",
+          "seeds/math_capability_shapes.json": "ddb216430ce303f45695998d992159d1c91d149b9bc18f5ab7d48d0ae4350057",
+          "seeds/memory_core.json": "5ec7f07b90f192bc3cea660d87335e34c5074d466a7d484b7381abf651231e6b",
+          "seeds/motor_core.json": "12cbe423bd6f1149fe28801e9172f86eaf34744948975a4bae27e349f7cbd6c3",
+          "seeds/perception_core.json": "7a274b9410bce9503392f0210bb22873273ea91c1558b9007e57885d852ae9bc",
+          "seeds/reflex_core.json": "f760e7821058306a48b6550fb041c871f044b18d0ef1359238fe90d292726c43",
+          "seeds/self_design_axis.json": "1003fb83a9f972747338f4cff35c6a471080ae25f265e1eae512255996731505",
+          "seeds/self_monitoring.json": "17cc07e1460c1505b6d223bdca203b4c3fbe17669971d904a5ffff322032eb58",
+          "seeds/shape_decode_loop.json": "0fb6e5206c6e901d1bae254dc7558c1f9f9171d2dfc8e3e0295593f27c3efa1e",
+          "seeds/theorem_core.json": "5630cfd5bd90a3c23f3346cbbc90af32a8f64848a287913b7688879095a7d332",
+          "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+          "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+        }
+      },
+      "source_stable": true
+    },
+    {
+      "case": {
+        "id": "unscoped_global_k2_r1",
+        "k": 2,
+        "kind": "positive",
+        "mode": "unscoped_global",
+        "repeat": 1
+      },
+      "closure_cpu_ns": 46881583,
+      "closure_wall_ns": 46877541,
+      "closure_work": 9,
+      "diagnostic_checks": [
+        {
+          "checked": 4800,
+          "frame": 0,
+          "scope_id": null,
+          "state_unchanged": true
+        },
+        {
+          "checked": 4800,
+          "frame": 1,
+          "scope_id": null,
+          "state_unchanged": true
+        }
+      ],
+      "edges_after": 749,
+      "hwm_after_kib": 45104,
+      "hwm_before_kib": 44912,
+      "hwm_delta_kib": 192,
+      "initial_candidate_checks_total": 9600,
+      "linear_generators": [
+        {
+          "matrix": [
+            2,
+            1,
+            1,
+            1
+          ],
+          "name": "genlin_[2,1,1,1]"
+        },
+        {
+          "matrix": [
+            2,
+            -1,
+            1,
+            1
+          ],
+          "name": "genlin_[2,-1,1,1]"
+        }
+      ],
+      "nodes_after": 780,
+      "nodes_before": 774,
+      "outputs": [
+        {
+          "frame": 0,
+          "matrix": [
+            2,
+            1,
+            1,
+            1
+          ],
+          "oracle_exact": true,
+          "quanta_count": 1,
+          "receipts": [
+            {
+              "base": "frame0_base",
+              "dim": "latent:genlin_[2,1,1,1]",
+              "dims": [],
+              "generator": "genlin_[2,1,1,1]",
+              "generators": [
+                "genlin_[2,1,1,1]"
+              ],
+              "k": 1,
+              "ks": [
+                1
+              ],
+              "source": "dim_infer",
+              "transforms": []
+            }
+          ],
+          "status": "recognized_transformed",
+          "target_generator_present": true
+        },
+        {
+          "frame": 1,
+          "matrix": [
+            2,
+            -1,
+            1,
+            1
+          ],
+          "oracle_exact": true,
+          "quanta_count": 1,
+          "receipts": [
+            {
+              "base": "frame1_base",
+              "dim": "latent:genlin_[2,-1,1,1]",
+              "dims": [],
+              "generator": "genlin_[2,-1,1,1]",
+              "generators": [
+                "genlin_[2,-1,1,1]"
+              ],
+              "k": 1,
+              "ks": [
+                1
+              ],
+              "source": "dim_infer",
+              "transforms": []
+            }
+          ],
+          "status": "recognized_transformed",
+          "target_generator_present": true
+        }
+      ],
+      "pid": 585,
+      "replicate": 2,
+      "runtime_work_trace": {
+        "dropped": 0,
+        "rows": [
+          [
+            93978778110664,
+            1,
+            0,
+            "scheduler_pass",
+            null,
+            3
+          ],
+          [
+            93978778110664,
+            1,
+            0,
+            "scheduler_external_poll_slots",
+            null,
+            477
+          ],
+          [
+            93978778110664,
+            1,
+            0,
+            "scheduler_fixedpoint_probe_slots",
+            null,
+            5
+          ],
+          [
+            93978778110664,
+            1,
+            0,
+            "scheduler_dirty_vector_slots",
+            null,
+            477
+          ],
+          [
+            93978778110664,
+            1,
+            0,
+            "scheduler_selected_rules",
+            null,
+            419
+          ],
+          [
+            93978778110664,
+            1,
+            0,
+            "operation_kind",
+            1,
+            1
+          ],
+          [
+            93978778110664,
+            1,
+            137,
+            "dynamic_helper_invocation",
+            1,
+            2
+          ],
+          [
+            93978778110664,
+            1,
+            137,
+            "helper_codebook_population_node",
+            1,
+            38
+          ],
+          [
+            93978778110664,
+            1,
+            137,
+            "helper_node_attribute_examined",
+            1,
+            160
+          ],
+          [
+            93978778110664,
+            1,
+            137,
+            "helper_codebook_part_parsed",
+            1,
+            38
+          ],
+          [
+            93978778110664,
+            1,
+            137,
+            "helper_search_candidate",
+            1,
+            2
+          ],
+          [
+            93978778110664,
+            1,
+            137,
+            "helper_candidate_part_scored",
+            1,
+            74
+          ],
+          [
+            93978778110664,
+            1,
+            138,
+            "dynamic_helper_invocation",
+            2,
+            4
+          ],
+          [
+            93978778110664,
+            1,
+            138,
+            "helper_codebook_population_node",
+            2,
+            76
+          ],
+          [
+            93978778110664,
+            1,
+            138,
+            "helper_node_attribute_examined",
+            2,
+            320
+          ],
+          [
+            93978778110664,
+            1,
+            138,
+            "helper_codebook_part_parsed",
+            2,
+            76
+          ],
+          [
+            93978778110664,
+            1,
+            138,
+            "helper_search_candidate",
+            2,
+            76
+          ],
+          [
+            93978778110664,
+            1,
+            139,
+            "dynamic_helper_invocation",
+            3,
+            4
+          ],
+          [
+            93978778110664,
+            1,
+            139,
+            "helper_codebook_population_node",
+            3,
+            76
+          ],
+          [
+            93978778110664,
+            1,
+            139,
+            "helper_node_attribute_examined",
+            3,
+            320
+          ],
+          [
+            93978778110664,
+            1,
+            139,
+            "helper_codebook_part_parsed",
+            3,
+            76
+          ],
+          [
+            93978778110664,
+            1,
+            139,
+            "helper_search_candidate",
+            3,
+            2760
+          ],
+          [
+            93978778110664,
+            1,
+            139,
+            "helper_auxiliary_population_node",
+            3,
+            24
+          ],
+          [
+            93978778110664,
+            1,
+            142,
+            "dynamic_helper_invocation",
+            4,
+            2
+          ],
+          [
+            93978778110664,
+            1,
+            142,
+            "helper_codebook_population_node",
+            4,
+            38
+          ],
+          [
+            93978778110664,
+            1,
+            142,
+            "helper_node_attribute_examined",
+            4,
+            160
+          ],
+          [
+            93978778110664,
+            1,
+            142,
+            "helper_codebook_part_parsed",
+            4,
+            38
+          ],
+          [
+            93978778110664,
+            1,
+            142,
+            "helper_search_candidate",
+            4,
+            9600
+          ],
+          [
+            93978778110664,
+            1,
+            147,
+            "dynamic_helper_invocation",
+            4,
+            2
+          ],
+          [
+            93978778110664,
+            1,
+            147,
+            "helper_codebook_population_node",
+            4,
+            38
+          ],
+          [
+            93978778110664,
+            1,
+            147,
+            "helper_node_attribute_examined",
+            4,
+            160
+          ],
+          [
+            93978778110664,
+            1,
+            147,
+            "helper_codebook_part_parsed",
+            4,
+            38
+          ],
+          [
+            93978778110664,
+            1,
+            147,
+            "helper_search_candidate",
+            4,
+            9600
+          ],
+          [
+            93978778110664,
+            1,
+            150,
+            "dynamic_helper_invocation",
+            3,
+            2
+          ],
+          [
+            93978778110664,
+            1,
+            150,
+            "helper_codebook_population_node",
+            3,
+            38
+          ],
+          [
+            93978778110664,
+            1,
+            150,
+            "helper_node_attribute_examined",
+            3,
+            160
+          ],
+          [
+            93978778110664,
+            1,
+            150,
+            "helper_codebook_part_parsed",
+            3,
+            38
+          ],
+          [
+            93978778110664,
+            1,
+            150,
+            "helper_search_candidate",
+            3,
+            2172
+          ],
+          [
+            93978778110664,
+            1,
+            150,
+            "helper_auxiliary_population_node",
+            3,
+            14
+          ]
+        ]
+      },
+      "scope_membership": [
+        {
+          "frame": 0,
+          "members_agree": true,
+          "obs_scope_id_attr": null,
+          "part_scope_id_attr": null,
+          "provenance_sha256": "0ee2599327e45dd1a4f2d535134f393fa089871e14a63b4233c66ee35c24b434",
+          "scope_id": "audit-global-unscoped_global_k2_r1-0",
+          "scope_node": "#769"
+        },
+        {
+          "frame": 1,
+          "members_agree": true,
+          "obs_scope_id_attr": null,
+          "part_scope_id_attr": null,
+          "provenance_sha256": "750b8989097321ff3cf99a32fa9f04717ac06652adaf1db8720a918aaa2ceeae",
+          "scope_id": "audit-global-unscoped_global_k2_r1-1",
+          "scope_node": "#772"
+        }
+      ],
+      "source_after": {
+        "engine": "engine 1acf723cf64b @ /home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_build_manifest_sha256": "46331382fddd6ed1ae747e6d6af2b23aaf672bbeafbe82c9bf97862e9f55183a",
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "1acf723cf64b1c7d9c41feab7932d684f860d4078c83530c2d7a13bb78ba2f93",
+        "source_sha256": {
+          "docs/research/engine_substrate/SUBSTRATE_GENINFER_SCOPED_POPULATION_TRACE_V1_PREREG_20261005.md": "ea91625dcc17413619654e06d8afec93f1d68587291a6543218eb593e5eba8cc",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+          "evaluation/substrate_capability/analyze_geninfer_scoped_population_trace_v1.py": "59999cc599f89f2191cdd59b75c606200f127e2d46a8aebd9b74c9a68f6fd5e2",
+          "evaluation/substrate_capability/substrate_geninfer_scoped_population_trace_v1.py": "8ec6b17d6603a57145b84c29d6af3903a670cba52a4b95353b99e01424df6171",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/__init__.py": "b5b0ffab338329a3c9c7f24fbafe8821d89810f6c162c51b564976328e2bf843",
+          "runners/dsl/python/substrate_rs/_native.build.json": "46331382fddd6ed1ae747e6d6af2b23aaf672bbeafbe82c9bf97862e9f55183a",
+          "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+          "runners/dsl/src/graph.rs": "72e0fb8edfd7bd3d435cccc4511ea2481288d1997747d0e538a4ecd16934c58d",
+          "runners/dsl/src/jsonio.rs": "dd6a65282f85d9397f3b3b57d3405fd504612c899020674b0b74a83487de0f71",
+          "runners/dsl/src/lib.rs": "10ae7645d9ed1f7c3c9d4f5fd119406928ce079e4336a5b007df307c685c0826",
+          "runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+          "runners/dsl/src/py.rs": "ad5ced217ff7648a57fbd066a5d2a7dcffefb612e11c32c375c4482dd49b8a49",
+          "runners/dsl/src/reflect.rs": "7d80c39ad2f2a7fabc2cc9469377ba0ccd87a6bb5fe81258d169baf1124f30d1",
+          "runners/dsl/src/rewrite.rs": "a617664517d2a7b654a1ecc3caee6aaafb3d6c41ce0a47667a08497a7978f2ed",
+          "runners/dsl/src/shape_decode.rs": "ae83fe53614a12b60c4bfd6694e4b0faaad6210a3535cab428af701078d2f8aa",
+          "runners/dsl/src/substrate.rs": "866e4dd75fa2c884d95c8d2ccb1b5415bfeb3ba1e928bebbc64e18d3a1b0d577",
+          "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+          "runners/dsl/src/term.rs": "313b5f6dcd820f4ed62f0f6cfd794119379b09258ea7f926915fc0014439d417",
+          "seeds/adaptive_control_core.json": "fc57fe2f6e3f0ab45f4fac84221bdabf5b3a99b64de3bccf62cf7c016b2c9504",
+          "seeds/affective_state_core.json": "9cfd82ff99c780a0ddfb5ec65942fef77ea2275341e6a09f5b78d1910c354990",
+          "seeds/decision_core.json": "a2226728536b18760ffbeac4d699aad4db9d965f4a0f37470f73350c8b202198",
+          "seeds/default_mode_core.json": "10afab5ee8914577580225d192bad8138361e662c17509f34ecfc7f3175d748d",
+          "seeds/dual_process_core.json": "4cace3623596a588eb49b28cff51ee8bf144b0f9005dd8262f5d3910c23bc777",
+          "seeds/episodic_working_memory_core.json": "023050b48704fa75ed8da0c2db64c2e468f355112b5578897a04caa643fd9b57",
+          "seeds/epistemics_core.json": "485d3517bd988d332312fc08b83c2d757bd13a613e0a7d8ad4e1972ddae81e3e",
+          "seeds/experimentation_core.json": "dfbba83b66305e06328a3cc737765da56e0ab3fc66580b45dad7d75b0fb1ff7a",
+          "seeds/generative_world_model.json": "f147432955e1970bae03f1ec8cb1b3238fe8abba1520129e506c3600a07ed0a6",
+          "seeds/goal_construction.json": "598a573afb85beaaaafc90a6259e01f1cde211ffc4ea96acd1f2b9074d2e0e83",
+          "seeds/learning_core.json": "8269692b08f399096fef7d15bc58a207d79477e6954288aa09d3ed5e98bd3141",
+          "seeds/math_capability_shapes.json": "ddb216430ce303f45695998d992159d1c91d149b9bc18f5ab7d48d0ae4350057",
+          "seeds/memory_core.json": "5ec7f07b90f192bc3cea660d87335e34c5074d466a7d484b7381abf651231e6b",
+          "seeds/motor_core.json": "12cbe423bd6f1149fe28801e9172f86eaf34744948975a4bae27e349f7cbd6c3",
+          "seeds/perception_core.json": "7a274b9410bce9503392f0210bb22873273ea91c1558b9007e57885d852ae9bc",
+          "seeds/reflex_core.json": "f760e7821058306a48b6550fb041c871f044b18d0ef1359238fe90d292726c43",
+          "seeds/self_design_axis.json": "1003fb83a9f972747338f4cff35c6a471080ae25f265e1eae512255996731505",
+          "seeds/self_monitoring.json": "17cc07e1460c1505b6d223bdca203b4c3fbe17669971d904a5ffff322032eb58",
+          "seeds/shape_decode_loop.json": "0fb6e5206c6e901d1bae254dc7558c1f9f9171d2dfc8e3e0295593f27c3efa1e",
+          "seeds/theorem_core.json": "5630cfd5bd90a3c23f3346cbbc90af32a8f64848a287913b7688879095a7d332",
+          "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+          "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+        }
+      },
+      "source_before": {
+        "engine": "engine 1acf723cf64b @ /home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_build_manifest_sha256": "46331382fddd6ed1ae747e6d6af2b23aaf672bbeafbe82c9bf97862e9f55183a",
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "1acf723cf64b1c7d9c41feab7932d684f860d4078c83530c2d7a13bb78ba2f93",
+        "source_sha256": {
+          "docs/research/engine_substrate/SUBSTRATE_GENINFER_SCOPED_POPULATION_TRACE_V1_PREREG_20261005.md": "ea91625dcc17413619654e06d8afec93f1d68587291a6543218eb593e5eba8cc",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+          "evaluation/substrate_capability/analyze_geninfer_scoped_population_trace_v1.py": "59999cc599f89f2191cdd59b75c606200f127e2d46a8aebd9b74c9a68f6fd5e2",
+          "evaluation/substrate_capability/substrate_geninfer_scoped_population_trace_v1.py": "8ec6b17d6603a57145b84c29d6af3903a670cba52a4b95353b99e01424df6171",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/__init__.py": "b5b0ffab338329a3c9c7f24fbafe8821d89810f6c162c51b564976328e2bf843",
+          "runners/dsl/python/substrate_rs/_native.build.json": "46331382fddd6ed1ae747e6d6af2b23aaf672bbeafbe82c9bf97862e9f55183a",
+          "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+          "runners/dsl/src/graph.rs": "72e0fb8edfd7bd3d435cccc4511ea2481288d1997747d0e538a4ecd16934c58d",
+          "runners/dsl/src/jsonio.rs": "dd6a65282f85d9397f3b3b57d3405fd504612c899020674b0b74a83487de0f71",
+          "runners/dsl/src/lib.rs": "10ae7645d9ed1f7c3c9d4f5fd119406928ce079e4336a5b007df307c685c0826",
+          "runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+          "runners/dsl/src/py.rs": "ad5ced217ff7648a57fbd066a5d2a7dcffefb612e11c32c375c4482dd49b8a49",
+          "runners/dsl/src/reflect.rs": "7d80c39ad2f2a7fabc2cc9469377ba0ccd87a6bb5fe81258d169baf1124f30d1",
+          "runners/dsl/src/rewrite.rs": "a617664517d2a7b654a1ecc3caee6aaafb3d6c41ce0a47667a08497a7978f2ed",
+          "runners/dsl/src/shape_decode.rs": "ae83fe53614a12b60c4bfd6694e4b0faaad6210a3535cab428af701078d2f8aa",
+          "runners/dsl/src/substrate.rs": "866e4dd75fa2c884d95c8d2ccb1b5415bfeb3ba1e928bebbc64e18d3a1b0d577",
+          "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+          "runners/dsl/src/term.rs": "313b5f6dcd820f4ed62f0f6cfd794119379b09258ea7f926915fc0014439d417",
+          "seeds/adaptive_control_core.json": "fc57fe2f6e3f0ab45f4fac84221bdabf5b3a99b64de3bccf62cf7c016b2c9504",
+          "seeds/affective_state_core.json": "9cfd82ff99c780a0ddfb5ec65942fef77ea2275341e6a09f5b78d1910c354990",
+          "seeds/decision_core.json": "a2226728536b18760ffbeac4d699aad4db9d965f4a0f37470f73350c8b202198",
+          "seeds/default_mode_core.json": "10afab5ee8914577580225d192bad8138361e662c17509f34ecfc7f3175d748d",
+          "seeds/dual_process_core.json": "4cace3623596a588eb49b28cff51ee8bf144b0f9005dd8262f5d3910c23bc777",
+          "seeds/episodic_working_memory_core.json": "023050b48704fa75ed8da0c2db64c2e468f355112b5578897a04caa643fd9b57",
+          "seeds/epistemics_core.json": "485d3517bd988d332312fc08b83c2d757bd13a613e0a7d8ad4e1972ddae81e3e",
+          "seeds/experimentation_core.json": "dfbba83b66305e06328a3cc737765da56e0ab3fc66580b45dad7d75b0fb1ff7a",
+          "seeds/generative_world_model.json": "f147432955e1970bae03f1ec8cb1b3238fe8abba1520129e506c3600a07ed0a6",
+          "seeds/goal_construction.json": "598a573afb85beaaaafc90a6259e01f1cde211ffc4ea96acd1f2b9074d2e0e83",
+          "seeds/learning_core.json": "8269692b08f399096fef7d15bc58a207d79477e6954288aa09d3ed5e98bd3141",
+          "seeds/math_capability_shapes.json": "ddb216430ce303f45695998d992159d1c91d149b9bc18f5ab7d48d0ae4350057",
+          "seeds/memory_core.json": "5ec7f07b90f192bc3cea660d87335e34c5074d466a7d484b7381abf651231e6b",
+          "seeds/motor_core.json": "12cbe423bd6f1149fe28801e9172f86eaf34744948975a4bae27e349f7cbd6c3",
+          "seeds/perception_core.json": "7a274b9410bce9503392f0210bb22873273ea91c1558b9007e57885d852ae9bc",
+          "seeds/reflex_core.json": "f760e7821058306a48b6550fb041c871f044b18d0ef1359238fe90d292726c43",
+          "seeds/self_design_axis.json": "1003fb83a9f972747338f4cff35c6a471080ae25f265e1eae512255996731505",
+          "seeds/self_monitoring.json": "17cc07e1460c1505b6d223bdca203b4c3fbe17669971d904a5ffff322032eb58",
+          "seeds/shape_decode_loop.json": "0fb6e5206c6e901d1bae254dc7558c1f9f9171d2dfc8e3e0295593f27c3efa1e",
+          "seeds/theorem_core.json": "5630cfd5bd90a3c23f3346cbbc90af32a8f64848a287913b7688879095a7d332",
+          "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+          "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+        }
+      },
+      "source_stable": true
+    },
+    {
+      "case": {
+        "id": "explicit_global_k2_r1",
+        "k": 2,
+        "kind": "positive",
+        "mode": "explicit_global",
+        "repeat": 1
+      },
+      "closure_cpu_ns": 31641679,
+      "closure_wall_ns": 31639106,
+      "closure_work": 9,
+      "diagnostic_checks": [
+        {
+          "checked": 4800,
+          "frame": 0,
+          "scope_id": "shared_explicit_global_k2_r1",
+          "state_unchanged": true
+        },
+        {
+          "checked": 4800,
+          "frame": 1,
+          "scope_id": "shared_explicit_global_k2_r1",
+          "state_unchanged": true
+        }
+      ],
+      "edges_after": 749,
+      "hwm_after_kib": 44172,
+      "hwm_before_kib": 43980,
+      "hwm_delta_kib": 192,
+      "initial_candidate_checks_total": 9600,
+      "linear_generators": [
+        {
+          "matrix": [
+            2,
+            1,
+            1,
+            1
+          ],
+          "name": "genlin_[2,1,1,1]"
+        },
+        {
+          "matrix": [
+            2,
+            -1,
+            1,
+            1
+          ],
+          "name": "genlin_[2,-1,1,1]"
+        }
+      ],
+      "nodes_after": 780,
+      "nodes_before": 774,
+      "outputs": [
+        {
+          "frame": 0,
+          "matrix": [
+            2,
+            1,
+            1,
+            1
+          ],
+          "oracle_exact": true,
+          "quanta_count": 1,
+          "receipts": [
+            {
+              "base": "frame0_base",
+              "dim": "latent:genlin_[2,1,1,1]",
+              "dims": [],
+              "generator": "genlin_[2,1,1,1]",
+              "generators": [
+                "genlin_[2,1,1,1]"
+              ],
+              "k": 1,
+              "ks": [
+                1
+              ],
+              "source": "dim_infer",
+              "transforms": []
+            }
+          ],
+          "status": "recognized_transformed",
+          "target_generator_present": true
+        },
+        {
+          "frame": 1,
+          "matrix": [
+            2,
+            -1,
+            1,
+            1
+          ],
+          "oracle_exact": true,
+          "quanta_count": 1,
+          "receipts": [
+            {
+              "base": "frame1_base",
+              "dim": "latent:genlin_[2,-1,1,1]",
+              "dims": [],
+              "generator": "genlin_[2,-1,1,1]",
+              "generators": [
+                "genlin_[2,-1,1,1]"
+              ],
+              "k": 1,
+              "ks": [
+                1
+              ],
+              "source": "dim_infer",
+              "transforms": []
+            }
+          ],
+          "status": "recognized_transformed",
+          "target_generator_present": true
+        }
+      ],
+      "pid": 682,
+      "replicate": 2,
+      "runtime_work_trace": {
+        "dropped": 0,
+        "rows": [
+          [
+            105576352381640,
+            1,
+            0,
+            "scheduler_pass",
+            null,
+            3
+          ],
+          [
+            105576352381640,
+            1,
+            0,
+            "scheduler_external_poll_slots",
+            null,
+            477
+          ],
+          [
+            105576352381640,
+            1,
+            0,
+            "scheduler_fixedpoint_probe_slots",
+            null,
+            5
+          ],
+          [
+            105576352381640,
+            1,
+            0,
+            "scheduler_dirty_vector_slots",
+            null,
+            477
+          ],
+          [
+            105576352381640,
+            1,
+            0,
+            "scheduler_selected_rules",
+            null,
+            419
+          ],
+          [
+            105576352381640,
+            1,
+            0,
+            "operation_kind",
+            1,
+            1
+          ],
+          [
+            105576352381640,
+            1,
+            137,
+            "dynamic_helper_invocation",
+            1,
+            2
+          ],
+          [
+            105576352381640,
+            1,
+            137,
+            "helper_codebook_population_node",
+            1,
+            38
+          ],
+          [
+            105576352381640,
+            1,
+            137,
+            "helper_node_attribute_examined",
+            1,
+            164
+          ],
+          [
+            105576352381640,
+            1,
+            137,
+            "helper_codebook_part_parsed",
+            1,
+            38
+          ],
+          [
+            105576352381640,
+            1,
+            137,
+            "helper_search_candidate",
+            1,
+            2
+          ],
+          [
+            105576352381640,
+            1,
+            137,
+            "helper_candidate_part_scored",
+            1,
+            74
+          ],
+          [
+            105576352381640,
+            1,
+            138,
+            "dynamic_helper_invocation",
+            2,
+            4
+          ],
+          [
+            105576352381640,
+            1,
+            138,
+            "helper_codebook_population_node",
+            2,
+            76
+          ],
+          [
+            105576352381640,
+            1,
+            138,
+            "helper_node_attribute_examined",
+            2,
+            328
+          ],
+          [
+            105576352381640,
+            1,
+            138,
+            "helper_codebook_part_parsed",
+            2,
+            76
+          ],
+          [
+            105576352381640,
+            1,
+            138,
+            "helper_search_candidate",
+            2,
+            76
+          ],
+          [
+            105576352381640,
+            1,
+            139,
+            "dynamic_helper_invocation",
+            3,
+            4
+          ],
+          [
+            105576352381640,
+            1,
+            139,
+            "helper_codebook_population_node",
+            3,
+            76
+          ],
+          [
+            105576352381640,
+            1,
+            139,
+            "helper_node_attribute_examined",
+            3,
+            328
+          ],
+          [
+            105576352381640,
+            1,
+            139,
+            "helper_codebook_part_parsed",
+            3,
+            76
+          ],
+          [
+            105576352381640,
+            1,
+            139,
+            "helper_search_candidate",
+            3,
+            2760
+          ],
+          [
+            105576352381640,
+            1,
+            139,
+            "helper_auxiliary_population_node",
+            3,
+            24
+          ],
+          [
+            105576352381640,
+            1,
+            142,
+            "dynamic_helper_invocation",
+            4,
+            2
+          ],
+          [
+            105576352381640,
+            1,
+            142,
+            "helper_codebook_population_node",
+            4,
+            38
+          ],
+          [
+            105576352381640,
+            1,
+            142,
+            "helper_node_attribute_examined",
+            4,
+            28
+          ],
+          [
+            105576352381640,
+            1,
+            142,
+            "helper_codebook_part_parsed",
+            4,
+            4
+          ],
+          [
+            105576352381640,
+            1,
+            142,
+            "helper_search_candidate",
+            4,
+            9600
+          ],
+          [
+            105576352381640,
+            1,
+            147,
+            "dynamic_helper_invocation",
+            4,
+            2
+          ],
+          [
+            105576352381640,
+            1,
+            147,
+            "helper_codebook_population_node",
+            4,
+            38
+          ],
+          [
+            105576352381640,
+            1,
+            147,
+            "helper_node_attribute_examined",
+            4,
+            28
+          ],
+          [
+            105576352381640,
+            1,
+            147,
+            "helper_codebook_part_parsed",
+            4,
+            4
+          ],
+          [
+            105576352381640,
+            1,
+            147,
+            "helper_search_candidate",
+            4,
+            9600
+          ],
+          [
+            105576352381640,
+            1,
+            150,
+            "dynamic_helper_invocation",
+            3,
+            2
+          ],
+          [
+            105576352381640,
+            1,
+            150,
+            "helper_codebook_population_node",
+            3,
+            38
+          ],
+          [
+            105576352381640,
+            1,
+            150,
+            "helper_node_attribute_examined",
+            3,
+            164
+          ],
+          [
+            105576352381640,
+            1,
+            150,
+            "helper_codebook_part_parsed",
+            3,
+            38
+          ],
+          [
+            105576352381640,
+            1,
+            150,
+            "helper_search_candidate",
+            3,
+            2172
+          ],
+          [
+            105576352381640,
+            1,
+            150,
+            "helper_auxiliary_population_node",
+            3,
+            14
+          ]
+        ]
+      },
+      "scope_membership": [
+        {
+          "frame": 0,
+          "members_agree": true,
+          "obs_scope_id_attr": "shared_explicit_global_k2_r1",
+          "part_scope_id_attr": "shared_explicit_global_k2_r1",
+          "provenance_sha256": "81ab8999f90631d72bf8fe8e870610ee74db31850d13318a98f50eca7a3d8ede",
+          "scope_id": "shared_explicit_global_k2_r1",
+          "scope_node": "#769"
+        },
+        {
+          "frame": 1,
+          "members_agree": true,
+          "obs_scope_id_attr": "shared_explicit_global_k2_r1",
+          "part_scope_id_attr": "shared_explicit_global_k2_r1",
+          "provenance_sha256": "5c2858eb53ad5a8a48ffba439dae1e19a3d7a220f84ba041e3cbb6867a78666a",
+          "scope_id": "shared_explicit_global_k2_r1",
+          "scope_node": "#772"
+        }
+      ],
+      "source_after": {
+        "engine": "engine 1acf723cf64b @ /home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_build_manifest_sha256": "46331382fddd6ed1ae747e6d6af2b23aaf672bbeafbe82c9bf97862e9f55183a",
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "1acf723cf64b1c7d9c41feab7932d684f860d4078c83530c2d7a13bb78ba2f93",
+        "source_sha256": {
+          "docs/research/engine_substrate/SUBSTRATE_GENINFER_SCOPED_POPULATION_TRACE_V1_PREREG_20261005.md": "ea91625dcc17413619654e06d8afec93f1d68587291a6543218eb593e5eba8cc",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+          "evaluation/substrate_capability/analyze_geninfer_scoped_population_trace_v1.py": "59999cc599f89f2191cdd59b75c606200f127e2d46a8aebd9b74c9a68f6fd5e2",
+          "evaluation/substrate_capability/substrate_geninfer_scoped_population_trace_v1.py": "8ec6b17d6603a57145b84c29d6af3903a670cba52a4b95353b99e01424df6171",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/__init__.py": "b5b0ffab338329a3c9c7f24fbafe8821d89810f6c162c51b564976328e2bf843",
+          "runners/dsl/python/substrate_rs/_native.build.json": "46331382fddd6ed1ae747e6d6af2b23aaf672bbeafbe82c9bf97862e9f55183a",
+          "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+          "runners/dsl/src/graph.rs": "72e0fb8edfd7bd3d435cccc4511ea2481288d1997747d0e538a4ecd16934c58d",
+          "runners/dsl/src/jsonio.rs": "dd6a65282f85d9397f3b3b57d3405fd504612c899020674b0b74a83487de0f71",
+          "runners/dsl/src/lib.rs": "10ae7645d9ed1f7c3c9d4f5fd119406928ce079e4336a5b007df307c685c0826",
+          "runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+          "runners/dsl/src/py.rs": "ad5ced217ff7648a57fbd066a5d2a7dcffefb612e11c32c375c4482dd49b8a49",
+          "runners/dsl/src/reflect.rs": "7d80c39ad2f2a7fabc2cc9469377ba0ccd87a6bb5fe81258d169baf1124f30d1",
+          "runners/dsl/src/rewrite.rs": "a617664517d2a7b654a1ecc3caee6aaafb3d6c41ce0a47667a08497a7978f2ed",
+          "runners/dsl/src/shape_decode.rs": "ae83fe53614a12b60c4bfd6694e4b0faaad6210a3535cab428af701078d2f8aa",
+          "runners/dsl/src/substrate.rs": "866e4dd75fa2c884d95c8d2ccb1b5415bfeb3ba1e928bebbc64e18d3a1b0d577",
+          "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+          "runners/dsl/src/term.rs": "313b5f6dcd820f4ed62f0f6cfd794119379b09258ea7f926915fc0014439d417",
+          "seeds/adaptive_control_core.json": "fc57fe2f6e3f0ab45f4fac84221bdabf5b3a99b64de3bccf62cf7c016b2c9504",
+          "seeds/affective_state_core.json": "9cfd82ff99c780a0ddfb5ec65942fef77ea2275341e6a09f5b78d1910c354990",
+          "seeds/decision_core.json": "a2226728536b18760ffbeac4d699aad4db9d965f4a0f37470f73350c8b202198",
+          "seeds/default_mode_core.json": "10afab5ee8914577580225d192bad8138361e662c17509f34ecfc7f3175d748d",
+          "seeds/dual_process_core.json": "4cace3623596a588eb49b28cff51ee8bf144b0f9005dd8262f5d3910c23bc777",
+          "seeds/episodic_working_memory_core.json": "023050b48704fa75ed8da0c2db64c2e468f355112b5578897a04caa643fd9b57",
+          "seeds/epistemics_core.json": "485d3517bd988d332312fc08b83c2d757bd13a613e0a7d8ad4e1972ddae81e3e",
+          "seeds/experimentation_core.json": "dfbba83b66305e06328a3cc737765da56e0ab3fc66580b45dad7d75b0fb1ff7a",
+          "seeds/generative_world_model.json": "f147432955e1970bae03f1ec8cb1b3238fe8abba1520129e506c3600a07ed0a6",
+          "seeds/goal_construction.json": "598a573afb85beaaaafc90a6259e01f1cde211ffc4ea96acd1f2b9074d2e0e83",
+          "seeds/learning_core.json": "8269692b08f399096fef7d15bc58a207d79477e6954288aa09d3ed5e98bd3141",
+          "seeds/math_capability_shapes.json": "ddb216430ce303f45695998d992159d1c91d149b9bc18f5ab7d48d0ae4350057",
+          "seeds/memory_core.json": "5ec7f07b90f192bc3cea660d87335e34c5074d466a7d484b7381abf651231e6b",
+          "seeds/motor_core.json": "12cbe423bd6f1149fe28801e9172f86eaf34744948975a4bae27e349f7cbd6c3",
+          "seeds/perception_core.json": "7a274b9410bce9503392f0210bb22873273ea91c1558b9007e57885d852ae9bc",
+          "seeds/reflex_core.json": "f760e7821058306a48b6550fb041c871f044b18d0ef1359238fe90d292726c43",
+          "seeds/self_design_axis.json": "1003fb83a9f972747338f4cff35c6a471080ae25f265e1eae512255996731505",
+          "seeds/self_monitoring.json": "17cc07e1460c1505b6d223bdca203b4c3fbe17669971d904a5ffff322032eb58",
+          "seeds/shape_decode_loop.json": "0fb6e5206c6e901d1bae254dc7558c1f9f9171d2dfc8e3e0295593f27c3efa1e",
+          "seeds/theorem_core.json": "5630cfd5bd90a3c23f3346cbbc90af32a8f64848a287913b7688879095a7d332",
+          "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+          "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+        }
+      },
+      "source_before": {
+        "engine": "engine 1acf723cf64b @ /home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_build_manifest_sha256": "46331382fddd6ed1ae747e6d6af2b23aaf672bbeafbe82c9bf97862e9f55183a",
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "1acf723cf64b1c7d9c41feab7932d684f860d4078c83530c2d7a13bb78ba2f93",
+        "source_sha256": {
+          "docs/research/engine_substrate/SUBSTRATE_GENINFER_SCOPED_POPULATION_TRACE_V1_PREREG_20261005.md": "ea91625dcc17413619654e06d8afec93f1d68587291a6543218eb593e5eba8cc",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+          "evaluation/substrate_capability/analyze_geninfer_scoped_population_trace_v1.py": "59999cc599f89f2191cdd59b75c606200f127e2d46a8aebd9b74c9a68f6fd5e2",
+          "evaluation/substrate_capability/substrate_geninfer_scoped_population_trace_v1.py": "8ec6b17d6603a57145b84c29d6af3903a670cba52a4b95353b99e01424df6171",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/__init__.py": "b5b0ffab338329a3c9c7f24fbafe8821d89810f6c162c51b564976328e2bf843",
+          "runners/dsl/python/substrate_rs/_native.build.json": "46331382fddd6ed1ae747e6d6af2b23aaf672bbeafbe82c9bf97862e9f55183a",
+          "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+          "runners/dsl/src/graph.rs": "72e0fb8edfd7bd3d435cccc4511ea2481288d1997747d0e538a4ecd16934c58d",
+          "runners/dsl/src/jsonio.rs": "dd6a65282f85d9397f3b3b57d3405fd504612c899020674b0b74a83487de0f71",
+          "runners/dsl/src/lib.rs": "10ae7645d9ed1f7c3c9d4f5fd119406928ce079e4336a5b007df307c685c0826",
+          "runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+          "runners/dsl/src/py.rs": "ad5ced217ff7648a57fbd066a5d2a7dcffefb612e11c32c375c4482dd49b8a49",
+          "runners/dsl/src/reflect.rs": "7d80c39ad2f2a7fabc2cc9469377ba0ccd87a6bb5fe81258d169baf1124f30d1",
+          "runners/dsl/src/rewrite.rs": "a617664517d2a7b654a1ecc3caee6aaafb3d6c41ce0a47667a08497a7978f2ed",
+          "runners/dsl/src/shape_decode.rs": "ae83fe53614a12b60c4bfd6694e4b0faaad6210a3535cab428af701078d2f8aa",
+          "runners/dsl/src/substrate.rs": "866e4dd75fa2c884d95c8d2ccb1b5415bfeb3ba1e928bebbc64e18d3a1b0d577",
+          "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+          "runners/dsl/src/term.rs": "313b5f6dcd820f4ed62f0f6cfd794119379b09258ea7f926915fc0014439d417",
+          "seeds/adaptive_control_core.json": "fc57fe2f6e3f0ab45f4fac84221bdabf5b3a99b64de3bccf62cf7c016b2c9504",
+          "seeds/affective_state_core.json": "9cfd82ff99c780a0ddfb5ec65942fef77ea2275341e6a09f5b78d1910c354990",
+          "seeds/decision_core.json": "a2226728536b18760ffbeac4d699aad4db9d965f4a0f37470f73350c8b202198",
+          "seeds/default_mode_core.json": "10afab5ee8914577580225d192bad8138361e662c17509f34ecfc7f3175d748d",
+          "seeds/dual_process_core.json": "4cace3623596a588eb49b28cff51ee8bf144b0f9005dd8262f5d3910c23bc777",
+          "seeds/episodic_working_memory_core.json": "023050b48704fa75ed8da0c2db64c2e468f355112b5578897a04caa643fd9b57",
+          "seeds/epistemics_core.json": "485d3517bd988d332312fc08b83c2d757bd13a613e0a7d8ad4e1972ddae81e3e",
+          "seeds/experimentation_core.json": "dfbba83b66305e06328a3cc737765da56e0ab3fc66580b45dad7d75b0fb1ff7a",
+          "seeds/generative_world_model.json": "f147432955e1970bae03f1ec8cb1b3238fe8abba1520129e506c3600a07ed0a6",
+          "seeds/goal_construction.json": "598a573afb85beaaaafc90a6259e01f1cde211ffc4ea96acd1f2b9074d2e0e83",
+          "seeds/learning_core.json": "8269692b08f399096fef7d15bc58a207d79477e6954288aa09d3ed5e98bd3141",
+          "seeds/math_capability_shapes.json": "ddb216430ce303f45695998d992159d1c91d149b9bc18f5ab7d48d0ae4350057",
+          "seeds/memory_core.json": "5ec7f07b90f192bc3cea660d87335e34c5074d466a7d484b7381abf651231e6b",
+          "seeds/motor_core.json": "12cbe423bd6f1149fe28801e9172f86eaf34744948975a4bae27e349f7cbd6c3",
+          "seeds/perception_core.json": "7a274b9410bce9503392f0210bb22873273ea91c1558b9007e57885d852ae9bc",
+          "seeds/reflex_core.json": "f760e7821058306a48b6550fb041c871f044b18d0ef1359238fe90d292726c43",
+          "seeds/self_design_axis.json": "1003fb83a9f972747338f4cff35c6a471080ae25f265e1eae512255996731505",
+          "seeds/self_monitoring.json": "17cc07e1460c1505b6d223bdca203b4c3fbe17669971d904a5ffff322032eb58",
+          "seeds/shape_decode_loop.json": "0fb6e5206c6e901d1bae254dc7558c1f9f9171d2dfc8e3e0295593f27c3efa1e",
+          "seeds/theorem_core.json": "5630cfd5bd90a3c23f3346cbbc90af32a8f64848a287913b7688879095a7d332",
+          "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+          "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+        }
+      },
+      "source_stable": true
+    },
+    {
+      "case": {
+        "id": "frame_scoped_k2_r1",
+        "k": 2,
+        "kind": "positive",
+        "mode": "frame_scoped",
+        "repeat": 1
+      },
+      "closure_cpu_ns": 34859379,
+      "closure_wall_ns": 34836587,
+      "closure_work": 9,
+      "diagnostic_checks": [
+        {
+          "checked": 2400,
+          "frame": 0,
+          "scope_id": "scope_frame_scoped_k2_r1_frame0",
+          "state_unchanged": true
+        },
+        {
+          "checked": 2400,
+          "frame": 1,
+          "scope_id": "scope_frame_scoped_k2_r1_frame1",
+          "state_unchanged": true
+        }
+      ],
+      "edges_after": 749,
+      "hwm_after_kib": 45168,
+      "hwm_before_kib": 44784,
+      "hwm_delta_kib": 384,
+      "initial_candidate_checks_total": 4800,
+      "linear_generators": [
+        {
+          "matrix": [
+            2,
+            1,
+            1,
+            1
+          ],
+          "name": "genlin_[2,1,1,1]"
+        },
+        {
+          "matrix": [
+            2,
+            -1,
+            1,
+            1
+          ],
+          "name": "genlin_[2,-1,1,1]"
+        }
+      ],
+      "nodes_after": 780,
+      "nodes_before": 774,
+      "outputs": [
+        {
+          "frame": 0,
+          "matrix": [
+            2,
+            1,
+            1,
+            1
+          ],
+          "oracle_exact": true,
+          "quanta_count": 1,
+          "receipts": [
+            {
+              "base": "frame0_base",
+              "dim": "latent:genlin_[2,1,1,1]",
+              "dims": [],
+              "generator": "genlin_[2,1,1,1]",
+              "generators": [
+                "genlin_[2,1,1,1]"
+              ],
+              "k": 1,
+              "ks": [
+                1
+              ],
+              "source": "dim_infer",
+              "transforms": []
+            }
+          ],
+          "status": "recognized_transformed",
+          "target_generator_present": true
+        },
+        {
+          "frame": 1,
+          "matrix": [
+            2,
+            -1,
+            1,
+            1
+          ],
+          "oracle_exact": true,
+          "quanta_count": 1,
+          "receipts": [
+            {
+              "base": "frame1_base",
+              "dim": "latent:genlin_[2,-1,1,1]",
+              "dims": [],
+              "generator": "genlin_[2,-1,1,1]",
+              "generators": [
+                "genlin_[2,-1,1,1]"
+              ],
+              "k": 1,
+              "ks": [
+                1
+              ],
+              "source": "dim_infer",
+              "transforms": []
+            }
+          ],
+          "status": "recognized_transformed",
+          "target_generator_present": true
+        }
+      ],
+      "pid": 779,
+      "replicate": 2,
+      "runtime_work_trace": {
+        "dropped": 0,
+        "rows": [
+          [
+            102002684443336,
+            1,
+            0,
+            "scheduler_pass",
+            null,
+            3
+          ],
+          [
+            102002684443336,
+            1,
+            0,
+            "scheduler_external_poll_slots",
+            null,
+            477
+          ],
+          [
+            102002684443336,
+            1,
+            0,
+            "scheduler_fixedpoint_probe_slots",
+            null,
+            5
+          ],
+          [
+            102002684443336,
+            1,
+            0,
+            "scheduler_dirty_vector_slots",
+            null,
+            477
+          ],
+          [
+            102002684443336,
+            1,
+            0,
+            "scheduler_selected_rules",
+            null,
+            419
+          ],
+          [
+            102002684443336,
+            1,
+            0,
+            "operation_kind",
+            1,
+            1
+          ],
+          [
+            102002684443336,
+            1,
+            137,
+            "dynamic_helper_invocation",
+            1,
+            2
+          ],
+          [
+            102002684443336,
+            1,
+            137,
+            "helper_codebook_population_node",
+            1,
+            38
+          ],
+          [
+            102002684443336,
+            1,
+            137,
+            "helper_node_attribute_examined",
+            1,
+            164
+          ],
+          [
+            102002684443336,
+            1,
+            137,
+            "helper_codebook_part_parsed",
+            1,
+            38
+          ],
+          [
+            102002684443336,
+            1,
+            137,
+            "helper_search_candidate",
+            1,
+            2
+          ],
+          [
+            102002684443336,
+            1,
+            137,
+            "helper_candidate_part_scored",
+            1,
+            74
+          ],
+          [
+            102002684443336,
+            1,
+            138,
+            "dynamic_helper_invocation",
+            2,
+            4
+          ],
+          [
+            102002684443336,
+            1,
+            138,
+            "helper_codebook_population_node",
+            2,
+            76
+          ],
+          [
+            102002684443336,
+            1,
+            138,
+            "helper_node_attribute_examined",
+            2,
+            328
+          ],
+          [
+            102002684443336,
+            1,
+            138,
+            "helper_codebook_part_parsed",
+            2,
+            76
+          ],
+          [
+            102002684443336,
+            1,
+            138,
+            "helper_search_candidate",
+            2,
+            76
+          ],
+          [
+            102002684443336,
+            1,
+            139,
+            "dynamic_helper_invocation",
+            3,
+            4
+          ],
+          [
+            102002684443336,
+            1,
+            139,
+            "helper_codebook_population_node",
+            3,
+            76
+          ],
+          [
+            102002684443336,
+            1,
+            139,
+            "helper_node_attribute_examined",
+            3,
+            328
+          ],
+          [
+            102002684443336,
+            1,
+            139,
+            "helper_codebook_part_parsed",
+            3,
+            76
+          ],
+          [
+            102002684443336,
+            1,
+            139,
+            "helper_search_candidate",
+            3,
+            2760
+          ],
+          [
+            102002684443336,
+            1,
+            139,
+            "helper_auxiliary_population_node",
+            3,
+            24
+          ],
+          [
+            102002684443336,
+            1,
+            142,
+            "dynamic_helper_invocation",
+            4,
+            2
+          ],
+          [
+            102002684443336,
+            1,
+            142,
+            "helper_codebook_population_node",
+            4,
+            38
+          ],
+          [
+            102002684443336,
+            1,
+            142,
+            "helper_node_attribute_examined",
+            4,
+            14
+          ],
+          [
+            102002684443336,
+            1,
+            142,
+            "helper_codebook_part_parsed",
+            4,
+            2
+          ],
+          [
+            102002684443336,
+            1,
+            142,
+            "helper_search_candidate",
+            4,
+            4800
+          ],
+          [
+            102002684443336,
+            1,
+            147,
+            "dynamic_helper_invocation",
+            4,
+            2
+          ],
+          [
+            102002684443336,
+            1,
+            147,
+            "helper_codebook_population_node",
+            4,
+            38
+          ],
+          [
+            102002684443336,
+            1,
+            147,
+            "helper_node_attribute_examined",
+            4,
+            14
+          ],
+          [
+            102002684443336,
+            1,
+            147,
+            "helper_codebook_part_parsed",
+            4,
+            2
+          ],
+          [
+            102002684443336,
+            1,
+            147,
+            "helper_search_candidate",
+            4,
+            4800
+          ],
+          [
+            102002684443336,
+            1,
+            150,
+            "dynamic_helper_invocation",
+            3,
+            2
+          ],
+          [
+            102002684443336,
+            1,
+            150,
+            "helper_codebook_population_node",
+            3,
+            38
+          ],
+          [
+            102002684443336,
+            1,
+            150,
+            "helper_node_attribute_examined",
+            3,
+            164
+          ],
+          [
+            102002684443336,
+            1,
+            150,
+            "helper_codebook_part_parsed",
+            3,
+            38
+          ],
+          [
+            102002684443336,
+            1,
+            150,
+            "helper_search_candidate",
+            3,
+            2172
+          ],
+          [
+            102002684443336,
+            1,
+            150,
+            "helper_auxiliary_population_node",
+            3,
+            14
+          ]
+        ]
+      },
+      "scope_membership": [
+        {
+          "frame": 0,
+          "members_agree": true,
+          "obs_scope_id_attr": "scope_frame_scoped_k2_r1_frame0",
+          "part_scope_id_attr": "scope_frame_scoped_k2_r1_frame0",
+          "provenance_sha256": "1a9f4f43ec06eb9e69d35465de436958865083b79d62f574fa4a58b67bcf6674",
+          "scope_id": "scope_frame_scoped_k2_r1_frame0",
+          "scope_node": "#769"
+        },
+        {
+          "frame": 1,
+          "members_agree": true,
+          "obs_scope_id_attr": "scope_frame_scoped_k2_r1_frame1",
+          "part_scope_id_attr": "scope_frame_scoped_k2_r1_frame1",
+          "provenance_sha256": "2ee986618750ec61140b9a188e3d024fa4bfa910ddcf4cf2de8a1135f6df37eb",
+          "scope_id": "scope_frame_scoped_k2_r1_frame1",
+          "scope_node": "#772"
+        }
+      ],
+      "source_after": {
+        "engine": "engine 1acf723cf64b @ /home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_build_manifest_sha256": "46331382fddd6ed1ae747e6d6af2b23aaf672bbeafbe82c9bf97862e9f55183a",
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "1acf723cf64b1c7d9c41feab7932d684f860d4078c83530c2d7a13bb78ba2f93",
+        "source_sha256": {
+          "docs/research/engine_substrate/SUBSTRATE_GENINFER_SCOPED_POPULATION_TRACE_V1_PREREG_20261005.md": "ea91625dcc17413619654e06d8afec93f1d68587291a6543218eb593e5eba8cc",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+          "evaluation/substrate_capability/analyze_geninfer_scoped_population_trace_v1.py": "59999cc599f89f2191cdd59b75c606200f127e2d46a8aebd9b74c9a68f6fd5e2",
+          "evaluation/substrate_capability/substrate_geninfer_scoped_population_trace_v1.py": "8ec6b17d6603a57145b84c29d6af3903a670cba52a4b95353b99e01424df6171",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/__init__.py": "b5b0ffab338329a3c9c7f24fbafe8821d89810f6c162c51b564976328e2bf843",
+          "runners/dsl/python/substrate_rs/_native.build.json": "46331382fddd6ed1ae747e6d6af2b23aaf672bbeafbe82c9bf97862e9f55183a",
+          "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+          "runners/dsl/src/graph.rs": "72e0fb8edfd7bd3d435cccc4511ea2481288d1997747d0e538a4ecd16934c58d",
+          "runners/dsl/src/jsonio.rs": "dd6a65282f85d9397f3b3b57d3405fd504612c899020674b0b74a83487de0f71",
+          "runners/dsl/src/lib.rs": "10ae7645d9ed1f7c3c9d4f5fd119406928ce079e4336a5b007df307c685c0826",
+          "runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+          "runners/dsl/src/py.rs": "ad5ced217ff7648a57fbd066a5d2a7dcffefb612e11c32c375c4482dd49b8a49",
+          "runners/dsl/src/reflect.rs": "7d80c39ad2f2a7fabc2cc9469377ba0ccd87a6bb5fe81258d169baf1124f30d1",
+          "runners/dsl/src/rewrite.rs": "a617664517d2a7b654a1ecc3caee6aaafb3d6c41ce0a47667a08497a7978f2ed",
+          "runners/dsl/src/shape_decode.rs": "ae83fe53614a12b60c4bfd6694e4b0faaad6210a3535cab428af701078d2f8aa",
+          "runners/dsl/src/substrate.rs": "866e4dd75fa2c884d95c8d2ccb1b5415bfeb3ba1e928bebbc64e18d3a1b0d577",
+          "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+          "runners/dsl/src/term.rs": "313b5f6dcd820f4ed62f0f6cfd794119379b09258ea7f926915fc0014439d417",
+          "seeds/adaptive_control_core.json": "fc57fe2f6e3f0ab45f4fac84221bdabf5b3a99b64de3bccf62cf7c016b2c9504",
+          "seeds/affective_state_core.json": "9cfd82ff99c780a0ddfb5ec65942fef77ea2275341e6a09f5b78d1910c354990",
+          "seeds/decision_core.json": "a2226728536b18760ffbeac4d699aad4db9d965f4a0f37470f73350c8b202198",
+          "seeds/default_mode_core.json": "10afab5ee8914577580225d192bad8138361e662c17509f34ecfc7f3175d748d",
+          "seeds/dual_process_core.json": "4cace3623596a588eb49b28cff51ee8bf144b0f9005dd8262f5d3910c23bc777",
+          "seeds/episodic_working_memory_core.json": "023050b48704fa75ed8da0c2db64c2e468f355112b5578897a04caa643fd9b57",
+          "seeds/epistemics_core.json": "485d3517bd988d332312fc08b83c2d757bd13a613e0a7d8ad4e1972ddae81e3e",
+          "seeds/experimentation_core.json": "dfbba83b66305e06328a3cc737765da56e0ab3fc66580b45dad7d75b0fb1ff7a",
+          "seeds/generative_world_model.json": "f147432955e1970bae03f1ec8cb1b3238fe8abba1520129e506c3600a07ed0a6",
+          "seeds/goal_construction.json": "598a573afb85beaaaafc90a6259e01f1cde211ffc4ea96acd1f2b9074d2e0e83",
+          "seeds/learning_core.json": "8269692b08f399096fef7d15bc58a207d79477e6954288aa09d3ed5e98bd3141",
+          "seeds/math_capability_shapes.json": "ddb216430ce303f45695998d992159d1c91d149b9bc18f5ab7d48d0ae4350057",
+          "seeds/memory_core.json": "5ec7f07b90f192bc3cea660d87335e34c5074d466a7d484b7381abf651231e6b",
+          "seeds/motor_core.json": "12cbe423bd6f1149fe28801e9172f86eaf34744948975a4bae27e349f7cbd6c3",
+          "seeds/perception_core.json": "7a274b9410bce9503392f0210bb22873273ea91c1558b9007e57885d852ae9bc",
+          "seeds/reflex_core.json": "f760e7821058306a48b6550fb041c871f044b18d0ef1359238fe90d292726c43",
+          "seeds/self_design_axis.json": "1003fb83a9f972747338f4cff35c6a471080ae25f265e1eae512255996731505",
+          "seeds/self_monitoring.json": "17cc07e1460c1505b6d223bdca203b4c3fbe17669971d904a5ffff322032eb58",
+          "seeds/shape_decode_loop.json": "0fb6e5206c6e901d1bae254dc7558c1f9f9171d2dfc8e3e0295593f27c3efa1e",
+          "seeds/theorem_core.json": "5630cfd5bd90a3c23f3346cbbc90af32a8f64848a287913b7688879095a7d332",
+          "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+          "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+        }
+      },
+      "source_before": {
+        "engine": "engine 1acf723cf64b @ /home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_build_manifest_sha256": "46331382fddd6ed1ae747e6d6af2b23aaf672bbeafbe82c9bf97862e9f55183a",
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "1acf723cf64b1c7d9c41feab7932d684f860d4078c83530c2d7a13bb78ba2f93",
+        "source_sha256": {
+          "docs/research/engine_substrate/SUBSTRATE_GENINFER_SCOPED_POPULATION_TRACE_V1_PREREG_20261005.md": "ea91625dcc17413619654e06d8afec93f1d68587291a6543218eb593e5eba8cc",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+          "evaluation/substrate_capability/analyze_geninfer_scoped_population_trace_v1.py": "59999cc599f89f2191cdd59b75c606200f127e2d46a8aebd9b74c9a68f6fd5e2",
+          "evaluation/substrate_capability/substrate_geninfer_scoped_population_trace_v1.py": "8ec6b17d6603a57145b84c29d6af3903a670cba52a4b95353b99e01424df6171",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/__init__.py": "b5b0ffab338329a3c9c7f24fbafe8821d89810f6c162c51b564976328e2bf843",
+          "runners/dsl/python/substrate_rs/_native.build.json": "46331382fddd6ed1ae747e6d6af2b23aaf672bbeafbe82c9bf97862e9f55183a",
+          "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+          "runners/dsl/src/graph.rs": "72e0fb8edfd7bd3d435cccc4511ea2481288d1997747d0e538a4ecd16934c58d",
+          "runners/dsl/src/jsonio.rs": "dd6a65282f85d9397f3b3b57d3405fd504612c899020674b0b74a83487de0f71",
+          "runners/dsl/src/lib.rs": "10ae7645d9ed1f7c3c9d4f5fd119406928ce079e4336a5b007df307c685c0826",
+          "runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+          "runners/dsl/src/py.rs": "ad5ced217ff7648a57fbd066a5d2a7dcffefb612e11c32c375c4482dd49b8a49",
+          "runners/dsl/src/reflect.rs": "7d80c39ad2f2a7fabc2cc9469377ba0ccd87a6bb5fe81258d169baf1124f30d1",
+          "runners/dsl/src/rewrite.rs": "a617664517d2a7b654a1ecc3caee6aaafb3d6c41ce0a47667a08497a7978f2ed",
+          "runners/dsl/src/shape_decode.rs": "ae83fe53614a12b60c4bfd6694e4b0faaad6210a3535cab428af701078d2f8aa",
+          "runners/dsl/src/substrate.rs": "866e4dd75fa2c884d95c8d2ccb1b5415bfeb3ba1e928bebbc64e18d3a1b0d577",
+          "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+          "runners/dsl/src/term.rs": "313b5f6dcd820f4ed62f0f6cfd794119379b09258ea7f926915fc0014439d417",
+          "seeds/adaptive_control_core.json": "fc57fe2f6e3f0ab45f4fac84221bdabf5b3a99b64de3bccf62cf7c016b2c9504",
+          "seeds/affective_state_core.json": "9cfd82ff99c780a0ddfb5ec65942fef77ea2275341e6a09f5b78d1910c354990",
+          "seeds/decision_core.json": "a2226728536b18760ffbeac4d699aad4db9d965f4a0f37470f73350c8b202198",
+          "seeds/default_mode_core.json": "10afab5ee8914577580225d192bad8138361e662c17509f34ecfc7f3175d748d",
+          "seeds/dual_process_core.json": "4cace3623596a588eb49b28cff51ee8bf144b0f9005dd8262f5d3910c23bc777",
+          "seeds/episodic_working_memory_core.json": "023050b48704fa75ed8da0c2db64c2e468f355112b5578897a04caa643fd9b57",
+          "seeds/epistemics_core.json": "485d3517bd988d332312fc08b83c2d757bd13a613e0a7d8ad4e1972ddae81e3e",
+          "seeds/experimentation_core.json": "dfbba83b66305e06328a3cc737765da56e0ab3fc66580b45dad7d75b0fb1ff7a",
+          "seeds/generative_world_model.json": "f147432955e1970bae03f1ec8cb1b3238fe8abba1520129e506c3600a07ed0a6",
+          "seeds/goal_construction.json": "598a573afb85beaaaafc90a6259e01f1cde211ffc4ea96acd1f2b9074d2e0e83",
+          "seeds/learning_core.json": "8269692b08f399096fef7d15bc58a207d79477e6954288aa09d3ed5e98bd3141",
+          "seeds/math_capability_shapes.json": "ddb216430ce303f45695998d992159d1c91d149b9bc18f5ab7d48d0ae4350057",
+          "seeds/memory_core.json": "5ec7f07b90f192bc3cea660d87335e34c5074d466a7d484b7381abf651231e6b",
+          "seeds/motor_core.json": "12cbe423bd6f1149fe28801e9172f86eaf34744948975a4bae27e349f7cbd6c3",
+          "seeds/perception_core.json": "7a274b9410bce9503392f0210bb22873273ea91c1558b9007e57885d852ae9bc",
+          "seeds/reflex_core.json": "f760e7821058306a48b6550fb041c871f044b18d0ef1359238fe90d292726c43",
+          "seeds/self_design_axis.json": "1003fb83a9f972747338f4cff35c6a471080ae25f265e1eae512255996731505",
+          "seeds/self_monitoring.json": "17cc07e1460c1505b6d223bdca203b4c3fbe17669971d904a5ffff322032eb58",
+          "seeds/shape_decode_loop.json": "0fb6e5206c6e901d1bae254dc7558c1f9f9171d2dfc8e3e0295593f27c3efa1e",
+          "seeds/theorem_core.json": "5630cfd5bd90a3c23f3346cbbc90af32a8f64848a287913b7688879095a7d332",
+          "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+          "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+        }
+      },
+      "source_stable": true
+    }
+  ],
+  "host": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+  "lock_sha256": "7bfe5418fc5a20ecebb4ad4e08215c8e29c6e598be5feab2823372e3b490a368",
+  "schema": "GenInferScopedPopulationTraceV1Results",
+  "source_manifest": {
+    "engine": "engine 1acf723cf64b @ /home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+    "native_build_manifest_sha256": "46331382fddd6ed1ae747e6d6af2b23aaf672bbeafbe82c9bf97862e9f55183a",
+    "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+    "native_sha256": "1acf723cf64b1c7d9c41feab7932d684f860d4078c83530c2d7a13bb78ba2f93",
+    "source_sha256": {
+      "docs/research/engine_substrate/SUBSTRATE_GENINFER_SCOPED_POPULATION_TRACE_V1_PREREG_20261005.md": "ea91625dcc17413619654e06d8afec93f1d68587291a6543218eb593e5eba8cc",
+      "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+      "domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+      "evaluation/substrate_capability/analyze_geninfer_scoped_population_trace_v1.py": "59999cc599f89f2191cdd59b75c606200f127e2d46a8aebd9b74c9a68f6fd5e2",
+      "evaluation/substrate_capability/substrate_geninfer_scoped_population_trace_v1.py": "8ec6b17d6603a57145b84c29d6af3903a670cba52a4b95353b99e01424df6171",
+      "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+      "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+      "runners/dsl/python/substrate_rs/__init__.py": "b5b0ffab338329a3c9c7f24fbafe8821d89810f6c162c51b564976328e2bf843",
+      "runners/dsl/python/substrate_rs/_native.build.json": "46331382fddd6ed1ae747e6d6af2b23aaf672bbeafbe82c9bf97862e9f55183a",
+      "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+      "runners/dsl/src/graph.rs": "72e0fb8edfd7bd3d435cccc4511ea2481288d1997747d0e538a4ecd16934c58d",
+      "runners/dsl/src/jsonio.rs": "dd6a65282f85d9397f3b3b57d3405fd504612c899020674b0b74a83487de0f71",
+      "runners/dsl/src/lib.rs": "10ae7645d9ed1f7c3c9d4f5fd119406928ce079e4336a5b007df307c685c0826",
+      "runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+      "runners/dsl/src/py.rs": "ad5ced217ff7648a57fbd066a5d2a7dcffefb612e11c32c375c4482dd49b8a49",
+      "runners/dsl/src/reflect.rs": "7d80c39ad2f2a7fabc2cc9469377ba0ccd87a6bb5fe81258d169baf1124f30d1",
+      "runners/dsl/src/rewrite.rs": "a617664517d2a7b654a1ecc3caee6aaafb3d6c41ce0a47667a08497a7978f2ed",
+      "runners/dsl/src/shape_decode.rs": "ae83fe53614a12b60c4bfd6694e4b0faaad6210a3535cab428af701078d2f8aa",
+      "runners/dsl/src/substrate.rs": "866e4dd75fa2c884d95c8d2ccb1b5415bfeb3ba1e928bebbc64e18d3a1b0d577",
+      "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+      "runners/dsl/src/term.rs": "313b5f6dcd820f4ed62f0f6cfd794119379b09258ea7f926915fc0014439d417",
+      "seeds/adaptive_control_core.json": "fc57fe2f6e3f0ab45f4fac84221bdabf5b3a99b64de3bccf62cf7c016b2c9504",
+      "seeds/affective_state_core.json": "9cfd82ff99c780a0ddfb5ec65942fef77ea2275341e6a09f5b78d1910c354990",
+      "seeds/decision_core.json": "a2226728536b18760ffbeac4d699aad4db9d965f4a0f37470f73350c8b202198",
+      "seeds/default_mode_core.json": "10afab5ee8914577580225d192bad8138361e662c17509f34ecfc7f3175d748d",
+      "seeds/dual_process_core.json": "4cace3623596a588eb49b28cff51ee8bf144b0f9005dd8262f5d3910c23bc777",
+      "seeds/episodic_working_memory_core.json": "023050b48704fa75ed8da0c2db64c2e468f355112b5578897a04caa643fd9b57",
+      "seeds/epistemics_core.json": "485d3517bd988d332312fc08b83c2d757bd13a613e0a7d8ad4e1972ddae81e3e",
+      "seeds/experimentation_core.json": "dfbba83b66305e06328a3cc737765da56e0ab3fc66580b45dad7d75b0fb1ff7a",
+      "seeds/generative_world_model.json": "f147432955e1970bae03f1ec8cb1b3238fe8abba1520129e506c3600a07ed0a6",
+      "seeds/goal_construction.json": "598a573afb85beaaaafc90a6259e01f1cde211ffc4ea96acd1f2b9074d2e0e83",
+      "seeds/learning_core.json": "8269692b08f399096fef7d15bc58a207d79477e6954288aa09d3ed5e98bd3141",
+      "seeds/math_capability_shapes.json": "ddb216430ce303f45695998d992159d1c91d149b9bc18f5ab7d48d0ae4350057",
+      "seeds/memory_core.json": "5ec7f07b90f192bc3cea660d87335e34c5074d466a7d484b7381abf651231e6b",
+      "seeds/motor_core.json": "12cbe423bd6f1149fe28801e9172f86eaf34744948975a4bae27e349f7cbd6c3",
+      "seeds/perception_core.json": "7a274b9410bce9503392f0210bb22873273ea91c1558b9007e57885d852ae9bc",
+      "seeds/reflex_core.json": "f760e7821058306a48b6550fb041c871f044b18d0ef1359238fe90d292726c43",
+      "seeds/self_design_axis.json": "1003fb83a9f972747338f4cff35c6a471080ae25f265e1eae512255996731505",
+      "seeds/self_monitoring.json": "17cc07e1460c1505b6d223bdca203b4c3fbe17669971d904a5ffff322032eb58",
+      "seeds/shape_decode_loop.json": "0fb6e5206c6e901d1bae254dc7558c1f9f9171d2dfc8e3e0295593f27c3efa1e",
+      "seeds/theorem_core.json": "5630cfd5bd90a3c23f3346cbbc90af32a8f64848a287913b7688879095a7d332",
+      "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+      "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+    }
+  }
+}

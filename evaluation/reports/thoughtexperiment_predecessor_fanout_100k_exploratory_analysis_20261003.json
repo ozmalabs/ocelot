@@ -1,0 +1,35 @@
+{
+  "capture": "evaluation/reports/thoughtexperiment_predecessor_fanout_100k_exploratory_20261003.json",
+  "checks": {
+    "all_rows_at_100k_scale": true,
+    "branch_and_primary_match_monolithic": true,
+    "one_candidate_selected_each": true,
+    "primary_isolation_and_stale_rejection": true,
+    "quiescent_scoped_closure": true,
+    "shared_snapshot_forks_faster": true,
+    "shared_snapshot_retains_less_allocator_memory": true,
+    "six_unique_paired_rows": true
+  },
+  "interpretation_boundary": "Unpreregistered exploratory checkpoint, three replicates per backend, one host and one 100k-node synthetic noise graph; not a scaling law.",
+  "schema": "ThoughtexperimentPredecessorFanout100kExploratoryAnalysis",
+  "summaries": {
+    "full_copy": {
+      "median_candidate_forks_ms": 53.485956,
+      "median_lifecycle_ms": 2516.963522,
+      "median_post_drop_allocator_delta_mib": -0.1081390380859375,
+      "median_retained_allocator_delta_mib": 75.79335021972656,
+      "median_sampled_peak_rss_delta_mib": 268.51953125,
+      "median_snapshot_ms": 13.694182,
+      "replicates": 3
+    },
+    "shared_graph_pages": {
+      "median_candidate_forks_ms": 0.426803,
+      "median_lifecycle_ms": 2369.049013,
+      "median_post_drop_allocator_delta_mib": -0.104339599609375,
+      "median_retained_allocator_delta_mib": 4.608367919921875,
+      "median_sampled_peak_rss_delta_mib": 197.953125,
+      "median_snapshot_ms": 0.227711,
+      "replicates": 3
+    }
+  }
+}

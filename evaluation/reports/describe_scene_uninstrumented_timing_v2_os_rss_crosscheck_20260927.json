@@ -1,0 +1,22 @@
+{
+  "command": "OCEL0_TIMING_REPLICATE=99 /usr/bin/time -v env PYTHONPATH=runners/dsl/python:.:scripts OZMA_NO_LLM=1 OZMA_SEED_PERSIST_DISABLED=1 python3 scripts/substrate_describe_scene_uninstrumented_timing_v2.py --worker",
+  "interpretation": "OS maximum resident set size equals the worker resource.getrusage(RUSAGE_SELF) high-water value (2,693,939,200 bytes, 2,630,800 KiB), validating that metric for this process. The one-worker check corroborates measurement method, not the five-replicate distribution.",
+  "method": "GNU /usr/bin/time -v wrapped one fresh worker subprocess (replicate 99) using the preregistered v2 worker entrypoint.",
+  "os_observations": {
+    "elapsed_wall_seconds": 24.35,
+    "exit_status": 0,
+    "major_page_faults": 0,
+    "max_resident_set_kib": 2630800,
+    "minor_page_faults": 1388792,
+    "swaps": 0,
+    "system_cpu_seconds": 3.47,
+    "user_cpu_seconds": 22.14
+  },
+  "run_id": "describe-scene-timing-v2-os-rss-crosscheck-20260927",
+  "runner_high_water_bytes": 2693939200,
+  "runner_rss_bytes": 2693939200,
+  "schema_version": 1,
+  "source_stable": true,
+  "thread_errors": {},
+  "two_calls_joined": true
+}

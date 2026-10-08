@@ -1,0 +1,2412 @@
+{
+  "_README": "PBE string-transformation battery -- SynthEnumerate called DIRECTLY (no MBPP pipeline, no NL prompt anywhere) on a genuinely new, hand-built 26-task corpus. Two arms at DEFAULT_BUDGET (max_size=15, max_candidates=200000): typed_default (ops=None/consts=None, the engine's own typed default, zero caller hints) and declared (a single FIXED op/const inventory, PBE_OPS/PBE_CONSTS, applied uniformly to every task). Every declared-arm failure is re-probed once at HIGH_BUDGET (max_size=20, max_candidates=2000000, the CEILING_REASSESSMENT_7 probe budget).",
+  "head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+  "measured_at": "2026-09-24T23:58:22+1000",
+  "engine": {
+    "so": "runners/dsl/python/substrate_rs/_native.abi3.so",
+    "mtime": "2026-09-24T20:17:43"
+  },
+  "fixture": "tests/fixtures/pbe_string/pbe_string_tasks.json",
+  "n_tasks": 26,
+  "pbe_ops": [
+    "Concat",
+    "CaseFold",
+    "Eq",
+    "IfThenElse",
+    "Replace",
+    "Split",
+    "StrCount",
+    "Capitalize",
+    "Reverse",
+    "Slice",
+    "Str",
+    "MapList",
+    "JoinList",
+    "First",
+    "LastElem"
+  ],
+  "pbe_consts": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    -1,
+    -2,
+    -3,
+    -4,
+    999,
+    ""
+  ],
+  "budgets": {
+    "default": {
+      "max_size": 15,
+      "max_candidates": 0
+    },
+    "high": {
+      "max_size": 20,
+      "max_candidates": 2000000
+    }
+  },
+  "arms": {
+    "typed_default": {
+      "rows": [
+        {
+          "task_id": "pbe_001",
+          "name": "reverse_string",
+          "tier": "tier1_single_op",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": true,
+          "halt_reason": "solved",
+          "size": 2,
+          "tested": 38,
+          "distinct": 28,
+          "term_str": "reversed(s)",
+          "elapsed_seconds": 0.0,
+          "term_json": {
+            "seq": {
+              "name": "s",
+              "type": "Var"
+            },
+            "type": "Reverse"
+          },
+          "holdout": {
+            "n": 1,
+            "n_ok": 1,
+            "all_ok": true,
+            "rows": [
+              {
+                "inputs": {
+                  "s": "python"
+                },
+                "expected": "nohtyp",
+                "got": "nohtyp",
+                "ok": true
+              }
+            ]
+          },
+          "outcome": "pass",
+          "arm": "typed_default"
+        },
+        {
+          "task_id": "pbe_002",
+          "name": "lowercase_all",
+          "tier": "tier1_single_op",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": true,
+          "halt_reason": "solved",
+          "size": 2,
+          "tested": 32,
+          "distinct": 32,
+          "term_str": "lower(s)",
+          "elapsed_seconds": 0.0,
+          "term_json": {
+            "text": {
+              "name": "s",
+              "type": "Var"
+            },
+            "type": "CaseFold"
+          },
+          "holdout": {
+            "n": 1,
+            "n_ok": 1,
+            "all_ok": true,
+            "rows": [
+              {
+                "inputs": {
+                  "s": "MiXeD"
+                },
+                "expected": "mixed",
+                "got": "mixed",
+                "ok": true
+              }
+            ]
+          },
+          "outcome": "pass",
+          "arm": "typed_default"
+        },
+        {
+          "task_id": "pbe_003",
+          "name": "capitalize_sentence",
+          "tier": "tier1_single_op",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": true,
+          "halt_reason": "solved",
+          "size": 2,
+          "tested": 50,
+          "distinct": 43,
+          "term_str": "s.capitalize()",
+          "elapsed_seconds": 0.0,
+          "term_json": {
+            "text": {
+              "name": "s",
+              "type": "Var"
+            },
+            "type": "Capitalize"
+          },
+          "holdout": {
+            "n": 1,
+            "n_ok": 1,
+            "all_ok": true,
+            "rows": [
+              {
+                "inputs": {
+                  "s": "aBC def"
+                },
+                "expected": "Abc def",
+                "got": "Abc def",
+                "ok": true
+              }
+            ]
+          },
+          "outcome": "pass",
+          "arm": "typed_default"
+        },
+        {
+          "task_id": "pbe_004",
+          "name": "first_three_chars",
+          "tier": "tier1_single_op",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": true,
+          "halt_reason": "solved",
+          "size": 4,
+          "tested": 1868,
+          "distinct": 237,
+          "term_str": "s.replace('hello', 'hel')",
+          "elapsed_seconds": 0.001,
+          "term_json": {
+            "new": {
+              "type": "Lit",
+              "value": "hel"
+            },
+            "old": {
+              "type": "Lit",
+              "value": "hello"
+            },
+            "text": {
+              "name": "s",
+              "type": "Var"
+            },
+            "type": "Replace"
+          },
+          "holdout": {
+            "n": 1,
+            "n_ok": 0,
+            "all_ok": false,
+            "rows": [
+              {
+                "inputs": {
+                  "s": "elephant"
+                },
+                "expected": "ele",
+                "got": "elephant",
+                "ok": false
+              }
+            ]
+          },
+          "outcome": "found_but_holdout_fail",
+          "arm": "typed_default"
+        },
+        {
+          "task_id": "pbe_005",
+          "name": "last_two_chars",
+          "tier": "tier1_single_op",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": true,
+          "halt_reason": "solved",
+          "size": 6,
+          "tested": 195772,
+          "distinct": 11598,
+          "term_str": "reversed(reversed(s)[s:2])",
+          "elapsed_seconds": 0.142,
+          "term_json": {
+            "seq": {
+              "seq": {
+                "seq": {
+                  "name": "s",
+                  "type": "Var"
+                },
+                "type": "Reverse"
+              },
+              "start": {
+                "name": "s",
+                "type": "Var"
+              },
+              "stop": {
+                "type": "Lit",
+                "value": 2
+              },
+              "type": "Slice"
+            },
+            "type": "Reverse"
+          },
+          "holdout": {
+            "n": 1,
+            "n_ok": 1,
+            "all_ok": true,
+            "rows": [
+              {
+                "inputs": {
+                  "s": "go"
+                },
+                "expected": "go",
+                "got": "go",
+                "ok": true
+              }
+            ]
+          },
+          "outcome": "pass",
+          "arm": "typed_default"
+        },
+        {
+          "task_id": "pbe_006",
+          "name": "remove_spaces",
+          "tier": "tier1_single_op",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": true,
+          "halt_reason": "solved",
+          "size": 5,
+          "tested": 10353,
+          "distinct": 748,
+          "term_str": "s.replace(' ', 0.capitalize())",
+          "elapsed_seconds": 0.006,
+          "term_json": {
+            "new": {
+              "text": {
+                "type": "Lit",
+                "value": 0
+              },
+              "type": "Capitalize"
+            },
+            "old": {
+              "type": "Lit",
+              "value": " "
+            },
+            "text": {
+              "name": "s",
+              "type": "Var"
+            },
+            "type": "Replace"
+          },
+          "holdout": {
+            "n": 1,
+            "n_ok": 1,
+            "all_ok": true,
+            "rows": [
+              {
+                "inputs": {
+                  "s": "no spaces here"
+                },
+                "expected": "nospaceshere",
+                "got": "nospaceshere",
+                "ok": true
+              }
+            ]
+          },
+          "outcome": "pass",
+          "arm": "typed_default"
+        },
+        {
+          "task_id": "pbe_007",
+          "name": "count_letter",
+          "tier": "tier1_single_op",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": true,
+          "halt_reason": "solved",
+          "size": 3,
+          "tested": 1346,
+          "distinct": 86,
+          "term_str": "s.count(c)",
+          "elapsed_seconds": 0.0,
+          "term_json": {
+            "sub": {
+              "name": "c",
+              "type": "Var"
+            },
+            "text": {
+              "name": "s",
+              "type": "Var"
+            },
+            "type": "StrCount"
+          },
+          "holdout": {
+            "n": 1,
+            "n_ok": 1,
+            "all_ok": true,
+            "rows": [
+              {
+                "inputs": {
+                  "s": "hello",
+                  "c": "l"
+                },
+                "expected": 2,
+                "got": 2,
+                "ok": true
+              }
+            ]
+          },
+          "outcome": "pass",
+          "arm": "typed_default"
+        },
+        {
+          "task_id": "pbe_008",
+          "name": "replace_char",
+          "tier": "tier1_single_op",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": true,
+          "halt_reason": "solved",
+          "size": 4,
+          "tested": 3571,
+          "distinct": 368,
+          "term_str": "s.replace(old, new)",
+          "elapsed_seconds": 0.002,
+          "term_json": {
+            "new": {
+              "name": "new",
+              "type": "Var"
+            },
+            "old": {
+              "name": "old",
+              "type": "Var"
+            },
+            "text": {
+              "name": "s",
+              "type": "Var"
+            },
+            "type": "Replace"
+          },
+          "holdout": {
+            "n": 1,
+            "n_ok": 1,
+            "all_ok": true,
+            "rows": [
+              {
+                "inputs": {
+                  "s": "mississippi",
+                  "old": "s",
+                  "new": "x"
+                },
+                "expected": "mixxixxippi",
+                "got": "mixxixxippi",
+                "ok": true
+              }
+            ]
+          },
+          "outcome": "pass",
+          "arm": "typed_default"
+        },
+        {
+          "task_id": "pbe_009",
+          "name": "concat_two",
+          "tier": "tier1_single_op",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": true,
+          "halt_reason": "solved",
+          "size": 3,
+          "tested": 66,
+          "distinct": 44,
+          "term_str": "(a + b)",
+          "elapsed_seconds": 0.0,
+          "term_json": {
+            "parts": [
+              {
+                "name": "a",
+                "type": "Var"
+              },
+              {
+                "name": "b",
+                "type": "Var"
+              }
+            ],
+            "type": "StringConcat"
+          },
+          "holdout": {
+            "n": 1,
+            "n_ok": 1,
+            "all_ok": true,
+            "rows": [
+              {
+                "inputs": {
+                  "a": "a",
+                  "b": "b"
+                },
+                "expected": "ab",
+                "got": "ab",
+                "ok": true
+              }
+            ]
+          },
+          "outcome": "pass",
+          "arm": "typed_default"
+        },
+        {
+          "task_id": "pbe_010",
+          "name": "first_word",
+          "tier": "tier2_composition",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": false,
+          "halt_reason": "budget",
+          "size": null,
+          "tested": 200000,
+          "distinct": 12443,
+          "term_str": null,
+          "elapsed_seconds": 0.14,
+          "outcome": "not_found:budget",
+          "holdout": null,
+          "arm": "typed_default"
+        },
+        {
+          "task_id": "pbe_011",
+          "name": "last_word",
+          "tier": "tier2_composition",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": false,
+          "halt_reason": "budget",
+          "size": null,
+          "tested": 200000,
+          "distinct": 11251,
+          "term_str": null,
+          "elapsed_seconds": 0.147,
+          "outcome": "not_found:budget",
+          "holdout": null,
+          "arm": "typed_default"
+        },
+        {
+          "task_id": "pbe_012",
+          "name": "initials_concat",
+          "tier": "tier2_composition",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": false,
+          "halt_reason": "budget",
+          "size": null,
+          "tested": 200000,
+          "distinct": 15160,
+          "term_str": null,
+          "elapsed_seconds": 0.162,
+          "outcome": "not_found:budget",
+          "holdout": null,
+          "arm": "typed_default"
+        },
+        {
+          "task_id": "pbe_013",
+          "name": "reverse_first_word",
+          "tier": "tier2_composition",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": false,
+          "halt_reason": "budget",
+          "size": null,
+          "tested": 200000,
+          "distinct": 14149,
+          "term_str": null,
+          "elapsed_seconds": 0.151,
+          "outcome": "not_found:budget",
+          "holdout": null,
+          "arm": "typed_default"
+        },
+        {
+          "task_id": "pbe_014",
+          "name": "double_string",
+          "tier": "tier2_composition",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": true,
+          "halt_reason": "solved",
+          "size": 3,
+          "tested": 44,
+          "distinct": 28,
+          "term_str": "(s + s)",
+          "elapsed_seconds": 0.0,
+          "term_json": {
+            "parts": [
+              {
+                "name": "s",
+                "type": "Var"
+              },
+              {
+                "name": "s",
+                "type": "Var"
+              }
+            ],
+            "type": "StringConcat"
+          },
+          "holdout": {
+            "n": 1,
+            "n_ok": 1,
+            "all_ok": true,
+            "rows": [
+              {
+                "inputs": {
+                  "s": "cat"
+                },
+                "expected": "catcat",
+                "got": "catcat",
+                "ok": true
+              }
+            ]
+          },
+          "outcome": "pass",
+          "arm": "typed_default"
+        },
+        {
+          "task_id": "pbe_015",
+          "name": "first_and_last_char",
+          "tier": "tier2_composition",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": false,
+          "halt_reason": "budget",
+          "size": null,
+          "tested": 200000,
+          "distinct": 12728,
+          "term_str": null,
+          "elapsed_seconds": 0.125,
+          "outcome": "not_found:budget",
+          "holdout": null,
+          "arm": "typed_default"
+        },
+        {
+          "task_id": "pbe_016",
+          "name": "capitalize_then_reverse",
+          "tier": "tier2_composition",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": true,
+          "halt_reason": "solved",
+          "size": 3,
+          "tested": 510,
+          "distinct": 121,
+          "term_str": "reversed(s.capitalize())",
+          "elapsed_seconds": 0.001,
+          "term_json": {
+            "seq": {
+              "text": {
+                "name": "s",
+                "type": "Var"
+              },
+              "type": "Capitalize"
+            },
+            "type": "Reverse"
+          },
+          "holdout": {
+            "n": 1,
+            "n_ok": 1,
+            "all_ok": true,
+            "rows": [
+              {
+                "inputs": {
+                  "s": "data science"
+                },
+                "expected": "ecneics ataD",
+                "got": "ecneics ataD",
+                "ok": true
+              }
+            ]
+          },
+          "outcome": "pass",
+          "arm": "typed_default"
+        },
+        {
+          "task_id": "pbe_017",
+          "name": "trim_first_and_last_char",
+          "tier": "tier2_composition",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": true,
+          "halt_reason": "solved",
+          "size": 4,
+          "tested": 5047,
+          "distinct": 472,
+          "term_str": "s[1:-1]",
+          "elapsed_seconds": 0.003,
+          "term_json": {
+            "seq": {
+              "name": "s",
+              "type": "Var"
+            },
+            "start": {
+              "type": "Lit",
+              "value": 1
+            },
+            "stop": {
+              "type": "Lit",
+              "value": -1
+            },
+            "type": "Slice"
+          },
+          "holdout": {
+            "n": 1,
+            "n_ok": 1,
+            "all_ok": true,
+            "rows": [
+              {
+                "inputs": {
+                  "s": "banana"
+                },
+                "expected": "anan",
+                "got": "anan",
+                "ok": true
+              }
+            ]
+          },
+          "outcome": "pass",
+          "arm": "typed_default"
+        },
+        {
+          "task_id": "pbe_018",
+          "name": "shout",
+          "tier": "tier3_deep_or_missing",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": false,
+          "halt_reason": "budget",
+          "size": null,
+          "tested": 200000,
+          "distinct": 18106,
+          "term_str": null,
+          "elapsed_seconds": 0.152,
+          "outcome": "not_found:budget",
+          "holdout": null,
+          "arm": "typed_default"
+        },
+        {
+          "task_id": "pbe_019",
+          "name": "title_case_words",
+          "tier": "tier3_deep_or_missing",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": false,
+          "halt_reason": "budget",
+          "size": null,
+          "tested": 200000,
+          "distinct": 14114,
+          "term_str": null,
+          "elapsed_seconds": 0.159,
+          "outcome": "not_found:budget",
+          "holdout": null,
+          "arm": "typed_default"
+        },
+        {
+          "task_id": "pbe_020",
+          "name": "strip_whitespace",
+          "tier": "tier3_deep_or_missing",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": false,
+          "halt_reason": "budget",
+          "size": null,
+          "tested": 200000,
+          "distinct": 14168,
+          "term_str": null,
+          "elapsed_seconds": 0.127,
+          "outcome": "not_found:budget",
+          "holdout": null,
+          "arm": "typed_default"
+        },
+        {
+          "task_id": "pbe_021",
+          "name": "first_three_reversed",
+          "tier": "tier3_deep_or_missing",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": false,
+          "halt_reason": "budget",
+          "size": null,
+          "tested": 200000,
+          "distinct": 11225,
+          "term_str": null,
+          "elapsed_seconds": 0.129,
+          "outcome": "not_found:budget",
+          "holdout": null,
+          "arm": "typed_default"
+        },
+        {
+          "task_id": "pbe_022",
+          "name": "initials_capitalized_concat",
+          "tier": "tier3_deep_or_missing",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": false,
+          "halt_reason": "budget",
+          "size": null,
+          "tested": 200000,
+          "distinct": 15332,
+          "term_str": null,
+          "elapsed_seconds": 0.156,
+          "outcome": "not_found:budget",
+          "holdout": null,
+          "arm": "typed_default"
+        },
+        {
+          "task_id": "pbe_023",
+          "name": "trap_reverse_simple",
+          "tier": "memorization_trap",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": true,
+          "halt_reason": "solved",
+          "size": 2,
+          "tested": 30,
+          "distinct": 21,
+          "term_str": "reversed(s)",
+          "elapsed_seconds": 0.0,
+          "term_json": {
+            "seq": {
+              "name": "s",
+              "type": "Var"
+            },
+            "type": "Reverse"
+          },
+          "holdout": {
+            "n": 1,
+            "n_ok": 1,
+            "all_ok": true,
+            "rows": [
+              {
+                "inputs": {
+                  "s": "stop"
+                },
+                "expected": "pots",
+                "got": "pots",
+                "ok": true
+              }
+            ]
+          },
+          "outcome": "pass",
+          "arm": "typed_default"
+        },
+        {
+          "task_id": "pbe_024",
+          "name": "trap_capitalize_reverse_slice",
+          "tier": "memorization_trap",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": false,
+          "halt_reason": "budget",
+          "size": null,
+          "tested": 200000,
+          "distinct": 9829,
+          "term_str": null,
+          "elapsed_seconds": 0.111,
+          "outcome": "not_found:budget",
+          "holdout": null,
+          "arm": "typed_default"
+        },
+        {
+          "task_id": "pbe_025",
+          "name": "trap_replace_reverse",
+          "tier": "memorization_trap",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": false,
+          "halt_reason": "budget",
+          "size": null,
+          "tested": 200000,
+          "distinct": 18009,
+          "term_str": null,
+          "elapsed_seconds": 0.102,
+          "outcome": "not_found:budget",
+          "holdout": null,
+          "arm": "typed_default"
+        },
+        {
+          "task_id": "pbe_026",
+          "name": "trap_slice_capitalize_reverse",
+          "tier": "memorization_trap",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": false,
+          "halt_reason": "budget",
+          "size": null,
+          "tested": 200000,
+          "distinct": 12220,
+          "term_str": null,
+          "elapsed_seconds": 0.102,
+          "outcome": "not_found:budget",
+          "holdout": null,
+          "arm": "typed_default"
+        }
+      ],
+      "n_pass": 12,
+      "n_total": 26,
+      "pass_task_ids": [
+        "pbe_001",
+        "pbe_002",
+        "pbe_003",
+        "pbe_005",
+        "pbe_006",
+        "pbe_007",
+        "pbe_008",
+        "pbe_009",
+        "pbe_014",
+        "pbe_016",
+        "pbe_017",
+        "pbe_023"
+      ],
+      "outcome_taxonomy": {
+        "not_found:budget": {
+          "n": 13,
+          "task_ids": [
+            "pbe_010",
+            "pbe_011",
+            "pbe_012",
+            "pbe_013",
+            "pbe_015",
+            "pbe_018",
+            "pbe_019",
+            "pbe_020",
+            "pbe_021",
+            "pbe_022",
+            "pbe_024",
+            "pbe_025",
+            "pbe_026"
+          ]
+        },
+        "pass": {
+          "n": 12,
+          "task_ids": [
+            "pbe_001",
+            "pbe_002",
+            "pbe_003",
+            "pbe_005",
+            "pbe_006",
+            "pbe_007",
+            "pbe_008",
+            "pbe_009",
+            "pbe_014",
+            "pbe_016",
+            "pbe_017",
+            "pbe_023"
+          ]
+        },
+        "found_but_holdout_fail": {
+          "n": 1,
+          "task_ids": [
+            "pbe_004"
+          ]
+        }
+      }
+    },
+    "declared": {
+      "rows": [
+        {
+          "task_id": "pbe_001",
+          "name": "reverse_string",
+          "tier": "tier1_single_op",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": true,
+          "halt_reason": "solved",
+          "size": 2,
+          "tested": 59,
+          "distinct": 34,
+          "term_str": "reversed(s)",
+          "elapsed_seconds": 0.0,
+          "term_json": {
+            "seq": {
+              "name": "s",
+              "type": "Var"
+            },
+            "type": "Reverse"
+          },
+          "holdout": {
+            "n": 1,
+            "n_ok": 1,
+            "all_ok": true,
+            "rows": [
+              {
+                "inputs": {
+                  "s": "python"
+                },
+                "expected": "nohtyp",
+                "got": "nohtyp",
+                "ok": true
+              }
+            ]
+          },
+          "outcome": "pass",
+          "arm": "declared"
+        },
+        {
+          "task_id": "pbe_002",
+          "name": "lowercase_all",
+          "tier": "tier1_single_op",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": true,
+          "halt_reason": "solved",
+          "size": 2,
+          "tested": 39,
+          "distinct": 39,
+          "term_str": "lower(s)",
+          "elapsed_seconds": 0.0,
+          "term_json": {
+            "text": {
+              "name": "s",
+              "type": "Var"
+            },
+            "type": "CaseFold"
+          },
+          "holdout": {
+            "n": 1,
+            "n_ok": 1,
+            "all_ok": true,
+            "rows": [
+              {
+                "inputs": {
+                  "s": "MiXeD"
+                },
+                "expected": "mixed",
+                "got": "mixed",
+                "ok": true
+              }
+            ]
+          },
+          "outcome": "pass",
+          "arm": "declared"
+        },
+        {
+          "task_id": "pbe_003",
+          "name": "capitalize_sentence",
+          "tier": "tier1_single_op",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": true,
+          "halt_reason": "solved",
+          "size": 2,
+          "tested": 64,
+          "distinct": 50,
+          "term_str": "s.capitalize()",
+          "elapsed_seconds": 0.0,
+          "term_json": {
+            "text": {
+              "name": "s",
+              "type": "Var"
+            },
+            "type": "Capitalize"
+          },
+          "holdout": {
+            "n": 1,
+            "n_ok": 1,
+            "all_ok": true,
+            "rows": [
+              {
+                "inputs": {
+                  "s": "aBC def"
+                },
+                "expected": "Abc def",
+                "got": "Abc def",
+                "ok": true
+              }
+            ]
+          },
+          "outcome": "pass",
+          "arm": "declared"
+        },
+        {
+          "task_id": "pbe_004",
+          "name": "first_three_chars",
+          "tier": "tier1_single_op",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": true,
+          "halt_reason": "solved",
+          "size": 4,
+          "tested": 6918,
+          "distinct": 321,
+          "term_str": "s.replace('hello', 'hel')",
+          "elapsed_seconds": 0.002,
+          "term_json": {
+            "new": {
+              "type": "Lit",
+              "value": "hel"
+            },
+            "old": {
+              "type": "Lit",
+              "value": "hello"
+            },
+            "text": {
+              "name": "s",
+              "type": "Var"
+            },
+            "type": "Replace"
+          },
+          "holdout": {
+            "n": 1,
+            "n_ok": 0,
+            "all_ok": false,
+            "rows": [
+              {
+                "inputs": {
+                  "s": "elephant"
+                },
+                "expected": "ele",
+                "got": "elephant",
+                "ok": false
+              }
+            ]
+          },
+          "outcome": "found_but_holdout_fail",
+          "arm": "declared"
+        },
+        {
+          "task_id": "pbe_005",
+          "name": "last_two_chars",
+          "tier": "tier1_single_op",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": true,
+          "halt_reason": "solved",
+          "size": 4,
+          "tested": 17199,
+          "distinct": 745,
+          "term_str": "s[-2:999]",
+          "elapsed_seconds": 0.006,
+          "term_json": {
+            "seq": {
+              "name": "s",
+              "type": "Var"
+            },
+            "start": {
+              "type": "Lit",
+              "value": -2
+            },
+            "stop": {
+              "type": "Lit",
+              "value": 999
+            },
+            "type": "Slice"
+          },
+          "holdout": {
+            "n": 1,
+            "n_ok": 1,
+            "all_ok": true,
+            "rows": [
+              {
+                "inputs": {
+                  "s": "go"
+                },
+                "expected": "go",
+                "got": "go",
+                "ok": true
+              }
+            ]
+          },
+          "outcome": "pass",
+          "arm": "declared"
+        },
+        {
+          "task_id": "pbe_006",
+          "name": "remove_spaces",
+          "tier": "tier1_single_op",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": true,
+          "halt_reason": "solved",
+          "size": 4,
+          "tested": 6802,
+          "distinct": 316,
+          "term_str": "s.replace(' ', '')",
+          "elapsed_seconds": 0.002,
+          "term_json": {
+            "new": {
+              "type": "Lit",
+              "value": ""
+            },
+            "old": {
+              "type": "Lit",
+              "value": " "
+            },
+            "text": {
+              "name": "s",
+              "type": "Var"
+            },
+            "type": "Replace"
+          },
+          "holdout": {
+            "n": 1,
+            "n_ok": 1,
+            "all_ok": true,
+            "rows": [
+              {
+                "inputs": {
+                  "s": "no spaces here"
+                },
+                "expected": "nospaceshere",
+                "got": "nospaceshere",
+                "ok": true
+              }
+            ]
+          },
+          "outcome": "pass",
+          "arm": "declared"
+        },
+        {
+          "task_id": "pbe_007",
+          "name": "count_letter",
+          "tier": "tier1_single_op",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": true,
+          "halt_reason": "solved",
+          "size": 3,
+          "tested": 896,
+          "distinct": 96,
+          "term_str": "s.count(c)",
+          "elapsed_seconds": 0.0,
+          "term_json": {
+            "sub": {
+              "name": "c",
+              "type": "Var"
+            },
+            "text": {
+              "name": "s",
+              "type": "Var"
+            },
+            "type": "StrCount"
+          },
+          "holdout": {
+            "n": 1,
+            "n_ok": 1,
+            "all_ok": true,
+            "rows": [
+              {
+                "inputs": {
+                  "s": "hello",
+                  "c": "l"
+                },
+                "expected": 2,
+                "got": 2,
+                "ok": true
+              }
+            ]
+          },
+          "outcome": "pass",
+          "arm": "declared"
+        },
+        {
+          "task_id": "pbe_008",
+          "name": "replace_char",
+          "tier": "tier1_single_op",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": true,
+          "halt_reason": "solved",
+          "size": 4,
+          "tested": 10874,
+          "distinct": 501,
+          "term_str": "s.replace(old, new)",
+          "elapsed_seconds": 0.004,
+          "term_json": {
+            "new": {
+              "name": "new",
+              "type": "Var"
+            },
+            "old": {
+              "name": "old",
+              "type": "Var"
+            },
+            "text": {
+              "name": "s",
+              "type": "Var"
+            },
+            "type": "Replace"
+          },
+          "holdout": {
+            "n": 1,
+            "n_ok": 1,
+            "all_ok": true,
+            "rows": [
+              {
+                "inputs": {
+                  "s": "mississippi",
+                  "old": "s",
+                  "new": "x"
+                },
+                "expected": "mixxixxippi",
+                "got": "mixxixxippi",
+                "ok": true
+              }
+            ]
+          },
+          "outcome": "pass",
+          "arm": "declared"
+        },
+        {
+          "task_id": "pbe_009",
+          "name": "concat_two",
+          "tier": "tier1_single_op",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": true,
+          "halt_reason": "solved",
+          "size": 3,
+          "tested": 101,
+          "distinct": 56,
+          "term_str": "(a + b)",
+          "elapsed_seconds": 0.0,
+          "term_json": {
+            "parts": [
+              {
+                "name": "a",
+                "type": "Var"
+              },
+              {
+                "name": "b",
+                "type": "Var"
+              }
+            ],
+            "type": "StringConcat"
+          },
+          "holdout": {
+            "n": 1,
+            "n_ok": 1,
+            "all_ok": true,
+            "rows": [
+              {
+                "inputs": {
+                  "a": "a",
+                  "b": "b"
+                },
+                "expected": "ab",
+                "got": "ab",
+                "ok": true
+              }
+            ]
+          },
+          "outcome": "pass",
+          "arm": "declared"
+        },
+        {
+          "task_id": "pbe_010",
+          "name": "first_word",
+          "tier": "tier2_composition",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": true,
+          "halt_reason": "solved",
+          "size": 5,
+          "tested": 125344,
+          "distinct": 4308,
+          "term_str": "s.split(0)[0]",
+          "elapsed_seconds": 0.065,
+          "term_json": {
+            "index": {
+              "type": "Lit",
+              "value": 0
+            },
+            "seq": {
+              "sep": {
+                "type": "Lit",
+                "value": 0
+              },
+              "text": {
+                "name": "s",
+                "type": "Var"
+              },
+              "type": "Split"
+            },
+            "type": "IndexAt"
+          },
+          "holdout": {
+            "n": 1,
+            "n_ok": 1,
+            "all_ok": true,
+            "rows": [
+              {
+                "inputs": {
+                  "s": "one two three"
+                },
+                "expected": "one",
+                "got": "one",
+                "ok": true
+              }
+            ]
+          },
+          "outcome": "pass",
+          "arm": "declared"
+        },
+        {
+          "task_id": "pbe_011",
+          "name": "last_word",
+          "tier": "tier2_composition",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": true,
+          "halt_reason": "solved",
+          "size": 4,
+          "tested": 22714,
+          "distinct": 854,
+          "term_str": "s.split(0)[-1]",
+          "elapsed_seconds": 0.008,
+          "term_json": {
+            "seq": {
+              "sep": {
+                "type": "Lit",
+                "value": 0
+              },
+              "text": {
+                "name": "s",
+                "type": "Var"
+              },
+              "type": "Split"
+            },
+            "type": "Last"
+          },
+          "holdout": {
+            "n": 1,
+            "n_ok": 1,
+            "all_ok": true,
+            "rows": [
+              {
+                "inputs": {
+                  "s": "one two three"
+                },
+                "expected": "three",
+                "got": "three",
+                "ok": true
+              }
+            ]
+          },
+          "outcome": "pass",
+          "arm": "declared"
+        },
+        {
+          "task_id": "pbe_012",
+          "name": "initials_concat",
+          "tier": "tier2_composition",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": false,
+          "halt_reason": "budget",
+          "size": null,
+          "tested": 200000,
+          "distinct": 7503,
+          "term_str": null,
+          "elapsed_seconds": 0.112,
+          "outcome": "not_found:budget",
+          "holdout": null,
+          "arm": "declared"
+        },
+        {
+          "task_id": "pbe_013",
+          "name": "reverse_first_word",
+          "tier": "tier2_composition",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": true,
+          "halt_reason": "solved",
+          "size": 5,
+          "tested": 69125,
+          "distinct": 2109,
+          "term_str": "reversed(s).split(0)[-1]",
+          "elapsed_seconds": 0.035,
+          "term_json": {
+            "seq": {
+              "sep": {
+                "type": "Lit",
+                "value": 0
+              },
+              "text": {
+                "seq": {
+                  "name": "s",
+                  "type": "Var"
+                },
+                "type": "Reverse"
+              },
+              "type": "Split"
+            },
+            "type": "Last"
+          },
+          "holdout": {
+            "n": 1,
+            "n_ok": 1,
+            "all_ok": true,
+            "rows": [
+              {
+                "inputs": {
+                  "s": "data science rules"
+                },
+                "expected": "atad",
+                "got": "atad",
+                "ok": true
+              }
+            ]
+          },
+          "outcome": "pass",
+          "arm": "declared"
+        },
+        {
+          "task_id": "pbe_014",
+          "name": "double_string",
+          "tier": "tier2_composition",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": true,
+          "halt_reason": "solved",
+          "size": 3,
+          "tested": 79,
+          "distinct": 40,
+          "term_str": "(s + s)",
+          "elapsed_seconds": 0.0,
+          "term_json": {
+            "parts": [
+              {
+                "name": "s",
+                "type": "Var"
+              },
+              {
+                "name": "s",
+                "type": "Var"
+              }
+            ],
+            "type": "StringConcat"
+          },
+          "holdout": {
+            "n": 1,
+            "n_ok": 1,
+            "all_ok": true,
+            "rows": [
+              {
+                "inputs": {
+                  "s": "cat"
+                },
+                "expected": "catcat",
+                "got": "catcat",
+                "ok": true
+              }
+            ]
+          },
+          "outcome": "pass",
+          "arm": "declared"
+        },
+        {
+          "task_id": "pbe_015",
+          "name": "first_and_last_char",
+          "tier": "tier2_composition",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": false,
+          "halt_reason": "budget",
+          "size": null,
+          "tested": 200000,
+          "distinct": 6127,
+          "term_str": null,
+          "elapsed_seconds": 0.098,
+          "outcome": "not_found:budget",
+          "holdout": null,
+          "arm": "declared"
+        },
+        {
+          "task_id": "pbe_016",
+          "name": "capitalize_then_reverse",
+          "tier": "tier2_composition",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": true,
+          "halt_reason": "solved",
+          "size": 3,
+          "tested": 1311,
+          "distinct": 138,
+          "term_str": "reversed(s.capitalize())",
+          "elapsed_seconds": 0.001,
+          "term_json": {
+            "seq": {
+              "text": {
+                "name": "s",
+                "type": "Var"
+              },
+              "type": "Capitalize"
+            },
+            "type": "Reverse"
+          },
+          "holdout": {
+            "n": 1,
+            "n_ok": 1,
+            "all_ok": true,
+            "rows": [
+              {
+                "inputs": {
+                  "s": "data science"
+                },
+                "expected": "ecneics ataD",
+                "got": "ecneics ataD",
+                "ok": true
+              }
+            ]
+          },
+          "outcome": "pass",
+          "arm": "declared"
+        },
+        {
+          "task_id": "pbe_017",
+          "name": "trim_first_and_last_char",
+          "tier": "tier2_composition",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": true,
+          "halt_reason": "solved",
+          "size": 4,
+          "tested": 14587,
+          "distinct": 570,
+          "term_str": "s[1:-1]",
+          "elapsed_seconds": 0.005,
+          "term_json": {
+            "seq": {
+              "name": "s",
+              "type": "Var"
+            },
+            "start": {
+              "type": "Lit",
+              "value": 1
+            },
+            "stop": {
+              "type": "Lit",
+              "value": -1
+            },
+            "type": "Slice"
+          },
+          "holdout": {
+            "n": 1,
+            "n_ok": 1,
+            "all_ok": true,
+            "rows": [
+              {
+                "inputs": {
+                  "s": "banana"
+                },
+                "expected": "anan",
+                "got": "anan",
+                "ok": true
+              }
+            ]
+          },
+          "outcome": "pass",
+          "arm": "declared"
+        },
+        {
+          "task_id": "pbe_018",
+          "name": "shout",
+          "tier": "tier3_deep_or_missing",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": false,
+          "halt_reason": "budget",
+          "size": null,
+          "tested": 200000,
+          "distinct": 7686,
+          "term_str": null,
+          "elapsed_seconds": 0.109,
+          "outcome": "not_found:budget",
+          "holdout": null,
+          "arm": "declared"
+        },
+        {
+          "task_id": "pbe_019",
+          "name": "title_case_words",
+          "tier": "tier3_deep_or_missing",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": false,
+          "halt_reason": "budget",
+          "size": null,
+          "tested": 200000,
+          "distinct": 7291,
+          "term_str": null,
+          "elapsed_seconds": 0.122,
+          "outcome": "not_found:budget",
+          "holdout": null,
+          "arm": "declared"
+        },
+        {
+          "task_id": "pbe_020",
+          "name": "strip_whitespace",
+          "tier": "tier3_deep_or_missing",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": false,
+          "halt_reason": "budget",
+          "size": null,
+          "tested": 200000,
+          "distinct": 19500,
+          "term_str": null,
+          "elapsed_seconds": 0.14,
+          "outcome": "not_found:budget",
+          "holdout": null,
+          "arm": "declared"
+        },
+        {
+          "task_id": "pbe_021",
+          "name": "first_three_reversed",
+          "tier": "tier3_deep_or_missing",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": true,
+          "halt_reason": "solved",
+          "size": 5,
+          "tested": 48271,
+          "distinct": 1487,
+          "term_str": "reversed(s[s:3])",
+          "elapsed_seconds": 0.022,
+          "term_json": {
+            "seq": {
+              "seq": {
+                "name": "s",
+                "type": "Var"
+              },
+              "start": {
+                "name": "s",
+                "type": "Var"
+              },
+              "stop": {
+                "type": "Lit",
+                "value": 3
+              },
+              "type": "Slice"
+            },
+            "type": "Reverse"
+          },
+          "holdout": {
+            "n": 1,
+            "n_ok": 1,
+            "all_ok": true,
+            "rows": [
+              {
+                "inputs": {
+                  "s": "elephant"
+                },
+                "expected": "ele",
+                "got": "ele",
+                "ok": true
+              }
+            ]
+          },
+          "outcome": "pass",
+          "arm": "declared"
+        },
+        {
+          "task_id": "pbe_022",
+          "name": "initials_capitalized_concat",
+          "tier": "tier3_deep_or_missing",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": false,
+          "halt_reason": "budget",
+          "size": null,
+          "tested": 200000,
+          "distinct": 7531,
+          "term_str": null,
+          "elapsed_seconds": 0.116,
+          "outcome": "not_found:budget",
+          "holdout": null,
+          "arm": "declared"
+        },
+        {
+          "task_id": "pbe_023",
+          "name": "trap_reverse_simple",
+          "tier": "memorization_trap",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": true,
+          "halt_reason": "solved",
+          "size": 2,
+          "tested": 51,
+          "distinct": 27,
+          "term_str": "reversed(s)",
+          "elapsed_seconds": 0.0,
+          "term_json": {
+            "seq": {
+              "name": "s",
+              "type": "Var"
+            },
+            "type": "Reverse"
+          },
+          "holdout": {
+            "n": 1,
+            "n_ok": 1,
+            "all_ok": true,
+            "rows": [
+              {
+                "inputs": {
+                  "s": "stop"
+                },
+                "expected": "pots",
+                "got": "pots",
+                "ok": true
+              }
+            ]
+          },
+          "outcome": "pass",
+          "arm": "declared"
+        },
+        {
+          "task_id": "pbe_024",
+          "name": "trap_capitalize_reverse_slice",
+          "tier": "memorization_trap",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": true,
+          "halt_reason": "solved",
+          "size": 6,
+          "tested": 198949,
+          "distinct": 6309,
+          "term_str": "reversed(s[s:4]).capitalize()",
+          "elapsed_seconds": 0.092,
+          "term_json": {
+            "text": {
+              "seq": {
+                "seq": {
+                  "name": "s",
+                  "type": "Var"
+                },
+                "start": {
+                  "name": "s",
+                  "type": "Var"
+                },
+                "stop": {
+                  "type": "Lit",
+                  "value": 4
+                },
+                "type": "Slice"
+              },
+              "type": "Reverse"
+            },
+            "type": "Capitalize"
+          },
+          "holdout": {
+            "n": 1,
+            "n_ok": 1,
+            "all_ok": true,
+            "rows": [
+              {
+                "inputs": {
+                  "s": "data science"
+                },
+                "expected": "Atad",
+                "got": "Atad",
+                "ok": true
+              }
+            ]
+          },
+          "outcome": "pass",
+          "arm": "declared"
+        },
+        {
+          "task_id": "pbe_025",
+          "name": "trap_replace_reverse",
+          "tier": "memorization_trap",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": false,
+          "halt_reason": "budget",
+          "size": null,
+          "tested": 200000,
+          "distinct": 6571,
+          "term_str": null,
+          "elapsed_seconds": 0.069,
+          "outcome": "not_found:budget",
+          "holdout": null,
+          "arm": "declared"
+        },
+        {
+          "task_id": "pbe_026",
+          "name": "trap_slice_capitalize_reverse",
+          "tier": "memorization_trap",
+          "budget": {
+            "max_size": 15,
+            "max_candidates": 0
+          },
+          "found": false,
+          "halt_reason": "budget",
+          "size": null,
+          "tested": 200000,
+          "distinct": 6609,
+          "term_str": null,
+          "elapsed_seconds": 0.081,
+          "outcome": "not_found:budget",
+          "holdout": null,
+          "arm": "declared"
+        }
+      ],
+      "n_pass": 17,
+      "n_total": 26,
+      "pass_task_ids": [
+        "pbe_001",
+        "pbe_002",
+        "pbe_003",
+        "pbe_005",
+        "pbe_006",
+        "pbe_007",
+        "pbe_008",
+        "pbe_009",
+        "pbe_010",
+        "pbe_011",
+        "pbe_013",
+        "pbe_014",
+        "pbe_016",
+        "pbe_017",
+        "pbe_021",
+        "pbe_023",
+        "pbe_024"
+      ],
+      "outcome_taxonomy": {
+        "pass": {
+          "n": 17,
+          "task_ids": [
+            "pbe_001",
+            "pbe_002",
+            "pbe_003",
+            "pbe_005",
+            "pbe_006",
+            "pbe_007",
+            "pbe_008",
+            "pbe_009",
+            "pbe_010",
+            "pbe_011",
+            "pbe_013",
+            "pbe_014",
+            "pbe_016",
+            "pbe_017",
+            "pbe_021",
+            "pbe_023",
+            "pbe_024"
+          ]
+        },
+        "not_found:budget": {
+          "n": 8,
+          "task_ids": [
+            "pbe_012",
+            "pbe_015",
+            "pbe_018",
+            "pbe_019",
+            "pbe_020",
+            "pbe_022",
+            "pbe_025",
+            "pbe_026"
+          ]
+        },
+        "found_but_holdout_fail": {
+          "n": 1,
+          "task_ids": [
+            "pbe_004"
+          ]
+        }
+      }
+    },
+    "declared_high_budget_escalation": {
+      "rows": [
+        {
+          "task_id": "pbe_004",
+          "name": "first_three_chars",
+          "tier": "tier1_single_op",
+          "budget": {
+            "max_size": 20,
+            "max_candidates": 2000000
+          },
+          "found": true,
+          "halt_reason": "solved",
+          "size": 4,
+          "tested": 6918,
+          "distinct": 321,
+          "term_str": "s.replace('hello', 'hel')",
+          "elapsed_seconds": 0.002,
+          "term_json": {
+            "new": {
+              "type": "Lit",
+              "value": "hel"
+            },
+            "old": {
+              "type": "Lit",
+              "value": "hello"
+            },
+            "text": {
+              "name": "s",
+              "type": "Var"
+            },
+            "type": "Replace"
+          },
+          "holdout": {
+            "n": 1,
+            "n_ok": 0,
+            "all_ok": false,
+            "rows": [
+              {
+                "inputs": {
+                  "s": "elephant"
+                },
+                "expected": "ele",
+                "got": "elephant",
+                "ok": false
+              }
+            ]
+          },
+          "outcome": "found_but_holdout_fail",
+          "arm": "declared_high_budget"
+        },
+        {
+          "task_id": "pbe_012",
+          "name": "initials_concat",
+          "tier": "tier2_composition",
+          "budget": {
+            "max_size": 20,
+            "max_candidates": 2000000
+          },
+          "found": false,
+          "halt_reason": "budget",
+          "size": null,
+          "tested": 2000000,
+          "distinct": 58809,
+          "term_str": null,
+          "elapsed_seconds": 1.763,
+          "outcome": "not_found:budget",
+          "holdout": null,
+          "arm": "declared_high_budget"
+        },
+        {
+          "task_id": "pbe_015",
+          "name": "first_and_last_char",
+          "tier": "tier2_composition",
+          "budget": {
+            "max_size": 20,
+            "max_candidates": 2000000
+          },
+          "found": true,
+          "halt_reason": "solved",
+          "size": 7,
+          "tested": 904596,
+          "distinct": 29444,
+          "term_str": "s.replace(s[1:-1], '')",
+          "elapsed_seconds": 0.573,
+          "term_json": {
+            "new": {
+              "type": "Lit",
+              "value": ""
+            },
+            "old": {
+              "seq": {
+                "name": "s",
+                "type": "Var"
+              },
+              "start": {
+                "type": "Lit",
+                "value": 1
+              },
+              "stop": {
+                "type": "Lit",
+                "value": -1
+              },
+              "type": "Slice"
+            },
+            "text": {
+              "name": "s",
+              "type": "Var"
+            },
+            "type": "Replace"
+          },
+          "holdout": {
+            "n": 1,
+            "n_ok": 1,
+            "all_ok": true,
+            "rows": [
+              {
+                "inputs": {
+                  "s": "banana"
+                },
+                "expected": "ba",
+                "got": "ba",
+                "ok": true
+              }
+            ]
+          },
+          "outcome": "pass",
+          "arm": "declared_high_budget"
+        },
+        {
+          "task_id": "pbe_018",
+          "name": "shout",
+          "tier": "tier3_deep_or_missing",
+          "budget": {
+            "max_size": 20,
+            "max_candidates": 2000000
+          },
+          "found": false,
+          "halt_reason": "budget",
+          "size": null,
+          "tested": 2000000,
+          "distinct": 61651,
+          "term_str": null,
+          "elapsed_seconds": 1.627,
+          "outcome": "not_found:budget",
+          "holdout": null,
+          "arm": "declared_high_budget"
+        },
+        {
+          "task_id": "pbe_019",
+          "name": "title_case_words",
+          "tier": "tier3_deep_or_missing",
+          "budget": {
+            "max_size": 20,
+            "max_candidates": 2000000
+          },
+          "found": false,
+          "halt_reason": "budget",
+          "size": null,
+          "tested": 2000000,
+          "distinct": 59796,
+          "term_str": null,
+          "elapsed_seconds": 1.839,
+          "outcome": "not_found:budget",
+          "holdout": null,
+          "arm": "declared_high_budget"
+        },
+        {
+          "task_id": "pbe_020",
+          "name": "strip_whitespace",
+          "tier": "tier3_deep_or_missing",
+          "budget": {
+            "max_size": 20,
+            "max_candidates": 2000000
+          },
+          "found": false,
+          "halt_reason": "budget",
+          "size": null,
+          "tested": 2000000,
+          "distinct": 107995,
+          "term_str": null,
+          "elapsed_seconds": 1.539,
+          "outcome": "not_found:budget",
+          "holdout": null,
+          "arm": "declared_high_budget"
+        },
+        {
+          "task_id": "pbe_022",
+          "name": "initials_capitalized_concat",
+          "tier": "tier3_deep_or_missing",
+          "budget": {
+            "max_size": 20,
+            "max_candidates": 2000000
+          },
+          "found": false,
+          "halt_reason": "budget",
+          "size": null,
+          "tested": 2000000,
+          "distinct": 59060,
+          "term_str": null,
+          "elapsed_seconds": 1.747,
+          "outcome": "not_found:budget",
+          "holdout": null,
+          "arm": "declared_high_budget"
+        },
+        {
+          "task_id": "pbe_025",
+          "name": "trap_replace_reverse",
+          "tier": "memorization_trap",
+          "budget": {
+            "max_size": 20,
+            "max_candidates": 2000000
+          },
+          "found": true,
+          "halt_reason": "solved",
+          "size": 7,
+          "tested": 1411517,
+          "distinct": 39591,
+          "term_str": "reversed(s).replace('p', '@')",
+          "elapsed_seconds": 0.689,
+          "term_json": {
+            "new": {
+              "type": "Lit",
+              "value": "@"
+            },
+            "old": {
+              "type": "Lit",
+              "value": "p"
+            },
+            "text": {
+              "seq": {
+                "name": "s",
+                "type": "Var"
+              },
+              "type": "Reverse"
+            },
+            "type": "Replace"
+          },
+          "holdout": {
+            "n": 1,
+            "n_ok": 1,
+            "all_ok": true,
+            "rows": [
+              {
+                "inputs": {
+                  "s": "paper"
+                },
+                "expected": "re@a@",
+                "got": "re@a@",
+                "ok": true
+              }
+            ]
+          },
+          "outcome": "pass",
+          "arm": "declared_high_budget"
+        },
+        {
+          "task_id": "pbe_026",
+          "name": "trap_slice_capitalize_reverse",
+          "tier": "memorization_trap",
+          "budget": {
+            "max_size": 20,
+            "max_candidates": 2000000
+          },
+          "found": true,
+          "halt_reason": "solved",
+          "size": 6,
+          "tested": 251653,
+          "distinct": 8808,
+          "term_str": "reversed(s[-4:999].capitalize())",
+          "elapsed_seconds": 0.113,
+          "term_json": {
+            "seq": {
+              "text": {
+                "seq": {
+                  "name": "s",
+                  "type": "Var"
+                },
+                "start": {
+                  "type": "Lit",
+                  "value": -4
+                },
+                "stop": {
+                  "type": "Lit",
+                  "value": 999
+                },
+                "type": "Slice"
+              },
+              "type": "Capitalize"
+            },
+            "type": "Reverse"
+          },
+          "holdout": {
+            "n": 1,
+            "n_ok": 1,
+            "all_ok": true,
+            "rows": [
+              {
+                "inputs": {
+                  "s": "data science"
+                },
+                "expected": "ecnE",
+                "got": "ecnE",
+                "ok": true
+              }
+            ]
+          },
+          "outcome": "pass",
+          "arm": "declared_high_budget"
+        }
+      ],
+      "n_reprobed": 9,
+      "n_newly_pass": 3,
+      "newly_pass_task_ids": [
+        "pbe_015",
+        "pbe_025",
+        "pbe_026"
+      ],
+      "outcome_taxonomy": {
+        "not_found:budget": {
+          "n": 5,
+          "task_ids": [
+            "pbe_012",
+            "pbe_018",
+            "pbe_019",
+            "pbe_020",
+            "pbe_022"
+          ]
+        },
+        "pass": {
+          "n": 3,
+          "task_ids": [
+            "pbe_015",
+            "pbe_025",
+            "pbe_026"
+          ]
+        },
+        "found_but_holdout_fail": {
+          "n": 1,
+          "task_ids": [
+            "pbe_004"
+          ]
+        }
+      }
+    }
+  },
+  "diff_declared_minus_typed_default": {
+    "lost": [],
+    "gained": [
+      "pbe_010",
+      "pbe_011",
+      "pbe_013",
+      "pbe_021",
+      "pbe_024"
+    ]
+  },
+  "diff_high_budget_minus_declared_default": {
+    "lost": [],
+    "gained": [
+      "pbe_015",
+      "pbe_025",
+      "pbe_026"
+    ]
+  },
+  "declared_plus_high_budget_pass_task_ids": [
+    "pbe_001",
+    "pbe_002",
+    "pbe_003",
+    "pbe_005",
+    "pbe_006",
+    "pbe_007",
+    "pbe_008",
+    "pbe_009",
+    "pbe_010",
+    "pbe_011",
+    "pbe_013",
+    "pbe_014",
+    "pbe_015",
+    "pbe_016",
+    "pbe_017",
+    "pbe_021",
+    "pbe_023",
+    "pbe_024",
+    "pbe_025",
+    "pbe_026"
+  ],
+  "elapsed_seconds": 12.91,
+  "provenance": {
+    "repo_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "working_tree_dirty": true,
+    "command": "PYTHONPATH=runners/dsl/python:.:scripts OZMA_NO_LLM=1 OZMA_SEED_PERSIST_DISABLED=1 python3 -c 'import pbe_string_battery as b; b.OUT_PATH=\"/tmp/pbe_string_battery_current_20260924.json\"; b.main()'",
+    "native_extension_sha256": "2e31b4f92f4d58b537c51ad1205b7ba54c0111ed5c9104e0fd2448220e1b030e",
+    "native_extension_matches_build_manifest": true,
+    "build_manifest_sha256": "0a230802e876fed450eda500922860005e2203324da0cc7deab2c726cd6ca3c3",
+    "native_source_fingerprint": "594086a850a7a21d8a93d178e837e805b6b13aaa9ca0ae864ceef65f7020d378",
+    "synth_enumerate_source_sha256": "f3ae5dd0b15f0fef1713fa92ccb563e4b573dd94b626f0bfed58413298ee6203",
+    "harness_sha256": "2023dbf32c022a4ce878d6ee6b585ae4936c1e71b656ed3efe0c7d963ce8f7a9",
+    "fixture_sha256": "2aa57d29ca156c80e5519d2b488b67892d503f7b96fccc9460d7d1cbac9c0e2f",
+    "working_tree_changes_relevant_to_run": [
+      "runners/dsl/python/substrate_rs/_native.abi3.so is modified in the worktree; its SHA-256 matches _native.build.json engine_sha256",
+      "tracked synth_enumerate.rs has no worktree modification"
+    ]
+  }
+}

@@ -1,0 +1,2582 @@
+{
+  "checks": {
+    "all_eight_traces_present": true,
+    "cycle_lengths_reproducible_by_digest": true,
+    "expected_rule_order": true,
+    "full_vs_sliced_parity_preflights": true,
+    "rule_order_source_matches_capture": true,
+    "source_stable": true,
+    "trace_interpretation_enabled": true
+  },
+  "input": "evaluation/reports/substrate_vision_shared_substrate_multisheet_task_pilot_v1_8_20260927.json",
+  "interpretation": "Sliced execution reproduces full-closure graph, status, pass count, and progress work for both a cyclic root-scoped B-only case and a fixed-point global both-stimulated case. Across the recorded trajectories, act first changes on pass 2, while rate and rate_step first change on pass 3; act then continues changing in later settling passes without further rate writes. The current rule order places st_settle before oo_sunit_rate within each pass, while the one-time rate guard closes after its write. Repeated-state detection finds exact cycles of 6, 8, and 24 passes depending on condition/scope. This confirms distinct time slices and non-fixed dynamics; it does not determine whether that separation is intended.",
+  "pass": true,
+  "selected_export_rule_order": {
+    "global": [
+      {
+        "index": 149,
+        "name": "st_latch_aff"
+      },
+      {
+        "index": 150,
+        "name": "st_settle"
+      },
+      {
+        "index": 151,
+        "name": "st_commit"
+      },
+      {
+        "index": 152,
+        "name": "st_burst_bubble"
+      },
+      {
+        "index": 154,
+        "name": "oo_sunit_activate"
+      },
+      {
+        "index": 155,
+        "name": "oo_sunit_rate"
+      }
+    ],
+    "root_scoped": [
+      {
+        "index": 149,
+        "name": "st_latch_aff"
+      },
+      {
+        "index": 150,
+        "name": "st_settle_root_scoped_benchmark"
+      },
+      {
+        "index": 151,
+        "name": "st_commit"
+      },
+      {
+        "index": 152,
+        "name": "st_burst_bubble"
+      },
+      {
+        "index": 154,
+        "name": "oo_sunit_activate"
+      },
+      {
+        "index": 155,
+        "name": "oo_sunit_rate"
+      }
+    ]
+  },
+  "slicing_preflight": [
+    {
+      "condition": "b_only_exact",
+      "full_graph_sha256": "cbdf1fbdb39400790914b3bb92e424665f11f1dc874e78a8aaf48e2c4dbf1ecc",
+      "full_passes": 168,
+      "full_progress_steps": 172,
+      "full_status": "repeated_graph_state",
+      "graph_equal": true,
+      "scope": "root_scoped",
+      "sliced_graph_sha256": "cbdf1fbdb39400790914b3bb92e424665f11f1dc874e78a8aaf48e2c4dbf1ecc",
+      "sliced_passes": 168,
+      "sliced_progress_steps": 172,
+      "sliced_status": "repeated_graph_state",
+      "status_equal": true,
+      "work_equal": true
+    },
+    {
+      "condition": "both_exact",
+      "full_graph_sha256": "cb86f7a33b39d0c94111531fb5b50c2020ba8366e706b9daad3db46678c47104",
+      "full_passes": 169,
+      "full_progress_steps": 173,
+      "full_status": "fixed_point",
+      "graph_equal": true,
+      "scope": "global",
+      "sliced_graph_sha256": "cb86f7a33b39d0c94111531fb5b50c2020ba8366e706b9daad3db46678c47104",
+      "sliced_passes": 169,
+      "sliced_progress_steps": 173,
+      "sliced_status": "fixed_point",
+      "status_equal": true,
+      "work_equal": true
+    }
+  ],
+  "trace_summary": {
+    "global": {
+      "a_only_exact": {
+        "act_changes_after_rate_first_write": 84,
+        "changed_unit_counts_by_pass": {
+          "act": [
+            {
+              "pass": 2,
+              "units": 32
+            },
+            {
+              "pass": 4,
+              "units": 16
+            },
+            {
+              "pass": 6,
+              "units": 16
+            },
+            {
+              "pass": 8,
+              "units": 16
+            },
+            {
+              "pass": 10,
+              "units": 16
+            },
+            {
+              "pass": 12,
+              "units": 16
+            },
+            {
+              "pass": 14,
+              "units": 16
+            },
+            {
+              "pass": 16,
+              "units": 16
+            },
+            {
+              "pass": 18,
+              "units": 16
+            },
+            {
+              "pass": 20,
+              "units": 16
+            },
+            {
+              "pass": 22,
+              "units": 16
+            },
+            {
+              "pass": 24,
+              "units": 16
+            },
+            {
+              "pass": 26,
+              "units": 16
+            },
+            {
+              "pass": 28,
+              "units": 16
+            },
+            {
+              "pass": 30,
+              "units": 16
+            },
+            {
+              "pass": 32,
+              "units": 16
+            },
+            {
+              "pass": 34,
+              "units": 16
+            },
+            {
+              "pass": 36,
+              "units": 16
+            },
+            {
+              "pass": 38,
+              "units": 16
+            },
+            {
+              "pass": 40,
+              "units": 16
+            },
+            {
+              "pass": 42,
+              "units": 16
+            },
+            {
+              "pass": 44,
+              "units": 16
+            },
+            {
+              "pass": 46,
+              "units": 16
+            },
+            {
+              "pass": 48,
+              "units": 16
+            },
+            {
+              "pass": 50,
+              "units": 16
+            },
+            {
+              "pass": 52,
+              "units": 16
+            },
+            {
+              "pass": 54,
+              "units": 16
+            },
+            {
+              "pass": 56,
+              "units": 16
+            },
+            {
+              "pass": 58,
+              "units": 16
+            },
+            {
+              "pass": 60,
+              "units": 16
+            },
+            {
+              "pass": 62,
+              "units": 16
+            },
+            {
+              "pass": 64,
+              "units": 16
+            },
+            {
+              "pass": 66,
+              "units": 16
+            },
+            {
+              "pass": 68,
+              "units": 16
+            },
+            {
+              "pass": 70,
+              "units": 16
+            },
+            {
+              "pass": 72,
+              "units": 16
+            },
+            {
+              "pass": 74,
+              "units": 16
+            },
+            {
+              "pass": 76,
+              "units": 16
+            },
+            {
+              "pass": 78,
+              "units": 16
+            },
+            {
+              "pass": 80,
+              "units": 16
+            },
+            {
+              "pass": 82,
+              "units": 16
+            },
+            {
+              "pass": 84,
+              "units": 16
+            },
+            {
+              "pass": 86,
+              "units": 16
+            },
+            {
+              "pass": 88,
+              "units": 16
+            },
+            {
+              "pass": 90,
+              "units": 16
+            },
+            {
+              "pass": 92,
+              "units": 16
+            },
+            {
+              "pass": 94,
+              "units": 16
+            },
+            {
+              "pass": 96,
+              "units": 16
+            },
+            {
+              "pass": 98,
+              "units": 16
+            },
+            {
+              "pass": 100,
+              "units": 16
+            },
+            {
+              "pass": 102,
+              "units": 16
+            },
+            {
+              "pass": 104,
+              "units": 16
+            },
+            {
+              "pass": 106,
+              "units": 16
+            },
+            {
+              "pass": 108,
+              "units": 16
+            },
+            {
+              "pass": 110,
+              "units": 16
+            },
+            {
+              "pass": 112,
+              "units": 16
+            },
+            {
+              "pass": 114,
+              "units": 16
+            },
+            {
+              "pass": 116,
+              "units": 16
+            },
+            {
+              "pass": 118,
+              "units": 16
+            },
+            {
+              "pass": 120,
+              "units": 16
+            },
+            {
+              "pass": 122,
+              "units": 16
+            },
+            {
+              "pass": 124,
+              "units": 16
+            },
+            {
+              "pass": 126,
+              "units": 16
+            },
+            {
+              "pass": 128,
+              "units": 16
+            },
+            {
+              "pass": 130,
+              "units": 16
+            },
+            {
+              "pass": 132,
+              "units": 16
+            },
+            {
+              "pass": 134,
+              "units": 16
+            },
+            {
+              "pass": 136,
+              "units": 16
+            },
+            {
+              "pass": 138,
+              "units": 16
+            },
+            {
+              "pass": 140,
+              "units": 13
+            },
+            {
+              "pass": 142,
+              "units": 15
+            },
+            {
+              "pass": 144,
+              "units": 14
+            },
+            {
+              "pass": 146,
+              "units": 13
+            },
+            {
+              "pass": 148,
+              "units": 12
+            },
+            {
+              "pass": 150,
+              "units": 12
+            },
+            {
+              "pass": 152,
+              "units": 12
+            },
+            {
+              "pass": 154,
+              "units": 12
+            },
+            {
+              "pass": 156,
+              "units": 10
+            },
+            {
+              "pass": 158,
+              "units": 11
+            },
+            {
+              "pass": 160,
+              "units": 11
+            },
+            {
+              "pass": 162,
+              "units": 7
+            },
+            {
+              "pass": 164,
+              "units": 6
+            },
+            {
+              "pass": 166,
+              "units": 6
+            },
+            {
+              "pass": 168,
+              "units": 2
+            },
+            {
+              "pass": 170,
+              "units": 3
+            }
+          ],
+          "act_step": [
+            {
+              "pass": 2,
+              "units": 32
+            }
+          ],
+          "bursting": [],
+          "rate": [
+            {
+              "pass": 3,
+              "units": 26
+            }
+          ],
+          "rate_step": [
+            {
+              "pass": 3,
+              "units": 32
+            }
+          ],
+          "theta": []
+        },
+        "cycle_period_passes": null,
+        "cycle_start_pass_index": null,
+        "first_changed_pass": {
+          "act": 2,
+          "act_step": 2,
+          "bursting": null,
+          "rate": 3,
+          "rate_step": 3,
+          "theta": null
+        },
+        "passes": 171,
+        "progress_steps_sum": 175,
+        "status": "fixed_point",
+        "unit_count": 32
+      },
+      "b_only_exact": {
+        "act_changes_after_rate_first_write": 82,
+        "changed_unit_counts_by_pass": {
+          "act": [
+            {
+              "pass": 2,
+              "units": 32
+            },
+            {
+              "pass": 4,
+              "units": 16
+            },
+            {
+              "pass": 6,
+              "units": 16
+            },
+            {
+              "pass": 8,
+              "units": 16
+            },
+            {
+              "pass": 10,
+              "units": 16
+            },
+            {
+              "pass": 12,
+              "units": 16
+            },
+            {
+              "pass": 14,
+              "units": 16
+            },
+            {
+              "pass": 16,
+              "units": 16
+            },
+            {
+              "pass": 18,
+              "units": 16
+            },
+            {
+              "pass": 20,
+              "units": 16
+            },
+            {
+              "pass": 22,
+              "units": 16
+            },
+            {
+              "pass": 24,
+              "units": 16
+            },
+            {
+              "pass": 26,
+              "units": 16
+            },
+            {
+              "pass": 28,
+              "units": 16
+            },
+            {
+              "pass": 30,
+              "units": 16
+            },
+            {
+              "pass": 32,
+              "units": 16
+            },
+            {
+              "pass": 34,
+              "units": 16
+            },
+            {
+              "pass": 36,
+              "units": 16
+            },
+            {
+              "pass": 38,
+              "units": 16
+            },
+            {
+              "pass": 40,
+              "units": 16
+            },
+            {
+              "pass": 42,
+              "units": 16
+            },
+            {
+              "pass": 44,
+              "units": 16
+            },
+            {
+              "pass": 46,
+              "units": 16
+            },
+            {
+              "pass": 48,
+              "units": 16
+            },
+            {
+              "pass": 50,
+              "units": 16
+            },
+            {
+              "pass": 52,
+              "units": 16
+            },
+            {
+              "pass": 54,
+              "units": 16
+            },
+            {
+              "pass": 56,
+              "units": 16
+            },
+            {
+              "pass": 58,
+              "units": 16
+            },
+            {
+              "pass": 60,
+              "units": 16
+            },
+            {
+              "pass": 62,
+              "units": 16
+            },
+            {
+              "pass": 64,
+              "units": 16
+            },
+            {
+              "pass": 66,
+              "units": 16
+            },
+            {
+              "pass": 68,
+              "units": 16
+            },
+            {
+              "pass": 70,
+              "units": 16
+            },
+            {
+              "pass": 72,
+              "units": 16
+            },
+            {
+              "pass": 74,
+              "units": 16
+            },
+            {
+              "pass": 76,
+              "units": 16
+            },
+            {
+              "pass": 78,
+              "units": 16
+            },
+            {
+              "pass": 80,
+              "units": 16
+            },
+            {
+              "pass": 82,
+              "units": 16
+            },
+            {
+              "pass": 84,
+              "units": 16
+            },
+            {
+              "pass": 86,
+              "units": 16
+            },
+            {
+              "pass": 88,
+              "units": 16
+            },
+            {
+              "pass": 90,
+              "units": 16
+            },
+            {
+              "pass": 92,
+              "units": 16
+            },
+            {
+              "pass": 94,
+              "units": 16
+            },
+            {
+              "pass": 96,
+              "units": 16
+            },
+            {
+              "pass": 98,
+              "units": 16
+            },
+            {
+              "pass": 100,
+              "units": 16
+            },
+            {
+              "pass": 102,
+              "units": 16
+            },
+            {
+              "pass": 104,
+              "units": 16
+            },
+            {
+              "pass": 106,
+              "units": 16
+            },
+            {
+              "pass": 108,
+              "units": 16
+            },
+            {
+              "pass": 110,
+              "units": 16
+            },
+            {
+              "pass": 112,
+              "units": 16
+            },
+            {
+              "pass": 114,
+              "units": 16
+            },
+            {
+              "pass": 116,
+              "units": 16
+            },
+            {
+              "pass": 118,
+              "units": 16
+            },
+            {
+              "pass": 120,
+              "units": 16
+            },
+            {
+              "pass": 122,
+              "units": 16
+            },
+            {
+              "pass": 124,
+              "units": 16
+            },
+            {
+              "pass": 126,
+              "units": 16
+            },
+            {
+              "pass": 128,
+              "units": 14
+            },
+            {
+              "pass": 130,
+              "units": 16
+            },
+            {
+              "pass": 132,
+              "units": 16
+            },
+            {
+              "pass": 134,
+              "units": 15
+            },
+            {
+              "pass": 136,
+              "units": 12
+            },
+            {
+              "pass": 138,
+              "units": 16
+            },
+            {
+              "pass": 140,
+              "units": 12
+            },
+            {
+              "pass": 142,
+              "units": 16
+            },
+            {
+              "pass": 144,
+              "units": 14
+            },
+            {
+              "pass": 146,
+              "units": 9
+            },
+            {
+              "pass": 148,
+              "units": 9
+            },
+            {
+              "pass": 150,
+              "units": 14
+            },
+            {
+              "pass": 152,
+              "units": 14
+            },
+            {
+              "pass": 154,
+              "units": 6
+            },
+            {
+              "pass": 156,
+              "units": 10
+            },
+            {
+              "pass": 158,
+              "units": 10
+            },
+            {
+              "pass": 160,
+              "units": 14
+            },
+            {
+              "pass": 162,
+              "units": 15
+            },
+            {
+              "pass": 164,
+              "units": 9
+            },
+            {
+              "pass": 166,
+              "units": 8
+            }
+          ],
+          "act_step": [
+            {
+              "pass": 2,
+              "units": 32
+            }
+          ],
+          "bursting": [],
+          "rate": [
+            {
+              "pass": 3,
+              "units": 26
+            }
+          ],
+          "rate_step": [
+            {
+              "pass": 3,
+              "units": 32
+            }
+          ],
+          "theta": []
+        },
+        "cycle_period_passes": 8,
+        "cycle_start_pass_index": 158,
+        "first_changed_pass": {
+          "act": 2,
+          "act_step": 2,
+          "bursting": null,
+          "rate": 3,
+          "rate_step": 3,
+          "theta": null
+        },
+        "passes": 166,
+        "progress_steps_sum": 170,
+        "status": "repeated_graph_state",
+        "unit_count": 32
+      },
+      "both_blank": {
+        "act_changes_after_rate_first_write": 0,
+        "changed_unit_counts_by_pass": {
+          "act": [
+            {
+              "pass": 2,
+              "units": 32
+            }
+          ],
+          "act_step": [
+            {
+              "pass": 2,
+              "units": 32
+            }
+          ],
+          "bursting": [],
+          "rate": [
+            {
+              "pass": 3,
+              "units": 26
+            }
+          ],
+          "rate_step": [
+            {
+              "pass": 3,
+              "units": 32
+            }
+          ],
+          "theta": []
+        },
+        "cycle_period_passes": null,
+        "cycle_start_pass_index": null,
+        "first_changed_pass": {
+          "act": 2,
+          "act_step": 2,
+          "bursting": null,
+          "rate": 3,
+          "rate_step": 3,
+          "theta": null
+        },
+        "passes": 4,
+        "progress_steps_sum": 6,
+        "status": "fixed_point",
+        "unit_count": 32
+      },
+      "both_exact": {
+        "act_changes_after_rate_first_write": 83,
+        "changed_unit_counts_by_pass": {
+          "act": [
+            {
+              "pass": 2,
+              "units": 32
+            },
+            {
+              "pass": 4,
+              "units": 32
+            },
+            {
+              "pass": 6,
+              "units": 32
+            },
+            {
+              "pass": 8,
+              "units": 32
+            },
+            {
+              "pass": 10,
+              "units": 32
+            },
+            {
+              "pass": 12,
+              "units": 32
+            },
+            {
+              "pass": 14,
+              "units": 32
+            },
+            {
+              "pass": 16,
+              "units": 32
+            },
+            {
+              "pass": 18,
+              "units": 32
+            },
+            {
+              "pass": 20,
+              "units": 32
+            },
+            {
+              "pass": 22,
+              "units": 32
+            },
+            {
+              "pass": 24,
+              "units": 32
+            },
+            {
+              "pass": 26,
+              "units": 32
+            },
+            {
+              "pass": 28,
+              "units": 27
+            },
+            {
+              "pass": 30,
+              "units": 16
+            },
+            {
+              "pass": 32,
+              "units": 16
+            },
+            {
+              "pass": 34,
+              "units": 16
+            },
+            {
+              "pass": 36,
+              "units": 16
+            },
+            {
+              "pass": 38,
+              "units": 16
+            },
+            {
+              "pass": 40,
+              "units": 16
+            },
+            {
+              "pass": 42,
+              "units": 16
+            },
+            {
+              "pass": 44,
+              "units": 16
+            },
+            {
+              "pass": 46,
+              "units": 16
+            },
+            {
+              "pass": 48,
+              "units": 16
+            },
+            {
+              "pass": 50,
+              "units": 16
+            },
+            {
+              "pass": 52,
+              "units": 16
+            },
+            {
+              "pass": 54,
+              "units": 16
+            },
+            {
+              "pass": 56,
+              "units": 16
+            },
+            {
+              "pass": 58,
+              "units": 16
+            },
+            {
+              "pass": 60,
+              "units": 16
+            },
+            {
+              "pass": 62,
+              "units": 16
+            },
+            {
+              "pass": 64,
+              "units": 16
+            },
+            {
+              "pass": 66,
+              "units": 16
+            },
+            {
+              "pass": 68,
+              "units": 16
+            },
+            {
+              "pass": 70,
+              "units": 16
+            },
+            {
+              "pass": 72,
+              "units": 16
+            },
+            {
+              "pass": 74,
+              "units": 16
+            },
+            {
+              "pass": 76,
+              "units": 16
+            },
+            {
+              "pass": 78,
+              "units": 16
+            },
+            {
+              "pass": 80,
+              "units": 16
+            },
+            {
+              "pass": 82,
+              "units": 16
+            },
+            {
+              "pass": 84,
+              "units": 16
+            },
+            {
+              "pass": 86,
+              "units": 16
+            },
+            {
+              "pass": 88,
+              "units": 16
+            },
+            {
+              "pass": 90,
+              "units": 16
+            },
+            {
+              "pass": 92,
+              "units": 16
+            },
+            {
+              "pass": 94,
+              "units": 16
+            },
+            {
+              "pass": 96,
+              "units": 16
+            },
+            {
+              "pass": 98,
+              "units": 16
+            },
+            {
+              "pass": 100,
+              "units": 16
+            },
+            {
+              "pass": 102,
+              "units": 16
+            },
+            {
+              "pass": 104,
+              "units": 16
+            },
+            {
+              "pass": 106,
+              "units": 16
+            },
+            {
+              "pass": 108,
+              "units": 16
+            },
+            {
+              "pass": 110,
+              "units": 16
+            },
+            {
+              "pass": 112,
+              "units": 16
+            },
+            {
+              "pass": 114,
+              "units": 16
+            },
+            {
+              "pass": 116,
+              "units": 16
+            },
+            {
+              "pass": 118,
+              "units": 16
+            },
+            {
+              "pass": 120,
+              "units": 16
+            },
+            {
+              "pass": 122,
+              "units": 16
+            },
+            {
+              "pass": 124,
+              "units": 16
+            },
+            {
+              "pass": 126,
+              "units": 16
+            },
+            {
+              "pass": 128,
+              "units": 16
+            },
+            {
+              "pass": 130,
+              "units": 16
+            },
+            {
+              "pass": 132,
+              "units": 16
+            },
+            {
+              "pass": 134,
+              "units": 16
+            },
+            {
+              "pass": 136,
+              "units": 15
+            },
+            {
+              "pass": 138,
+              "units": 16
+            },
+            {
+              "pass": 140,
+              "units": 16
+            },
+            {
+              "pass": 142,
+              "units": 14
+            },
+            {
+              "pass": 144,
+              "units": 13
+            },
+            {
+              "pass": 146,
+              "units": 12
+            },
+            {
+              "pass": 148,
+              "units": 16
+            },
+            {
+              "pass": 150,
+              "units": 16
+            },
+            {
+              "pass": 152,
+              "units": 14
+            },
+            {
+              "pass": 154,
+              "units": 14
+            },
+            {
+              "pass": 156,
+              "units": 11
+            },
+            {
+              "pass": 158,
+              "units": 10
+            },
+            {
+              "pass": 160,
+              "units": 9
+            },
+            {
+              "pass": 162,
+              "units": 7
+            },
+            {
+              "pass": 164,
+              "units": 5
+            },
+            {
+              "pass": 166,
+              "units": 6
+            },
+            {
+              "pass": 168,
+              "units": 4
+            }
+          ],
+          "act_step": [
+            {
+              "pass": 2,
+              "units": 32
+            }
+          ],
+          "bursting": [],
+          "rate": [
+            {
+              "pass": 3,
+              "units": 26
+            }
+          ],
+          "rate_step": [
+            {
+              "pass": 3,
+              "units": 32
+            }
+          ],
+          "theta": []
+        },
+        "cycle_period_passes": null,
+        "cycle_start_pass_index": null,
+        "first_changed_pass": {
+          "act": 2,
+          "act_step": 2,
+          "bursting": null,
+          "rate": 3,
+          "rate_step": 3,
+          "theta": null
+        },
+        "passes": 169,
+        "progress_steps_sum": 173,
+        "status": "fixed_point",
+        "unit_count": 32
+      }
+    },
+    "root_scoped": {
+      "a_only_exact": {
+        "act_changes_after_rate_first_write": 94,
+        "changed_unit_counts_by_pass": {
+          "act": [
+            {
+              "pass": 2,
+              "units": 32
+            },
+            {
+              "pass": 4,
+              "units": 16
+            },
+            {
+              "pass": 6,
+              "units": 16
+            },
+            {
+              "pass": 8,
+              "units": 16
+            },
+            {
+              "pass": 10,
+              "units": 16
+            },
+            {
+              "pass": 12,
+              "units": 16
+            },
+            {
+              "pass": 14,
+              "units": 16
+            },
+            {
+              "pass": 16,
+              "units": 16
+            },
+            {
+              "pass": 18,
+              "units": 16
+            },
+            {
+              "pass": 20,
+              "units": 16
+            },
+            {
+              "pass": 22,
+              "units": 16
+            },
+            {
+              "pass": 24,
+              "units": 16
+            },
+            {
+              "pass": 26,
+              "units": 16
+            },
+            {
+              "pass": 28,
+              "units": 16
+            },
+            {
+              "pass": 30,
+              "units": 16
+            },
+            {
+              "pass": 32,
+              "units": 16
+            },
+            {
+              "pass": 34,
+              "units": 16
+            },
+            {
+              "pass": 36,
+              "units": 16
+            },
+            {
+              "pass": 38,
+              "units": 16
+            },
+            {
+              "pass": 40,
+              "units": 16
+            },
+            {
+              "pass": 42,
+              "units": 16
+            },
+            {
+              "pass": 44,
+              "units": 16
+            },
+            {
+              "pass": 46,
+              "units": 16
+            },
+            {
+              "pass": 48,
+              "units": 16
+            },
+            {
+              "pass": 50,
+              "units": 16
+            },
+            {
+              "pass": 52,
+              "units": 16
+            },
+            {
+              "pass": 54,
+              "units": 16
+            },
+            {
+              "pass": 56,
+              "units": 16
+            },
+            {
+              "pass": 58,
+              "units": 16
+            },
+            {
+              "pass": 60,
+              "units": 16
+            },
+            {
+              "pass": 62,
+              "units": 16
+            },
+            {
+              "pass": 64,
+              "units": 16
+            },
+            {
+              "pass": 66,
+              "units": 16
+            },
+            {
+              "pass": 68,
+              "units": 16
+            },
+            {
+              "pass": 70,
+              "units": 16
+            },
+            {
+              "pass": 72,
+              "units": 16
+            },
+            {
+              "pass": 74,
+              "units": 16
+            },
+            {
+              "pass": 76,
+              "units": 16
+            },
+            {
+              "pass": 78,
+              "units": 16
+            },
+            {
+              "pass": 80,
+              "units": 16
+            },
+            {
+              "pass": 82,
+              "units": 16
+            },
+            {
+              "pass": 84,
+              "units": 16
+            },
+            {
+              "pass": 86,
+              "units": 16
+            },
+            {
+              "pass": 88,
+              "units": 16
+            },
+            {
+              "pass": 90,
+              "units": 16
+            },
+            {
+              "pass": 92,
+              "units": 16
+            },
+            {
+              "pass": 94,
+              "units": 16
+            },
+            {
+              "pass": 96,
+              "units": 16
+            },
+            {
+              "pass": 98,
+              "units": 16
+            },
+            {
+              "pass": 100,
+              "units": 16
+            },
+            {
+              "pass": 102,
+              "units": 16
+            },
+            {
+              "pass": 104,
+              "units": 16
+            },
+            {
+              "pass": 106,
+              "units": 16
+            },
+            {
+              "pass": 108,
+              "units": 16
+            },
+            {
+              "pass": 110,
+              "units": 16
+            },
+            {
+              "pass": 112,
+              "units": 16
+            },
+            {
+              "pass": 114,
+              "units": 16
+            },
+            {
+              "pass": 116,
+              "units": 16
+            },
+            {
+              "pass": 118,
+              "units": 16
+            },
+            {
+              "pass": 120,
+              "units": 16
+            },
+            {
+              "pass": 122,
+              "units": 16
+            },
+            {
+              "pass": 124,
+              "units": 16
+            },
+            {
+              "pass": 126,
+              "units": 16
+            },
+            {
+              "pass": 128,
+              "units": 16
+            },
+            {
+              "pass": 130,
+              "units": 16
+            },
+            {
+              "pass": 132,
+              "units": 16
+            },
+            {
+              "pass": 134,
+              "units": 16
+            },
+            {
+              "pass": 136,
+              "units": 16
+            },
+            {
+              "pass": 138,
+              "units": 15
+            },
+            {
+              "pass": 140,
+              "units": 15
+            },
+            {
+              "pass": 142,
+              "units": 15
+            },
+            {
+              "pass": 144,
+              "units": 12
+            },
+            {
+              "pass": 146,
+              "units": 16
+            },
+            {
+              "pass": 148,
+              "units": 15
+            },
+            {
+              "pass": 150,
+              "units": 16
+            },
+            {
+              "pass": 152,
+              "units": 16
+            },
+            {
+              "pass": 154,
+              "units": 14
+            },
+            {
+              "pass": 156,
+              "units": 16
+            },
+            {
+              "pass": 158,
+              "units": 10
+            },
+            {
+              "pass": 160,
+              "units": 16
+            },
+            {
+              "pass": 162,
+              "units": 16
+            },
+            {
+              "pass": 164,
+              "units": 9
+            },
+            {
+              "pass": 166,
+              "units": 5
+            },
+            {
+              "pass": 168,
+              "units": 16
+            },
+            {
+              "pass": 170,
+              "units": 10
+            },
+            {
+              "pass": 172,
+              "units": 10
+            },
+            {
+              "pass": 174,
+              "units": 5
+            },
+            {
+              "pass": 176,
+              "units": 7
+            },
+            {
+              "pass": 178,
+              "units": 5
+            },
+            {
+              "pass": 180,
+              "units": 14
+            },
+            {
+              "pass": 182,
+              "units": 13
+            },
+            {
+              "pass": 184,
+              "units": 4
+            },
+            {
+              "pass": 186,
+              "units": 13
+            },
+            {
+              "pass": 188,
+              "units": 13
+            },
+            {
+              "pass": 190,
+              "units": 6
+            }
+          ],
+          "act_step": [
+            {
+              "pass": 2,
+              "units": 32
+            }
+          ],
+          "bursting": [],
+          "rate": [
+            {
+              "pass": 3,
+              "units": 26
+            }
+          ],
+          "rate_step": [
+            {
+              "pass": 3,
+              "units": 32
+            }
+          ],
+          "theta": []
+        },
+        "cycle_period_passes": 6,
+        "cycle_start_pass_index": 184,
+        "first_changed_pass": {
+          "act": 2,
+          "act_step": 2,
+          "bursting": null,
+          "rate": 3,
+          "rate_step": 3,
+          "theta": null
+        },
+        "passes": 190,
+        "progress_steps_sum": 195,
+        "status": "repeated_graph_state",
+        "unit_count": 32
+      },
+      "b_only_exact": {
+        "act_changes_after_rate_first_write": 83,
+        "changed_unit_counts_by_pass": {
+          "act": [
+            {
+              "pass": 2,
+              "units": 32
+            },
+            {
+              "pass": 4,
+              "units": 16
+            },
+            {
+              "pass": 6,
+              "units": 16
+            },
+            {
+              "pass": 8,
+              "units": 16
+            },
+            {
+              "pass": 10,
+              "units": 16
+            },
+            {
+              "pass": 12,
+              "units": 16
+            },
+            {
+              "pass": 14,
+              "units": 16
+            },
+            {
+              "pass": 16,
+              "units": 16
+            },
+            {
+              "pass": 18,
+              "units": 16
+            },
+            {
+              "pass": 20,
+              "units": 16
+            },
+            {
+              "pass": 22,
+              "units": 16
+            },
+            {
+              "pass": 24,
+              "units": 16
+            },
+            {
+              "pass": 26,
+              "units": 16
+            },
+            {
+              "pass": 28,
+              "units": 16
+            },
+            {
+              "pass": 30,
+              "units": 16
+            },
+            {
+              "pass": 32,
+              "units": 16
+            },
+            {
+              "pass": 34,
+              "units": 16
+            },
+            {
+              "pass": 36,
+              "units": 16
+            },
+            {
+              "pass": 38,
+              "units": 16
+            },
+            {
+              "pass": 40,
+              "units": 16
+            },
+            {
+              "pass": 42,
+              "units": 16
+            },
+            {
+              "pass": 44,
+              "units": 16
+            },
+            {
+              "pass": 46,
+              "units": 16
+            },
+            {
+              "pass": 48,
+              "units": 16
+            },
+            {
+              "pass": 50,
+              "units": 16
+            },
+            {
+              "pass": 52,
+              "units": 16
+            },
+            {
+              "pass": 54,
+              "units": 16
+            },
+            {
+              "pass": 56,
+              "units": 16
+            },
+            {
+              "pass": 58,
+              "units": 16
+            },
+            {
+              "pass": 60,
+              "units": 16
+            },
+            {
+              "pass": 62,
+              "units": 16
+            },
+            {
+              "pass": 64,
+              "units": 16
+            },
+            {
+              "pass": 66,
+              "units": 16
+            },
+            {
+              "pass": 68,
+              "units": 16
+            },
+            {
+              "pass": 70,
+              "units": 16
+            },
+            {
+              "pass": 72,
+              "units": 16
+            },
+            {
+              "pass": 74,
+              "units": 16
+            },
+            {
+              "pass": 76,
+              "units": 16
+            },
+            {
+              "pass": 78,
+              "units": 16
+            },
+            {
+              "pass": 80,
+              "units": 16
+            },
+            {
+              "pass": 82,
+              "units": 16
+            },
+            {
+              "pass": 84,
+              "units": 16
+            },
+            {
+              "pass": 86,
+              "units": 16
+            },
+            {
+              "pass": 88,
+              "units": 16
+            },
+            {
+              "pass": 90,
+              "units": 16
+            },
+            {
+              "pass": 92,
+              "units": 16
+            },
+            {
+              "pass": 94,
+              "units": 16
+            },
+            {
+              "pass": 96,
+              "units": 16
+            },
+            {
+              "pass": 98,
+              "units": 16
+            },
+            {
+              "pass": 100,
+              "units": 16
+            },
+            {
+              "pass": 102,
+              "units": 16
+            },
+            {
+              "pass": 104,
+              "units": 16
+            },
+            {
+              "pass": 106,
+              "units": 16
+            },
+            {
+              "pass": 108,
+              "units": 16
+            },
+            {
+              "pass": 110,
+              "units": 16
+            },
+            {
+              "pass": 112,
+              "units": 16
+            },
+            {
+              "pass": 114,
+              "units": 16
+            },
+            {
+              "pass": 116,
+              "units": 16
+            },
+            {
+              "pass": 118,
+              "units": 16
+            },
+            {
+              "pass": 120,
+              "units": 16
+            },
+            {
+              "pass": 122,
+              "units": 16
+            },
+            {
+              "pass": 124,
+              "units": 16
+            },
+            {
+              "pass": 126,
+              "units": 16
+            },
+            {
+              "pass": 128,
+              "units": 16
+            },
+            {
+              "pass": 130,
+              "units": 14
+            },
+            {
+              "pass": 132,
+              "units": 15
+            },
+            {
+              "pass": 134,
+              "units": 13
+            },
+            {
+              "pass": 136,
+              "units": 16
+            },
+            {
+              "pass": 138,
+              "units": 16
+            },
+            {
+              "pass": 140,
+              "units": 16
+            },
+            {
+              "pass": 142,
+              "units": 16
+            },
+            {
+              "pass": 144,
+              "units": 11
+            },
+            {
+              "pass": 146,
+              "units": 16
+            },
+            {
+              "pass": 148,
+              "units": 16
+            },
+            {
+              "pass": 150,
+              "units": 6
+            },
+            {
+              "pass": 152,
+              "units": 4
+            },
+            {
+              "pass": 154,
+              "units": 2
+            },
+            {
+              "pass": 156,
+              "units": 16
+            },
+            {
+              "pass": 158,
+              "units": 9
+            },
+            {
+              "pass": 160,
+              "units": 10
+            },
+            {
+              "pass": 162,
+              "units": 13
+            },
+            {
+              "pass": 164,
+              "units": 16
+            },
+            {
+              "pass": 166,
+              "units": 16
+            },
+            {
+              "pass": 168,
+              "units": 12
+            }
+          ],
+          "act_step": [
+            {
+              "pass": 2,
+              "units": 32
+            }
+          ],
+          "bursting": [],
+          "rate": [
+            {
+              "pass": 3,
+              "units": 26
+            }
+          ],
+          "rate_step": [
+            {
+              "pass": 3,
+              "units": 32
+            }
+          ],
+          "theta": []
+        },
+        "cycle_period_passes": 8,
+        "cycle_start_pass_index": 160,
+        "first_changed_pass": {
+          "act": 2,
+          "act_step": 2,
+          "bursting": null,
+          "rate": 3,
+          "rate_step": 3,
+          "theta": null
+        },
+        "passes": 168,
+        "progress_steps_sum": 172,
+        "status": "repeated_graph_state",
+        "unit_count": 32
+      },
+      "both_blank": {
+        "act_changes_after_rate_first_write": 0,
+        "changed_unit_counts_by_pass": {
+          "act": [
+            {
+              "pass": 2,
+              "units": 32
+            }
+          ],
+          "act_step": [
+            {
+              "pass": 2,
+              "units": 32
+            }
+          ],
+          "bursting": [],
+          "rate": [
+            {
+              "pass": 3,
+              "units": 26
+            }
+          ],
+          "rate_step": [
+            {
+              "pass": 3,
+              "units": 32
+            }
+          ],
+          "theta": []
+        },
+        "cycle_period_passes": null,
+        "cycle_start_pass_index": null,
+        "first_changed_pass": {
+          "act": 2,
+          "act_step": 2,
+          "bursting": null,
+          "rate": 3,
+          "rate_step": 3,
+          "theta": null
+        },
+        "passes": 4,
+        "progress_steps_sum": 6,
+        "status": "fixed_point",
+        "unit_count": 32
+      },
+      "both_exact": {
+        "act_changes_after_rate_first_write": 103,
+        "changed_unit_counts_by_pass": {
+          "act": [
+            {
+              "pass": 2,
+              "units": 32
+            },
+            {
+              "pass": 4,
+              "units": 32
+            },
+            {
+              "pass": 6,
+              "units": 32
+            },
+            {
+              "pass": 8,
+              "units": 32
+            },
+            {
+              "pass": 10,
+              "units": 32
+            },
+            {
+              "pass": 12,
+              "units": 32
+            },
+            {
+              "pass": 14,
+              "units": 32
+            },
+            {
+              "pass": 16,
+              "units": 32
+            },
+            {
+              "pass": 18,
+              "units": 32
+            },
+            {
+              "pass": 20,
+              "units": 32
+            },
+            {
+              "pass": 22,
+              "units": 32
+            },
+            {
+              "pass": 24,
+              "units": 32
+            },
+            {
+              "pass": 26,
+              "units": 32
+            },
+            {
+              "pass": 28,
+              "units": 32
+            },
+            {
+              "pass": 30,
+              "units": 32
+            },
+            {
+              "pass": 32,
+              "units": 32
+            },
+            {
+              "pass": 34,
+              "units": 32
+            },
+            {
+              "pass": 36,
+              "units": 32
+            },
+            {
+              "pass": 38,
+              "units": 32
+            },
+            {
+              "pass": 40,
+              "units": 32
+            },
+            {
+              "pass": 42,
+              "units": 32
+            },
+            {
+              "pass": 44,
+              "units": 32
+            },
+            {
+              "pass": 46,
+              "units": 32
+            },
+            {
+              "pass": 48,
+              "units": 32
+            },
+            {
+              "pass": 50,
+              "units": 32
+            },
+            {
+              "pass": 52,
+              "units": 32
+            },
+            {
+              "pass": 54,
+              "units": 32
+            },
+            {
+              "pass": 56,
+              "units": 32
+            },
+            {
+              "pass": 58,
+              "units": 32
+            },
+            {
+              "pass": 60,
+              "units": 32
+            },
+            {
+              "pass": 62,
+              "units": 32
+            },
+            {
+              "pass": 64,
+              "units": 32
+            },
+            {
+              "pass": 66,
+              "units": 32
+            },
+            {
+              "pass": 68,
+              "units": 32
+            },
+            {
+              "pass": 70,
+              "units": 32
+            },
+            {
+              "pass": 72,
+              "units": 32
+            },
+            {
+              "pass": 74,
+              "units": 32
+            },
+            {
+              "pass": 76,
+              "units": 32
+            },
+            {
+              "pass": 78,
+              "units": 32
+            },
+            {
+              "pass": 80,
+              "units": 32
+            },
+            {
+              "pass": 82,
+              "units": 32
+            },
+            {
+              "pass": 84,
+              "units": 32
+            },
+            {
+              "pass": 86,
+              "units": 32
+            },
+            {
+              "pass": 88,
+              "units": 32
+            },
+            {
+              "pass": 90,
+              "units": 32
+            },
+            {
+              "pass": 92,
+              "units": 32
+            },
+            {
+              "pass": 94,
+              "units": 32
+            },
+            {
+              "pass": 96,
+              "units": 32
+            },
+            {
+              "pass": 98,
+              "units": 32
+            },
+            {
+              "pass": 100,
+              "units": 32
+            },
+            {
+              "pass": 102,
+              "units": 32
+            },
+            {
+              "pass": 104,
+              "units": 32
+            },
+            {
+              "pass": 106,
+              "units": 32
+            },
+            {
+              "pass": 108,
+              "units": 32
+            },
+            {
+              "pass": 110,
+              "units": 32
+            },
+            {
+              "pass": 112,
+              "units": 32
+            },
+            {
+              "pass": 114,
+              "units": 32
+            },
+            {
+              "pass": 116,
+              "units": 32
+            },
+            {
+              "pass": 118,
+              "units": 32
+            },
+            {
+              "pass": 120,
+              "units": 32
+            },
+            {
+              "pass": 122,
+              "units": 32
+            },
+            {
+              "pass": 124,
+              "units": 32
+            },
+            {
+              "pass": 126,
+              "units": 32
+            },
+            {
+              "pass": 128,
+              "units": 32
+            },
+            {
+              "pass": 130,
+              "units": 30
+            },
+            {
+              "pass": 132,
+              "units": 31
+            },
+            {
+              "pass": 134,
+              "units": 29
+            },
+            {
+              "pass": 136,
+              "units": 32
+            },
+            {
+              "pass": 138,
+              "units": 31
+            },
+            {
+              "pass": 140,
+              "units": 31
+            },
+            {
+              "pass": 142,
+              "units": 31
+            },
+            {
+              "pass": 144,
+              "units": 23
+            },
+            {
+              "pass": 146,
+              "units": 32
+            },
+            {
+              "pass": 148,
+              "units": 31
+            },
+            {
+              "pass": 150,
+              "units": 22
+            },
+            {
+              "pass": 152,
+              "units": 20
+            },
+            {
+              "pass": 154,
+              "units": 16
+            },
+            {
+              "pass": 156,
+              "units": 32
+            },
+            {
+              "pass": 158,
+              "units": 19
+            },
+            {
+              "pass": 160,
+              "units": 26
+            },
+            {
+              "pass": 162,
+              "units": 29
+            },
+            {
+              "pass": 164,
+              "units": 25
+            },
+            {
+              "pass": 166,
+              "units": 21
+            },
+            {
+              "pass": 168,
+              "units": 28
+            },
+            {
+              "pass": 170,
+              "units": 23
+            },
+            {
+              "pass": 172,
+              "units": 26
+            },
+            {
+              "pass": 174,
+              "units": 21
+            },
+            {
+              "pass": 176,
+              "units": 19
+            },
+            {
+              "pass": 178,
+              "units": 18
+            },
+            {
+              "pass": 180,
+              "units": 30
+            },
+            {
+              "pass": 182,
+              "units": 29
+            },
+            {
+              "pass": 184,
+              "units": 16
+            },
+            {
+              "pass": 186,
+              "units": 26
+            },
+            {
+              "pass": 188,
+              "units": 29
+            },
+            {
+              "pass": 190,
+              "units": 22
+            },
+            {
+              "pass": 192,
+              "units": 25
+            },
+            {
+              "pass": 194,
+              "units": 26
+            },
+            {
+              "pass": 196,
+              "units": 22
+            },
+            {
+              "pass": 198,
+              "units": 29
+            },
+            {
+              "pass": 200,
+              "units": 25
+            },
+            {
+              "pass": 202,
+              "units": 19
+            },
+            {
+              "pass": 204,
+              "units": 29
+            },
+            {
+              "pass": 206,
+              "units": 29
+            },
+            {
+              "pass": 208,
+              "units": 18
+            }
+          ],
+          "act_step": [
+            {
+              "pass": 2,
+              "units": 32
+            }
+          ],
+          "bursting": [],
+          "rate": [
+            {
+              "pass": 3,
+              "units": 26
+            }
+          ],
+          "rate_step": [
+            {
+              "pass": 3,
+              "units": 32
+            }
+          ],
+          "theta": []
+        },
+        "cycle_period_passes": 24,
+        "cycle_start_pass_index": 184,
+        "first_changed_pass": {
+          "act": 2,
+          "act_step": 2,
+          "bursting": null,
+          "rate": 3,
+          "rate_step": 3,
+          "theta": null
+        },
+        "passes": 208,
+        "progress_steps_sum": 213,
+        "status": "repeated_graph_state",
+        "unit_count": 32
+      }
+    }
+  }
+}

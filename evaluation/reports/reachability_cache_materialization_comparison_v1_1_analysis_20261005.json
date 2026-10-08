@@ -1,0 +1,503 @@
+{
+  "analyzer_sha256": "dabb4fd270fa69609daae661c29176f26154205d19f0864f6a7f3e5d9a918ea8",
+  "capture_sha256": "1ed696cf44dcaa10e3f63a7ce12d4e06b35c1b33fdb211277f1e9327f56bbb45",
+  "checks": {
+    "all_query_counts_match_independent_dfs": true,
+    "analyzer_hash_stable": true,
+    "arm_order_and_three_arm_coverage": true,
+    "cache_off_zero_and_cache_on_exact_reuse_counts": true,
+    "independent_complete_case_matrix": true,
+    "injective_match_count_recomputed": false,
+    "materialized_relation_and_progress_bound": true,
+    "reader_rules_fixed_point_one_pass": true,
+    "restricted_checker_and_negative_control": true,
+    "source_lock_and_capture_current": true
+  },
+  "claim_limit": "controlled native no-op rule workload; comparison is not natural task prevalence or general cache policy",
+  "errors": [
+    "injective reader-match count mismatch ('binary_tree', 64, 1, 1) direct_cache_off",
+    "injective reader-match count mismatch ('binary_tree', 64, 1, 1) direct_cache_on",
+    "injective reader-match count mismatch ('binary_tree', 64, 1, 1) materialized_profile",
+    "injective reader-match count mismatch ('binary_tree', 64, 1, 2) direct_cache_off",
+    "injective reader-match count mismatch ('binary_tree', 64, 1, 2) direct_cache_on",
+    "injective reader-match count mismatch ('binary_tree', 64, 1, 2) materialized_profile",
+    "injective reader-match count mismatch ('binary_tree', 64, 1, 3) direct_cache_off",
+    "injective reader-match count mismatch ('binary_tree', 64, 1, 3) direct_cache_on",
+    "injective reader-match count mismatch ('binary_tree', 64, 1, 3) materialized_profile",
+    "injective reader-match count mismatch ('binary_tree', 64, 1, 4) direct_cache_off",
+    "injective reader-match count mismatch ('binary_tree', 64, 1, 4) direct_cache_on",
+    "injective reader-match count mismatch ('binary_tree', 64, 1, 4) materialized_profile",
+    "injective reader-match count mismatch ('binary_tree', 64, 1, 5) direct_cache_off",
+    "injective reader-match count mismatch ('binary_tree', 64, 1, 5) direct_cache_on",
+    "injective reader-match count mismatch ('binary_tree', 64, 1, 5) materialized_profile",
+    "injective reader-match count mismatch ('binary_tree', 64, 4, 1) direct_cache_off",
+    "injective reader-match count mismatch ('binary_tree', 64, 4, 1) direct_cache_on",
+    "injective reader-match count mismatch ('binary_tree', 64, 4, 1) materialized_profile",
+    "injective reader-match count mismatch ('binary_tree', 64, 4, 2) direct_cache_off",
+    "injective reader-match count mismatch ('binary_tree', 64, 4, 2) direct_cache_on",
+    "injective reader-match count mismatch ('binary_tree', 64, 4, 2) materialized_profile",
+    "injective reader-match count mismatch ('binary_tree', 64, 4, 3) direct_cache_off",
+    "injective reader-match count mismatch ('binary_tree', 64, 4, 3) direct_cache_on",
+    "injective reader-match count mismatch ('binary_tree', 64, 4, 3) materialized_profile",
+    "injective reader-match count mismatch ('binary_tree', 64, 4, 4) direct_cache_off",
+    "injective reader-match count mismatch ('binary_tree', 64, 4, 4) direct_cache_on",
+    "injective reader-match count mismatch ('binary_tree', 64, 4, 4) materialized_profile",
+    "injective reader-match count mismatch ('binary_tree', 64, 4, 5) direct_cache_off",
+    "injective reader-match count mismatch ('binary_tree', 64, 4, 5) direct_cache_on",
+    "injective reader-match count mismatch ('binary_tree', 64, 4, 5) materialized_profile",
+    "injective reader-match count mismatch ('binary_tree', 64, 16, 1) direct_cache_off",
+    "injective reader-match count mismatch ('binary_tree', 64, 16, 1) direct_cache_on",
+    "injective reader-match count mismatch ('binary_tree', 64, 16, 1) materialized_profile",
+    "injective reader-match count mismatch ('binary_tree', 64, 16, 2) direct_cache_off",
+    "injective reader-match count mismatch ('binary_tree', 64, 16, 2) direct_cache_on",
+    "injective reader-match count mismatch ('binary_tree', 64, 16, 2) materialized_profile",
+    "injective reader-match count mismatch ('binary_tree', 64, 16, 3) direct_cache_off",
+    "injective reader-match count mismatch ('binary_tree', 64, 16, 3) direct_cache_on",
+    "injective reader-match count mismatch ('binary_tree', 64, 16, 3) materialized_profile",
+    "injective reader-match count mismatch ('binary_tree', 64, 16, 4) direct_cache_off",
+    "injective reader-match count mismatch ('binary_tree', 64, 16, 4) direct_cache_on",
+    "injective reader-match count mismatch ('binary_tree', 64, 16, 4) materialized_profile",
+    "injective reader-match count mismatch ('binary_tree', 64, 16, 5) direct_cache_off",
+    "injective reader-match count mismatch ('binary_tree', 64, 16, 5) direct_cache_on",
+    "injective reader-match count mismatch ('binary_tree', 64, 16, 5) materialized_profile",
+    "injective reader-match count mismatch ('binary_tree', 128, 1, 1) direct_cache_off",
+    "injective reader-match count mismatch ('binary_tree', 128, 1, 1) direct_cache_on",
+    "injective reader-match count mismatch ('binary_tree', 128, 1, 1) materialized_profile",
+    "injective reader-match count mismatch ('binary_tree', 128, 1, 2) direct_cache_off",
+    "injective reader-match count mismatch ('binary_tree', 128, 1, 2) direct_cache_on",
+    "injective reader-match count mismatch ('binary_tree', 128, 1, 2) materialized_profile",
+    "injective reader-match count mismatch ('binary_tree', 128, 1, 3) direct_cache_off",
+    "injective reader-match count mismatch ('binary_tree', 128, 1, 3) direct_cache_on",
+    "injective reader-match count mismatch ('binary_tree', 128, 1, 3) materialized_profile",
+    "injective reader-match count mismatch ('binary_tree', 128, 1, 4) direct_cache_off",
+    "injective reader-match count mismatch ('binary_tree', 128, 1, 4) direct_cache_on",
+    "injective reader-match count mismatch ('binary_tree', 128, 1, 4) materialized_profile",
+    "injective reader-match count mismatch ('binary_tree', 128, 1, 5) direct_cache_off",
+    "injective reader-match count mismatch ('binary_tree', 128, 1, 5) direct_cache_on",
+    "injective reader-match count mismatch ('binary_tree', 128, 1, 5) materialized_profile",
+    "injective reader-match count mismatch ('binary_tree', 128, 4, 1) direct_cache_off",
+    "injective reader-match count mismatch ('binary_tree', 128, 4, 1) direct_cache_on",
+    "injective reader-match count mismatch ('binary_tree', 128, 4, 1) materialized_profile",
+    "injective reader-match count mismatch ('binary_tree', 128, 4, 2) direct_cache_off",
+    "injective reader-match count mismatch ('binary_tree', 128, 4, 2) direct_cache_on",
+    "injective reader-match count mismatch ('binary_tree', 128, 4, 2) materialized_profile",
+    "injective reader-match count mismatch ('binary_tree', 128, 4, 3) direct_cache_off",
+    "injective reader-match count mismatch ('binary_tree', 128, 4, 3) direct_cache_on",
+    "injective reader-match count mismatch ('binary_tree', 128, 4, 3) materialized_profile",
+    "injective reader-match count mismatch ('binary_tree', 128, 4, 4) direct_cache_off",
+    "injective reader-match count mismatch ('binary_tree', 128, 4, 4) direct_cache_on",
+    "injective reader-match count mismatch ('binary_tree', 128, 4, 4) materialized_profile",
+    "injective reader-match count mismatch ('binary_tree', 128, 4, 5) direct_cache_off",
+    "injective reader-match count mismatch ('binary_tree', 128, 4, 5) direct_cache_on",
+    "injective reader-match count mismatch ('binary_tree', 128, 4, 5) materialized_profile",
+    "injective reader-match count mismatch ('binary_tree', 128, 16, 1) direct_cache_off",
+    "injective reader-match count mismatch ('binary_tree', 128, 16, 1) direct_cache_on",
+    "injective reader-match count mismatch ('binary_tree', 128, 16, 1) materialized_profile",
+    "injective reader-match count mismatch ('binary_tree', 128, 16, 2) direct_cache_off",
+    "injective reader-match count mismatch ('binary_tree', 128, 16, 2) direct_cache_on",
+    "injective reader-match count mismatch ('binary_tree', 128, 16, 2) materialized_profile",
+    "injective reader-match count mismatch ('binary_tree', 128, 16, 3) direct_cache_off",
+    "injective reader-match count mismatch ('binary_tree', 128, 16, 3) direct_cache_on",
+    "injective reader-match count mismatch ('binary_tree', 128, 16, 3) materialized_profile",
+    "injective reader-match count mismatch ('binary_tree', 128, 16, 4) direct_cache_off",
+    "injective reader-match count mismatch ('binary_tree', 128, 16, 4) direct_cache_on",
+    "injective reader-match count mismatch ('binary_tree', 128, 16, 4) materialized_profile",
+    "injective reader-match count mismatch ('binary_tree', 128, 16, 5) direct_cache_off",
+    "injective reader-match count mismatch ('binary_tree', 128, 16, 5) direct_cache_on",
+    "injective reader-match count mismatch ('binary_tree', 128, 16, 5) materialized_profile",
+    "injective reader-match count mismatch ('ternary_tree', 64, 1, 1) direct_cache_off",
+    "injective reader-match count mismatch ('ternary_tree', 64, 1, 1) direct_cache_on",
+    "injective reader-match count mismatch ('ternary_tree', 64, 1, 1) materialized_profile",
+    "injective reader-match count mismatch ('ternary_tree', 64, 1, 2) direct_cache_off",
+    "injective reader-match count mismatch ('ternary_tree', 64, 1, 2) direct_cache_on",
+    "injective reader-match count mismatch ('ternary_tree', 64, 1, 2) materialized_profile",
+    "injective reader-match count mismatch ('ternary_tree', 64, 1, 3) direct_cache_off",
+    "injective reader-match count mismatch ('ternary_tree', 64, 1, 3) direct_cache_on",
+    "injective reader-match count mismatch ('ternary_tree', 64, 1, 3) materialized_profile",
+    "injective reader-match count mismatch ('ternary_tree', 64, 1, 4) direct_cache_off",
+    "injective reader-match count mismatch ('ternary_tree', 64, 1, 4) direct_cache_on",
+    "injective reader-match count mismatch ('ternary_tree', 64, 1, 4) materialized_profile",
+    "injective reader-match count mismatch ('ternary_tree', 64, 1, 5) direct_cache_off",
+    "injective reader-match count mismatch ('ternary_tree', 64, 1, 5) direct_cache_on",
+    "injective reader-match count mismatch ('ternary_tree', 64, 1, 5) materialized_profile",
+    "injective reader-match count mismatch ('ternary_tree', 64, 4, 1) direct_cache_off",
+    "injective reader-match count mismatch ('ternary_tree', 64, 4, 1) direct_cache_on",
+    "injective reader-match count mismatch ('ternary_tree', 64, 4, 1) materialized_profile",
+    "injective reader-match count mismatch ('ternary_tree', 64, 4, 2) direct_cache_off",
+    "injective reader-match count mismatch ('ternary_tree', 64, 4, 2) direct_cache_on",
+    "injective reader-match count mismatch ('ternary_tree', 64, 4, 2) materialized_profile",
+    "injective reader-match count mismatch ('ternary_tree', 64, 4, 3) direct_cache_off",
+    "injective reader-match count mismatch ('ternary_tree', 64, 4, 3) direct_cache_on",
+    "injective reader-match count mismatch ('ternary_tree', 64, 4, 3) materialized_profile",
+    "injective reader-match count mismatch ('ternary_tree', 64, 4, 4) direct_cache_off",
+    "injective reader-match count mismatch ('ternary_tree', 64, 4, 4) direct_cache_on",
+    "injective reader-match count mismatch ('ternary_tree', 64, 4, 4) materialized_profile",
+    "injective reader-match count mismatch ('ternary_tree', 64, 4, 5) direct_cache_off",
+    "injective reader-match count mismatch ('ternary_tree', 64, 4, 5) direct_cache_on",
+    "injective reader-match count mismatch ('ternary_tree', 64, 4, 5) materialized_profile",
+    "injective reader-match count mismatch ('ternary_tree', 64, 16, 1) direct_cache_off",
+    "injective reader-match count mismatch ('ternary_tree', 64, 16, 1) direct_cache_on",
+    "injective reader-match count mismatch ('ternary_tree', 64, 16, 1) materialized_profile",
+    "injective reader-match count mismatch ('ternary_tree', 64, 16, 2) direct_cache_off",
+    "injective reader-match count mismatch ('ternary_tree', 64, 16, 2) direct_cache_on",
+    "injective reader-match count mismatch ('ternary_tree', 64, 16, 2) materialized_profile",
+    "injective reader-match count mismatch ('ternary_tree', 64, 16, 3) direct_cache_off",
+    "injective reader-match count mismatch ('ternary_tree', 64, 16, 3) direct_cache_on",
+    "injective reader-match count mismatch ('ternary_tree', 64, 16, 3) materialized_profile",
+    "injective reader-match count mismatch ('ternary_tree', 64, 16, 4) direct_cache_off",
+    "injective reader-match count mismatch ('ternary_tree', 64, 16, 4) direct_cache_on",
+    "injective reader-match count mismatch ('ternary_tree', 64, 16, 4) materialized_profile",
+    "injective reader-match count mismatch ('ternary_tree', 64, 16, 5) direct_cache_off",
+    "injective reader-match count mismatch ('ternary_tree', 64, 16, 5) direct_cache_on",
+    "injective reader-match count mismatch ('ternary_tree', 64, 16, 5) materialized_profile",
+    "injective reader-match count mismatch ('ternary_tree', 128, 1, 1) direct_cache_off",
+    "injective reader-match count mismatch ('ternary_tree', 128, 1, 1) direct_cache_on",
+    "injective reader-match count mismatch ('ternary_tree', 128, 1, 1) materialized_profile",
+    "injective reader-match count mismatch ('ternary_tree', 128, 1, 2) direct_cache_off",
+    "injective reader-match count mismatch ('ternary_tree', 128, 1, 2) direct_cache_on",
+    "injective reader-match count mismatch ('ternary_tree', 128, 1, 2) materialized_profile",
+    "injective reader-match count mismatch ('ternary_tree', 128, 1, 3) direct_cache_off",
+    "injective reader-match count mismatch ('ternary_tree', 128, 1, 3) direct_cache_on",
+    "injective reader-match count mismatch ('ternary_tree', 128, 1, 3) materialized_profile",
+    "injective reader-match count mismatch ('ternary_tree', 128, 1, 4) direct_cache_off",
+    "injective reader-match count mismatch ('ternary_tree', 128, 1, 4) direct_cache_on",
+    "injective reader-match count mismatch ('ternary_tree', 128, 1, 4) materialized_profile",
+    "injective reader-match count mismatch ('ternary_tree', 128, 1, 5) direct_cache_off",
+    "injective reader-match count mismatch ('ternary_tree', 128, 1, 5) direct_cache_on",
+    "injective reader-match count mismatch ('ternary_tree', 128, 1, 5) materialized_profile",
+    "injective reader-match count mismatch ('ternary_tree', 128, 4, 1) direct_cache_off",
+    "injective reader-match count mismatch ('ternary_tree', 128, 4, 1) direct_cache_on",
+    "injective reader-match count mismatch ('ternary_tree', 128, 4, 1) materialized_profile",
+    "injective reader-match count mismatch ('ternary_tree', 128, 4, 2) direct_cache_off",
+    "injective reader-match count mismatch ('ternary_tree', 128, 4, 2) direct_cache_on",
+    "injective reader-match count mismatch ('ternary_tree', 128, 4, 2) materialized_profile",
+    "injective reader-match count mismatch ('ternary_tree', 128, 4, 3) direct_cache_off",
+    "injective reader-match count mismatch ('ternary_tree', 128, 4, 3) direct_cache_on",
+    "injective reader-match count mismatch ('ternary_tree', 128, 4, 3) materialized_profile",
+    "injective reader-match count mismatch ('ternary_tree', 128, 4, 4) direct_cache_off",
+    "injective reader-match count mismatch ('ternary_tree', 128, 4, 4) direct_cache_on",
+    "injective reader-match count mismatch ('ternary_tree', 128, 4, 4) materialized_profile",
+    "injective reader-match count mismatch ('ternary_tree', 128, 4, 5) direct_cache_off",
+    "injective reader-match count mismatch ('ternary_tree', 128, 4, 5) direct_cache_on",
+    "injective reader-match count mismatch ('ternary_tree', 128, 4, 5) materialized_profile",
+    "injective reader-match count mismatch ('ternary_tree', 128, 16, 1) direct_cache_off",
+    "injective reader-match count mismatch ('ternary_tree', 128, 16, 1) direct_cache_on",
+    "injective reader-match count mismatch ('ternary_tree', 128, 16, 1) materialized_profile",
+    "injective reader-match count mismatch ('ternary_tree', 128, 16, 2) direct_cache_off",
+    "injective reader-match count mismatch ('ternary_tree', 128, 16, 2) direct_cache_on",
+    "injective reader-match count mismatch ('ternary_tree', 128, 16, 2) materialized_profile",
+    "injective reader-match count mismatch ('ternary_tree', 128, 16, 3) direct_cache_off",
+    "injective reader-match count mismatch ('ternary_tree', 128, 16, 3) direct_cache_on",
+    "injective reader-match count mismatch ('ternary_tree', 128, 16, 3) materialized_profile",
+    "injective reader-match count mismatch ('ternary_tree', 128, 16, 4) direct_cache_off",
+    "injective reader-match count mismatch ('ternary_tree', 128, 16, 4) direct_cache_on",
+    "injective reader-match count mismatch ('ternary_tree', 128, 16, 4) materialized_profile",
+    "injective reader-match count mismatch ('ternary_tree', 128, 16, 5) direct_cache_off",
+    "injective reader-match count mismatch ('ternary_tree', 128, 16, 5) direct_cache_on",
+    "injective reader-match count mismatch ('ternary_tree', 128, 16, 5) materialized_profile"
+  ],
+  "passed": false,
+  "schema": "ReachabilityCacheMaterializationComparisonV1_1Analysis",
+  "summary": {
+    "binary_tree:N=128:readers=1": {
+      "direct_cache_off": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.140991,
+        "median_total_wall_ms": 0.637955
+      },
+      "direct_cache_on": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 127,
+        "median_cache_payload_bytes": 31324,
+        "median_reader_wall_ms": 0.135111,
+        "median_total_wall_ms": 0.629755
+      },
+      "materialized_profile": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.054081,
+        "median_total_wall_ms": 2.469399
+      },
+      "ratios_cache_on_over_cache_off": 0.9871464288233495,
+      "ratios_profile_over_cache_on": 3.921205865773198
+    },
+    "binary_tree:N=128:readers=16": {
+      "direct_cache_off": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 2.158387,
+        "median_total_wall_ms": 5.995487
+      },
+      "direct_cache_on": {
+        "median_cache_hits": 1905,
+        "median_cache_misses": 127,
+        "median_cache_payload_bytes": 31324,
+        "median_reader_wall_ms": 0.777316,
+        "median_total_wall_ms": 3.521847
+      },
+      "materialized_profile": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.782876,
+        "median_total_wall_ms": 5.354272
+      },
+      "ratios_cache_on_over_cache_off": 0.5874163349866325,
+      "ratios_profile_over_cache_on": 1.5203022732106193
+    },
+    "binary_tree:N=128:readers=4": {
+      "direct_cache_off": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.634895,
+        "median_total_wall_ms": 1.926066
+      },
+      "direct_cache_on": {
+        "median_cache_hits": 381,
+        "median_cache_misses": 127,
+        "median_cache_payload_bytes": 31324,
+        "median_reader_wall_ms": 0.296802,
+        "median_total_wall_ms": 1.32163
+      },
+      "materialized_profile": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.148001,
+        "median_total_wall_ms": 2.986214
+      },
+      "ratios_cache_on_over_cache_off": 0.6861810550624953,
+      "ratios_profile_over_cache_on": 2.2594932015768405
+    },
+    "binary_tree:N=64:readers=1": {
+      "direct_cache_off": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.07063,
+        "median_total_wall_ms": 0.405143
+      },
+      "direct_cache_on": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 63,
+        "median_cache_payload_bytes": 13892,
+        "median_reader_wall_ms": 0.103,
+        "median_total_wall_ms": 0.632525
+      },
+      "materialized_profile": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.038181,
+        "median_total_wall_ms": 1.278731
+      },
+      "ratios_cache_on_over_cache_off": 1.5612388712133742,
+      "ratios_profile_over_cache_on": 2.021629184617209
+    },
+    "binary_tree:N=64:readers=16": {
+      "direct_cache_off": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.702545,
+        "median_total_wall_ms": 3.138574
+      },
+      "direct_cache_on": {
+        "median_cache_hits": 945,
+        "median_cache_misses": 63,
+        "median_cache_payload_bytes": 13892,
+        "median_reader_wall_ms": 0.448794,
+        "median_total_wall_ms": 2.398529
+      },
+      "materialized_profile": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.391513,
+        "median_total_wall_ms": 3.720408
+      },
+      "ratios_cache_on_over_cache_off": 0.7642097971881497,
+      "ratios_profile_over_cache_on": 1.5511207077337819
+    },
+    "binary_tree:N=64:readers=4": {
+      "direct_cache_off": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.230172,
+        "median_total_wall_ms": 1.2715
+      },
+      "direct_cache_on": {
+        "median_cache_hits": 189,
+        "median_cache_misses": 63,
+        "median_cache_payload_bytes": 13892,
+        "median_reader_wall_ms": 0.224952,
+        "median_total_wall_ms": 1.17621
+      },
+      "materialized_profile": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.133831,
+        "median_total_wall_ms": 1.905545
+      },
+      "ratios_cache_on_over_cache_off": 0.9250570192685803,
+      "ratios_profile_over_cache_on": 1.6200720959692572
+    },
+    "ternary_tree:N=128:readers=1": {
+      "direct_cache_off": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.106711,
+        "median_total_wall_ms": 0.584765
+      },
+      "direct_cache_on": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 127,
+        "median_cache_payload_bytes": 26348,
+        "median_reader_wall_ms": 0.181652,
+        "median_total_wall_ms": 1.015367
+      },
+      "materialized_profile": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.06581,
+        "median_total_wall_ms": 2.65821
+      },
+      "ratios_cache_on_over_cache_off": 1.736367600660094,
+      "ratios_profile_over_cache_on": 2.617979508886935
+    },
+    "ternary_tree:N=128:readers=16": {
+      "direct_cache_off": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 1.336391,
+        "median_total_wall_ms": 3.529448
+      },
+      "direct_cache_on": {
+        "median_cache_hits": 1905,
+        "median_cache_misses": 127,
+        "median_cache_payload_bytes": 26348,
+        "median_reader_wall_ms": 0.814326,
+        "median_total_wall_ms": 3.595048
+      },
+      "materialized_profile": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.506164,
+        "median_total_wall_ms": 4.527226
+      },
+      "ratios_cache_on_over_cache_off": 1.0185864758455145,
+      "ratios_profile_over_cache_on": 1.2592950080221461
+    },
+    "ternary_tree:N=128:readers=4": {
+      "direct_cache_off": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.338933,
+        "median_total_wall_ms": 1.24825
+      },
+      "direct_cache_on": {
+        "median_cache_hits": 381,
+        "median_cache_misses": 127,
+        "median_cache_payload_bytes": 26348,
+        "median_reader_wall_ms": 0.298842,
+        "median_total_wall_ms": 1.234149
+      },
+      "materialized_profile": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.226582,
+        "median_total_wall_ms": 3.672799
+      },
+      "ratios_cache_on_over_cache_off": 0.988703384738634,
+      "ratios_profile_over_cache_on": 2.975976968745265
+    },
+    "ternary_tree:N=64:readers=1": {
+      "direct_cache_off": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.06068,
+        "median_total_wall_ms": 0.358163
+      },
+      "direct_cache_on": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 63,
+        "median_cache_payload_bytes": 12132,
+        "median_reader_wall_ms": 0.068241,
+        "median_total_wall_ms": 0.392823
+      },
+      "materialized_profile": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.0374,
+        "median_total_wall_ms": 0.958977
+      },
+      "ratios_cache_on_over_cache_off": 1.096771581654163,
+      "ratios_profile_over_cache_on": 2.441244529979151
+    },
+    "ternary_tree:N=64:readers=16": {
+      "direct_cache_off": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.844096,
+        "median_total_wall_ms": 3.466377
+      },
+      "direct_cache_on": {
+        "median_cache_hits": 945,
+        "median_cache_misses": 63,
+        "median_cache_payload_bytes": 12132,
+        "median_reader_wall_ms": 0.413163,
+        "median_total_wall_ms": 2.475398
+      },
+      "materialized_profile": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.292212,
+        "median_total_wall_ms": 3.591828
+      },
+      "ratios_cache_on_over_cache_off": 0.7141167853352363,
+      "ratios_profile_over_cache_on": 1.4510103021817096
+    },
+    "ternary_tree:N=64:readers=4": {
+      "direct_cache_off": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.238402,
+        "median_total_wall_ms": 1.075629
+      },
+      "direct_cache_on": {
+        "median_cache_hits": 189,
+        "median_cache_misses": 63,
+        "median_cache_payload_bytes": 12132,
+        "median_reader_wall_ms": 0.198491,
+        "median_total_wall_ms": 1.076149
+      },
+      "materialized_profile": {
+        "median_cache_hits": 0,
+        "median_cache_misses": 0,
+        "median_cache_payload_bytes": 0,
+        "median_reader_wall_ms": 0.111301,
+        "median_total_wall_ms": 1.655533
+      },
+      "ratios_cache_on_over_cache_off": 1.000483438062752,
+      "ratios_profile_over_cache_on": 1.5383864130338827
+    }
+  }
+}

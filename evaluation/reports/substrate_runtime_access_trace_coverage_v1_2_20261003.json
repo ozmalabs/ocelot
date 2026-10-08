@@ -1,0 +1,233 @@
+{
+  "access_trace_note_callsite_count_by_file": {
+    "jit": 3,
+    "rewrite": 16,
+    "term": 51
+  },
+  "audit_runner_sha256": "2486f0479fcf7c70d2076763d12116731af9a16b584b79ca62b7c3e77ab6f9fa",
+  "claim_boundary": "Source audit of known native trace coverage, not a dynamic completeness test. A note site demonstrates instrumentation code exists, not that every caller path or all access classes are covered.",
+  "event_kinds": {
+    "1": "pattern_edge",
+    "2": "term_attr_read",
+    "3": "term_type_read",
+    "4": "effect_attr_write",
+    "5": "effect_edge_upsert",
+    "6": "effect_edge_delete",
+    "7": "effect_node_mint",
+    "8": "effect_node_delete",
+    "9": "effect_type_query",
+    "10": "effect_type_candidate_read",
+    "11": "effect_replace_edge",
+    "12": "jit_attr_read",
+    "13": "jit_type_read",
+    "14": "term_edge_read",
+    "15": "term_edge_attr_read",
+    "16": "term_index_query",
+    "17": "effect_attr_compare_read",
+    "18": "term_tool_dispatch",
+    "19": "scheduler_pass",
+    "20": "scheduler_external_poll_slots",
+    "21": "scheduler_fixedpoint_probe_slots",
+    "22": "scheduler_dirty_vector_slots",
+    "23": "scheduler_selected_rules",
+    "24": "deferred_queue_enqueue_items",
+    "25": "deferred_queue_drain_batches",
+    "26": "deferred_queue_drained_items",
+    "27": "operation_kind",
+    "28": "effect_edge_compare_read",
+    "30": "term_index_scan_candidate",
+    "31": "term_index_result_candidate",
+    "32": "term_index_query_indexed",
+    "33": "term_index_query_fallback",
+    "34": "term_typed_population_query",
+    "35": "term_typed_population_candidate"
+  },
+  "findings": [
+    {
+      "coverage": [
+        "Attr",
+        "TypeOf",
+        "selected JIT attribute/type reads"
+      ],
+      "evidence": [
+        {
+          "line": 7066,
+          "path": "runners/dsl/src/term.rs"
+        },
+        {
+          "line": 7077,
+          "path": "runners/dsl/src/term.rs"
+        },
+        {
+          "line": 655,
+          "path": "runners/dsl/src/jit.rs"
+        }
+      ],
+      "family": "interpreted and selected JIT node reads",
+      "status": "instrumented_partial"
+    },
+    {
+      "coverage": [
+        "Neighbours",
+        "ReachableFrom",
+        "InNeighbours",
+        "MapNeighbours",
+        "SlideNeighbours",
+        "Edges",
+        "EdgeAttr",
+        "render child/template traversal"
+      ],
+      "evidence": [
+        {
+          "line": 8329,
+          "path": "runners/dsl/src/term.rs"
+        },
+        {
+          "line": 10640,
+          "path": "runners/dsl/src/term.rs"
+        },
+        {
+          "line": 8512,
+          "path": "runners/dsl/src/term.rs"
+        }
+      ],
+      "family": "typed adjacency and edge attributes",
+      "status": "instrumented_partial"
+    },
+    {
+      "coverage": [
+        "NodesWhere indexed/fallback query markers and rows",
+        "NodesOfType returned rows (population scan not explicitly marked)",
+        "ScalarAttrTriples iteration"
+      ],
+      "detail": "NodesWhere records a query marker for both indexed and fallback paths and distinguishes scanned candidates from returned rows. NodesOfType currently records only returned-node type reads; an empty result has no query event, and scanned population size must be obtained from separate work accounting.",
+      "evidence": [
+        {
+          "line": 9801,
+          "path": "runners/dsl/src/term.rs"
+        },
+        {
+          "line": 9827,
+          "path": "runners/dsl/src/term.rs"
+        },
+        {
+          "line": 9829,
+          "path": "runners/dsl/src/term.rs"
+        },
+        {
+          "line": 10572,
+          "path": "runners/dsl/src/term.rs"
+        }
+      ],
+      "family": "type/index population queries",
+      "status": "instrumented_partial"
+    },
+    {
+      "coverage": [
+        "successful pattern-edge bindings"
+      ],
+      "evidence": [
+        {
+          "line": 1612,
+          "path": "runners/dsl/src/rewrite.rs"
+        }
+      ],
+      "family": "rule matcher",
+      "limit": "The event is emitted after a binding succeeds; a 1-versus-9 candidate probe showed cand_tested scaling 1-to-9 while successful pattern_edge events stayed at 1. Predicate attribute reads were traced for all candidates, but rejected candidate edge identities and scheduler/index work were not fully represented.",
+      "status": "instrumented_partial"
+    },
+    {
+      "coverage": [
+        "typed-population query marker",
+        "node type and attribute fingerprint reads under an active RuleUid",
+        "partial decoder reads on cache misses"
+      ],
+      "detail": "sd_cache_key now emits a typed-population query marker and note_node_type_and_attrs for every fingerprinted node, so key-construction reads are visible on both cache hits and misses under an active RuleUid. Direct evaluations without a RuleUid remain unattributed, and the trace does not label hit versus miss. A paired 1-versus-2 computed-effect probe observed exactly 2-versus-4 query markers per type with semantic parity.",
+      "evidence": [
+        {
+          "line": 3478,
+          "path": "runners/dsl/src/term.rs"
+        },
+        {
+          "line": 3508,
+          "path": "runners/dsl/src/term.rs"
+        },
+        {
+          "line": 3506,
+          "path": "runners/dsl/src/term.rs"
+        },
+        {
+          "line": 3498,
+          "path": "runners/dsl/src/term.rs"
+        },
+        {
+          "line": 55,
+          "path": "runners/dsl/src/shape_decode.rs"
+        },
+        {
+          "line": 290,
+          "path": "runners/dsl/src/shape_decode.rs"
+        }
+      ],
+      "family": "shape-decode cache fingerprint and decoder scans",
+      "status": "instrumented_partial"
+    },
+    {
+      "detail": "UseTool evaluates arguments and calls the registered Python handler; callback reads, writes, and external side effects are not represented as native graph-access events. A paired probe independently observed one callback invocation in both traced/untraced arms and no tool-kind trace row.",
+      "evidence": [
+        {
+          "line": 3909,
+          "path": "runners/dsl/src/term.rs"
+        },
+        {
+          "line": 7113,
+          "path": "runners/dsl/src/term.rs"
+        }
+      ],
+      "family": "external tool dispatch",
+      "status": "omitted_known"
+    },
+    {
+      "detail": "SetAttrIfDifferent reads the old value before deciding whether it writes; current events record the effect write only on the changed branch, not a separate concrete old-value read. A paired probe confirmed unchanged and changed arms preserve semantics, while only the changed arm emits the target write event. Static writesets remain a separate diagnostic.",
+      "evidence": [
+        {
+          "line": 2509,
+          "path": "runners/dsl/src/rewrite.rs"
+        },
+        {
+          "line": 2517,
+          "path": "runners/dsl/src/rewrite.rs"
+        }
+      ],
+      "family": "attribute effects",
+      "status": "omitted_read_detail"
+    },
+    {
+      "detail": "note() returns without recording when the thread-local current rule UID is zero. Adapter work, post-rule queue draining, and other operations outside an entered rule are therefore invisible to this event stream.",
+      "evidence": [
+        {
+          "line": 305,
+          "path": "runners/dsl/src/access_trace.rs"
+        },
+        {
+          "line": 307,
+          "path": "runners/dsl/src/access_trace.rs"
+        }
+      ],
+      "family": "host/scheduler work outside a rule UID",
+      "status": "omitted_when_unattributed"
+    }
+  ],
+  "next_probe": "Attribute trace work outside active RuleUID/scope pairs, post-rule queued effects, and host callbacks; calibrate scheduler and matcher counters against those event sites. Failed-candidate, SetAttrIfDifferent, and UseTool omissions have bounded probes, but no complete dynamic trace-recall estimate exists. Cache hit/miss labels may aid attribution but do not close these omissions.",
+  "run_id": "substrate_runtime_access_trace_coverage_v1_2_20261003",
+  "schema_version": 1,
+  "source_sha256": {
+    "access_trace": "55bdfbe2fb670dbff6e916a8eebe5000188ffca06e58c0a8cd1ba522db135e5a",
+    "jit": "3aac8ae92aab48acc16e6af2543ee2edd34ef81a1c5bb8aada456701093e0c8d",
+    "rewrite": "5190011bee567b070daec65ebca9066154953799a8158be9b8f76ac84d61fd55",
+    "shape_decode": "c41427df933278c43fb66ae7ed3b6a1a0c731b4e68b197380d7809d9e3f229c1",
+    "term": "f6605bc2aa97e3784bee57ab24bccf6b6375b2dae1e650182dcb5c35d7108e61",
+    "world_adapter": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c"
+  },
+  "term_node_variant_count": 237
+}

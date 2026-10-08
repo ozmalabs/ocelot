@@ -1,0 +1,1373 @@
+{
+  "claim_boundary": "Three fresh-process synthetic rule fixtures. Measures selected RuleKey declarations, trace events, graph results, and callback repetition for ReadFile/UseTool. Does not establish safety, containment, natural workload frequency, general trace completeness, or a callback invocation bound beyond this fixture.",
+  "environment": {
+    "cpu_count": 24,
+    "machine": "x86_64",
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+  },
+  "lock_sha256": "6309737dc6f4fa1f36de670cb98e31478efde754a4a59d31956e07565b95693f",
+  "locked_inputs": {
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "native_build_manifest_sha256": "425e086594e50335ca917e330206fec9bd8c778d4e58d2c5dd0d06cc61bc41ee",
+    "native_extension_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+    "native_extension_sha256": "260cf6063acbfb2fb83a7bfbe8b0bbe35afa951d3142539fbd868edf331d3afa",
+    "source_sha256": {
+      "docs/research/engine_substrate/SUBSTRATE_TERM_EXTERNAL_DEPENDENCY_PROBE_V1_PREREG_20260928.md": "8ac6f8a3b527f81e7492b867d7decd1d3bd03ff10bac8a42731037769353b5b7",
+      "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+      "runners/dsl/src/prog_eval.rs": "d419bda3288c534cbc8c35a3bccc29b67171b8297ecf8aeb43a474f77f0e1451",
+      "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+      "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+      "runners/dsl/src/term.rs": "0b91be836a6a7fe4587fb2ec3a944fdd6fb461838ca25151b1358c2158705fce",
+      "runners/dsl/src/tools.rs": "adde1024c48f3b16b5214e0322572202e2c3f1cbec130035f632afd022092731",
+      "scripts/analyze_term_external_dependency_probe_v1.py": "2685c026e2674dead31231414b4ca0e33d7e5712a572e3460561a394cbb34214",
+      "scripts/substrate_term_external_dependency_probe_v1.py": "5dbf735fe83a0e112452401c5fbfcaf3c00b1e1c1fdcca2bb9c6d784d16b9546"
+    }
+  },
+  "protocol_sha256": "8ac6f8a3b527f81e7492b867d7decd1d3bd03ff10bac8a42731037769353b5b7",
+  "run_id": "term_external_dependency_probe_v1_20260928",
+  "runs": [
+    {
+      "cells": [
+        {
+          "callback_arguments": [],
+          "callback_invocations": 0,
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              }
+            ],
+            "next_id": 2,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "BoundaryProbe"
+              },
+              {
+                "attrs": {
+                  "result": {
+                    "__surface__": null,
+                    "kind": "text",
+                    "payload": "616c706861"
+                  }
+                },
+                "id": 1,
+                "type": "BoundaryProbe"
+              }
+            ]
+          },
+          "handler_mode": "none",
+          "name": "file_alpha",
+          "native_fire_delta": 0,
+          "progress": 1,
+          "rule_uid": 1,
+          "static_access": {
+            "reads": [
+              "edge:trigger"
+            ],
+            "reads_any": false,
+            "term_edge_reads": [],
+            "writes": [
+              "attr:result"
+            ],
+            "writes_any": false
+          },
+          "trace_dropped": 0,
+          "trace_enabled": true,
+          "trace_rows": [
+            [
+              1,
+              "pattern_edge",
+              0,
+              "trigger",
+              1,
+              1
+            ],
+            [
+              1,
+              "effect_attr_write",
+              1,
+              "result",
+              null,
+              1
+            ]
+          ]
+        },
+        {
+          "callback_arguments": [],
+          "callback_invocations": 0,
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              }
+            ],
+            "next_id": 2,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "BoundaryProbe"
+              },
+              {
+                "attrs": {
+                  "result": {
+                    "__surface__": null,
+                    "kind": "text",
+                    "payload": "62657461"
+                  }
+                },
+                "id": 1,
+                "type": "BoundaryProbe"
+              }
+            ]
+          },
+          "handler_mode": "none",
+          "name": "file_beta",
+          "native_fire_delta": 0,
+          "progress": 1,
+          "rule_uid": 1,
+          "static_access": {
+            "reads": [
+              "edge:trigger"
+            ],
+            "reads_any": false,
+            "term_edge_reads": [],
+            "writes": [
+              "attr:result"
+            ],
+            "writes_any": false
+          },
+          "trace_dropped": 0,
+          "trace_enabled": true,
+          "trace_rows": [
+            [
+              1,
+              "pattern_edge",
+              0,
+              "trigger",
+              1,
+              1
+            ],
+            [
+              1,
+              "effect_attr_write",
+              1,
+              "result",
+              null,
+              1
+            ]
+          ]
+        },
+        {
+          "callback_arguments": [],
+          "callback_invocations": 0,
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              }
+            ],
+            "next_id": 2,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "BoundaryProbe"
+              },
+              {
+                "attrs": {
+                  "result": null
+                },
+                "id": 1,
+                "type": "BoundaryProbe"
+              }
+            ]
+          },
+          "handler_mode": "none",
+          "name": "file_missing",
+          "native_fire_delta": 0,
+          "progress": 1,
+          "rule_uid": 1,
+          "static_access": {
+            "reads": [
+              "edge:trigger"
+            ],
+            "reads_any": false,
+            "term_edge_reads": [],
+            "writes": [
+              "attr:result"
+            ],
+            "writes_any": false
+          },
+          "trace_dropped": 0,
+          "trace_enabled": true,
+          "trace_rows": [
+            [
+              1,
+              "pattern_edge",
+              0,
+              "trigger",
+              1,
+              1
+            ],
+            [
+              1,
+              "effect_attr_write",
+              1,
+              "result",
+              null,
+              1
+            ]
+          ]
+        },
+        {
+          "callback_arguments": [
+            "payload",
+            "payload"
+          ],
+          "callback_invocations": 2,
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              }
+            ],
+            "next_id": 2,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "BoundaryProbe"
+              },
+              {
+                "attrs": {
+                  "result": {
+                    "__surface__": null,
+                    "kind": "text",
+                    "payload": "66697865642d726573756c74"
+                  }
+                },
+                "id": 1,
+                "type": "BoundaryProbe"
+              }
+            ]
+          },
+          "handler_mode": "fixed",
+          "name": "tool_traced",
+          "native_fire_delta": 2,
+          "progress": 1,
+          "rule_uid": 1,
+          "static_access": {
+            "reads": [
+              "edge:trigger"
+            ],
+            "reads_any": true,
+            "term_edge_reads": [],
+            "writes": [
+              "attr:result"
+            ],
+            "writes_any": false
+          },
+          "trace_dropped": 0,
+          "trace_enabled": true,
+          "trace_rows": [
+            [
+              1,
+              "pattern_edge",
+              0,
+              "trigger",
+              1,
+              2
+            ],
+            [
+              1,
+              "effect_attr_write",
+              1,
+              "result",
+              null,
+              2
+            ],
+            [
+              1,
+              "term_tool_dispatch",
+              null,
+              "probe",
+              null,
+              2
+            ]
+          ]
+        },
+        {
+          "callback_arguments": [
+            "payload",
+            "payload"
+          ],
+          "callback_invocations": 2,
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              }
+            ],
+            "next_id": 2,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "BoundaryProbe"
+              },
+              {
+                "attrs": {
+                  "result": {
+                    "__surface__": null,
+                    "kind": "text",
+                    "payload": "66697865642d726573756c74"
+                  }
+                },
+                "id": 1,
+                "type": "BoundaryProbe"
+              }
+            ]
+          },
+          "handler_mode": "fixed",
+          "name": "tool_untraced",
+          "native_fire_delta": 2,
+          "progress": 1,
+          "rule_uid": 1,
+          "static_access": {
+            "reads": [
+              "edge:trigger"
+            ],
+            "reads_any": true,
+            "term_edge_reads": [],
+            "writes": [
+              "attr:result"
+            ],
+            "writes_any": false
+          },
+          "trace_dropped": 0,
+          "trace_enabled": false,
+          "trace_rows": []
+        },
+        {
+          "callback_arguments": [],
+          "callback_invocations": 0,
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              }
+            ],
+            "next_id": 2,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "BoundaryProbe"
+              },
+              {
+                "attrs": {
+                  "result": 0
+                },
+                "id": 1,
+                "type": "BoundaryProbe"
+              }
+            ]
+          },
+          "handler_mode": "none",
+          "name": "tool_missing",
+          "native_fire_delta": 0,
+          "progress": 1,
+          "rule_uid": 1,
+          "static_access": {
+            "reads": [
+              "edge:trigger"
+            ],
+            "reads_any": true,
+            "term_edge_reads": [],
+            "writes": [
+              "attr:result"
+            ],
+            "writes_any": false
+          },
+          "trace_dropped": 0,
+          "trace_enabled": true,
+          "trace_rows": [
+            [
+              1,
+              "pattern_edge",
+              0,
+              "trigger",
+              1,
+              2
+            ],
+            [
+              1,
+              "effect_attr_write",
+              1,
+              "result",
+              null,
+              2
+            ],
+            [
+              1,
+              "term_tool_dispatch",
+              null,
+              "probe",
+              null,
+              2
+            ]
+          ]
+        }
+      ],
+      "child_process": {
+        "argv": [
+          "/home/linuxbrew/.linuxbrew/opt/python@3.13/bin/python3.13",
+          "/home/matt/ozmadev/ocelot/scripts/substrate_term_external_dependency_probe_v1.py",
+          "--worker",
+          "1"
+        ],
+        "return_code": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_sha256": "3f9c95db09de58bf3682bf3ebd681f3ae422309f2957e5b3971d69188ec6cecc"
+      },
+      "pid": 7,
+      "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+      "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]",
+      "started_inputs": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "425e086594e50335ca917e330206fec9bd8c778d4e58d2c5dd0d06cc61bc41ee",
+        "native_extension_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_extension_sha256": "260cf6063acbfb2fb83a7bfbe8b0bbe35afa951d3142539fbd868edf331d3afa",
+        "source_sha256": {
+          "docs/research/engine_substrate/SUBSTRATE_TERM_EXTERNAL_DEPENDENCY_PROBE_V1_PREREG_20260928.md": "8ac6f8a3b527f81e7492b867d7decd1d3bd03ff10bac8a42731037769353b5b7",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/src/prog_eval.rs": "d419bda3288c534cbc8c35a3bccc29b67171b8297ecf8aeb43a474f77f0e1451",
+          "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+          "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+          "runners/dsl/src/term.rs": "0b91be836a6a7fe4587fb2ec3a944fdd6fb461838ca25151b1358c2158705fce",
+          "runners/dsl/src/tools.rs": "adde1024c48f3b16b5214e0322572202e2c3f1cbec130035f632afd022092731",
+          "scripts/analyze_term_external_dependency_probe_v1.py": "2685c026e2674dead31231414b4ca0e33d7e5712a572e3460561a394cbb34214",
+          "scripts/substrate_term_external_dependency_probe_v1.py": "5dbf735fe83a0e112452401c5fbfcaf3c00b1e1c1fdcca2bb9c6d784d16b9546"
+        }
+      },
+      "worker_id": 1
+    },
+    {
+      "cells": [
+        {
+          "callback_arguments": [],
+          "callback_invocations": 0,
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              }
+            ],
+            "next_id": 2,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "BoundaryProbe"
+              },
+              {
+                "attrs": {
+                  "result": {
+                    "__surface__": null,
+                    "kind": "text",
+                    "payload": "616c706861"
+                  }
+                },
+                "id": 1,
+                "type": "BoundaryProbe"
+              }
+            ]
+          },
+          "handler_mode": "none",
+          "name": "file_alpha",
+          "native_fire_delta": 0,
+          "progress": 1,
+          "rule_uid": 1,
+          "static_access": {
+            "reads": [
+              "edge:trigger"
+            ],
+            "reads_any": false,
+            "term_edge_reads": [],
+            "writes": [
+              "attr:result"
+            ],
+            "writes_any": false
+          },
+          "trace_dropped": 0,
+          "trace_enabled": true,
+          "trace_rows": [
+            [
+              1,
+              "pattern_edge",
+              0,
+              "trigger",
+              1,
+              1
+            ],
+            [
+              1,
+              "effect_attr_write",
+              1,
+              "result",
+              null,
+              1
+            ]
+          ]
+        },
+        {
+          "callback_arguments": [],
+          "callback_invocations": 0,
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              }
+            ],
+            "next_id": 2,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "BoundaryProbe"
+              },
+              {
+                "attrs": {
+                  "result": {
+                    "__surface__": null,
+                    "kind": "text",
+                    "payload": "62657461"
+                  }
+                },
+                "id": 1,
+                "type": "BoundaryProbe"
+              }
+            ]
+          },
+          "handler_mode": "none",
+          "name": "file_beta",
+          "native_fire_delta": 0,
+          "progress": 1,
+          "rule_uid": 1,
+          "static_access": {
+            "reads": [
+              "edge:trigger"
+            ],
+            "reads_any": false,
+            "term_edge_reads": [],
+            "writes": [
+              "attr:result"
+            ],
+            "writes_any": false
+          },
+          "trace_dropped": 0,
+          "trace_enabled": true,
+          "trace_rows": [
+            [
+              1,
+              "pattern_edge",
+              0,
+              "trigger",
+              1,
+              1
+            ],
+            [
+              1,
+              "effect_attr_write",
+              1,
+              "result",
+              null,
+              1
+            ]
+          ]
+        },
+        {
+          "callback_arguments": [],
+          "callback_invocations": 0,
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              }
+            ],
+            "next_id": 2,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "BoundaryProbe"
+              },
+              {
+                "attrs": {
+                  "result": null
+                },
+                "id": 1,
+                "type": "BoundaryProbe"
+              }
+            ]
+          },
+          "handler_mode": "none",
+          "name": "file_missing",
+          "native_fire_delta": 0,
+          "progress": 1,
+          "rule_uid": 1,
+          "static_access": {
+            "reads": [
+              "edge:trigger"
+            ],
+            "reads_any": false,
+            "term_edge_reads": [],
+            "writes": [
+              "attr:result"
+            ],
+            "writes_any": false
+          },
+          "trace_dropped": 0,
+          "trace_enabled": true,
+          "trace_rows": [
+            [
+              1,
+              "pattern_edge",
+              0,
+              "trigger",
+              1,
+              1
+            ],
+            [
+              1,
+              "effect_attr_write",
+              1,
+              "result",
+              null,
+              1
+            ]
+          ]
+        },
+        {
+          "callback_arguments": [
+            "payload",
+            "payload"
+          ],
+          "callback_invocations": 2,
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              }
+            ],
+            "next_id": 2,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "BoundaryProbe"
+              },
+              {
+                "attrs": {
+                  "result": {
+                    "__surface__": null,
+                    "kind": "text",
+                    "payload": "66697865642d726573756c74"
+                  }
+                },
+                "id": 1,
+                "type": "BoundaryProbe"
+              }
+            ]
+          },
+          "handler_mode": "fixed",
+          "name": "tool_traced",
+          "native_fire_delta": 2,
+          "progress": 1,
+          "rule_uid": 1,
+          "static_access": {
+            "reads": [
+              "edge:trigger"
+            ],
+            "reads_any": true,
+            "term_edge_reads": [],
+            "writes": [
+              "attr:result"
+            ],
+            "writes_any": false
+          },
+          "trace_dropped": 0,
+          "trace_enabled": true,
+          "trace_rows": [
+            [
+              1,
+              "pattern_edge",
+              0,
+              "trigger",
+              1,
+              2
+            ],
+            [
+              1,
+              "effect_attr_write",
+              1,
+              "result",
+              null,
+              2
+            ],
+            [
+              1,
+              "term_tool_dispatch",
+              null,
+              "probe",
+              null,
+              2
+            ]
+          ]
+        },
+        {
+          "callback_arguments": [
+            "payload",
+            "payload"
+          ],
+          "callback_invocations": 2,
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              }
+            ],
+            "next_id": 2,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "BoundaryProbe"
+              },
+              {
+                "attrs": {
+                  "result": {
+                    "__surface__": null,
+                    "kind": "text",
+                    "payload": "66697865642d726573756c74"
+                  }
+                },
+                "id": 1,
+                "type": "BoundaryProbe"
+              }
+            ]
+          },
+          "handler_mode": "fixed",
+          "name": "tool_untraced",
+          "native_fire_delta": 2,
+          "progress": 1,
+          "rule_uid": 1,
+          "static_access": {
+            "reads": [
+              "edge:trigger"
+            ],
+            "reads_any": true,
+            "term_edge_reads": [],
+            "writes": [
+              "attr:result"
+            ],
+            "writes_any": false
+          },
+          "trace_dropped": 0,
+          "trace_enabled": false,
+          "trace_rows": []
+        },
+        {
+          "callback_arguments": [],
+          "callback_invocations": 0,
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              }
+            ],
+            "next_id": 2,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "BoundaryProbe"
+              },
+              {
+                "attrs": {
+                  "result": 0
+                },
+                "id": 1,
+                "type": "BoundaryProbe"
+              }
+            ]
+          },
+          "handler_mode": "none",
+          "name": "tool_missing",
+          "native_fire_delta": 0,
+          "progress": 1,
+          "rule_uid": 1,
+          "static_access": {
+            "reads": [
+              "edge:trigger"
+            ],
+            "reads_any": true,
+            "term_edge_reads": [],
+            "writes": [
+              "attr:result"
+            ],
+            "writes_any": false
+          },
+          "trace_dropped": 0,
+          "trace_enabled": true,
+          "trace_rows": [
+            [
+              1,
+              "pattern_edge",
+              0,
+              "trigger",
+              1,
+              2
+            ],
+            [
+              1,
+              "effect_attr_write",
+              1,
+              "result",
+              null,
+              2
+            ],
+            [
+              1,
+              "term_tool_dispatch",
+              null,
+              "probe",
+              null,
+              2
+            ]
+          ]
+        }
+      ],
+      "child_process": {
+        "argv": [
+          "/home/linuxbrew/.linuxbrew/opt/python@3.13/bin/python3.13",
+          "/home/matt/ozmadev/ocelot/scripts/substrate_term_external_dependency_probe_v1.py",
+          "--worker",
+          "2"
+        ],
+        "return_code": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_sha256": "60bcaf2752e9b6811c1b1846de27e9328199d0c9c36df86c0009a74bf88d9807"
+      },
+      "pid": 16,
+      "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+      "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]",
+      "started_inputs": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "425e086594e50335ca917e330206fec9bd8c778d4e58d2c5dd0d06cc61bc41ee",
+        "native_extension_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_extension_sha256": "260cf6063acbfb2fb83a7bfbe8b0bbe35afa951d3142539fbd868edf331d3afa",
+        "source_sha256": {
+          "docs/research/engine_substrate/SUBSTRATE_TERM_EXTERNAL_DEPENDENCY_PROBE_V1_PREREG_20260928.md": "8ac6f8a3b527f81e7492b867d7decd1d3bd03ff10bac8a42731037769353b5b7",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/src/prog_eval.rs": "d419bda3288c534cbc8c35a3bccc29b67171b8297ecf8aeb43a474f77f0e1451",
+          "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+          "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+          "runners/dsl/src/term.rs": "0b91be836a6a7fe4587fb2ec3a944fdd6fb461838ca25151b1358c2158705fce",
+          "runners/dsl/src/tools.rs": "adde1024c48f3b16b5214e0322572202e2c3f1cbec130035f632afd022092731",
+          "scripts/analyze_term_external_dependency_probe_v1.py": "2685c026e2674dead31231414b4ca0e33d7e5712a572e3460561a394cbb34214",
+          "scripts/substrate_term_external_dependency_probe_v1.py": "5dbf735fe83a0e112452401c5fbfcaf3c00b1e1c1fdcca2bb9c6d784d16b9546"
+        }
+      },
+      "worker_id": 2
+    },
+    {
+      "cells": [
+        {
+          "callback_arguments": [],
+          "callback_invocations": 0,
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              }
+            ],
+            "next_id": 2,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "BoundaryProbe"
+              },
+              {
+                "attrs": {
+                  "result": {
+                    "__surface__": null,
+                    "kind": "text",
+                    "payload": "616c706861"
+                  }
+                },
+                "id": 1,
+                "type": "BoundaryProbe"
+              }
+            ]
+          },
+          "handler_mode": "none",
+          "name": "file_alpha",
+          "native_fire_delta": 0,
+          "progress": 1,
+          "rule_uid": 1,
+          "static_access": {
+            "reads": [
+              "edge:trigger"
+            ],
+            "reads_any": false,
+            "term_edge_reads": [],
+            "writes": [
+              "attr:result"
+            ],
+            "writes_any": false
+          },
+          "trace_dropped": 0,
+          "trace_enabled": true,
+          "trace_rows": [
+            [
+              1,
+              "pattern_edge",
+              0,
+              "trigger",
+              1,
+              1
+            ],
+            [
+              1,
+              "effect_attr_write",
+              1,
+              "result",
+              null,
+              1
+            ]
+          ]
+        },
+        {
+          "callback_arguments": [],
+          "callback_invocations": 0,
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              }
+            ],
+            "next_id": 2,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "BoundaryProbe"
+              },
+              {
+                "attrs": {
+                  "result": {
+                    "__surface__": null,
+                    "kind": "text",
+                    "payload": "62657461"
+                  }
+                },
+                "id": 1,
+                "type": "BoundaryProbe"
+              }
+            ]
+          },
+          "handler_mode": "none",
+          "name": "file_beta",
+          "native_fire_delta": 0,
+          "progress": 1,
+          "rule_uid": 1,
+          "static_access": {
+            "reads": [
+              "edge:trigger"
+            ],
+            "reads_any": false,
+            "term_edge_reads": [],
+            "writes": [
+              "attr:result"
+            ],
+            "writes_any": false
+          },
+          "trace_dropped": 0,
+          "trace_enabled": true,
+          "trace_rows": [
+            [
+              1,
+              "pattern_edge",
+              0,
+              "trigger",
+              1,
+              1
+            ],
+            [
+              1,
+              "effect_attr_write",
+              1,
+              "result",
+              null,
+              1
+            ]
+          ]
+        },
+        {
+          "callback_arguments": [],
+          "callback_invocations": 0,
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              }
+            ],
+            "next_id": 2,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "BoundaryProbe"
+              },
+              {
+                "attrs": {
+                  "result": null
+                },
+                "id": 1,
+                "type": "BoundaryProbe"
+              }
+            ]
+          },
+          "handler_mode": "none",
+          "name": "file_missing",
+          "native_fire_delta": 0,
+          "progress": 1,
+          "rule_uid": 1,
+          "static_access": {
+            "reads": [
+              "edge:trigger"
+            ],
+            "reads_any": false,
+            "term_edge_reads": [],
+            "writes": [
+              "attr:result"
+            ],
+            "writes_any": false
+          },
+          "trace_dropped": 0,
+          "trace_enabled": true,
+          "trace_rows": [
+            [
+              1,
+              "pattern_edge",
+              0,
+              "trigger",
+              1,
+              1
+            ],
+            [
+              1,
+              "effect_attr_write",
+              1,
+              "result",
+              null,
+              1
+            ]
+          ]
+        },
+        {
+          "callback_arguments": [
+            "payload",
+            "payload"
+          ],
+          "callback_invocations": 2,
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              }
+            ],
+            "next_id": 2,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "BoundaryProbe"
+              },
+              {
+                "attrs": {
+                  "result": {
+                    "__surface__": null,
+                    "kind": "text",
+                    "payload": "66697865642d726573756c74"
+                  }
+                },
+                "id": 1,
+                "type": "BoundaryProbe"
+              }
+            ]
+          },
+          "handler_mode": "fixed",
+          "name": "tool_traced",
+          "native_fire_delta": 2,
+          "progress": 1,
+          "rule_uid": 1,
+          "static_access": {
+            "reads": [
+              "edge:trigger"
+            ],
+            "reads_any": true,
+            "term_edge_reads": [],
+            "writes": [
+              "attr:result"
+            ],
+            "writes_any": false
+          },
+          "trace_dropped": 0,
+          "trace_enabled": true,
+          "trace_rows": [
+            [
+              1,
+              "pattern_edge",
+              0,
+              "trigger",
+              1,
+              2
+            ],
+            [
+              1,
+              "effect_attr_write",
+              1,
+              "result",
+              null,
+              2
+            ],
+            [
+              1,
+              "term_tool_dispatch",
+              null,
+              "probe",
+              null,
+              2
+            ]
+          ]
+        },
+        {
+          "callback_arguments": [
+            "payload",
+            "payload"
+          ],
+          "callback_invocations": 2,
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              }
+            ],
+            "next_id": 2,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "BoundaryProbe"
+              },
+              {
+                "attrs": {
+                  "result": {
+                    "__surface__": null,
+                    "kind": "text",
+                    "payload": "66697865642d726573756c74"
+                  }
+                },
+                "id": 1,
+                "type": "BoundaryProbe"
+              }
+            ]
+          },
+          "handler_mode": "fixed",
+          "name": "tool_untraced",
+          "native_fire_delta": 2,
+          "progress": 1,
+          "rule_uid": 1,
+          "static_access": {
+            "reads": [
+              "edge:trigger"
+            ],
+            "reads_any": true,
+            "term_edge_reads": [],
+            "writes": [
+              "attr:result"
+            ],
+            "writes_any": false
+          },
+          "trace_dropped": 0,
+          "trace_enabled": false,
+          "trace_rows": []
+        },
+        {
+          "callback_arguments": [],
+          "callback_invocations": 0,
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              }
+            ],
+            "next_id": 2,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "BoundaryProbe"
+              },
+              {
+                "attrs": {
+                  "result": 0
+                },
+                "id": 1,
+                "type": "BoundaryProbe"
+              }
+            ]
+          },
+          "handler_mode": "none",
+          "name": "tool_missing",
+          "native_fire_delta": 0,
+          "progress": 1,
+          "rule_uid": 1,
+          "static_access": {
+            "reads": [
+              "edge:trigger"
+            ],
+            "reads_any": true,
+            "term_edge_reads": [],
+            "writes": [
+              "attr:result"
+            ],
+            "writes_any": false
+          },
+          "trace_dropped": 0,
+          "trace_enabled": true,
+          "trace_rows": [
+            [
+              1,
+              "pattern_edge",
+              0,
+              "trigger",
+              1,
+              2
+            ],
+            [
+              1,
+              "effect_attr_write",
+              1,
+              "result",
+              null,
+              2
+            ],
+            [
+              1,
+              "term_tool_dispatch",
+              null,
+              "probe",
+              null,
+              2
+            ]
+          ]
+        }
+      ],
+      "child_process": {
+        "argv": [
+          "/home/linuxbrew/.linuxbrew/opt/python@3.13/bin/python3.13",
+          "/home/matt/ozmadev/ocelot/scripts/substrate_term_external_dependency_probe_v1.py",
+          "--worker",
+          "3"
+        ],
+        "return_code": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_sha256": "527411dae2a083ecb6a53a7c31ff2684311f7c6c133f3745e219c33494f17711"
+      },
+      "pid": 25,
+      "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+      "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]",
+      "started_inputs": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "425e086594e50335ca917e330206fec9bd8c778d4e58d2c5dd0d06cc61bc41ee",
+        "native_extension_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_extension_sha256": "260cf6063acbfb2fb83a7bfbe8b0bbe35afa951d3142539fbd868edf331d3afa",
+        "source_sha256": {
+          "docs/research/engine_substrate/SUBSTRATE_TERM_EXTERNAL_DEPENDENCY_PROBE_V1_PREREG_20260928.md": "8ac6f8a3b527f81e7492b867d7decd1d3bd03ff10bac8a42731037769353b5b7",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/src/prog_eval.rs": "d419bda3288c534cbc8c35a3bccc29b67171b8297ecf8aeb43a474f77f0e1451",
+          "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+          "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+          "runners/dsl/src/term.rs": "0b91be836a6a7fe4587fb2ec3a944fdd6fb461838ca25151b1358c2158705fce",
+          "runners/dsl/src/tools.rs": "adde1024c48f3b16b5214e0322572202e2c3f1cbec130035f632afd022092731",
+          "scripts/analyze_term_external_dependency_probe_v1.py": "2685c026e2674dead31231414b4ca0e33d7e5712a572e3460561a394cbb34214",
+          "scripts/substrate_term_external_dependency_probe_v1.py": "5dbf735fe83a0e112452401c5fbfcaf3c00b1e1c1fdcca2bb9c6d784d16b9546"
+        }
+      },
+      "worker_id": 3
+    }
+  ],
+  "schema_version": 1
+}

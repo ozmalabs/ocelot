@@ -1,0 +1,26 @@
+{
+  "all_checks_pass": false,
+  "analysis_id": "substrate-mint-fragment-admission-path-probe-v1-independent-analysis",
+  "checks": {
+    "all_four_routes_accept_out_of_fragment_rule": false,
+    "all_route_cells_present_once_per_worker": true,
+    "checker_rejects_negative_fixture_each_worker": true,
+    "direct_and_import_make_one_live_rule": true,
+    "patch_commits_new_effect_revision": true,
+    "raw_and_lock_hashes_recorded": true,
+    "runner_gates_pass": true,
+    "self_mint_installs_but_does_not_fire_new_rule": false,
+    "source_locks_match_workers_and_checkout": true,
+    "three_unique_worker_pids": true
+  },
+  "claim_boundary": "Exact route behavior only: current runtime routes accept this checker-rejected fresh-mint syntax. The probe never executes closure on the out-of-fragment rule and does not establish general termination or exhaustive route coverage.",
+  "lock_sha256": "18104b5dd6676582a2d42520c12d655419e3571a82555192584ccf0f5cd9efd3",
+  "raw_sha256": "e9db7f467ae14405ed9b0630456497cfa611766e0ed109918df667b1ee4c876b",
+  "route_acceptance_counts": {
+    "checkpoint_import": 3,
+    "direct_add_rule": 3,
+    "graph_rule_self_mint": 0,
+    "rule_patch_revision": 3
+  },
+  "schema_version": 1
+}

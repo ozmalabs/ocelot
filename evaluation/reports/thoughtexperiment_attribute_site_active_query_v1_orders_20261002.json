@@ -1,0 +1,2604 @@
+{
+  "captured_utc": "2026-10-02T01:57:44Z",
+  "host": {
+    "machine": "x86_64",
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5"
+  },
+  "lock_sha256": "9e4463a4eb150b079cbfdceb16a859e4836c4d0311e1565caeae414da99819ac",
+  "schema": "AttributeSiteActiveQueryV1Orders",
+  "workers": [
+    {
+      "branch_receipts_verified": true,
+      "composer_decision_ns": 22880100,
+      "operator": "swap_term_leaf",
+      "primary_target_preserved": true,
+      "proposal": {
+        "batch": false,
+        "content_hash": 8990572338201777206,
+        "effects": [
+          [
+            "set_attr",
+            "req",
+            "predicted",
+            {
+              "__term__": {
+                "cond": {
+                  "a": {
+                    "key": "good_score",
+                    "node": {
+                      "name": "m",
+                      "type": "Var"
+                    },
+                    "type": "Attr"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 0.0
+                  },
+                  "type": "Gt"
+                },
+                "other": {
+                  "key": "negative",
+                  "node": {
+                    "name": "m",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "then": {
+                  "key": "positive",
+                  "node": {
+                    "name": "m",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "type": "IfThenElse"
+              }
+            }
+          ],
+          [
+            "set_attr",
+            "req",
+            "classified",
+            1.0
+          ],
+          [
+            "set_attr",
+            "req",
+            "audit",
+            {
+              "__term__": {
+                "key": "good_score",
+                "node": {
+                  "name": "m",
+                  "type": "Var"
+                },
+                "type": "Attr"
+              }
+            }
+          ]
+        ],
+        "match": [
+          [
+            "world",
+            "has_request",
+            "req"
+          ],
+          [
+            "req",
+            "has_measurement",
+            "m"
+          ]
+        ],
+        "match_type": null,
+        "name": "classify_meter_delta_structvariant_w0",
+        "revision": 0,
+        "rule_uid": 1,
+        "where": {
+          "a": {
+            "key": "classified",
+            "node": {
+              "name": "req",
+              "type": "Var"
+            },
+            "type": "Attr"
+          },
+          "b": {
+            "type": "Lit",
+            "value": 0.0
+          },
+          "type": "Eq"
+        }
+      },
+      "proposal_digest": "sha256:1eaa4b9e3df44a38d915a53715aa3dc6cb943bff4a2fa8561e9fba568a8c3e96",
+      "reference_digest": "sha256:1eaa4b9e3df44a38d915a53715aa3dc6cb943bff4a2fa8561e9fba568a8c3e96",
+      "reference_label": "swap_term_leaf:bad_score->good_score",
+      "selections": [
+        {
+          "alias_rate_percent": 0,
+          "candidate_count": 100,
+          "input_pool_sha256": "8099a3de5299a12312d66e5f1d36d5144625d66399490c885012b01256cdf967",
+          "mode": "cow_snapshot",
+          "native_closure_calls": 200,
+          "prediction_calls": 200,
+          "prediction_summary": {
+            "all_fixedpoint_zero": true,
+            "all_receipts_verified": true,
+            "mean_branch_fork_ns": 14069.675,
+            "mean_candidate_patch_ns": 179846.415,
+            "mean_closure_ns": 11584.48,
+            "mean_prediction_ns": 299476.96,
+            "n": 200,
+            "output_sha256": "dd331b1df0564f81d3ba0193550476c079e6d786167486beb60befeca319d024",
+            "total_closure_work": 200
+          },
+          "random_env": {
+            "bad_score": 1.0,
+            "good_score": -1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w0_r0_i47"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  "COLD",
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "HOT",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "bad_score": -1.0,
+              "good_score": 1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w0_r0_i68"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 63422637,
+          "selector_wall_ns": 62673509
+        },
+        {
+          "alias_rate_percent": 50,
+          "candidate_count": 100,
+          "input_pool_sha256": "67fff54dfad16eb683c424bb9b64a7b0e27d6ac8c532f35e8dc02bd038c1040c",
+          "mode": "cow_snapshot",
+          "native_closure_calls": 200,
+          "prediction_calls": 200,
+          "prediction_summary": {
+            "all_fixedpoint_zero": true,
+            "all_receipts_verified": true,
+            "mean_branch_fork_ns": 14221.795,
+            "mean_candidate_patch_ns": 187466.375,
+            "mean_closure_ns": 11823.885,
+            "mean_prediction_ns": 310522.38,
+            "n": 200,
+            "output_sha256": "8afc4ce89532625c4cdcd0555468b7d6ded1979a45ab433c7b9f6dfa25faf920",
+            "total_closure_work": 200
+          },
+          "random_env": {
+            "bad_score": 1.0,
+            "good_score": 1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w0_r50_i72"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  "COLD",
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "HOT",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "bad_score": -1.0,
+              "good_score": 1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w0_r50_i28"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 65812788,
+          "selector_wall_ns": 64937001
+        },
+        {
+          "alias_rate_percent": 90,
+          "candidate_count": 100,
+          "input_pool_sha256": "da05fb33938067b483b9e943e580a92a4030e88f2d80e7c7e33a131ea3bef17b",
+          "mode": "cow_snapshot",
+          "native_closure_calls": 200,
+          "prediction_calls": 200,
+          "prediction_summary": {
+            "all_fixedpoint_zero": true,
+            "all_receipts_verified": true,
+            "mean_branch_fork_ns": 14623.48,
+            "mean_candidate_patch_ns": 180233.855,
+            "mean_closure_ns": 11695.295,
+            "mean_prediction_ns": 304810.455,
+            "n": 200,
+            "output_sha256": "4302a404d28bb44ce12f72a70986120bb154bb1ece2b88d1340b739664d4dfe7",
+            "total_closure_work": 200
+          },
+          "random_env": {
+            "bad_score": -1.0,
+            "good_score": -1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w0_r90_i89"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  "COLD",
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "HOT",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "bad_score": -1.0,
+              "good_score": 1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w0_r90_i8"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 64888147,
+          "selector_wall_ns": 64055736
+        },
+        {
+          "alias_rate_percent": 99,
+          "candidate_count": 100,
+          "input_pool_sha256": "2c389d9153022e5042ae66e93acf8f8a6f46c4798d21f1e1e6b09936aee48268",
+          "mode": "cow_snapshot",
+          "native_closure_calls": 200,
+          "prediction_calls": 200,
+          "prediction_summary": {
+            "all_fixedpoint_zero": true,
+            "all_receipts_verified": true,
+            "mean_branch_fork_ns": 14474.38,
+            "mean_candidate_patch_ns": 186480.17,
+            "mean_closure_ns": 11870.32,
+            "mean_prediction_ns": 310844.75,
+            "n": 200,
+            "output_sha256": "c6b3f85e09acbdc0f24abac83750ed54e88a9f0a9879cdb129e61e2d5d3ed84b",
+            "total_closure_work": 200
+          },
+          "random_env": {
+            "bad_score": 1.0,
+            "good_score": 1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w0_r99_i36"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  "COLD",
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "HOT",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "bad_score": -1.0,
+              "good_score": 1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w0_r99_i0"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 65941457,
+          "selector_wall_ns": 65082081
+        },
+        {
+          "alias_rate_percent": 0,
+          "candidate_count": 100,
+          "input_pool_sha256": "8099a3de5299a12312d66e5f1d36d5144625d66399490c885012b01256cdf967",
+          "mode": "full_copy",
+          "native_closure_calls": 200,
+          "prediction_calls": 200,
+          "prediction_summary": {
+            "all_fixedpoint_zero": true,
+            "all_receipts_verified": true,
+            "mean_branch_fork_ns": 28375.975,
+            "mean_candidate_patch_ns": 186836.42,
+            "mean_closure_ns": 11937.3,
+            "mean_prediction_ns": 323863.115,
+            "n": 200,
+            "output_sha256": "dd331b1df0564f81d3ba0193550476c079e6d786167486beb60befeca319d024",
+            "total_closure_work": 200
+          },
+          "random_env": {
+            "bad_score": 1.0,
+            "good_score": -1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w0_r0_i47"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  "COLD",
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "HOT",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "bad_score": -1.0,
+              "good_score": 1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w0_r0_i68"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 68360949,
+          "selector_wall_ns": 67639116
+        },
+        {
+          "alias_rate_percent": 50,
+          "candidate_count": 100,
+          "input_pool_sha256": "67fff54dfad16eb683c424bb9b64a7b0e27d6ac8c532f35e8dc02bd038c1040c",
+          "mode": "full_copy",
+          "native_closure_calls": 200,
+          "prediction_calls": 200,
+          "prediction_summary": {
+            "all_fixedpoint_zero": true,
+            "all_receipts_verified": true,
+            "mean_branch_fork_ns": 27008.785,
+            "mean_candidate_patch_ns": 180728.27,
+            "mean_closure_ns": 11559.39,
+            "mean_prediction_ns": 310950.94,
+            "n": 200,
+            "output_sha256": "8afc4ce89532625c4cdcd0555468b7d6ded1979a45ab433c7b9f6dfa25faf920",
+            "total_closure_work": 200
+          },
+          "random_env": {
+            "bad_score": 1.0,
+            "good_score": 1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w0_r50_i72"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  "COLD",
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "HOT",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "bad_score": -1.0,
+              "good_score": 1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w0_r50_i28"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 65721637,
+          "selector_wall_ns": 64971491
+        },
+        {
+          "alias_rate_percent": 90,
+          "candidate_count": 100,
+          "input_pool_sha256": "da05fb33938067b483b9e943e580a92a4030e88f2d80e7c7e33a131ea3bef17b",
+          "mode": "full_copy",
+          "native_closure_calls": 200,
+          "prediction_calls": 200,
+          "prediction_summary": {
+            "all_fixedpoint_zero": true,
+            "all_receipts_verified": true,
+            "mean_branch_fork_ns": 27373.155,
+            "mean_candidate_patch_ns": 179988.565,
+            "mean_closure_ns": 11281.89,
+            "mean_prediction_ns": 309919.64,
+            "n": 200,
+            "output_sha256": "4302a404d28bb44ce12f72a70986120bb154bb1ece2b88d1340b739664d4dfe7",
+            "total_closure_work": 200
+          },
+          "random_env": {
+            "bad_score": -1.0,
+            "good_score": -1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w0_r90_i89"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  "COLD",
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "HOT",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "bad_score": -1.0,
+              "good_score": 1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w0_r90_i8"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 65544657,
+          "selector_wall_ns": 64689370
+        },
+        {
+          "alias_rate_percent": 99,
+          "candidate_count": 100,
+          "input_pool_sha256": "2c389d9153022e5042ae66e93acf8f8a6f46c4798d21f1e1e6b09936aee48268",
+          "mode": "full_copy",
+          "native_closure_calls": 200,
+          "prediction_calls": 200,
+          "prediction_summary": {
+            "all_fixedpoint_zero": true,
+            "all_receipts_verified": true,
+            "mean_branch_fork_ns": 29829.075,
+            "mean_candidate_patch_ns": 345547.51,
+            "mean_closure_ns": 12350.03,
+            "mean_prediction_ns": 492403.335,
+            "n": 200,
+            "output_sha256": "c6b3f85e09acbdc0f24abac83750ed54e88a9f0a9879cdb129e61e2d5d3ed84b",
+            "total_closure_work": 200
+          },
+          "random_env": {
+            "bad_score": 1.0,
+            "good_score": 1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w0_r99_i36"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  "COLD",
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "HOT",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "bad_score": -1.0,
+              "good_score": 1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w0_r99_i0"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 72597352,
+          "selector_wall_ns": 101530280
+        }
+      ],
+      "semantic_candidate_match": true,
+      "site": "Attr key 'bad_score' -> 'good_score'",
+      "snapshot_creation_ns": 19510,
+      "source_after": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_ATTRIBUTE_SITE_ACTIVE_QUERY_V1_PREREG_20261002.md": "e340c9121e2834eee0e18136d0640b81d0e69e6fe1001f8b199a5a6215e55930",
+        "domains/contract_query.py": "9e42a16541e95fb0de8a051aebb654c39cf22fd5c5d7c610b58711692e789b37",
+        "domains/edit_ops.py": "5fef079eff6c47e6feb7cd35a92e39913312835acd82c151ca726319c4e9da1c",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/reflective_faculty.py": "30951ff474cf00dba5cf9dfc01589a61104f2a05120f530c941d1fbd40c0d845",
+        "domains/self_correction.py": "7c4f28e21afc4c334328d03146c56d5c46c80a9ec5c21aa22e1ee29f12deb2dd",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_attribute_site_active_query_v1.py": "881a0078c2f6fcbf01736d7d29b16051a641ccf02dd83db58068a36cb89ed4e8",
+        "evaluation/substrate_capability/thoughtexperiment_attribute_site_active_query_v1.py": "981a7d33a94be11938bed0bb80237e9dd3ea92e4e875d60072c9be82d1652754",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+      },
+      "source_before": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_ATTRIBUTE_SITE_ACTIVE_QUERY_V1_PREREG_20261002.md": "e340c9121e2834eee0e18136d0640b81d0e69e6fe1001f8b199a5a6215e55930",
+        "domains/contract_query.py": "9e42a16541e95fb0de8a051aebb654c39cf22fd5c5d7c610b58711692e789b37",
+        "domains/edit_ops.py": "5fef079eff6c47e6feb7cd35a92e39913312835acd82c151ca726319c4e9da1c",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/reflective_faculty.py": "30951ff474cf00dba5cf9dfc01589a61104f2a05120f530c941d1fbd40c0d845",
+        "domains/self_correction.py": "7c4f28e21afc4c334328d03146c56d5c46c80a9ec5c21aa22e1ee29f12deb2dd",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_attribute_site_active_query_v1.py": "881a0078c2f6fcbf01736d7d29b16051a641ccf02dd83db58068a36cb89ed4e8",
+        "evaluation/substrate_capability/thoughtexperiment_attribute_site_active_query_v1.py": "981a7d33a94be11938bed0bb80237e9dd3ea92e4e875d60072c9be82d1652754",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+      },
+      "source_stable": true,
+      "target": "classify_meter_delta",
+      "worker": 0
+    },
+    {
+      "branch_receipts_verified": true,
+      "composer_decision_ns": 22694210,
+      "operator": "swap_term_leaf",
+      "primary_target_preserved": true,
+      "proposal": {
+        "batch": false,
+        "content_hash": 8990572338201777206,
+        "effects": [
+          [
+            "set_attr",
+            "req",
+            "predicted",
+            {
+              "__term__": {
+                "cond": {
+                  "a": {
+                    "key": "good_score",
+                    "node": {
+                      "name": "m",
+                      "type": "Var"
+                    },
+                    "type": "Attr"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 0.0
+                  },
+                  "type": "Gt"
+                },
+                "other": {
+                  "key": "negative",
+                  "node": {
+                    "name": "m",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "then": {
+                  "key": "positive",
+                  "node": {
+                    "name": "m",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "type": "IfThenElse"
+              }
+            }
+          ],
+          [
+            "set_attr",
+            "req",
+            "classified",
+            1.0
+          ],
+          [
+            "set_attr",
+            "req",
+            "audit",
+            {
+              "__term__": {
+                "key": "good_score",
+                "node": {
+                  "name": "m",
+                  "type": "Var"
+                },
+                "type": "Attr"
+              }
+            }
+          ]
+        ],
+        "match": [
+          [
+            "world",
+            "has_request",
+            "req"
+          ],
+          [
+            "req",
+            "has_measurement",
+            "m"
+          ]
+        ],
+        "match_type": null,
+        "name": "classify_meter_delta_structvariant_w1",
+        "revision": 0,
+        "rule_uid": 1,
+        "where": {
+          "a": {
+            "key": "classified",
+            "node": {
+              "name": "req",
+              "type": "Var"
+            },
+            "type": "Attr"
+          },
+          "b": {
+            "type": "Lit",
+            "value": 0.0
+          },
+          "type": "Eq"
+        }
+      },
+      "proposal_digest": "sha256:1eaa4b9e3df44a38d915a53715aa3dc6cb943bff4a2fa8561e9fba568a8c3e96",
+      "reference_digest": "sha256:1eaa4b9e3df44a38d915a53715aa3dc6cb943bff4a2fa8561e9fba568a8c3e96",
+      "reference_label": "swap_term_leaf:bad_score->good_score",
+      "selections": [
+        {
+          "alias_rate_percent": 0,
+          "candidate_count": 100,
+          "input_pool_sha256": "c6bbca5e891caa439f9f86c64a5bf870d7b2cf8afa4cd13127d614eb3b7f6e3d",
+          "mode": "cow_snapshot",
+          "native_closure_calls": 200,
+          "prediction_calls": 200,
+          "prediction_summary": {
+            "all_fixedpoint_zero": true,
+            "all_receipts_verified": true,
+            "mean_branch_fork_ns": 14759.48,
+            "mean_candidate_patch_ns": 187890.065,
+            "mean_closure_ns": 12314.94,
+            "mean_prediction_ns": 313972.98,
+            "n": 200,
+            "output_sha256": "788027aa59d0d361f58e3915196438215fbd6d74c7374f56b1200e5f3cbd2b07",
+            "total_closure_work": 200
+          },
+          "random_env": {
+            "bad_score": 1.0,
+            "good_score": -1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w1_r0_i42"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  "COLD",
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "HOT",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "bad_score": -1.0,
+              "good_score": 1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w1_r0_i47"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 66640368,
+          "selector_wall_ns": 65834396
+        },
+        {
+          "alias_rate_percent": 50,
+          "candidate_count": 100,
+          "input_pool_sha256": "7d1899117e172f29c03514509b78f62b282b076054fb4cded30640dcdc9552ce",
+          "mode": "cow_snapshot",
+          "native_closure_calls": 200,
+          "prediction_calls": 200,
+          "prediction_summary": {
+            "all_fixedpoint_zero": true,
+            "all_receipts_verified": true,
+            "mean_branch_fork_ns": 14630.385,
+            "mean_candidate_patch_ns": 187926.615,
+            "mean_closure_ns": 12188.92,
+            "mean_prediction_ns": 313310.79,
+            "n": 200,
+            "output_sha256": "153de3cb6a422cf6c70c32a729b8cd27bfa3e7b0c46183c9609dc34e6f29dc31",
+            "total_closure_work": 200
+          },
+          "random_env": {
+            "bad_score": 1.0,
+            "good_score": 1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w1_r50_i87"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  "COLD",
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "HOT",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "bad_score": -1.0,
+              "good_score": 1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w1_r50_i23"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 66411388,
+          "selector_wall_ns": 65538274
+        },
+        {
+          "alias_rate_percent": 90,
+          "candidate_count": 100,
+          "input_pool_sha256": "931d189738acb8294cc5fdc376efb851e5f15d76b090eff6f91e50ac0b8500cb",
+          "mode": "cow_snapshot",
+          "native_closure_calls": 200,
+          "prediction_calls": 200,
+          "prediction_summary": {
+            "all_fixedpoint_zero": true,
+            "all_receipts_verified": true,
+            "mean_branch_fork_ns": 14217.75,
+            "mean_candidate_patch_ns": 185465.8,
+            "mean_closure_ns": 11806.335,
+            "mean_prediction_ns": 308184.58,
+            "n": 200,
+            "output_sha256": "77b5bd24b51bcf8888af9a08afa1cdd66adf642ed8acf6dac7753d300f387975",
+            "total_closure_work": 200
+          },
+          "random_env": {
+            "bad_score": -1.0,
+            "good_score": -1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w1_r90_i36"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  "HOT",
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "COLD",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "bad_score": 1.0,
+              "good_score": -1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w1_r90_i2"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 65326108,
+          "selector_wall_ns": 64471249
+        },
+        {
+          "alias_rate_percent": 99,
+          "candidate_count": 100,
+          "input_pool_sha256": "dc8af6cc865d5b6b54c129b933fa0df04beff45731f6c4fe64b15103e700d9da",
+          "mode": "cow_snapshot",
+          "native_closure_calls": 200,
+          "prediction_calls": 200,
+          "prediction_summary": {
+            "all_fixedpoint_zero": true,
+            "all_receipts_verified": true,
+            "mean_branch_fork_ns": 14255.58,
+            "mean_candidate_patch_ns": 183095.665,
+            "mean_closure_ns": 12006.675,
+            "mean_prediction_ns": 305397.975,
+            "n": 200,
+            "output_sha256": "b425330a67ca9026d3821405958f8eb91959303f33025fd8f97b8f2fcf60de03",
+            "total_closure_work": 200
+          },
+          "random_env": {
+            "bad_score": 1.0,
+            "good_score": 1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w1_r99_i13"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  "HOT",
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "COLD",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "bad_score": 1.0,
+              "good_score": -1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w1_r99_i0"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 64595848,
+          "selector_wall_ns": 63929195
+        },
+        {
+          "alias_rate_percent": 0,
+          "candidate_count": 100,
+          "input_pool_sha256": "c6bbca5e891caa439f9f86c64a5bf870d7b2cf8afa4cd13127d614eb3b7f6e3d",
+          "mode": "full_copy",
+          "native_closure_calls": 200,
+          "prediction_calls": 200,
+          "prediction_summary": {
+            "all_fixedpoint_zero": true,
+            "all_receipts_verified": true,
+            "mean_branch_fork_ns": 29056.045,
+            "mean_candidate_patch_ns": 187872.16,
+            "mean_closure_ns": 12537.855,
+            "mean_prediction_ns": 327102.82,
+            "n": 200,
+            "output_sha256": "788027aa59d0d361f58e3915196438215fbd6d74c7374f56b1200e5f3cbd2b07",
+            "total_closure_work": 200
+          },
+          "random_env": {
+            "bad_score": 1.0,
+            "good_score": -1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w1_r0_i42"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  "COLD",
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "HOT",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "bad_score": -1.0,
+              "good_score": 1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w1_r0_i47"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 69130579,
+          "selector_wall_ns": 68366761
+        },
+        {
+          "alias_rate_percent": 50,
+          "candidate_count": 100,
+          "input_pool_sha256": "7d1899117e172f29c03514509b78f62b282b076054fb4cded30640dcdc9552ce",
+          "mode": "full_copy",
+          "native_closure_calls": 200,
+          "prediction_calls": 200,
+          "prediction_summary": {
+            "all_fixedpoint_zero": true,
+            "all_receipts_verified": true,
+            "mean_branch_fork_ns": 29212.225,
+            "mean_candidate_patch_ns": 188709.1,
+            "mean_closure_ns": 12597.86,
+            "mean_prediction_ns": 328648.845,
+            "n": 200,
+            "output_sha256": "153de3cb6a422cf6c70c32a729b8cd27bfa3e7b0c46183c9609dc34e6f29dc31",
+            "total_closure_work": 200
+          },
+          "random_env": {
+            "bad_score": 1.0,
+            "good_score": 1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w1_r50_i87"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  "COLD",
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "HOT",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "bad_score": -1.0,
+              "good_score": 1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w1_r50_i23"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 69556149,
+          "selector_wall_ns": 68702653
+        },
+        {
+          "alias_rate_percent": 90,
+          "candidate_count": 100,
+          "input_pool_sha256": "931d189738acb8294cc5fdc376efb851e5f15d76b090eff6f91e50ac0b8500cb",
+          "mode": "full_copy",
+          "native_closure_calls": 200,
+          "prediction_calls": 200,
+          "prediction_summary": {
+            "all_fixedpoint_zero": true,
+            "all_receipts_verified": true,
+            "mean_branch_fork_ns": 28594.805,
+            "mean_candidate_patch_ns": 184840.87,
+            "mean_closure_ns": 12161.38,
+            "mean_prediction_ns": 320964.01,
+            "n": 200,
+            "output_sha256": "77b5bd24b51bcf8888af9a08afa1cdd66adf642ed8acf6dac7753d300f387975",
+            "total_closure_work": 200
+          },
+          "random_env": {
+            "bad_score": -1.0,
+            "good_score": -1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w1_r90_i36"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  "HOT",
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "COLD",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "bad_score": 1.0,
+              "good_score": -1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w1_r90_i2"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 67925408,
+          "selector_wall_ns": 67065104
+        },
+        {
+          "alias_rate_percent": 99,
+          "candidate_count": 100,
+          "input_pool_sha256": "dc8af6cc865d5b6b54c129b933fa0df04beff45731f6c4fe64b15103e700d9da",
+          "mode": "full_copy",
+          "native_closure_calls": 200,
+          "prediction_calls": 200,
+          "prediction_summary": {
+            "all_fixedpoint_zero": true,
+            "all_receipts_verified": true,
+            "mean_branch_fork_ns": 28545.515,
+            "mean_candidate_patch_ns": 185483.58,
+            "mean_closure_ns": 12100.195,
+            "mean_prediction_ns": 320391.02,
+            "n": 200,
+            "output_sha256": "b425330a67ca9026d3821405958f8eb91959303f33025fd8f97b8f2fcf60de03",
+            "total_closure_work": 200
+          },
+          "random_env": {
+            "bad_score": 1.0,
+            "good_score": 1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w1_r99_i13"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  "HOT",
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "COLD",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "bad_score": 1.0,
+              "good_score": -1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w1_r99_i0"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 67657859,
+          "selector_wall_ns": 66867362
+        }
+      ],
+      "semantic_candidate_match": true,
+      "site": "Attr key 'bad_score' -> 'good_score'",
+      "snapshot_creation_ns": 20660,
+      "source_after": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_ATTRIBUTE_SITE_ACTIVE_QUERY_V1_PREREG_20261002.md": "e340c9121e2834eee0e18136d0640b81d0e69e6fe1001f8b199a5a6215e55930",
+        "domains/contract_query.py": "9e42a16541e95fb0de8a051aebb654c39cf22fd5c5d7c610b58711692e789b37",
+        "domains/edit_ops.py": "5fef079eff6c47e6feb7cd35a92e39913312835acd82c151ca726319c4e9da1c",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/reflective_faculty.py": "30951ff474cf00dba5cf9dfc01589a61104f2a05120f530c941d1fbd40c0d845",
+        "domains/self_correction.py": "7c4f28e21afc4c334328d03146c56d5c46c80a9ec5c21aa22e1ee29f12deb2dd",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_attribute_site_active_query_v1.py": "881a0078c2f6fcbf01736d7d29b16051a641ccf02dd83db58068a36cb89ed4e8",
+        "evaluation/substrate_capability/thoughtexperiment_attribute_site_active_query_v1.py": "981a7d33a94be11938bed0bb80237e9dd3ea92e4e875d60072c9be82d1652754",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+      },
+      "source_before": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_ATTRIBUTE_SITE_ACTIVE_QUERY_V1_PREREG_20261002.md": "e340c9121e2834eee0e18136d0640b81d0e69e6fe1001f8b199a5a6215e55930",
+        "domains/contract_query.py": "9e42a16541e95fb0de8a051aebb654c39cf22fd5c5d7c610b58711692e789b37",
+        "domains/edit_ops.py": "5fef079eff6c47e6feb7cd35a92e39913312835acd82c151ca726319c4e9da1c",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/reflective_faculty.py": "30951ff474cf00dba5cf9dfc01589a61104f2a05120f530c941d1fbd40c0d845",
+        "domains/self_correction.py": "7c4f28e21afc4c334328d03146c56d5c46c80a9ec5c21aa22e1ee29f12deb2dd",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_attribute_site_active_query_v1.py": "881a0078c2f6fcbf01736d7d29b16051a641ccf02dd83db58068a36cb89ed4e8",
+        "evaluation/substrate_capability/thoughtexperiment_attribute_site_active_query_v1.py": "981a7d33a94be11938bed0bb80237e9dd3ea92e4e875d60072c9be82d1652754",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+      },
+      "source_stable": true,
+      "target": "classify_meter_delta",
+      "worker": 1
+    },
+    {
+      "branch_receipts_verified": true,
+      "composer_decision_ns": 23400634,
+      "operator": "swap_term_leaf",
+      "primary_target_preserved": true,
+      "proposal": {
+        "batch": false,
+        "content_hash": 8990572338201777206,
+        "effects": [
+          [
+            "set_attr",
+            "req",
+            "predicted",
+            {
+              "__term__": {
+                "cond": {
+                  "a": {
+                    "key": "good_score",
+                    "node": {
+                      "name": "m",
+                      "type": "Var"
+                    },
+                    "type": "Attr"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 0.0
+                  },
+                  "type": "Gt"
+                },
+                "other": {
+                  "key": "negative",
+                  "node": {
+                    "name": "m",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "then": {
+                  "key": "positive",
+                  "node": {
+                    "name": "m",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "type": "IfThenElse"
+              }
+            }
+          ],
+          [
+            "set_attr",
+            "req",
+            "classified",
+            1.0
+          ],
+          [
+            "set_attr",
+            "req",
+            "audit",
+            {
+              "__term__": {
+                "key": "good_score",
+                "node": {
+                  "name": "m",
+                  "type": "Var"
+                },
+                "type": "Attr"
+              }
+            }
+          ]
+        ],
+        "match": [
+          [
+            "world",
+            "has_request",
+            "req"
+          ],
+          [
+            "req",
+            "has_measurement",
+            "m"
+          ]
+        ],
+        "match_type": null,
+        "name": "classify_meter_delta_structvariant_w2",
+        "revision": 0,
+        "rule_uid": 1,
+        "where": {
+          "a": {
+            "key": "classified",
+            "node": {
+              "name": "req",
+              "type": "Var"
+            },
+            "type": "Attr"
+          },
+          "b": {
+            "type": "Lit",
+            "value": 0.0
+          },
+          "type": "Eq"
+        }
+      },
+      "proposal_digest": "sha256:1eaa4b9e3df44a38d915a53715aa3dc6cb943bff4a2fa8561e9fba568a8c3e96",
+      "reference_digest": "sha256:1eaa4b9e3df44a38d915a53715aa3dc6cb943bff4a2fa8561e9fba568a8c3e96",
+      "reference_label": "swap_term_leaf:bad_score->good_score",
+      "selections": [
+        {
+          "alias_rate_percent": 0,
+          "candidate_count": 100,
+          "input_pool_sha256": "3ace515d5ee32339e2e496af0c24f48fcdad7f11169610dd5300be01d7e91524",
+          "mode": "cow_snapshot",
+          "native_closure_calls": 200,
+          "prediction_calls": 200,
+          "prediction_summary": {
+            "all_fixedpoint_zero": true,
+            "all_receipts_verified": true,
+            "mean_branch_fork_ns": 15418.04,
+            "mean_candidate_patch_ns": 450480.735,
+            "mean_closure_ns": 12867.77,
+            "mean_prediction_ns": 588466.895,
+            "n": 200,
+            "output_sha256": "863dd52010908f88246a4f52050ffa918902cbde7c4ef0de6878824f3b8c1aa1",
+            "total_closure_work": 200
+          },
+          "random_env": {
+            "bad_score": -1.0,
+            "good_score": 1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w2_r0_i42"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  "COLD",
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "HOT",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "bad_score": -1.0,
+              "good_score": 1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w2_r0_i58"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 70880913,
+          "selector_wall_ns": 120952772
+        },
+        {
+          "alias_rate_percent": 50,
+          "candidate_count": 100,
+          "input_pool_sha256": "e4be99c32c2a5ebbb2cbfc2a6b0a7f4974ca144b4779c0fe1ab7db7ea530449c",
+          "mode": "cow_snapshot",
+          "native_closure_calls": 200,
+          "prediction_calls": 200,
+          "prediction_summary": {
+            "all_fixedpoint_zero": true,
+            "all_receipts_verified": true,
+            "mean_branch_fork_ns": 14195.895,
+            "mean_candidate_patch_ns": 184414.835,
+            "mean_closure_ns": 11742.945,
+            "mean_prediction_ns": 306536.56,
+            "n": 200,
+            "output_sha256": "8227115915e484b102e73fcdbee291b1ef9305f3884ea875cb6d849da35a4d94",
+            "total_closure_work": 200
+          },
+          "random_env": {
+            "bad_score": -1.0,
+            "good_score": 1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w2_r50_i30"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  "COLD",
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "HOT",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "bad_score": -1.0,
+              "good_score": 1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w2_r50_i12"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 65111907,
+          "selector_wall_ns": 64156297
+        },
+        {
+          "alias_rate_percent": 90,
+          "candidate_count": 100,
+          "input_pool_sha256": "8519523cede796e3ceb73ada13e3794d6e480f3a2b96e2a447804180a7b94504",
+          "mode": "cow_snapshot",
+          "native_closure_calls": 200,
+          "prediction_calls": 200,
+          "prediction_summary": {
+            "all_fixedpoint_zero": true,
+            "all_receipts_verified": true,
+            "mean_branch_fork_ns": 14970.98,
+            "mean_candidate_patch_ns": 191578.765,
+            "mean_closure_ns": 12819.415,
+            "mean_prediction_ns": 322662.885,
+            "n": 200,
+            "output_sha256": "f019aba6c828c35d3e76ab42423524d900f5853b9d34ddfa7e3f325229a4e351",
+            "total_closure_work": 200
+          },
+          "random_env": {
+            "bad_score": -1.0,
+            "good_score": -1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w2_r90_i95"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  "HOT",
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "COLD",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "bad_score": 1.0,
+              "good_score": -1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w2_r90_i5"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 68478218,
+          "selector_wall_ns": 67604256
+        },
+        {
+          "alias_rate_percent": 99,
+          "candidate_count": 100,
+          "input_pool_sha256": "142dfac061d1ce5c82b3deb67958601d70222d0f663e98c5ffac119041f6b448",
+          "mode": "cow_snapshot",
+          "native_closure_calls": 200,
+          "prediction_calls": 200,
+          "prediction_summary": {
+            "all_fixedpoint_zero": true,
+            "all_receipts_verified": true,
+            "mean_branch_fork_ns": 14360.555,
+            "mean_candidate_patch_ns": 182753.88,
+            "mean_closure_ns": 12021.02,
+            "mean_prediction_ns": 306399.315,
+            "n": 200,
+            "output_sha256": "789d156e53e080a84991601ca080e66a9aeaf3245d4fab9d3a28f8d0911cf283",
+            "total_closure_work": 200
+          },
+          "random_env": {
+            "bad_score": -1.0,
+            "good_score": -1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w2_r99_i9"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  "COLD",
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "HOT",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "bad_score": -1.0,
+              "good_score": 1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w2_r99_i0"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 64960877,
+          "selector_wall_ns": 64175466
+        },
+        {
+          "alias_rate_percent": 0,
+          "candidate_count": 100,
+          "input_pool_sha256": "3ace515d5ee32339e2e496af0c24f48fcdad7f11169610dd5300be01d7e91524",
+          "mode": "full_copy",
+          "native_closure_calls": 200,
+          "prediction_calls": 200,
+          "prediction_summary": {
+            "all_fixedpoint_zero": true,
+            "all_receipts_verified": true,
+            "mean_branch_fork_ns": 28850.085,
+            "mean_candidate_patch_ns": 186114.75,
+            "mean_closure_ns": 12482.26,
+            "mean_prediction_ns": 327445.43,
+            "n": 200,
+            "output_sha256": "863dd52010908f88246a4f52050ffa918902cbde7c4ef0de6878824f3b8c1aa1",
+            "total_closure_work": 200
+          },
+          "random_env": {
+            "bad_score": -1.0,
+            "good_score": 1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w2_r0_i42"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  "COLD",
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "HOT",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "bad_score": -1.0,
+              "good_score": 1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w2_r0_i58"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 69253809,
+          "selector_wall_ns": 68413121
+        },
+        {
+          "alias_rate_percent": 50,
+          "candidate_count": 100,
+          "input_pool_sha256": "e4be99c32c2a5ebbb2cbfc2a6b0a7f4974ca144b4779c0fe1ab7db7ea530449c",
+          "mode": "full_copy",
+          "native_closure_calls": 200,
+          "prediction_calls": 200,
+          "prediction_summary": {
+            "all_fixedpoint_zero": true,
+            "all_receipts_verified": true,
+            "mean_branch_fork_ns": 27954.725,
+            "mean_candidate_patch_ns": 182101.895,
+            "mean_closure_ns": 12026.05,
+            "mean_prediction_ns": 314644.185,
+            "n": 200,
+            "output_sha256": "8227115915e484b102e73fcdbee291b1ef9305f3884ea875cb6d849da35a4d94",
+            "total_closure_work": 200
+          },
+          "random_env": {
+            "bad_score": -1.0,
+            "good_score": 1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w2_r50_i30"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  "COLD",
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "HOT",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "bad_score": -1.0,
+              "good_score": 1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w2_r50_i12"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 66657059,
+          "selector_wall_ns": 65724916
+        },
+        {
+          "alias_rate_percent": 90,
+          "candidate_count": 100,
+          "input_pool_sha256": "8519523cede796e3ceb73ada13e3794d6e480f3a2b96e2a447804180a7b94504",
+          "mode": "full_copy",
+          "native_closure_calls": 200,
+          "prediction_calls": 200,
+          "prediction_summary": {
+            "all_fixedpoint_zero": true,
+            "all_receipts_verified": true,
+            "mean_branch_fork_ns": 29297.205,
+            "mean_candidate_patch_ns": 187658.6,
+            "mean_closure_ns": 12893.48,
+            "mean_prediction_ns": 328172.675,
+            "n": 200,
+            "output_sha256": "f019aba6c828c35d3e76ab42423524d900f5853b9d34ddfa7e3f325229a4e351",
+            "total_closure_work": 200
+          },
+          "random_env": {
+            "bad_score": -1.0,
+            "good_score": -1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w2_r90_i95"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  "HOT",
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "COLD",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "bad_score": 1.0,
+              "good_score": -1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w2_r90_i5"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 69535630,
+          "selector_wall_ns": 68620132
+        },
+        {
+          "alias_rate_percent": 99,
+          "candidate_count": 100,
+          "input_pool_sha256": "142dfac061d1ce5c82b3deb67958601d70222d0f663e98c5ffac119041f6b448",
+          "mode": "full_copy",
+          "native_closure_calls": 200,
+          "prediction_calls": 200,
+          "prediction_summary": {
+            "all_fixedpoint_zero": true,
+            "all_receipts_verified": true,
+            "mean_branch_fork_ns": 29279.875,
+            "mean_candidate_patch_ns": 188455.2,
+            "mean_closure_ns": 12683.065,
+            "mean_prediction_ns": 329142.205,
+            "n": 200,
+            "output_sha256": "789d156e53e080a84991601ca080e66a9aeaf3245d4fab9d3a28f8d0911cf283",
+            "total_closure_work": 200
+          },
+          "random_env": {
+            "bad_score": -1.0,
+            "good_score": -1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w2_r99_i9"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  "COLD",
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "HOT",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "bad_score": -1.0,
+              "good_score": 1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w2_r99_i0"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 69663639,
+          "selector_wall_ns": 68824753
+        }
+      ],
+      "semantic_candidate_match": true,
+      "site": "Attr key 'bad_score' -> 'good_score'",
+      "snapshot_creation_ns": 23940,
+      "source_after": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_ATTRIBUTE_SITE_ACTIVE_QUERY_V1_PREREG_20261002.md": "e340c9121e2834eee0e18136d0640b81d0e69e6fe1001f8b199a5a6215e55930",
+        "domains/contract_query.py": "9e42a16541e95fb0de8a051aebb654c39cf22fd5c5d7c610b58711692e789b37",
+        "domains/edit_ops.py": "5fef079eff6c47e6feb7cd35a92e39913312835acd82c151ca726319c4e9da1c",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/reflective_faculty.py": "30951ff474cf00dba5cf9dfc01589a61104f2a05120f530c941d1fbd40c0d845",
+        "domains/self_correction.py": "7c4f28e21afc4c334328d03146c56d5c46c80a9ec5c21aa22e1ee29f12deb2dd",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_attribute_site_active_query_v1.py": "881a0078c2f6fcbf01736d7d29b16051a641ccf02dd83db58068a36cb89ed4e8",
+        "evaluation/substrate_capability/thoughtexperiment_attribute_site_active_query_v1.py": "981a7d33a94be11938bed0bb80237e9dd3ea92e4e875d60072c9be82d1652754",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+      },
+      "source_before": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_ATTRIBUTE_SITE_ACTIVE_QUERY_V1_PREREG_20261002.md": "e340c9121e2834eee0e18136d0640b81d0e69e6fe1001f8b199a5a6215e55930",
+        "domains/contract_query.py": "9e42a16541e95fb0de8a051aebb654c39cf22fd5c5d7c610b58711692e789b37",
+        "domains/edit_ops.py": "5fef079eff6c47e6feb7cd35a92e39913312835acd82c151ca726319c4e9da1c",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/reflective_faculty.py": "30951ff474cf00dba5cf9dfc01589a61104f2a05120f530c941d1fbd40c0d845",
+        "domains/self_correction.py": "7c4f28e21afc4c334328d03146c56d5c46c80a9ec5c21aa22e1ee29f12deb2dd",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_attribute_site_active_query_v1.py": "881a0078c2f6fcbf01736d7d29b16051a641ccf02dd83db58068a36cb89ed4e8",
+        "evaluation/substrate_capability/thoughtexperiment_attribute_site_active_query_v1.py": "981a7d33a94be11938bed0bb80237e9dd3ea92e4e875d60072c9be82d1652754",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+      },
+      "source_stable": true,
+      "target": "classify_meter_delta",
+      "worker": 2
+    },
+    {
+      "branch_receipts_verified": true,
+      "composer_decision_ns": 23498204,
+      "operator": "swap_term_leaf",
+      "primary_target_preserved": true,
+      "proposal": {
+        "batch": false,
+        "content_hash": 8990572338201777206,
+        "effects": [
+          [
+            "set_attr",
+            "req",
+            "predicted",
+            {
+              "__term__": {
+                "cond": {
+                  "a": {
+                    "key": "good_score",
+                    "node": {
+                      "name": "m",
+                      "type": "Var"
+                    },
+                    "type": "Attr"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 0.0
+                  },
+                  "type": "Gt"
+                },
+                "other": {
+                  "key": "negative",
+                  "node": {
+                    "name": "m",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "then": {
+                  "key": "positive",
+                  "node": {
+                    "name": "m",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                "type": "IfThenElse"
+              }
+            }
+          ],
+          [
+            "set_attr",
+            "req",
+            "classified",
+            1.0
+          ],
+          [
+            "set_attr",
+            "req",
+            "audit",
+            {
+              "__term__": {
+                "key": "good_score",
+                "node": {
+                  "name": "m",
+                  "type": "Var"
+                },
+                "type": "Attr"
+              }
+            }
+          ]
+        ],
+        "match": [
+          [
+            "world",
+            "has_request",
+            "req"
+          ],
+          [
+            "req",
+            "has_measurement",
+            "m"
+          ]
+        ],
+        "match_type": null,
+        "name": "classify_meter_delta_structvariant_w3",
+        "revision": 0,
+        "rule_uid": 1,
+        "where": {
+          "a": {
+            "key": "classified",
+            "node": {
+              "name": "req",
+              "type": "Var"
+            },
+            "type": "Attr"
+          },
+          "b": {
+            "type": "Lit",
+            "value": 0.0
+          },
+          "type": "Eq"
+        }
+      },
+      "proposal_digest": "sha256:1eaa4b9e3df44a38d915a53715aa3dc6cb943bff4a2fa8561e9fba568a8c3e96",
+      "reference_digest": "sha256:1eaa4b9e3df44a38d915a53715aa3dc6cb943bff4a2fa8561e9fba568a8c3e96",
+      "reference_label": "swap_term_leaf:bad_score->good_score",
+      "selections": [
+        {
+          "alias_rate_percent": 0,
+          "candidate_count": 100,
+          "input_pool_sha256": "de319b8b3954f318e3e290cb38f960065497a0a521f625dd22a652eca0f4efb4",
+          "mode": "cow_snapshot",
+          "native_closure_calls": 200,
+          "prediction_calls": 200,
+          "prediction_summary": {
+            "all_fixedpoint_zero": true,
+            "all_receipts_verified": true,
+            "mean_branch_fork_ns": 15001.355,
+            "mean_candidate_patch_ns": 188153.715,
+            "mean_closure_ns": 12172.845,
+            "mean_prediction_ns": 313201.6,
+            "n": 200,
+            "output_sha256": "942d07bd05f475ec6203cba0c8fd4f46d1c32f199ee990065d8a026654d8d53c",
+            "total_closure_work": 200
+          },
+          "random_env": {
+            "bad_score": 1.0,
+            "good_score": -1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w3_r0_i16"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  "HOT",
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "COLD",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "bad_score": 1.0,
+              "good_score": -1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w3_r0_i32"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 66510487,
+          "selector_wall_ns": 65559555
+        },
+        {
+          "alias_rate_percent": 50,
+          "candidate_count": 100,
+          "input_pool_sha256": "375ecfea78d811dc4e697d5255570e58eb5ec938cf10b029f74547bda11b2cc5",
+          "mode": "cow_snapshot",
+          "native_closure_calls": 200,
+          "prediction_calls": 200,
+          "prediction_summary": {
+            "all_fixedpoint_zero": true,
+            "all_receipts_verified": true,
+            "mean_branch_fork_ns": 14290.505,
+            "mean_candidate_patch_ns": 189311.68,
+            "mean_closure_ns": 11825.39,
+            "mean_prediction_ns": 315145.545,
+            "n": 200,
+            "output_sha256": "c6262730f189e5f00907d8f6acc0ff28bc3e9fa3b2f8378417ac9e10fc82a49c",
+            "total_closure_work": 200
+          },
+          "random_env": {
+            "bad_score": -1.0,
+            "good_score": 1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w3_r50_i39"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  "COLD",
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "HOT",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "bad_score": -1.0,
+              "good_score": 1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w3_r50_i3"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 66917227,
+          "selector_wall_ns": 65959957
+        },
+        {
+          "alias_rate_percent": 90,
+          "candidate_count": 100,
+          "input_pool_sha256": "b9c5183bd5130b11dff6e03afac11ed0e1ebe18ef9ea6e652873e8c2e7b52bbf",
+          "mode": "cow_snapshot",
+          "native_closure_calls": 200,
+          "prediction_calls": 200,
+          "prediction_summary": {
+            "all_fixedpoint_zero": true,
+            "all_receipts_verified": true,
+            "mean_branch_fork_ns": 14101.345,
+            "mean_candidate_patch_ns": 175145.0,
+            "mean_closure_ns": 11613.07,
+            "mean_prediction_ns": 296764.575,
+            "n": 200,
+            "output_sha256": "73d22e814a65dc373936f150187922c1e99cc90ad58883aaa2675a602766af3b",
+            "total_closure_work": 200
+          },
+          "random_env": {
+            "bad_score": -1.0,
+            "good_score": -1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w3_r90_i92"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  "HOT",
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "COLD",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "bad_score": 1.0,
+              "good_score": -1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w3_r90_i6"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 63044447,
+          "selector_wall_ns": 62191006
+        },
+        {
+          "alias_rate_percent": 99,
+          "candidate_count": 100,
+          "input_pool_sha256": "28caada474b6c3eb4e9e9d201206df42742483bab8ec482973c5ed3d74507463",
+          "mode": "cow_snapshot",
+          "native_closure_calls": 200,
+          "prediction_calls": 200,
+          "prediction_summary": {
+            "all_fixedpoint_zero": true,
+            "all_receipts_verified": true,
+            "mean_branch_fork_ns": 15856.895,
+            "mean_candidate_patch_ns": 341538.84,
+            "mean_closure_ns": 13415.815,
+            "mean_prediction_ns": 489640.635,
+            "n": 200,
+            "output_sha256": "6ccd3d25460740915c060dccd19c8e8da6772462b96708ecd01b212c0df3745a",
+            "total_closure_work": 200
+          },
+          "random_env": {
+            "bad_score": -1.0,
+            "good_score": -1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w3_r99_i58"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  "HOT",
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "COLD",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "bad_score": 1.0,
+              "good_score": -1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w3_r99_i0"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 74933950,
+          "selector_wall_ns": 101317329
+        },
+        {
+          "alias_rate_percent": 0,
+          "candidate_count": 100,
+          "input_pool_sha256": "de319b8b3954f318e3e290cb38f960065497a0a521f625dd22a652eca0f4efb4",
+          "mode": "full_copy",
+          "native_closure_calls": 200,
+          "prediction_calls": 200,
+          "prediction_summary": {
+            "all_fixedpoint_zero": true,
+            "all_receipts_verified": true,
+            "mean_branch_fork_ns": 28760.645,
+            "mean_candidate_patch_ns": 187228.675,
+            "mean_closure_ns": 11975.885,
+            "mean_prediction_ns": 322683.49,
+            "n": 200,
+            "output_sha256": "942d07bd05f475ec6203cba0c8fd4f46d1c32f199ee990065d8a026654d8d53c",
+            "total_closure_work": 200
+          },
+          "random_env": {
+            "bad_score": 1.0,
+            "good_score": -1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w3_r0_i16"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  "HOT",
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "COLD",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "bad_score": 1.0,
+              "good_score": -1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w3_r0_i32"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 68285240,
+          "selector_wall_ns": 67398875
+        },
+        {
+          "alias_rate_percent": 50,
+          "candidate_count": 100,
+          "input_pool_sha256": "375ecfea78d811dc4e697d5255570e58eb5ec938cf10b029f74547bda11b2cc5",
+          "mode": "full_copy",
+          "native_closure_calls": 200,
+          "prediction_calls": 200,
+          "prediction_summary": {
+            "all_fixedpoint_zero": true,
+            "all_receipts_verified": true,
+            "mean_branch_fork_ns": 27382.69,
+            "mean_candidate_patch_ns": 183842.62,
+            "mean_closure_ns": 11679.795,
+            "mean_prediction_ns": 315021.015,
+            "n": 200,
+            "output_sha256": "c6262730f189e5f00907d8f6acc0ff28bc3e9fa3b2f8378417ac9e10fc82a49c",
+            "total_closure_work": 200
+          },
+          "random_env": {
+            "bad_score": -1.0,
+            "good_score": 1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w3_r50_i39"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  "COLD",
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "HOT",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "bad_score": -1.0,
+              "good_score": 1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w3_r50_i3"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 66674208,
+          "selector_wall_ns": 65753446
+        },
+        {
+          "alias_rate_percent": 90,
+          "candidate_count": 100,
+          "input_pool_sha256": "b9c5183bd5130b11dff6e03afac11ed0e1ebe18ef9ea6e652873e8c2e7b52bbf",
+          "mode": "full_copy",
+          "native_closure_calls": 200,
+          "prediction_calls": 200,
+          "prediction_summary": {
+            "all_fixedpoint_zero": true,
+            "all_receipts_verified": true,
+            "mean_branch_fork_ns": 27454.34,
+            "mean_candidate_patch_ns": 184836.36,
+            "mean_closure_ns": 12054.965,
+            "mean_prediction_ns": 318613.095,
+            "n": 200,
+            "output_sha256": "73d22e814a65dc373936f150187922c1e99cc90ad58883aaa2675a602766af3b",
+            "total_closure_work": 200
+          },
+          "random_env": {
+            "bad_score": -1.0,
+            "good_score": -1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w3_r90_i92"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  "HOT",
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "COLD",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "bad_score": 1.0,
+              "good_score": -1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w3_r90_i6"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 67514918,
+          "selector_wall_ns": 66570941
+        },
+        {
+          "alias_rate_percent": 99,
+          "candidate_count": 100,
+          "input_pool_sha256": "28caada474b6c3eb4e9e9d201206df42742483bab8ec482973c5ed3d74507463",
+          "mode": "full_copy",
+          "native_closure_calls": 200,
+          "prediction_calls": 200,
+          "prediction_summary": {
+            "all_fixedpoint_zero": true,
+            "all_receipts_verified": true,
+            "mean_branch_fork_ns": 28430.24,
+            "mean_candidate_patch_ns": 195034.705,
+            "mean_closure_ns": 12887.305,
+            "mean_prediction_ns": 336739.305,
+            "n": 200,
+            "output_sha256": "6ccd3d25460740915c060dccd19c8e8da6772462b96708ecd01b212c0df3745a",
+            "total_closure_work": 200
+          },
+          "random_env": {
+            "bad_score": -1.0,
+            "good_score": -1.0,
+            "negative": "COLD",
+            "positive": "HOT",
+            "probe_id": "w3_r99_i58"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  "HOT",
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "COLD",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "bad_score": 1.0,
+              "good_score": -1.0,
+              "negative": "COLD",
+              "positive": "HOT",
+              "probe_id": "w3_r99_i0"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 70600698,
+          "selector_wall_ns": 70248701
+        }
+      ],
+      "semantic_candidate_match": true,
+      "site": "Attr key 'bad_score' -> 'good_score'",
+      "snapshot_creation_ns": 19431,
+      "source_after": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_ATTRIBUTE_SITE_ACTIVE_QUERY_V1_PREREG_20261002.md": "e340c9121e2834eee0e18136d0640b81d0e69e6fe1001f8b199a5a6215e55930",
+        "domains/contract_query.py": "9e42a16541e95fb0de8a051aebb654c39cf22fd5c5d7c610b58711692e789b37",
+        "domains/edit_ops.py": "5fef079eff6c47e6feb7cd35a92e39913312835acd82c151ca726319c4e9da1c",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/reflective_faculty.py": "30951ff474cf00dba5cf9dfc01589a61104f2a05120f530c941d1fbd40c0d845",
+        "domains/self_correction.py": "7c4f28e21afc4c334328d03146c56d5c46c80a9ec5c21aa22e1ee29f12deb2dd",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_attribute_site_active_query_v1.py": "881a0078c2f6fcbf01736d7d29b16051a641ccf02dd83db58068a36cb89ed4e8",
+        "evaluation/substrate_capability/thoughtexperiment_attribute_site_active_query_v1.py": "981a7d33a94be11938bed0bb80237e9dd3ea92e4e875d60072c9be82d1652754",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+      },
+      "source_before": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_ATTRIBUTE_SITE_ACTIVE_QUERY_V1_PREREG_20261002.md": "e340c9121e2834eee0e18136d0640b81d0e69e6fe1001f8b199a5a6215e55930",
+        "domains/contract_query.py": "9e42a16541e95fb0de8a051aebb654c39cf22fd5c5d7c610b58711692e789b37",
+        "domains/edit_ops.py": "5fef079eff6c47e6feb7cd35a92e39913312835acd82c151ca726319c4e9da1c",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/reflective_faculty.py": "30951ff474cf00dba5cf9dfc01589a61104f2a05120f530c941d1fbd40c0d845",
+        "domains/self_correction.py": "7c4f28e21afc4c334328d03146c56d5c46c80a9ec5c21aa22e1ee29f12deb2dd",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_attribute_site_active_query_v1.py": "881a0078c2f6fcbf01736d7d29b16051a641ccf02dd83db58068a36cb89ed4e8",
+        "evaluation/substrate_capability/thoughtexperiment_attribute_site_active_query_v1.py": "981a7d33a94be11938bed0bb80237e9dd3ea92e4e875d60072c9be82d1652754",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+      },
+      "source_stable": true,
+      "target": "classify_meter_delta",
+      "worker": 3
+    }
+  ]
+}

@@ -1,0 +1,118 @@
+{
+  "analysis": "evaluation/reports/substrate_adequacy_selector_receipt_adoption_v1_analysis_20261002.json",
+  "analyzer_sha256": "f20fc1c353a668e9e8ad1bb768b6ae383833de733e66a742592eda7dc4fd6d1b",
+  "checks": [
+    {
+      "detail": null,
+      "name": "live_source_lock_matches",
+      "passed": true
+    },
+    {
+      "detail": null,
+      "name": "capture_lock_and_post_lock_match",
+      "passed": true
+    },
+    {
+      "detail": null,
+      "name": "worker_sources_stable",
+      "passed": true
+    },
+    {
+      "detail": null,
+      "name": "nine_fresh_processes",
+      "passed": true
+    },
+    {
+      "detail": null,
+      "name": "three_repeats_per_case",
+      "passed": true
+    },
+    {
+      "detail": {
+        "errors": []
+      },
+      "name": "independent_receipt_and_outcome_audit",
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "schema": "SubstrateAdequacySelectorReceiptAdoptionV1Analysis",
+  "summary": {
+    "cases": {
+      "correct_square": {
+        "epoch_increments": [
+          1,
+          1,
+          1
+        ],
+        "heldout_exact": 3,
+        "receipt_statuses": {
+          "accepted": 3,
+          "rejected": 0
+        },
+        "selected_inputs": [
+          {
+            "x": 3
+          },
+          {
+            "x": 2
+          },
+          {
+            "x": 2
+          }
+        ],
+        "teach_adoptions": 3
+      },
+      "wrong_identity_alias": {
+        "epoch_increments": [
+          1,
+          1,
+          1
+        ],
+        "heldout_exact": 0,
+        "receipt_statuses": {
+          "accepted": 3,
+          "rejected": 0
+        },
+        "selected_inputs": [
+          {
+            "x": 1
+          },
+          {
+            "x": 1
+          },
+          {
+            "x": 1
+          }
+        ],
+        "teach_adoptions": 3
+      },
+      "wrong_identity_broad": {
+        "epoch_increments": [
+          0,
+          0,
+          0
+        ],
+        "heldout_exact": 0,
+        "receipt_statuses": {
+          "accepted": 0,
+          "rejected": 3
+        },
+        "selected_inputs": [
+          {
+            "x": 4
+          },
+          {
+            "x": 3
+          },
+          {
+            "x": 3
+          }
+        ],
+        "teach_adoptions": 0
+      }
+    },
+    "median_full_seed_boot_ms": 11931.742182,
+    "workers": 9
+  }
+}

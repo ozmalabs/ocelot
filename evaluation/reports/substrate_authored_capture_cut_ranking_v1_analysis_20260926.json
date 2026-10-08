@@ -1,0 +1,45 @@
+{
+  "case_checks": {
+    "bigville_task_access_census": {
+      "captured_graph_digest_matches_accepted_source_record": true,
+      "graph_digest_validation_method": "source digest record; accepted trace-off parity gate",
+      "graph_identity_validated": true,
+      "induced_width_matches": true,
+      "min_fill_order_matches": true,
+      "partition_metrics_match_independent_recomputation": true,
+      "task_ownership_complete": true,
+      "three_partition_arms": true
+    },
+    "connected_mixed_dialogue_census": {
+      "captured_graph_digest_matches_accepted_source_record": true,
+      "graph_digest_validation_method": "recomputed canonical digest from full graph JSON",
+      "graph_identity_validated": true,
+      "induced_width_matches": true,
+      "min_fill_order_matches": true,
+      "partition_metrics_match_independent_recomputation": true,
+      "task_ownership_complete": true,
+      "three_partition_arms": true
+    }
+  },
+  "checks": {
+    "all_case_checks_pass": true,
+    "lock_runner_and_capture_hashes_match": true,
+    "raw_case_set_complete": true,
+    "raw_cites_current_lock": true,
+    "raw_is_retrospective_only": true,
+    "source_capture_checks_all_pass": true
+  },
+  "claim_boundary": "Cut ranking on two previously captured task graphs only; no rerun, mutation, partitioned closure, parity, natural-task prevalence, or speed claim.",
+  "lock_sha256": "3c423a8855ea0c7ce05fb71cd52109ad353df9e3f1fca5bd51db1e8c5642be04",
+  "raw_sha256": "da02a090d71695c2b4431f49fffc8c24c5b5f2f42e9dbe12b722162dd38b540f",
+  "run_id": "substrate-authored-capture-cut-ranking-v1-analysis-20260926",
+  "schema_version": 1,
+  "unmet_confirmatory_requirements": [
+    "fresh trace-on/off/control runs under this protocol",
+    "three boundary mutation branches",
+    "partition rebuild/update cost",
+    "shared-state refusal or audited boundary delivery",
+    "partitioned-vs-monolithic parity at every checkpoint",
+    "omitted-boundary divergence control"
+  ]
+}

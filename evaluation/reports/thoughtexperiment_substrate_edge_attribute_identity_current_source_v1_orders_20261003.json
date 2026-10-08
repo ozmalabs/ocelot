@@ -1,0 +1,4292 @@
+{
+  "captured_utc": "2026-10-03T03:29:03Z",
+  "host": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+  "lock_sha256": "5dfcf067dd9f034886a0c7578935cd03e917d1a708f3a296fef73e482e58bf09",
+  "schema": "SubstrateEdgeAttributeIdentityV1Orders",
+  "workers": [
+    {
+      "controls": {
+        "ambiguous_site": {
+          "built": false,
+          "kind": "add_edge_identity_guard",
+          "wall": "no unique positive-scoring EditSite for 'add_edge_identity_guard' among 3 applicable edge sites (tied or no cue overlap); abstained"
+        },
+        "ambiguous_site_ns": 31563229,
+        "no_overlap": {
+          "built": false,
+          "kind": null,
+          "wall": "no RuleSummary genuinely overlaps this axis's residual predicates (abstained, like the acting-variant pick abstains on no overlap)"
+        },
+        "no_overlap_ns": 23538374
+      },
+      "families": {
+        "actor_recipient_edge": {
+          "primary_rule_unchanged": true,
+          "proposal": {
+            "built": true,
+            "candidate": {
+              "label": "substrate_composer",
+              "rules": {
+                "mint_actor_goal_recipient": {
+                  "batch": false,
+                  "content_hash": 5120657590456103972,
+                  "effects": [
+                    [
+                      "add_node",
+                      "goal",
+                      "ActorGoal",
+                      {
+                        "actor": {
+                          "__term__": {
+                            "key": "actor",
+                            "node": {
+                              "name": "aa",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        },
+                        "agency": "recipient",
+                        "meta_goal_core_interest": "",
+                        "meta_goal_opposes": "",
+                        "note": "no authored goal -- the actor is grammatically the subject but semantically the RECIPIENT/beneficiary of this verb class, per the held RecipientVerb codebook, honestly no surface goal abducted",
+                        "object": {
+                          "__term__": {
+                            "key": "object_domain",
+                            "node": {
+                              "name": "aa",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        },
+                        "revisable": 1.0,
+                        "serves_conflicting_meta_goal": 0.0,
+                        "surface_goal": "",
+                        "verb": {
+                          "__term__": {
+                            "key": "verb",
+                            "node": {
+                              "name": "aa",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        }
+                      }
+                    ],
+                    [
+                      "add_edge",
+                      "agent",
+                      "has_actor_goal",
+                      "goal",
+                      {}
+                    ]
+                  ],
+                  "match": [
+                    [
+                      "agent",
+                      "has_actor_action",
+                      "aa"
+                    ],
+                    [
+                      "agent",
+                      "has_recipient_verb",
+                      "rv"
+                    ]
+                  ],
+                  "match_type": null,
+                  "name": "mint_actor_goal_recipient_structvariant_order0",
+                  "revision": 0,
+                  "rule_uid": 4,
+                  "where": {
+                    "items": [
+                      {
+                        "items": [
+                          {
+                            "a": {
+                              "key": "verb",
+                              "node": {
+                                "name": "aa",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "b": {
+                              "key": "verb",
+                              "node": {
+                                "name": "rv",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "type": "Eq"
+                          }
+                        ],
+                        "type": "And"
+                      },
+                      {
+                        "arg": {
+                          "predicate": {
+                            "type": "Lit",
+                            "value": true
+                          },
+                          "source": {
+                            "edge_type": "has_actor_goal",
+                            "node": {
+                              "name": "agent",
+                              "type": "Var"
+                            },
+                            "type": "Neighbours"
+                          },
+                          "type": "Exists",
+                          "var_name": "existing_edge_identity"
+                        },
+                        "type": "Not"
+                      }
+                    ],
+                    "type": "And"
+                  }
+                }
+              }
+            },
+            "compose_ns": 25659798,
+            "digest": "sha256:6b8a662f087d34240137a8fb327325757b992f529a3b82cfddb5637cfc227e48",
+            "operator": "add_edge_identity_guard",
+            "site": "out agent has_actor_goal any endpoint",
+            "source_rule_digest": "sha256:fb1929256756cc2c0a70e90c386f9a271aa5dff082e3cd555baa391b67211816",
+            "target": "mint_actor_goal_recipient",
+            "wall": null
+          },
+          "source_control_ns": 3022141,
+          "source_training": [
+            {
+              "correct": true,
+              "expected_counts": [
+                1
+              ],
+              "fixedpoint_progress": 0,
+              "input_sweeps": [
+                1
+              ],
+              "output_counts": [
+                1
+              ],
+              "rule_store_stable": true,
+              "verbs": [
+                "sing"
+              ]
+            },
+            {
+              "correct": true,
+              "expected_counts": [
+                1
+              ],
+              "fixedpoint_progress": 0,
+              "input_sweeps": [
+                1
+              ],
+              "output_counts": [
+                1
+              ],
+              "rule_store_stable": true,
+              "verbs": [
+                "sing"
+              ]
+            }
+          ],
+          "training": [
+            {
+              "correct": true,
+              "expected_counts": [
+                1
+              ],
+              "fixedpoint_progress": 0,
+              "input_sweeps": [
+                1
+              ],
+              "output_counts": [
+                1
+              ],
+              "rule_store_stable": true,
+              "verbs": [
+                "sing"
+              ]
+            },
+            {
+              "correct": true,
+              "expected_counts": [
+                1
+              ],
+              "fixedpoint_progress": 0,
+              "input_sweeps": [
+                1
+              ],
+              "output_counts": [
+                1
+              ],
+              "rule_store_stable": true,
+              "verbs": [
+                "sing"
+              ]
+            }
+          ],
+          "training_scoring_ns": 4269660
+        },
+        "actor_recipient_identity": {
+          "primary_rule_unchanged": true,
+          "proposal": {
+            "built": true,
+            "candidate": {
+              "label": "substrate_composer",
+              "rules": {
+                "mint_actor_goal_recipient": {
+                  "batch": false,
+                  "content_hash": 5120657590456103972,
+                  "effects": [
+                    [
+                      "add_node",
+                      "goal",
+                      "ActorGoal",
+                      {
+                        "actor": {
+                          "__term__": {
+                            "key": "actor",
+                            "node": {
+                              "name": "aa",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        },
+                        "agency": "recipient",
+                        "meta_goal_core_interest": "",
+                        "meta_goal_opposes": "",
+                        "note": "no authored goal -- the actor is grammatically the subject but semantically the RECIPIENT/beneficiary of this verb class, per the held RecipientVerb codebook, honestly no surface goal abducted",
+                        "object": {
+                          "__term__": {
+                            "key": "object_domain",
+                            "node": {
+                              "name": "aa",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        },
+                        "revisable": 1.0,
+                        "serves_conflicting_meta_goal": 0.0,
+                        "surface_goal": "",
+                        "verb": {
+                          "__term__": {
+                            "key": "verb",
+                            "node": {
+                              "name": "aa",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        }
+                      }
+                    ],
+                    [
+                      "add_edge",
+                      "agent",
+                      "has_actor_goal",
+                      "goal",
+                      {}
+                    ]
+                  ],
+                  "match": [
+                    [
+                      "agent",
+                      "has_actor_action",
+                      "aa"
+                    ],
+                    [
+                      "agent",
+                      "has_recipient_verb",
+                      "rv"
+                    ]
+                  ],
+                  "match_type": null,
+                  "name": "mint_actor_goal_recipient_structvariant_order0",
+                  "revision": 0,
+                  "rule_uid": 4,
+                  "where": {
+                    "items": [
+                      {
+                        "items": [
+                          {
+                            "a": {
+                              "key": "verb",
+                              "node": {
+                                "name": "aa",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "b": {
+                              "key": "verb",
+                              "node": {
+                                "name": "rv",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "type": "Eq"
+                          }
+                        ],
+                        "type": "And"
+                      },
+                      {
+                        "arg": {
+                          "predicate": {
+                            "items": [
+                              {
+                                "a": {
+                                  "key": "actor",
+                                  "node": {
+                                    "name": "existing_edge_identity",
+                                    "type": "Var"
+                                  },
+                                  "type": "Attr"
+                                },
+                                "b": {
+                                  "key": "actor",
+                                  "node": {
+                                    "name": "aa",
+                                    "type": "Var"
+                                  },
+                                  "type": "Attr"
+                                },
+                                "type": "Eq"
+                              },
+                              {
+                                "a": {
+                                  "key": "verb",
+                                  "node": {
+                                    "name": "existing_edge_identity",
+                                    "type": "Var"
+                                  },
+                                  "type": "Attr"
+                                },
+                                "b": {
+                                  "key": "verb",
+                                  "node": {
+                                    "name": "aa",
+                                    "type": "Var"
+                                  },
+                                  "type": "Attr"
+                                },
+                                "type": "Eq"
+                              }
+                            ],
+                            "type": "And"
+                          },
+                          "source": {
+                            "node_type": "ActorGoal",
+                            "type": "NodesOfType"
+                          },
+                          "type": "Exists",
+                          "var_name": "existing_edge_identity"
+                        },
+                        "type": "Not"
+                      }
+                    ],
+                    "type": "And"
+                  }
+                }
+              }
+            },
+            "compose_ns": 15688419,
+            "digest": "sha256:df99935a3168656d4d9d365d2bf76fdb5a8a86c510f7158e410bc0523ff08678",
+            "operator": "add_edge_identity_guard",
+            "site": "out agent has_actor_goal attributes actor+verb",
+            "source_rule_digest": "sha256:fb1929256756cc2c0a70e90c386f9a271aa5dff082e3cd555baa391b67211816",
+            "target": "mint_actor_goal_recipient",
+            "wall": null
+          },
+          "source_control_ns": 3852146,
+          "source_training": [
+            {
+              "correct": true,
+              "expected_counts": [
+                1
+              ],
+              "fixedpoint_progress": 0,
+              "input_sweeps": [
+                1
+              ],
+              "output_counts": [
+                1
+              ],
+              "rule_store_stable": true,
+              "verbs": [
+                "sing"
+              ]
+            },
+            {
+              "correct": true,
+              "expected_counts": [
+                1
+              ],
+              "fixedpoint_progress": 0,
+              "input_sweeps": [
+                1
+              ],
+              "output_counts": [
+                1
+              ],
+              "rule_store_stable": true,
+              "verbs": [
+                "sing"
+              ]
+            }
+          ],
+          "training": [
+            {
+              "correct": true,
+              "expected_counts": [
+                1
+              ],
+              "fixedpoint_progress": 0,
+              "input_sweeps": [
+                1
+              ],
+              "output_counts": [
+                1
+              ],
+              "rule_store_stable": true,
+              "verbs": [
+                "sing"
+              ]
+            },
+            {
+              "correct": true,
+              "expected_counts": [
+                1
+              ],
+              "fixedpoint_progress": 0,
+              "input_sweeps": [
+                1
+              ],
+              "output_counts": [
+                1
+              ],
+              "rule_store_stable": true,
+              "verbs": [
+                "sing"
+              ]
+            }
+          ],
+          "training_scoring_ns": 4346480
+        },
+        "conversation": {
+          "primary_rule_unchanged": true,
+          "proposal": {
+            "built": true,
+            "candidate": {
+              "label": "substrate_composer",
+              "rules": {
+                "reply_to_adjacency_pair": {
+                  "batch": false,
+                  "content_hash": 6590774322814344041,
+                  "effects": [
+                    [
+                      "add_node",
+                      "reply",
+                      "Message",
+                      {
+                        "from": "agent"
+                      }
+                    ],
+                    [
+                      "add_edge",
+                      "reply",
+                      "has_speech_act",
+                      "r",
+                      {}
+                    ],
+                    [
+                      "add_edge",
+                      "reply",
+                      "responds_to",
+                      "m",
+                      {}
+                    ],
+                    [
+                      "add_edge",
+                      "agent",
+                      "sent",
+                      "reply",
+                      {}
+                    ],
+                    [
+                      "set_attr",
+                      "m",
+                      "adjacency_replied_act",
+                      {
+                        "__term__": {
+                          "key": "name",
+                          "node": {
+                            "name": "r",
+                            "type": "Var"
+                          },
+                          "type": "Attr"
+                        }
+                      }
+                    ]
+                  ],
+                  "match": [
+                    [
+                      "m",
+                      "has_intent",
+                      "i"
+                    ],
+                    [
+                      "i",
+                      "expects_response",
+                      "r"
+                    ],
+                    [
+                      "agent",
+                      "is_a",
+                      "Agent"
+                    ]
+                  ],
+                  "match_type": null,
+                  "name": "reply_to_adjacency_pair_structvariant_order0",
+                  "revision": 0,
+                  "rule_uid": 12,
+                  "where": {
+                    "items": [
+                      {
+                        "items": [
+                          {
+                            "a": {
+                              "key": "from",
+                              "node": {
+                                "name": "m",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": "interlocutor"
+                            },
+                            "type": "Eq"
+                          }
+                        ],
+                        "type": "And"
+                      },
+                      {
+                        "arg": {
+                          "predicate": {
+                            "type": "Lit",
+                            "value": true
+                          },
+                          "source": {
+                            "edge_type": "responds_to",
+                            "node": {
+                              "name": "m",
+                              "type": "Var"
+                            },
+                            "type": "InNeighbours"
+                          },
+                          "type": "Exists",
+                          "var_name": "existing_edge_identity"
+                        },
+                        "type": "Not"
+                      }
+                    ],
+                    "type": "And"
+                  }
+                }
+              }
+            },
+            "compose_ns": 31122066,
+            "digest": "sha256:2142f383a9a699868b40da8a7afe5d0c2f526ec9d7fb63aaf784031ba3b55555",
+            "operator": "add_edge_identity_guard",
+            "site": "in m responds_to any endpoint",
+            "source_rule_digest": "sha256:b0ce645cf9092f626aa86ca2417cf5f6c4a6bcd4645c03a28b2b0c5c116ca758",
+            "target": "reply_to_adjacency_pair",
+            "wall": null
+          },
+          "source_control_ns": 17824624,
+          "source_training": [
+            {
+              "correct": true,
+              "expected_counts": [
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#491"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 396413
+            },
+            {
+              "correct": true,
+              "expected_counts": [
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#491"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 363343
+            }
+          ],
+          "training": [
+            {
+              "correct": true,
+              "expected_counts": [
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#491"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 18388157
+            },
+            {
+              "correct": true,
+              "expected_counts": [
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#491"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 381762
+            }
+          ],
+          "training_scoring_ns": 37533900
+        },
+        "recurrence": {
+          "primary_rule_unchanged": true,
+          "proposal": {
+            "built": true,
+            "candidate": {
+              "label": "substrate_composer",
+              "rules": {
+                "mrl_offer_due_once": {
+                  "batch": false,
+                  "content_hash": 463715677639902482,
+                  "effects": [
+                    [
+                      "add_node",
+                      "offer",
+                      "Observation",
+                      {
+                        "key": {
+                          "__term__": {
+                            "source": {
+                              "items": [
+                                {
+                                  "key": "capability_key",
+                                  "node": {
+                                    "name": "candidate",
+                                    "type": "Var"
+                                  },
+                                  "type": "Attr"
+                                }
+                              ],
+                              "type": "SetT"
+                            },
+                            "type": "MapList",
+                            "value": {
+                              "name": "k",
+                              "type": "Var"
+                            },
+                            "var_name": "k"
+                          }
+                        },
+                        "offered_at_persistence": {
+                          "__term__": {
+                            "key": "persistence",
+                            "node": {
+                              "name": "candidate",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        },
+                        "offered_at_segment": {
+                          "__term__": {
+                            "key": "latest_segment_ordinal",
+                            "node": {
+                              "name": "candidate",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        },
+                        "signature": {
+                          "__term__": {
+                            "key": "structural_signature",
+                            "node": {
+                              "name": "candidate",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        },
+                        "status": "pending"
+                      }
+                    ],
+                    [
+                      "add_edge",
+                      "agent",
+                      "observed",
+                      "offer",
+                      {}
+                    ],
+                    [
+                      "add_edge",
+                      "candidate",
+                      "has_mint_offer",
+                      "offer",
+                      {}
+                    ],
+                    [
+                      "add_edge",
+                      "episode",
+                      "has_mint_offer",
+                      "offer",
+                      {}
+                    ]
+                  ],
+                  "match": [
+                    [
+                      "agent",
+                      "has_minting_recurrence_episode",
+                      "episode"
+                    ],
+                    [
+                      "episode",
+                      "has_predicate_recurrence_candidate",
+                      "candidate"
+                    ]
+                  ],
+                  "match_type": null,
+                  "name": "mrl_offer_due_once_structvariant_order0",
+                  "revision": 0,
+                  "rule_uid": 13,
+                  "where": {
+                    "items": [
+                      {
+                        "items": [
+                          {
+                            "a": {
+                              "key": "persistence",
+                              "node": {
+                                "name": "candidate",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "b": {
+                              "key": "mint_after_quanta",
+                              "node": {
+                                "name": "episode",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "type": "Gte"
+                          }
+                        ],
+                        "type": "And"
+                      },
+                      {
+                        "arg": {
+                          "predicate": {
+                            "type": "Lit",
+                            "value": true
+                          },
+                          "source": {
+                            "edge_type": "has_mint_offer",
+                            "node": {
+                              "name": "candidate",
+                              "type": "Var"
+                            },
+                            "type": "Neighbours"
+                          },
+                          "type": "Exists",
+                          "var_name": "existing_edge_identity"
+                        },
+                        "type": "Not"
+                      }
+                    ],
+                    "type": "And"
+                  }
+                }
+              }
+            },
+            "compose_ns": 36946756,
+            "digest": "sha256:b63b0f29aa232a0c5d92da634ef729dd6a28091b2967ec2644d9426997405a9c",
+            "operator": "add_edge_identity_guard",
+            "site": "out candidate has_mint_offer any endpoint",
+            "source_rule_digest": "sha256:04479af4f59ef2139cb2d69c4af6c7eb363fc081b494f6d788c1a58bf5a16af1",
+            "target": "mrl_offer_due_once",
+            "wall": null
+          },
+          "source_control_ns": 13154381,
+          "source_training": [
+            {
+              "correct": true,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-0-train_source_0-0-0",
+                "bidir-0-train_source_0-0-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "correct": true,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-0-train_source_0-1-0",
+                "bidir-0-train_source_0-1-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ],
+          "training": [
+            {
+              "correct": true,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-0-train_0-0-0",
+                "bidir-0-train_0-0-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "correct": true,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-0-train_0-1-0",
+                "bidir-0-train_0-1-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ],
+          "training_scoring_ns": 14244379
+        }
+      },
+      "source_after": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_PREREG_20261002.md": "2475c402246935fd9f60ba4a5994592b52a40653065f4055636da8756e1b743a",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_SUBSTRATE_EDGE_ATTRIBUTE_IDENTITY_CURRENT_SOURCE_AMENDMENT_20261003.md": "44acc12938f1e05c6152ac962b912a6bca3d63969dcd1b223e73840f872dc215",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_SUBSTRATE_EDGE_ATTRIBUTE_IDENTITY_V1_PREREG_20261002.md": "e0ea3efc99aee011ba47c351c9ddfb571720d266ffed2be43c75e2305b794ebc",
+        "domains/edit_ops.py": "308c401e992f8512308b3abb2b32acd6708bfebbb90255d7c5c9f4ea36c73a0d",
+        "domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+        "domains/seed_registry.py": "bb67553fd24366900698fddb6b649671a0b2ea2431c10784feaf054704bc292f",
+        "episode_helper::docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_1_AMENDMENT_20261002.md": "e46f2e311f31f93eda56772d71ad3fdc7ad9b84dafec10a39beb6020b23846dc",
+        "episode_helper::docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_PREREG_20261002.md": "2475c402246935fd9f60ba4a5994592b52a40653065f4055636da8756e1b743a",
+        "episode_helper::domains/contract_query.py": "5861f25467e2fed9905fa325816a3dc60822d4a79004b8b7b095511c3806b9a6",
+        "episode_helper::domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "episode_helper::domains/language_world.py": "06d24bdba1ccbd720f749f0c02d5a96729c40601237ec21a8f938077b2a262bb",
+        "episode_helper::domains/reference_resolution.py": "1f9c6ce8eaf98c33deb025110a0dea5e7960251eace4f7dc6872d3d4b85c2701",
+        "episode_helper::domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+        "episode_helper::evaluation/substrate_capability/analyze_thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "35f7efdf13d181853a4c915a9fa6bc2a03658a948db6159aaba9d4ebd6493260",
+        "episode_helper::evaluation/substrate_capability/thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "94e0c33434d055b886f9f4be389737e2d508a9a3dcb5d720db8b739929b55696",
+        "episode_helper::loaded_native_binary": "995e5c6a74989d06d310ed37e7f05e90a9a21e075684f2e155e1f6f23f809483",
+        "episode_helper::runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "episode_helper::runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "episode_helper::runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "episode_helper::runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "episode_helper::runners/dsl/src/graph.rs": "39c4fb983db934cf7350c28d168d0ad9d3049efba1cdb3847f23b55a0d488c66",
+        "episode_helper::runners/dsl/src/graph_rules.rs": "c02b4f7499f40348395f9ef0394c8799c6d0664d1d8296bf780f3745d3299246",
+        "episode_helper::runners/dsl/src/lib.rs": "10ae7645d9ed1f7c3c9d4f5fd119406928ce079e4336a5b007df307c685c0826",
+        "episode_helper::runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+        "episode_helper::runners/dsl/src/py.rs": "40e07774aaf04740ae08a42ca725ca0465a8b855754d5a596c8d67ca4c699cd8",
+        "episode_helper::runners/dsl/src/substrate.rs": "c8790f285532a7494089bcbff1eb5ed4917cefd23a8eab420408bb3187f51744",
+        "episode_helper::runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "episode_helper::runners/dsl/src/term.rs": "f6605bc2aa97e3784bee57ab24bccf6b6375b2dae1e650182dcb5c35d7108e61",
+        "episode_helper::seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "episode_helper::seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "episode_helper::seeds/conversation.json": "dbcf2ec16f706ee4057f9a0fc6266c764b83c4631f067a32b4e9c6d2bf9f748a",
+        "episode_helper::seeds/conversation_reply.json": "32be4138d22d9cca4c1872f79e86729a830f4e2952375a847ea00f2767aa15ff",
+        "episode_helper::seeds/faculty_lessons.json": "a1a0ab3e67957666dfdf7cc6a20f0e3f15203d6553e16c08f2bbeb16774f9c2a",
+        "episode_helper::seeds/intent.json": "1833b673e04f98521361bc1d93e57f4feb5add49e93ce9fd813ed2bb5eebae5f",
+        "episode_helper::seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "episode_helper::seeds/psychology.json": "1c8753c431f829f4a144d8c3d777df86af3f68c6139e7a247fa1db7e171d45b1",
+        "episode_helper::seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "episode_helper::seeds/relations.json": "94c553808d35c873f328691bccf4d0a3e37d6b30137e1038a4b3ff69898e4f5c",
+        "episode_helper::substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "episode_helper::substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "episode_helper::substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "35f7efdf13d181853a4c915a9fa6bc2a03658a948db6159aaba9d4ebd6493260",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_substrate_edge_attribute_identity_v1.py": "125fa66bb2f2d13766a8a7e80330780d1e7c76b59ea5b2568129ec6455eb5f93",
+        "evaluation/substrate_capability/thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "94e0c33434d055b886f9f4be389737e2d508a9a3dcb5d720db8b739929b55696",
+        "evaluation/substrate_capability/thoughtexperiment_substrate_edge_identity_current_source_v1.py": "49119bff7febfb10163fafa39753ad0c3ad6e60535b75a8e41ca80e05f8f1614",
+        "loaded_native_binary": "995e5c6a74989d06d310ed37e7f05e90a9a21e075684f2e155e1f6f23f809483",
+        "seeds/actor_goals.json": "e488cbd26e4051f8078b3f3da55965a5ec9e99eec9a329b265bde1e79a6422d9"
+      },
+      "source_before": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_PREREG_20261002.md": "2475c402246935fd9f60ba4a5994592b52a40653065f4055636da8756e1b743a",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_SUBSTRATE_EDGE_ATTRIBUTE_IDENTITY_CURRENT_SOURCE_AMENDMENT_20261003.md": "44acc12938f1e05c6152ac962b912a6bca3d63969dcd1b223e73840f872dc215",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_SUBSTRATE_EDGE_ATTRIBUTE_IDENTITY_V1_PREREG_20261002.md": "e0ea3efc99aee011ba47c351c9ddfb571720d266ffed2be43c75e2305b794ebc",
+        "domains/edit_ops.py": "308c401e992f8512308b3abb2b32acd6708bfebbb90255d7c5c9f4ea36c73a0d",
+        "domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+        "domains/seed_registry.py": "bb67553fd24366900698fddb6b649671a0b2ea2431c10784feaf054704bc292f",
+        "episode_helper::docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_1_AMENDMENT_20261002.md": "e46f2e311f31f93eda56772d71ad3fdc7ad9b84dafec10a39beb6020b23846dc",
+        "episode_helper::docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_PREREG_20261002.md": "2475c402246935fd9f60ba4a5994592b52a40653065f4055636da8756e1b743a",
+        "episode_helper::domains/contract_query.py": "5861f25467e2fed9905fa325816a3dc60822d4a79004b8b7b095511c3806b9a6",
+        "episode_helper::domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "episode_helper::domains/language_world.py": "06d24bdba1ccbd720f749f0c02d5a96729c40601237ec21a8f938077b2a262bb",
+        "episode_helper::domains/reference_resolution.py": "1f9c6ce8eaf98c33deb025110a0dea5e7960251eace4f7dc6872d3d4b85c2701",
+        "episode_helper::domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+        "episode_helper::evaluation/substrate_capability/analyze_thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "35f7efdf13d181853a4c915a9fa6bc2a03658a948db6159aaba9d4ebd6493260",
+        "episode_helper::evaluation/substrate_capability/thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "94e0c33434d055b886f9f4be389737e2d508a9a3dcb5d720db8b739929b55696",
+        "episode_helper::loaded_native_binary": "995e5c6a74989d06d310ed37e7f05e90a9a21e075684f2e155e1f6f23f809483",
+        "episode_helper::runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "episode_helper::runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "episode_helper::runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "episode_helper::runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "episode_helper::runners/dsl/src/graph.rs": "39c4fb983db934cf7350c28d168d0ad9d3049efba1cdb3847f23b55a0d488c66",
+        "episode_helper::runners/dsl/src/graph_rules.rs": "c02b4f7499f40348395f9ef0394c8799c6d0664d1d8296bf780f3745d3299246",
+        "episode_helper::runners/dsl/src/lib.rs": "10ae7645d9ed1f7c3c9d4f5fd119406928ce079e4336a5b007df307c685c0826",
+        "episode_helper::runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+        "episode_helper::runners/dsl/src/py.rs": "40e07774aaf04740ae08a42ca725ca0465a8b855754d5a596c8d67ca4c699cd8",
+        "episode_helper::runners/dsl/src/substrate.rs": "c8790f285532a7494089bcbff1eb5ed4917cefd23a8eab420408bb3187f51744",
+        "episode_helper::runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "episode_helper::runners/dsl/src/term.rs": "f6605bc2aa97e3784bee57ab24bccf6b6375b2dae1e650182dcb5c35d7108e61",
+        "episode_helper::seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "episode_helper::seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "episode_helper::seeds/conversation.json": "dbcf2ec16f706ee4057f9a0fc6266c764b83c4631f067a32b4e9c6d2bf9f748a",
+        "episode_helper::seeds/conversation_reply.json": "32be4138d22d9cca4c1872f79e86729a830f4e2952375a847ea00f2767aa15ff",
+        "episode_helper::seeds/faculty_lessons.json": "a1a0ab3e67957666dfdf7cc6a20f0e3f15203d6553e16c08f2bbeb16774f9c2a",
+        "episode_helper::seeds/intent.json": "1833b673e04f98521361bc1d93e57f4feb5add49e93ce9fd813ed2bb5eebae5f",
+        "episode_helper::seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "episode_helper::seeds/psychology.json": "1c8753c431f829f4a144d8c3d777df86af3f68c6139e7a247fa1db7e171d45b1",
+        "episode_helper::seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "episode_helper::seeds/relations.json": "94c553808d35c873f328691bccf4d0a3e37d6b30137e1038a4b3ff69898e4f5c",
+        "episode_helper::substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "episode_helper::substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "episode_helper::substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "35f7efdf13d181853a4c915a9fa6bc2a03658a948db6159aaba9d4ebd6493260",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_substrate_edge_attribute_identity_v1.py": "125fa66bb2f2d13766a8a7e80330780d1e7c76b59ea5b2568129ec6455eb5f93",
+        "evaluation/substrate_capability/thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "94e0c33434d055b886f9f4be389737e2d508a9a3dcb5d720db8b739929b55696",
+        "evaluation/substrate_capability/thoughtexperiment_substrate_edge_identity_current_source_v1.py": "49119bff7febfb10163fafa39753ad0c3ad6e60535b75a8e41ca80e05f8f1614",
+        "loaded_native_binary": "995e5c6a74989d06d310ed37e7f05e90a9a21e075684f2e155e1f6f23f809483",
+        "seeds/actor_goals.json": "e488cbd26e4051f8078b3f3da55965a5ec9e99eec9a329b265bde1e79a6422d9"
+      },
+      "source_stable": true,
+      "worker": 0,
+      "worker_stage_wall_ns": 386877939
+    },
+    {
+      "controls": {
+        "ambiguous_site": {
+          "built": false,
+          "kind": "add_edge_identity_guard",
+          "wall": "no unique positive-scoring EditSite for 'add_edge_identity_guard' among 3 applicable edge sites (tied or no cue overlap); abstained"
+        },
+        "ambiguous_site_ns": 29359153,
+        "no_overlap": {
+          "built": false,
+          "kind": null,
+          "wall": "no RuleSummary genuinely overlaps this axis's residual predicates (abstained, like the acting-variant pick abstains on no overlap)"
+        },
+        "no_overlap_ns": 26940807
+      },
+      "families": {
+        "actor_recipient_edge": {
+          "primary_rule_unchanged": true,
+          "proposal": {
+            "built": true,
+            "candidate": {
+              "label": "substrate_composer",
+              "rules": {
+                "mint_actor_goal_recipient": {
+                  "batch": false,
+                  "content_hash": 5120657590456103972,
+                  "effects": [
+                    [
+                      "add_node",
+                      "goal",
+                      "ActorGoal",
+                      {
+                        "actor": {
+                          "__term__": {
+                            "key": "actor",
+                            "node": {
+                              "name": "aa",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        },
+                        "agency": "recipient",
+                        "meta_goal_core_interest": "",
+                        "meta_goal_opposes": "",
+                        "note": "no authored goal -- the actor is grammatically the subject but semantically the RECIPIENT/beneficiary of this verb class, per the held RecipientVerb codebook, honestly no surface goal abducted",
+                        "object": {
+                          "__term__": {
+                            "key": "object_domain",
+                            "node": {
+                              "name": "aa",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        },
+                        "revisable": 1.0,
+                        "serves_conflicting_meta_goal": 0.0,
+                        "surface_goal": "",
+                        "verb": {
+                          "__term__": {
+                            "key": "verb",
+                            "node": {
+                              "name": "aa",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        }
+                      }
+                    ],
+                    [
+                      "add_edge",
+                      "agent",
+                      "has_actor_goal",
+                      "goal",
+                      {}
+                    ]
+                  ],
+                  "match": [
+                    [
+                      "agent",
+                      "has_actor_action",
+                      "aa"
+                    ],
+                    [
+                      "agent",
+                      "has_recipient_verb",
+                      "rv"
+                    ]
+                  ],
+                  "match_type": null,
+                  "name": "mint_actor_goal_recipient_structvariant_order1",
+                  "revision": 0,
+                  "rule_uid": 4,
+                  "where": {
+                    "items": [
+                      {
+                        "items": [
+                          {
+                            "a": {
+                              "key": "verb",
+                              "node": {
+                                "name": "aa",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "b": {
+                              "key": "verb",
+                              "node": {
+                                "name": "rv",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "type": "Eq"
+                          }
+                        ],
+                        "type": "And"
+                      },
+                      {
+                        "arg": {
+                          "predicate": {
+                            "type": "Lit",
+                            "value": true
+                          },
+                          "source": {
+                            "edge_type": "has_actor_goal",
+                            "node": {
+                              "name": "agent",
+                              "type": "Var"
+                            },
+                            "type": "Neighbours"
+                          },
+                          "type": "Exists",
+                          "var_name": "existing_edge_identity"
+                        },
+                        "type": "Not"
+                      }
+                    ],
+                    "type": "And"
+                  }
+                }
+              }
+            },
+            "compose_ns": 26430613,
+            "digest": "sha256:6b8a662f087d34240137a8fb327325757b992f529a3b82cfddb5637cfc227e48",
+            "operator": "add_edge_identity_guard",
+            "site": "out agent has_actor_goal any endpoint",
+            "source_rule_digest": "sha256:fb1929256756cc2c0a70e90c386f9a271aa5dff082e3cd555baa391b67211816",
+            "target": "mint_actor_goal_recipient",
+            "wall": null
+          },
+          "source_control_ns": 8267457,
+          "source_training": [
+            {
+              "correct": true,
+              "expected_counts": [
+                1
+              ],
+              "fixedpoint_progress": 0,
+              "input_sweeps": [
+                1
+              ],
+              "output_counts": [
+                1
+              ],
+              "rule_store_stable": true,
+              "verbs": [
+                "sing"
+              ]
+            },
+            {
+              "correct": true,
+              "expected_counts": [
+                1
+              ],
+              "fixedpoint_progress": 0,
+              "input_sweeps": [
+                1
+              ],
+              "output_counts": [
+                1
+              ],
+              "rule_store_stable": true,
+              "verbs": [
+                "sing"
+              ]
+            }
+          ],
+          "training": [
+            {
+              "correct": true,
+              "expected_counts": [
+                1
+              ],
+              "fixedpoint_progress": 0,
+              "input_sweeps": [
+                1
+              ],
+              "output_counts": [
+                1
+              ],
+              "rule_store_stable": true,
+              "verbs": [
+                "sing"
+              ]
+            },
+            {
+              "correct": true,
+              "expected_counts": [
+                1
+              ],
+              "fixedpoint_progress": 0,
+              "input_sweeps": [
+                1
+              ],
+              "output_counts": [
+                1
+              ],
+              "rule_store_stable": true,
+              "verbs": [
+                "sing"
+              ]
+            }
+          ],
+          "training_scoring_ns": 4480901
+        },
+        "actor_recipient_identity": {
+          "primary_rule_unchanged": true,
+          "proposal": {
+            "built": true,
+            "candidate": {
+              "label": "substrate_composer",
+              "rules": {
+                "mint_actor_goal_recipient": {
+                  "batch": false,
+                  "content_hash": 5120657590456103972,
+                  "effects": [
+                    [
+                      "add_node",
+                      "goal",
+                      "ActorGoal",
+                      {
+                        "actor": {
+                          "__term__": {
+                            "key": "actor",
+                            "node": {
+                              "name": "aa",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        },
+                        "agency": "recipient",
+                        "meta_goal_core_interest": "",
+                        "meta_goal_opposes": "",
+                        "note": "no authored goal -- the actor is grammatically the subject but semantically the RECIPIENT/beneficiary of this verb class, per the held RecipientVerb codebook, honestly no surface goal abducted",
+                        "object": {
+                          "__term__": {
+                            "key": "object_domain",
+                            "node": {
+                              "name": "aa",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        },
+                        "revisable": 1.0,
+                        "serves_conflicting_meta_goal": 0.0,
+                        "surface_goal": "",
+                        "verb": {
+                          "__term__": {
+                            "key": "verb",
+                            "node": {
+                              "name": "aa",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        }
+                      }
+                    ],
+                    [
+                      "add_edge",
+                      "agent",
+                      "has_actor_goal",
+                      "goal",
+                      {}
+                    ]
+                  ],
+                  "match": [
+                    [
+                      "agent",
+                      "has_actor_action",
+                      "aa"
+                    ],
+                    [
+                      "agent",
+                      "has_recipient_verb",
+                      "rv"
+                    ]
+                  ],
+                  "match_type": null,
+                  "name": "mint_actor_goal_recipient_structvariant_order1",
+                  "revision": 0,
+                  "rule_uid": 4,
+                  "where": {
+                    "items": [
+                      {
+                        "items": [
+                          {
+                            "a": {
+                              "key": "verb",
+                              "node": {
+                                "name": "aa",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "b": {
+                              "key": "verb",
+                              "node": {
+                                "name": "rv",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "type": "Eq"
+                          }
+                        ],
+                        "type": "And"
+                      },
+                      {
+                        "arg": {
+                          "predicate": {
+                            "items": [
+                              {
+                                "a": {
+                                  "key": "actor",
+                                  "node": {
+                                    "name": "existing_edge_identity",
+                                    "type": "Var"
+                                  },
+                                  "type": "Attr"
+                                },
+                                "b": {
+                                  "key": "actor",
+                                  "node": {
+                                    "name": "aa",
+                                    "type": "Var"
+                                  },
+                                  "type": "Attr"
+                                },
+                                "type": "Eq"
+                              },
+                              {
+                                "a": {
+                                  "key": "verb",
+                                  "node": {
+                                    "name": "existing_edge_identity",
+                                    "type": "Var"
+                                  },
+                                  "type": "Attr"
+                                },
+                                "b": {
+                                  "key": "verb",
+                                  "node": {
+                                    "name": "aa",
+                                    "type": "Var"
+                                  },
+                                  "type": "Attr"
+                                },
+                                "type": "Eq"
+                              }
+                            ],
+                            "type": "And"
+                          },
+                          "source": {
+                            "node_type": "ActorGoal",
+                            "type": "NodesOfType"
+                          },
+                          "type": "Exists",
+                          "var_name": "existing_edge_identity"
+                        },
+                        "type": "Not"
+                      }
+                    ],
+                    "type": "And"
+                  }
+                }
+              }
+            },
+            "compose_ns": 24327959,
+            "digest": "sha256:df99935a3168656d4d9d365d2bf76fdb5a8a86c510f7158e410bc0523ff08678",
+            "operator": "add_edge_identity_guard",
+            "site": "out agent has_actor_goal attributes actor+verb",
+            "source_rule_digest": "sha256:fb1929256756cc2c0a70e90c386f9a271aa5dff082e3cd555baa391b67211816",
+            "target": "mint_actor_goal_recipient",
+            "wall": null
+          },
+          "source_control_ns": 4125519,
+          "source_training": [
+            {
+              "correct": true,
+              "expected_counts": [
+                1
+              ],
+              "fixedpoint_progress": 0,
+              "input_sweeps": [
+                1
+              ],
+              "output_counts": [
+                1
+              ],
+              "rule_store_stable": true,
+              "verbs": [
+                "sing"
+              ]
+            },
+            {
+              "correct": true,
+              "expected_counts": [
+                1
+              ],
+              "fixedpoint_progress": 0,
+              "input_sweeps": [
+                1
+              ],
+              "output_counts": [
+                1
+              ],
+              "rule_store_stable": true,
+              "verbs": [
+                "sing"
+              ]
+            }
+          ],
+          "training": [
+            {
+              "correct": true,
+              "expected_counts": [
+                1
+              ],
+              "fixedpoint_progress": 0,
+              "input_sweeps": [
+                1
+              ],
+              "output_counts": [
+                1
+              ],
+              "rule_store_stable": true,
+              "verbs": [
+                "sing"
+              ]
+            },
+            {
+              "correct": true,
+              "expected_counts": [
+                1
+              ],
+              "fixedpoint_progress": 0,
+              "input_sweeps": [
+                1
+              ],
+              "output_counts": [
+                1
+              ],
+              "rule_store_stable": true,
+              "verbs": [
+                "sing"
+              ]
+            }
+          ],
+          "training_scoring_ns": 19127662
+        },
+        "conversation": {
+          "primary_rule_unchanged": true,
+          "proposal": {
+            "built": true,
+            "candidate": {
+              "label": "substrate_composer",
+              "rules": {
+                "reply_to_adjacency_pair": {
+                  "batch": false,
+                  "content_hash": 6590774322814344041,
+                  "effects": [
+                    [
+                      "add_node",
+                      "reply",
+                      "Message",
+                      {
+                        "from": "agent"
+                      }
+                    ],
+                    [
+                      "add_edge",
+                      "reply",
+                      "has_speech_act",
+                      "r",
+                      {}
+                    ],
+                    [
+                      "add_edge",
+                      "reply",
+                      "responds_to",
+                      "m",
+                      {}
+                    ],
+                    [
+                      "add_edge",
+                      "agent",
+                      "sent",
+                      "reply",
+                      {}
+                    ],
+                    [
+                      "set_attr",
+                      "m",
+                      "adjacency_replied_act",
+                      {
+                        "__term__": {
+                          "key": "name",
+                          "node": {
+                            "name": "r",
+                            "type": "Var"
+                          },
+                          "type": "Attr"
+                        }
+                      }
+                    ]
+                  ],
+                  "match": [
+                    [
+                      "m",
+                      "has_intent",
+                      "i"
+                    ],
+                    [
+                      "i",
+                      "expects_response",
+                      "r"
+                    ],
+                    [
+                      "agent",
+                      "is_a",
+                      "Agent"
+                    ]
+                  ],
+                  "match_type": null,
+                  "name": "reply_to_adjacency_pair_structvariant_order1",
+                  "revision": 0,
+                  "rule_uid": 12,
+                  "where": {
+                    "items": [
+                      {
+                        "items": [
+                          {
+                            "a": {
+                              "key": "from",
+                              "node": {
+                                "name": "m",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": "interlocutor"
+                            },
+                            "type": "Eq"
+                          }
+                        ],
+                        "type": "And"
+                      },
+                      {
+                        "arg": {
+                          "predicate": {
+                            "type": "Lit",
+                            "value": true
+                          },
+                          "source": {
+                            "edge_type": "responds_to",
+                            "node": {
+                              "name": "m",
+                              "type": "Var"
+                            },
+                            "type": "InNeighbours"
+                          },
+                          "type": "Exists",
+                          "var_name": "existing_edge_identity"
+                        },
+                        "type": "Not"
+                      }
+                    ],
+                    "type": "And"
+                  }
+                }
+              }
+            },
+            "compose_ns": 30694023,
+            "digest": "sha256:2142f383a9a699868b40da8a7afe5d0c2f526ec9d7fb63aaf784031ba3b55555",
+            "operator": "add_edge_identity_guard",
+            "site": "in m responds_to any endpoint",
+            "source_rule_digest": "sha256:b0ce645cf9092f626aa86ca2417cf5f6c4a6bcd4645c03a28b2b0c5c116ca758",
+            "target": "reply_to_adjacency_pair",
+            "wall": null
+          },
+          "source_control_ns": 20987525,
+          "source_training": [
+            {
+              "correct": true,
+              "expected_counts": [
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#491"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 472554
+            },
+            {
+              "correct": true,
+              "expected_counts": [
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#491"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 393573
+            }
+          ],
+          "training": [
+            {
+              "correct": true,
+              "expected_counts": [
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#491"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 20776374
+            },
+            {
+              "correct": true,
+              "expected_counts": [
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#491"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 538474
+            }
+          ],
+          "training_scoring_ns": 42152272
+        },
+        "recurrence": {
+          "primary_rule_unchanged": true,
+          "proposal": {
+            "built": true,
+            "candidate": {
+              "label": "substrate_composer",
+              "rules": {
+                "mrl_offer_due_once": {
+                  "batch": false,
+                  "content_hash": 463715677639902482,
+                  "effects": [
+                    [
+                      "add_node",
+                      "offer",
+                      "Observation",
+                      {
+                        "key": {
+                          "__term__": {
+                            "source": {
+                              "items": [
+                                {
+                                  "key": "capability_key",
+                                  "node": {
+                                    "name": "candidate",
+                                    "type": "Var"
+                                  },
+                                  "type": "Attr"
+                                }
+                              ],
+                              "type": "SetT"
+                            },
+                            "type": "MapList",
+                            "value": {
+                              "name": "k",
+                              "type": "Var"
+                            },
+                            "var_name": "k"
+                          }
+                        },
+                        "offered_at_persistence": {
+                          "__term__": {
+                            "key": "persistence",
+                            "node": {
+                              "name": "candidate",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        },
+                        "offered_at_segment": {
+                          "__term__": {
+                            "key": "latest_segment_ordinal",
+                            "node": {
+                              "name": "candidate",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        },
+                        "signature": {
+                          "__term__": {
+                            "key": "structural_signature",
+                            "node": {
+                              "name": "candidate",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        },
+                        "status": "pending"
+                      }
+                    ],
+                    [
+                      "add_edge",
+                      "agent",
+                      "observed",
+                      "offer",
+                      {}
+                    ],
+                    [
+                      "add_edge",
+                      "candidate",
+                      "has_mint_offer",
+                      "offer",
+                      {}
+                    ],
+                    [
+                      "add_edge",
+                      "episode",
+                      "has_mint_offer",
+                      "offer",
+                      {}
+                    ]
+                  ],
+                  "match": [
+                    [
+                      "agent",
+                      "has_minting_recurrence_episode",
+                      "episode"
+                    ],
+                    [
+                      "episode",
+                      "has_predicate_recurrence_candidate",
+                      "candidate"
+                    ]
+                  ],
+                  "match_type": null,
+                  "name": "mrl_offer_due_once_structvariant_order1",
+                  "revision": 0,
+                  "rule_uid": 13,
+                  "where": {
+                    "items": [
+                      {
+                        "items": [
+                          {
+                            "a": {
+                              "key": "persistence",
+                              "node": {
+                                "name": "candidate",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "b": {
+                              "key": "mint_after_quanta",
+                              "node": {
+                                "name": "episode",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "type": "Gte"
+                          }
+                        ],
+                        "type": "And"
+                      },
+                      {
+                        "arg": {
+                          "predicate": {
+                            "type": "Lit",
+                            "value": true
+                          },
+                          "source": {
+                            "edge_type": "has_mint_offer",
+                            "node": {
+                              "name": "candidate",
+                              "type": "Var"
+                            },
+                            "type": "Neighbours"
+                          },
+                          "type": "Exists",
+                          "var_name": "existing_edge_identity"
+                        },
+                        "type": "Not"
+                      }
+                    ],
+                    "type": "And"
+                  }
+                }
+              }
+            },
+            "compose_ns": 38835419,
+            "digest": "sha256:b63b0f29aa232a0c5d92da634ef729dd6a28091b2967ec2644d9426997405a9c",
+            "operator": "add_edge_identity_guard",
+            "site": "out candidate has_mint_offer any endpoint",
+            "source_rule_digest": "sha256:04479af4f59ef2139cb2d69c4af6c7eb363fc081b494f6d788c1a58bf5a16af1",
+            "target": "mrl_offer_due_once",
+            "wall": null
+          },
+          "source_control_ns": 11059256,
+          "source_training": [
+            {
+              "correct": true,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-1-train_source_1-0-0",
+                "bidir-1-train_source_1-0-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "correct": true,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-1-train_source_1-1-0",
+                "bidir-1-train_source_1-1-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ],
+          "training": [
+            {
+              "correct": true,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-1-train_1-0-0",
+                "bidir-1-train_1-0-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "correct": true,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-1-train_1-1-0",
+                "bidir-1-train_1-1-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ],
+          "training_scoring_ns": 12058564
+        }
+      },
+      "source_after": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_PREREG_20261002.md": "2475c402246935fd9f60ba4a5994592b52a40653065f4055636da8756e1b743a",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_SUBSTRATE_EDGE_ATTRIBUTE_IDENTITY_CURRENT_SOURCE_AMENDMENT_20261003.md": "44acc12938f1e05c6152ac962b912a6bca3d63969dcd1b223e73840f872dc215",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_SUBSTRATE_EDGE_ATTRIBUTE_IDENTITY_V1_PREREG_20261002.md": "e0ea3efc99aee011ba47c351c9ddfb571720d266ffed2be43c75e2305b794ebc",
+        "domains/edit_ops.py": "308c401e992f8512308b3abb2b32acd6708bfebbb90255d7c5c9f4ea36c73a0d",
+        "domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+        "domains/seed_registry.py": "bb67553fd24366900698fddb6b649671a0b2ea2431c10784feaf054704bc292f",
+        "episode_helper::docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_1_AMENDMENT_20261002.md": "e46f2e311f31f93eda56772d71ad3fdc7ad9b84dafec10a39beb6020b23846dc",
+        "episode_helper::docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_PREREG_20261002.md": "2475c402246935fd9f60ba4a5994592b52a40653065f4055636da8756e1b743a",
+        "episode_helper::domains/contract_query.py": "5861f25467e2fed9905fa325816a3dc60822d4a79004b8b7b095511c3806b9a6",
+        "episode_helper::domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "episode_helper::domains/language_world.py": "06d24bdba1ccbd720f749f0c02d5a96729c40601237ec21a8f938077b2a262bb",
+        "episode_helper::domains/reference_resolution.py": "1f9c6ce8eaf98c33deb025110a0dea5e7960251eace4f7dc6872d3d4b85c2701",
+        "episode_helper::domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+        "episode_helper::evaluation/substrate_capability/analyze_thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "35f7efdf13d181853a4c915a9fa6bc2a03658a948db6159aaba9d4ebd6493260",
+        "episode_helper::evaluation/substrate_capability/thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "94e0c33434d055b886f9f4be389737e2d508a9a3dcb5d720db8b739929b55696",
+        "episode_helper::loaded_native_binary": "995e5c6a74989d06d310ed37e7f05e90a9a21e075684f2e155e1f6f23f809483",
+        "episode_helper::runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "episode_helper::runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "episode_helper::runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "episode_helper::runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "episode_helper::runners/dsl/src/graph.rs": "39c4fb983db934cf7350c28d168d0ad9d3049efba1cdb3847f23b55a0d488c66",
+        "episode_helper::runners/dsl/src/graph_rules.rs": "c02b4f7499f40348395f9ef0394c8799c6d0664d1d8296bf780f3745d3299246",
+        "episode_helper::runners/dsl/src/lib.rs": "10ae7645d9ed1f7c3c9d4f5fd119406928ce079e4336a5b007df307c685c0826",
+        "episode_helper::runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+        "episode_helper::runners/dsl/src/py.rs": "40e07774aaf04740ae08a42ca725ca0465a8b855754d5a596c8d67ca4c699cd8",
+        "episode_helper::runners/dsl/src/substrate.rs": "c8790f285532a7494089bcbff1eb5ed4917cefd23a8eab420408bb3187f51744",
+        "episode_helper::runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "episode_helper::runners/dsl/src/term.rs": "f6605bc2aa97e3784bee57ab24bccf6b6375b2dae1e650182dcb5c35d7108e61",
+        "episode_helper::seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "episode_helper::seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "episode_helper::seeds/conversation.json": "dbcf2ec16f706ee4057f9a0fc6266c764b83c4631f067a32b4e9c6d2bf9f748a",
+        "episode_helper::seeds/conversation_reply.json": "32be4138d22d9cca4c1872f79e86729a830f4e2952375a847ea00f2767aa15ff",
+        "episode_helper::seeds/faculty_lessons.json": "a1a0ab3e67957666dfdf7cc6a20f0e3f15203d6553e16c08f2bbeb16774f9c2a",
+        "episode_helper::seeds/intent.json": "1833b673e04f98521361bc1d93e57f4feb5add49e93ce9fd813ed2bb5eebae5f",
+        "episode_helper::seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "episode_helper::seeds/psychology.json": "1c8753c431f829f4a144d8c3d777df86af3f68c6139e7a247fa1db7e171d45b1",
+        "episode_helper::seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "episode_helper::seeds/relations.json": "94c553808d35c873f328691bccf4d0a3e37d6b30137e1038a4b3ff69898e4f5c",
+        "episode_helper::substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "episode_helper::substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "episode_helper::substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "35f7efdf13d181853a4c915a9fa6bc2a03658a948db6159aaba9d4ebd6493260",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_substrate_edge_attribute_identity_v1.py": "125fa66bb2f2d13766a8a7e80330780d1e7c76b59ea5b2568129ec6455eb5f93",
+        "evaluation/substrate_capability/thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "94e0c33434d055b886f9f4be389737e2d508a9a3dcb5d720db8b739929b55696",
+        "evaluation/substrate_capability/thoughtexperiment_substrate_edge_identity_current_source_v1.py": "49119bff7febfb10163fafa39753ad0c3ad6e60535b75a8e41ca80e05f8f1614",
+        "loaded_native_binary": "995e5c6a74989d06d310ed37e7f05e90a9a21e075684f2e155e1f6f23f809483",
+        "seeds/actor_goals.json": "e488cbd26e4051f8078b3f3da55965a5ec9e99eec9a329b265bde1e79a6422d9"
+      },
+      "source_before": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_PREREG_20261002.md": "2475c402246935fd9f60ba4a5994592b52a40653065f4055636da8756e1b743a",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_SUBSTRATE_EDGE_ATTRIBUTE_IDENTITY_CURRENT_SOURCE_AMENDMENT_20261003.md": "44acc12938f1e05c6152ac962b912a6bca3d63969dcd1b223e73840f872dc215",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_SUBSTRATE_EDGE_ATTRIBUTE_IDENTITY_V1_PREREG_20261002.md": "e0ea3efc99aee011ba47c351c9ddfb571720d266ffed2be43c75e2305b794ebc",
+        "domains/edit_ops.py": "308c401e992f8512308b3abb2b32acd6708bfebbb90255d7c5c9f4ea36c73a0d",
+        "domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+        "domains/seed_registry.py": "bb67553fd24366900698fddb6b649671a0b2ea2431c10784feaf054704bc292f",
+        "episode_helper::docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_1_AMENDMENT_20261002.md": "e46f2e311f31f93eda56772d71ad3fdc7ad9b84dafec10a39beb6020b23846dc",
+        "episode_helper::docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_PREREG_20261002.md": "2475c402246935fd9f60ba4a5994592b52a40653065f4055636da8756e1b743a",
+        "episode_helper::domains/contract_query.py": "5861f25467e2fed9905fa325816a3dc60822d4a79004b8b7b095511c3806b9a6",
+        "episode_helper::domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "episode_helper::domains/language_world.py": "06d24bdba1ccbd720f749f0c02d5a96729c40601237ec21a8f938077b2a262bb",
+        "episode_helper::domains/reference_resolution.py": "1f9c6ce8eaf98c33deb025110a0dea5e7960251eace4f7dc6872d3d4b85c2701",
+        "episode_helper::domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+        "episode_helper::evaluation/substrate_capability/analyze_thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "35f7efdf13d181853a4c915a9fa6bc2a03658a948db6159aaba9d4ebd6493260",
+        "episode_helper::evaluation/substrate_capability/thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "94e0c33434d055b886f9f4be389737e2d508a9a3dcb5d720db8b739929b55696",
+        "episode_helper::loaded_native_binary": "995e5c6a74989d06d310ed37e7f05e90a9a21e075684f2e155e1f6f23f809483",
+        "episode_helper::runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "episode_helper::runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "episode_helper::runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "episode_helper::runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "episode_helper::runners/dsl/src/graph.rs": "39c4fb983db934cf7350c28d168d0ad9d3049efba1cdb3847f23b55a0d488c66",
+        "episode_helper::runners/dsl/src/graph_rules.rs": "c02b4f7499f40348395f9ef0394c8799c6d0664d1d8296bf780f3745d3299246",
+        "episode_helper::runners/dsl/src/lib.rs": "10ae7645d9ed1f7c3c9d4f5fd119406928ce079e4336a5b007df307c685c0826",
+        "episode_helper::runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+        "episode_helper::runners/dsl/src/py.rs": "40e07774aaf04740ae08a42ca725ca0465a8b855754d5a596c8d67ca4c699cd8",
+        "episode_helper::runners/dsl/src/substrate.rs": "c8790f285532a7494089bcbff1eb5ed4917cefd23a8eab420408bb3187f51744",
+        "episode_helper::runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "episode_helper::runners/dsl/src/term.rs": "f6605bc2aa97e3784bee57ab24bccf6b6375b2dae1e650182dcb5c35d7108e61",
+        "episode_helper::seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "episode_helper::seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "episode_helper::seeds/conversation.json": "dbcf2ec16f706ee4057f9a0fc6266c764b83c4631f067a32b4e9c6d2bf9f748a",
+        "episode_helper::seeds/conversation_reply.json": "32be4138d22d9cca4c1872f79e86729a830f4e2952375a847ea00f2767aa15ff",
+        "episode_helper::seeds/faculty_lessons.json": "a1a0ab3e67957666dfdf7cc6a20f0e3f15203d6553e16c08f2bbeb16774f9c2a",
+        "episode_helper::seeds/intent.json": "1833b673e04f98521361bc1d93e57f4feb5add49e93ce9fd813ed2bb5eebae5f",
+        "episode_helper::seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "episode_helper::seeds/psychology.json": "1c8753c431f829f4a144d8c3d777df86af3f68c6139e7a247fa1db7e171d45b1",
+        "episode_helper::seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "episode_helper::seeds/relations.json": "94c553808d35c873f328691bccf4d0a3e37d6b30137e1038a4b3ff69898e4f5c",
+        "episode_helper::substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "episode_helper::substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "episode_helper::substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "35f7efdf13d181853a4c915a9fa6bc2a03658a948db6159aaba9d4ebd6493260",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_substrate_edge_attribute_identity_v1.py": "125fa66bb2f2d13766a8a7e80330780d1e7c76b59ea5b2568129ec6455eb5f93",
+        "evaluation/substrate_capability/thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "94e0c33434d055b886f9f4be389737e2d508a9a3dcb5d720db8b739929b55696",
+        "evaluation/substrate_capability/thoughtexperiment_substrate_edge_identity_current_source_v1.py": "49119bff7febfb10163fafa39753ad0c3ad6e60535b75a8e41ca80e05f8f1614",
+        "loaded_native_binary": "995e5c6a74989d06d310ed37e7f05e90a9a21e075684f2e155e1f6f23f809483",
+        "seeds/actor_goals.json": "e488cbd26e4051f8078b3f3da55965a5ec9e99eec9a329b265bde1e79a6422d9"
+      },
+      "source_stable": true,
+      "worker": 1,
+      "worker_stage_wall_ns": 431003955
+    },
+    {
+      "controls": {
+        "ambiguous_site": {
+          "built": false,
+          "kind": "add_edge_identity_guard",
+          "wall": "no unique positive-scoring EditSite for 'add_edge_identity_guard' among 3 applicable edge sites (tied or no cue overlap); abstained"
+        },
+        "ambiguous_site_ns": 30729833,
+        "no_overlap": {
+          "built": false,
+          "kind": null,
+          "wall": "no RuleSummary genuinely overlaps this axis's residual predicates (abstained, like the acting-variant pick abstains on no overlap)"
+        },
+        "no_overlap_ns": 24181138
+      },
+      "families": {
+        "actor_recipient_edge": {
+          "primary_rule_unchanged": true,
+          "proposal": {
+            "built": true,
+            "candidate": {
+              "label": "substrate_composer",
+              "rules": {
+                "mint_actor_goal_recipient": {
+                  "batch": false,
+                  "content_hash": 5120657590456103972,
+                  "effects": [
+                    [
+                      "add_node",
+                      "goal",
+                      "ActorGoal",
+                      {
+                        "actor": {
+                          "__term__": {
+                            "key": "actor",
+                            "node": {
+                              "name": "aa",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        },
+                        "agency": "recipient",
+                        "meta_goal_core_interest": "",
+                        "meta_goal_opposes": "",
+                        "note": "no authored goal -- the actor is grammatically the subject but semantically the RECIPIENT/beneficiary of this verb class, per the held RecipientVerb codebook, honestly no surface goal abducted",
+                        "object": {
+                          "__term__": {
+                            "key": "object_domain",
+                            "node": {
+                              "name": "aa",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        },
+                        "revisable": 1.0,
+                        "serves_conflicting_meta_goal": 0.0,
+                        "surface_goal": "",
+                        "verb": {
+                          "__term__": {
+                            "key": "verb",
+                            "node": {
+                              "name": "aa",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        }
+                      }
+                    ],
+                    [
+                      "add_edge",
+                      "agent",
+                      "has_actor_goal",
+                      "goal",
+                      {}
+                    ]
+                  ],
+                  "match": [
+                    [
+                      "agent",
+                      "has_actor_action",
+                      "aa"
+                    ],
+                    [
+                      "agent",
+                      "has_recipient_verb",
+                      "rv"
+                    ]
+                  ],
+                  "match_type": null,
+                  "name": "mint_actor_goal_recipient_structvariant_order2",
+                  "revision": 0,
+                  "rule_uid": 4,
+                  "where": {
+                    "items": [
+                      {
+                        "items": [
+                          {
+                            "a": {
+                              "key": "verb",
+                              "node": {
+                                "name": "aa",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "b": {
+                              "key": "verb",
+                              "node": {
+                                "name": "rv",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "type": "Eq"
+                          }
+                        ],
+                        "type": "And"
+                      },
+                      {
+                        "arg": {
+                          "predicate": {
+                            "type": "Lit",
+                            "value": true
+                          },
+                          "source": {
+                            "edge_type": "has_actor_goal",
+                            "node": {
+                              "name": "agent",
+                              "type": "Var"
+                            },
+                            "type": "Neighbours"
+                          },
+                          "type": "Exists",
+                          "var_name": "existing_edge_identity"
+                        },
+                        "type": "Not"
+                      }
+                    ],
+                    "type": "And"
+                  }
+                }
+              }
+            },
+            "compose_ns": 24360179,
+            "digest": "sha256:6b8a662f087d34240137a8fb327325757b992f529a3b82cfddb5637cfc227e48",
+            "operator": "add_edge_identity_guard",
+            "site": "out agent has_actor_goal any endpoint",
+            "source_rule_digest": "sha256:fb1929256756cc2c0a70e90c386f9a271aa5dff082e3cd555baa391b67211816",
+            "target": "mint_actor_goal_recipient",
+            "wall": null
+          },
+          "source_control_ns": 3102442,
+          "source_training": [
+            {
+              "correct": true,
+              "expected_counts": [
+                1
+              ],
+              "fixedpoint_progress": 0,
+              "input_sweeps": [
+                1
+              ],
+              "output_counts": [
+                1
+              ],
+              "rule_store_stable": true,
+              "verbs": [
+                "sing"
+              ]
+            },
+            {
+              "correct": true,
+              "expected_counts": [
+                1
+              ],
+              "fixedpoint_progress": 0,
+              "input_sweeps": [
+                1
+              ],
+              "output_counts": [
+                1
+              ],
+              "rule_store_stable": true,
+              "verbs": [
+                "sing"
+              ]
+            }
+          ],
+          "training": [
+            {
+              "correct": true,
+              "expected_counts": [
+                1
+              ],
+              "fixedpoint_progress": 0,
+              "input_sweeps": [
+                1
+              ],
+              "output_counts": [
+                1
+              ],
+              "rule_store_stable": true,
+              "verbs": [
+                "sing"
+              ]
+            },
+            {
+              "correct": true,
+              "expected_counts": [
+                1
+              ],
+              "fixedpoint_progress": 0,
+              "input_sweeps": [
+                1
+              ],
+              "output_counts": [
+                1
+              ],
+              "rule_store_stable": true,
+              "verbs": [
+                "sing"
+              ]
+            }
+          ],
+          "training_scoring_ns": 4312840
+        },
+        "actor_recipient_identity": {
+          "primary_rule_unchanged": true,
+          "proposal": {
+            "built": true,
+            "candidate": {
+              "label": "substrate_composer",
+              "rules": {
+                "mint_actor_goal_recipient": {
+                  "batch": false,
+                  "content_hash": 5120657590456103972,
+                  "effects": [
+                    [
+                      "add_node",
+                      "goal",
+                      "ActorGoal",
+                      {
+                        "actor": {
+                          "__term__": {
+                            "key": "actor",
+                            "node": {
+                              "name": "aa",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        },
+                        "agency": "recipient",
+                        "meta_goal_core_interest": "",
+                        "meta_goal_opposes": "",
+                        "note": "no authored goal -- the actor is grammatically the subject but semantically the RECIPIENT/beneficiary of this verb class, per the held RecipientVerb codebook, honestly no surface goal abducted",
+                        "object": {
+                          "__term__": {
+                            "key": "object_domain",
+                            "node": {
+                              "name": "aa",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        },
+                        "revisable": 1.0,
+                        "serves_conflicting_meta_goal": 0.0,
+                        "surface_goal": "",
+                        "verb": {
+                          "__term__": {
+                            "key": "verb",
+                            "node": {
+                              "name": "aa",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        }
+                      }
+                    ],
+                    [
+                      "add_edge",
+                      "agent",
+                      "has_actor_goal",
+                      "goal",
+                      {}
+                    ]
+                  ],
+                  "match": [
+                    [
+                      "agent",
+                      "has_actor_action",
+                      "aa"
+                    ],
+                    [
+                      "agent",
+                      "has_recipient_verb",
+                      "rv"
+                    ]
+                  ],
+                  "match_type": null,
+                  "name": "mint_actor_goal_recipient_structvariant_order2",
+                  "revision": 0,
+                  "rule_uid": 4,
+                  "where": {
+                    "items": [
+                      {
+                        "items": [
+                          {
+                            "a": {
+                              "key": "verb",
+                              "node": {
+                                "name": "aa",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "b": {
+                              "key": "verb",
+                              "node": {
+                                "name": "rv",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "type": "Eq"
+                          }
+                        ],
+                        "type": "And"
+                      },
+                      {
+                        "arg": {
+                          "predicate": {
+                            "items": [
+                              {
+                                "a": {
+                                  "key": "actor",
+                                  "node": {
+                                    "name": "existing_edge_identity",
+                                    "type": "Var"
+                                  },
+                                  "type": "Attr"
+                                },
+                                "b": {
+                                  "key": "actor",
+                                  "node": {
+                                    "name": "aa",
+                                    "type": "Var"
+                                  },
+                                  "type": "Attr"
+                                },
+                                "type": "Eq"
+                              },
+                              {
+                                "a": {
+                                  "key": "verb",
+                                  "node": {
+                                    "name": "existing_edge_identity",
+                                    "type": "Var"
+                                  },
+                                  "type": "Attr"
+                                },
+                                "b": {
+                                  "key": "verb",
+                                  "node": {
+                                    "name": "aa",
+                                    "type": "Var"
+                                  },
+                                  "type": "Attr"
+                                },
+                                "type": "Eq"
+                              }
+                            ],
+                            "type": "And"
+                          },
+                          "source": {
+                            "node_type": "ActorGoal",
+                            "type": "NodesOfType"
+                          },
+                          "type": "Exists",
+                          "var_name": "existing_edge_identity"
+                        },
+                        "type": "Not"
+                      }
+                    ],
+                    "type": "And"
+                  }
+                }
+              }
+            },
+            "compose_ns": 16162062,
+            "digest": "sha256:df99935a3168656d4d9d365d2bf76fdb5a8a86c510f7158e410bc0523ff08678",
+            "operator": "add_edge_identity_guard",
+            "site": "out agent has_actor_goal attributes actor+verb",
+            "source_rule_digest": "sha256:fb1929256756cc2c0a70e90c386f9a271aa5dff082e3cd555baa391b67211816",
+            "target": "mint_actor_goal_recipient",
+            "wall": null
+          },
+          "source_control_ns": 3390984,
+          "source_training": [
+            {
+              "correct": true,
+              "expected_counts": [
+                1
+              ],
+              "fixedpoint_progress": 0,
+              "input_sweeps": [
+                1
+              ],
+              "output_counts": [
+                1
+              ],
+              "rule_store_stable": true,
+              "verbs": [
+                "sing"
+              ]
+            },
+            {
+              "correct": true,
+              "expected_counts": [
+                1
+              ],
+              "fixedpoint_progress": 0,
+              "input_sweeps": [
+                1
+              ],
+              "output_counts": [
+                1
+              ],
+              "rule_store_stable": true,
+              "verbs": [
+                "sing"
+              ]
+            }
+          ],
+          "training": [
+            {
+              "correct": true,
+              "expected_counts": [
+                1
+              ],
+              "fixedpoint_progress": 0,
+              "input_sweeps": [
+                1
+              ],
+              "output_counts": [
+                1
+              ],
+              "rule_store_stable": true,
+              "verbs": [
+                "sing"
+              ]
+            },
+            {
+              "correct": true,
+              "expected_counts": [
+                1
+              ],
+              "fixedpoint_progress": 0,
+              "input_sweeps": [
+                1
+              ],
+              "output_counts": [
+                1
+              ],
+              "rule_store_stable": true,
+              "verbs": [
+                "sing"
+              ]
+            }
+          ],
+          "training_scoring_ns": 4629612
+        },
+        "conversation": {
+          "primary_rule_unchanged": true,
+          "proposal": {
+            "built": true,
+            "candidate": {
+              "label": "substrate_composer",
+              "rules": {
+                "reply_to_adjacency_pair": {
+                  "batch": false,
+                  "content_hash": 6590774322814344041,
+                  "effects": [
+                    [
+                      "add_node",
+                      "reply",
+                      "Message",
+                      {
+                        "from": "agent"
+                      }
+                    ],
+                    [
+                      "add_edge",
+                      "reply",
+                      "has_speech_act",
+                      "r",
+                      {}
+                    ],
+                    [
+                      "add_edge",
+                      "reply",
+                      "responds_to",
+                      "m",
+                      {}
+                    ],
+                    [
+                      "add_edge",
+                      "agent",
+                      "sent",
+                      "reply",
+                      {}
+                    ],
+                    [
+                      "set_attr",
+                      "m",
+                      "adjacency_replied_act",
+                      {
+                        "__term__": {
+                          "key": "name",
+                          "node": {
+                            "name": "r",
+                            "type": "Var"
+                          },
+                          "type": "Attr"
+                        }
+                      }
+                    ]
+                  ],
+                  "match": [
+                    [
+                      "m",
+                      "has_intent",
+                      "i"
+                    ],
+                    [
+                      "i",
+                      "expects_response",
+                      "r"
+                    ],
+                    [
+                      "agent",
+                      "is_a",
+                      "Agent"
+                    ]
+                  ],
+                  "match_type": null,
+                  "name": "reply_to_adjacency_pair_structvariant_order2",
+                  "revision": 0,
+                  "rule_uid": 12,
+                  "where": {
+                    "items": [
+                      {
+                        "items": [
+                          {
+                            "a": {
+                              "key": "from",
+                              "node": {
+                                "name": "m",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": "interlocutor"
+                            },
+                            "type": "Eq"
+                          }
+                        ],
+                        "type": "And"
+                      },
+                      {
+                        "arg": {
+                          "predicate": {
+                            "type": "Lit",
+                            "value": true
+                          },
+                          "source": {
+                            "edge_type": "responds_to",
+                            "node": {
+                              "name": "m",
+                              "type": "Var"
+                            },
+                            "type": "InNeighbours"
+                          },
+                          "type": "Exists",
+                          "var_name": "existing_edge_identity"
+                        },
+                        "type": "Not"
+                      }
+                    ],
+                    "type": "And"
+                  }
+                }
+              }
+            },
+            "compose_ns": 29949518,
+            "digest": "sha256:2142f383a9a699868b40da8a7afe5d0c2f526ec9d7fb63aaf784031ba3b55555",
+            "operator": "add_edge_identity_guard",
+            "site": "in m responds_to any endpoint",
+            "source_rule_digest": "sha256:b0ce645cf9092f626aa86ca2417cf5f6c4a6bcd4645c03a28b2b0c5c116ca758",
+            "target": "reply_to_adjacency_pair",
+            "wall": null
+          },
+          "source_control_ns": 18411038,
+          "source_training": [
+            {
+              "correct": true,
+              "expected_counts": [
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#491"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 380492
+            },
+            {
+              "correct": true,
+              "expected_counts": [
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#491"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 374193
+            }
+          ],
+          "training": [
+            {
+              "correct": true,
+              "expected_counts": [
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#491"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 18552599
+            },
+            {
+              "correct": true,
+              "expected_counts": [
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#491"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 402773
+            }
+          ],
+          "training_scoring_ns": 37733961
+        },
+        "recurrence": {
+          "primary_rule_unchanged": true,
+          "proposal": {
+            "built": true,
+            "candidate": {
+              "label": "substrate_composer",
+              "rules": {
+                "mrl_offer_due_once": {
+                  "batch": false,
+                  "content_hash": 463715677639902482,
+                  "effects": [
+                    [
+                      "add_node",
+                      "offer",
+                      "Observation",
+                      {
+                        "key": {
+                          "__term__": {
+                            "source": {
+                              "items": [
+                                {
+                                  "key": "capability_key",
+                                  "node": {
+                                    "name": "candidate",
+                                    "type": "Var"
+                                  },
+                                  "type": "Attr"
+                                }
+                              ],
+                              "type": "SetT"
+                            },
+                            "type": "MapList",
+                            "value": {
+                              "name": "k",
+                              "type": "Var"
+                            },
+                            "var_name": "k"
+                          }
+                        },
+                        "offered_at_persistence": {
+                          "__term__": {
+                            "key": "persistence",
+                            "node": {
+                              "name": "candidate",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        },
+                        "offered_at_segment": {
+                          "__term__": {
+                            "key": "latest_segment_ordinal",
+                            "node": {
+                              "name": "candidate",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        },
+                        "signature": {
+                          "__term__": {
+                            "key": "structural_signature",
+                            "node": {
+                              "name": "candidate",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        },
+                        "status": "pending"
+                      }
+                    ],
+                    [
+                      "add_edge",
+                      "agent",
+                      "observed",
+                      "offer",
+                      {}
+                    ],
+                    [
+                      "add_edge",
+                      "candidate",
+                      "has_mint_offer",
+                      "offer",
+                      {}
+                    ],
+                    [
+                      "add_edge",
+                      "episode",
+                      "has_mint_offer",
+                      "offer",
+                      {}
+                    ]
+                  ],
+                  "match": [
+                    [
+                      "agent",
+                      "has_minting_recurrence_episode",
+                      "episode"
+                    ],
+                    [
+                      "episode",
+                      "has_predicate_recurrence_candidate",
+                      "candidate"
+                    ]
+                  ],
+                  "match_type": null,
+                  "name": "mrl_offer_due_once_structvariant_order2",
+                  "revision": 0,
+                  "rule_uid": 13,
+                  "where": {
+                    "items": [
+                      {
+                        "items": [
+                          {
+                            "a": {
+                              "key": "persistence",
+                              "node": {
+                                "name": "candidate",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "b": {
+                              "key": "mint_after_quanta",
+                              "node": {
+                                "name": "episode",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "type": "Gte"
+                          }
+                        ],
+                        "type": "And"
+                      },
+                      {
+                        "arg": {
+                          "predicate": {
+                            "type": "Lit",
+                            "value": true
+                          },
+                          "source": {
+                            "edge_type": "has_mint_offer",
+                            "node": {
+                              "name": "candidate",
+                              "type": "Var"
+                            },
+                            "type": "Neighbours"
+                          },
+                          "type": "Exists",
+                          "var_name": "existing_edge_identity"
+                        },
+                        "type": "Not"
+                      }
+                    ],
+                    "type": "And"
+                  }
+                }
+              }
+            },
+            "compose_ns": 37680110,
+            "digest": "sha256:b63b0f29aa232a0c5d92da634ef729dd6a28091b2967ec2644d9426997405a9c",
+            "operator": "add_edge_identity_guard",
+            "site": "out candidate has_mint_offer any endpoint",
+            "source_rule_digest": "sha256:04479af4f59ef2139cb2d69c4af6c7eb363fc081b494f6d788c1a58bf5a16af1",
+            "target": "mrl_offer_due_once",
+            "wall": null
+          },
+          "source_control_ns": 10613984,
+          "source_training": [
+            {
+              "correct": true,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-2-train_source_2-0-0",
+                "bidir-2-train_source_2-0-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "correct": true,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-2-train_source_2-1-0",
+                "bidir-2-train_source_2-1-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ],
+          "training": [
+            {
+              "correct": true,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-2-train_2-0-0",
+                "bidir-2-train_2-0-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "correct": true,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-2-train_2-1-0",
+                "bidir-2-train_2-1-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ],
+          "training_scoring_ns": 13740845
+        }
+      },
+      "source_after": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_PREREG_20261002.md": "2475c402246935fd9f60ba4a5994592b52a40653065f4055636da8756e1b743a",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_SUBSTRATE_EDGE_ATTRIBUTE_IDENTITY_CURRENT_SOURCE_AMENDMENT_20261003.md": "44acc12938f1e05c6152ac962b912a6bca3d63969dcd1b223e73840f872dc215",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_SUBSTRATE_EDGE_ATTRIBUTE_IDENTITY_V1_PREREG_20261002.md": "e0ea3efc99aee011ba47c351c9ddfb571720d266ffed2be43c75e2305b794ebc",
+        "domains/edit_ops.py": "308c401e992f8512308b3abb2b32acd6708bfebbb90255d7c5c9f4ea36c73a0d",
+        "domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+        "domains/seed_registry.py": "bb67553fd24366900698fddb6b649671a0b2ea2431c10784feaf054704bc292f",
+        "episode_helper::docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_1_AMENDMENT_20261002.md": "e46f2e311f31f93eda56772d71ad3fdc7ad9b84dafec10a39beb6020b23846dc",
+        "episode_helper::docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_PREREG_20261002.md": "2475c402246935fd9f60ba4a5994592b52a40653065f4055636da8756e1b743a",
+        "episode_helper::domains/contract_query.py": "5861f25467e2fed9905fa325816a3dc60822d4a79004b8b7b095511c3806b9a6",
+        "episode_helper::domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "episode_helper::domains/language_world.py": "06d24bdba1ccbd720f749f0c02d5a96729c40601237ec21a8f938077b2a262bb",
+        "episode_helper::domains/reference_resolution.py": "1f9c6ce8eaf98c33deb025110a0dea5e7960251eace4f7dc6872d3d4b85c2701",
+        "episode_helper::domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+        "episode_helper::evaluation/substrate_capability/analyze_thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "35f7efdf13d181853a4c915a9fa6bc2a03658a948db6159aaba9d4ebd6493260",
+        "episode_helper::evaluation/substrate_capability/thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "94e0c33434d055b886f9f4be389737e2d508a9a3dcb5d720db8b739929b55696",
+        "episode_helper::loaded_native_binary": "995e5c6a74989d06d310ed37e7f05e90a9a21e075684f2e155e1f6f23f809483",
+        "episode_helper::runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "episode_helper::runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "episode_helper::runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "episode_helper::runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "episode_helper::runners/dsl/src/graph.rs": "39c4fb983db934cf7350c28d168d0ad9d3049efba1cdb3847f23b55a0d488c66",
+        "episode_helper::runners/dsl/src/graph_rules.rs": "c02b4f7499f40348395f9ef0394c8799c6d0664d1d8296bf780f3745d3299246",
+        "episode_helper::runners/dsl/src/lib.rs": "10ae7645d9ed1f7c3c9d4f5fd119406928ce079e4336a5b007df307c685c0826",
+        "episode_helper::runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+        "episode_helper::runners/dsl/src/py.rs": "40e07774aaf04740ae08a42ca725ca0465a8b855754d5a596c8d67ca4c699cd8",
+        "episode_helper::runners/dsl/src/substrate.rs": "c8790f285532a7494089bcbff1eb5ed4917cefd23a8eab420408bb3187f51744",
+        "episode_helper::runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "episode_helper::runners/dsl/src/term.rs": "f6605bc2aa97e3784bee57ab24bccf6b6375b2dae1e650182dcb5c35d7108e61",
+        "episode_helper::seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "episode_helper::seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "episode_helper::seeds/conversation.json": "dbcf2ec16f706ee4057f9a0fc6266c764b83c4631f067a32b4e9c6d2bf9f748a",
+        "episode_helper::seeds/conversation_reply.json": "32be4138d22d9cca4c1872f79e86729a830f4e2952375a847ea00f2767aa15ff",
+        "episode_helper::seeds/faculty_lessons.json": "a1a0ab3e67957666dfdf7cc6a20f0e3f15203d6553e16c08f2bbeb16774f9c2a",
+        "episode_helper::seeds/intent.json": "1833b673e04f98521361bc1d93e57f4feb5add49e93ce9fd813ed2bb5eebae5f",
+        "episode_helper::seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "episode_helper::seeds/psychology.json": "1c8753c431f829f4a144d8c3d777df86af3f68c6139e7a247fa1db7e171d45b1",
+        "episode_helper::seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "episode_helper::seeds/relations.json": "94c553808d35c873f328691bccf4d0a3e37d6b30137e1038a4b3ff69898e4f5c",
+        "episode_helper::substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "episode_helper::substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "episode_helper::substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "35f7efdf13d181853a4c915a9fa6bc2a03658a948db6159aaba9d4ebd6493260",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_substrate_edge_attribute_identity_v1.py": "125fa66bb2f2d13766a8a7e80330780d1e7c76b59ea5b2568129ec6455eb5f93",
+        "evaluation/substrate_capability/thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "94e0c33434d055b886f9f4be389737e2d508a9a3dcb5d720db8b739929b55696",
+        "evaluation/substrate_capability/thoughtexperiment_substrate_edge_identity_current_source_v1.py": "49119bff7febfb10163fafa39753ad0c3ad6e60535b75a8e41ca80e05f8f1614",
+        "loaded_native_binary": "995e5c6a74989d06d310ed37e7f05e90a9a21e075684f2e155e1f6f23f809483",
+        "seeds/actor_goals.json": "e488cbd26e4051f8078b3f3da55965a5ec9e99eec9a329b265bde1e79a6422d9"
+      },
+      "source_before": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_PREREG_20261002.md": "2475c402246935fd9f60ba4a5994592b52a40653065f4055636da8756e1b743a",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_SUBSTRATE_EDGE_ATTRIBUTE_IDENTITY_CURRENT_SOURCE_AMENDMENT_20261003.md": "44acc12938f1e05c6152ac962b912a6bca3d63969dcd1b223e73840f872dc215",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_SUBSTRATE_EDGE_ATTRIBUTE_IDENTITY_V1_PREREG_20261002.md": "e0ea3efc99aee011ba47c351c9ddfb571720d266ffed2be43c75e2305b794ebc",
+        "domains/edit_ops.py": "308c401e992f8512308b3abb2b32acd6708bfebbb90255d7c5c9f4ea36c73a0d",
+        "domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+        "domains/seed_registry.py": "bb67553fd24366900698fddb6b649671a0b2ea2431c10784feaf054704bc292f",
+        "episode_helper::docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_1_AMENDMENT_20261002.md": "e46f2e311f31f93eda56772d71ad3fdc7ad9b84dafec10a39beb6020b23846dc",
+        "episode_helper::docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_PREREG_20261002.md": "2475c402246935fd9f60ba4a5994592b52a40653065f4055636da8756e1b743a",
+        "episode_helper::domains/contract_query.py": "5861f25467e2fed9905fa325816a3dc60822d4a79004b8b7b095511c3806b9a6",
+        "episode_helper::domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "episode_helper::domains/language_world.py": "06d24bdba1ccbd720f749f0c02d5a96729c40601237ec21a8f938077b2a262bb",
+        "episode_helper::domains/reference_resolution.py": "1f9c6ce8eaf98c33deb025110a0dea5e7960251eace4f7dc6872d3d4b85c2701",
+        "episode_helper::domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+        "episode_helper::evaluation/substrate_capability/analyze_thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "35f7efdf13d181853a4c915a9fa6bc2a03658a948db6159aaba9d4ebd6493260",
+        "episode_helper::evaluation/substrate_capability/thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "94e0c33434d055b886f9f4be389737e2d508a9a3dcb5d720db8b739929b55696",
+        "episode_helper::loaded_native_binary": "995e5c6a74989d06d310ed37e7f05e90a9a21e075684f2e155e1f6f23f809483",
+        "episode_helper::runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "episode_helper::runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "episode_helper::runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "episode_helper::runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "episode_helper::runners/dsl/src/graph.rs": "39c4fb983db934cf7350c28d168d0ad9d3049efba1cdb3847f23b55a0d488c66",
+        "episode_helper::runners/dsl/src/graph_rules.rs": "c02b4f7499f40348395f9ef0394c8799c6d0664d1d8296bf780f3745d3299246",
+        "episode_helper::runners/dsl/src/lib.rs": "10ae7645d9ed1f7c3c9d4f5fd119406928ce079e4336a5b007df307c685c0826",
+        "episode_helper::runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+        "episode_helper::runners/dsl/src/py.rs": "40e07774aaf04740ae08a42ca725ca0465a8b855754d5a596c8d67ca4c699cd8",
+        "episode_helper::runners/dsl/src/substrate.rs": "c8790f285532a7494089bcbff1eb5ed4917cefd23a8eab420408bb3187f51744",
+        "episode_helper::runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "episode_helper::runners/dsl/src/term.rs": "f6605bc2aa97e3784bee57ab24bccf6b6375b2dae1e650182dcb5c35d7108e61",
+        "episode_helper::seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "episode_helper::seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "episode_helper::seeds/conversation.json": "dbcf2ec16f706ee4057f9a0fc6266c764b83c4631f067a32b4e9c6d2bf9f748a",
+        "episode_helper::seeds/conversation_reply.json": "32be4138d22d9cca4c1872f79e86729a830f4e2952375a847ea00f2767aa15ff",
+        "episode_helper::seeds/faculty_lessons.json": "a1a0ab3e67957666dfdf7cc6a20f0e3f15203d6553e16c08f2bbeb16774f9c2a",
+        "episode_helper::seeds/intent.json": "1833b673e04f98521361bc1d93e57f4feb5add49e93ce9fd813ed2bb5eebae5f",
+        "episode_helper::seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "episode_helper::seeds/psychology.json": "1c8753c431f829f4a144d8c3d777df86af3f68c6139e7a247fa1db7e171d45b1",
+        "episode_helper::seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "episode_helper::seeds/relations.json": "94c553808d35c873f328691bccf4d0a3e37d6b30137e1038a4b3ff69898e4f5c",
+        "episode_helper::substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "episode_helper::substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "episode_helper::substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "35f7efdf13d181853a4c915a9fa6bc2a03658a948db6159aaba9d4ebd6493260",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_substrate_edge_attribute_identity_v1.py": "125fa66bb2f2d13766a8a7e80330780d1e7c76b59ea5b2568129ec6455eb5f93",
+        "evaluation/substrate_capability/thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "94e0c33434d055b886f9f4be389737e2d508a9a3dcb5d720db8b739929b55696",
+        "evaluation/substrate_capability/thoughtexperiment_substrate_edge_identity_current_source_v1.py": "49119bff7febfb10163fafa39753ad0c3ad6e60535b75a8e41ca80e05f8f1614",
+        "loaded_native_binary": "995e5c6a74989d06d310ed37e7f05e90a9a21e075684f2e155e1f6f23f809483",
+        "seeds/actor_goals.json": "e488cbd26e4051f8078b3f3da55965a5ec9e99eec9a329b265bde1e79a6422d9"
+      },
+      "source_stable": true,
+      "worker": 2,
+      "worker_stage_wall_ns": 379117245
+    },
+    {
+      "controls": {
+        "ambiguous_site": {
+          "built": false,
+          "kind": "add_edge_identity_guard",
+          "wall": "no unique positive-scoring EditSite for 'add_edge_identity_guard' among 3 applicable edge sites (tied or no cue overlap); abstained"
+        },
+        "ambiguous_site_ns": 30664462,
+        "no_overlap": {
+          "built": false,
+          "kind": null,
+          "wall": "no RuleSummary genuinely overlaps this axis's residual predicates (abstained, like the acting-variant pick abstains on no overlap)"
+        },
+        "no_overlap_ns": 26678545
+      },
+      "families": {
+        "actor_recipient_edge": {
+          "primary_rule_unchanged": true,
+          "proposal": {
+            "built": true,
+            "candidate": {
+              "label": "substrate_composer",
+              "rules": {
+                "mint_actor_goal_recipient": {
+                  "batch": false,
+                  "content_hash": 5120657590456103972,
+                  "effects": [
+                    [
+                      "add_node",
+                      "goal",
+                      "ActorGoal",
+                      {
+                        "actor": {
+                          "__term__": {
+                            "key": "actor",
+                            "node": {
+                              "name": "aa",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        },
+                        "agency": "recipient",
+                        "meta_goal_core_interest": "",
+                        "meta_goal_opposes": "",
+                        "note": "no authored goal -- the actor is grammatically the subject but semantically the RECIPIENT/beneficiary of this verb class, per the held RecipientVerb codebook, honestly no surface goal abducted",
+                        "object": {
+                          "__term__": {
+                            "key": "object_domain",
+                            "node": {
+                              "name": "aa",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        },
+                        "revisable": 1.0,
+                        "serves_conflicting_meta_goal": 0.0,
+                        "surface_goal": "",
+                        "verb": {
+                          "__term__": {
+                            "key": "verb",
+                            "node": {
+                              "name": "aa",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        }
+                      }
+                    ],
+                    [
+                      "add_edge",
+                      "agent",
+                      "has_actor_goal",
+                      "goal",
+                      {}
+                    ]
+                  ],
+                  "match": [
+                    [
+                      "agent",
+                      "has_actor_action",
+                      "aa"
+                    ],
+                    [
+                      "agent",
+                      "has_recipient_verb",
+                      "rv"
+                    ]
+                  ],
+                  "match_type": null,
+                  "name": "mint_actor_goal_recipient_structvariant_order3",
+                  "revision": 0,
+                  "rule_uid": 4,
+                  "where": {
+                    "items": [
+                      {
+                        "items": [
+                          {
+                            "a": {
+                              "key": "verb",
+                              "node": {
+                                "name": "aa",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "b": {
+                              "key": "verb",
+                              "node": {
+                                "name": "rv",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "type": "Eq"
+                          }
+                        ],
+                        "type": "And"
+                      },
+                      {
+                        "arg": {
+                          "predicate": {
+                            "type": "Lit",
+                            "value": true
+                          },
+                          "source": {
+                            "edge_type": "has_actor_goal",
+                            "node": {
+                              "name": "agent",
+                              "type": "Var"
+                            },
+                            "type": "Neighbours"
+                          },
+                          "type": "Exists",
+                          "var_name": "existing_edge_identity"
+                        },
+                        "type": "Not"
+                      }
+                    ],
+                    "type": "And"
+                  }
+                }
+              }
+            },
+            "compose_ns": 26374393,
+            "digest": "sha256:6b8a662f087d34240137a8fb327325757b992f529a3b82cfddb5637cfc227e48",
+            "operator": "add_edge_identity_guard",
+            "site": "out agent has_actor_goal any endpoint",
+            "source_rule_digest": "sha256:fb1929256756cc2c0a70e90c386f9a271aa5dff082e3cd555baa391b67211816",
+            "target": "mint_actor_goal_recipient",
+            "wall": null
+          },
+          "source_control_ns": 14524531,
+          "source_training": [
+            {
+              "correct": true,
+              "expected_counts": [
+                1
+              ],
+              "fixedpoint_progress": 0,
+              "input_sweeps": [
+                1
+              ],
+              "output_counts": [
+                1
+              ],
+              "rule_store_stable": true,
+              "verbs": [
+                "sing"
+              ]
+            },
+            {
+              "correct": true,
+              "expected_counts": [
+                1
+              ],
+              "fixedpoint_progress": 0,
+              "input_sweeps": [
+                1
+              ],
+              "output_counts": [
+                1
+              ],
+              "rule_store_stable": true,
+              "verbs": [
+                "sing"
+              ]
+            }
+          ],
+          "training": [
+            {
+              "correct": true,
+              "expected_counts": [
+                1
+              ],
+              "fixedpoint_progress": 0,
+              "input_sweeps": [
+                1
+              ],
+              "output_counts": [
+                1
+              ],
+              "rule_store_stable": true,
+              "verbs": [
+                "sing"
+              ]
+            },
+            {
+              "correct": true,
+              "expected_counts": [
+                1
+              ],
+              "fixedpoint_progress": 0,
+              "input_sweeps": [
+                1
+              ],
+              "output_counts": [
+                1
+              ],
+              "rule_store_stable": true,
+              "verbs": [
+                "sing"
+              ]
+            }
+          ],
+          "training_scoring_ns": 26317802
+        },
+        "actor_recipient_identity": {
+          "primary_rule_unchanged": true,
+          "proposal": {
+            "built": true,
+            "candidate": {
+              "label": "substrate_composer",
+              "rules": {
+                "mint_actor_goal_recipient": {
+                  "batch": false,
+                  "content_hash": 5120657590456103972,
+                  "effects": [
+                    [
+                      "add_node",
+                      "goal",
+                      "ActorGoal",
+                      {
+                        "actor": {
+                          "__term__": {
+                            "key": "actor",
+                            "node": {
+                              "name": "aa",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        },
+                        "agency": "recipient",
+                        "meta_goal_core_interest": "",
+                        "meta_goal_opposes": "",
+                        "note": "no authored goal -- the actor is grammatically the subject but semantically the RECIPIENT/beneficiary of this verb class, per the held RecipientVerb codebook, honestly no surface goal abducted",
+                        "object": {
+                          "__term__": {
+                            "key": "object_domain",
+                            "node": {
+                              "name": "aa",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        },
+                        "revisable": 1.0,
+                        "serves_conflicting_meta_goal": 0.0,
+                        "surface_goal": "",
+                        "verb": {
+                          "__term__": {
+                            "key": "verb",
+                            "node": {
+                              "name": "aa",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        }
+                      }
+                    ],
+                    [
+                      "add_edge",
+                      "agent",
+                      "has_actor_goal",
+                      "goal",
+                      {}
+                    ]
+                  ],
+                  "match": [
+                    [
+                      "agent",
+                      "has_actor_action",
+                      "aa"
+                    ],
+                    [
+                      "agent",
+                      "has_recipient_verb",
+                      "rv"
+                    ]
+                  ],
+                  "match_type": null,
+                  "name": "mint_actor_goal_recipient_structvariant_order3",
+                  "revision": 0,
+                  "rule_uid": 4,
+                  "where": {
+                    "items": [
+                      {
+                        "items": [
+                          {
+                            "a": {
+                              "key": "verb",
+                              "node": {
+                                "name": "aa",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "b": {
+                              "key": "verb",
+                              "node": {
+                                "name": "rv",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "type": "Eq"
+                          }
+                        ],
+                        "type": "And"
+                      },
+                      {
+                        "arg": {
+                          "predicate": {
+                            "items": [
+                              {
+                                "a": {
+                                  "key": "actor",
+                                  "node": {
+                                    "name": "existing_edge_identity",
+                                    "type": "Var"
+                                  },
+                                  "type": "Attr"
+                                },
+                                "b": {
+                                  "key": "actor",
+                                  "node": {
+                                    "name": "aa",
+                                    "type": "Var"
+                                  },
+                                  "type": "Attr"
+                                },
+                                "type": "Eq"
+                              },
+                              {
+                                "a": {
+                                  "key": "verb",
+                                  "node": {
+                                    "name": "existing_edge_identity",
+                                    "type": "Var"
+                                  },
+                                  "type": "Attr"
+                                },
+                                "b": {
+                                  "key": "verb",
+                                  "node": {
+                                    "name": "aa",
+                                    "type": "Var"
+                                  },
+                                  "type": "Attr"
+                                },
+                                "type": "Eq"
+                              }
+                            ],
+                            "type": "And"
+                          },
+                          "source": {
+                            "node_type": "ActorGoal",
+                            "type": "NodesOfType"
+                          },
+                          "type": "Exists",
+                          "var_name": "existing_edge_identity"
+                        },
+                        "type": "Not"
+                      }
+                    ],
+                    "type": "And"
+                  }
+                }
+              }
+            },
+            "compose_ns": 27898923,
+            "digest": "sha256:df99935a3168656d4d9d365d2bf76fdb5a8a86c510f7158e410bc0523ff08678",
+            "operator": "add_edge_identity_guard",
+            "site": "out agent has_actor_goal attributes actor+verb",
+            "source_rule_digest": "sha256:fb1929256756cc2c0a70e90c386f9a271aa5dff082e3cd555baa391b67211816",
+            "target": "mint_actor_goal_recipient",
+            "wall": null
+          },
+          "source_control_ns": 3116211,
+          "source_training": [
+            {
+              "correct": true,
+              "expected_counts": [
+                1
+              ],
+              "fixedpoint_progress": 0,
+              "input_sweeps": [
+                1
+              ],
+              "output_counts": [
+                1
+              ],
+              "rule_store_stable": true,
+              "verbs": [
+                "sing"
+              ]
+            },
+            {
+              "correct": true,
+              "expected_counts": [
+                1
+              ],
+              "fixedpoint_progress": 0,
+              "input_sweeps": [
+                1
+              ],
+              "output_counts": [
+                1
+              ],
+              "rule_store_stable": true,
+              "verbs": [
+                "sing"
+              ]
+            }
+          ],
+          "training": [
+            {
+              "correct": true,
+              "expected_counts": [
+                1
+              ],
+              "fixedpoint_progress": 0,
+              "input_sweeps": [
+                1
+              ],
+              "output_counts": [
+                1
+              ],
+              "rule_store_stable": true,
+              "verbs": [
+                "sing"
+              ]
+            },
+            {
+              "correct": true,
+              "expected_counts": [
+                1
+              ],
+              "fixedpoint_progress": 0,
+              "input_sweeps": [
+                1
+              ],
+              "output_counts": [
+                1
+              ],
+              "rule_store_stable": true,
+              "verbs": [
+                "sing"
+              ]
+            }
+          ],
+          "training_scoring_ns": 4376681
+        },
+        "conversation": {
+          "primary_rule_unchanged": true,
+          "proposal": {
+            "built": true,
+            "candidate": {
+              "label": "substrate_composer",
+              "rules": {
+                "reply_to_adjacency_pair": {
+                  "batch": false,
+                  "content_hash": 6590774322814344041,
+                  "effects": [
+                    [
+                      "add_node",
+                      "reply",
+                      "Message",
+                      {
+                        "from": "agent"
+                      }
+                    ],
+                    [
+                      "add_edge",
+                      "reply",
+                      "has_speech_act",
+                      "r",
+                      {}
+                    ],
+                    [
+                      "add_edge",
+                      "reply",
+                      "responds_to",
+                      "m",
+                      {}
+                    ],
+                    [
+                      "add_edge",
+                      "agent",
+                      "sent",
+                      "reply",
+                      {}
+                    ],
+                    [
+                      "set_attr",
+                      "m",
+                      "adjacency_replied_act",
+                      {
+                        "__term__": {
+                          "key": "name",
+                          "node": {
+                            "name": "r",
+                            "type": "Var"
+                          },
+                          "type": "Attr"
+                        }
+                      }
+                    ]
+                  ],
+                  "match": [
+                    [
+                      "m",
+                      "has_intent",
+                      "i"
+                    ],
+                    [
+                      "i",
+                      "expects_response",
+                      "r"
+                    ],
+                    [
+                      "agent",
+                      "is_a",
+                      "Agent"
+                    ]
+                  ],
+                  "match_type": null,
+                  "name": "reply_to_adjacency_pair_structvariant_order3",
+                  "revision": 0,
+                  "rule_uid": 12,
+                  "where": {
+                    "items": [
+                      {
+                        "items": [
+                          {
+                            "a": {
+                              "key": "from",
+                              "node": {
+                                "name": "m",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": "interlocutor"
+                            },
+                            "type": "Eq"
+                          }
+                        ],
+                        "type": "And"
+                      },
+                      {
+                        "arg": {
+                          "predicate": {
+                            "type": "Lit",
+                            "value": true
+                          },
+                          "source": {
+                            "edge_type": "responds_to",
+                            "node": {
+                              "name": "m",
+                              "type": "Var"
+                            },
+                            "type": "InNeighbours"
+                          },
+                          "type": "Exists",
+                          "var_name": "existing_edge_identity"
+                        },
+                        "type": "Not"
+                      }
+                    ],
+                    "type": "And"
+                  }
+                }
+              }
+            },
+            "compose_ns": 31963461,
+            "digest": "sha256:2142f383a9a699868b40da8a7afe5d0c2f526ec9d7fb63aaf784031ba3b55555",
+            "operator": "add_edge_identity_guard",
+            "site": "in m responds_to any endpoint",
+            "source_rule_digest": "sha256:b0ce645cf9092f626aa86ca2417cf5f6c4a6bcd4645c03a28b2b0c5c116ca758",
+            "target": "reply_to_adjacency_pair",
+            "wall": null
+          },
+          "source_control_ns": 21878692,
+          "source_training": [
+            {
+              "correct": true,
+              "expected_counts": [
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#491"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 613075
+            },
+            {
+              "correct": true,
+              "expected_counts": [
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#491"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 394572
+            }
+          ],
+          "training": [
+            {
+              "correct": true,
+              "expected_counts": [
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#491"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 19051581
+            },
+            {
+              "correct": true,
+              "expected_counts": [
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#491"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 390003
+            }
+          ],
+          "training_scoring_ns": 38612927
+        },
+        "recurrence": {
+          "primary_rule_unchanged": true,
+          "proposal": {
+            "built": true,
+            "candidate": {
+              "label": "substrate_composer",
+              "rules": {
+                "mrl_offer_due_once": {
+                  "batch": false,
+                  "content_hash": 463715677639902482,
+                  "effects": [
+                    [
+                      "add_node",
+                      "offer",
+                      "Observation",
+                      {
+                        "key": {
+                          "__term__": {
+                            "source": {
+                              "items": [
+                                {
+                                  "key": "capability_key",
+                                  "node": {
+                                    "name": "candidate",
+                                    "type": "Var"
+                                  },
+                                  "type": "Attr"
+                                }
+                              ],
+                              "type": "SetT"
+                            },
+                            "type": "MapList",
+                            "value": {
+                              "name": "k",
+                              "type": "Var"
+                            },
+                            "var_name": "k"
+                          }
+                        },
+                        "offered_at_persistence": {
+                          "__term__": {
+                            "key": "persistence",
+                            "node": {
+                              "name": "candidate",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        },
+                        "offered_at_segment": {
+                          "__term__": {
+                            "key": "latest_segment_ordinal",
+                            "node": {
+                              "name": "candidate",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        },
+                        "signature": {
+                          "__term__": {
+                            "key": "structural_signature",
+                            "node": {
+                              "name": "candidate",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        },
+                        "status": "pending"
+                      }
+                    ],
+                    [
+                      "add_edge",
+                      "agent",
+                      "observed",
+                      "offer",
+                      {}
+                    ],
+                    [
+                      "add_edge",
+                      "candidate",
+                      "has_mint_offer",
+                      "offer",
+                      {}
+                    ],
+                    [
+                      "add_edge",
+                      "episode",
+                      "has_mint_offer",
+                      "offer",
+                      {}
+                    ]
+                  ],
+                  "match": [
+                    [
+                      "agent",
+                      "has_minting_recurrence_episode",
+                      "episode"
+                    ],
+                    [
+                      "episode",
+                      "has_predicate_recurrence_candidate",
+                      "candidate"
+                    ]
+                  ],
+                  "match_type": null,
+                  "name": "mrl_offer_due_once_structvariant_order3",
+                  "revision": 0,
+                  "rule_uid": 13,
+                  "where": {
+                    "items": [
+                      {
+                        "items": [
+                          {
+                            "a": {
+                              "key": "persistence",
+                              "node": {
+                                "name": "candidate",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "b": {
+                              "key": "mint_after_quanta",
+                              "node": {
+                                "name": "episode",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "type": "Gte"
+                          }
+                        ],
+                        "type": "And"
+                      },
+                      {
+                        "arg": {
+                          "predicate": {
+                            "type": "Lit",
+                            "value": true
+                          },
+                          "source": {
+                            "edge_type": "has_mint_offer",
+                            "node": {
+                              "name": "candidate",
+                              "type": "Var"
+                            },
+                            "type": "Neighbours"
+                          },
+                          "type": "Exists",
+                          "var_name": "existing_edge_identity"
+                        },
+                        "type": "Not"
+                      }
+                    ],
+                    "type": "And"
+                  }
+                }
+              }
+            },
+            "compose_ns": 37684481,
+            "digest": "sha256:b63b0f29aa232a0c5d92da634ef729dd6a28091b2967ec2644d9426997405a9c",
+            "operator": "add_edge_identity_guard",
+            "site": "out candidate has_mint_offer any endpoint",
+            "source_rule_digest": "sha256:04479af4f59ef2139cb2d69c4af6c7eb363fc081b494f6d788c1a58bf5a16af1",
+            "target": "mrl_offer_due_once",
+            "wall": null
+          },
+          "source_control_ns": 10663263,
+          "source_training": [
+            {
+              "correct": true,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-3-train_source_3-0-0",
+                "bidir-3-train_source_3-0-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "correct": true,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-3-train_source_3-1-0",
+                "bidir-3-train_source_3-1-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ],
+          "training": [
+            {
+              "correct": true,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-3-train_3-0-0",
+                "bidir-3-train_3-0-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "correct": true,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-3-train_3-1-0",
+                "bidir-3-train_3-1-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ],
+          "training_scoring_ns": 11765052
+        }
+      },
+      "source_after": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_PREREG_20261002.md": "2475c402246935fd9f60ba4a5994592b52a40653065f4055636da8756e1b743a",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_SUBSTRATE_EDGE_ATTRIBUTE_IDENTITY_CURRENT_SOURCE_AMENDMENT_20261003.md": "44acc12938f1e05c6152ac962b912a6bca3d63969dcd1b223e73840f872dc215",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_SUBSTRATE_EDGE_ATTRIBUTE_IDENTITY_V1_PREREG_20261002.md": "e0ea3efc99aee011ba47c351c9ddfb571720d266ffed2be43c75e2305b794ebc",
+        "domains/edit_ops.py": "308c401e992f8512308b3abb2b32acd6708bfebbb90255d7c5c9f4ea36c73a0d",
+        "domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+        "domains/seed_registry.py": "bb67553fd24366900698fddb6b649671a0b2ea2431c10784feaf054704bc292f",
+        "episode_helper::docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_1_AMENDMENT_20261002.md": "e46f2e311f31f93eda56772d71ad3fdc7ad9b84dafec10a39beb6020b23846dc",
+        "episode_helper::docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_PREREG_20261002.md": "2475c402246935fd9f60ba4a5994592b52a40653065f4055636da8756e1b743a",
+        "episode_helper::domains/contract_query.py": "5861f25467e2fed9905fa325816a3dc60822d4a79004b8b7b095511c3806b9a6",
+        "episode_helper::domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "episode_helper::domains/language_world.py": "06d24bdba1ccbd720f749f0c02d5a96729c40601237ec21a8f938077b2a262bb",
+        "episode_helper::domains/reference_resolution.py": "1f9c6ce8eaf98c33deb025110a0dea5e7960251eace4f7dc6872d3d4b85c2701",
+        "episode_helper::domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+        "episode_helper::evaluation/substrate_capability/analyze_thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "35f7efdf13d181853a4c915a9fa6bc2a03658a948db6159aaba9d4ebd6493260",
+        "episode_helper::evaluation/substrate_capability/thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "94e0c33434d055b886f9f4be389737e2d508a9a3dcb5d720db8b739929b55696",
+        "episode_helper::loaded_native_binary": "995e5c6a74989d06d310ed37e7f05e90a9a21e075684f2e155e1f6f23f809483",
+        "episode_helper::runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "episode_helper::runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "episode_helper::runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "episode_helper::runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "episode_helper::runners/dsl/src/graph.rs": "39c4fb983db934cf7350c28d168d0ad9d3049efba1cdb3847f23b55a0d488c66",
+        "episode_helper::runners/dsl/src/graph_rules.rs": "c02b4f7499f40348395f9ef0394c8799c6d0664d1d8296bf780f3745d3299246",
+        "episode_helper::runners/dsl/src/lib.rs": "10ae7645d9ed1f7c3c9d4f5fd119406928ce079e4336a5b007df307c685c0826",
+        "episode_helper::runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+        "episode_helper::runners/dsl/src/py.rs": "40e07774aaf04740ae08a42ca725ca0465a8b855754d5a596c8d67ca4c699cd8",
+        "episode_helper::runners/dsl/src/substrate.rs": "c8790f285532a7494089bcbff1eb5ed4917cefd23a8eab420408bb3187f51744",
+        "episode_helper::runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "episode_helper::runners/dsl/src/term.rs": "f6605bc2aa97e3784bee57ab24bccf6b6375b2dae1e650182dcb5c35d7108e61",
+        "episode_helper::seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "episode_helper::seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "episode_helper::seeds/conversation.json": "dbcf2ec16f706ee4057f9a0fc6266c764b83c4631f067a32b4e9c6d2bf9f748a",
+        "episode_helper::seeds/conversation_reply.json": "32be4138d22d9cca4c1872f79e86729a830f4e2952375a847ea00f2767aa15ff",
+        "episode_helper::seeds/faculty_lessons.json": "a1a0ab3e67957666dfdf7cc6a20f0e3f15203d6553e16c08f2bbeb16774f9c2a",
+        "episode_helper::seeds/intent.json": "1833b673e04f98521361bc1d93e57f4feb5add49e93ce9fd813ed2bb5eebae5f",
+        "episode_helper::seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "episode_helper::seeds/psychology.json": "1c8753c431f829f4a144d8c3d777df86af3f68c6139e7a247fa1db7e171d45b1",
+        "episode_helper::seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "episode_helper::seeds/relations.json": "94c553808d35c873f328691bccf4d0a3e37d6b30137e1038a4b3ff69898e4f5c",
+        "episode_helper::substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "episode_helper::substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "episode_helper::substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "35f7efdf13d181853a4c915a9fa6bc2a03658a948db6159aaba9d4ebd6493260",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_substrate_edge_attribute_identity_v1.py": "125fa66bb2f2d13766a8a7e80330780d1e7c76b59ea5b2568129ec6455eb5f93",
+        "evaluation/substrate_capability/thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "94e0c33434d055b886f9f4be389737e2d508a9a3dcb5d720db8b739929b55696",
+        "evaluation/substrate_capability/thoughtexperiment_substrate_edge_identity_current_source_v1.py": "49119bff7febfb10163fafa39753ad0c3ad6e60535b75a8e41ca80e05f8f1614",
+        "loaded_native_binary": "995e5c6a74989d06d310ed37e7f05e90a9a21e075684f2e155e1f6f23f809483",
+        "seeds/actor_goals.json": "e488cbd26e4051f8078b3f3da55965a5ec9e99eec9a329b265bde1e79a6422d9"
+      },
+      "source_before": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_PREREG_20261002.md": "2475c402246935fd9f60ba4a5994592b52a40653065f4055636da8756e1b743a",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_SUBSTRATE_EDGE_ATTRIBUTE_IDENTITY_CURRENT_SOURCE_AMENDMENT_20261003.md": "44acc12938f1e05c6152ac962b912a6bca3d63969dcd1b223e73840f872dc215",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_SUBSTRATE_EDGE_ATTRIBUTE_IDENTITY_V1_PREREG_20261002.md": "e0ea3efc99aee011ba47c351c9ddfb571720d266ffed2be43c75e2305b794ebc",
+        "domains/edit_ops.py": "308c401e992f8512308b3abb2b32acd6708bfebbb90255d7c5c9f4ea36c73a0d",
+        "domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+        "domains/seed_registry.py": "bb67553fd24366900698fddb6b649671a0b2ea2431c10784feaf054704bc292f",
+        "episode_helper::docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_1_AMENDMENT_20261002.md": "e46f2e311f31f93eda56772d71ad3fdc7ad9b84dafec10a39beb6020b23846dc",
+        "episode_helper::docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_PREREG_20261002.md": "2475c402246935fd9f60ba4a5994592b52a40653065f4055636da8756e1b743a",
+        "episode_helper::domains/contract_query.py": "5861f25467e2fed9905fa325816a3dc60822d4a79004b8b7b095511c3806b9a6",
+        "episode_helper::domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "episode_helper::domains/language_world.py": "06d24bdba1ccbd720f749f0c02d5a96729c40601237ec21a8f938077b2a262bb",
+        "episode_helper::domains/reference_resolution.py": "1f9c6ce8eaf98c33deb025110a0dea5e7960251eace4f7dc6872d3d4b85c2701",
+        "episode_helper::domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+        "episode_helper::evaluation/substrate_capability/analyze_thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "35f7efdf13d181853a4c915a9fa6bc2a03658a948db6159aaba9d4ebd6493260",
+        "episode_helper::evaluation/substrate_capability/thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "94e0c33434d055b886f9f4be389737e2d508a9a3dcb5d720db8b739929b55696",
+        "episode_helper::loaded_native_binary": "995e5c6a74989d06d310ed37e7f05e90a9a21e075684f2e155e1f6f23f809483",
+        "episode_helper::runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "episode_helper::runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "episode_helper::runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "episode_helper::runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "episode_helper::runners/dsl/src/graph.rs": "39c4fb983db934cf7350c28d168d0ad9d3049efba1cdb3847f23b55a0d488c66",
+        "episode_helper::runners/dsl/src/graph_rules.rs": "c02b4f7499f40348395f9ef0394c8799c6d0664d1d8296bf780f3745d3299246",
+        "episode_helper::runners/dsl/src/lib.rs": "10ae7645d9ed1f7c3c9d4f5fd119406928ce079e4336a5b007df307c685c0826",
+        "episode_helper::runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+        "episode_helper::runners/dsl/src/py.rs": "40e07774aaf04740ae08a42ca725ca0465a8b855754d5a596c8d67ca4c699cd8",
+        "episode_helper::runners/dsl/src/substrate.rs": "c8790f285532a7494089bcbff1eb5ed4917cefd23a8eab420408bb3187f51744",
+        "episode_helper::runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "episode_helper::runners/dsl/src/term.rs": "f6605bc2aa97e3784bee57ab24bccf6b6375b2dae1e650182dcb5c35d7108e61",
+        "episode_helper::seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "episode_helper::seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "episode_helper::seeds/conversation.json": "dbcf2ec16f706ee4057f9a0fc6266c764b83c4631f067a32b4e9c6d2bf9f748a",
+        "episode_helper::seeds/conversation_reply.json": "32be4138d22d9cca4c1872f79e86729a830f4e2952375a847ea00f2767aa15ff",
+        "episode_helper::seeds/faculty_lessons.json": "a1a0ab3e67957666dfdf7cc6a20f0e3f15203d6553e16c08f2bbeb16774f9c2a",
+        "episode_helper::seeds/intent.json": "1833b673e04f98521361bc1d93e57f4feb5add49e93ce9fd813ed2bb5eebae5f",
+        "episode_helper::seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "episode_helper::seeds/psychology.json": "1c8753c431f829f4a144d8c3d777df86af3f68c6139e7a247fa1db7e171d45b1",
+        "episode_helper::seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "episode_helper::seeds/relations.json": "94c553808d35c873f328691bccf4d0a3e37d6b30137e1038a4b3ff69898e4f5c",
+        "episode_helper::substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "episode_helper::substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "episode_helper::substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "35f7efdf13d181853a4c915a9fa6bc2a03658a948db6159aaba9d4ebd6493260",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_substrate_edge_attribute_identity_v1.py": "125fa66bb2f2d13766a8a7e80330780d1e7c76b59ea5b2568129ec6455eb5f93",
+        "evaluation/substrate_capability/thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "94e0c33434d055b886f9f4be389737e2d508a9a3dcb5d720db8b739929b55696",
+        "evaluation/substrate_capability/thoughtexperiment_substrate_edge_identity_current_source_v1.py": "49119bff7febfb10163fafa39753ad0c3ad6e60535b75a8e41ca80e05f8f1614",
+        "loaded_native_binary": "995e5c6a74989d06d310ed37e7f05e90a9a21e075684f2e155e1f6f23f809483",
+        "seeds/actor_goals.json": "e488cbd26e4051f8078b3f3da55965a5ec9e99eec9a329b265bde1e79a6422d9"
+      },
+      "source_stable": true,
+      "worker": 3,
+      "worker_stage_wall_ns": 444017264
+    }
+  ]
+}

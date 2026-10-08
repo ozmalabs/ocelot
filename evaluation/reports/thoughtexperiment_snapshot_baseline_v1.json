@@ -1,0 +1,112 @@
+{
+  "binary": {
+    "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+    "sha256": "sha256:a5aa1ea0812e8ad2bd84e0c78864e23f33bccda3e3b9db2d946708d378e811de"
+  },
+  "host": {
+    "machine": "x86_64",
+    "pid": 2,
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5"
+  },
+  "implementation_status": "serialization_copy_baseline; no CoW fork",
+  "measurement": "native_graph_to_dict_plus_graph_from_dict",
+  "results": [
+    {
+      "export": {
+        "max_ms": 7.973534986376762,
+        "median_ms": 5.630308005493134,
+        "min_ms": 5.2645960240624845,
+        "p95_ms": 7.297882187413051
+      },
+      "export_plus_restore": {
+        "max_ms": 12.488935026340187,
+        "median_ms": 10.325190029107034,
+        "min_ms": 10.004018025938421,
+        "p95_ms": 11.94277541944757
+      },
+      "json_payload_bytes": 228591,
+      "observed_edges": 1991,
+      "observed_nodes": 1000,
+      "repeats": 7,
+      "requested_nodes": 1000,
+      "restore": {
+        "max_ms": 4.982574027962983,
+        "median_ms": 4.714752023573965,
+        "min_ms": 4.515400039963424,
+        "p95_ms": 4.915184713900089
+      },
+      "warmups": 2
+    },
+    {
+      "export": {
+        "max_ms": 94.95700697880238,
+        "median_ms": 71.11099397297949,
+        "min_ms": 66.9955859775655,
+        "p95_ms": 88.52312119561246
+      },
+      "export_plus_restore": {
+        "max_ms": 144.76176700554788,
+        "median_ms": 124.56134898820892,
+        "min_ms": 122.50834499718621,
+        "p95_ms": 139.35162010602653
+      },
+      "json_payload_bytes": 2349771,
+      "observed_edges": 19991,
+      "observed_nodes": 10000,
+      "repeats": 7,
+      "requested_nodes": 10000,
+      "restore": {
+        "max_ms": 57.23109998507425,
+        "median_ms": 53.34828398190439,
+        "min_ms": 49.8047600267455,
+        "p95_ms": 57.06327909138054
+      },
+      "warmups": 2
+    },
+    {
+      "export": {
+        "max_ms": 431.64359300863,
+        "median_ms": 402.89423597278073,
+        "min_ms": 386.90543797565624,
+        "p95_ms": 428.81606180453673
+      },
+      "export_plus_restore": {
+        "max_ms": 745.1926909852773,
+        "median_ms": 729.1426209849305,
+        "min_ms": 717.2542299958877,
+        "p95_ms": 743.0650342896115
+      },
+      "json_payload_bytes": 12017262,
+      "observed_edges": 99991,
+      "observed_nodes": 50000,
+      "repeats": 7,
+      "requested_nodes": 50000,
+      "restore": {
+        "max_ms": 342.99896797165275,
+        "median_ms": 319.2008170299232,
+        "min_ms": 311.7144150310196,
+        "p95_ms": 342.7704324829392
+      },
+      "warmups": 2
+    }
+  ],
+  "runner": {
+    "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/thoughtexperiment_snapshot_baseline_v1.py",
+    "sha256": "sha256:b1ac1df7b6408b91ebf7a114e853727e4763fe8427e8457cbefc873b2e7c07eb"
+  },
+  "schema": "ThoughtexperimentSnapshotBaselineV1",
+  "sources": {
+    "domains/imagination.py": "sha256:9333592736b6006aeab466112ee61382e99fd40cbe45bff662397ed3c8c76d33",
+    "domains/self_correction.py": "sha256:9b5e7d2ee13b8cf5dadcf161840fd84b9ab54b691a2d89d3b1c3ed0607fc03fe",
+    "runners/dsl/src/graph.rs": "sha256:b3b6a3f851e6212a01d20e811f16971a322509706b8ea042a3988ff921c07bcf",
+    "runners/dsl/src/persist.rs": "sha256:0e5b1080aeb1e16204082bcff584687a0a1aef58109b716b696e76fc5237cb13",
+    "runners/dsl/src/py.rs": "sha256:c5034c827842ba92f37f0f1e01cb364133dd2e0b031bccefdd896e71096ee289"
+  },
+  "workload": {
+    "attrs_per_node": 3,
+    "edges": "chain plus forward skip-8; max out-degree 2",
+    "node_type": "ThoughtexperimentBenchNode",
+    "payload_attr_bytes": 24
+  }
+}

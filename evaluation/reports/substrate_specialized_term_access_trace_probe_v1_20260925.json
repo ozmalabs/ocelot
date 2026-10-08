@@ -1,0 +1,594 @@
+{
+  "cells": [
+    {
+      "case": "slide_neighbours",
+      "expected_event_kinds": [
+        "term_attr_read",
+        "term_edge_read"
+      ],
+      "missing_expected_kinds": [],
+      "observed_kinds": [
+        "pattern_edge",
+        "term_attr_read",
+        "term_edge_read"
+      ],
+      "outcome_match": true,
+      "plain": {
+        "dropped": 0,
+        "event_count": 0,
+        "events": [],
+        "index_active": false,
+        "progress": 0,
+        "static_mismatches": [],
+        "status": "fixed_point",
+        "terminal_progress": 0,
+        "trace_enabled": false
+      },
+      "traced": {
+        "dropped": 0,
+        "event_count": 22,
+        "events": [
+          [
+            1,
+            "pattern_edge",
+            0,
+            "probe_edge",
+            1,
+            1
+          ],
+          [
+            1,
+            "term_attr_read",
+            0,
+            "row",
+            null,
+            4
+          ],
+          [
+            1,
+            "term_attr_read",
+            0,
+            "col",
+            null,
+            4
+          ],
+          [
+            1,
+            "term_attr_read",
+            1,
+            "row",
+            null,
+            4
+          ],
+          [
+            1,
+            "term_attr_read",
+            1,
+            "col",
+            null,
+            4
+          ],
+          [
+            1,
+            "term_attr_read",
+            1,
+            "value",
+            null,
+            1
+          ],
+          [
+            1,
+            "term_edge_read",
+            0,
+            "neighbour",
+            1,
+            4
+          ]
+        ],
+        "index_active": false,
+        "progress": 0,
+        "static_mismatches": [],
+        "status": "fixed_point",
+        "terminal_progress": 0,
+        "trace_enabled": true
+      }
+    },
+    {
+      "case": "nodes_where",
+      "expected_event_kinds": [
+        "term_attr_read",
+        "term_index_query",
+        "term_type_read"
+      ],
+      "missing_expected_kinds": [],
+      "observed_kinds": [
+        "pattern_edge",
+        "term_attr_read",
+        "term_index_query",
+        "term_type_read"
+      ],
+      "outcome_match": true,
+      "plain": {
+        "dropped": 0,
+        "event_count": 0,
+        "events": [],
+        "index_active": false,
+        "progress": 0,
+        "static_mismatches": [],
+        "status": "fixed_point",
+        "terminal_progress": 0,
+        "trace_enabled": false
+      },
+      "traced": {
+        "dropped": 0,
+        "event_count": 6,
+        "events": [
+          [
+            1,
+            "pattern_edge",
+            0,
+            "probe_edge",
+            1,
+            1
+          ],
+          [
+            1,
+            "term_attr_read",
+            0,
+            "flag",
+            null,
+            1
+          ],
+          [
+            1,
+            "term_attr_read",
+            1,
+            "flag",
+            null,
+            1
+          ],
+          [
+            1,
+            "term_type_read",
+            0,
+            "Probe",
+            null,
+            1
+          ],
+          [
+            1,
+            "term_type_read",
+            1,
+            "Probe",
+            null,
+            1
+          ],
+          [
+            1,
+            "term_index_query",
+            null,
+            "flag",
+            4,
+            1
+          ]
+        ],
+        "index_active": false,
+        "progress": 0,
+        "static_mismatches": [],
+        "status": "fixed_point",
+        "terminal_progress": 0,
+        "trace_enabled": true
+      }
+    },
+    {
+      "case": "nodes_where_indexed",
+      "expected_event_kinds": [
+        "term_attr_read",
+        "term_index_query",
+        "term_type_read"
+      ],
+      "missing_expected_kinds": [],
+      "observed_kinds": [
+        "pattern_edge",
+        "term_attr_read",
+        "term_index_query",
+        "term_type_read"
+      ],
+      "outcome_match": true,
+      "plain": {
+        "dropped": 0,
+        "event_count": 0,
+        "events": [],
+        "index_active": true,
+        "progress": 0,
+        "static_mismatches": [],
+        "status": "fixed_point",
+        "terminal_progress": 0,
+        "trace_enabled": false
+      },
+      "traced": {
+        "dropped": 0,
+        "event_count": 4,
+        "events": [
+          [
+            1,
+            "pattern_edge",
+            0,
+            "probe_edge",
+            1,
+            1
+          ],
+          [
+            1,
+            "term_attr_read",
+            1,
+            "flag",
+            null,
+            1
+          ],
+          [
+            1,
+            "term_type_read",
+            1,
+            "Probe",
+            null,
+            1
+          ],
+          [
+            1,
+            "term_index_query",
+            null,
+            "flag",
+            4,
+            1
+          ]
+        ],
+        "index_active": true,
+        "progress": 0,
+        "static_mismatches": [],
+        "status": "fixed_point",
+        "terminal_progress": 0,
+        "trace_enabled": true
+      }
+    },
+    {
+      "case": "nodes_of_type",
+      "expected_event_kinds": [
+        "term_type_read"
+      ],
+      "missing_expected_kinds": [],
+      "observed_kinds": [
+        "pattern_edge",
+        "term_type_read"
+      ],
+      "outcome_match": true,
+      "plain": {
+        "dropped": 0,
+        "event_count": 0,
+        "events": [],
+        "index_active": false,
+        "progress": 0,
+        "static_mismatches": [],
+        "status": "fixed_point",
+        "terminal_progress": 0,
+        "trace_enabled": false
+      },
+      "traced": {
+        "dropped": 0,
+        "event_count": 3,
+        "events": [
+          [
+            1,
+            "pattern_edge",
+            0,
+            "probe_edge",
+            1,
+            1
+          ],
+          [
+            1,
+            "term_type_read",
+            0,
+            "Probe",
+            null,
+            1
+          ],
+          [
+            1,
+            "term_type_read",
+            1,
+            "Probe",
+            null,
+            1
+          ]
+        ],
+        "index_active": false,
+        "progress": 0,
+        "static_mismatches": [],
+        "status": "fixed_point",
+        "terminal_progress": 0,
+        "trace_enabled": true
+      }
+    },
+    {
+      "case": "scalar_attr_triples",
+      "expected_event_kinds": [
+        "term_attr_read",
+        "term_type_read"
+      ],
+      "missing_expected_kinds": [],
+      "observed_kinds": [
+        "pattern_edge",
+        "term_attr_read",
+        "term_type_read"
+      ],
+      "outcome_match": true,
+      "plain": {
+        "dropped": 0,
+        "event_count": 0,
+        "events": [],
+        "index_active": false,
+        "progress": 0,
+        "static_mismatches": [],
+        "status": "fixed_point",
+        "terminal_progress": 0,
+        "trace_enabled": false
+      },
+      "traced": {
+        "dropped": 0,
+        "event_count": 13,
+        "events": [
+          [
+            1,
+            "pattern_edge",
+            0,
+            "probe_edge",
+            1,
+            1
+          ],
+          [
+            1,
+            "term_attr_read",
+            0,
+            "flag",
+            null,
+            1
+          ],
+          [
+            1,
+            "term_attr_read",
+            0,
+            "row",
+            null,
+            1
+          ],
+          [
+            1,
+            "term_attr_read",
+            0,
+            "col",
+            null,
+            1
+          ],
+          [
+            1,
+            "term_attr_read",
+            0,
+            "value",
+            null,
+            1
+          ],
+          [
+            1,
+            "term_attr_read",
+            1,
+            "flag",
+            null,
+            1
+          ],
+          [
+            1,
+            "term_attr_read",
+            1,
+            "row",
+            null,
+            1
+          ],
+          [
+            1,
+            "term_attr_read",
+            1,
+            "col",
+            null,
+            1
+          ],
+          [
+            1,
+            "term_attr_read",
+            1,
+            "value",
+            null,
+            1
+          ],
+          [
+            1,
+            "term_attr_read",
+            2,
+            "tag",
+            null,
+            1
+          ],
+          [
+            1,
+            "term_type_read",
+            0,
+            "Probe",
+            null,
+            1
+          ],
+          [
+            1,
+            "term_type_read",
+            1,
+            "Probe",
+            null,
+            1
+          ],
+          [
+            1,
+            "term_type_read",
+            2,
+            "Aux",
+            null,
+            1
+          ]
+        ],
+        "index_active": false,
+        "progress": 0,
+        "static_mismatches": [],
+        "status": "fixed_point",
+        "terminal_progress": 0,
+        "trace_enabled": true
+      }
+    },
+    {
+      "case": "attr_by_name",
+      "expected_event_kinds": [
+        "term_attr_read"
+      ],
+      "missing_expected_kinds": [],
+      "observed_kinds": [
+        "pattern_edge",
+        "term_attr_read"
+      ],
+      "outcome_match": true,
+      "plain": {
+        "dropped": 0,
+        "event_count": 0,
+        "events": [],
+        "index_active": false,
+        "progress": 0,
+        "static_mismatches": [],
+        "status": "fixed_point",
+        "terminal_progress": 0,
+        "trace_enabled": false
+      },
+      "traced": {
+        "dropped": 0,
+        "event_count": 2,
+        "events": [
+          [
+            1,
+            "pattern_edge",
+            0,
+            "probe_edge",
+            1,
+            1
+          ],
+          [
+            1,
+            "term_attr_read",
+            0,
+            "flag",
+            null,
+            1
+          ]
+        ],
+        "index_active": false,
+        "progress": 0,
+        "static_mismatches": [],
+        "status": "fixed_point",
+        "terminal_progress": 0,
+        "trace_enabled": true
+      }
+    },
+    {
+      "case": "edge_attr",
+      "expected_event_kinds": [
+        "term_edge_attr_read",
+        "term_edge_read"
+      ],
+      "missing_expected_kinds": [],
+      "observed_kinds": [
+        "pattern_edge",
+        "term_edge_attr_read",
+        "term_edge_read"
+      ],
+      "outcome_match": true,
+      "plain": {
+        "dropped": 0,
+        "event_count": 0,
+        "events": [],
+        "index_active": false,
+        "progress": 0,
+        "static_mismatches": [],
+        "status": "fixed_point",
+        "terminal_progress": 0,
+        "trace_enabled": false
+      },
+      "traced": {
+        "dropped": 0,
+        "event_count": 3,
+        "events": [
+          [
+            1,
+            "pattern_edge",
+            0,
+            "probe_edge",
+            1,
+            1
+          ],
+          [
+            1,
+            "term_edge_read",
+            0,
+            "probe_edge",
+            1,
+            1
+          ],
+          [
+            1,
+            "term_edge_attr_read",
+            0,
+            "weight",
+            1,
+            1
+          ]
+        ],
+        "index_active": false,
+        "progress": 0,
+        "static_mismatches": [],
+        "status": "fixed_point",
+        "terminal_progress": 0,
+        "trace_enabled": true
+      }
+    }
+  ],
+  "checks": {
+    "all_expected_event_kinds_observed": true,
+    "all_seven_direct_read_fixtures_present": true,
+    "nodes_where_indexed_and_fallback_routes_confirmed": true,
+    "paired_outcomes_match_and_settle": true,
+    "plain_arms_emit_no_events": true,
+    "trace_has_no_overflow_or_static_mismatches": true
+  },
+  "claim_boundary": "Targeted trace-site coverage only; cannot prove omitted dependencies absent or establish natural-task prevalence.",
+  "environment": {
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+  },
+  "provenance": {
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "native_build_manifest_sha256": "04acadda2f45b19f12bad985136246f8bf61dc5ffc9bb99a67fcdb437a5feb11",
+    "native_extension_sha256": "92d84634951c375e788453304671ce9b60b971e293d5178c46611ecb778ec5c9",
+    "source_sha256": {
+      "runners/dsl/src/access_trace.rs": "07f2549a37eff48749a52aecc1135c953a7493c5ab5fa8e553db96ace72efdc7",
+      "runners/dsl/src/rewrite.rs": "0b8fd251e026d43bf4a877ef97a2d8391679636a218042d0034893754a5f2643",
+      "runners/dsl/src/term.rs": "5c9fb76f60645a4298ba149173b9b12a50af516734b4c21249774be7d65b7feb",
+      "scripts/substrate_specialized_term_access_trace_probe_v1.py": "be368fe534df79b6bfef3bee086a733b6dc29407a91876fa6db148bcf8dd78ad"
+    }
+  },
+  "run_id": "substrate-specialized-term-access-trace-probe-v1-20260925",
+  "schema_version": 1,
+  "scope": "seven paired direct graph-read probes: SlideNeighbours, indexed and fallback NodesWhere, NodesOfType, ScalarAttrTriples, AttrByName, Edges plus EdgeAttr"
+}

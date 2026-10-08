@@ -1,0 +1,5973 @@
+{
+  "captured_utc": "2026-10-02T11:18:25Z",
+  "checks": {
+    "all_connected": true,
+    "all_extraction_exact": true,
+    "expected_sizes": true,
+    "failure_free": true,
+    "fresh_pids": true,
+    "no_mutation": true,
+    "oracle_and_rescore": true,
+    "pre_post_lock": true,
+    "replicates": true,
+    "ten_heldout_each": true,
+    "topology_stable": true,
+    "width_profile_reconciles": true,
+    "worker_locks": true
+  },
+  "claim_boundary": "all ten heldout inputs from one real model/layer export on a fixed authored connected 8-neuron/4-mode incidence graph; not broad language capability or natural frame prevalence",
+  "configuration": {
+    "heldout_rows_per_worker": 10,
+    "modes": 4,
+    "neurons": 8,
+    "replicates": 3,
+    "vocabulary": [
+      -1.0,
+      0.0,
+      1.0
+    ]
+  },
+  "failures": [],
+  "host": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+  "lock_sha256": "c4eb5c8df160a1834384606f1f5105b6b2b9b89074da1865b4ce658c66a422a0",
+  "post_run_sources": {
+    "analyzer": {
+      "bytes": 5143,
+      "path": "evaluation/substrate_capability/analyze_llm_mode_neuron_task_graph_inference_census_v1.py",
+      "sha256": "f75446a7db5f1187ba9e4e68c65d7e99e5845fa764bff2499119e90e2f24f6f3"
+    },
+    "export": {
+      "bytes": 583286,
+      "path": "/applications/data/model_graph_work/mode_export_L12b.npz",
+      "sha256": "7cd62b8948a784f8f448d34334b078f9738437405986346f4b0e9f22a500e540"
+    },
+    "mode_count": 4,
+    "native_binary": {
+      "bytes": 10599400,
+      "path": "runners/dsl/python/substrate_rs/_native.abi3.so",
+      "sha256": "7148f66f4cd307b7b34e03970b6a0c12177973105af8e1f3c6684e2e6132a63e"
+    },
+    "native_build_manifest": {
+      "bytes": 12669,
+      "path": "runners/dsl/python/substrate_rs/_native.build.json",
+      "sha256": "476fdf4408323867341f127b3947f5a528743ebb86ab2a7973442993447f0e82"
+    },
+    "neuron_count": 8,
+    "prior_protocol": {
+      "bytes": 4077,
+      "path": "docs/research/psychology_affect/NATIVE_GRAPH_APERTURE_PREREG.md",
+      "sha256": "ad9bc116d7d4d94f2a03d24ef4575e59d479d8856d6b3f4138bb4aee7ffd9b95"
+    },
+    "prior_results": {
+      "bytes": 5812,
+      "path": "docs/research/psychology_affect/NATIVE_GRAPH_APERTURE_RESULTS.md",
+      "sha256": "538003db472dbc06de4d379ed2abe90e1ca9151af6a1c002f31067696a4e6174"
+    },
+    "prior_runner": {
+      "bytes": 8121,
+      "path": "scripts/llm_native_graph_levers_measure.py",
+      "sha256": "35644092fec1f342eb50eb26421d01380e33b2cf729244dfa7060c5bce4a8bdc"
+    },
+    "protocol": {
+      "bytes": 3148,
+      "path": "docs/research/engine_substrate/LLM_MODE_NEURON_TASK_GRAPH_INFERENCE_CENSUS_V1_PREREG_20261002.md",
+      "sha256": "37a4877d5234325720bc053e5b62c9039b26056337ffee7587e7b5b13bf27d6d"
+    },
+    "replicates": 3,
+    "runner": {
+      "bytes": 12180,
+      "path": "evaluation/substrate_capability/llm_mode_neuron_task_graph_inference_census_v1.py",
+      "sha256": "ef152de90e39f62a3d42ef28587dbf77d672cece70b9a9af89e9226bef6f2053"
+    },
+    "seed": {
+      "bytes": 43983,
+      "path": "seeds/can_native_reimplementation.json",
+      "sha256": "3b185987ae810d5e05ab2468b044ab73d8890c8e73ac86dfcaf35b734b9c61d8"
+    },
+    "sources": [
+      {
+        "bytes": 29504,
+        "path": "domains/llm_native_graph.py",
+        "sha256": "3091594306fbfcc7aa93588b2b085ab72376fbb59817cc6c952dba20a05a1809"
+      },
+      {
+        "bytes": 14856,
+        "path": "domains/can_junction_tree.py",
+        "sha256": "e8d4aa30bfdaced52cda2739f885a56ed50a040b8419cb558b132e5e46206ba7"
+      },
+      {
+        "bytes": 9424,
+        "path": "domains/graph_treewidth.py",
+        "sha256": "e945bea9f54b76098edb3b3dcb784ac5a0ce630de43cd63a9fb5b0f416d543e5"
+      }
+    ],
+    "tolerance": 1e-08,
+    "vocabulary": [
+      -1.0,
+      0.0,
+      1.0
+    ]
+  },
+  "runs": [
+    {
+      "all_topologies_identical": true,
+      "input_count": 10,
+      "process_peak_rss_kib": 53456,
+      "replicate": 0,
+      "rows": [
+        {
+          "component_count": 1,
+          "component_sizes": [
+            12
+          ],
+          "connected": true,
+          "direct_rescore": -7.285329662729055,
+          "directed_edges_in_graph": 32,
+          "exact_extraction": true,
+          "heldout_index": 0,
+          "jt_energy": -7.285329662729055,
+          "minfill_width_certificate": 4,
+          "mode_neuron_edges": 32,
+          "mode_prediction": [
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "mode_sign_agreement": 1.0,
+          "mode_target": [
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "no_mutation": true,
+          "nodes": 12,
+          "oracle_energy": -7.285329662729055,
+          "oracle_operations": 10527,
+          "timing_ns": {
+            "graph_construction": 52759980,
+            "junction_tree": 30726704,
+            "minfill_order": 161791,
+            "oracle": 9806562,
+            "runtime_extraction": 404473
+          },
+          "traced_peak_bytes": 152800,
+          "triangulation_width": 4,
+          "undirected_factors": 32,
+          "vocabulary": [
+            -1.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "component_count": 1,
+          "component_sizes": [
+            12
+          ],
+          "connected": true,
+          "direct_rescore": -8.050546454731375,
+          "directed_edges_in_graph": 32,
+          "exact_extraction": true,
+          "heldout_index": 1,
+          "jt_energy": -8.050546454731375,
+          "minfill_width_certificate": 4,
+          "mode_neuron_edges": 32,
+          "mode_prediction": [
+            1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "mode_sign_agreement": 1.0,
+          "mode_target": [
+            1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "no_mutation": true,
+          "nodes": 12,
+          "oracle_energy": -8.050546454731375,
+          "oracle_operations": 10527,
+          "timing_ns": {
+            "graph_construction": 2258072,
+            "junction_tree": 30134420,
+            "minfill_order": 143850,
+            "oracle": 6029812,
+            "runtime_extraction": 343672
+          },
+          "traced_peak_bytes": 102832,
+          "triangulation_width": 4,
+          "undirected_factors": 32,
+          "vocabulary": [
+            -1.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "component_count": 1,
+          "component_sizes": [
+            12
+          ],
+          "connected": true,
+          "direct_rescore": -6.821204633451998,
+          "directed_edges_in_graph": 32,
+          "exact_extraction": true,
+          "heldout_index": 2,
+          "jt_energy": -6.821204633451998,
+          "minfill_width_certificate": 4,
+          "mode_neuron_edges": 32,
+          "mode_prediction": [
+            -1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "mode_sign_agreement": 0.75,
+          "mode_target": [
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "no_mutation": true,
+          "nodes": 12,
+          "oracle_energy": -6.821204633451998,
+          "oracle_operations": 10527,
+          "timing_ns": {
+            "graph_construction": 2154422,
+            "junction_tree": 31030195,
+            "minfill_order": 141761,
+            "oracle": 5887121,
+            "runtime_extraction": 336601
+          },
+          "traced_peak_bytes": 102832,
+          "triangulation_width": 4,
+          "undirected_factors": 32,
+          "vocabulary": [
+            -1.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "component_count": 1,
+          "component_sizes": [
+            12
+          ],
+          "connected": true,
+          "direct_rescore": -7.941558868158609,
+          "directed_edges_in_graph": 32,
+          "exact_extraction": true,
+          "heldout_index": 3,
+          "jt_energy": -7.941558868158609,
+          "minfill_width_certificate": 4,
+          "mode_neuron_edges": 32,
+          "mode_prediction": [
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0
+          ],
+          "mode_sign_agreement": 0.75,
+          "mode_target": [
+            -1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "no_mutation": true,
+          "nodes": 12,
+          "oracle_energy": -7.941558868158609,
+          "oracle_operations": 10527,
+          "timing_ns": {
+            "graph_construction": 2018621,
+            "junction_tree": 30246981,
+            "minfill_order": 147771,
+            "oracle": 5884671,
+            "runtime_extraction": 344572
+          },
+          "traced_peak_bytes": 102832,
+          "triangulation_width": 4,
+          "undirected_factors": 32,
+          "vocabulary": [
+            -1.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "component_count": 1,
+          "component_sizes": [
+            12
+          ],
+          "connected": true,
+          "direct_rescore": -8.161742752883583,
+          "directed_edges_in_graph": 32,
+          "exact_extraction": true,
+          "heldout_index": 4,
+          "jt_energy": -8.161742752883583,
+          "minfill_width_certificate": 4,
+          "mode_neuron_edges": 32,
+          "mode_prediction": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "mode_sign_agreement": 1.0,
+          "mode_target": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "no_mutation": true,
+          "nodes": 12,
+          "oracle_energy": -8.161742752883583,
+          "oracle_operations": 10527,
+          "timing_ns": {
+            "graph_construction": 2050511,
+            "junction_tree": 30241771,
+            "minfill_order": 161631,
+            "oracle": 7403819,
+            "runtime_extraction": 336861
+          },
+          "traced_peak_bytes": 102832,
+          "triangulation_width": 4,
+          "undirected_factors": 32,
+          "vocabulary": [
+            -1.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "component_count": 1,
+          "component_sizes": [
+            12
+          ],
+          "connected": true,
+          "direct_rescore": -14.792502443306148,
+          "directed_edges_in_graph": 32,
+          "exact_extraction": true,
+          "heldout_index": 5,
+          "jt_energy": -14.792502443306148,
+          "minfill_width_certificate": 4,
+          "mode_neuron_edges": 32,
+          "mode_prediction": [
+            1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "mode_sign_agreement": 0.75,
+          "mode_target": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "no_mutation": true,
+          "nodes": 12,
+          "oracle_energy": -14.792502443306148,
+          "oracle_operations": 10527,
+          "timing_ns": {
+            "graph_construction": 2116211,
+            "junction_tree": 31735799,
+            "minfill_order": 143781,
+            "oracle": 6015522,
+            "runtime_extraction": 350572
+          },
+          "traced_peak_bytes": 102832,
+          "triangulation_width": 4,
+          "undirected_factors": 32,
+          "vocabulary": [
+            -1.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "component_count": 1,
+          "component_sizes": [
+            12
+          ],
+          "connected": true,
+          "direct_rescore": -6.8759726686403155,
+          "directed_edges_in_graph": 32,
+          "exact_extraction": true,
+          "heldout_index": 6,
+          "jt_energy": -6.8759726686403155,
+          "minfill_width_certificate": 4,
+          "mode_neuron_edges": 32,
+          "mode_prediction": [
+            -1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "mode_sign_agreement": 0.75,
+          "mode_target": [
+            -1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "no_mutation": true,
+          "nodes": 12,
+          "oracle_energy": -6.8759726686403155,
+          "oracle_operations": 10527,
+          "timing_ns": {
+            "graph_construction": 2334702,
+            "junction_tree": 30174761,
+            "minfill_order": 171910,
+            "oracle": 7695120,
+            "runtime_extraction": 350142
+          },
+          "traced_peak_bytes": 102832,
+          "triangulation_width": 4,
+          "undirected_factors": 32,
+          "vocabulary": [
+            -1.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "component_count": 1,
+          "component_sizes": [
+            12
+          ],
+          "connected": true,
+          "direct_rescore": -7.4893729167524725,
+          "directed_edges_in_graph": 32,
+          "exact_extraction": true,
+          "heldout_index": 7,
+          "jt_energy": -7.4893729167524725,
+          "minfill_width_certificate": 4,
+          "mode_neuron_edges": 32,
+          "mode_prediction": [
+            1.0,
+            -1.0,
+            -1.0,
+            1.0
+          ],
+          "mode_sign_agreement": 0.25,
+          "mode_target": [
+            1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "no_mutation": true,
+          "nodes": 12,
+          "oracle_energy": -7.4893729167524725,
+          "oracle_operations": 10527,
+          "timing_ns": {
+            "graph_construction": 2157141,
+            "junction_tree": 31883570,
+            "minfill_order": 202971,
+            "oracle": 5936022,
+            "runtime_extraction": 343902
+          },
+          "traced_peak_bytes": 102832,
+          "triangulation_width": 4,
+          "undirected_factors": 32,
+          "vocabulary": [
+            -1.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "component_count": 1,
+          "component_sizes": [
+            12
+          ],
+          "connected": true,
+          "direct_rescore": -7.691665678285062,
+          "directed_edges_in_graph": 32,
+          "exact_extraction": true,
+          "heldout_index": 8,
+          "jt_energy": -7.691665678285062,
+          "minfill_width_certificate": 4,
+          "mode_neuron_edges": 32,
+          "mode_prediction": [
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "mode_sign_agreement": 0.5,
+          "mode_target": [
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "no_mutation": true,
+          "nodes": 12,
+          "oracle_energy": -7.691665678285062,
+          "oracle_operations": 10527,
+          "timing_ns": {
+            "graph_construction": 2032881,
+            "junction_tree": 30378941,
+            "minfill_order": 148930,
+            "oracle": 5972252,
+            "runtime_extraction": 344742
+          },
+          "traced_peak_bytes": 102832,
+          "triangulation_width": 4,
+          "undirected_factors": 32,
+          "vocabulary": [
+            -1.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "component_count": 1,
+          "component_sizes": [
+            12
+          ],
+          "connected": true,
+          "direct_rescore": -5.888747283257544,
+          "directed_edges_in_graph": 32,
+          "exact_extraction": true,
+          "heldout_index": 9,
+          "jt_energy": -5.888747283257544,
+          "minfill_width_certificate": 4,
+          "mode_neuron_edges": 32,
+          "mode_prediction": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "mode_sign_agreement": 0.75,
+          "mode_target": [
+            -1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "no_mutation": true,
+          "nodes": 12,
+          "oracle_energy": -5.888747283257544,
+          "oracle_operations": 10527,
+          "timing_ns": {
+            "graph_construction": 2203682,
+            "junction_tree": 31227656,
+            "minfill_order": 144471,
+            "oracle": 6015532,
+            "runtime_extraction": 349691
+          },
+          "traced_peak_bytes": 102832,
+          "triangulation_width": 4,
+          "undirected_factors": 32,
+          "vocabulary": [
+            -1.0,
+            0.0,
+            1.0
+          ]
+        }
+      ],
+      "source_lock_end": {
+        "analyzer": {
+          "bytes": 5143,
+          "path": "evaluation/substrate_capability/analyze_llm_mode_neuron_task_graph_inference_census_v1.py",
+          "sha256": "f75446a7db5f1187ba9e4e68c65d7e99e5845fa764bff2499119e90e2f24f6f3"
+        },
+        "export": {
+          "bytes": 583286,
+          "path": "/applications/data/model_graph_work/mode_export_L12b.npz",
+          "sha256": "7cd62b8948a784f8f448d34334b078f9738437405986346f4b0e9f22a500e540"
+        },
+        "mode_count": 4,
+        "native_binary": {
+          "bytes": 10599400,
+          "path": "runners/dsl/python/substrate_rs/_native.abi3.so",
+          "sha256": "7148f66f4cd307b7b34e03970b6a0c12177973105af8e1f3c6684e2e6132a63e"
+        },
+        "native_build_manifest": {
+          "bytes": 12669,
+          "path": "runners/dsl/python/substrate_rs/_native.build.json",
+          "sha256": "476fdf4408323867341f127b3947f5a528743ebb86ab2a7973442993447f0e82"
+        },
+        "neuron_count": 8,
+        "prior_protocol": {
+          "bytes": 4077,
+          "path": "docs/research/psychology_affect/NATIVE_GRAPH_APERTURE_PREREG.md",
+          "sha256": "ad9bc116d7d4d94f2a03d24ef4575e59d479d8856d6b3f4138bb4aee7ffd9b95"
+        },
+        "prior_results": {
+          "bytes": 5812,
+          "path": "docs/research/psychology_affect/NATIVE_GRAPH_APERTURE_RESULTS.md",
+          "sha256": "538003db472dbc06de4d379ed2abe90e1ca9151af6a1c002f31067696a4e6174"
+        },
+        "prior_runner": {
+          "bytes": 8121,
+          "path": "scripts/llm_native_graph_levers_measure.py",
+          "sha256": "35644092fec1f342eb50eb26421d01380e33b2cf729244dfa7060c5bce4a8bdc"
+        },
+        "protocol": {
+          "bytes": 3148,
+          "path": "docs/research/engine_substrate/LLM_MODE_NEURON_TASK_GRAPH_INFERENCE_CENSUS_V1_PREREG_20261002.md",
+          "sha256": "37a4877d5234325720bc053e5b62c9039b26056337ffee7587e7b5b13bf27d6d"
+        },
+        "replicates": 3,
+        "runner": {
+          "bytes": 12180,
+          "path": "evaluation/substrate_capability/llm_mode_neuron_task_graph_inference_census_v1.py",
+          "sha256": "ef152de90e39f62a3d42ef28587dbf77d672cece70b9a9af89e9226bef6f2053"
+        },
+        "seed": {
+          "bytes": 43983,
+          "path": "seeds/can_native_reimplementation.json",
+          "sha256": "3b185987ae810d5e05ab2468b044ab73d8890c8e73ac86dfcaf35b734b9c61d8"
+        },
+        "sources": [
+          {
+            "bytes": 29504,
+            "path": "domains/llm_native_graph.py",
+            "sha256": "3091594306fbfcc7aa93588b2b085ab72376fbb59817cc6c952dba20a05a1809"
+          },
+          {
+            "bytes": 14856,
+            "path": "domains/can_junction_tree.py",
+            "sha256": "e8d4aa30bfdaced52cda2739f885a56ed50a040b8419cb558b132e5e46206ba7"
+          },
+          {
+            "bytes": 9424,
+            "path": "domains/graph_treewidth.py",
+            "sha256": "e945bea9f54b76098edb3b3dcb784ac5a0ce630de43cd63a9fb5b0f416d543e5"
+          }
+        ],
+        "tolerance": 1e-08,
+        "vocabulary": [
+          -1.0,
+          0.0,
+          1.0
+        ]
+      },
+      "source_lock_start": {
+        "analyzer": {
+          "bytes": 5143,
+          "path": "evaluation/substrate_capability/analyze_llm_mode_neuron_task_graph_inference_census_v1.py",
+          "sha256": "f75446a7db5f1187ba9e4e68c65d7e99e5845fa764bff2499119e90e2f24f6f3"
+        },
+        "export": {
+          "bytes": 583286,
+          "path": "/applications/data/model_graph_work/mode_export_L12b.npz",
+          "sha256": "7cd62b8948a784f8f448d34334b078f9738437405986346f4b0e9f22a500e540"
+        },
+        "mode_count": 4,
+        "native_binary": {
+          "bytes": 10599400,
+          "path": "runners/dsl/python/substrate_rs/_native.abi3.so",
+          "sha256": "7148f66f4cd307b7b34e03970b6a0c12177973105af8e1f3c6684e2e6132a63e"
+        },
+        "native_build_manifest": {
+          "bytes": 12669,
+          "path": "runners/dsl/python/substrate_rs/_native.build.json",
+          "sha256": "476fdf4408323867341f127b3947f5a528743ebb86ab2a7973442993447f0e82"
+        },
+        "neuron_count": 8,
+        "prior_protocol": {
+          "bytes": 4077,
+          "path": "docs/research/psychology_affect/NATIVE_GRAPH_APERTURE_PREREG.md",
+          "sha256": "ad9bc116d7d4d94f2a03d24ef4575e59d479d8856d6b3f4138bb4aee7ffd9b95"
+        },
+        "prior_results": {
+          "bytes": 5812,
+          "path": "docs/research/psychology_affect/NATIVE_GRAPH_APERTURE_RESULTS.md",
+          "sha256": "538003db472dbc06de4d379ed2abe90e1ca9151af6a1c002f31067696a4e6174"
+        },
+        "prior_runner": {
+          "bytes": 8121,
+          "path": "scripts/llm_native_graph_levers_measure.py",
+          "sha256": "35644092fec1f342eb50eb26421d01380e33b2cf729244dfa7060c5bce4a8bdc"
+        },
+        "protocol": {
+          "bytes": 3148,
+          "path": "docs/research/engine_substrate/LLM_MODE_NEURON_TASK_GRAPH_INFERENCE_CENSUS_V1_PREREG_20261002.md",
+          "sha256": "37a4877d5234325720bc053e5b62c9039b26056337ffee7587e7b5b13bf27d6d"
+        },
+        "replicates": 3,
+        "runner": {
+          "bytes": 12180,
+          "path": "evaluation/substrate_capability/llm_mode_neuron_task_graph_inference_census_v1.py",
+          "sha256": "ef152de90e39f62a3d42ef28587dbf77d672cece70b9a9af89e9226bef6f2053"
+        },
+        "seed": {
+          "bytes": 43983,
+          "path": "seeds/can_native_reimplementation.json",
+          "sha256": "3b185987ae810d5e05ab2468b044ab73d8890c8e73ac86dfcaf35b734b9c61d8"
+        },
+        "sources": [
+          {
+            "bytes": 29504,
+            "path": "domains/llm_native_graph.py",
+            "sha256": "3091594306fbfcc7aa93588b2b085ab72376fbb59817cc6c952dba20a05a1809"
+          },
+          {
+            "bytes": 14856,
+            "path": "domains/can_junction_tree.py",
+            "sha256": "e8d4aa30bfdaced52cda2739f885a56ed50a040b8419cb558b132e5e46206ba7"
+          },
+          {
+            "bytes": 9424,
+            "path": "domains/graph_treewidth.py",
+            "sha256": "e945bea9f54b76098edb3b3dcb784ac5a0ce630de43cd63a9fb5b0f416d543e5"
+          }
+        ],
+        "tolerance": 1e-08,
+        "vocabulary": [
+          -1.0,
+          0.0,
+          1.0
+        ]
+      },
+      "topology_signatures": [
+        [
+          [
+            0,
+            8
+          ],
+          [
+            0,
+            9
+          ],
+          [
+            0,
+            10
+          ],
+          [
+            0,
+            11
+          ],
+          [
+            1,
+            8
+          ],
+          [
+            1,
+            9
+          ],
+          [
+            1,
+            10
+          ],
+          [
+            1,
+            11
+          ],
+          [
+            2,
+            8
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            10
+          ],
+          [
+            2,
+            11
+          ],
+          [
+            3,
+            8
+          ],
+          [
+            3,
+            9
+          ],
+          [
+            3,
+            10
+          ],
+          [
+            3,
+            11
+          ],
+          [
+            4,
+            8
+          ],
+          [
+            4,
+            9
+          ],
+          [
+            4,
+            10
+          ],
+          [
+            4,
+            11
+          ],
+          [
+            5,
+            8
+          ],
+          [
+            5,
+            9
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            5,
+            11
+          ],
+          [
+            6,
+            8
+          ],
+          [
+            6,
+            9
+          ],
+          [
+            6,
+            10
+          ],
+          [
+            6,
+            11
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            7,
+            9
+          ],
+          [
+            7,
+            10
+          ],
+          [
+            7,
+            11
+          ]
+        ],
+        [
+          [
+            0,
+            8
+          ],
+          [
+            0,
+            9
+          ],
+          [
+            0,
+            10
+          ],
+          [
+            0,
+            11
+          ],
+          [
+            1,
+            8
+          ],
+          [
+            1,
+            9
+          ],
+          [
+            1,
+            10
+          ],
+          [
+            1,
+            11
+          ],
+          [
+            2,
+            8
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            10
+          ],
+          [
+            2,
+            11
+          ],
+          [
+            3,
+            8
+          ],
+          [
+            3,
+            9
+          ],
+          [
+            3,
+            10
+          ],
+          [
+            3,
+            11
+          ],
+          [
+            4,
+            8
+          ],
+          [
+            4,
+            9
+          ],
+          [
+            4,
+            10
+          ],
+          [
+            4,
+            11
+          ],
+          [
+            5,
+            8
+          ],
+          [
+            5,
+            9
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            5,
+            11
+          ],
+          [
+            6,
+            8
+          ],
+          [
+            6,
+            9
+          ],
+          [
+            6,
+            10
+          ],
+          [
+            6,
+            11
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            7,
+            9
+          ],
+          [
+            7,
+            10
+          ],
+          [
+            7,
+            11
+          ]
+        ],
+        [
+          [
+            0,
+            8
+          ],
+          [
+            0,
+            9
+          ],
+          [
+            0,
+            10
+          ],
+          [
+            0,
+            11
+          ],
+          [
+            1,
+            8
+          ],
+          [
+            1,
+            9
+          ],
+          [
+            1,
+            10
+          ],
+          [
+            1,
+            11
+          ],
+          [
+            2,
+            8
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            10
+          ],
+          [
+            2,
+            11
+          ],
+          [
+            3,
+            8
+          ],
+          [
+            3,
+            9
+          ],
+          [
+            3,
+            10
+          ],
+          [
+            3,
+            11
+          ],
+          [
+            4,
+            8
+          ],
+          [
+            4,
+            9
+          ],
+          [
+            4,
+            10
+          ],
+          [
+            4,
+            11
+          ],
+          [
+            5,
+            8
+          ],
+          [
+            5,
+            9
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            5,
+            11
+          ],
+          [
+            6,
+            8
+          ],
+          [
+            6,
+            9
+          ],
+          [
+            6,
+            10
+          ],
+          [
+            6,
+            11
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            7,
+            9
+          ],
+          [
+            7,
+            10
+          ],
+          [
+            7,
+            11
+          ]
+        ],
+        [
+          [
+            0,
+            8
+          ],
+          [
+            0,
+            9
+          ],
+          [
+            0,
+            10
+          ],
+          [
+            0,
+            11
+          ],
+          [
+            1,
+            8
+          ],
+          [
+            1,
+            9
+          ],
+          [
+            1,
+            10
+          ],
+          [
+            1,
+            11
+          ],
+          [
+            2,
+            8
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            10
+          ],
+          [
+            2,
+            11
+          ],
+          [
+            3,
+            8
+          ],
+          [
+            3,
+            9
+          ],
+          [
+            3,
+            10
+          ],
+          [
+            3,
+            11
+          ],
+          [
+            4,
+            8
+          ],
+          [
+            4,
+            9
+          ],
+          [
+            4,
+            10
+          ],
+          [
+            4,
+            11
+          ],
+          [
+            5,
+            8
+          ],
+          [
+            5,
+            9
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            5,
+            11
+          ],
+          [
+            6,
+            8
+          ],
+          [
+            6,
+            9
+          ],
+          [
+            6,
+            10
+          ],
+          [
+            6,
+            11
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            7,
+            9
+          ],
+          [
+            7,
+            10
+          ],
+          [
+            7,
+            11
+          ]
+        ],
+        [
+          [
+            0,
+            8
+          ],
+          [
+            0,
+            9
+          ],
+          [
+            0,
+            10
+          ],
+          [
+            0,
+            11
+          ],
+          [
+            1,
+            8
+          ],
+          [
+            1,
+            9
+          ],
+          [
+            1,
+            10
+          ],
+          [
+            1,
+            11
+          ],
+          [
+            2,
+            8
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            10
+          ],
+          [
+            2,
+            11
+          ],
+          [
+            3,
+            8
+          ],
+          [
+            3,
+            9
+          ],
+          [
+            3,
+            10
+          ],
+          [
+            3,
+            11
+          ],
+          [
+            4,
+            8
+          ],
+          [
+            4,
+            9
+          ],
+          [
+            4,
+            10
+          ],
+          [
+            4,
+            11
+          ],
+          [
+            5,
+            8
+          ],
+          [
+            5,
+            9
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            5,
+            11
+          ],
+          [
+            6,
+            8
+          ],
+          [
+            6,
+            9
+          ],
+          [
+            6,
+            10
+          ],
+          [
+            6,
+            11
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            7,
+            9
+          ],
+          [
+            7,
+            10
+          ],
+          [
+            7,
+            11
+          ]
+        ],
+        [
+          [
+            0,
+            8
+          ],
+          [
+            0,
+            9
+          ],
+          [
+            0,
+            10
+          ],
+          [
+            0,
+            11
+          ],
+          [
+            1,
+            8
+          ],
+          [
+            1,
+            9
+          ],
+          [
+            1,
+            10
+          ],
+          [
+            1,
+            11
+          ],
+          [
+            2,
+            8
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            10
+          ],
+          [
+            2,
+            11
+          ],
+          [
+            3,
+            8
+          ],
+          [
+            3,
+            9
+          ],
+          [
+            3,
+            10
+          ],
+          [
+            3,
+            11
+          ],
+          [
+            4,
+            8
+          ],
+          [
+            4,
+            9
+          ],
+          [
+            4,
+            10
+          ],
+          [
+            4,
+            11
+          ],
+          [
+            5,
+            8
+          ],
+          [
+            5,
+            9
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            5,
+            11
+          ],
+          [
+            6,
+            8
+          ],
+          [
+            6,
+            9
+          ],
+          [
+            6,
+            10
+          ],
+          [
+            6,
+            11
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            7,
+            9
+          ],
+          [
+            7,
+            10
+          ],
+          [
+            7,
+            11
+          ]
+        ],
+        [
+          [
+            0,
+            8
+          ],
+          [
+            0,
+            9
+          ],
+          [
+            0,
+            10
+          ],
+          [
+            0,
+            11
+          ],
+          [
+            1,
+            8
+          ],
+          [
+            1,
+            9
+          ],
+          [
+            1,
+            10
+          ],
+          [
+            1,
+            11
+          ],
+          [
+            2,
+            8
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            10
+          ],
+          [
+            2,
+            11
+          ],
+          [
+            3,
+            8
+          ],
+          [
+            3,
+            9
+          ],
+          [
+            3,
+            10
+          ],
+          [
+            3,
+            11
+          ],
+          [
+            4,
+            8
+          ],
+          [
+            4,
+            9
+          ],
+          [
+            4,
+            10
+          ],
+          [
+            4,
+            11
+          ],
+          [
+            5,
+            8
+          ],
+          [
+            5,
+            9
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            5,
+            11
+          ],
+          [
+            6,
+            8
+          ],
+          [
+            6,
+            9
+          ],
+          [
+            6,
+            10
+          ],
+          [
+            6,
+            11
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            7,
+            9
+          ],
+          [
+            7,
+            10
+          ],
+          [
+            7,
+            11
+          ]
+        ],
+        [
+          [
+            0,
+            8
+          ],
+          [
+            0,
+            9
+          ],
+          [
+            0,
+            10
+          ],
+          [
+            0,
+            11
+          ],
+          [
+            1,
+            8
+          ],
+          [
+            1,
+            9
+          ],
+          [
+            1,
+            10
+          ],
+          [
+            1,
+            11
+          ],
+          [
+            2,
+            8
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            10
+          ],
+          [
+            2,
+            11
+          ],
+          [
+            3,
+            8
+          ],
+          [
+            3,
+            9
+          ],
+          [
+            3,
+            10
+          ],
+          [
+            3,
+            11
+          ],
+          [
+            4,
+            8
+          ],
+          [
+            4,
+            9
+          ],
+          [
+            4,
+            10
+          ],
+          [
+            4,
+            11
+          ],
+          [
+            5,
+            8
+          ],
+          [
+            5,
+            9
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            5,
+            11
+          ],
+          [
+            6,
+            8
+          ],
+          [
+            6,
+            9
+          ],
+          [
+            6,
+            10
+          ],
+          [
+            6,
+            11
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            7,
+            9
+          ],
+          [
+            7,
+            10
+          ],
+          [
+            7,
+            11
+          ]
+        ],
+        [
+          [
+            0,
+            8
+          ],
+          [
+            0,
+            9
+          ],
+          [
+            0,
+            10
+          ],
+          [
+            0,
+            11
+          ],
+          [
+            1,
+            8
+          ],
+          [
+            1,
+            9
+          ],
+          [
+            1,
+            10
+          ],
+          [
+            1,
+            11
+          ],
+          [
+            2,
+            8
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            10
+          ],
+          [
+            2,
+            11
+          ],
+          [
+            3,
+            8
+          ],
+          [
+            3,
+            9
+          ],
+          [
+            3,
+            10
+          ],
+          [
+            3,
+            11
+          ],
+          [
+            4,
+            8
+          ],
+          [
+            4,
+            9
+          ],
+          [
+            4,
+            10
+          ],
+          [
+            4,
+            11
+          ],
+          [
+            5,
+            8
+          ],
+          [
+            5,
+            9
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            5,
+            11
+          ],
+          [
+            6,
+            8
+          ],
+          [
+            6,
+            9
+          ],
+          [
+            6,
+            10
+          ],
+          [
+            6,
+            11
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            7,
+            9
+          ],
+          [
+            7,
+            10
+          ],
+          [
+            7,
+            11
+          ]
+        ],
+        [
+          [
+            0,
+            8
+          ],
+          [
+            0,
+            9
+          ],
+          [
+            0,
+            10
+          ],
+          [
+            0,
+            11
+          ],
+          [
+            1,
+            8
+          ],
+          [
+            1,
+            9
+          ],
+          [
+            1,
+            10
+          ],
+          [
+            1,
+            11
+          ],
+          [
+            2,
+            8
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            10
+          ],
+          [
+            2,
+            11
+          ],
+          [
+            3,
+            8
+          ],
+          [
+            3,
+            9
+          ],
+          [
+            3,
+            10
+          ],
+          [
+            3,
+            11
+          ],
+          [
+            4,
+            8
+          ],
+          [
+            4,
+            9
+          ],
+          [
+            4,
+            10
+          ],
+          [
+            4,
+            11
+          ],
+          [
+            5,
+            8
+          ],
+          [
+            5,
+            9
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            5,
+            11
+          ],
+          [
+            6,
+            8
+          ],
+          [
+            6,
+            9
+          ],
+          [
+            6,
+            10
+          ],
+          [
+            6,
+            11
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            7,
+            9
+          ],
+          [
+            7,
+            10
+          ],
+          [
+            7,
+            11
+          ]
+        ]
+      ],
+      "worker_pid": 26
+    },
+    {
+      "all_topologies_identical": true,
+      "input_count": 10,
+      "process_peak_rss_kib": 53956,
+      "replicate": 1,
+      "rows": [
+        {
+          "component_count": 1,
+          "component_sizes": [
+            12
+          ],
+          "connected": true,
+          "direct_rescore": -7.285329662729055,
+          "directed_edges_in_graph": 32,
+          "exact_extraction": true,
+          "heldout_index": 0,
+          "jt_energy": -7.285329662729055,
+          "minfill_width_certificate": 4,
+          "mode_neuron_edges": 32,
+          "mode_prediction": [
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "mode_sign_agreement": 1.0,
+          "mode_target": [
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "no_mutation": true,
+          "nodes": 12,
+          "oracle_energy": -7.285329662729055,
+          "oracle_operations": 10527,
+          "timing_ns": {
+            "graph_construction": 67076947,
+            "junction_tree": 29922329,
+            "minfill_order": 226781,
+            "oracle": 14793929,
+            "runtime_extraction": 588473
+          },
+          "traced_peak_bytes": 152800,
+          "triangulation_width": 4,
+          "undirected_factors": 32,
+          "vocabulary": [
+            -1.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "component_count": 1,
+          "component_sizes": [
+            12
+          ],
+          "connected": true,
+          "direct_rescore": -8.050546454731375,
+          "directed_edges_in_graph": 32,
+          "exact_extraction": true,
+          "heldout_index": 1,
+          "jt_energy": -8.050546454731375,
+          "minfill_width_certificate": 4,
+          "mode_neuron_edges": 32,
+          "mode_prediction": [
+            1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "mode_sign_agreement": 1.0,
+          "mode_target": [
+            1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "no_mutation": true,
+          "nodes": 12,
+          "oracle_energy": -8.050546454731375,
+          "oracle_operations": 10527,
+          "timing_ns": {
+            "graph_construction": 2345572,
+            "junction_tree": 31254276,
+            "minfill_order": 147300,
+            "oracle": 7030107,
+            "runtime_extraction": 355232
+          },
+          "traced_peak_bytes": 102832,
+          "triangulation_width": 4,
+          "undirected_factors": 32,
+          "vocabulary": [
+            -1.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "component_count": 1,
+          "component_sizes": [
+            12
+          ],
+          "connected": true,
+          "direct_rescore": -6.821204633451998,
+          "directed_edges_in_graph": 32,
+          "exact_extraction": true,
+          "heldout_index": 2,
+          "jt_energy": -6.821204633451998,
+          "minfill_width_certificate": 4,
+          "mode_neuron_edges": 32,
+          "mode_prediction": [
+            -1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "mode_sign_agreement": 0.75,
+          "mode_target": [
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "no_mutation": true,
+          "nodes": 12,
+          "oracle_energy": -6.821204633451998,
+          "oracle_operations": 10527,
+          "timing_ns": {
+            "graph_construction": 2228212,
+            "junction_tree": 32049430,
+            "minfill_order": 146371,
+            "oracle": 5746211,
+            "runtime_extraction": 344571
+          },
+          "traced_peak_bytes": 102832,
+          "triangulation_width": 4,
+          "undirected_factors": 32,
+          "vocabulary": [
+            -1.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "component_count": 1,
+          "component_sizes": [
+            12
+          ],
+          "connected": true,
+          "direct_rescore": -7.941558868158609,
+          "directed_edges_in_graph": 32,
+          "exact_extraction": true,
+          "heldout_index": 3,
+          "jt_energy": -7.941558868158609,
+          "minfill_width_certificate": 4,
+          "mode_neuron_edges": 32,
+          "mode_prediction": [
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0
+          ],
+          "mode_sign_agreement": 0.75,
+          "mode_target": [
+            -1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "no_mutation": true,
+          "nodes": 12,
+          "oracle_energy": -7.941558868158609,
+          "oracle_operations": 10527,
+          "timing_ns": {
+            "graph_construction": 2998366,
+            "junction_tree": 32160701,
+            "minfill_order": 147230,
+            "oracle": 6081302,
+            "runtime_extraction": 375792
+          },
+          "traced_peak_bytes": 102832,
+          "triangulation_width": 4,
+          "undirected_factors": 32,
+          "vocabulary": [
+            -1.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "component_count": 1,
+          "component_sizes": [
+            12
+          ],
+          "connected": true,
+          "direct_rescore": -8.161742752883583,
+          "directed_edges_in_graph": 32,
+          "exact_extraction": true,
+          "heldout_index": 4,
+          "jt_energy": -8.161742752883583,
+          "minfill_width_certificate": 4,
+          "mode_neuron_edges": 32,
+          "mode_prediction": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "mode_sign_agreement": 1.0,
+          "mode_target": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "no_mutation": true,
+          "nodes": 12,
+          "oracle_energy": -8.161742752883583,
+          "oracle_operations": 10527,
+          "timing_ns": {
+            "graph_construction": 2098681,
+            "junction_tree": 32797655,
+            "minfill_order": 147021,
+            "oracle": 5769240,
+            "runtime_extraction": 326961
+          },
+          "traced_peak_bytes": 102832,
+          "triangulation_width": 4,
+          "undirected_factors": 32,
+          "vocabulary": [
+            -1.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "component_count": 1,
+          "component_sizes": [
+            12
+          ],
+          "connected": true,
+          "direct_rescore": -14.792502443306148,
+          "directed_edges_in_graph": 32,
+          "exact_extraction": true,
+          "heldout_index": 5,
+          "jt_energy": -14.792502443306148,
+          "minfill_width_certificate": 4,
+          "mode_neuron_edges": 32,
+          "mode_prediction": [
+            1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "mode_sign_agreement": 0.75,
+          "mode_target": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "no_mutation": true,
+          "nodes": 12,
+          "oracle_energy": -14.792502443306148,
+          "oracle_operations": 10527,
+          "timing_ns": {
+            "graph_construction": 2507243,
+            "junction_tree": 31514028,
+            "minfill_order": 143440,
+            "oracle": 5704070,
+            "runtime_extraction": 367752
+          },
+          "traced_peak_bytes": 102832,
+          "triangulation_width": 4,
+          "undirected_factors": 32,
+          "vocabulary": [
+            -1.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "component_count": 1,
+          "component_sizes": [
+            12
+          ],
+          "connected": true,
+          "direct_rescore": -6.8759726686403155,
+          "directed_edges_in_graph": 32,
+          "exact_extraction": true,
+          "heldout_index": 6,
+          "jt_energy": -6.8759726686403155,
+          "minfill_width_certificate": 4,
+          "mode_neuron_edges": 32,
+          "mode_prediction": [
+            -1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "mode_sign_agreement": 0.75,
+          "mode_target": [
+            -1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "no_mutation": true,
+          "nodes": 12,
+          "oracle_energy": -6.8759726686403155,
+          "oracle_operations": 10527,
+          "timing_ns": {
+            "graph_construction": 2351052,
+            "junction_tree": 32142061,
+            "minfill_order": 151361,
+            "oracle": 6286564,
+            "runtime_extraction": 388093
+          },
+          "traced_peak_bytes": 102832,
+          "triangulation_width": 4,
+          "undirected_factors": 32,
+          "vocabulary": [
+            -1.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "component_count": 1,
+          "component_sizes": [
+            12
+          ],
+          "connected": true,
+          "direct_rescore": -7.4893729167524725,
+          "directed_edges_in_graph": 32,
+          "exact_extraction": true,
+          "heldout_index": 7,
+          "jt_energy": -7.4893729167524725,
+          "minfill_width_certificate": 4,
+          "mode_neuron_edges": 32,
+          "mode_prediction": [
+            1.0,
+            -1.0,
+            -1.0,
+            1.0
+          ],
+          "mode_sign_agreement": 0.25,
+          "mode_target": [
+            1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "no_mutation": true,
+          "nodes": 12,
+          "oracle_energy": -7.4893729167524725,
+          "oracle_operations": 10527,
+          "timing_ns": {
+            "graph_construction": 2323543,
+            "junction_tree": 30163671,
+            "minfill_order": 144481,
+            "oracle": 5946061,
+            "runtime_extraction": 332221
+          },
+          "traced_peak_bytes": 102832,
+          "triangulation_width": 4,
+          "undirected_factors": 32,
+          "vocabulary": [
+            -1.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "component_count": 1,
+          "component_sizes": [
+            12
+          ],
+          "connected": true,
+          "direct_rescore": -7.691665678285062,
+          "directed_edges_in_graph": 32,
+          "exact_extraction": true,
+          "heldout_index": 8,
+          "jt_energy": -7.691665678285062,
+          "minfill_width_certificate": 4,
+          "mode_neuron_edges": 32,
+          "mode_prediction": [
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "mode_sign_agreement": 0.5,
+          "mode_target": [
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "no_mutation": true,
+          "nodes": 12,
+          "oracle_energy": -7.691665678285062,
+          "oracle_operations": 10527,
+          "timing_ns": {
+            "graph_construction": 2107332,
+            "junction_tree": 29923899,
+            "minfill_order": 140551,
+            "oracle": 5752981,
+            "runtime_extraction": 360092
+          },
+          "traced_peak_bytes": 102832,
+          "triangulation_width": 4,
+          "undirected_factors": 32,
+          "vocabulary": [
+            -1.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "component_count": 1,
+          "component_sizes": [
+            12
+          ],
+          "connected": true,
+          "direct_rescore": -5.888747283257544,
+          "directed_edges_in_graph": 32,
+          "exact_extraction": true,
+          "heldout_index": 9,
+          "jt_energy": -5.888747283257544,
+          "minfill_width_certificate": 4,
+          "mode_neuron_edges": 32,
+          "mode_prediction": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "mode_sign_agreement": 0.75,
+          "mode_target": [
+            -1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "no_mutation": true,
+          "nodes": 12,
+          "oracle_energy": -5.888747283257544,
+          "oracle_operations": 10527,
+          "timing_ns": {
+            "graph_construction": 2066091,
+            "junction_tree": 29527968,
+            "minfill_order": 142071,
+            "oracle": 5639220,
+            "runtime_extraction": 352422
+          },
+          "traced_peak_bytes": 102832,
+          "triangulation_width": 4,
+          "undirected_factors": 32,
+          "vocabulary": [
+            -1.0,
+            0.0,
+            1.0
+          ]
+        }
+      ],
+      "source_lock_end": {
+        "analyzer": {
+          "bytes": 5143,
+          "path": "evaluation/substrate_capability/analyze_llm_mode_neuron_task_graph_inference_census_v1.py",
+          "sha256": "f75446a7db5f1187ba9e4e68c65d7e99e5845fa764bff2499119e90e2f24f6f3"
+        },
+        "export": {
+          "bytes": 583286,
+          "path": "/applications/data/model_graph_work/mode_export_L12b.npz",
+          "sha256": "7cd62b8948a784f8f448d34334b078f9738437405986346f4b0e9f22a500e540"
+        },
+        "mode_count": 4,
+        "native_binary": {
+          "bytes": 10599400,
+          "path": "runners/dsl/python/substrate_rs/_native.abi3.so",
+          "sha256": "7148f66f4cd307b7b34e03970b6a0c12177973105af8e1f3c6684e2e6132a63e"
+        },
+        "native_build_manifest": {
+          "bytes": 12669,
+          "path": "runners/dsl/python/substrate_rs/_native.build.json",
+          "sha256": "476fdf4408323867341f127b3947f5a528743ebb86ab2a7973442993447f0e82"
+        },
+        "neuron_count": 8,
+        "prior_protocol": {
+          "bytes": 4077,
+          "path": "docs/research/psychology_affect/NATIVE_GRAPH_APERTURE_PREREG.md",
+          "sha256": "ad9bc116d7d4d94f2a03d24ef4575e59d479d8856d6b3f4138bb4aee7ffd9b95"
+        },
+        "prior_results": {
+          "bytes": 5812,
+          "path": "docs/research/psychology_affect/NATIVE_GRAPH_APERTURE_RESULTS.md",
+          "sha256": "538003db472dbc06de4d379ed2abe90e1ca9151af6a1c002f31067696a4e6174"
+        },
+        "prior_runner": {
+          "bytes": 8121,
+          "path": "scripts/llm_native_graph_levers_measure.py",
+          "sha256": "35644092fec1f342eb50eb26421d01380e33b2cf729244dfa7060c5bce4a8bdc"
+        },
+        "protocol": {
+          "bytes": 3148,
+          "path": "docs/research/engine_substrate/LLM_MODE_NEURON_TASK_GRAPH_INFERENCE_CENSUS_V1_PREREG_20261002.md",
+          "sha256": "37a4877d5234325720bc053e5b62c9039b26056337ffee7587e7b5b13bf27d6d"
+        },
+        "replicates": 3,
+        "runner": {
+          "bytes": 12180,
+          "path": "evaluation/substrate_capability/llm_mode_neuron_task_graph_inference_census_v1.py",
+          "sha256": "ef152de90e39f62a3d42ef28587dbf77d672cece70b9a9af89e9226bef6f2053"
+        },
+        "seed": {
+          "bytes": 43983,
+          "path": "seeds/can_native_reimplementation.json",
+          "sha256": "3b185987ae810d5e05ab2468b044ab73d8890c8e73ac86dfcaf35b734b9c61d8"
+        },
+        "sources": [
+          {
+            "bytes": 29504,
+            "path": "domains/llm_native_graph.py",
+            "sha256": "3091594306fbfcc7aa93588b2b085ab72376fbb59817cc6c952dba20a05a1809"
+          },
+          {
+            "bytes": 14856,
+            "path": "domains/can_junction_tree.py",
+            "sha256": "e8d4aa30bfdaced52cda2739f885a56ed50a040b8419cb558b132e5e46206ba7"
+          },
+          {
+            "bytes": 9424,
+            "path": "domains/graph_treewidth.py",
+            "sha256": "e945bea9f54b76098edb3b3dcb784ac5a0ce630de43cd63a9fb5b0f416d543e5"
+          }
+        ],
+        "tolerance": 1e-08,
+        "vocabulary": [
+          -1.0,
+          0.0,
+          1.0
+        ]
+      },
+      "source_lock_start": {
+        "analyzer": {
+          "bytes": 5143,
+          "path": "evaluation/substrate_capability/analyze_llm_mode_neuron_task_graph_inference_census_v1.py",
+          "sha256": "f75446a7db5f1187ba9e4e68c65d7e99e5845fa764bff2499119e90e2f24f6f3"
+        },
+        "export": {
+          "bytes": 583286,
+          "path": "/applications/data/model_graph_work/mode_export_L12b.npz",
+          "sha256": "7cd62b8948a784f8f448d34334b078f9738437405986346f4b0e9f22a500e540"
+        },
+        "mode_count": 4,
+        "native_binary": {
+          "bytes": 10599400,
+          "path": "runners/dsl/python/substrate_rs/_native.abi3.so",
+          "sha256": "7148f66f4cd307b7b34e03970b6a0c12177973105af8e1f3c6684e2e6132a63e"
+        },
+        "native_build_manifest": {
+          "bytes": 12669,
+          "path": "runners/dsl/python/substrate_rs/_native.build.json",
+          "sha256": "476fdf4408323867341f127b3947f5a528743ebb86ab2a7973442993447f0e82"
+        },
+        "neuron_count": 8,
+        "prior_protocol": {
+          "bytes": 4077,
+          "path": "docs/research/psychology_affect/NATIVE_GRAPH_APERTURE_PREREG.md",
+          "sha256": "ad9bc116d7d4d94f2a03d24ef4575e59d479d8856d6b3f4138bb4aee7ffd9b95"
+        },
+        "prior_results": {
+          "bytes": 5812,
+          "path": "docs/research/psychology_affect/NATIVE_GRAPH_APERTURE_RESULTS.md",
+          "sha256": "538003db472dbc06de4d379ed2abe90e1ca9151af6a1c002f31067696a4e6174"
+        },
+        "prior_runner": {
+          "bytes": 8121,
+          "path": "scripts/llm_native_graph_levers_measure.py",
+          "sha256": "35644092fec1f342eb50eb26421d01380e33b2cf729244dfa7060c5bce4a8bdc"
+        },
+        "protocol": {
+          "bytes": 3148,
+          "path": "docs/research/engine_substrate/LLM_MODE_NEURON_TASK_GRAPH_INFERENCE_CENSUS_V1_PREREG_20261002.md",
+          "sha256": "37a4877d5234325720bc053e5b62c9039b26056337ffee7587e7b5b13bf27d6d"
+        },
+        "replicates": 3,
+        "runner": {
+          "bytes": 12180,
+          "path": "evaluation/substrate_capability/llm_mode_neuron_task_graph_inference_census_v1.py",
+          "sha256": "ef152de90e39f62a3d42ef28587dbf77d672cece70b9a9af89e9226bef6f2053"
+        },
+        "seed": {
+          "bytes": 43983,
+          "path": "seeds/can_native_reimplementation.json",
+          "sha256": "3b185987ae810d5e05ab2468b044ab73d8890c8e73ac86dfcaf35b734b9c61d8"
+        },
+        "sources": [
+          {
+            "bytes": 29504,
+            "path": "domains/llm_native_graph.py",
+            "sha256": "3091594306fbfcc7aa93588b2b085ab72376fbb59817cc6c952dba20a05a1809"
+          },
+          {
+            "bytes": 14856,
+            "path": "domains/can_junction_tree.py",
+            "sha256": "e8d4aa30bfdaced52cda2739f885a56ed50a040b8419cb558b132e5e46206ba7"
+          },
+          {
+            "bytes": 9424,
+            "path": "domains/graph_treewidth.py",
+            "sha256": "e945bea9f54b76098edb3b3dcb784ac5a0ce630de43cd63a9fb5b0f416d543e5"
+          }
+        ],
+        "tolerance": 1e-08,
+        "vocabulary": [
+          -1.0,
+          0.0,
+          1.0
+        ]
+      },
+      "topology_signatures": [
+        [
+          [
+            0,
+            8
+          ],
+          [
+            0,
+            9
+          ],
+          [
+            0,
+            10
+          ],
+          [
+            0,
+            11
+          ],
+          [
+            1,
+            8
+          ],
+          [
+            1,
+            9
+          ],
+          [
+            1,
+            10
+          ],
+          [
+            1,
+            11
+          ],
+          [
+            2,
+            8
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            10
+          ],
+          [
+            2,
+            11
+          ],
+          [
+            3,
+            8
+          ],
+          [
+            3,
+            9
+          ],
+          [
+            3,
+            10
+          ],
+          [
+            3,
+            11
+          ],
+          [
+            4,
+            8
+          ],
+          [
+            4,
+            9
+          ],
+          [
+            4,
+            10
+          ],
+          [
+            4,
+            11
+          ],
+          [
+            5,
+            8
+          ],
+          [
+            5,
+            9
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            5,
+            11
+          ],
+          [
+            6,
+            8
+          ],
+          [
+            6,
+            9
+          ],
+          [
+            6,
+            10
+          ],
+          [
+            6,
+            11
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            7,
+            9
+          ],
+          [
+            7,
+            10
+          ],
+          [
+            7,
+            11
+          ]
+        ],
+        [
+          [
+            0,
+            8
+          ],
+          [
+            0,
+            9
+          ],
+          [
+            0,
+            10
+          ],
+          [
+            0,
+            11
+          ],
+          [
+            1,
+            8
+          ],
+          [
+            1,
+            9
+          ],
+          [
+            1,
+            10
+          ],
+          [
+            1,
+            11
+          ],
+          [
+            2,
+            8
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            10
+          ],
+          [
+            2,
+            11
+          ],
+          [
+            3,
+            8
+          ],
+          [
+            3,
+            9
+          ],
+          [
+            3,
+            10
+          ],
+          [
+            3,
+            11
+          ],
+          [
+            4,
+            8
+          ],
+          [
+            4,
+            9
+          ],
+          [
+            4,
+            10
+          ],
+          [
+            4,
+            11
+          ],
+          [
+            5,
+            8
+          ],
+          [
+            5,
+            9
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            5,
+            11
+          ],
+          [
+            6,
+            8
+          ],
+          [
+            6,
+            9
+          ],
+          [
+            6,
+            10
+          ],
+          [
+            6,
+            11
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            7,
+            9
+          ],
+          [
+            7,
+            10
+          ],
+          [
+            7,
+            11
+          ]
+        ],
+        [
+          [
+            0,
+            8
+          ],
+          [
+            0,
+            9
+          ],
+          [
+            0,
+            10
+          ],
+          [
+            0,
+            11
+          ],
+          [
+            1,
+            8
+          ],
+          [
+            1,
+            9
+          ],
+          [
+            1,
+            10
+          ],
+          [
+            1,
+            11
+          ],
+          [
+            2,
+            8
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            10
+          ],
+          [
+            2,
+            11
+          ],
+          [
+            3,
+            8
+          ],
+          [
+            3,
+            9
+          ],
+          [
+            3,
+            10
+          ],
+          [
+            3,
+            11
+          ],
+          [
+            4,
+            8
+          ],
+          [
+            4,
+            9
+          ],
+          [
+            4,
+            10
+          ],
+          [
+            4,
+            11
+          ],
+          [
+            5,
+            8
+          ],
+          [
+            5,
+            9
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            5,
+            11
+          ],
+          [
+            6,
+            8
+          ],
+          [
+            6,
+            9
+          ],
+          [
+            6,
+            10
+          ],
+          [
+            6,
+            11
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            7,
+            9
+          ],
+          [
+            7,
+            10
+          ],
+          [
+            7,
+            11
+          ]
+        ],
+        [
+          [
+            0,
+            8
+          ],
+          [
+            0,
+            9
+          ],
+          [
+            0,
+            10
+          ],
+          [
+            0,
+            11
+          ],
+          [
+            1,
+            8
+          ],
+          [
+            1,
+            9
+          ],
+          [
+            1,
+            10
+          ],
+          [
+            1,
+            11
+          ],
+          [
+            2,
+            8
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            10
+          ],
+          [
+            2,
+            11
+          ],
+          [
+            3,
+            8
+          ],
+          [
+            3,
+            9
+          ],
+          [
+            3,
+            10
+          ],
+          [
+            3,
+            11
+          ],
+          [
+            4,
+            8
+          ],
+          [
+            4,
+            9
+          ],
+          [
+            4,
+            10
+          ],
+          [
+            4,
+            11
+          ],
+          [
+            5,
+            8
+          ],
+          [
+            5,
+            9
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            5,
+            11
+          ],
+          [
+            6,
+            8
+          ],
+          [
+            6,
+            9
+          ],
+          [
+            6,
+            10
+          ],
+          [
+            6,
+            11
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            7,
+            9
+          ],
+          [
+            7,
+            10
+          ],
+          [
+            7,
+            11
+          ]
+        ],
+        [
+          [
+            0,
+            8
+          ],
+          [
+            0,
+            9
+          ],
+          [
+            0,
+            10
+          ],
+          [
+            0,
+            11
+          ],
+          [
+            1,
+            8
+          ],
+          [
+            1,
+            9
+          ],
+          [
+            1,
+            10
+          ],
+          [
+            1,
+            11
+          ],
+          [
+            2,
+            8
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            10
+          ],
+          [
+            2,
+            11
+          ],
+          [
+            3,
+            8
+          ],
+          [
+            3,
+            9
+          ],
+          [
+            3,
+            10
+          ],
+          [
+            3,
+            11
+          ],
+          [
+            4,
+            8
+          ],
+          [
+            4,
+            9
+          ],
+          [
+            4,
+            10
+          ],
+          [
+            4,
+            11
+          ],
+          [
+            5,
+            8
+          ],
+          [
+            5,
+            9
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            5,
+            11
+          ],
+          [
+            6,
+            8
+          ],
+          [
+            6,
+            9
+          ],
+          [
+            6,
+            10
+          ],
+          [
+            6,
+            11
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            7,
+            9
+          ],
+          [
+            7,
+            10
+          ],
+          [
+            7,
+            11
+          ]
+        ],
+        [
+          [
+            0,
+            8
+          ],
+          [
+            0,
+            9
+          ],
+          [
+            0,
+            10
+          ],
+          [
+            0,
+            11
+          ],
+          [
+            1,
+            8
+          ],
+          [
+            1,
+            9
+          ],
+          [
+            1,
+            10
+          ],
+          [
+            1,
+            11
+          ],
+          [
+            2,
+            8
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            10
+          ],
+          [
+            2,
+            11
+          ],
+          [
+            3,
+            8
+          ],
+          [
+            3,
+            9
+          ],
+          [
+            3,
+            10
+          ],
+          [
+            3,
+            11
+          ],
+          [
+            4,
+            8
+          ],
+          [
+            4,
+            9
+          ],
+          [
+            4,
+            10
+          ],
+          [
+            4,
+            11
+          ],
+          [
+            5,
+            8
+          ],
+          [
+            5,
+            9
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            5,
+            11
+          ],
+          [
+            6,
+            8
+          ],
+          [
+            6,
+            9
+          ],
+          [
+            6,
+            10
+          ],
+          [
+            6,
+            11
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            7,
+            9
+          ],
+          [
+            7,
+            10
+          ],
+          [
+            7,
+            11
+          ]
+        ],
+        [
+          [
+            0,
+            8
+          ],
+          [
+            0,
+            9
+          ],
+          [
+            0,
+            10
+          ],
+          [
+            0,
+            11
+          ],
+          [
+            1,
+            8
+          ],
+          [
+            1,
+            9
+          ],
+          [
+            1,
+            10
+          ],
+          [
+            1,
+            11
+          ],
+          [
+            2,
+            8
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            10
+          ],
+          [
+            2,
+            11
+          ],
+          [
+            3,
+            8
+          ],
+          [
+            3,
+            9
+          ],
+          [
+            3,
+            10
+          ],
+          [
+            3,
+            11
+          ],
+          [
+            4,
+            8
+          ],
+          [
+            4,
+            9
+          ],
+          [
+            4,
+            10
+          ],
+          [
+            4,
+            11
+          ],
+          [
+            5,
+            8
+          ],
+          [
+            5,
+            9
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            5,
+            11
+          ],
+          [
+            6,
+            8
+          ],
+          [
+            6,
+            9
+          ],
+          [
+            6,
+            10
+          ],
+          [
+            6,
+            11
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            7,
+            9
+          ],
+          [
+            7,
+            10
+          ],
+          [
+            7,
+            11
+          ]
+        ],
+        [
+          [
+            0,
+            8
+          ],
+          [
+            0,
+            9
+          ],
+          [
+            0,
+            10
+          ],
+          [
+            0,
+            11
+          ],
+          [
+            1,
+            8
+          ],
+          [
+            1,
+            9
+          ],
+          [
+            1,
+            10
+          ],
+          [
+            1,
+            11
+          ],
+          [
+            2,
+            8
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            10
+          ],
+          [
+            2,
+            11
+          ],
+          [
+            3,
+            8
+          ],
+          [
+            3,
+            9
+          ],
+          [
+            3,
+            10
+          ],
+          [
+            3,
+            11
+          ],
+          [
+            4,
+            8
+          ],
+          [
+            4,
+            9
+          ],
+          [
+            4,
+            10
+          ],
+          [
+            4,
+            11
+          ],
+          [
+            5,
+            8
+          ],
+          [
+            5,
+            9
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            5,
+            11
+          ],
+          [
+            6,
+            8
+          ],
+          [
+            6,
+            9
+          ],
+          [
+            6,
+            10
+          ],
+          [
+            6,
+            11
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            7,
+            9
+          ],
+          [
+            7,
+            10
+          ],
+          [
+            7,
+            11
+          ]
+        ],
+        [
+          [
+            0,
+            8
+          ],
+          [
+            0,
+            9
+          ],
+          [
+            0,
+            10
+          ],
+          [
+            0,
+            11
+          ],
+          [
+            1,
+            8
+          ],
+          [
+            1,
+            9
+          ],
+          [
+            1,
+            10
+          ],
+          [
+            1,
+            11
+          ],
+          [
+            2,
+            8
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            10
+          ],
+          [
+            2,
+            11
+          ],
+          [
+            3,
+            8
+          ],
+          [
+            3,
+            9
+          ],
+          [
+            3,
+            10
+          ],
+          [
+            3,
+            11
+          ],
+          [
+            4,
+            8
+          ],
+          [
+            4,
+            9
+          ],
+          [
+            4,
+            10
+          ],
+          [
+            4,
+            11
+          ],
+          [
+            5,
+            8
+          ],
+          [
+            5,
+            9
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            5,
+            11
+          ],
+          [
+            6,
+            8
+          ],
+          [
+            6,
+            9
+          ],
+          [
+            6,
+            10
+          ],
+          [
+            6,
+            11
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            7,
+            9
+          ],
+          [
+            7,
+            10
+          ],
+          [
+            7,
+            11
+          ]
+        ],
+        [
+          [
+            0,
+            8
+          ],
+          [
+            0,
+            9
+          ],
+          [
+            0,
+            10
+          ],
+          [
+            0,
+            11
+          ],
+          [
+            1,
+            8
+          ],
+          [
+            1,
+            9
+          ],
+          [
+            1,
+            10
+          ],
+          [
+            1,
+            11
+          ],
+          [
+            2,
+            8
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            10
+          ],
+          [
+            2,
+            11
+          ],
+          [
+            3,
+            8
+          ],
+          [
+            3,
+            9
+          ],
+          [
+            3,
+            10
+          ],
+          [
+            3,
+            11
+          ],
+          [
+            4,
+            8
+          ],
+          [
+            4,
+            9
+          ],
+          [
+            4,
+            10
+          ],
+          [
+            4,
+            11
+          ],
+          [
+            5,
+            8
+          ],
+          [
+            5,
+            9
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            5,
+            11
+          ],
+          [
+            6,
+            8
+          ],
+          [
+            6,
+            9
+          ],
+          [
+            6,
+            10
+          ],
+          [
+            6,
+            11
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            7,
+            9
+          ],
+          [
+            7,
+            10
+          ],
+          [
+            7,
+            11
+          ]
+        ]
+      ],
+      "worker_pid": 100
+    },
+    {
+      "all_topologies_identical": true,
+      "input_count": 10,
+      "process_peak_rss_kib": 54348,
+      "replicate": 2,
+      "rows": [
+        {
+          "component_count": 1,
+          "component_sizes": [
+            12
+          ],
+          "connected": true,
+          "direct_rescore": -7.285329662729055,
+          "directed_edges_in_graph": 32,
+          "exact_extraction": true,
+          "heldout_index": 0,
+          "jt_energy": -7.285329662729055,
+          "minfill_width_certificate": 4,
+          "mode_neuron_edges": 32,
+          "mode_prediction": [
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "mode_sign_agreement": 1.0,
+          "mode_target": [
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "no_mutation": true,
+          "nodes": 12,
+          "oracle_energy": -7.285329662729055,
+          "oracle_operations": 10527,
+          "timing_ns": {
+            "graph_construction": 47751934,
+            "junction_tree": 28494472,
+            "minfill_order": 149701,
+            "oracle": 7649251,
+            "runtime_extraction": 380702
+          },
+          "traced_peak_bytes": 152800,
+          "triangulation_width": 4,
+          "undirected_factors": 32,
+          "vocabulary": [
+            -1.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "component_count": 1,
+          "component_sizes": [
+            12
+          ],
+          "connected": true,
+          "direct_rescore": -8.050546454731375,
+          "directed_edges_in_graph": 32,
+          "exact_extraction": true,
+          "heldout_index": 1,
+          "jt_energy": -8.050546454731375,
+          "minfill_width_certificate": 4,
+          "mode_neuron_edges": 32,
+          "mode_prediction": [
+            1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "mode_sign_agreement": 1.0,
+          "mode_target": [
+            1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "no_mutation": true,
+          "nodes": 12,
+          "oracle_energy": -8.050546454731375,
+          "oracle_operations": 10527,
+          "timing_ns": {
+            "graph_construction": 1987050,
+            "junction_tree": 28518742,
+            "minfill_order": 141381,
+            "oracle": 5600730,
+            "runtime_extraction": 327402
+          },
+          "traced_peak_bytes": 102832,
+          "triangulation_width": 4,
+          "undirected_factors": 32,
+          "vocabulary": [
+            -1.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "component_count": 1,
+          "component_sizes": [
+            12
+          ],
+          "connected": true,
+          "direct_rescore": -6.821204633451998,
+          "directed_edges_in_graph": 32,
+          "exact_extraction": true,
+          "heldout_index": 2,
+          "jt_energy": -6.821204633451998,
+          "minfill_width_certificate": 4,
+          "mode_neuron_edges": 32,
+          "mode_prediction": [
+            -1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "mode_sign_agreement": 0.75,
+          "mode_target": [
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "no_mutation": true,
+          "nodes": 12,
+          "oracle_energy": -6.821204633451998,
+          "oracle_operations": 10527,
+          "timing_ns": {
+            "graph_construction": 2025181,
+            "junction_tree": 28445142,
+            "minfill_order": 141091,
+            "oracle": 5677470,
+            "runtime_extraction": 324332
+          },
+          "traced_peak_bytes": 102832,
+          "triangulation_width": 4,
+          "undirected_factors": 32,
+          "vocabulary": [
+            -1.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "component_count": 1,
+          "component_sizes": [
+            12
+          ],
+          "connected": true,
+          "direct_rescore": -7.941558868158609,
+          "directed_edges_in_graph": 32,
+          "exact_extraction": true,
+          "heldout_index": 3,
+          "jt_energy": -7.941558868158609,
+          "minfill_width_certificate": 4,
+          "mode_neuron_edges": 32,
+          "mode_prediction": [
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0
+          ],
+          "mode_sign_agreement": 0.75,
+          "mode_target": [
+            -1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "no_mutation": true,
+          "nodes": 12,
+          "oracle_energy": -7.941558868158609,
+          "oracle_operations": 10527,
+          "timing_ns": {
+            "graph_construction": 2003890,
+            "junction_tree": 29009854,
+            "minfill_order": 141680,
+            "oracle": 5570229,
+            "runtime_extraction": 320412
+          },
+          "traced_peak_bytes": 102832,
+          "triangulation_width": 4,
+          "undirected_factors": 32,
+          "vocabulary": [
+            -1.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "component_count": 1,
+          "component_sizes": [
+            12
+          ],
+          "connected": true,
+          "direct_rescore": -8.161742752883583,
+          "directed_edges_in_graph": 32,
+          "exact_extraction": true,
+          "heldout_index": 4,
+          "jt_energy": -8.161742752883583,
+          "minfill_width_certificate": 4,
+          "mode_neuron_edges": 32,
+          "mode_prediction": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "mode_sign_agreement": 1.0,
+          "mode_target": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "no_mutation": true,
+          "nodes": 12,
+          "oracle_energy": -8.161742752883583,
+          "oracle_operations": 10527,
+          "timing_ns": {
+            "graph_construction": 2041761,
+            "junction_tree": 29256166,
+            "minfill_order": 147270,
+            "oracle": 5719480,
+            "runtime_extraction": 323732
+          },
+          "traced_peak_bytes": 102832,
+          "triangulation_width": 4,
+          "undirected_factors": 32,
+          "vocabulary": [
+            -1.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "component_count": 1,
+          "component_sizes": [
+            12
+          ],
+          "connected": true,
+          "direct_rescore": -14.792502443306148,
+          "directed_edges_in_graph": 32,
+          "exact_extraction": true,
+          "heldout_index": 5,
+          "jt_energy": -14.792502443306148,
+          "minfill_width_certificate": 4,
+          "mode_neuron_edges": 32,
+          "mode_prediction": [
+            1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "mode_sign_agreement": 0.75,
+          "mode_target": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "no_mutation": true,
+          "nodes": 12,
+          "oracle_energy": -14.792502443306148,
+          "oracle_operations": 10527,
+          "timing_ns": {
+            "graph_construction": 1982491,
+            "junction_tree": 28994994,
+            "minfill_order": 138251,
+            "oracle": 5717721,
+            "runtime_extraction": 313911
+          },
+          "traced_peak_bytes": 102832,
+          "triangulation_width": 4,
+          "undirected_factors": 32,
+          "vocabulary": [
+            -1.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "component_count": 1,
+          "component_sizes": [
+            12
+          ],
+          "connected": true,
+          "direct_rescore": -6.8759726686403155,
+          "directed_edges_in_graph": 32,
+          "exact_extraction": true,
+          "heldout_index": 6,
+          "jt_energy": -6.8759726686403155,
+          "minfill_width_certificate": 4,
+          "mode_neuron_edges": 32,
+          "mode_prediction": [
+            -1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "mode_sign_agreement": 0.75,
+          "mode_target": [
+            -1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "no_mutation": true,
+          "nodes": 12,
+          "oracle_energy": -6.8759726686403155,
+          "oracle_operations": 10527,
+          "timing_ns": {
+            "graph_construction": 2258832,
+            "junction_tree": 29918789,
+            "minfill_order": 142350,
+            "oracle": 5904902,
+            "runtime_extraction": 315042
+          },
+          "traced_peak_bytes": 102832,
+          "triangulation_width": 4,
+          "undirected_factors": 32,
+          "vocabulary": [
+            -1.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "component_count": 1,
+          "component_sizes": [
+            12
+          ],
+          "connected": true,
+          "direct_rescore": -7.4893729167524725,
+          "directed_edges_in_graph": 32,
+          "exact_extraction": true,
+          "heldout_index": 7,
+          "jt_energy": -7.4893729167524725,
+          "minfill_width_certificate": 4,
+          "mode_neuron_edges": 32,
+          "mode_prediction": [
+            1.0,
+            -1.0,
+            -1.0,
+            1.0
+          ],
+          "mode_sign_agreement": 0.25,
+          "mode_target": [
+            1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "no_mutation": true,
+          "nodes": 12,
+          "oracle_energy": -7.4893729167524725,
+          "oracle_operations": 10527,
+          "timing_ns": {
+            "graph_construction": 1997590,
+            "junction_tree": 28683573,
+            "minfill_order": 151811,
+            "oracle": 5593520,
+            "runtime_extraction": 331572
+          },
+          "traced_peak_bytes": 102832,
+          "triangulation_width": 4,
+          "undirected_factors": 32,
+          "vocabulary": [
+            -1.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "component_count": 1,
+          "component_sizes": [
+            12
+          ],
+          "connected": true,
+          "direct_rescore": -7.691665678285062,
+          "directed_edges_in_graph": 32,
+          "exact_extraction": true,
+          "heldout_index": 8,
+          "jt_energy": -7.691665678285062,
+          "minfill_width_certificate": 4,
+          "mode_neuron_edges": 32,
+          "mode_prediction": [
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "mode_sign_agreement": 0.5,
+          "mode_target": [
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "no_mutation": true,
+          "nodes": 12,
+          "oracle_energy": -7.691665678285062,
+          "oracle_operations": 10527,
+          "timing_ns": {
+            "graph_construction": 1997570,
+            "junction_tree": 28478402,
+            "minfill_order": 136360,
+            "oracle": 5570860,
+            "runtime_extraction": 327882
+          },
+          "traced_peak_bytes": 102832,
+          "triangulation_width": 4,
+          "undirected_factors": 32,
+          "vocabulary": [
+            -1.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "component_count": 1,
+          "component_sizes": [
+            12
+          ],
+          "connected": true,
+          "direct_rescore": -5.888747283257544,
+          "directed_edges_in_graph": 32,
+          "exact_extraction": true,
+          "heldout_index": 9,
+          "jt_energy": -5.888747283257544,
+          "minfill_width_certificate": 4,
+          "mode_neuron_edges": 32,
+          "mode_prediction": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "mode_sign_agreement": 0.75,
+          "mode_target": [
+            -1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "no_mutation": true,
+          "nodes": 12,
+          "oracle_energy": -5.888747283257544,
+          "oracle_operations": 10527,
+          "timing_ns": {
+            "graph_construction": 2045051,
+            "junction_tree": 28665132,
+            "minfill_order": 140011,
+            "oracle": 5589640,
+            "runtime_extraction": 314672
+          },
+          "traced_peak_bytes": 102832,
+          "triangulation_width": 4,
+          "undirected_factors": 32,
+          "vocabulary": [
+            -1.0,
+            0.0,
+            1.0
+          ]
+        }
+      ],
+      "source_lock_end": {
+        "analyzer": {
+          "bytes": 5143,
+          "path": "evaluation/substrate_capability/analyze_llm_mode_neuron_task_graph_inference_census_v1.py",
+          "sha256": "f75446a7db5f1187ba9e4e68c65d7e99e5845fa764bff2499119e90e2f24f6f3"
+        },
+        "export": {
+          "bytes": 583286,
+          "path": "/applications/data/model_graph_work/mode_export_L12b.npz",
+          "sha256": "7cd62b8948a784f8f448d34334b078f9738437405986346f4b0e9f22a500e540"
+        },
+        "mode_count": 4,
+        "native_binary": {
+          "bytes": 10599400,
+          "path": "runners/dsl/python/substrate_rs/_native.abi3.so",
+          "sha256": "7148f66f4cd307b7b34e03970b6a0c12177973105af8e1f3c6684e2e6132a63e"
+        },
+        "native_build_manifest": {
+          "bytes": 12669,
+          "path": "runners/dsl/python/substrate_rs/_native.build.json",
+          "sha256": "476fdf4408323867341f127b3947f5a528743ebb86ab2a7973442993447f0e82"
+        },
+        "neuron_count": 8,
+        "prior_protocol": {
+          "bytes": 4077,
+          "path": "docs/research/psychology_affect/NATIVE_GRAPH_APERTURE_PREREG.md",
+          "sha256": "ad9bc116d7d4d94f2a03d24ef4575e59d479d8856d6b3f4138bb4aee7ffd9b95"
+        },
+        "prior_results": {
+          "bytes": 5812,
+          "path": "docs/research/psychology_affect/NATIVE_GRAPH_APERTURE_RESULTS.md",
+          "sha256": "538003db472dbc06de4d379ed2abe90e1ca9151af6a1c002f31067696a4e6174"
+        },
+        "prior_runner": {
+          "bytes": 8121,
+          "path": "scripts/llm_native_graph_levers_measure.py",
+          "sha256": "35644092fec1f342eb50eb26421d01380e33b2cf729244dfa7060c5bce4a8bdc"
+        },
+        "protocol": {
+          "bytes": 3148,
+          "path": "docs/research/engine_substrate/LLM_MODE_NEURON_TASK_GRAPH_INFERENCE_CENSUS_V1_PREREG_20261002.md",
+          "sha256": "37a4877d5234325720bc053e5b62c9039b26056337ffee7587e7b5b13bf27d6d"
+        },
+        "replicates": 3,
+        "runner": {
+          "bytes": 12180,
+          "path": "evaluation/substrate_capability/llm_mode_neuron_task_graph_inference_census_v1.py",
+          "sha256": "ef152de90e39f62a3d42ef28587dbf77d672cece70b9a9af89e9226bef6f2053"
+        },
+        "seed": {
+          "bytes": 43983,
+          "path": "seeds/can_native_reimplementation.json",
+          "sha256": "3b185987ae810d5e05ab2468b044ab73d8890c8e73ac86dfcaf35b734b9c61d8"
+        },
+        "sources": [
+          {
+            "bytes": 29504,
+            "path": "domains/llm_native_graph.py",
+            "sha256": "3091594306fbfcc7aa93588b2b085ab72376fbb59817cc6c952dba20a05a1809"
+          },
+          {
+            "bytes": 14856,
+            "path": "domains/can_junction_tree.py",
+            "sha256": "e8d4aa30bfdaced52cda2739f885a56ed50a040b8419cb558b132e5e46206ba7"
+          },
+          {
+            "bytes": 9424,
+            "path": "domains/graph_treewidth.py",
+            "sha256": "e945bea9f54b76098edb3b3dcb784ac5a0ce630de43cd63a9fb5b0f416d543e5"
+          }
+        ],
+        "tolerance": 1e-08,
+        "vocabulary": [
+          -1.0,
+          0.0,
+          1.0
+        ]
+      },
+      "source_lock_start": {
+        "analyzer": {
+          "bytes": 5143,
+          "path": "evaluation/substrate_capability/analyze_llm_mode_neuron_task_graph_inference_census_v1.py",
+          "sha256": "f75446a7db5f1187ba9e4e68c65d7e99e5845fa764bff2499119e90e2f24f6f3"
+        },
+        "export": {
+          "bytes": 583286,
+          "path": "/applications/data/model_graph_work/mode_export_L12b.npz",
+          "sha256": "7cd62b8948a784f8f448d34334b078f9738437405986346f4b0e9f22a500e540"
+        },
+        "mode_count": 4,
+        "native_binary": {
+          "bytes": 10599400,
+          "path": "runners/dsl/python/substrate_rs/_native.abi3.so",
+          "sha256": "7148f66f4cd307b7b34e03970b6a0c12177973105af8e1f3c6684e2e6132a63e"
+        },
+        "native_build_manifest": {
+          "bytes": 12669,
+          "path": "runners/dsl/python/substrate_rs/_native.build.json",
+          "sha256": "476fdf4408323867341f127b3947f5a528743ebb86ab2a7973442993447f0e82"
+        },
+        "neuron_count": 8,
+        "prior_protocol": {
+          "bytes": 4077,
+          "path": "docs/research/psychology_affect/NATIVE_GRAPH_APERTURE_PREREG.md",
+          "sha256": "ad9bc116d7d4d94f2a03d24ef4575e59d479d8856d6b3f4138bb4aee7ffd9b95"
+        },
+        "prior_results": {
+          "bytes": 5812,
+          "path": "docs/research/psychology_affect/NATIVE_GRAPH_APERTURE_RESULTS.md",
+          "sha256": "538003db472dbc06de4d379ed2abe90e1ca9151af6a1c002f31067696a4e6174"
+        },
+        "prior_runner": {
+          "bytes": 8121,
+          "path": "scripts/llm_native_graph_levers_measure.py",
+          "sha256": "35644092fec1f342eb50eb26421d01380e33b2cf729244dfa7060c5bce4a8bdc"
+        },
+        "protocol": {
+          "bytes": 3148,
+          "path": "docs/research/engine_substrate/LLM_MODE_NEURON_TASK_GRAPH_INFERENCE_CENSUS_V1_PREREG_20261002.md",
+          "sha256": "37a4877d5234325720bc053e5b62c9039b26056337ffee7587e7b5b13bf27d6d"
+        },
+        "replicates": 3,
+        "runner": {
+          "bytes": 12180,
+          "path": "evaluation/substrate_capability/llm_mode_neuron_task_graph_inference_census_v1.py",
+          "sha256": "ef152de90e39f62a3d42ef28587dbf77d672cece70b9a9af89e9226bef6f2053"
+        },
+        "seed": {
+          "bytes": 43983,
+          "path": "seeds/can_native_reimplementation.json",
+          "sha256": "3b185987ae810d5e05ab2468b044ab73d8890c8e73ac86dfcaf35b734b9c61d8"
+        },
+        "sources": [
+          {
+            "bytes": 29504,
+            "path": "domains/llm_native_graph.py",
+            "sha256": "3091594306fbfcc7aa93588b2b085ab72376fbb59817cc6c952dba20a05a1809"
+          },
+          {
+            "bytes": 14856,
+            "path": "domains/can_junction_tree.py",
+            "sha256": "e8d4aa30bfdaced52cda2739f885a56ed50a040b8419cb558b132e5e46206ba7"
+          },
+          {
+            "bytes": 9424,
+            "path": "domains/graph_treewidth.py",
+            "sha256": "e945bea9f54b76098edb3b3dcb784ac5a0ce630de43cd63a9fb5b0f416d543e5"
+          }
+        ],
+        "tolerance": 1e-08,
+        "vocabulary": [
+          -1.0,
+          0.0,
+          1.0
+        ]
+      },
+      "topology_signatures": [
+        [
+          [
+            0,
+            8
+          ],
+          [
+            0,
+            9
+          ],
+          [
+            0,
+            10
+          ],
+          [
+            0,
+            11
+          ],
+          [
+            1,
+            8
+          ],
+          [
+            1,
+            9
+          ],
+          [
+            1,
+            10
+          ],
+          [
+            1,
+            11
+          ],
+          [
+            2,
+            8
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            10
+          ],
+          [
+            2,
+            11
+          ],
+          [
+            3,
+            8
+          ],
+          [
+            3,
+            9
+          ],
+          [
+            3,
+            10
+          ],
+          [
+            3,
+            11
+          ],
+          [
+            4,
+            8
+          ],
+          [
+            4,
+            9
+          ],
+          [
+            4,
+            10
+          ],
+          [
+            4,
+            11
+          ],
+          [
+            5,
+            8
+          ],
+          [
+            5,
+            9
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            5,
+            11
+          ],
+          [
+            6,
+            8
+          ],
+          [
+            6,
+            9
+          ],
+          [
+            6,
+            10
+          ],
+          [
+            6,
+            11
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            7,
+            9
+          ],
+          [
+            7,
+            10
+          ],
+          [
+            7,
+            11
+          ]
+        ],
+        [
+          [
+            0,
+            8
+          ],
+          [
+            0,
+            9
+          ],
+          [
+            0,
+            10
+          ],
+          [
+            0,
+            11
+          ],
+          [
+            1,
+            8
+          ],
+          [
+            1,
+            9
+          ],
+          [
+            1,
+            10
+          ],
+          [
+            1,
+            11
+          ],
+          [
+            2,
+            8
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            10
+          ],
+          [
+            2,
+            11
+          ],
+          [
+            3,
+            8
+          ],
+          [
+            3,
+            9
+          ],
+          [
+            3,
+            10
+          ],
+          [
+            3,
+            11
+          ],
+          [
+            4,
+            8
+          ],
+          [
+            4,
+            9
+          ],
+          [
+            4,
+            10
+          ],
+          [
+            4,
+            11
+          ],
+          [
+            5,
+            8
+          ],
+          [
+            5,
+            9
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            5,
+            11
+          ],
+          [
+            6,
+            8
+          ],
+          [
+            6,
+            9
+          ],
+          [
+            6,
+            10
+          ],
+          [
+            6,
+            11
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            7,
+            9
+          ],
+          [
+            7,
+            10
+          ],
+          [
+            7,
+            11
+          ]
+        ],
+        [
+          [
+            0,
+            8
+          ],
+          [
+            0,
+            9
+          ],
+          [
+            0,
+            10
+          ],
+          [
+            0,
+            11
+          ],
+          [
+            1,
+            8
+          ],
+          [
+            1,
+            9
+          ],
+          [
+            1,
+            10
+          ],
+          [
+            1,
+            11
+          ],
+          [
+            2,
+            8
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            10
+          ],
+          [
+            2,
+            11
+          ],
+          [
+            3,
+            8
+          ],
+          [
+            3,
+            9
+          ],
+          [
+            3,
+            10
+          ],
+          [
+            3,
+            11
+          ],
+          [
+            4,
+            8
+          ],
+          [
+            4,
+            9
+          ],
+          [
+            4,
+            10
+          ],
+          [
+            4,
+            11
+          ],
+          [
+            5,
+            8
+          ],
+          [
+            5,
+            9
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            5,
+            11
+          ],
+          [
+            6,
+            8
+          ],
+          [
+            6,
+            9
+          ],
+          [
+            6,
+            10
+          ],
+          [
+            6,
+            11
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            7,
+            9
+          ],
+          [
+            7,
+            10
+          ],
+          [
+            7,
+            11
+          ]
+        ],
+        [
+          [
+            0,
+            8
+          ],
+          [
+            0,
+            9
+          ],
+          [
+            0,
+            10
+          ],
+          [
+            0,
+            11
+          ],
+          [
+            1,
+            8
+          ],
+          [
+            1,
+            9
+          ],
+          [
+            1,
+            10
+          ],
+          [
+            1,
+            11
+          ],
+          [
+            2,
+            8
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            10
+          ],
+          [
+            2,
+            11
+          ],
+          [
+            3,
+            8
+          ],
+          [
+            3,
+            9
+          ],
+          [
+            3,
+            10
+          ],
+          [
+            3,
+            11
+          ],
+          [
+            4,
+            8
+          ],
+          [
+            4,
+            9
+          ],
+          [
+            4,
+            10
+          ],
+          [
+            4,
+            11
+          ],
+          [
+            5,
+            8
+          ],
+          [
+            5,
+            9
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            5,
+            11
+          ],
+          [
+            6,
+            8
+          ],
+          [
+            6,
+            9
+          ],
+          [
+            6,
+            10
+          ],
+          [
+            6,
+            11
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            7,
+            9
+          ],
+          [
+            7,
+            10
+          ],
+          [
+            7,
+            11
+          ]
+        ],
+        [
+          [
+            0,
+            8
+          ],
+          [
+            0,
+            9
+          ],
+          [
+            0,
+            10
+          ],
+          [
+            0,
+            11
+          ],
+          [
+            1,
+            8
+          ],
+          [
+            1,
+            9
+          ],
+          [
+            1,
+            10
+          ],
+          [
+            1,
+            11
+          ],
+          [
+            2,
+            8
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            10
+          ],
+          [
+            2,
+            11
+          ],
+          [
+            3,
+            8
+          ],
+          [
+            3,
+            9
+          ],
+          [
+            3,
+            10
+          ],
+          [
+            3,
+            11
+          ],
+          [
+            4,
+            8
+          ],
+          [
+            4,
+            9
+          ],
+          [
+            4,
+            10
+          ],
+          [
+            4,
+            11
+          ],
+          [
+            5,
+            8
+          ],
+          [
+            5,
+            9
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            5,
+            11
+          ],
+          [
+            6,
+            8
+          ],
+          [
+            6,
+            9
+          ],
+          [
+            6,
+            10
+          ],
+          [
+            6,
+            11
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            7,
+            9
+          ],
+          [
+            7,
+            10
+          ],
+          [
+            7,
+            11
+          ]
+        ],
+        [
+          [
+            0,
+            8
+          ],
+          [
+            0,
+            9
+          ],
+          [
+            0,
+            10
+          ],
+          [
+            0,
+            11
+          ],
+          [
+            1,
+            8
+          ],
+          [
+            1,
+            9
+          ],
+          [
+            1,
+            10
+          ],
+          [
+            1,
+            11
+          ],
+          [
+            2,
+            8
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            10
+          ],
+          [
+            2,
+            11
+          ],
+          [
+            3,
+            8
+          ],
+          [
+            3,
+            9
+          ],
+          [
+            3,
+            10
+          ],
+          [
+            3,
+            11
+          ],
+          [
+            4,
+            8
+          ],
+          [
+            4,
+            9
+          ],
+          [
+            4,
+            10
+          ],
+          [
+            4,
+            11
+          ],
+          [
+            5,
+            8
+          ],
+          [
+            5,
+            9
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            5,
+            11
+          ],
+          [
+            6,
+            8
+          ],
+          [
+            6,
+            9
+          ],
+          [
+            6,
+            10
+          ],
+          [
+            6,
+            11
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            7,
+            9
+          ],
+          [
+            7,
+            10
+          ],
+          [
+            7,
+            11
+          ]
+        ],
+        [
+          [
+            0,
+            8
+          ],
+          [
+            0,
+            9
+          ],
+          [
+            0,
+            10
+          ],
+          [
+            0,
+            11
+          ],
+          [
+            1,
+            8
+          ],
+          [
+            1,
+            9
+          ],
+          [
+            1,
+            10
+          ],
+          [
+            1,
+            11
+          ],
+          [
+            2,
+            8
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            10
+          ],
+          [
+            2,
+            11
+          ],
+          [
+            3,
+            8
+          ],
+          [
+            3,
+            9
+          ],
+          [
+            3,
+            10
+          ],
+          [
+            3,
+            11
+          ],
+          [
+            4,
+            8
+          ],
+          [
+            4,
+            9
+          ],
+          [
+            4,
+            10
+          ],
+          [
+            4,
+            11
+          ],
+          [
+            5,
+            8
+          ],
+          [
+            5,
+            9
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            5,
+            11
+          ],
+          [
+            6,
+            8
+          ],
+          [
+            6,
+            9
+          ],
+          [
+            6,
+            10
+          ],
+          [
+            6,
+            11
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            7,
+            9
+          ],
+          [
+            7,
+            10
+          ],
+          [
+            7,
+            11
+          ]
+        ],
+        [
+          [
+            0,
+            8
+          ],
+          [
+            0,
+            9
+          ],
+          [
+            0,
+            10
+          ],
+          [
+            0,
+            11
+          ],
+          [
+            1,
+            8
+          ],
+          [
+            1,
+            9
+          ],
+          [
+            1,
+            10
+          ],
+          [
+            1,
+            11
+          ],
+          [
+            2,
+            8
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            10
+          ],
+          [
+            2,
+            11
+          ],
+          [
+            3,
+            8
+          ],
+          [
+            3,
+            9
+          ],
+          [
+            3,
+            10
+          ],
+          [
+            3,
+            11
+          ],
+          [
+            4,
+            8
+          ],
+          [
+            4,
+            9
+          ],
+          [
+            4,
+            10
+          ],
+          [
+            4,
+            11
+          ],
+          [
+            5,
+            8
+          ],
+          [
+            5,
+            9
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            5,
+            11
+          ],
+          [
+            6,
+            8
+          ],
+          [
+            6,
+            9
+          ],
+          [
+            6,
+            10
+          ],
+          [
+            6,
+            11
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            7,
+            9
+          ],
+          [
+            7,
+            10
+          ],
+          [
+            7,
+            11
+          ]
+        ],
+        [
+          [
+            0,
+            8
+          ],
+          [
+            0,
+            9
+          ],
+          [
+            0,
+            10
+          ],
+          [
+            0,
+            11
+          ],
+          [
+            1,
+            8
+          ],
+          [
+            1,
+            9
+          ],
+          [
+            1,
+            10
+          ],
+          [
+            1,
+            11
+          ],
+          [
+            2,
+            8
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            10
+          ],
+          [
+            2,
+            11
+          ],
+          [
+            3,
+            8
+          ],
+          [
+            3,
+            9
+          ],
+          [
+            3,
+            10
+          ],
+          [
+            3,
+            11
+          ],
+          [
+            4,
+            8
+          ],
+          [
+            4,
+            9
+          ],
+          [
+            4,
+            10
+          ],
+          [
+            4,
+            11
+          ],
+          [
+            5,
+            8
+          ],
+          [
+            5,
+            9
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            5,
+            11
+          ],
+          [
+            6,
+            8
+          ],
+          [
+            6,
+            9
+          ],
+          [
+            6,
+            10
+          ],
+          [
+            6,
+            11
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            7,
+            9
+          ],
+          [
+            7,
+            10
+          ],
+          [
+            7,
+            11
+          ]
+        ],
+        [
+          [
+            0,
+            8
+          ],
+          [
+            0,
+            9
+          ],
+          [
+            0,
+            10
+          ],
+          [
+            0,
+            11
+          ],
+          [
+            1,
+            8
+          ],
+          [
+            1,
+            9
+          ],
+          [
+            1,
+            10
+          ],
+          [
+            1,
+            11
+          ],
+          [
+            2,
+            8
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            10
+          ],
+          [
+            2,
+            11
+          ],
+          [
+            3,
+            8
+          ],
+          [
+            3,
+            9
+          ],
+          [
+            3,
+            10
+          ],
+          [
+            3,
+            11
+          ],
+          [
+            4,
+            8
+          ],
+          [
+            4,
+            9
+          ],
+          [
+            4,
+            10
+          ],
+          [
+            4,
+            11
+          ],
+          [
+            5,
+            8
+          ],
+          [
+            5,
+            9
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            5,
+            11
+          ],
+          [
+            6,
+            8
+          ],
+          [
+            6,
+            9
+          ],
+          [
+            6,
+            10
+          ],
+          [
+            6,
+            11
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            7,
+            9
+          ],
+          [
+            7,
+            10
+          ],
+          [
+            7,
+            11
+          ]
+        ]
+      ],
+      "worker_pid": 174
+    }
+  ],
+  "schema": "LlmModeNeuronTaskGraphInferenceCensusV1Results",
+  "sources": {
+    "analyzer": {
+      "bytes": 5143,
+      "path": "evaluation/substrate_capability/analyze_llm_mode_neuron_task_graph_inference_census_v1.py",
+      "sha256": "f75446a7db5f1187ba9e4e68c65d7e99e5845fa764bff2499119e90e2f24f6f3"
+    },
+    "export": {
+      "bytes": 583286,
+      "path": "/applications/data/model_graph_work/mode_export_L12b.npz",
+      "sha256": "7cd62b8948a784f8f448d34334b078f9738437405986346f4b0e9f22a500e540"
+    },
+    "mode_count": 4,
+    "native_binary": {
+      "bytes": 10599400,
+      "path": "runners/dsl/python/substrate_rs/_native.abi3.so",
+      "sha256": "7148f66f4cd307b7b34e03970b6a0c12177973105af8e1f3c6684e2e6132a63e"
+    },
+    "native_build_manifest": {
+      "bytes": 12669,
+      "path": "runners/dsl/python/substrate_rs/_native.build.json",
+      "sha256": "476fdf4408323867341f127b3947f5a528743ebb86ab2a7973442993447f0e82"
+    },
+    "neuron_count": 8,
+    "prior_protocol": {
+      "bytes": 4077,
+      "path": "docs/research/psychology_affect/NATIVE_GRAPH_APERTURE_PREREG.md",
+      "sha256": "ad9bc116d7d4d94f2a03d24ef4575e59d479d8856d6b3f4138bb4aee7ffd9b95"
+    },
+    "prior_results": {
+      "bytes": 5812,
+      "path": "docs/research/psychology_affect/NATIVE_GRAPH_APERTURE_RESULTS.md",
+      "sha256": "538003db472dbc06de4d379ed2abe90e1ca9151af6a1c002f31067696a4e6174"
+    },
+    "prior_runner": {
+      "bytes": 8121,
+      "path": "scripts/llm_native_graph_levers_measure.py",
+      "sha256": "35644092fec1f342eb50eb26421d01380e33b2cf729244dfa7060c5bce4a8bdc"
+    },
+    "protocol": {
+      "bytes": 3148,
+      "path": "docs/research/engine_substrate/LLM_MODE_NEURON_TASK_GRAPH_INFERENCE_CENSUS_V1_PREREG_20261002.md",
+      "sha256": "37a4877d5234325720bc053e5b62c9039b26056337ffee7587e7b5b13bf27d6d"
+    },
+    "replicates": 3,
+    "runner": {
+      "bytes": 12180,
+      "path": "evaluation/substrate_capability/llm_mode_neuron_task_graph_inference_census_v1.py",
+      "sha256": "ef152de90e39f62a3d42ef28587dbf77d672cece70b9a9af89e9226bef6f2053"
+    },
+    "seed": {
+      "bytes": 43983,
+      "path": "seeds/can_native_reimplementation.json",
+      "sha256": "3b185987ae810d5e05ab2468b044ab73d8890c8e73ac86dfcaf35b734b9c61d8"
+    },
+    "sources": [
+      {
+        "bytes": 29504,
+        "path": "domains/llm_native_graph.py",
+        "sha256": "3091594306fbfcc7aa93588b2b085ab72376fbb59817cc6c952dba20a05a1809"
+      },
+      {
+        "bytes": 14856,
+        "path": "domains/can_junction_tree.py",
+        "sha256": "e8d4aa30bfdaced52cda2739f885a56ed50a040b8419cb558b132e5e46206ba7"
+      },
+      {
+        "bytes": 9424,
+        "path": "domains/graph_treewidth.py",
+        "sha256": "e945bea9f54b76098edb3b3dcb784ac5a0ce630de43cd63a9fb5b0f416d543e5"
+      }
+    ],
+    "tolerance": 1e-08,
+    "vocabulary": [
+      -1.0,
+      0.0,
+      1.0
+    ]
+  }
+}

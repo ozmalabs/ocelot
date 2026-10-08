@@ -1,0 +1,486 @@
+{
+  "active": {
+    "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+    "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+    "domains/code_write_growth.py": "691fd96072687baf2b99c6b3c9816cc6bb44805e35bec13f070a30061151761c",
+    "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+    "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+    "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+    "domains/information_commitment.py": "da7ba4e2b289f24380289cde6170cbff82f4aee13b5d0158c103b4f9a660ee96",
+    "domains/reflective_faculty.py": "8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+    "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+    "domains_tree": "200a51e70b6a1b587d82ed05fdea106aca865f89479972f5eefd3e1225c151f8",
+    "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+    "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+    "python_native_tree": "4d4cb4aaaed3c395638b0485fc0d871749150149aded5e81491b42c7fdeb5402",
+    "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+    "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+    "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+    "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+    "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+    "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+    "rust_dsl_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+    "seed_manifest_inventory": "f1098a8168c0663746dffb253eb7230435957b3f8f8aa6d5c8197d224cf946b1",
+    "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+    "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+    "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+    "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023",
+    "substrate_tree": "206c8d6c975998dae706c64fe23be1ae7af659fd749577d978aafa1c30d7fdba"
+  },
+  "design": {
+    "fixtures": {
+      "clamp": {
+        "domain": [
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": -6
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": -4
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": -3
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": 2
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": 8
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": 10
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": -1
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 1
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 2
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 3
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 5
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 7
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -11
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -9
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -8
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -6
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -2
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": 0
+          }
+        ],
+        "heldout": [
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": -20
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": -4
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": -3
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": 0
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": 7
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": 8
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": 9
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": 20
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -9
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -10
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -5
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -2
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": 0
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": 12
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 2
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 1
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 3
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 5
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 7
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": -1
+          }
+        ],
+        "known": [
+          {
+            "expected": -4,
+            "inputs": {
+              "lower": -4,
+              "upper": 8,
+              "value": -10
+            }
+          },
+          {
+            "expected": 0,
+            "inputs": {
+              "lower": -4,
+              "upper": 8,
+              "value": 0
+            }
+          },
+          {
+            "expected": 8,
+            "inputs": {
+              "lower": -4,
+              "upper": 8,
+              "value": 12
+            }
+          }
+        ],
+        "name": "clamp_value",
+        "source": "def clamp_value(value, lower, upper):\n    return lower if value < lower else (upper if value > upper else value)\n"
+      },
+      "negative": {
+        "domain": [
+          {
+            "x": 0
+          },
+          {
+            "x": 1
+          },
+          {
+            "x": 2
+          },
+          {
+            "x": 3
+          },
+          {
+            "x": 4
+          },
+          {
+            "x": 5
+          }
+        ],
+        "known": [
+          {
+            "expected": 1,
+            "inputs": {
+              "x": 1
+            }
+          }
+        ],
+        "name": "identity",
+        "source": "def identity(x):\n    return x\n",
+        "task": "square"
+      },
+      "parity": {
+        "domain": [
+          {
+            "value": -5
+          },
+          {
+            "value": -4
+          },
+          {
+            "value": -3
+          },
+          {
+            "value": -2
+          },
+          {
+            "value": -1
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 1
+          },
+          {
+            "value": 2
+          },
+          {
+            "value": 3
+          },
+          {
+            "value": 4
+          },
+          {
+            "value": 5
+          }
+        ],
+        "heldout": [
+          {
+            "value": -20
+          },
+          {
+            "value": -19
+          },
+          {
+            "value": -18
+          },
+          {
+            "value": -17
+          },
+          {
+            "value": -16
+          },
+          {
+            "value": -15
+          },
+          {
+            "value": -14
+          },
+          {
+            "value": -13
+          },
+          {
+            "value": -12
+          },
+          {
+            "value": -11
+          },
+          {
+            "value": -10
+          },
+          {
+            "value": -9
+          },
+          {
+            "value": -8
+          },
+          {
+            "value": -7
+          },
+          {
+            "value": -6
+          },
+          {
+            "value": -5
+          },
+          {
+            "value": -4
+          },
+          {
+            "value": -3
+          },
+          {
+            "value": -2
+          },
+          {
+            "value": -1
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 1
+          },
+          {
+            "value": 2
+          },
+          {
+            "value": 3
+          },
+          {
+            "value": 4
+          },
+          {
+            "value": 5
+          },
+          {
+            "value": 6
+          },
+          {
+            "value": 7
+          },
+          {
+            "value": 8
+          },
+          {
+            "value": 9
+          },
+          {
+            "value": 10
+          },
+          {
+            "value": 11
+          },
+          {
+            "value": 12
+          },
+          {
+            "value": 13
+          },
+          {
+            "value": 14
+          },
+          {
+            "value": 15
+          },
+          {
+            "value": 16
+          },
+          {
+            "value": 17
+          },
+          {
+            "value": 18
+          },
+          {
+            "value": 19
+          },
+          {
+            "value": 20
+          }
+        ],
+        "known": [
+          {
+            "expected": true,
+            "inputs": {
+              "value": 0
+            }
+          },
+          {
+            "expected": false,
+            "inputs": {
+              "value": 1
+            }
+          }
+        ],
+        "name": "parity",
+        "source": "def parity(value):\n    return value % 2 == 0\n"
+      }
+    },
+    "labels": "source-hash-bound deterministic oracle outputs on fresh selected probes",
+    "oracle_source": "independent_codewrite_oracles.py",
+    "repetitions": 3,
+    "requests": {
+      "clamp": "Write a function that clamps a value between lower and upper bounds.",
+      "parity": "Write a function that returns the parity of an integer.",
+      "square": "Write a function that squares an integer."
+    },
+    "seed": 20261002
+  },
+  "files": {
+    "docs/research/engine_substrate/SUBSTRATE_INDEPENDENT_ADEQUACY_CODEWRITE_TRANSFER_V1_PREREG_20261002.md": "c7137c206ce7e035faafc1bb5e9c8fc619794ce6baaa993f8d54e35a563c22d9",
+    "evaluation/substrate_capability/analyze_substrate_independent_adequacy_codewrite_transfer_v1.py": "f7563e9a138ba78983eb38ea6d21f68fa293ed9e97c77b0a75f42237429fdddb",
+    "evaluation/substrate_capability/independent_codewrite_oracles.py": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+    "evaluation/substrate_capability/substrate_independent_adequacy_codewrite_transfer_v1.py": "4df60f2b25381a778d4e1b6aa20889a8645d7993d0e8f57054d38179e6db57a5"
+  },
+  "git_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+  "schema": "SubstrateIndependentAdequacyCodewriteTransferV1Lock"
+}

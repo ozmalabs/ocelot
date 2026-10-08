@@ -1,0 +1,114 @@
+{
+  "checks": {
+    "60_cell_semantic_outcome_parity": true,
+    "current_run_source_native_stable": true,
+    "old_and_new_independent_analyses_admitted": true,
+    "same_locked_case_schedule": true
+  },
+  "closure_time_ms": {
+    "linear:frozen": {
+      "current_source_v1_2_1": {
+        "max_ms": 0.7885459926910698,
+        "median_ms": 0.49188852426595986,
+        "n_closures": 20,
+        "p90_ms": 0.6047760776709765
+      },
+      "v1_1_rep2": {
+        "max_ms": 0.5557039985433221,
+        "median_ms": 0.4351324969320558,
+        "n_closures": 20,
+        "p90_ms": 0.4603370020049624
+      }
+    },
+    "linear:induction": {
+      "current_source_v1_2_1": {
+        "max_ms": 78.37190304417163,
+        "median_ms": 36.64941948954947,
+        "n_closures": 20,
+        "p90_ms": 75.28551722643897
+      },
+      "v1_1_rep2": {
+        "max_ms": 95.61602000030689,
+        "median_ms": 34.382554491457995,
+        "n_closures": 20,
+        "p90_ms": 71.83042219403436
+      }
+    },
+    "piecewise_shear:frozen": {
+      "current_source_v1_2_1": {
+        "max_ms": 0.758324982598424,
+        "median_ms": 0.47635799273848534,
+        "n_closures": 20,
+        "p90_ms": 0.5499509919900447
+      },
+      "v1_1_rep2": {
+        "max_ms": 0.525504001416266,
+        "median_ms": 0.43057199945906177,
+        "n_closures": 20,
+        "p90_ms": 0.5080709961475804
+      }
+    },
+    "piecewise_shear:induction": {
+      "current_source_v1_2_1": {
+        "max_ms": 99.12053996231407,
+        "median_ms": 42.19590802676976,
+        "n_closures": 20,
+        "p90_ms": 78.18586729117669
+      },
+      "v1_1_rep2": {
+        "max_ms": 74.82991799770389,
+        "median_ms": 40.546238495153375,
+        "n_closures": 20,
+        "p90_ms": 73.0985605972819
+      }
+    },
+    "quadratic_shear:frozen": {
+      "current_source_v1_2_1": {
+        "max_ms": 0.7145649869926274,
+        "median_ms": 0.47289850772358477,
+        "n_closures": 20,
+        "p90_ms": 0.5483990884386003
+      },
+      "v1_1_rep2": {
+        "max_ms": 0.682254001731053,
+        "median_ms": 0.45694799337070435,
+        "n_closures": 20,
+        "p90_ms": 0.6226169949513861
+      }
+    },
+    "quadratic_shear:induction": {
+      "current_source_v1_2_1": {
+        "max_ms": 2104.2914480203763,
+        "median_ms": 1066.686154983472,
+        "n_closures": 20,
+        "p90_ms": 2068.1831064342987
+      },
+      "v1_1_rep2": {
+        "max_ms": 1994.1236000013305,
+        "median_ms": 1013.38235050207,
+        "n_closures": 20,
+        "p90_ms": 1985.8836495041032
+      }
+    }
+  },
+  "comparison": "v1.1 same-build process replicate 2 vs v1.2.1 current-source fresh replication",
+  "comparison_pass": true,
+  "interpretation": "The repeated finite fixtures have exact status, quantum-count, and generator-state parity across the two captured source/build states. Timing differences are descriptive same-host observations; the v1.1 run and v1.2.1 run are not independent-environment replications and do not estimate timing uncertainty.",
+  "limitations": [
+    "Only three registered transforms, one point geometry, and ten repeats per arm/family.",
+    "No natural-task prevalence or arbitrary nonlinear induction is tested.",
+    "Closure timing is one host and process; do not infer a general complexity bound."
+  ],
+  "new_lock_sha256": "01cd15d9d5d4b97357c56ffdf7adb773cb5040a6a7094dcccf175c4b6625b7a8",
+  "new_raw_sha256": "7b34d1279f6c3fb1c86a5197292cc8fd4427c5eb188b13aa0972106db35c22dc",
+  "old_lock_sha256": "579338ac226d2abbdb0b230e2462177d32c7b410c0769aa0ff12c66527970cc3",
+  "old_raw_sha256": "7c08d3b12c38d412707d244e4b4f7c3a1975a7dfdc8987259652ec2ecb2f70c3",
+  "semantic_cell_parity": {
+    "linear:frozen": true,
+    "linear:induction": true,
+    "piecewise_shear:frozen": true,
+    "piecewise_shear:induction": true,
+    "quadratic_shear:frozen": true,
+    "quadratic_shear:induction": true
+  }
+}

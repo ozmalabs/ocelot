@@ -1,0 +1,2514 @@
+{
+  "alphabet_count": 20,
+  "checks": {
+    "capture_matches_preregistered_lock": true,
+    "complete_system_episode_matrix": true,
+    "current_source_and_dataset_inputs_match_lock": true,
+    "episode_design_and_shared_inputs_valid": true,
+    "independent_prediction_and_accuracy_reconstruction": true,
+    "runner_observed_source_stability": true
+  },
+  "claim_boundary": "100 deterministic 20-way one-shot episodes from one Omniglot evaluation split; alphabet-clustered uncertainty; host-side trajectory loading/caching plus graph-Term substrate recognition. No training or task-family generality claim.",
+  "episode_count": 100,
+  "feature_prep": {
+    "process_cpu_ns": 1509847309,
+    "unique_trajectories": 3514,
+    "wall_ns": 1511243138
+  },
+  "integrity_pass": true,
+  "paired_system_differences": {
+    "ordered_dtw-minus-deformable": {
+      "accuracy_difference": -0.015000000000000013,
+      "alphabet_cluster_bootstrap_95ci": [
+        -0.0895464015151515,
+        0.04757281553398058
+      ]
+    },
+    "ordered_dtw-minus-pointset": {
+      "accuracy_difference": -0.14050000000000007,
+      "alphabet_cluster_bootstrap_95ci": [
+        -0.19663810483870967,
+        -0.08894724190283401
+      ]
+    },
+    "pointset-minus-deformable": {
+      "accuracy_difference": 0.12550000000000006,
+      "alphabet_cluster_bootstrap_95ci": [
+        0.09705882352941177,
+        0.15
+      ]
+    }
+  },
+  "passed_checks": 6,
+  "run_id": "omniglot_one_shot_current_v1_20260929",
+  "system_count": 3,
+  "systems": {
+    "deformable": {
+      "accuracy": 0.5425,
+      "alphabet_cluster_bootstrap_95ci": [
+        0.4904035547785548,
+        0.5988372093023255
+      ],
+      "by_alphabet": {
+        "Angelic": {
+          "accuracy": 0.8166666666666667,
+          "correct": 49,
+          "total": 60
+        },
+        "Atemayar_Qelisayer": {
+          "accuracy": 0.5625,
+          "correct": 90,
+          "total": 160
+        },
+        "Atlantean": {
+          "accuracy": 0.5583333333333333,
+          "correct": 67,
+          "total": 120
+        },
+        "Aurek-Besh": {
+          "accuracy": 0.7,
+          "correct": 56,
+          "total": 80
+        },
+        "Avesta": {
+          "accuracy": 0.725,
+          "correct": 29,
+          "total": 40
+        },
+        "Ge_ez": {
+          "accuracy": 0.6,
+          "correct": 36,
+          "total": 60
+        },
+        "Glagolitic": {
+          "accuracy": 0.6333333333333333,
+          "correct": 38,
+          "total": 60
+        },
+        "Gurmukhi": {
+          "accuracy": 0.44375,
+          "correct": 71,
+          "total": 160
+        },
+        "Kannada": {
+          "accuracy": 0.5166666666666667,
+          "correct": 31,
+          "total": 60
+        },
+        "Keble": {
+          "accuracy": 0.525,
+          "correct": 42,
+          "total": 80
+        },
+        "Malayalam": {
+          "accuracy": 0.5083333333333333,
+          "correct": 61,
+          "total": 120
+        },
+        "Manipuri": {
+          "accuracy": 0.45,
+          "correct": 45,
+          "total": 100
+        },
+        "Mongolian": {
+          "accuracy": 0.625,
+          "correct": 75,
+          "total": 120
+        },
+        "Old_Church_Slavonic_(Cyrillic)": {
+          "accuracy": 0.45,
+          "correct": 54,
+          "total": 120
+        },
+        "Oriya": {
+          "accuracy": 0.3375,
+          "correct": 27,
+          "total": 80
+        },
+        "Sylheti": {
+          "accuracy": 0.2375,
+          "correct": 19,
+          "total": 80
+        },
+        "Syriac_(Serto)": {
+          "accuracy": 0.5375,
+          "correct": 43,
+          "total": 80
+        },
+        "Tengwar": {
+          "accuracy": 0.51,
+          "correct": 102,
+          "total": 200
+        },
+        "Tibetan": {
+          "accuracy": 0.52,
+          "correct": 52,
+          "total": 100
+        },
+        "ULOG": {
+          "accuracy": 0.8166666666666667,
+          "correct": 98,
+          "total": 120
+        }
+      },
+      "chance_accuracy": 0.05,
+      "correct": 1085,
+      "episode_scores": [
+        {
+          "accuracy": 0.45,
+          "alphabet": "Tibetan",
+          "correct": 9,
+          "episode": 0,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Kannada",
+          "correct": 9,
+          "episode": 1,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Gurmukhi",
+          "correct": 11,
+          "episode": 2,
+          "total": 20
+        },
+        {
+          "accuracy": 0.95,
+          "alphabet": "ULOG",
+          "correct": 19,
+          "episode": 3,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Tengwar",
+          "correct": 16,
+          "episode": 4,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Gurmukhi",
+          "correct": 9,
+          "episode": 5,
+          "total": 20
+        },
+        {
+          "accuracy": 0.9,
+          "alphabet": "Aurek-Besh",
+          "correct": 18,
+          "episode": 6,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Tengwar",
+          "correct": 12,
+          "episode": 7,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Tibetan",
+          "correct": 9,
+          "episode": 8,
+          "total": 20
+        },
+        {
+          "accuracy": 0.75,
+          "alphabet": "Atemayar_Qelisayer",
+          "correct": 15,
+          "episode": 9,
+          "total": 20
+        },
+        {
+          "accuracy": 0.9,
+          "alphabet": "ULOG",
+          "correct": 18,
+          "episode": 10,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Syriac_(Serto)",
+          "correct": 11,
+          "episode": 11,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Glagolitic",
+          "correct": 13,
+          "episode": 12,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Syriac_(Serto)",
+          "correct": 10,
+          "episode": 13,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Keble",
+          "correct": 10,
+          "episode": 14,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Atlantean",
+          "correct": 16,
+          "episode": 15,
+          "total": 20
+        },
+        {
+          "accuracy": 0.95,
+          "alphabet": "Avesta",
+          "correct": 19,
+          "episode": 16,
+          "total": 20
+        },
+        {
+          "accuracy": 0.25,
+          "alphabet": "Oriya",
+          "correct": 5,
+          "episode": 17,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Atemayar_Qelisayer",
+          "correct": 12,
+          "episode": 18,
+          "total": 20
+        },
+        {
+          "accuracy": 0.3,
+          "alphabet": "Manipuri",
+          "correct": 6,
+          "episode": 19,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Kannada",
+          "correct": 12,
+          "episode": 20,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Old_Church_Slavonic_(Cyrillic)",
+          "correct": 11,
+          "episode": 21,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Keble",
+          "correct": 13,
+          "episode": 22,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Angelic",
+          "correct": 16,
+          "episode": 23,
+          "total": 20
+        },
+        {
+          "accuracy": 0.4,
+          "alphabet": "Old_Church_Slavonic_(Cyrillic)",
+          "correct": 8,
+          "episode": 24,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Atemayar_Qelisayer",
+          "correct": 9,
+          "episode": 25,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Tibetan",
+          "correct": 10,
+          "episode": 26,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Mongolian",
+          "correct": 10,
+          "episode": 27,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "ULOG",
+          "correct": 16,
+          "episode": 28,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Manipuri",
+          "correct": 12,
+          "episode": 29,
+          "total": 20
+        },
+        {
+          "accuracy": 0.25,
+          "alphabet": "Old_Church_Slavonic_(Cyrillic)",
+          "correct": 5,
+          "episode": 30,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Keble",
+          "correct": 11,
+          "episode": 31,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Syriac_(Serto)",
+          "correct": 12,
+          "episode": 32,
+          "total": 20
+        },
+        {
+          "accuracy": 0.3,
+          "alphabet": "Oriya",
+          "correct": 6,
+          "episode": 33,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Malayalam",
+          "correct": 10,
+          "episode": 34,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Ge_ez",
+          "correct": 11,
+          "episode": 35,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Gurmukhi",
+          "correct": 12,
+          "episode": 36,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Atlantean",
+          "correct": 13,
+          "episode": 37,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Avesta",
+          "correct": 10,
+          "episode": 38,
+          "total": 20
+        },
+        {
+          "accuracy": 0.4,
+          "alphabet": "Mongolian",
+          "correct": 8,
+          "episode": 39,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Ge_ez",
+          "correct": 12,
+          "episode": 40,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Mongolian",
+          "correct": 13,
+          "episode": 41,
+          "total": 20
+        },
+        {
+          "accuracy": 0.25,
+          "alphabet": "Gurmukhi",
+          "correct": 5,
+          "episode": 42,
+          "total": 20
+        },
+        {
+          "accuracy": 0.35,
+          "alphabet": "Tengwar",
+          "correct": 7,
+          "episode": 43,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Aurek-Besh",
+          "correct": 9,
+          "episode": 44,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Manipuri",
+          "correct": 9,
+          "episode": 45,
+          "total": 20
+        },
+        {
+          "accuracy": 0.75,
+          "alphabet": "ULOG",
+          "correct": 15,
+          "episode": 46,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Oriya",
+          "correct": 9,
+          "episode": 47,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Atemayar_Qelisayer",
+          "correct": 13,
+          "episode": 48,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Glagolitic",
+          "correct": 11,
+          "episode": 49,
+          "total": 20
+        },
+        {
+          "accuracy": 0.4,
+          "alphabet": "Atemayar_Qelisayer",
+          "correct": 8,
+          "episode": 50,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Syriac_(Serto)",
+          "correct": 10,
+          "episode": 51,
+          "total": 20
+        },
+        {
+          "accuracy": 0.3,
+          "alphabet": "Sylheti",
+          "correct": 6,
+          "episode": 52,
+          "total": 20
+        },
+        {
+          "accuracy": 0.4,
+          "alphabet": "Malayalam",
+          "correct": 8,
+          "episode": 53,
+          "total": 20
+        },
+        {
+          "accuracy": 0.2,
+          "alphabet": "Sylheti",
+          "correct": 4,
+          "episode": 54,
+          "total": 20
+        },
+        {
+          "accuracy": 0.75,
+          "alphabet": "Mongolian",
+          "correct": 15,
+          "episode": 55,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Malayalam",
+          "correct": 14,
+          "episode": 56,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Atlantean",
+          "correct": 10,
+          "episode": 57,
+          "total": 20
+        },
+        {
+          "accuracy": 0.4,
+          "alphabet": "Gurmukhi",
+          "correct": 8,
+          "episode": 58,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Glagolitic",
+          "correct": 14,
+          "episode": 59,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Mongolian",
+          "correct": 16,
+          "episode": 60,
+          "total": 20
+        },
+        {
+          "accuracy": 0.4,
+          "alphabet": "Keble",
+          "correct": 8,
+          "episode": 61,
+          "total": 20
+        },
+        {
+          "accuracy": 0.4,
+          "alphabet": "Tengwar",
+          "correct": 8,
+          "episode": 62,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Tengwar",
+          "correct": 10,
+          "episode": 63,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Atemayar_Qelisayer",
+          "correct": 12,
+          "episode": 64,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Mongolian",
+          "correct": 13,
+          "episode": 65,
+          "total": 20
+        },
+        {
+          "accuracy": 0.25,
+          "alphabet": "Manipuri",
+          "correct": 5,
+          "episode": 66,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Tengwar",
+          "correct": 9,
+          "episode": 67,
+          "total": 20
+        },
+        {
+          "accuracy": 0.2,
+          "alphabet": "Sylheti",
+          "correct": 4,
+          "episode": 68,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Angelic",
+          "correct": 14,
+          "episode": 69,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Atemayar_Qelisayer",
+          "correct": 11,
+          "episode": 70,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Kannada",
+          "correct": 10,
+          "episode": 71,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Aurek-Besh",
+          "correct": 11,
+          "episode": 72,
+          "total": 20
+        },
+        {
+          "accuracy": 0.3,
+          "alphabet": "Old_Church_Slavonic_(Cyrillic)",
+          "correct": 6,
+          "episode": 73,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Gurmukhi",
+          "correct": 9,
+          "episode": 74,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Tengwar",
+          "correct": 11,
+          "episode": 75,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Atlantean",
+          "correct": 12,
+          "episode": 76,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Ge_ez",
+          "correct": 13,
+          "episode": 77,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Tibetan",
+          "correct": 9,
+          "episode": 78,
+          "total": 20
+        },
+        {
+          "accuracy": 0.75,
+          "alphabet": "Malayalam",
+          "correct": 15,
+          "episode": 79,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Old_Church_Slavonic_(Cyrillic)",
+          "correct": 11,
+          "episode": 80,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Manipuri",
+          "correct": 13,
+          "episode": 81,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Tengwar",
+          "correct": 14,
+          "episode": 82,
+          "total": 20
+        },
+        {
+          "accuracy": 0.35,
+          "alphabet": "Tengwar",
+          "correct": 7,
+          "episode": 83,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Gurmukhi",
+          "correct": 10,
+          "episode": 84,
+          "total": 20
+        },
+        {
+          "accuracy": 0.95,
+          "alphabet": "Angelic",
+          "correct": 19,
+          "episode": 85,
+          "total": 20
+        },
+        {
+          "accuracy": 0.4,
+          "alphabet": "Tengwar",
+          "correct": 8,
+          "episode": 86,
+          "total": 20
+        },
+        {
+          "accuracy": 0.4,
+          "alphabet": "Malayalam",
+          "correct": 8,
+          "episode": 87,
+          "total": 20
+        },
+        {
+          "accuracy": 0.35,
+          "alphabet": "Oriya",
+          "correct": 7,
+          "episode": 88,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Old_Church_Slavonic_(Cyrillic)",
+          "correct": 13,
+          "episode": 89,
+          "total": 20
+        },
+        {
+          "accuracy": 0.9,
+          "alphabet": "ULOG",
+          "correct": 18,
+          "episode": 90,
+          "total": 20
+        },
+        {
+          "accuracy": 0.3,
+          "alphabet": "Malayalam",
+          "correct": 6,
+          "episode": 91,
+          "total": 20
+        },
+        {
+          "accuracy": 0.25,
+          "alphabet": "Sylheti",
+          "correct": 5,
+          "episode": 92,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "ULOG",
+          "correct": 12,
+          "episode": 93,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Atemayar_Qelisayer",
+          "correct": 10,
+          "episode": 94,
+          "total": 20
+        },
+        {
+          "accuracy": 0.35,
+          "alphabet": "Gurmukhi",
+          "correct": 7,
+          "episode": 95,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Atlantean",
+          "correct": 10,
+          "episode": 96,
+          "total": 20
+        },
+        {
+          "accuracy": 0.9,
+          "alphabet": "Aurek-Besh",
+          "correct": 18,
+          "episode": 97,
+          "total": 20
+        },
+        {
+          "accuracy": 0.75,
+          "alphabet": "Tibetan",
+          "correct": 15,
+          "episode": 98,
+          "total": 20
+        },
+        {
+          "accuracy": 0.3,
+          "alphabet": "Atlantean",
+          "correct": 6,
+          "episode": 99,
+          "total": 20
+        }
+      ],
+      "median_episode_accuracy": 0.525,
+      "median_episode_cpu_ms": 16.3847045,
+      "median_episode_wall_ms": 16.3851325,
+      "peak_rss_bytes": 69906432,
+      "random_accuracy": 0.0555,
+      "random_correct": 111,
+      "random_total": 2000,
+      "total": 2000
+    },
+    "ordered_dtw": {
+      "accuracy": 0.5275,
+      "alphabet_cluster_bootstrap_95ci": [
+        0.48947368421052634,
+        0.5677095502336449
+      ],
+      "by_alphabet": {
+        "Angelic": {
+          "accuracy": 0.48333333333333334,
+          "correct": 29,
+          "total": 60
+        },
+        "Atemayar_Qelisayer": {
+          "accuracy": 0.49375,
+          "correct": 79,
+          "total": 160
+        },
+        "Atlantean": {
+          "accuracy": 0.6916666666666667,
+          "correct": 83,
+          "total": 120
+        },
+        "Aurek-Besh": {
+          "accuracy": 0.4375,
+          "correct": 35,
+          "total": 80
+        },
+        "Avesta": {
+          "accuracy": 0.575,
+          "correct": 23,
+          "total": 40
+        },
+        "Ge_ez": {
+          "accuracy": 0.6,
+          "correct": 36,
+          "total": 60
+        },
+        "Glagolitic": {
+          "accuracy": 0.48333333333333334,
+          "correct": 29,
+          "total": 60
+        },
+        "Gurmukhi": {
+          "accuracy": 0.48125,
+          "correct": 77,
+          "total": 160
+        },
+        "Kannada": {
+          "accuracy": 0.5833333333333334,
+          "correct": 35,
+          "total": 60
+        },
+        "Keble": {
+          "accuracy": 0.475,
+          "correct": 38,
+          "total": 80
+        },
+        "Malayalam": {
+          "accuracy": 0.7083333333333334,
+          "correct": 85,
+          "total": 120
+        },
+        "Manipuri": {
+          "accuracy": 0.54,
+          "correct": 54,
+          "total": 100
+        },
+        "Mongolian": {
+          "accuracy": 0.5666666666666667,
+          "correct": 68,
+          "total": 120
+        },
+        "Old_Church_Slavonic_(Cyrillic)": {
+          "accuracy": 0.525,
+          "correct": 63,
+          "total": 120
+        },
+        "Oriya": {
+          "accuracy": 0.35,
+          "correct": 28,
+          "total": 80
+        },
+        "Sylheti": {
+          "accuracy": 0.4625,
+          "correct": 37,
+          "total": 80
+        },
+        "Syriac_(Serto)": {
+          "accuracy": 0.4,
+          "correct": 32,
+          "total": 80
+        },
+        "Tengwar": {
+          "accuracy": 0.555,
+          "correct": 111,
+          "total": 200
+        },
+        "Tibetan": {
+          "accuracy": 0.59,
+          "correct": 59,
+          "total": 100
+        },
+        "ULOG": {
+          "accuracy": 0.45,
+          "correct": 54,
+          "total": 120
+        }
+      },
+      "chance_accuracy": 0.05,
+      "correct": 1055,
+      "episode_scores": [
+        {
+          "accuracy": 0.7,
+          "alphabet": "Tibetan",
+          "correct": 14,
+          "episode": 0,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Kannada",
+          "correct": 12,
+          "episode": 1,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Gurmukhi",
+          "correct": 12,
+          "episode": 2,
+          "total": 20
+        },
+        {
+          "accuracy": 0.4,
+          "alphabet": "ULOG",
+          "correct": 8,
+          "episode": 3,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Tengwar",
+          "correct": 13,
+          "episode": 4,
+          "total": 20
+        },
+        {
+          "accuracy": 0.25,
+          "alphabet": "Gurmukhi",
+          "correct": 5,
+          "episode": 5,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Aurek-Besh",
+          "correct": 9,
+          "episode": 6,
+          "total": 20
+        },
+        {
+          "accuracy": 0.4,
+          "alphabet": "Tengwar",
+          "correct": 8,
+          "episode": 7,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Tibetan",
+          "correct": 11,
+          "episode": 8,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Atemayar_Qelisayer",
+          "correct": 10,
+          "episode": 9,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "ULOG",
+          "correct": 12,
+          "episode": 10,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Syriac_(Serto)",
+          "correct": 10,
+          "episode": 11,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Glagolitic",
+          "correct": 10,
+          "episode": 12,
+          "total": 20
+        },
+        {
+          "accuracy": 0.35,
+          "alphabet": "Syriac_(Serto)",
+          "correct": 7,
+          "episode": 13,
+          "total": 20
+        },
+        {
+          "accuracy": 0.15,
+          "alphabet": "Keble",
+          "correct": 3,
+          "episode": 14,
+          "total": 20
+        },
+        {
+          "accuracy": 0.75,
+          "alphabet": "Atlantean",
+          "correct": 15,
+          "episode": 15,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Avesta",
+          "correct": 12,
+          "episode": 16,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Oriya",
+          "correct": 11,
+          "episode": 17,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Atemayar_Qelisayer",
+          "correct": 9,
+          "episode": 18,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Manipuri",
+          "correct": 9,
+          "episode": 19,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Kannada",
+          "correct": 12,
+          "episode": 20,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Old_Church_Slavonic_(Cyrillic)",
+          "correct": 9,
+          "episode": 21,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Keble",
+          "correct": 10,
+          "episode": 22,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Angelic",
+          "correct": 9,
+          "episode": 23,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Old_Church_Slavonic_(Cyrillic)",
+          "correct": 12,
+          "episode": 24,
+          "total": 20
+        },
+        {
+          "accuracy": 0.4,
+          "alphabet": "Atemayar_Qelisayer",
+          "correct": 8,
+          "episode": 25,
+          "total": 20
+        },
+        {
+          "accuracy": 0.4,
+          "alphabet": "Tibetan",
+          "correct": 8,
+          "episode": 26,
+          "total": 20
+        },
+        {
+          "accuracy": 0.35,
+          "alphabet": "Mongolian",
+          "correct": 7,
+          "episode": 27,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "ULOG",
+          "correct": 9,
+          "episode": 28,
+          "total": 20
+        },
+        {
+          "accuracy": 0.75,
+          "alphabet": "Manipuri",
+          "correct": 15,
+          "episode": 29,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Old_Church_Slavonic_(Cyrillic)",
+          "correct": 9,
+          "episode": 30,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Keble",
+          "correct": 13,
+          "episode": 31,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Syriac_(Serto)",
+          "correct": 10,
+          "episode": 32,
+          "total": 20
+        },
+        {
+          "accuracy": 0.3,
+          "alphabet": "Oriya",
+          "correct": 6,
+          "episode": 33,
+          "total": 20
+        },
+        {
+          "accuracy": 0.35,
+          "alphabet": "Malayalam",
+          "correct": 7,
+          "episode": 34,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Ge_ez",
+          "correct": 10,
+          "episode": 35,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Gurmukhi",
+          "correct": 11,
+          "episode": 36,
+          "total": 20
+        },
+        {
+          "accuracy": 0.75,
+          "alphabet": "Atlantean",
+          "correct": 15,
+          "episode": 37,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Avesta",
+          "correct": 11,
+          "episode": 38,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Mongolian",
+          "correct": 9,
+          "episode": 39,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Ge_ez",
+          "correct": 13,
+          "episode": 40,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Mongolian",
+          "correct": 16,
+          "episode": 41,
+          "total": 20
+        },
+        {
+          "accuracy": 0.4,
+          "alphabet": "Gurmukhi",
+          "correct": 8,
+          "episode": 42,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Tengwar",
+          "correct": 11,
+          "episode": 43,
+          "total": 20
+        },
+        {
+          "accuracy": 0.2,
+          "alphabet": "Aurek-Besh",
+          "correct": 4,
+          "episode": 44,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Manipuri",
+          "correct": 9,
+          "episode": 45,
+          "total": 20
+        },
+        {
+          "accuracy": 0.4,
+          "alphabet": "ULOG",
+          "correct": 8,
+          "episode": 46,
+          "total": 20
+        },
+        {
+          "accuracy": 0.35,
+          "alphabet": "Oriya",
+          "correct": 7,
+          "episode": 47,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Atemayar_Qelisayer",
+          "correct": 9,
+          "episode": 48,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Glagolitic",
+          "correct": 9,
+          "episode": 49,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Atemayar_Qelisayer",
+          "correct": 10,
+          "episode": 50,
+          "total": 20
+        },
+        {
+          "accuracy": 0.25,
+          "alphabet": "Syriac_(Serto)",
+          "correct": 5,
+          "episode": 51,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Sylheti",
+          "correct": 10,
+          "episode": 52,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Malayalam",
+          "correct": 10,
+          "episode": 53,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Sylheti",
+          "correct": 9,
+          "episode": 54,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Mongolian",
+          "correct": 14,
+          "episode": 55,
+          "total": 20
+        },
+        {
+          "accuracy": 0.85,
+          "alphabet": "Malayalam",
+          "correct": 17,
+          "episode": 56,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Atlantean",
+          "correct": 10,
+          "episode": 57,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Gurmukhi",
+          "correct": 10,
+          "episode": 58,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Glagolitic",
+          "correct": 10,
+          "episode": 59,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Mongolian",
+          "correct": 10,
+          "episode": 60,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Keble",
+          "correct": 12,
+          "episode": 61,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Tengwar",
+          "correct": 14,
+          "episode": 62,
+          "total": 20
+        },
+        {
+          "accuracy": 0.4,
+          "alphabet": "Tengwar",
+          "correct": 8,
+          "episode": 63,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Atemayar_Qelisayer",
+          "correct": 12,
+          "episode": 64,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Mongolian",
+          "correct": 12,
+          "episode": 65,
+          "total": 20
+        },
+        {
+          "accuracy": 0.25,
+          "alphabet": "Manipuri",
+          "correct": 5,
+          "episode": 66,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Tengwar",
+          "correct": 13,
+          "episode": 67,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Sylheti",
+          "correct": 11,
+          "episode": 68,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Angelic",
+          "correct": 9,
+          "episode": 69,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Atemayar_Qelisayer",
+          "correct": 12,
+          "episode": 70,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Kannada",
+          "correct": 11,
+          "episode": 71,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Aurek-Besh",
+          "correct": 9,
+          "episode": 72,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Old_Church_Slavonic_(Cyrillic)",
+          "correct": 12,
+          "episode": 73,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Gurmukhi",
+          "correct": 10,
+          "episode": 74,
+          "total": 20
+        },
+        {
+          "accuracy": 0.4,
+          "alphabet": "Tengwar",
+          "correct": 8,
+          "episode": 75,
+          "total": 20
+        },
+        {
+          "accuracy": 0.9,
+          "alphabet": "Atlantean",
+          "correct": 18,
+          "episode": 76,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Ge_ez",
+          "correct": 13,
+          "episode": 77,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Tibetan",
+          "correct": 13,
+          "episode": 78,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Malayalam",
+          "correct": 14,
+          "episode": 79,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Old_Church_Slavonic_(Cyrillic)",
+          "correct": 14,
+          "episode": 80,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Manipuri",
+          "correct": 16,
+          "episode": 81,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Tengwar",
+          "correct": 16,
+          "episode": 82,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Tengwar",
+          "correct": 10,
+          "episode": 83,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Gurmukhi",
+          "correct": 11,
+          "episode": 84,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Angelic",
+          "correct": 11,
+          "episode": 85,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Tengwar",
+          "correct": 10,
+          "episode": 86,
+          "total": 20
+        },
+        {
+          "accuracy": 0.95,
+          "alphabet": "Malayalam",
+          "correct": 19,
+          "episode": 87,
+          "total": 20
+        },
+        {
+          "accuracy": 0.2,
+          "alphabet": "Oriya",
+          "correct": 4,
+          "episode": 88,
+          "total": 20
+        },
+        {
+          "accuracy": 0.35,
+          "alphabet": "Old_Church_Slavonic_(Cyrillic)",
+          "correct": 7,
+          "episode": 89,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "ULOG",
+          "correct": 9,
+          "episode": 90,
+          "total": 20
+        },
+        {
+          "accuracy": 0.9,
+          "alphabet": "Malayalam",
+          "correct": 18,
+          "episode": 91,
+          "total": 20
+        },
+        {
+          "accuracy": 0.35,
+          "alphabet": "Sylheti",
+          "correct": 7,
+          "episode": 92,
+          "total": 20
+        },
+        {
+          "accuracy": 0.4,
+          "alphabet": "ULOG",
+          "correct": 8,
+          "episode": 93,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Atemayar_Qelisayer",
+          "correct": 9,
+          "episode": 94,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Gurmukhi",
+          "correct": 10,
+          "episode": 95,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Atlantean",
+          "correct": 12,
+          "episode": 96,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Aurek-Besh",
+          "correct": 13,
+          "episode": 97,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Tibetan",
+          "correct": 13,
+          "episode": 98,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Atlantean",
+          "correct": 13,
+          "episode": 99,
+          "total": 20
+        }
+      ],
+      "median_episode_accuracy": 0.5,
+      "median_episode_cpu_ms": 12.1382185,
+      "median_episode_wall_ms": 12.137805,
+      "peak_rss_bytes": 68702208,
+      "random_accuracy": 0.044,
+      "random_correct": 88,
+      "random_total": 2000,
+      "total": 2000
+    },
+    "pointset": {
+      "accuracy": 0.668,
+      "alphabet_cluster_bootstrap_95ci": [
+        0.6255426464063886,
+        0.7109532967032968
+      ],
+      "by_alphabet": {
+        "Angelic": {
+          "accuracy": 0.8333333333333334,
+          "correct": 50,
+          "total": 60
+        },
+        "Atemayar_Qelisayer": {
+          "accuracy": 0.7375,
+          "correct": 118,
+          "total": 160
+        },
+        "Atlantean": {
+          "accuracy": 0.725,
+          "correct": 87,
+          "total": 120
+        },
+        "Aurek-Besh": {
+          "accuracy": 0.7375,
+          "correct": 59,
+          "total": 80
+        },
+        "Avesta": {
+          "accuracy": 0.7,
+          "correct": 28,
+          "total": 40
+        },
+        "Ge_ez": {
+          "accuracy": 0.7833333333333333,
+          "correct": 47,
+          "total": 60
+        },
+        "Glagolitic": {
+          "accuracy": 0.7666666666666667,
+          "correct": 46,
+          "total": 60
+        },
+        "Gurmukhi": {
+          "accuracy": 0.60625,
+          "correct": 97,
+          "total": 160
+        },
+        "Kannada": {
+          "accuracy": 0.6333333333333333,
+          "correct": 38,
+          "total": 60
+        },
+        "Keble": {
+          "accuracy": 0.7125,
+          "correct": 57,
+          "total": 80
+        },
+        "Malayalam": {
+          "accuracy": 0.6583333333333333,
+          "correct": 79,
+          "total": 120
+        },
+        "Manipuri": {
+          "accuracy": 0.65,
+          "correct": 65,
+          "total": 100
+        },
+        "Mongolian": {
+          "accuracy": 0.675,
+          "correct": 81,
+          "total": 120
+        },
+        "Old_Church_Slavonic_(Cyrillic)": {
+          "accuracy": 0.6083333333333333,
+          "correct": 73,
+          "total": 120
+        },
+        "Oriya": {
+          "accuracy": 0.425,
+          "correct": 34,
+          "total": 80
+        },
+        "Sylheti": {
+          "accuracy": 0.45,
+          "correct": 36,
+          "total": 80
+        },
+        "Syriac_(Serto)": {
+          "accuracy": 0.6,
+          "correct": 48,
+          "total": 80
+        },
+        "Tengwar": {
+          "accuracy": 0.665,
+          "correct": 133,
+          "total": 200
+        },
+        "Tibetan": {
+          "accuracy": 0.58,
+          "correct": 58,
+          "total": 100
+        },
+        "ULOG": {
+          "accuracy": 0.85,
+          "correct": 102,
+          "total": 120
+        }
+      },
+      "chance_accuracy": 0.05,
+      "correct": 1336,
+      "episode_scores": [
+        {
+          "accuracy": 0.55,
+          "alphabet": "Tibetan",
+          "correct": 11,
+          "episode": 0,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Kannada",
+          "correct": 12,
+          "episode": 1,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Gurmukhi",
+          "correct": 14,
+          "episode": 2,
+          "total": 20
+        },
+        {
+          "accuracy": 0.95,
+          "alphabet": "ULOG",
+          "correct": 19,
+          "episode": 3,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Tengwar",
+          "correct": 14,
+          "episode": 4,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Gurmukhi",
+          "correct": 9,
+          "episode": 5,
+          "total": 20
+        },
+        {
+          "accuracy": 0.9,
+          "alphabet": "Aurek-Besh",
+          "correct": 18,
+          "episode": 6,
+          "total": 20
+        },
+        {
+          "accuracy": 0.85,
+          "alphabet": "Tengwar",
+          "correct": 17,
+          "episode": 7,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Tibetan",
+          "correct": 10,
+          "episode": 8,
+          "total": 20
+        },
+        {
+          "accuracy": 0.85,
+          "alphabet": "Atemayar_Qelisayer",
+          "correct": 17,
+          "episode": 9,
+          "total": 20
+        },
+        {
+          "accuracy": 0.95,
+          "alphabet": "ULOG",
+          "correct": 19,
+          "episode": 10,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Syriac_(Serto)",
+          "correct": 13,
+          "episode": 11,
+          "total": 20
+        },
+        {
+          "accuracy": 0.75,
+          "alphabet": "Glagolitic",
+          "correct": 15,
+          "episode": 12,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Syriac_(Serto)",
+          "correct": 11,
+          "episode": 13,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Keble",
+          "correct": 14,
+          "episode": 14,
+          "total": 20
+        },
+        {
+          "accuracy": 0.85,
+          "alphabet": "Atlantean",
+          "correct": 17,
+          "episode": 15,
+          "total": 20
+        },
+        {
+          "accuracy": 0.9,
+          "alphabet": "Avesta",
+          "correct": 18,
+          "episode": 16,
+          "total": 20
+        },
+        {
+          "accuracy": 0.2,
+          "alphabet": "Oriya",
+          "correct": 4,
+          "episode": 17,
+          "total": 20
+        },
+        {
+          "accuracy": 0.75,
+          "alphabet": "Atemayar_Qelisayer",
+          "correct": 15,
+          "episode": 18,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Manipuri",
+          "correct": 13,
+          "episode": 19,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Kannada",
+          "correct": 16,
+          "episode": 20,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Old_Church_Slavonic_(Cyrillic)",
+          "correct": 12,
+          "episode": 21,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Keble",
+          "correct": 16,
+          "episode": 22,
+          "total": 20
+        },
+        {
+          "accuracy": 0.85,
+          "alphabet": "Angelic",
+          "correct": 17,
+          "episode": 23,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Old_Church_Slavonic_(Cyrillic)",
+          "correct": 11,
+          "episode": 24,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Atemayar_Qelisayer",
+          "correct": 13,
+          "episode": 25,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Tibetan",
+          "correct": 11,
+          "episode": 26,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Mongolian",
+          "correct": 10,
+          "episode": 27,
+          "total": 20
+        },
+        {
+          "accuracy": 0.75,
+          "alphabet": "ULOG",
+          "correct": 15,
+          "episode": 28,
+          "total": 20
+        },
+        {
+          "accuracy": 0.75,
+          "alphabet": "Manipuri",
+          "correct": 15,
+          "episode": 29,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Old_Church_Slavonic_(Cyrillic)",
+          "correct": 9,
+          "episode": 30,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Keble",
+          "correct": 14,
+          "episode": 31,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Syriac_(Serto)",
+          "correct": 12,
+          "episode": 32,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Oriya",
+          "correct": 9,
+          "episode": 33,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Malayalam",
+          "correct": 13,
+          "episode": 34,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Ge_ez",
+          "correct": 16,
+          "episode": 35,
+          "total": 20
+        },
+        {
+          "accuracy": 0.85,
+          "alphabet": "Gurmukhi",
+          "correct": 17,
+          "episode": 36,
+          "total": 20
+        },
+        {
+          "accuracy": 0.85,
+          "alphabet": "Atlantean",
+          "correct": 17,
+          "episode": 37,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Avesta",
+          "correct": 10,
+          "episode": 38,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Mongolian",
+          "correct": 12,
+          "episode": 39,
+          "total": 20
+        },
+        {
+          "accuracy": 0.75,
+          "alphabet": "Ge_ez",
+          "correct": 15,
+          "episode": 40,
+          "total": 20
+        },
+        {
+          "accuracy": 0.85,
+          "alphabet": "Mongolian",
+          "correct": 17,
+          "episode": 41,
+          "total": 20
+        },
+        {
+          "accuracy": 0.4,
+          "alphabet": "Gurmukhi",
+          "correct": 8,
+          "episode": 42,
+          "total": 20
+        },
+        {
+          "accuracy": 0.35,
+          "alphabet": "Tengwar",
+          "correct": 7,
+          "episode": 43,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Aurek-Besh",
+          "correct": 10,
+          "episode": 44,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Manipuri",
+          "correct": 9,
+          "episode": 45,
+          "total": 20
+        },
+        {
+          "accuracy": 0.85,
+          "alphabet": "ULOG",
+          "correct": 17,
+          "episode": 46,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Oriya",
+          "correct": 14,
+          "episode": 47,
+          "total": 20
+        },
+        {
+          "accuracy": 0.85,
+          "alphabet": "Atemayar_Qelisayer",
+          "correct": 17,
+          "episode": 48,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Glagolitic",
+          "correct": 14,
+          "episode": 49,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Atemayar_Qelisayer",
+          "correct": 11,
+          "episode": 50,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Syriac_(Serto)",
+          "correct": 12,
+          "episode": 51,
+          "total": 20
+        },
+        {
+          "accuracy": 0.4,
+          "alphabet": "Sylheti",
+          "correct": 8,
+          "episode": 52,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Malayalam",
+          "correct": 12,
+          "episode": 53,
+          "total": 20
+        },
+        {
+          "accuracy": 0.4,
+          "alphabet": "Sylheti",
+          "correct": 8,
+          "episode": 54,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Mongolian",
+          "correct": 16,
+          "episode": 55,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Malayalam",
+          "correct": 16,
+          "episode": 56,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Atlantean",
+          "correct": 13,
+          "episode": 57,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Gurmukhi",
+          "correct": 12,
+          "episode": 58,
+          "total": 20
+        },
+        {
+          "accuracy": 0.85,
+          "alphabet": "Glagolitic",
+          "correct": 17,
+          "episode": 59,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Mongolian",
+          "correct": 10,
+          "episode": 60,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Keble",
+          "correct": 13,
+          "episode": 61,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Tengwar",
+          "correct": 16,
+          "episode": 62,
+          "total": 20
+        },
+        {
+          "accuracy": 0.75,
+          "alphabet": "Tengwar",
+          "correct": 15,
+          "episode": 63,
+          "total": 20
+        },
+        {
+          "accuracy": 0.85,
+          "alphabet": "Atemayar_Qelisayer",
+          "correct": 17,
+          "episode": 64,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Mongolian",
+          "correct": 16,
+          "episode": 65,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Manipuri",
+          "correct": 12,
+          "episode": 66,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Tengwar",
+          "correct": 13,
+          "episode": 67,
+          "total": 20
+        },
+        {
+          "accuracy": 0.3,
+          "alphabet": "Sylheti",
+          "correct": 6,
+          "episode": 68,
+          "total": 20
+        },
+        {
+          "accuracy": 0.75,
+          "alphabet": "Angelic",
+          "correct": 15,
+          "episode": 69,
+          "total": 20
+        },
+        {
+          "accuracy": 0.75,
+          "alphabet": "Atemayar_Qelisayer",
+          "correct": 15,
+          "episode": 70,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Kannada",
+          "correct": 10,
+          "episode": 71,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Aurek-Besh",
+          "correct": 11,
+          "episode": 72,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Old_Church_Slavonic_(Cyrillic)",
+          "correct": 10,
+          "episode": 73,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Gurmukhi",
+          "correct": 14,
+          "episode": 74,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Tengwar",
+          "correct": 14,
+          "episode": 75,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Atlantean",
+          "correct": 16,
+          "episode": 76,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Ge_ez",
+          "correct": 16,
+          "episode": 77,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Tibetan",
+          "correct": 12,
+          "episode": 78,
+          "total": 20
+        },
+        {
+          "accuracy": 0.9,
+          "alphabet": "Malayalam",
+          "correct": 18,
+          "episode": 79,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Old_Church_Slavonic_(Cyrillic)",
+          "correct": 14,
+          "episode": 80,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Manipuri",
+          "correct": 16,
+          "episode": 81,
+          "total": 20
+        },
+        {
+          "accuracy": 1.0,
+          "alphabet": "Tengwar",
+          "correct": 20,
+          "episode": 82,
+          "total": 20
+        },
+        {
+          "accuracy": 0.4,
+          "alphabet": "Tengwar",
+          "correct": 8,
+          "episode": 83,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Gurmukhi",
+          "correct": 13,
+          "episode": 84,
+          "total": 20
+        },
+        {
+          "accuracy": 0.9,
+          "alphabet": "Angelic",
+          "correct": 18,
+          "episode": 85,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Tengwar",
+          "correct": 9,
+          "episode": 86,
+          "total": 20
+        },
+        {
+          "accuracy": 0.75,
+          "alphabet": "Malayalam",
+          "correct": 15,
+          "episode": 87,
+          "total": 20
+        },
+        {
+          "accuracy": 0.35,
+          "alphabet": "Oriya",
+          "correct": 7,
+          "episode": 88,
+          "total": 20
+        },
+        {
+          "accuracy": 0.85,
+          "alphabet": "Old_Church_Slavonic_(Cyrillic)",
+          "correct": 17,
+          "episode": 89,
+          "total": 20
+        },
+        {
+          "accuracy": 0.95,
+          "alphabet": "ULOG",
+          "correct": 19,
+          "episode": 90,
+          "total": 20
+        },
+        {
+          "accuracy": 0.25,
+          "alphabet": "Malayalam",
+          "correct": 5,
+          "episode": 91,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Sylheti",
+          "correct": 14,
+          "episode": 92,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "ULOG",
+          "correct": 13,
+          "episode": 93,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Atemayar_Qelisayer",
+          "correct": 13,
+          "episode": 94,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Gurmukhi",
+          "correct": 10,
+          "episode": 95,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Atlantean",
+          "correct": 12,
+          "episode": 96,
+          "total": 20
+        },
+        {
+          "accuracy": 1.0,
+          "alphabet": "Aurek-Besh",
+          "correct": 20,
+          "episode": 97,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Tibetan",
+          "correct": 14,
+          "episode": 98,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Atlantean",
+          "correct": 12,
+          "episode": 99,
+          "total": 20
+        }
+      ],
+      "median_episode_accuracy": 0.7,
+      "median_episode_cpu_ms": 16.85611,
+      "median_episode_wall_ms": 16.857047,
+      "peak_rss_bytes": 68702208,
+      "random_accuracy": 0.0545,
+      "random_correct": 109,
+      "random_total": 2000,
+      "total": 2000
+    }
+  },
+  "total_checks": 6,
+  "total_run_process_cpu_ns": 249433041691,
+  "total_run_wall_ns": 249711853805,
+  "worker_count": 300
+}

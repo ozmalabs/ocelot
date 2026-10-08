@@ -1,0 +1,5476 @@
+{
+  "captured_utc": "2026-10-03T18:17:04Z",
+  "lock_sha256": "3646256ee997fa5cb71612e12c9263d2179ecfe9c36639860f3199776ae714c3",
+  "schema": "TermDeduplicationClassReturnV1Results",
+  "sources": {
+    "binary": {
+      "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+      "sha256": "df49b1d8300f0f10179211649fa23d5c931089696b085b533845f90163dc0ecb"
+    },
+    "files": {
+      "docs/research/engine_substrate/TERM_DEDUPLICATION_CLASS_RETURN_V1_PREREG_20261004.md": "d1167382ff5ef8bd64fa8333da0eb856bfcd9f5bec3a40e7dddab730b151e1d8",
+      "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+      "evaluation/reports/coverage_aware_class_return_v1_1_analysis_20261004.json": "27bf09dbf4a26b92a8895d15665cc2cf23a8db5b63b32dd75df1fcd2e502bb5e",
+      "evaluation/reports/coverage_aware_class_return_v1_20261003.json": "c3629ba0c76c5435bf6e574204c609420b586edabc0cd7db0df2f39949aa9115",
+      "evaluation/substrate_capability/analyze_coverage_aware_class_return_v1_1.py": "61ce80a6e1c73cb79c3c32c75dd0a884c651136dee93839b8fb4d386c64c3c0c",
+      "evaluation/substrate_capability/analyze_term_deduplication_class_return_v1.py": "cee510577fb3b07ca66b25cedfbec286cb6713095728bd1754b9fae81f612314",
+      "evaluation/substrate_capability/coverage_aware_class_return_v1.py": "04b6cb4e0daaf107c9bb36b7416e109470b88c3997ab80e8d2c9558f7d746bc1",
+      "evaluation/substrate_capability/coverage_aware_class_return_v1_lock_20261003.json": "249a2d6f87a58ad2ce28a8ec02161717e52013a5c37b1585d38a7f407dcb09f1",
+      "evaluation/substrate_capability/term_deduplication_class_return_v1.py": "40c316313988493e96bfe1221f3a9489093d5838988022410d5c643e6937f540",
+      "runners/dsl/python/substrate_rs/__init__.py": "b5b0ffab338329a3c9c7f24fbafe8821d89810f6c162c51b564976328e2bf843",
+      "runners/dsl/python/substrate_rs/_native.build.json": "872573c290b4e9ecc3d9a1130aeca160cbda4d1fb59f5e6bd5414816f79011a4"
+    },
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]",
+    "rust_fingerprint": "84b8347a33e1836ba31f485c18d627a38b28564b9a5be7ba31900fe12e753c77"
+  },
+  "workers": [
+    {
+      "initial_count": 1,
+      "removed_duplicates": 0,
+      "result": {
+        "behavior_partition": null,
+        "calls": 2,
+        "coverage": {
+          "adequate": false,
+          "per_variable": {
+            "ax": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ay": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ex": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ey": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            }
+          },
+          "probe_count": 64
+        },
+        "decision": "exact_term",
+        "domain": "original",
+        "expansions": [],
+        "selector_ns": 0,
+        "steps": [
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": 1.0,
+              "ay": -3.0,
+              "ex": -3.0,
+              "ey": 3.0
+            },
+            "label": false,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              1.0,
+              -3.0,
+              -3.0,
+              3.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": 1.0,
+              "ay": -3.0,
+              "ex": 2.0,
+              "ey": 3.0
+            },
+            "label": false,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              1.0,
+              -3.0,
+              2.0,
+              3.0
+            ]
+          }
+        ],
+        "stop": "singleton_after_challenge",
+        "survivors": [
+          {
+            "family": "Plus",
+            "heldout": {
+              "exact": true,
+              "fn": 0,
+              "fp": 0,
+              "invalid": 0,
+              "n": 6560,
+              "tn": 6168,
+              "tp": 392
+            },
+            "id": "Plus000",
+            "term": {
+              "a": {
+                "items": [
+                  {
+                    "name": "ax",
+                    "type": "Var"
+                  },
+                  {
+                    "name": "ay",
+                    "type": "Var"
+                  }
+                ],
+                "type": "Plus"
+              },
+              "b": {
+                "items": [
+                  {
+                    "name": "ex",
+                    "type": "Var"
+                  },
+                  {
+                    "name": "ey",
+                    "type": "Var"
+                  }
+                ],
+                "type": "Plus"
+              },
+              "type": "Eq"
+            }
+          }
+        ],
+        "teacher": null
+      },
+      "task": "additive",
+      "unique_hypotheses": [
+        {
+          "family": "Plus",
+          "id": "Plus000",
+          "term": {
+            "a": {
+              "items": [
+                {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                {
+                  "name": "ay",
+                  "type": "Var"
+                }
+              ],
+              "type": "Plus"
+            },
+            "b": {
+              "items": [
+                {
+                  "name": "ex",
+                  "type": "Var"
+                },
+                {
+                  "name": "ey",
+                  "type": "Var"
+                }
+              ],
+              "type": "Plus"
+            },
+            "type": "Eq"
+          }
+        }
+      ],
+      "unique_term_count": 1,
+      "worker": 0
+    },
+    {
+      "initial_count": 1,
+      "removed_duplicates": 0,
+      "result": {
+        "behavior_partition": null,
+        "calls": 2,
+        "coverage": {
+          "adequate": false,
+          "per_variable": {
+            "ax": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ay": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ex": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ey": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            }
+          },
+          "probe_count": 64
+        },
+        "decision": "exact_term",
+        "domain": "original",
+        "expansions": [],
+        "selector_ns": 0,
+        "steps": [
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": -2.0,
+              "ay": -1.0,
+              "ex": -3.0,
+              "ey": -2.0
+            },
+            "label": false,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              -2.0,
+              -1.0,
+              -3.0,
+              -2.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": -1.0,
+              "ay": 3.0,
+              "ex": 2.0,
+              "ey": 3.0
+            },
+            "label": false,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              -1.0,
+              3.0,
+              2.0,
+              3.0
+            ]
+          }
+        ],
+        "stop": "singleton_after_challenge",
+        "survivors": [
+          {
+            "family": "Plus",
+            "heldout": {
+              "exact": true,
+              "fn": 0,
+              "fp": 0,
+              "invalid": 0,
+              "n": 6560,
+              "tn": 6168,
+              "tp": 392
+            },
+            "id": "Plus000",
+            "term": {
+              "a": {
+                "items": [
+                  {
+                    "name": "ax",
+                    "type": "Var"
+                  },
+                  {
+                    "name": "ay",
+                    "type": "Var"
+                  }
+                ],
+                "type": "Plus"
+              },
+              "b": {
+                "items": [
+                  {
+                    "name": "ex",
+                    "type": "Var"
+                  },
+                  {
+                    "name": "ey",
+                    "type": "Var"
+                  }
+                ],
+                "type": "Plus"
+              },
+              "type": "Eq"
+            }
+          }
+        ],
+        "teacher": null
+      },
+      "task": "additive",
+      "unique_hypotheses": [
+        {
+          "family": "Plus",
+          "id": "Plus000",
+          "term": {
+            "a": {
+              "items": [
+                {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                {
+                  "name": "ay",
+                  "type": "Var"
+                }
+              ],
+              "type": "Plus"
+            },
+            "b": {
+              "items": [
+                {
+                  "name": "ex",
+                  "type": "Var"
+                },
+                {
+                  "name": "ey",
+                  "type": "Var"
+                }
+              ],
+              "type": "Plus"
+            },
+            "type": "Eq"
+          }
+        }
+      ],
+      "unique_term_count": 1,
+      "worker": 1
+    },
+    {
+      "initial_count": 1,
+      "removed_duplicates": 0,
+      "result": {
+        "behavior_partition": null,
+        "calls": 2,
+        "coverage": {
+          "adequate": false,
+          "per_variable": {
+            "ax": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ay": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ex": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ey": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            }
+          },
+          "probe_count": 64
+        },
+        "decision": "exact_term",
+        "domain": "original",
+        "expansions": [],
+        "selector_ns": 0,
+        "steps": [
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": 1.0,
+              "ay": -3.0,
+              "ex": 3.0,
+              "ey": 3.0
+            },
+            "label": false,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              1.0,
+              -3.0,
+              3.0,
+              3.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": 3.0,
+              "ay": 1.0,
+              "ex": -1.0,
+              "ey": -1.0
+            },
+            "label": false,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              3.0,
+              1.0,
+              -1.0,
+              -1.0
+            ]
+          }
+        ],
+        "stop": "singleton_after_challenge",
+        "survivors": [
+          {
+            "family": "Plus",
+            "heldout": {
+              "exact": true,
+              "fn": 0,
+              "fp": 0,
+              "invalid": 0,
+              "n": 6560,
+              "tn": 6168,
+              "tp": 392
+            },
+            "id": "Plus000",
+            "term": {
+              "a": {
+                "items": [
+                  {
+                    "name": "ax",
+                    "type": "Var"
+                  },
+                  {
+                    "name": "ay",
+                    "type": "Var"
+                  }
+                ],
+                "type": "Plus"
+              },
+              "b": {
+                "items": [
+                  {
+                    "name": "ex",
+                    "type": "Var"
+                  },
+                  {
+                    "name": "ey",
+                    "type": "Var"
+                  }
+                ],
+                "type": "Plus"
+              },
+              "type": "Eq"
+            }
+          }
+        ],
+        "teacher": null
+      },
+      "task": "additive",
+      "unique_hypotheses": [
+        {
+          "family": "Plus",
+          "id": "Plus000",
+          "term": {
+            "a": {
+              "items": [
+                {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                {
+                  "name": "ay",
+                  "type": "Var"
+                }
+              ],
+              "type": "Plus"
+            },
+            "b": {
+              "items": [
+                {
+                  "name": "ex",
+                  "type": "Var"
+                },
+                {
+                  "name": "ey",
+                  "type": "Var"
+                }
+              ],
+              "type": "Plus"
+            },
+            "type": "Eq"
+          }
+        }
+      ],
+      "unique_term_count": 1,
+      "worker": 2
+    },
+    {
+      "initial_count": 1,
+      "removed_duplicates": 0,
+      "result": {
+        "behavior_partition": null,
+        "calls": 2,
+        "coverage": {
+          "adequate": false,
+          "per_variable": {
+            "ax": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ay": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ex": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ey": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            }
+          },
+          "probe_count": 64
+        },
+        "decision": "exact_term",
+        "domain": "original",
+        "expansions": [],
+        "selector_ns": 0,
+        "steps": [
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": -2.0,
+              "ay": -1.0,
+              "ex": -2.0,
+              "ey": -2.0
+            },
+            "label": false,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              -2.0,
+              -1.0,
+              -2.0,
+              -2.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": 2.0,
+              "ay": 1.0,
+              "ex": -3.0,
+              "ey": -3.0
+            },
+            "label": false,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              2.0,
+              1.0,
+              -3.0,
+              -3.0
+            ]
+          }
+        ],
+        "stop": "singleton_after_challenge",
+        "survivors": [
+          {
+            "family": "Plus",
+            "heldout": {
+              "exact": true,
+              "fn": 0,
+              "fp": 0,
+              "invalid": 0,
+              "n": 6560,
+              "tn": 6168,
+              "tp": 392
+            },
+            "id": "Plus000",
+            "term": {
+              "a": {
+                "items": [
+                  {
+                    "name": "ax",
+                    "type": "Var"
+                  },
+                  {
+                    "name": "ay",
+                    "type": "Var"
+                  }
+                ],
+                "type": "Plus"
+              },
+              "b": {
+                "items": [
+                  {
+                    "name": "ex",
+                    "type": "Var"
+                  },
+                  {
+                    "name": "ey",
+                    "type": "Var"
+                  }
+                ],
+                "type": "Plus"
+              },
+              "type": "Eq"
+            }
+          }
+        ],
+        "teacher": null
+      },
+      "task": "additive",
+      "unique_hypotheses": [
+        {
+          "family": "Plus",
+          "id": "Plus000",
+          "term": {
+            "a": {
+              "items": [
+                {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                {
+                  "name": "ay",
+                  "type": "Var"
+                }
+              ],
+              "type": "Plus"
+            },
+            "b": {
+              "items": [
+                {
+                  "name": "ex",
+                  "type": "Var"
+                },
+                {
+                  "name": "ey",
+                  "type": "Var"
+                }
+              ],
+              "type": "Plus"
+            },
+            "type": "Eq"
+          }
+        }
+      ],
+      "unique_term_count": 1,
+      "worker": 3
+    },
+    {
+      "initial_count": 1,
+      "removed_duplicates": 0,
+      "result": {
+        "behavior_partition": null,
+        "calls": 2,
+        "coverage": {
+          "adequate": false,
+          "per_variable": {
+            "ax": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ay": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ex": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ey": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            }
+          },
+          "probe_count": 64
+        },
+        "decision": "exact_term",
+        "domain": "original",
+        "expansions": [],
+        "selector_ns": 0,
+        "steps": [
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": 1.0,
+              "ay": 3.0,
+              "ex": 1.0,
+              "ey": -1.0
+            },
+            "label": false,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              1.0,
+              3.0,
+              1.0,
+              -1.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": 1.0,
+              "ay": 3.0,
+              "ex": 2.0,
+              "ey": 1.0
+            },
+            "label": false,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              1.0,
+              3.0,
+              2.0,
+              1.0
+            ]
+          }
+        ],
+        "stop": "singleton_after_challenge",
+        "survivors": [
+          {
+            "family": "Plus",
+            "heldout": {
+              "exact": true,
+              "fn": 0,
+              "fp": 0,
+              "invalid": 0,
+              "n": 6560,
+              "tn": 6168,
+              "tp": 392
+            },
+            "id": "Plus000",
+            "term": {
+              "a": {
+                "items": [
+                  {
+                    "name": "ax",
+                    "type": "Var"
+                  },
+                  {
+                    "name": "ay",
+                    "type": "Var"
+                  }
+                ],
+                "type": "Plus"
+              },
+              "b": {
+                "items": [
+                  {
+                    "name": "ex",
+                    "type": "Var"
+                  },
+                  {
+                    "name": "ey",
+                    "type": "Var"
+                  }
+                ],
+                "type": "Plus"
+              },
+              "type": "Eq"
+            }
+          }
+        ],
+        "teacher": null
+      },
+      "task": "additive",
+      "unique_hypotheses": [
+        {
+          "family": "Plus",
+          "id": "Plus000",
+          "term": {
+            "a": {
+              "items": [
+                {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                {
+                  "name": "ay",
+                  "type": "Var"
+                }
+              ],
+              "type": "Plus"
+            },
+            "b": {
+              "items": [
+                {
+                  "name": "ex",
+                  "type": "Var"
+                },
+                {
+                  "name": "ey",
+                  "type": "Var"
+                }
+              ],
+              "type": "Plus"
+            },
+            "type": "Eq"
+          }
+        }
+      ],
+      "unique_term_count": 1,
+      "worker": 4
+    },
+    {
+      "initial_count": 1,
+      "removed_duplicates": 0,
+      "result": {
+        "behavior_partition": null,
+        "calls": 2,
+        "coverage": {
+          "adequate": false,
+          "per_variable": {
+            "ax": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ay": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ex": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ey": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            }
+          },
+          "probe_count": 64
+        },
+        "decision": "exact_term",
+        "domain": "original",
+        "expansions": [],
+        "selector_ns": 0,
+        "steps": [
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": 1.0,
+              "ay": 1.0,
+              "ex": -1.0,
+              "ey": -3.0
+            },
+            "label": false,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              1.0,
+              1.0,
+              -1.0,
+              -3.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": 3.0,
+              "ay": 3.0,
+              "ex": 3.0,
+              "ey": -2.0
+            },
+            "label": false,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              3.0,
+              3.0,
+              3.0,
+              -2.0
+            ]
+          }
+        ],
+        "stop": "singleton_after_challenge",
+        "survivors": [
+          {
+            "family": "Times",
+            "heldout": {
+              "exact": true,
+              "fn": 0,
+              "fp": 0,
+              "invalid": 0,
+              "n": 6560,
+              "tn": 6048,
+              "tp": 512
+            },
+            "id": "Times000",
+            "term": {
+              "a": {
+                "items": [
+                  {
+                    "name": "ax",
+                    "type": "Var"
+                  },
+                  {
+                    "name": "ay",
+                    "type": "Var"
+                  }
+                ],
+                "type": "Times"
+              },
+              "b": {
+                "items": [
+                  {
+                    "name": "ex",
+                    "type": "Var"
+                  },
+                  {
+                    "name": "ey",
+                    "type": "Var"
+                  }
+                ],
+                "type": "Times"
+              },
+              "type": "Eq"
+            }
+          }
+        ],
+        "teacher": null
+      },
+      "task": "product",
+      "unique_hypotheses": [
+        {
+          "family": "Times",
+          "id": "Times000",
+          "term": {
+            "a": {
+              "items": [
+                {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                {
+                  "name": "ay",
+                  "type": "Var"
+                }
+              ],
+              "type": "Times"
+            },
+            "b": {
+              "items": [
+                {
+                  "name": "ex",
+                  "type": "Var"
+                },
+                {
+                  "name": "ey",
+                  "type": "Var"
+                }
+              ],
+              "type": "Times"
+            },
+            "type": "Eq"
+          }
+        }
+      ],
+      "unique_term_count": 1,
+      "worker": 0
+    },
+    {
+      "initial_count": 1,
+      "removed_duplicates": 0,
+      "result": {
+        "behavior_partition": null,
+        "calls": 2,
+        "coverage": {
+          "adequate": false,
+          "per_variable": {
+            "ax": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ay": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ex": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ey": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            }
+          },
+          "probe_count": 64
+        },
+        "decision": "exact_term",
+        "domain": "original",
+        "expansions": [],
+        "selector_ns": 0,
+        "steps": [
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": -2.0,
+              "ay": -3.0,
+              "ex": -1.0,
+              "ey": -3.0
+            },
+            "label": false,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              -2.0,
+              -3.0,
+              -1.0,
+              -3.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": -2.0,
+              "ay": 3.0,
+              "ex": -2.0,
+              "ey": -1.0
+            },
+            "label": false,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              -2.0,
+              3.0,
+              -2.0,
+              -1.0
+            ]
+          }
+        ],
+        "stop": "singleton_after_challenge",
+        "survivors": [
+          {
+            "family": "Times",
+            "heldout": {
+              "exact": true,
+              "fn": 0,
+              "fp": 0,
+              "invalid": 0,
+              "n": 6560,
+              "tn": 6048,
+              "tp": 512
+            },
+            "id": "Times000",
+            "term": {
+              "a": {
+                "items": [
+                  {
+                    "name": "ax",
+                    "type": "Var"
+                  },
+                  {
+                    "name": "ay",
+                    "type": "Var"
+                  }
+                ],
+                "type": "Times"
+              },
+              "b": {
+                "items": [
+                  {
+                    "name": "ex",
+                    "type": "Var"
+                  },
+                  {
+                    "name": "ey",
+                    "type": "Var"
+                  }
+                ],
+                "type": "Times"
+              },
+              "type": "Eq"
+            }
+          }
+        ],
+        "teacher": null
+      },
+      "task": "product",
+      "unique_hypotheses": [
+        {
+          "family": "Times",
+          "id": "Times000",
+          "term": {
+            "a": {
+              "items": [
+                {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                {
+                  "name": "ay",
+                  "type": "Var"
+                }
+              ],
+              "type": "Times"
+            },
+            "b": {
+              "items": [
+                {
+                  "name": "ex",
+                  "type": "Var"
+                },
+                {
+                  "name": "ey",
+                  "type": "Var"
+                }
+              ],
+              "type": "Times"
+            },
+            "type": "Eq"
+          }
+        }
+      ],
+      "unique_term_count": 1,
+      "worker": 1
+    },
+    {
+      "initial_count": 1,
+      "removed_duplicates": 0,
+      "result": {
+        "behavior_partition": null,
+        "calls": 2,
+        "coverage": {
+          "adequate": false,
+          "per_variable": {
+            "ax": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ay": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ex": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ey": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            }
+          },
+          "probe_count": 64
+        },
+        "decision": "exact_term",
+        "domain": "original",
+        "expansions": [],
+        "selector_ns": 0,
+        "steps": [
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": -2.0,
+              "ay": -3.0,
+              "ex": 1.0,
+              "ey": -3.0
+            },
+            "label": false,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              -2.0,
+              -3.0,
+              1.0,
+              -3.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": 1.0,
+              "ay": -3.0,
+              "ex": -2.0,
+              "ey": -2.0
+            },
+            "label": false,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              1.0,
+              -3.0,
+              -2.0,
+              -2.0
+            ]
+          }
+        ],
+        "stop": "singleton_after_challenge",
+        "survivors": [
+          {
+            "family": "Times",
+            "heldout": {
+              "exact": true,
+              "fn": 0,
+              "fp": 0,
+              "invalid": 0,
+              "n": 6560,
+              "tn": 6048,
+              "tp": 512
+            },
+            "id": "Times000",
+            "term": {
+              "a": {
+                "items": [
+                  {
+                    "name": "ax",
+                    "type": "Var"
+                  },
+                  {
+                    "name": "ay",
+                    "type": "Var"
+                  }
+                ],
+                "type": "Times"
+              },
+              "b": {
+                "items": [
+                  {
+                    "name": "ex",
+                    "type": "Var"
+                  },
+                  {
+                    "name": "ey",
+                    "type": "Var"
+                  }
+                ],
+                "type": "Times"
+              },
+              "type": "Eq"
+            }
+          }
+        ],
+        "teacher": null
+      },
+      "task": "product",
+      "unique_hypotheses": [
+        {
+          "family": "Times",
+          "id": "Times000",
+          "term": {
+            "a": {
+              "items": [
+                {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                {
+                  "name": "ay",
+                  "type": "Var"
+                }
+              ],
+              "type": "Times"
+            },
+            "b": {
+              "items": [
+                {
+                  "name": "ex",
+                  "type": "Var"
+                },
+                {
+                  "name": "ey",
+                  "type": "Var"
+                }
+              ],
+              "type": "Times"
+            },
+            "type": "Eq"
+          }
+        }
+      ],
+      "unique_term_count": 1,
+      "worker": 2
+    },
+    {
+      "initial_count": 1,
+      "removed_duplicates": 0,
+      "result": {
+        "behavior_partition": null,
+        "calls": 2,
+        "coverage": {
+          "adequate": false,
+          "per_variable": {
+            "ax": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ay": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ex": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ey": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            }
+          },
+          "probe_count": 64
+        },
+        "decision": "exact_term",
+        "domain": "original",
+        "expansions": [],
+        "selector_ns": 0,
+        "steps": [
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": -1.0,
+              "ay": 1.0,
+              "ex": 2.0,
+              "ey": -3.0
+            },
+            "label": false,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              -1.0,
+              1.0,
+              2.0,
+              -3.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": 3.0,
+              "ay": -1.0,
+              "ex": 1.0,
+              "ey": -1.0
+            },
+            "label": false,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              3.0,
+              -1.0,
+              1.0,
+              -1.0
+            ]
+          }
+        ],
+        "stop": "singleton_after_challenge",
+        "survivors": [
+          {
+            "family": "Times",
+            "heldout": {
+              "exact": true,
+              "fn": 0,
+              "fp": 0,
+              "invalid": 0,
+              "n": 6560,
+              "tn": 6048,
+              "tp": 512
+            },
+            "id": "Times000",
+            "term": {
+              "a": {
+                "items": [
+                  {
+                    "name": "ax",
+                    "type": "Var"
+                  },
+                  {
+                    "name": "ay",
+                    "type": "Var"
+                  }
+                ],
+                "type": "Times"
+              },
+              "b": {
+                "items": [
+                  {
+                    "name": "ex",
+                    "type": "Var"
+                  },
+                  {
+                    "name": "ey",
+                    "type": "Var"
+                  }
+                ],
+                "type": "Times"
+              },
+              "type": "Eq"
+            }
+          }
+        ],
+        "teacher": null
+      },
+      "task": "product",
+      "unique_hypotheses": [
+        {
+          "family": "Times",
+          "id": "Times000",
+          "term": {
+            "a": {
+              "items": [
+                {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                {
+                  "name": "ay",
+                  "type": "Var"
+                }
+              ],
+              "type": "Times"
+            },
+            "b": {
+              "items": [
+                {
+                  "name": "ex",
+                  "type": "Var"
+                },
+                {
+                  "name": "ey",
+                  "type": "Var"
+                }
+              ],
+              "type": "Times"
+            },
+            "type": "Eq"
+          }
+        }
+      ],
+      "unique_term_count": 1,
+      "worker": 3
+    },
+    {
+      "initial_count": 1,
+      "removed_duplicates": 0,
+      "result": {
+        "behavior_partition": null,
+        "calls": 2,
+        "coverage": {
+          "adequate": false,
+          "per_variable": {
+            "ax": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ay": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ex": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ey": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            }
+          },
+          "probe_count": 64
+        },
+        "decision": "exact_term",
+        "domain": "original",
+        "expansions": [],
+        "selector_ns": 0,
+        "steps": [
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": 2.0,
+              "ay": -3.0,
+              "ex": 1.0,
+              "ey": 2.0
+            },
+            "label": false,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              2.0,
+              -3.0,
+              1.0,
+              2.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": 1.0,
+              "ay": 3.0,
+              "ex": -2.0,
+              "ey": 3.0
+            },
+            "label": false,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              1.0,
+              3.0,
+              -2.0,
+              3.0
+            ]
+          }
+        ],
+        "stop": "singleton_after_challenge",
+        "survivors": [
+          {
+            "family": "Times",
+            "heldout": {
+              "exact": true,
+              "fn": 0,
+              "fp": 0,
+              "invalid": 0,
+              "n": 6560,
+              "tn": 6048,
+              "tp": 512
+            },
+            "id": "Times000",
+            "term": {
+              "a": {
+                "items": [
+                  {
+                    "name": "ax",
+                    "type": "Var"
+                  },
+                  {
+                    "name": "ay",
+                    "type": "Var"
+                  }
+                ],
+                "type": "Times"
+              },
+              "b": {
+                "items": [
+                  {
+                    "name": "ex",
+                    "type": "Var"
+                  },
+                  {
+                    "name": "ey",
+                    "type": "Var"
+                  }
+                ],
+                "type": "Times"
+              },
+              "type": "Eq"
+            }
+          }
+        ],
+        "teacher": null
+      },
+      "task": "product",
+      "unique_hypotheses": [
+        {
+          "family": "Times",
+          "id": "Times000",
+          "term": {
+            "a": {
+              "items": [
+                {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                {
+                  "name": "ay",
+                  "type": "Var"
+                }
+              ],
+              "type": "Times"
+            },
+            "b": {
+              "items": [
+                {
+                  "name": "ex",
+                  "type": "Var"
+                },
+                {
+                  "name": "ey",
+                  "type": "Var"
+                }
+              ],
+              "type": "Times"
+            },
+            "type": "Eq"
+          }
+        }
+      ],
+      "unique_term_count": 1,
+      "worker": 4
+    },
+    {
+      "initial_count": 4,
+      "removed_duplicates": 0,
+      "result": {
+        "behavior_partition": null,
+        "calls": 4,
+        "coverage": {
+          "adequate": false,
+          "per_variable": {
+            "ax": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ay": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ex": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ey": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            }
+          },
+          "probe_count": 64
+        },
+        "decision": "exact_term",
+        "domain": "original",
+        "expansions": [],
+        "selector_ns": 2727384,
+        "steps": [
+          {
+            "after": 2,
+            "before": 4,
+            "entropy_bits": 1.5,
+            "input_env": {
+              "ax": -2.0,
+              "ay": 3.0,
+              "ex": 2.0,
+              "ey": -1.0
+            },
+            "label": true,
+            "phase": "selection",
+            "predictions": [
+              {
+                "hypothesis": "Lt000",
+                "output": true
+              },
+              {
+                "hypothesis": "Lt001",
+                "output": 1.0
+              },
+              {
+                "hypothesis": "Lt002",
+                "output": true
+              },
+              {
+                "hypothesis": "Lt003",
+                "output": false
+              }
+            ],
+            "row": [
+              -2.0,
+              3.0,
+              2.0,
+              -1.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 2,
+            "entropy_bits": 1.0,
+            "input_env": {
+              "ax": -2.0,
+              "ay": -3.0,
+              "ex": 3.0,
+              "ey": -2.0
+            },
+            "label": true,
+            "phase": "selection",
+            "predictions": [
+              {
+                "hypothesis": "Lt000",
+                "output": true
+              },
+              {
+                "hypothesis": "Lt002",
+                "output": false
+              }
+            ],
+            "row": [
+              -2.0,
+              -3.0,
+              3.0,
+              -2.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": -2.0,
+              "ay": 1.0,
+              "ex": -2.0,
+              "ey": -2.0
+            },
+            "label": false,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              -2.0,
+              1.0,
+              -2.0,
+              -2.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": -2.0,
+              "ay": 3.0,
+              "ex": -3.0,
+              "ey": -2.0
+            },
+            "label": false,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              -2.0,
+              3.0,
+              -3.0,
+              -2.0
+            ]
+          }
+        ],
+        "stop": "singleton_after_challenge",
+        "survivors": [
+          {
+            "family": "Lt",
+            "heldout": {
+              "exact": true,
+              "fn": 0,
+              "fp": 0,
+              "invalid": 0,
+              "n": 6560,
+              "tn": 3644,
+              "tp": 2916
+            },
+            "id": "Lt000",
+            "term": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "name": "ex",
+                "type": "Var"
+              },
+              "type": "Lt"
+            }
+          }
+        ],
+        "teacher": null
+      },
+      "task": "ordering",
+      "unique_hypotheses": [
+        {
+          "family": "Lt",
+          "id": "Lt000",
+          "term": {
+            "a": {
+              "name": "ax",
+              "type": "Var"
+            },
+            "b": {
+              "name": "ex",
+              "type": "Var"
+            },
+            "type": "Lt"
+          }
+        },
+        {
+          "family": "Lt",
+          "id": "Lt001",
+          "term": {
+            "arg": {
+              "arg": {
+                "a": {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                "b": {
+                  "name": "ex",
+                  "type": "Var"
+                },
+                "type": "Lt"
+              },
+              "type": "Neg"
+            },
+            "type": "Neg"
+          }
+        },
+        {
+          "family": "Lt",
+          "id": "Lt002",
+          "term": {
+            "a": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "name": "ey",
+                "type": "Var"
+              },
+              "type": "Eq"
+            },
+            "b": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "name": "ex",
+                "type": "Var"
+              },
+              "type": "Lt"
+            },
+            "type": "Lt"
+          }
+        },
+        {
+          "family": "Lt",
+          "id": "Lt003",
+          "term": {
+            "a": {
+              "a": {
+                "name": "ex",
+                "type": "Var"
+              },
+              "b": {
+                "name": "ay",
+                "type": "Var"
+              },
+              "type": "Lt"
+            },
+            "b": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "name": "ex",
+                "type": "Var"
+              },
+              "type": "Lt"
+            },
+            "type": "Lt"
+          }
+        }
+      ],
+      "unique_term_count": 4,
+      "worker": 0
+    },
+    {
+      "initial_count": 2,
+      "removed_duplicates": 0,
+      "result": {
+        "behavior_partition": null,
+        "calls": 3,
+        "coverage": {
+          "adequate": false,
+          "per_variable": {
+            "ax": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ay": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ex": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ey": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            }
+          },
+          "probe_count": 64
+        },
+        "decision": "exact_term",
+        "domain": "original",
+        "expansions": [],
+        "selector_ns": 997125,
+        "steps": [
+          {
+            "after": 1,
+            "before": 2,
+            "entropy_bits": 1.0,
+            "input_env": {
+              "ax": 2.0,
+              "ay": 3.0,
+              "ex": -3.0,
+              "ey": 1.0
+            },
+            "label": false,
+            "phase": "selection",
+            "predictions": [
+              {
+                "hypothesis": "Lt000",
+                "output": false
+              },
+              {
+                "hypothesis": "Lt001",
+                "output": 0.0
+              }
+            ],
+            "row": [
+              2.0,
+              3.0,
+              -3.0,
+              1.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": 3.0,
+              "ay": -3.0,
+              "ex": -1.0,
+              "ey": 1.0
+            },
+            "label": false,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              3.0,
+              -3.0,
+              -1.0,
+              1.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": -3.0,
+              "ay": -3.0,
+              "ex": 1.0,
+              "ey": -3.0
+            },
+            "label": true,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              -3.0,
+              -3.0,
+              1.0,
+              -3.0
+            ]
+          }
+        ],
+        "stop": "singleton_after_challenge",
+        "survivors": [
+          {
+            "family": "Lt",
+            "heldout": {
+              "exact": true,
+              "fn": 0,
+              "fp": 0,
+              "invalid": 0,
+              "n": 6560,
+              "tn": 3644,
+              "tp": 2916
+            },
+            "id": "Lt000",
+            "term": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "name": "ex",
+                "type": "Var"
+              },
+              "type": "Lt"
+            }
+          }
+        ],
+        "teacher": null
+      },
+      "task": "ordering",
+      "unique_hypotheses": [
+        {
+          "family": "Lt",
+          "id": "Lt000",
+          "term": {
+            "a": {
+              "name": "ax",
+              "type": "Var"
+            },
+            "b": {
+              "name": "ex",
+              "type": "Var"
+            },
+            "type": "Lt"
+          }
+        },
+        {
+          "family": "Lt",
+          "id": "Lt001",
+          "term": {
+            "arg": {
+              "arg": {
+                "a": {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                "b": {
+                  "name": "ex",
+                  "type": "Var"
+                },
+                "type": "Lt"
+              },
+              "type": "Neg"
+            },
+            "type": "Neg"
+          }
+        }
+      ],
+      "unique_term_count": 2,
+      "worker": 1
+    },
+    {
+      "initial_count": 3,
+      "removed_duplicates": 0,
+      "result": {
+        "behavior_partition": null,
+        "calls": 3,
+        "coverage": {
+          "adequate": false,
+          "per_variable": {
+            "ax": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ay": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ex": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ey": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            }
+          },
+          "probe_count": 64
+        },
+        "decision": "exact_term",
+        "domain": "original",
+        "expansions": [],
+        "selector_ns": 1323387,
+        "steps": [
+          {
+            "after": 1,
+            "before": 3,
+            "entropy_bits": 1.584962500721156,
+            "input_env": {
+              "ax": -3.0,
+              "ay": 3.0,
+              "ex": 1.0,
+              "ey": 3.0
+            },
+            "label": true,
+            "phase": "selection",
+            "predictions": [
+              {
+                "hypothesis": "Lt000",
+                "output": true
+              },
+              {
+                "hypothesis": "Lt001",
+                "output": 1.0
+              },
+              {
+                "hypothesis": "Lt002",
+                "output": false
+              }
+            ],
+            "row": [
+              -3.0,
+              3.0,
+              1.0,
+              3.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": -3.0,
+              "ay": 1.0,
+              "ex": -1.0,
+              "ey": -2.0
+            },
+            "label": true,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              -3.0,
+              1.0,
+              -1.0,
+              -2.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": 1.0,
+              "ay": 1.0,
+              "ex": 1.0,
+              "ey": 1.0
+            },
+            "label": false,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ]
+          }
+        ],
+        "stop": "singleton_after_challenge",
+        "survivors": [
+          {
+            "family": "Lt",
+            "heldout": {
+              "exact": true,
+              "fn": 0,
+              "fp": 0,
+              "invalid": 0,
+              "n": 6560,
+              "tn": 3644,
+              "tp": 2916
+            },
+            "id": "Lt000",
+            "term": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "name": "ex",
+                "type": "Var"
+              },
+              "type": "Lt"
+            }
+          }
+        ],
+        "teacher": null
+      },
+      "task": "ordering",
+      "unique_hypotheses": [
+        {
+          "family": "Lt",
+          "id": "Lt000",
+          "term": {
+            "a": {
+              "name": "ax",
+              "type": "Var"
+            },
+            "b": {
+              "name": "ex",
+              "type": "Var"
+            },
+            "type": "Lt"
+          }
+        },
+        {
+          "family": "Lt",
+          "id": "Lt001",
+          "term": {
+            "arg": {
+              "arg": {
+                "a": {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                "b": {
+                  "name": "ex",
+                  "type": "Var"
+                },
+                "type": "Lt"
+              },
+              "type": "Neg"
+            },
+            "type": "Neg"
+          }
+        },
+        {
+          "family": "Lt",
+          "id": "Lt002",
+          "term": {
+            "a": {
+              "a": {
+                "name": "ay",
+                "type": "Var"
+              },
+              "b": {
+                "name": "ey",
+                "type": "Var"
+              },
+              "type": "Eq"
+            },
+            "b": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "name": "ex",
+                "type": "Var"
+              },
+              "type": "Lt"
+            },
+            "type": "Lt"
+          }
+        }
+      ],
+      "unique_term_count": 3,
+      "worker": 2
+    },
+    {
+      "initial_count": 4,
+      "removed_duplicates": 0,
+      "result": {
+        "behavior_partition": null,
+        "calls": 4,
+        "coverage": {
+          "adequate": false,
+          "per_variable": {
+            "ax": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ay": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ex": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ey": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            }
+          },
+          "probe_count": 64
+        },
+        "decision": "exact_term",
+        "domain": "original",
+        "expansions": [],
+        "selector_ns": 3034106,
+        "steps": [
+          {
+            "after": 2,
+            "before": 4,
+            "entropy_bits": 1.5,
+            "input_env": {
+              "ax": -2.0,
+              "ay": 1.0,
+              "ex": -1.0,
+              "ey": -1.0
+            },
+            "label": true,
+            "phase": "selection",
+            "predictions": [
+              {
+                "hypothesis": "Lt000",
+                "output": true
+              },
+              {
+                "hypothesis": "Lt001",
+                "output": 1.0
+              },
+              {
+                "hypothesis": "Lt002",
+                "output": false
+              },
+              {
+                "hypothesis": "Lt003",
+                "output": true
+              }
+            ],
+            "row": [
+              -2.0,
+              1.0,
+              -1.0,
+              -1.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 2,
+            "entropy_bits": 1.0,
+            "input_env": {
+              "ax": 2.0,
+              "ay": 3.0,
+              "ex": 3.0,
+              "ey": -3.0
+            },
+            "label": true,
+            "phase": "selection",
+            "predictions": [
+              {
+                "hypothesis": "Lt000",
+                "output": true
+              },
+              {
+                "hypothesis": "Lt003",
+                "output": false
+              }
+            ],
+            "row": [
+              2.0,
+              3.0,
+              3.0,
+              -3.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": -3.0,
+              "ay": 2.0,
+              "ex": -3.0,
+              "ey": 3.0
+            },
+            "label": false,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              -3.0,
+              2.0,
+              -3.0,
+              3.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": -3.0,
+              "ay": 1.0,
+              "ex": 3.0,
+              "ey": 1.0
+            },
+            "label": true,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              -3.0,
+              1.0,
+              3.0,
+              1.0
+            ]
+          }
+        ],
+        "stop": "singleton_after_challenge",
+        "survivors": [
+          {
+            "family": "Lt",
+            "heldout": {
+              "exact": true,
+              "fn": 0,
+              "fp": 0,
+              "invalid": 0,
+              "n": 6560,
+              "tn": 3644,
+              "tp": 2916
+            },
+            "id": "Lt000",
+            "term": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "name": "ex",
+                "type": "Var"
+              },
+              "type": "Lt"
+            }
+          }
+        ],
+        "teacher": null
+      },
+      "task": "ordering",
+      "unique_hypotheses": [
+        {
+          "family": "Lt",
+          "id": "Lt000",
+          "term": {
+            "a": {
+              "name": "ax",
+              "type": "Var"
+            },
+            "b": {
+              "name": "ex",
+              "type": "Var"
+            },
+            "type": "Lt"
+          }
+        },
+        {
+          "family": "Lt",
+          "id": "Lt001",
+          "term": {
+            "arg": {
+              "arg": {
+                "a": {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                "b": {
+                  "name": "ex",
+                  "type": "Var"
+                },
+                "type": "Lt"
+              },
+              "type": "Neg"
+            },
+            "type": "Neg"
+          }
+        },
+        {
+          "family": "Lt",
+          "id": "Lt002",
+          "term": {
+            "a": {
+              "a": {
+                "name": "ex",
+                "type": "Var"
+              },
+              "b": {
+                "name": "ey",
+                "type": "Var"
+              },
+              "type": "Eq"
+            },
+            "b": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "name": "ex",
+                "type": "Var"
+              },
+              "type": "Lt"
+            },
+            "type": "Lt"
+          }
+        },
+        {
+          "family": "Lt",
+          "id": "Lt003",
+          "term": {
+            "a": {
+              "a": {
+                "name": "ey",
+                "type": "Var"
+              },
+              "b": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "type": "Lt"
+            },
+            "b": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "name": "ex",
+                "type": "Var"
+              },
+              "type": "Lt"
+            },
+            "type": "Lt"
+          }
+        }
+      ],
+      "unique_term_count": 4,
+      "worker": 3
+    },
+    {
+      "initial_count": 4,
+      "removed_duplicates": 0,
+      "result": {
+        "behavior_partition": null,
+        "calls": 3,
+        "coverage": {
+          "adequate": false,
+          "per_variable": {
+            "ax": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ay": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ex": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ey": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            }
+          },
+          "probe_count": 64
+        },
+        "decision": "exact_term",
+        "domain": "original",
+        "expansions": [],
+        "selector_ns": 1967310,
+        "steps": [
+          {
+            "after": 1,
+            "before": 4,
+            "entropy_bits": 1.5,
+            "input_env": {
+              "ax": -3.0,
+              "ay": 3.0,
+              "ex": 3.0,
+              "ey": -3.0
+            },
+            "label": true,
+            "phase": "selection",
+            "predictions": [
+              {
+                "hypothesis": "Lt000",
+                "output": true
+              },
+              {
+                "hypothesis": "Lt001",
+                "output": 1.0
+              },
+              {
+                "hypothesis": "Lt002",
+                "output": false
+              },
+              {
+                "hypothesis": "Lt003",
+                "output": false
+              }
+            ],
+            "row": [
+              -3.0,
+              3.0,
+              3.0,
+              -3.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": 3.0,
+              "ay": -2.0,
+              "ex": -3.0,
+              "ey": 1.0
+            },
+            "label": false,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              3.0,
+              -2.0,
+              -3.0,
+              1.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": -1.0,
+              "ay": 1.0,
+              "ex": 2.0,
+              "ey": 2.0
+            },
+            "label": true,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              -1.0,
+              1.0,
+              2.0,
+              2.0
+            ]
+          }
+        ],
+        "stop": "singleton_after_challenge",
+        "survivors": [
+          {
+            "family": "Lt",
+            "heldout": {
+              "exact": true,
+              "fn": 0,
+              "fp": 0,
+              "invalid": 0,
+              "n": 6560,
+              "tn": 3644,
+              "tp": 2916
+            },
+            "id": "Lt000",
+            "term": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "name": "ex",
+                "type": "Var"
+              },
+              "type": "Lt"
+            }
+          }
+        ],
+        "teacher": null
+      },
+      "task": "ordering",
+      "unique_hypotheses": [
+        {
+          "family": "Lt",
+          "id": "Lt000",
+          "term": {
+            "a": {
+              "name": "ax",
+              "type": "Var"
+            },
+            "b": {
+              "name": "ex",
+              "type": "Var"
+            },
+            "type": "Lt"
+          }
+        },
+        {
+          "family": "Lt",
+          "id": "Lt001",
+          "term": {
+            "arg": {
+              "arg": {
+                "a": {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                "b": {
+                  "name": "ex",
+                  "type": "Var"
+                },
+                "type": "Lt"
+              },
+              "type": "Neg"
+            },
+            "type": "Neg"
+          }
+        },
+        {
+          "family": "Lt",
+          "id": "Lt002",
+          "term": {
+            "a": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "name": "ey",
+                "type": "Var"
+              },
+              "type": "Eq"
+            },
+            "b": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "name": "ex",
+                "type": "Var"
+              },
+              "type": "Lt"
+            },
+            "type": "Lt"
+          }
+        },
+        {
+          "family": "Lt",
+          "id": "Lt003",
+          "term": {
+            "a": {
+              "a": {
+                "name": "ay",
+                "type": "Var"
+              },
+              "b": {
+                "name": "ex",
+                "type": "Var"
+              },
+              "type": "Eq"
+            },
+            "b": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "name": "ex",
+                "type": "Var"
+              },
+              "type": "Lt"
+            },
+            "type": "Lt"
+          }
+        }
+      ],
+      "unique_term_count": 4,
+      "worker": 4
+    },
+    {
+      "initial_count": 8,
+      "removed_duplicates": 6,
+      "result": {
+        "behavior_partition": null,
+        "calls": 3,
+        "coverage": {
+          "adequate": false,
+          "per_variable": {
+            "ax": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ay": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ex": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ey": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            }
+          },
+          "probe_count": 64
+        },
+        "decision": "exact_term",
+        "domain": "original",
+        "expansions": [],
+        "selector_ns": 1206427,
+        "steps": [
+          {
+            "after": 1,
+            "before": 2,
+            "entropy_bits": 1.0,
+            "input_env": {
+              "ax": 3.0,
+              "ay": 2.0,
+              "ex": 1.0,
+              "ey": -3.0
+            },
+            "label": false,
+            "phase": "selection",
+            "predictions": [
+              {
+                "hypothesis": "Base000",
+                "output": false
+              },
+              {
+                "hypothesis": "Base001",
+                "output": 0.0
+              }
+            ],
+            "row": [
+              3.0,
+              2.0,
+              1.0,
+              -3.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": -2.0,
+              "ay": 3.0,
+              "ex": -2.0,
+              "ey": -1.0
+            },
+            "label": false,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              -2.0,
+              3.0,
+              -2.0,
+              -1.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": -1.0,
+              "ay": -1.0,
+              "ex": -1.0,
+              "ey": 1.0
+            },
+            "label": false,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              -1.0,
+              -1.0,
+              -1.0,
+              1.0
+            ]
+          }
+        ],
+        "stop": "singleton_after_challenge",
+        "survivors": [
+          {
+            "family": "Base",
+            "heldout": {
+              "exact": true,
+              "fn": 0,
+              "fp": 0,
+              "invalid": 0,
+              "n": 6560,
+              "tn": 5832,
+              "tp": 728
+            },
+            "id": "Base000",
+            "term": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "arg": {
+                  "name": "ex",
+                  "type": "Var"
+                },
+                "type": "Neg"
+              },
+              "type": "Eq"
+            }
+          }
+        ],
+        "teacher": null
+      },
+      "task": "opposition",
+      "unique_hypotheses": [
+        {
+          "family": "Base",
+          "id": "Base000",
+          "term": {
+            "a": {
+              "name": "ax",
+              "type": "Var"
+            },
+            "b": {
+              "arg": {
+                "name": "ex",
+                "type": "Var"
+              },
+              "type": "Neg"
+            },
+            "type": "Eq"
+          }
+        },
+        {
+          "family": "Base",
+          "id": "Base001",
+          "term": {
+            "arg": {
+              "arg": {
+                "a": {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                "b": {
+                  "arg": {
+                    "name": "ex",
+                    "type": "Var"
+                  },
+                  "type": "Neg"
+                },
+                "type": "Eq"
+              },
+              "type": "Neg"
+            },
+            "type": "Neg"
+          }
+        }
+      ],
+      "unique_term_count": 2,
+      "worker": 0
+    },
+    {
+      "initial_count": 8,
+      "removed_duplicates": 6,
+      "result": {
+        "behavior_partition": null,
+        "calls": 3,
+        "coverage": {
+          "adequate": false,
+          "per_variable": {
+            "ax": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ay": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ex": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ey": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            }
+          },
+          "probe_count": 64
+        },
+        "decision": "exact_term",
+        "domain": "original",
+        "expansions": [],
+        "selector_ns": 646113,
+        "steps": [
+          {
+            "after": 1,
+            "before": 2,
+            "entropy_bits": 1.0,
+            "input_env": {
+              "ax": 3.0,
+              "ay": 2.0,
+              "ex": 2.0,
+              "ey": -3.0
+            },
+            "label": false,
+            "phase": "selection",
+            "predictions": [
+              {
+                "hypothesis": "Base000",
+                "output": false
+              },
+              {
+                "hypothesis": "Base001",
+                "output": 0.0
+              }
+            ],
+            "row": [
+              3.0,
+              2.0,
+              2.0,
+              -3.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": 3.0,
+              "ay": -1.0,
+              "ex": -3.0,
+              "ey": -3.0
+            },
+            "label": true,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              3.0,
+              -1.0,
+              -3.0,
+              -3.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": -3.0,
+              "ay": -1.0,
+              "ex": -3.0,
+              "ey": -2.0
+            },
+            "label": false,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              -3.0,
+              -1.0,
+              -3.0,
+              -2.0
+            ]
+          }
+        ],
+        "stop": "singleton_after_challenge",
+        "survivors": [
+          {
+            "family": "Base",
+            "heldout": {
+              "exact": true,
+              "fn": 0,
+              "fp": 0,
+              "invalid": 0,
+              "n": 6560,
+              "tn": 5832,
+              "tp": 728
+            },
+            "id": "Base000",
+            "term": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "arg": {
+                  "name": "ex",
+                  "type": "Var"
+                },
+                "type": "Neg"
+              },
+              "type": "Eq"
+            }
+          }
+        ],
+        "teacher": null
+      },
+      "task": "opposition",
+      "unique_hypotheses": [
+        {
+          "family": "Base",
+          "id": "Base000",
+          "term": {
+            "a": {
+              "name": "ax",
+              "type": "Var"
+            },
+            "b": {
+              "arg": {
+                "name": "ex",
+                "type": "Var"
+              },
+              "type": "Neg"
+            },
+            "type": "Eq"
+          }
+        },
+        {
+          "family": "Base",
+          "id": "Base001",
+          "term": {
+            "arg": {
+              "arg": {
+                "a": {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                "b": {
+                  "arg": {
+                    "name": "ex",
+                    "type": "Var"
+                  },
+                  "type": "Neg"
+                },
+                "type": "Eq"
+              },
+              "type": "Neg"
+            },
+            "type": "Neg"
+          }
+        }
+      ],
+      "unique_term_count": 2,
+      "worker": 1
+    },
+    {
+      "initial_count": 9,
+      "removed_duplicates": 6,
+      "result": {
+        "behavior_partition": null,
+        "calls": 3,
+        "coverage": {
+          "adequate": false,
+          "per_variable": {
+            "ax": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ay": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ex": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ey": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            }
+          },
+          "probe_count": 64
+        },
+        "decision": "exact_term",
+        "domain": "original",
+        "expansions": [],
+        "selector_ns": 1722259,
+        "steps": [
+          {
+            "after": 1,
+            "before": 3,
+            "entropy_bits": 1.584962500721156,
+            "input_env": {
+              "ax": -2.0,
+              "ay": -1.0,
+              "ex": -2.0,
+              "ey": -2.0
+            },
+            "label": false,
+            "phase": "selection",
+            "predictions": [
+              {
+                "hypothesis": "Base000",
+                "output": false
+              },
+              {
+                "hypothesis": "Base001",
+                "output": 0.0
+              },
+              {
+                "hypothesis": "Times002",
+                "output": true
+              }
+            ],
+            "row": [
+              -2.0,
+              -1.0,
+              -2.0,
+              -2.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": 3.0,
+              "ay": -1.0,
+              "ex": -2.0,
+              "ey": -2.0
+            },
+            "label": false,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              3.0,
+              -1.0,
+              -2.0,
+              -2.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": 3.0,
+              "ay": 1.0,
+              "ex": -3.0,
+              "ey": 2.0
+            },
+            "label": true,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              3.0,
+              1.0,
+              -3.0,
+              2.0
+            ]
+          }
+        ],
+        "stop": "singleton_after_challenge",
+        "survivors": [
+          {
+            "family": "Base",
+            "heldout": {
+              "exact": true,
+              "fn": 0,
+              "fp": 0,
+              "invalid": 0,
+              "n": 6560,
+              "tn": 5832,
+              "tp": 728
+            },
+            "id": "Base000",
+            "term": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "arg": {
+                  "name": "ex",
+                  "type": "Var"
+                },
+                "type": "Neg"
+              },
+              "type": "Eq"
+            }
+          }
+        ],
+        "teacher": null
+      },
+      "task": "opposition",
+      "unique_hypotheses": [
+        {
+          "family": "Base",
+          "id": "Base000",
+          "term": {
+            "a": {
+              "name": "ax",
+              "type": "Var"
+            },
+            "b": {
+              "arg": {
+                "name": "ex",
+                "type": "Var"
+              },
+              "type": "Neg"
+            },
+            "type": "Eq"
+          }
+        },
+        {
+          "family": "Base",
+          "id": "Base001",
+          "term": {
+            "arg": {
+              "arg": {
+                "a": {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                "b": {
+                  "arg": {
+                    "name": "ex",
+                    "type": "Var"
+                  },
+                  "type": "Neg"
+                },
+                "type": "Eq"
+              },
+              "type": "Neg"
+            },
+            "type": "Neg"
+          }
+        },
+        {
+          "family": "Times",
+          "id": "Times002",
+          "term": {
+            "a": {
+              "items": [
+                {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                {
+                  "name": "ax",
+                  "type": "Var"
+                }
+              ],
+              "type": "Times"
+            },
+            "b": {
+              "items": [
+                {
+                  "name": "ex",
+                  "type": "Var"
+                },
+                {
+                  "name": "ex",
+                  "type": "Var"
+                }
+              ],
+              "type": "Times"
+            },
+            "type": "Eq"
+          }
+        }
+      ],
+      "unique_term_count": 3,
+      "worker": 2
+    },
+    {
+      "initial_count": 8,
+      "removed_duplicates": 6,
+      "result": {
+        "behavior_partition": null,
+        "calls": 3,
+        "coverage": {
+          "adequate": false,
+          "per_variable": {
+            "ax": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ay": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ex": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ey": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            }
+          },
+          "probe_count": 64
+        },
+        "decision": "exact_term",
+        "domain": "original",
+        "expansions": [],
+        "selector_ns": 1012865,
+        "steps": [
+          {
+            "after": 1,
+            "before": 2,
+            "entropy_bits": 1.0,
+            "input_env": {
+              "ax": -3.0,
+              "ay": -2.0,
+              "ex": 3.0,
+              "ey": -3.0
+            },
+            "label": true,
+            "phase": "selection",
+            "predictions": [
+              {
+                "hypothesis": "Base000",
+                "output": true
+              },
+              {
+                "hypothesis": "Base001",
+                "output": 1.0
+              }
+            ],
+            "row": [
+              -3.0,
+              -2.0,
+              3.0,
+              -3.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": -1.0,
+              "ay": -2.0,
+              "ex": 3.0,
+              "ey": -1.0
+            },
+            "label": false,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              -1.0,
+              -2.0,
+              3.0,
+              -1.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": -1.0,
+              "ay": -3.0,
+              "ex": 3.0,
+              "ey": 2.0
+            },
+            "label": false,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              -1.0,
+              -3.0,
+              3.0,
+              2.0
+            ]
+          }
+        ],
+        "stop": "singleton_after_challenge",
+        "survivors": [
+          {
+            "family": "Base",
+            "heldout": {
+              "exact": true,
+              "fn": 0,
+              "fp": 0,
+              "invalid": 0,
+              "n": 6560,
+              "tn": 5832,
+              "tp": 728
+            },
+            "id": "Base000",
+            "term": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "arg": {
+                  "name": "ex",
+                  "type": "Var"
+                },
+                "type": "Neg"
+              },
+              "type": "Eq"
+            }
+          }
+        ],
+        "teacher": null
+      },
+      "task": "opposition",
+      "unique_hypotheses": [
+        {
+          "family": "Base",
+          "id": "Base000",
+          "term": {
+            "a": {
+              "name": "ax",
+              "type": "Var"
+            },
+            "b": {
+              "arg": {
+                "name": "ex",
+                "type": "Var"
+              },
+              "type": "Neg"
+            },
+            "type": "Eq"
+          }
+        },
+        {
+          "family": "Base",
+          "id": "Base001",
+          "term": {
+            "arg": {
+              "arg": {
+                "a": {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                "b": {
+                  "arg": {
+                    "name": "ex",
+                    "type": "Var"
+                  },
+                  "type": "Neg"
+                },
+                "type": "Eq"
+              },
+              "type": "Neg"
+            },
+            "type": "Neg"
+          }
+        }
+      ],
+      "unique_term_count": 2,
+      "worker": 3
+    },
+    {
+      "initial_count": 8,
+      "removed_duplicates": 6,
+      "result": {
+        "behavior_partition": null,
+        "calls": 3,
+        "coverage": {
+          "adequate": false,
+          "per_variable": {
+            "ax": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ay": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ex": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            },
+            "ey": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": false
+            }
+          },
+          "probe_count": 64
+        },
+        "decision": "exact_term",
+        "domain": "original",
+        "expansions": [],
+        "selector_ns": 619873,
+        "steps": [
+          {
+            "after": 1,
+            "before": 2,
+            "entropy_bits": 1.0,
+            "input_env": {
+              "ax": -1.0,
+              "ay": -1.0,
+              "ex": 1.0,
+              "ey": 2.0
+            },
+            "label": true,
+            "phase": "selection",
+            "predictions": [
+              {
+                "hypothesis": "Base000",
+                "output": true
+              },
+              {
+                "hypothesis": "Base001",
+                "output": 1.0
+              }
+            ],
+            "row": [
+              -1.0,
+              -1.0,
+              1.0,
+              2.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": 1.0,
+              "ay": 3.0,
+              "ex": -3.0,
+              "ey": -3.0
+            },
+            "label": false,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              1.0,
+              3.0,
+              -3.0,
+              -3.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": 3.0,
+              "ay": -1.0,
+              "ex": 1.0,
+              "ey": 2.0
+            },
+            "label": false,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              3.0,
+              -1.0,
+              1.0,
+              2.0
+            ]
+          }
+        ],
+        "stop": "singleton_after_challenge",
+        "survivors": [
+          {
+            "family": "Base",
+            "heldout": {
+              "exact": true,
+              "fn": 0,
+              "fp": 0,
+              "invalid": 0,
+              "n": 6560,
+              "tn": 5832,
+              "tp": 728
+            },
+            "id": "Base000",
+            "term": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "arg": {
+                  "name": "ex",
+                  "type": "Var"
+                },
+                "type": "Neg"
+              },
+              "type": "Eq"
+            }
+          }
+        ],
+        "teacher": null
+      },
+      "task": "opposition",
+      "unique_hypotheses": [
+        {
+          "family": "Base",
+          "id": "Base000",
+          "term": {
+            "a": {
+              "name": "ax",
+              "type": "Var"
+            },
+            "b": {
+              "arg": {
+                "name": "ex",
+                "type": "Var"
+              },
+              "type": "Neg"
+            },
+            "type": "Eq"
+          }
+        },
+        {
+          "family": "Base",
+          "id": "Base001",
+          "term": {
+            "arg": {
+              "arg": {
+                "a": {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                "b": {
+                  "arg": {
+                    "name": "ex",
+                    "type": "Var"
+                  },
+                  "type": "Neg"
+                },
+                "type": "Eq"
+              },
+              "type": "Neg"
+            },
+            "type": "Neg"
+          }
+        }
+      ],
+      "unique_term_count": 2,
+      "worker": 4
+    },
+    {
+      "initial_count": 2,
+      "removed_duplicates": 0,
+      "result": {
+        "behavior_partition": null,
+        "calls": 3,
+        "coverage": {
+          "adequate": true,
+          "per_variable": {
+            "ax": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": true
+            },
+            "ay": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": true
+            },
+            "ex": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": true
+            },
+            "ey": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": true
+            }
+          },
+          "probe_count": 128
+        },
+        "decision": "exact_term",
+        "domain": "zero_aware",
+        "expansions": [
+          {
+            "coverage": {
+              "adequate": false,
+              "per_variable": {
+                "ax": {
+                  "max": 3.0,
+                  "min": -3.0,
+                  "negative_at_or_below_threshold": true,
+                  "positive_at_or_above_threshold": true,
+                  "zero": false
+                },
+                "ay": {
+                  "max": 3.0,
+                  "min": -3.0,
+                  "negative_at_or_below_threshold": true,
+                  "positive_at_or_above_threshold": true,
+                  "zero": false
+                },
+                "ex": {
+                  "max": 3.0,
+                  "min": -3.0,
+                  "negative_at_or_below_threshold": true,
+                  "positive_at_or_above_threshold": true,
+                  "zero": false
+                },
+                "ey": {
+                  "max": 3.0,
+                  "min": -3.0,
+                  "negative_at_or_below_threshold": true,
+                  "positive_at_or_above_threshold": true,
+                  "zero": false
+                }
+              },
+              "probe_count": 64
+            },
+            "from": "original",
+            "to": "zero_aware",
+            "trigger": "insufficient_coverage"
+          }
+        ],
+        "selector_ns": 2990584,
+        "steps": [
+          {
+            "after": 1,
+            "before": 2,
+            "entropy_bits": 1.0,
+            "input_env": {
+              "ax": 0.0,
+              "ay": 3.0,
+              "ex": -2.0,
+              "ey": 1.0
+            },
+            "label": true,
+            "phase": "selection",
+            "predictions": [
+              {
+                "hypothesis": "Plus000",
+                "output": false
+              },
+              {
+                "hypothesis": "Lt000",
+                "output": true
+              }
+            ],
+            "row": [
+              0.0,
+              3.0,
+              -2.0,
+              1.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": 2.0,
+              "ay": 1.0,
+              "ex": -1.0,
+              "ey": -2.0
+            },
+            "label": true,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              2.0,
+              1.0,
+              -1.0,
+              -2.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": -1.0,
+              "ay": 1.0,
+              "ex": -2.0,
+              "ey": -1.0
+            },
+            "label": true,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              -1.0,
+              1.0,
+              -2.0,
+              -1.0
+            ]
+          }
+        ],
+        "stop": "singleton_after_challenge",
+        "survivors": [
+          {
+            "family": "Lt",
+            "heldout": {
+              "exact": true,
+              "fn": 0,
+              "fp": 0,
+              "invalid": 0,
+              "n": 6560,
+              "tn": 728,
+              "tp": 5832
+            },
+            "id": "Lt000",
+            "term": {
+              "a": {
+                "a": {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                "b": {
+                  "name": "ex",
+                  "type": "Var"
+                },
+                "type": "Eq"
+              },
+              "b": {
+                "a": {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                "b": {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                "type": "Lt"
+              },
+              "type": "Eq"
+            }
+          }
+        ],
+        "teacher": null
+      },
+      "task": "inequality",
+      "unique_hypotheses": [
+        {
+          "family": "Plus",
+          "id": "Plus000",
+          "term": {
+            "items": [
+              {
+                "name": "ax",
+                "type": "Var"
+              },
+              {
+                "items": [
+                  {
+                    "name": "ax",
+                    "type": "Var"
+                  },
+                  {
+                    "arg": {
+                      "name": "ex",
+                      "type": "Var"
+                    },
+                    "type": "Neg"
+                  }
+                ],
+                "type": "Plus"
+              }
+            ],
+            "type": "And"
+          }
+        },
+        {
+          "family": "Lt",
+          "id": "Lt000",
+          "term": {
+            "a": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "name": "ex",
+                "type": "Var"
+              },
+              "type": "Eq"
+            },
+            "b": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "type": "Lt"
+            },
+            "type": "Eq"
+          }
+        }
+      ],
+      "unique_term_count": 2,
+      "worker": 0
+    },
+    {
+      "initial_count": 6,
+      "removed_duplicates": 3,
+      "result": {
+        "behavior_partition": null,
+        "calls": 4,
+        "coverage": {
+          "adequate": true,
+          "per_variable": {
+            "ax": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": true
+            },
+            "ay": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": true
+            },
+            "ex": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": true
+            },
+            "ey": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": true
+            }
+          },
+          "probe_count": 128
+        },
+        "decision": "exact_term",
+        "domain": "zero_aware",
+        "expansions": [
+          {
+            "coverage": {
+              "adequate": false,
+              "per_variable": {
+                "ax": {
+                  "max": 3.0,
+                  "min": -3.0,
+                  "negative_at_or_below_threshold": true,
+                  "positive_at_or_above_threshold": true,
+                  "zero": false
+                },
+                "ay": {
+                  "max": 3.0,
+                  "min": -3.0,
+                  "negative_at_or_below_threshold": true,
+                  "positive_at_or_above_threshold": true,
+                  "zero": false
+                },
+                "ex": {
+                  "max": 3.0,
+                  "min": -3.0,
+                  "negative_at_or_below_threshold": true,
+                  "positive_at_or_above_threshold": true,
+                  "zero": false
+                },
+                "ey": {
+                  "max": 3.0,
+                  "min": -3.0,
+                  "negative_at_or_below_threshold": true,
+                  "positive_at_or_above_threshold": true,
+                  "zero": false
+                }
+              },
+              "probe_count": 64
+            },
+            "from": "original",
+            "to": "zero_aware",
+            "trigger": "insufficient_coverage"
+          }
+        ],
+        "selector_ns": 4910464,
+        "steps": [
+          {
+            "after": 2,
+            "before": 3,
+            "entropy_bits": 0.9182958340544896,
+            "input_env": {
+              "ax": 2.0,
+              "ay": 3.0,
+              "ex": 3.0,
+              "ey": -1.0
+            },
+            "label": true,
+            "phase": "selection",
+            "predictions": [
+              {
+                "hypothesis": "Base000",
+                "output": false
+              },
+              {
+                "hypothesis": "Plus000",
+                "output": true
+              },
+              {
+                "hypothesis": "Lt001",
+                "output": true
+              }
+            ],
+            "row": [
+              2.0,
+              3.0,
+              3.0,
+              -1.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 2,
+            "entropy_bits": 1.0,
+            "input_env": {
+              "ax": 0.0,
+              "ay": -3.0,
+              "ex": 1.0,
+              "ey": 1.0
+            },
+            "label": true,
+            "phase": "selection",
+            "predictions": [
+              {
+                "hypothesis": "Plus000",
+                "output": false
+              },
+              {
+                "hypothesis": "Lt001",
+                "output": true
+              }
+            ],
+            "row": [
+              0.0,
+              -3.0,
+              1.0,
+              1.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": 1.0,
+              "ay": -2.0,
+              "ex": 2.0,
+              "ey": 0.0
+            },
+            "label": true,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              1.0,
+              -2.0,
+              2.0,
+              0.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": 3.0,
+              "ay": 3.0,
+              "ex": 3.0,
+              "ey": 3.0
+            },
+            "label": false,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              3.0,
+              3.0,
+              3.0,
+              3.0
+            ]
+          }
+        ],
+        "stop": "singleton_after_challenge",
+        "survivors": [
+          {
+            "family": "Lt",
+            "heldout": {
+              "exact": true,
+              "fn": 0,
+              "fp": 0,
+              "invalid": 0,
+              "n": 6560,
+              "tn": 728,
+              "tp": 5832
+            },
+            "id": "Lt001",
+            "term": {
+              "a": {
+                "a": {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                "b": {
+                  "name": "ex",
+                  "type": "Var"
+                },
+                "type": "Eq"
+              },
+              "b": {
+                "a": {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                "b": {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                "type": "Lt"
+              },
+              "type": "Eq"
+            }
+          }
+        ],
+        "teacher": null
+      },
+      "task": "inequality",
+      "unique_hypotheses": [
+        {
+          "family": "Base",
+          "id": "Base000",
+          "term": {
+            "a": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "name": "ex",
+                "type": "Var"
+              },
+              "type": "Eq"
+            },
+            "b": {
+              "a": {
+                "name": "ay",
+                "type": "Var"
+              },
+              "b": {
+                "name": "ex",
+                "type": "Var"
+              },
+              "type": "Eq"
+            },
+            "type": "Eq"
+          }
+        },
+        {
+          "family": "Plus",
+          "id": "Plus000",
+          "term": {
+            "items": [
+              {
+                "name": "ax",
+                "type": "Var"
+              },
+              {
+                "items": [
+                  {
+                    "name": "ax",
+                    "type": "Var"
+                  },
+                  {
+                    "arg": {
+                      "name": "ex",
+                      "type": "Var"
+                    },
+                    "type": "Neg"
+                  }
+                ],
+                "type": "Plus"
+              }
+            ],
+            "type": "And"
+          }
+        },
+        {
+          "family": "Lt",
+          "id": "Lt001",
+          "term": {
+            "a": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "name": "ex",
+                "type": "Var"
+              },
+              "type": "Eq"
+            },
+            "b": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "type": "Lt"
+            },
+            "type": "Eq"
+          }
+        }
+      ],
+      "unique_term_count": 3,
+      "worker": 1
+    },
+    {
+      "initial_count": 6,
+      "removed_duplicates": 3,
+      "result": {
+        "behavior_partition": null,
+        "calls": 4,
+        "coverage": {
+          "adequate": true,
+          "per_variable": {
+            "ax": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": true
+            },
+            "ay": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": true
+            },
+            "ex": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": true
+            },
+            "ey": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": true
+            }
+          },
+          "probe_count": 128
+        },
+        "decision": "exact_term",
+        "domain": "zero_aware",
+        "expansions": [
+          {
+            "coverage": {
+              "adequate": false,
+              "per_variable": {
+                "ax": {
+                  "max": 3.0,
+                  "min": -3.0,
+                  "negative_at_or_below_threshold": true,
+                  "positive_at_or_above_threshold": true,
+                  "zero": false
+                },
+                "ay": {
+                  "max": 3.0,
+                  "min": -3.0,
+                  "negative_at_or_below_threshold": true,
+                  "positive_at_or_above_threshold": true,
+                  "zero": false
+                },
+                "ex": {
+                  "max": 3.0,
+                  "min": -3.0,
+                  "negative_at_or_below_threshold": true,
+                  "positive_at_or_above_threshold": true,
+                  "zero": false
+                },
+                "ey": {
+                  "max": 3.0,
+                  "min": -3.0,
+                  "negative_at_or_below_threshold": true,
+                  "positive_at_or_above_threshold": true,
+                  "zero": false
+                }
+              },
+              "probe_count": 64
+            },
+            "from": "original",
+            "to": "zero_aware",
+            "trigger": "insufficient_coverage"
+          }
+        ],
+        "selector_ns": 2615442,
+        "steps": [
+          {
+            "after": 2,
+            "before": 3,
+            "entropy_bits": 0.9182958340544896,
+            "input_env": {
+              "ax": 1.0,
+              "ay": 1.0,
+              "ex": 1.0,
+              "ey": -3.0
+            },
+            "label": false,
+            "phase": "selection",
+            "predictions": [
+              {
+                "hypothesis": "Base000",
+                "output": true
+              },
+              {
+                "hypothesis": "Plus000",
+                "output": false
+              },
+              {
+                "hypothesis": "Lt001",
+                "output": false
+              }
+            ],
+            "row": [
+              1.0,
+              1.0,
+              1.0,
+              -3.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 2,
+            "entropy_bits": 1.0,
+            "input_env": {
+              "ax": 0.0,
+              "ay": 1.0,
+              "ex": 1.0,
+              "ey": 0.0
+            },
+            "label": true,
+            "phase": "selection",
+            "predictions": [
+              {
+                "hypothesis": "Plus000",
+                "output": false
+              },
+              {
+                "hypothesis": "Lt001",
+                "output": true
+              }
+            ],
+            "row": [
+              0.0,
+              1.0,
+              1.0,
+              0.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": 1.0,
+              "ay": 3.0,
+              "ex": -2.0,
+              "ey": 1.0
+            },
+            "label": true,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              1.0,
+              3.0,
+              -2.0,
+              1.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": -2.0,
+              "ay": 1.0,
+              "ex": 2.0,
+              "ey": 0.0
+            },
+            "label": true,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              -2.0,
+              1.0,
+              2.0,
+              0.0
+            ]
+          }
+        ],
+        "stop": "singleton_after_challenge",
+        "survivors": [
+          {
+            "family": "Lt",
+            "heldout": {
+              "exact": true,
+              "fn": 0,
+              "fp": 0,
+              "invalid": 0,
+              "n": 6560,
+              "tn": 728,
+              "tp": 5832
+            },
+            "id": "Lt001",
+            "term": {
+              "a": {
+                "a": {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                "b": {
+                  "name": "ex",
+                  "type": "Var"
+                },
+                "type": "Eq"
+              },
+              "b": {
+                "a": {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                "b": {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                "type": "Lt"
+              },
+              "type": "Eq"
+            }
+          }
+        ],
+        "teacher": null
+      },
+      "task": "inequality",
+      "unique_hypotheses": [
+        {
+          "family": "Base",
+          "id": "Base000",
+          "term": {
+            "a": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "name": "ex",
+                "type": "Var"
+              },
+              "type": "Eq"
+            },
+            "b": {
+              "a": {
+                "name": "ay",
+                "type": "Var"
+              },
+              "b": {
+                "name": "ex",
+                "type": "Var"
+              },
+              "type": "Eq"
+            },
+            "type": "Eq"
+          }
+        },
+        {
+          "family": "Plus",
+          "id": "Plus000",
+          "term": {
+            "items": [
+              {
+                "name": "ax",
+                "type": "Var"
+              },
+              {
+                "items": [
+                  {
+                    "name": "ax",
+                    "type": "Var"
+                  },
+                  {
+                    "arg": {
+                      "name": "ex",
+                      "type": "Var"
+                    },
+                    "type": "Neg"
+                  }
+                ],
+                "type": "Plus"
+              }
+            ],
+            "type": "And"
+          }
+        },
+        {
+          "family": "Lt",
+          "id": "Lt001",
+          "term": {
+            "a": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "name": "ex",
+                "type": "Var"
+              },
+              "type": "Eq"
+            },
+            "b": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "type": "Lt"
+            },
+            "type": "Eq"
+          }
+        }
+      ],
+      "unique_term_count": 3,
+      "worker": 2
+    },
+    {
+      "initial_count": 6,
+      "removed_duplicates": 3,
+      "result": {
+        "behavior_partition": null,
+        "calls": 4,
+        "coverage": {
+          "adequate": true,
+          "per_variable": {
+            "ax": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": true
+            },
+            "ay": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": true
+            },
+            "ex": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": true
+            },
+            "ey": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": true
+            }
+          },
+          "probe_count": 128
+        },
+        "decision": "exact_term",
+        "domain": "zero_aware",
+        "expansions": [
+          {
+            "coverage": {
+              "adequate": false,
+              "per_variable": {
+                "ax": {
+                  "max": 3.0,
+                  "min": -3.0,
+                  "negative_at_or_below_threshold": true,
+                  "positive_at_or_above_threshold": true,
+                  "zero": false
+                },
+                "ay": {
+                  "max": 3.0,
+                  "min": -3.0,
+                  "negative_at_or_below_threshold": true,
+                  "positive_at_or_above_threshold": true,
+                  "zero": false
+                },
+                "ex": {
+                  "max": 3.0,
+                  "min": -3.0,
+                  "negative_at_or_below_threshold": true,
+                  "positive_at_or_above_threshold": true,
+                  "zero": false
+                },
+                "ey": {
+                  "max": 3.0,
+                  "min": -3.0,
+                  "negative_at_or_below_threshold": true,
+                  "positive_at_or_above_threshold": true,
+                  "zero": false
+                }
+              },
+              "probe_count": 64
+            },
+            "from": "original",
+            "to": "zero_aware",
+            "trigger": "insufficient_coverage"
+          }
+        ],
+        "selector_ns": 4167310,
+        "steps": [
+          {
+            "after": 2,
+            "before": 3,
+            "entropy_bits": 0.9182958340544896,
+            "input_env": {
+              "ax": -2.0,
+              "ay": 1.0,
+              "ex": 2.0,
+              "ey": 1.0
+            },
+            "label": true,
+            "phase": "selection",
+            "predictions": [
+              {
+                "hypothesis": "Base000",
+                "output": false
+              },
+              {
+                "hypothesis": "Plus000",
+                "output": true
+              },
+              {
+                "hypothesis": "Lt001",
+                "output": true
+              }
+            ],
+            "row": [
+              -2.0,
+              1.0,
+              2.0,
+              1.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 2,
+            "entropy_bits": 1.0,
+            "input_env": {
+              "ax": 0.0,
+              "ay": 0.0,
+              "ex": 3.0,
+              "ey": 3.0
+            },
+            "label": true,
+            "phase": "selection",
+            "predictions": [
+              {
+                "hypothesis": "Plus000",
+                "output": false
+              },
+              {
+                "hypothesis": "Lt001",
+                "output": true
+              }
+            ],
+            "row": [
+              0.0,
+              0.0,
+              3.0,
+              3.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": -1.0,
+              "ay": -3.0,
+              "ex": 3.0,
+              "ey": 2.0
+            },
+            "label": true,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              -1.0,
+              -3.0,
+              3.0,
+              2.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": 2.0,
+              "ay": 0.0,
+              "ex": -3.0,
+              "ey": 0.0
+            },
+            "label": true,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              2.0,
+              0.0,
+              -3.0,
+              0.0
+            ]
+          }
+        ],
+        "stop": "singleton_after_challenge",
+        "survivors": [
+          {
+            "family": "Lt",
+            "heldout": {
+              "exact": true,
+              "fn": 0,
+              "fp": 0,
+              "invalid": 0,
+              "n": 6560,
+              "tn": 728,
+              "tp": 5832
+            },
+            "id": "Lt001",
+            "term": {
+              "a": {
+                "a": {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                "b": {
+                  "name": "ex",
+                  "type": "Var"
+                },
+                "type": "Eq"
+              },
+              "b": {
+                "a": {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                "b": {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                "type": "Lt"
+              },
+              "type": "Eq"
+            }
+          }
+        ],
+        "teacher": null
+      },
+      "task": "inequality",
+      "unique_hypotheses": [
+        {
+          "family": "Base",
+          "id": "Base000",
+          "term": {
+            "a": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "name": "ex",
+                "type": "Var"
+              },
+              "type": "Eq"
+            },
+            "b": {
+              "a": {
+                "name": "ay",
+                "type": "Var"
+              },
+              "b": {
+                "name": "ey",
+                "type": "Var"
+              },
+              "type": "Eq"
+            },
+            "type": "Eq"
+          }
+        },
+        {
+          "family": "Plus",
+          "id": "Plus000",
+          "term": {
+            "items": [
+              {
+                "name": "ax",
+                "type": "Var"
+              },
+              {
+                "items": [
+                  {
+                    "name": "ax",
+                    "type": "Var"
+                  },
+                  {
+                    "arg": {
+                      "name": "ex",
+                      "type": "Var"
+                    },
+                    "type": "Neg"
+                  }
+                ],
+                "type": "Plus"
+              }
+            ],
+            "type": "And"
+          }
+        },
+        {
+          "family": "Lt",
+          "id": "Lt001",
+          "term": {
+            "a": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "name": "ex",
+                "type": "Var"
+              },
+              "type": "Eq"
+            },
+            "b": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "type": "Lt"
+            },
+            "type": "Eq"
+          }
+        }
+      ],
+      "unique_term_count": 3,
+      "worker": 3
+    },
+    {
+      "initial_count": 2,
+      "removed_duplicates": 0,
+      "result": {
+        "behavior_partition": null,
+        "calls": 3,
+        "coverage": {
+          "adequate": true,
+          "per_variable": {
+            "ax": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": true
+            },
+            "ay": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": true
+            },
+            "ex": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": true
+            },
+            "ey": {
+              "max": 3.0,
+              "min": -3.0,
+              "negative_at_or_below_threshold": true,
+              "positive_at_or_above_threshold": true,
+              "zero": true
+            }
+          },
+          "probe_count": 128
+        },
+        "decision": "exact_term",
+        "domain": "zero_aware",
+        "expansions": [
+          {
+            "coverage": {
+              "adequate": false,
+              "per_variable": {
+                "ax": {
+                  "max": 3.0,
+                  "min": -3.0,
+                  "negative_at_or_below_threshold": true,
+                  "positive_at_or_above_threshold": true,
+                  "zero": false
+                },
+                "ay": {
+                  "max": 3.0,
+                  "min": -3.0,
+                  "negative_at_or_below_threshold": true,
+                  "positive_at_or_above_threshold": true,
+                  "zero": false
+                },
+                "ex": {
+                  "max": 3.0,
+                  "min": -3.0,
+                  "negative_at_or_below_threshold": true,
+                  "positive_at_or_above_threshold": true,
+                  "zero": false
+                },
+                "ey": {
+                  "max": 3.0,
+                  "min": -3.0,
+                  "negative_at_or_below_threshold": true,
+                  "positive_at_or_above_threshold": true,
+                  "zero": false
+                }
+              },
+              "probe_count": 64
+            },
+            "from": "original",
+            "to": "zero_aware",
+            "trigger": "insufficient_coverage"
+          }
+        ],
+        "selector_ns": 3386577,
+        "steps": [
+          {
+            "after": 1,
+            "before": 2,
+            "entropy_bits": 1.0,
+            "input_env": {
+              "ax": 0.0,
+              "ay": -1.0,
+              "ex": -2.0,
+              "ey": 3.0
+            },
+            "label": true,
+            "phase": "selection",
+            "predictions": [
+              {
+                "hypothesis": "Plus000",
+                "output": false
+              },
+              {
+                "hypothesis": "Lt000",
+                "output": true
+              }
+            ],
+            "row": [
+              0.0,
+              -1.0,
+              -2.0,
+              3.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": -2.0,
+              "ay": 3.0,
+              "ex": 2.0,
+              "ey": 2.0
+            },
+            "label": true,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              -2.0,
+              3.0,
+              2.0,
+              2.0
+            ]
+          },
+          {
+            "after": 1,
+            "before": 1,
+            "entropy_bits": null,
+            "input_env": {
+              "ax": -2.0,
+              "ay": -2.0,
+              "ex": 2.0,
+              "ey": 3.0
+            },
+            "label": true,
+            "phase": "challenge",
+            "predictions": [],
+            "row": [
+              -2.0,
+              -2.0,
+              2.0,
+              3.0
+            ]
+          }
+        ],
+        "stop": "singleton_after_challenge",
+        "survivors": [
+          {
+            "family": "Lt",
+            "heldout": {
+              "exact": true,
+              "fn": 0,
+              "fp": 0,
+              "invalid": 0,
+              "n": 6560,
+              "tn": 728,
+              "tp": 5832
+            },
+            "id": "Lt000",
+            "term": {
+              "a": {
+                "a": {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                "b": {
+                  "name": "ex",
+                  "type": "Var"
+                },
+                "type": "Eq"
+              },
+              "b": {
+                "a": {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                "b": {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                "type": "Lt"
+              },
+              "type": "Eq"
+            }
+          }
+        ],
+        "teacher": null
+      },
+      "task": "inequality",
+      "unique_hypotheses": [
+        {
+          "family": "Plus",
+          "id": "Plus000",
+          "term": {
+            "items": [
+              {
+                "name": "ax",
+                "type": "Var"
+              },
+              {
+                "items": [
+                  {
+                    "name": "ax",
+                    "type": "Var"
+                  },
+                  {
+                    "arg": {
+                      "name": "ex",
+                      "type": "Var"
+                    },
+                    "type": "Neg"
+                  }
+                ],
+                "type": "Plus"
+              }
+            ],
+            "type": "And"
+          }
+        },
+        {
+          "family": "Lt",
+          "id": "Lt000",
+          "term": {
+            "a": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "name": "ex",
+                "type": "Var"
+              },
+              "type": "Eq"
+            },
+            "b": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "type": "Lt"
+            },
+            "type": "Eq"
+          }
+        }
+      ],
+      "unique_term_count": 2,
+      "worker": 4
+    }
+  ]
+}

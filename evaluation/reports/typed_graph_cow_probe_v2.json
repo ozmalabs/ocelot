@@ -1,0 +1,213 @@
+{
+  "binary": {
+    "path": "/home/matt/ozmadev/ocelot/runners/dsl/target/release/typed_graph_cow_probe_v2",
+    "sha256": "sha256:d89081bf78e9cfd762cc6584598e397cbe056293bfbf09369dc17fdc6c600766"
+  },
+  "host": {
+    "machine": "x86_64",
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39"
+  },
+  "implementation_status": "actual TypedGraph node/edge slabs use CowPagedVec; adjacency, indexes, and other substrate state remain eager copies",
+  "protocol": {
+    "fixtures": "one node type, empty node/edge attrs; directed path, center-out star, and rectangular grid",
+    "measured_repeats_per_cell": 25,
+    "scope_limits": [
+      "only three synthetic topologies",
+      "query indexes and other Substrate fields still clone eagerly",
+      "no allocation or RSS/PSS accounting",
+      "no deletion or append mutation workload"
+    ],
+    "semantic_gate": "counts and node-type queries match; branch neighbours match base; two siblings take divergent values; eager/shared results agree; base value remains unchanged",
+    "sizes": [
+      771,
+      1771,
+      10771,
+      50771
+    ],
+    "timing": "eager/shared arm order alternates per repetition; median operation microseconds; fixture construction excluded",
+    "topologies": [
+      "path",
+      "star",
+      "grid"
+    ],
+    "write_patterns": [
+      "one node-attribute write",
+      "ceil(1% of nodes) spaced node-attribute writes"
+    ]
+  },
+  "rows": [
+    {
+      "eager_clone_one_percent_writes_us": 157.15099999999998,
+      "eager_clone_one_write_us": 158.841,
+      "eager_clone_us": 157.341,
+      "edges": 770,
+      "exact_query_and_sibling_isolation": true,
+      "nodes": 771,
+      "repeats": 25,
+      "shared_slab_clone_one_percent_writes_us": 50.881,
+      "shared_slab_clone_one_write_us": 44.181000000000004,
+      "shared_slab_clone_us": 41.741,
+      "topology": "path"
+    },
+    {
+      "eager_clone_one_percent_writes_us": 138.941,
+      "eager_clone_one_write_us": 137.491,
+      "eager_clone_us": 137.251,
+      "edges": 770,
+      "exact_query_and_sibling_isolation": true,
+      "nodes": 771,
+      "repeats": 25,
+      "shared_slab_clone_one_percent_writes_us": 37.370000000000005,
+      "shared_slab_clone_one_write_us": 29.560000000000002,
+      "shared_slab_clone_us": 27.759999999999998,
+      "topology": "star"
+    },
+    {
+      "eager_clone_one_percent_writes_us": 178.032,
+      "eager_clone_one_write_us": 176.89100000000002,
+      "eager_clone_us": 178.282,
+      "edges": 1486,
+      "exact_query_and_sibling_isolation": true,
+      "nodes": 771,
+      "repeats": 25,
+      "shared_slab_clone_one_percent_writes_us": 44.82,
+      "shared_slab_clone_one_write_us": 39.51,
+      "shared_slab_clone_us": 38.68,
+      "topology": "grid"
+    },
+    {
+      "eager_clone_one_percent_writes_us": 320.472,
+      "eager_clone_one_write_us": 311.68199999999996,
+      "eager_clone_us": 312.353,
+      "edges": 1770,
+      "exact_query_and_sibling_isolation": true,
+      "nodes": 1771,
+      "repeats": 25,
+      "shared_slab_clone_one_percent_writes_us": 106.771,
+      "shared_slab_clone_one_write_us": 88.371,
+      "shared_slab_clone_us": 85.041,
+      "topology": "path"
+    },
+    {
+      "eager_clone_one_percent_writes_us": 172.692,
+      "eager_clone_one_write_us": 171.021,
+      "eager_clone_us": 175.141,
+      "edges": 1770,
+      "exact_query_and_sibling_isolation": true,
+      "nodes": 1771,
+      "repeats": 25,
+      "shared_slab_clone_one_percent_writes_us": 57.961000000000006,
+      "shared_slab_clone_one_write_us": 45.2,
+      "shared_slab_clone_us": 44.199999999999996,
+      "topology": "star"
+    },
+    {
+      "eager_clone_one_percent_writes_us": 253.47199999999998,
+      "eager_clone_one_write_us": 243.292,
+      "eager_clone_us": 239.09199999999998,
+      "edges": 3457,
+      "exact_query_and_sibling_isolation": true,
+      "nodes": 1771,
+      "repeats": 25,
+      "shared_slab_clone_one_percent_writes_us": 84.67,
+      "shared_slab_clone_one_write_us": 71.691,
+      "shared_slab_clone_us": 70.01100000000001,
+      "topology": "grid"
+    },
+    {
+      "eager_clone_one_percent_writes_us": 1926.884,
+      "eager_clone_one_write_us": 1295.17,
+      "eager_clone_us": 1655.082,
+      "edges": 10770,
+      "exact_query_and_sibling_isolation": true,
+      "nodes": 10771,
+      "repeats": 25,
+      "shared_slab_clone_one_percent_writes_us": 656.645,
+      "shared_slab_clone_one_write_us": 483.733,
+      "shared_slab_clone_us": 486.24399999999997,
+      "topology": "path"
+    },
+    {
+      "eager_clone_one_percent_writes_us": 1691.913,
+      "eager_clone_one_write_us": 1375.0900000000001,
+      "eager_clone_us": 1312.11,
+      "edges": 10770,
+      "exact_query_and_sibling_isolation": true,
+      "nodes": 10771,
+      "repeats": 25,
+      "shared_slab_clone_one_percent_writes_us": 482.303,
+      "shared_slab_clone_one_write_us": 341.743,
+      "shared_slab_clone_us": 326.233,
+      "topology": "star"
+    },
+    {
+      "eager_clone_one_percent_writes_us": 1864.983,
+      "eager_clone_one_write_us": 2047.6449999999998,
+      "eager_clone_us": 2322.4869999999996,
+      "edges": 21334,
+      "exact_query_and_sibling_isolation": true,
+      "nodes": 10771,
+      "repeats": 25,
+      "shared_slab_clone_one_percent_writes_us": 690.255,
+      "shared_slab_clone_one_write_us": 553.7139999999999,
+      "shared_slab_clone_us": 534.1039999999999,
+      "topology": "grid"
+    },
+    {
+      "eager_clone_one_percent_writes_us": 8731.534000000001,
+      "eager_clone_one_write_us": 8274.001,
+      "eager_clone_us": 7953.218,
+      "edges": 50770,
+      "exact_query_and_sibling_isolation": true,
+      "nodes": 50771,
+      "repeats": 25,
+      "shared_slab_clone_one_percent_writes_us": 3307.944,
+      "shared_slab_clone_one_write_us": 2461.748,
+      "shared_slab_clone_us": 2406.418,
+      "topology": "path"
+    },
+    {
+      "eager_clone_one_percent_writes_us": 7649.465999999999,
+      "eager_clone_one_write_us": 7141.692,
+      "eager_clone_us": 6447.956999999999,
+      "edges": 50770,
+      "exact_query_and_sibling_isolation": true,
+      "nodes": 50771,
+      "repeats": 25,
+      "shared_slab_clone_one_percent_writes_us": 2274.937,
+      "shared_slab_clone_one_write_us": 1647.082,
+      "shared_slab_clone_us": 1465.37,
+      "topology": "star"
+    },
+    {
+      "eager_clone_one_percent_writes_us": 10384.496,
+      "eager_clone_one_write_us": 9413.048999999999,
+      "eager_clone_us": 10654.947,
+      "edges": 101091,
+      "exact_query_and_sibling_isolation": true,
+      "nodes": 50771,
+      "repeats": 25,
+      "shared_slab_clone_one_percent_writes_us": 3419.125,
+      "shared_slab_clone_one_write_us": 2447.998,
+      "shared_slab_clone_us": 2419.748,
+      "topology": "grid"
+    }
+  ],
+  "runner": {
+    "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/typed_graph_cow_probe_v2.py",
+    "sha256": "sha256:97e23cc26db7eee2ed85779e5cd2e0daacc6dea0ca7a68738da4a19c08a9acf0"
+  },
+  "schema": "TypedGraphCowProbeV2",
+  "sources": {
+    "runners/dsl/Cargo.lock": "sha256:409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+    "runners/dsl/Cargo.toml": "sha256:c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+    "runners/dsl/src/bin/typed_graph_cow_probe_v2.rs": "sha256:324d07fcb19921dd839cabeae2ec2ba0ab0a421906d14dc9d6be27992cea61f2",
+    "runners/dsl/src/cow_paged_vec.rs": "sha256:562f2a07c495110c5a5e796505e0ccb3c84513bae198ca59e8ee4884c118ebbf",
+    "runners/dsl/src/graph.rs": "sha256:fc40423371bafbe19b1ab617affb475e90c88669ad92d54cbbe3d80325227031",
+    "runners/dsl/src/lib.rs": "sha256:5ebe65e3e335079b607779a2c49583149b2d87733f8da935926bbbc53bfbff45"
+  },
+  "toolchain": {
+    "cargo": "cargo 1.87.0 (Homebrew)",
+    "rustc": "rustc 1.87.0 (17067e9ac 2025-05-09) (Homebrew)"
+  }
+}

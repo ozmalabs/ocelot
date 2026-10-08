@@ -1,0 +1,128 @@
+{
+  "analyzer_sha256": "323a6915b0ee1215523b174de4243ccece6e765bd0fa3edfccfa1947a06b0887",
+  "engine_provenance": {
+    "ambiguous": false,
+    "engine_source_fingerprint": "efb434f37559574e97cc9c027be4a429d0e4dd555da4e798ff422e40f4234b47",
+    "engine_tree": "/home/matt/ozmadev/ocelot",
+    "mtime": 1790851852.7283769,
+    "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+    "other_resolvable": [],
+    "sha256": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+    "short": "3816b4fb5d57",
+    "source_fingerprint": "efb434f37559574e97cc9c027be4a429d0e4dd555da4e798ff422e40f4234b47",
+    "source_match": "own",
+    "stale_rust": [],
+    "this_tree": "/home/matt/ozmadev/ocelot"
+  },
+  "inputs": {
+    "candidate_cap": 200000,
+    "entrypoint": "ensure_program_synthesis -> ingest_spec -> pump",
+    "protocol": "synthesis_offsupport_ambiguity_v1_20261001",
+    "repetitions": 5,
+    "schedule_seed": 20261001,
+    "schema": 1,
+    "task_order": [
+      "ambiguous_square",
+      "disambiguated_square",
+      "contradictory_square"
+    ],
+    "tasks": {
+      "ambiguous_square": {
+        "heldout": [
+          -3,
+          -2,
+          2,
+          3
+        ],
+        "request": "write a function mapping each input to its output from examples",
+        "training": [
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "contradictory_square": {
+        "heldout": [
+          -1,
+          2
+        ],
+        "request": "write a function mapping each input to its output from examples",
+        "training": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "disambiguated_square": {
+        "heldout": [
+          -4,
+          -3,
+          3,
+          4
+        ],
+        "request": "write a function mapping each input to its output from examples",
+        "training": [
+          [
+            -2,
+            4
+          ],
+          [
+            -1,
+            1
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            4
+          ]
+        ]
+      }
+    }
+  },
+  "native_extension": {
+    "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+    "sha256": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54"
+  },
+  "protocol_sha256": "e76b77953257154c28db8fb3c4bf5461e0bf12958eb977420c3d027f8d9fbd08",
+  "runner_sha256": "feae1d5d960745e38c8233ce440a13db17927fc28ba54e7a78b9c1c090c394e0",
+  "source_sha256": {
+    "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+    "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+    "domains/prog_retrieval.py": "c726c87171ece5ae722105da74dd5afde66e0d9a02e4138f06df2dfd777e2055",
+    "domains/prog_synthesis.py": "52c01df0e08483b3ad5b35c45da27f92b70805957f068995fbfbd8c57b9cae2b",
+    "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+    "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+    "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+    "runners/dsl/src/prog_eval.rs": "d419bda3288c534cbc8c35a3bccc29b67171b8297ecf8aeb43a474f77f0e1451",
+    "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+    "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+    "runners/dsl/src/synth_enumerate.rs": "f3ae5dd0b15f0fef1713fa92ccb563e4b573dd94b626f0bfed58413298ee6203",
+    "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+    "seeds/code_write_request_cues.json": "13e0cbeace3d712a20b2dd7a6abbb9c910b0cbfbac61ce1d978f89a987e8c36d",
+    "seeds/exact_families.json": "19c7e564a8712d173b37c76f0c2a5d3fde3fcdc68993d79d0857fe283587900a",
+    "seeds/program_synthesis.json": "9d657f4409e470626f3bb9adc1236b7c6c59976a7a1b16b38e566813324916bd",
+    "seeds/program_synthesis_grounding.json": "ec68c2e577cc6dc5c87ca1ac9a05b9f11966c9a7147894f216f1eb2cbe25ddea",
+    "seeds/program_synthesis_opgrammar.json": "8e747abefc9c4814a2b7bff1cce73acdef34d765e93dc1855d0a12dfc44042eb"
+  }
+}

@@ -1,0 +1,3504 @@
+{
+  "analyzer_sha256": "5aa43065c4e034d10cfff39446ebca45d6380a25f1b14a66005acf8de4974465",
+  "lock_sha256": "35957d2058618015a6ccd63812ad1c0cf80b9373a06d4f3fe8b1e8d7c34e7597",
+  "locked_inputs": {
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "native_build_manifest_sha256": "425e086594e50335ca917e330206fec9bd8c778d4e58d2c5dd0d06cc61bc41ee",
+    "native_extension_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+    "native_extension_sha256": "260cf6063acbfb2fb83a7bfbe8b0bbe35afa951d3142539fbd868edf331d3afa",
+    "source_sha256": {
+      "docs/research/engine_substrate/SUBSTRATE_COMMITTED_RESULT_CONSUMER_GATE_V1_1_PREREG_20260928.md": "9458ef15ddd649b8b7cfd8c56994be028b0c34d8e9b03a6d36160dc667b0fa45",
+      "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+      "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+      "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+      "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+      "runners/dsl/src/term.rs": "0b91be836a6a7fe4587fb2ec3a944fdd6fb461838ca25151b1358c2158705fce",
+      "scripts/analyze_substrate_committed_result_consumer_gate_v1_1.py": "5aa43065c4e034d10cfff39446ebca45d6380a25f1b14a66005acf8de4974465",
+      "scripts/substrate_committed_result_consumer_gate_v1_1.py": "483fb43be6dc0f15e9b8d5ea11e7eff49cda1bd7fc48928b9fe20a4d4d737cc1"
+    }
+  },
+  "protocol_sha256": "9458ef15ddd649b8b7cfd8c56994be028b0c34d8e9b03a6d36160dc667b0fa45",
+  "run_id": "committed_result_consumer_gate_v1_1_20260928",
+  "runs": [
+    {
+      "cells": [
+        {
+          "checkpoints": [
+            {
+              "attrs": {
+                "count_revision": 0,
+                "decision_revision": 0,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": "stale"
+              },
+              "elapsed_ns": 74070,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 810,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 4,
+                "term_eval:Eq": 2,
+                "term_eval:Var": 4,
+                "term_evals_total": 11,
+                "where_evals": 1,
+                "where_evals_first": 1,
+                "where_rejects": 1
+              },
+              "name": "one_stage_incomplete",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": "p001"
+              },
+              "elapsed_ns": 14660,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 140,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 8,
+                "term_eval:Eq": 4,
+                "term_eval:Var": 8,
+                "term_evals_total": 21,
+                "where_evals": 2,
+                "where_evals_first": 2,
+                "where_rejects": 1
+              },
+              "name": "stages_complete_uncommitted",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "consumed_label": "p001",
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 1,
+                "selected_label": "p001"
+              },
+              "elapsed_ns": 92930,
+              "metrics": {
+                "bindings_cloned": 2,
+                "cand_enum": 4,
+                "cand_enum_first": 4,
+                "cand_enum_local": 3,
+                "cand_enum_scan": 1,
+                "cand_tested": 4,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "leaf_visits": 2,
+                "rule_effect_attr_set_attempts": 2,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 4,
+                "scheduler_external_poll_slots": 6,
+                "scheduler_fixedpoint_probe_slots": 5,
+                "scheduler_passes": 3,
+                "scheduler_plan_ns": 1130,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 2,
+                "term_eval:Attr": 16,
+                "term_eval:Eq": 7,
+                "term_eval:Var": 16,
+                "term_evals_total": 41,
+                "where_evals": 3,
+                "where_evals_first": 3
+              },
+              "name": "committed",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 3,
+                "progress_steps": 2,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            }
+          ],
+          "distribution": "unique_max",
+          "expected_consumed": "p001",
+          "n": 2
+        },
+        {
+          "checkpoints": [
+            {
+              "attrs": {
+                "count_revision": 0,
+                "decision_revision": 0,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": "stale"
+              },
+              "elapsed_ns": 22410,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 230,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 4,
+                "term_eval:Eq": 2,
+                "term_eval:Var": 4,
+                "term_evals_total": 11,
+                "where_evals": 1,
+                "where_evals_first": 1,
+                "where_rejects": 1
+              },
+              "name": "one_stage_incomplete",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": ""
+              },
+              "elapsed_ns": 16120,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 190,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 8,
+                "term_eval:Eq": 4,
+                "term_eval:Var": 8,
+                "term_evals_total": 21,
+                "where_evals": 2,
+                "where_evals_first": 2,
+                "where_rejects": 1
+              },
+              "name": "stages_complete_uncommitted",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "consumed_label": "",
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 1,
+                "selected_label": ""
+              },
+              "elapsed_ns": 22170,
+              "metrics": {
+                "bindings_cloned": 2,
+                "cand_enum": 4,
+                "cand_enum_first": 4,
+                "cand_enum_local": 3,
+                "cand_enum_scan": 1,
+                "cand_tested": 4,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "leaf_visits": 2,
+                "rule_effect_attr_set_attempts": 2,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 4,
+                "scheduler_external_poll_slots": 6,
+                "scheduler_fixedpoint_probe_slots": 5,
+                "scheduler_passes": 3,
+                "scheduler_plan_ns": 230,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 2,
+                "term_eval:Attr": 16,
+                "term_eval:Eq": 7,
+                "term_eval:Var": 16,
+                "term_evals_total": 41,
+                "where_evals": 3,
+                "where_evals_first": 3
+              },
+              "name": "committed",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 3,
+                "progress_steps": 2,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            }
+          ],
+          "distribution": "tied_max",
+          "expected_consumed": "",
+          "n": 2
+        },
+        {
+          "checkpoints": [
+            {
+              "attrs": {
+                "count_revision": 0,
+                "decision_revision": 0,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": "stale"
+              },
+              "elapsed_ns": 17260,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 190,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 4,
+                "term_eval:Eq": 2,
+                "term_eval:Var": 4,
+                "term_evals_total": 11,
+                "where_evals": 1,
+                "where_evals_first": 1,
+                "where_rejects": 1
+              },
+              "name": "one_stage_incomplete",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": "p007"
+              },
+              "elapsed_ns": 14380,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 190,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 8,
+                "term_eval:Eq": 4,
+                "term_eval:Var": 8,
+                "term_evals_total": 21,
+                "where_evals": 2,
+                "where_evals_first": 2,
+                "where_rejects": 1
+              },
+              "name": "stages_complete_uncommitted",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "consumed_label": "p007",
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 1,
+                "selected_label": "p007"
+              },
+              "elapsed_ns": 15630,
+              "metrics": {
+                "bindings_cloned": 2,
+                "cand_enum": 4,
+                "cand_enum_first": 4,
+                "cand_enum_local": 3,
+                "cand_enum_scan": 1,
+                "cand_tested": 4,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "leaf_visits": 2,
+                "rule_effect_attr_set_attempts": 2,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 4,
+                "scheduler_external_poll_slots": 6,
+                "scheduler_fixedpoint_probe_slots": 5,
+                "scheduler_passes": 3,
+                "scheduler_plan_ns": 200,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 2,
+                "term_eval:Attr": 16,
+                "term_eval:Eq": 7,
+                "term_eval:Var": 16,
+                "term_evals_total": 41,
+                "where_evals": 3,
+                "where_evals_first": 3
+              },
+              "name": "committed",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 3,
+                "progress_steps": 2,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            }
+          ],
+          "distribution": "unique_max",
+          "expected_consumed": "p007",
+          "n": 8
+        },
+        {
+          "checkpoints": [
+            {
+              "attrs": {
+                "count_revision": 0,
+                "decision_revision": 0,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": "stale"
+              },
+              "elapsed_ns": 21180,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 200,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 4,
+                "term_eval:Eq": 2,
+                "term_eval:Var": 4,
+                "term_evals_total": 11,
+                "where_evals": 1,
+                "where_evals_first": 1,
+                "where_rejects": 1
+              },
+              "name": "one_stage_incomplete",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": ""
+              },
+              "elapsed_ns": 13230,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 120,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 8,
+                "term_eval:Eq": 4,
+                "term_eval:Var": 8,
+                "term_evals_total": 21,
+                "where_evals": 2,
+                "where_evals_first": 2,
+                "where_rejects": 1
+              },
+              "name": "stages_complete_uncommitted",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "consumed_label": "",
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 1,
+                "selected_label": ""
+              },
+              "elapsed_ns": 19430,
+              "metrics": {
+                "bindings_cloned": 2,
+                "cand_enum": 4,
+                "cand_enum_first": 4,
+                "cand_enum_local": 3,
+                "cand_enum_scan": 1,
+                "cand_tested": 4,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "leaf_visits": 2,
+                "rule_effect_attr_set_attempts": 2,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 4,
+                "scheduler_external_poll_slots": 6,
+                "scheduler_fixedpoint_probe_slots": 5,
+                "scheduler_passes": 3,
+                "scheduler_plan_ns": 240,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 2,
+                "term_eval:Attr": 16,
+                "term_eval:Eq": 7,
+                "term_eval:Var": 16,
+                "term_evals_total": 41,
+                "where_evals": 3,
+                "where_evals_first": 3
+              },
+              "name": "committed",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 3,
+                "progress_steps": 2,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            }
+          ],
+          "distribution": "tied_max",
+          "expected_consumed": "",
+          "n": 8
+        },
+        {
+          "checkpoints": [
+            {
+              "attrs": {
+                "count_revision": 0,
+                "decision_revision": 0,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": "stale"
+              },
+              "elapsed_ns": 19920,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 210,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 4,
+                "term_eval:Eq": 2,
+                "term_eval:Var": 4,
+                "term_evals_total": 11,
+                "where_evals": 1,
+                "where_evals_first": 1,
+                "where_rejects": 1
+              },
+              "name": "one_stage_incomplete",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": "p031"
+              },
+              "elapsed_ns": 14950,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 120,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 8,
+                "term_eval:Eq": 4,
+                "term_eval:Var": 8,
+                "term_evals_total": 21,
+                "where_evals": 2,
+                "where_evals_first": 2,
+                "where_rejects": 1
+              },
+              "name": "stages_complete_uncommitted",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "consumed_label": "p031",
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 1,
+                "selected_label": "p031"
+              },
+              "elapsed_ns": 19870,
+              "metrics": {
+                "bindings_cloned": 2,
+                "cand_enum": 4,
+                "cand_enum_first": 4,
+                "cand_enum_local": 3,
+                "cand_enum_scan": 1,
+                "cand_tested": 4,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "leaf_visits": 2,
+                "rule_effect_attr_set_attempts": 2,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 4,
+                "scheduler_external_poll_slots": 6,
+                "scheduler_fixedpoint_probe_slots": 5,
+                "scheduler_passes": 3,
+                "scheduler_plan_ns": 210,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 2,
+                "term_eval:Attr": 16,
+                "term_eval:Eq": 7,
+                "term_eval:Var": 16,
+                "term_evals_total": 41,
+                "where_evals": 3,
+                "where_evals_first": 3
+              },
+              "name": "committed",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 3,
+                "progress_steps": 2,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            }
+          ],
+          "distribution": "unique_max",
+          "expected_consumed": "p031",
+          "n": 32
+        },
+        {
+          "checkpoints": [
+            {
+              "attrs": {
+                "count_revision": 0,
+                "decision_revision": 0,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": "stale"
+              },
+              "elapsed_ns": 18560,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 180,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 4,
+                "term_eval:Eq": 2,
+                "term_eval:Var": 4,
+                "term_evals_total": 11,
+                "where_evals": 1,
+                "where_evals_first": 1,
+                "where_rejects": 1
+              },
+              "name": "one_stage_incomplete",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": ""
+              },
+              "elapsed_ns": 12390,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 120,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 8,
+                "term_eval:Eq": 4,
+                "term_eval:Var": 8,
+                "term_evals_total": 21,
+                "where_evals": 2,
+                "where_evals_first": 2,
+                "where_rejects": 1
+              },
+              "name": "stages_complete_uncommitted",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "consumed_label": "",
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 1,
+                "selected_label": ""
+              },
+              "elapsed_ns": 15790,
+              "metrics": {
+                "bindings_cloned": 2,
+                "cand_enum": 4,
+                "cand_enum_first": 4,
+                "cand_enum_local": 3,
+                "cand_enum_scan": 1,
+                "cand_tested": 4,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "leaf_visits": 2,
+                "rule_effect_attr_set_attempts": 2,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 4,
+                "scheduler_external_poll_slots": 6,
+                "scheduler_fixedpoint_probe_slots": 5,
+                "scheduler_passes": 3,
+                "scheduler_plan_ns": 190,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 2,
+                "term_eval:Attr": 16,
+                "term_eval:Eq": 7,
+                "term_eval:Var": 16,
+                "term_evals_total": 41,
+                "where_evals": 3,
+                "where_evals_first": 3
+              },
+              "name": "committed",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 3,
+                "progress_steps": 2,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            }
+          ],
+          "distribution": "tied_max",
+          "expected_consumed": "",
+          "n": 32
+        },
+        {
+          "checkpoints": [
+            {
+              "attrs": {
+                "count_revision": 0,
+                "decision_revision": 0,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": "stale"
+              },
+              "elapsed_ns": 18790,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 190,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 4,
+                "term_eval:Eq": 2,
+                "term_eval:Var": 4,
+                "term_evals_total": 11,
+                "where_evals": 1,
+                "where_evals_first": 1,
+                "where_rejects": 1
+              },
+              "name": "one_stage_incomplete",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": "p063"
+              },
+              "elapsed_ns": 19020,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 140,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 8,
+                "term_eval:Eq": 4,
+                "term_eval:Var": 8,
+                "term_evals_total": 21,
+                "where_evals": 2,
+                "where_evals_first": 2,
+                "where_rejects": 1
+              },
+              "name": "stages_complete_uncommitted",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "consumed_label": "p063",
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 1,
+                "selected_label": "p063"
+              },
+              "elapsed_ns": 25351,
+              "metrics": {
+                "bindings_cloned": 2,
+                "cand_enum": 4,
+                "cand_enum_first": 4,
+                "cand_enum_local": 3,
+                "cand_enum_scan": 1,
+                "cand_tested": 4,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "leaf_visits": 2,
+                "rule_effect_attr_set_attempts": 2,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 4,
+                "scheduler_external_poll_slots": 6,
+                "scheduler_fixedpoint_probe_slots": 5,
+                "scheduler_passes": 3,
+                "scheduler_plan_ns": 210,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 2,
+                "term_eval:Attr": 16,
+                "term_eval:Eq": 7,
+                "term_eval:Var": 16,
+                "term_evals_total": 41,
+                "where_evals": 3,
+                "where_evals_first": 3
+              },
+              "name": "committed",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 3,
+                "progress_steps": 2,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            }
+          ],
+          "distribution": "unique_max",
+          "expected_consumed": "p063",
+          "n": 64
+        },
+        {
+          "checkpoints": [
+            {
+              "attrs": {
+                "count_revision": 0,
+                "decision_revision": 0,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": "stale"
+              },
+              "elapsed_ns": 19100,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 180,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 4,
+                "term_eval:Eq": 2,
+                "term_eval:Var": 4,
+                "term_evals_total": 11,
+                "where_evals": 1,
+                "where_evals_first": 1,
+                "where_rejects": 1
+              },
+              "name": "one_stage_incomplete",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": ""
+              },
+              "elapsed_ns": 11920,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 100,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 8,
+                "term_eval:Eq": 4,
+                "term_eval:Var": 8,
+                "term_evals_total": 21,
+                "where_evals": 2,
+                "where_evals_first": 2,
+                "where_rejects": 1
+              },
+              "name": "stages_complete_uncommitted",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "consumed_label": "",
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 1,
+                "selected_label": ""
+              },
+              "elapsed_ns": 17330,
+              "metrics": {
+                "bindings_cloned": 2,
+                "cand_enum": 4,
+                "cand_enum_first": 4,
+                "cand_enum_local": 3,
+                "cand_enum_scan": 1,
+                "cand_tested": 4,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "leaf_visits": 2,
+                "rule_effect_attr_set_attempts": 2,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 4,
+                "scheduler_external_poll_slots": 6,
+                "scheduler_fixedpoint_probe_slots": 5,
+                "scheduler_passes": 3,
+                "scheduler_plan_ns": 170,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 2,
+                "term_eval:Attr": 16,
+                "term_eval:Eq": 7,
+                "term_eval:Var": 16,
+                "term_evals_total": 41,
+                "where_evals": 3,
+                "where_evals_first": 3
+              },
+              "name": "committed",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 3,
+                "progress_steps": 2,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            }
+          ],
+          "distribution": "tied_max",
+          "expected_consumed": "",
+          "n": 64
+        }
+      ],
+      "pid": 7,
+      "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+      "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]",
+      "started_inputs": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "425e086594e50335ca917e330206fec9bd8c778d4e58d2c5dd0d06cc61bc41ee",
+        "native_extension_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_extension_sha256": "260cf6063acbfb2fb83a7bfbe8b0bbe35afa951d3142539fbd868edf331d3afa",
+        "source_sha256": {
+          "docs/research/engine_substrate/SUBSTRATE_COMMITTED_RESULT_CONSUMER_GATE_V1_1_PREREG_20260928.md": "9458ef15ddd649b8b7cfd8c56994be028b0c34d8e9b03a6d36160dc667b0fa45",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+          "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+          "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+          "runners/dsl/src/term.rs": "0b91be836a6a7fe4587fb2ec3a944fdd6fb461838ca25151b1358c2158705fce",
+          "scripts/analyze_substrate_committed_result_consumer_gate_v1_1.py": "5aa43065c4e034d10cfff39446ebca45d6380a25f1b14a66005acf8de4974465",
+          "scripts/substrate_committed_result_consumer_gate_v1_1.py": "483fb43be6dc0f15e9b8d5ea11e7eff49cda1bd7fc48928b9fe20a4d4d737cc1"
+        }
+      },
+      "worker_id": 1
+    },
+    {
+      "cells": [
+        {
+          "checkpoints": [
+            {
+              "attrs": {
+                "count_revision": 0,
+                "decision_revision": 0,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": "stale"
+              },
+              "elapsed_ns": 59980,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 350,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 4,
+                "term_eval:Eq": 2,
+                "term_eval:Var": 4,
+                "term_evals_total": 11,
+                "where_evals": 1,
+                "where_evals_first": 1,
+                "where_rejects": 1
+              },
+              "name": "one_stage_incomplete",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": "p001"
+              },
+              "elapsed_ns": 12560,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 140,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 8,
+                "term_eval:Eq": 4,
+                "term_eval:Var": 8,
+                "term_evals_total": 21,
+                "where_evals": 2,
+                "where_evals_first": 2,
+                "where_rejects": 1
+              },
+              "name": "stages_complete_uncommitted",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "consumed_label": "p001",
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 1,
+                "selected_label": "p001"
+              },
+              "elapsed_ns": 28920,
+              "metrics": {
+                "bindings_cloned": 2,
+                "cand_enum": 4,
+                "cand_enum_first": 4,
+                "cand_enum_local": 3,
+                "cand_enum_scan": 1,
+                "cand_tested": 4,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "leaf_visits": 2,
+                "rule_effect_attr_set_attempts": 2,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 4,
+                "scheduler_external_poll_slots": 6,
+                "scheduler_fixedpoint_probe_slots": 5,
+                "scheduler_passes": 3,
+                "scheduler_plan_ns": 190,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 2,
+                "term_eval:Attr": 16,
+                "term_eval:Eq": 7,
+                "term_eval:Var": 16,
+                "term_evals_total": 41,
+                "where_evals": 3,
+                "where_evals_first": 3
+              },
+              "name": "committed",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 3,
+                "progress_steps": 2,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            }
+          ],
+          "distribution": "unique_max",
+          "expected_consumed": "p001",
+          "n": 2
+        },
+        {
+          "checkpoints": [
+            {
+              "attrs": {
+                "count_revision": 0,
+                "decision_revision": 0,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": "stale"
+              },
+              "elapsed_ns": 18190,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 180,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 4,
+                "term_eval:Eq": 2,
+                "term_eval:Var": 4,
+                "term_evals_total": 11,
+                "where_evals": 1,
+                "where_evals_first": 1,
+                "where_rejects": 1
+              },
+              "name": "one_stage_incomplete",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": ""
+              },
+              "elapsed_ns": 10980,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 90,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 8,
+                "term_eval:Eq": 4,
+                "term_eval:Var": 8,
+                "term_evals_total": 21,
+                "where_evals": 2,
+                "where_evals_first": 2,
+                "where_rejects": 1
+              },
+              "name": "stages_complete_uncommitted",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "consumed_label": "",
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 1,
+                "selected_label": ""
+              },
+              "elapsed_ns": 22721,
+              "metrics": {
+                "bindings_cloned": 2,
+                "cand_enum": 4,
+                "cand_enum_first": 4,
+                "cand_enum_local": 3,
+                "cand_enum_scan": 1,
+                "cand_tested": 4,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "leaf_visits": 2,
+                "rule_effect_attr_set_attempts": 2,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 4,
+                "scheduler_external_poll_slots": 6,
+                "scheduler_fixedpoint_probe_slots": 5,
+                "scheduler_passes": 3,
+                "scheduler_plan_ns": 300,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 2,
+                "term_eval:Attr": 16,
+                "term_eval:Eq": 7,
+                "term_eval:Var": 16,
+                "term_evals_total": 41,
+                "where_evals": 3,
+                "where_evals_first": 3
+              },
+              "name": "committed",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 3,
+                "progress_steps": 2,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            }
+          ],
+          "distribution": "tied_max",
+          "expected_consumed": "",
+          "n": 2
+        },
+        {
+          "checkpoints": [
+            {
+              "attrs": {
+                "count_revision": 0,
+                "decision_revision": 0,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": "stale"
+              },
+              "elapsed_ns": 16440,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 190,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 4,
+                "term_eval:Eq": 2,
+                "term_eval:Var": 4,
+                "term_evals_total": 11,
+                "where_evals": 1,
+                "where_evals_first": 1,
+                "where_rejects": 1
+              },
+              "name": "one_stage_incomplete",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": "p007"
+              },
+              "elapsed_ns": 10640,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 120,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 8,
+                "term_eval:Eq": 4,
+                "term_eval:Var": 8,
+                "term_evals_total": 21,
+                "where_evals": 2,
+                "where_evals_first": 2,
+                "where_rejects": 1
+              },
+              "name": "stages_complete_uncommitted",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "consumed_label": "p007",
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 1,
+                "selected_label": "p007"
+              },
+              "elapsed_ns": 14630,
+              "metrics": {
+                "bindings_cloned": 2,
+                "cand_enum": 4,
+                "cand_enum_first": 4,
+                "cand_enum_local": 3,
+                "cand_enum_scan": 1,
+                "cand_tested": 4,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "leaf_visits": 2,
+                "rule_effect_attr_set_attempts": 2,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 4,
+                "scheduler_external_poll_slots": 6,
+                "scheduler_fixedpoint_probe_slots": 5,
+                "scheduler_passes": 3,
+                "scheduler_plan_ns": 200,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 2,
+                "term_eval:Attr": 16,
+                "term_eval:Eq": 7,
+                "term_eval:Var": 16,
+                "term_evals_total": 41,
+                "where_evals": 3,
+                "where_evals_first": 3
+              },
+              "name": "committed",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 3,
+                "progress_steps": 2,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            }
+          ],
+          "distribution": "unique_max",
+          "expected_consumed": "p007",
+          "n": 8
+        },
+        {
+          "checkpoints": [
+            {
+              "attrs": {
+                "count_revision": 0,
+                "decision_revision": 0,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": "stale"
+              },
+              "elapsed_ns": 16800,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 200,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 4,
+                "term_eval:Eq": 2,
+                "term_eval:Var": 4,
+                "term_evals_total": 11,
+                "where_evals": 1,
+                "where_evals_first": 1,
+                "where_rejects": 1
+              },
+              "name": "one_stage_incomplete",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": ""
+              },
+              "elapsed_ns": 10510,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 70,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 8,
+                "term_eval:Eq": 4,
+                "term_eval:Var": 8,
+                "term_evals_total": 21,
+                "where_evals": 2,
+                "where_evals_first": 2,
+                "where_rejects": 1
+              },
+              "name": "stages_complete_uncommitted",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "consumed_label": "",
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 1,
+                "selected_label": ""
+              },
+              "elapsed_ns": 14860,
+              "metrics": {
+                "bindings_cloned": 2,
+                "cand_enum": 4,
+                "cand_enum_first": 4,
+                "cand_enum_local": 3,
+                "cand_enum_scan": 1,
+                "cand_tested": 4,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "leaf_visits": 2,
+                "rule_effect_attr_set_attempts": 2,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 4,
+                "scheduler_external_poll_slots": 6,
+                "scheduler_fixedpoint_probe_slots": 5,
+                "scheduler_passes": 3,
+                "scheduler_plan_ns": 200,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 2,
+                "term_eval:Attr": 16,
+                "term_eval:Eq": 7,
+                "term_eval:Var": 16,
+                "term_evals_total": 41,
+                "where_evals": 3,
+                "where_evals_first": 3
+              },
+              "name": "committed",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 3,
+                "progress_steps": 2,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            }
+          ],
+          "distribution": "tied_max",
+          "expected_consumed": "",
+          "n": 8
+        },
+        {
+          "checkpoints": [
+            {
+              "attrs": {
+                "count_revision": 0,
+                "decision_revision": 0,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": "stale"
+              },
+              "elapsed_ns": 16040,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 180,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 4,
+                "term_eval:Eq": 2,
+                "term_eval:Var": 4,
+                "term_evals_total": 11,
+                "where_evals": 1,
+                "where_evals_first": 1,
+                "where_rejects": 1
+              },
+              "name": "one_stage_incomplete",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": "p031"
+              },
+              "elapsed_ns": 13790,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 90,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 8,
+                "term_eval:Eq": 4,
+                "term_eval:Var": 8,
+                "term_evals_total": 21,
+                "where_evals": 2,
+                "where_evals_first": 2,
+                "where_rejects": 1
+              },
+              "name": "stages_complete_uncommitted",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "consumed_label": "p031",
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 1,
+                "selected_label": "p031"
+              },
+              "elapsed_ns": 20130,
+              "metrics": {
+                "bindings_cloned": 2,
+                "cand_enum": 4,
+                "cand_enum_first": 4,
+                "cand_enum_local": 3,
+                "cand_enum_scan": 1,
+                "cand_tested": 4,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "leaf_visits": 2,
+                "rule_effect_attr_set_attempts": 2,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 4,
+                "scheduler_external_poll_slots": 6,
+                "scheduler_fixedpoint_probe_slots": 5,
+                "scheduler_passes": 3,
+                "scheduler_plan_ns": 210,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 2,
+                "term_eval:Attr": 16,
+                "term_eval:Eq": 7,
+                "term_eval:Var": 16,
+                "term_evals_total": 41,
+                "where_evals": 3,
+                "where_evals_first": 3
+              },
+              "name": "committed",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 3,
+                "progress_steps": 2,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            }
+          ],
+          "distribution": "unique_max",
+          "expected_consumed": "p031",
+          "n": 32
+        },
+        {
+          "checkpoints": [
+            {
+              "attrs": {
+                "count_revision": 0,
+                "decision_revision": 0,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": "stale"
+              },
+              "elapsed_ns": 19250,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 180,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 4,
+                "term_eval:Eq": 2,
+                "term_eval:Var": 4,
+                "term_evals_total": 11,
+                "where_evals": 1,
+                "where_evals_first": 1,
+                "where_rejects": 1
+              },
+              "name": "one_stage_incomplete",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": ""
+              },
+              "elapsed_ns": 11610,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 110,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 8,
+                "term_eval:Eq": 4,
+                "term_eval:Var": 8,
+                "term_evals_total": 21,
+                "where_evals": 2,
+                "where_evals_first": 2,
+                "where_rejects": 1
+              },
+              "name": "stages_complete_uncommitted",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "consumed_label": "",
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 1,
+                "selected_label": ""
+              },
+              "elapsed_ns": 16030,
+              "metrics": {
+                "bindings_cloned": 2,
+                "cand_enum": 4,
+                "cand_enum_first": 4,
+                "cand_enum_local": 3,
+                "cand_enum_scan": 1,
+                "cand_tested": 4,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "leaf_visits": 2,
+                "rule_effect_attr_set_attempts": 2,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 4,
+                "scheduler_external_poll_slots": 6,
+                "scheduler_fixedpoint_probe_slots": 5,
+                "scheduler_passes": 3,
+                "scheduler_plan_ns": 180,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 2,
+                "term_eval:Attr": 16,
+                "term_eval:Eq": 7,
+                "term_eval:Var": 16,
+                "term_evals_total": 41,
+                "where_evals": 3,
+                "where_evals_first": 3
+              },
+              "name": "committed",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 3,
+                "progress_steps": 2,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            }
+          ],
+          "distribution": "tied_max",
+          "expected_consumed": "",
+          "n": 32
+        },
+        {
+          "checkpoints": [
+            {
+              "attrs": {
+                "count_revision": 0,
+                "decision_revision": 0,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": "stale"
+              },
+              "elapsed_ns": 19990,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 180,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 4,
+                "term_eval:Eq": 2,
+                "term_eval:Var": 4,
+                "term_evals_total": 11,
+                "where_evals": 1,
+                "where_evals_first": 1,
+                "where_rejects": 1
+              },
+              "name": "one_stage_incomplete",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": "p063"
+              },
+              "elapsed_ns": 18390,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 110,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 8,
+                "term_eval:Eq": 4,
+                "term_eval:Var": 8,
+                "term_evals_total": 21,
+                "where_evals": 2,
+                "where_evals_first": 2,
+                "where_rejects": 1
+              },
+              "name": "stages_complete_uncommitted",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "consumed_label": "p063",
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 1,
+                "selected_label": "p063"
+              },
+              "elapsed_ns": 26330,
+              "metrics": {
+                "bindings_cloned": 2,
+                "cand_enum": 4,
+                "cand_enum_first": 4,
+                "cand_enum_local": 3,
+                "cand_enum_scan": 1,
+                "cand_tested": 4,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "leaf_visits": 2,
+                "rule_effect_attr_set_attempts": 2,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 4,
+                "scheduler_external_poll_slots": 6,
+                "scheduler_fixedpoint_probe_slots": 5,
+                "scheduler_passes": 3,
+                "scheduler_plan_ns": 280,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 2,
+                "term_eval:Attr": 16,
+                "term_eval:Eq": 7,
+                "term_eval:Var": 16,
+                "term_evals_total": 41,
+                "where_evals": 3,
+                "where_evals_first": 3
+              },
+              "name": "committed",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 3,
+                "progress_steps": 2,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            }
+          ],
+          "distribution": "unique_max",
+          "expected_consumed": "p063",
+          "n": 64
+        },
+        {
+          "checkpoints": [
+            {
+              "attrs": {
+                "count_revision": 0,
+                "decision_revision": 0,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": "stale"
+              },
+              "elapsed_ns": 19331,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 170,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 4,
+                "term_eval:Eq": 2,
+                "term_eval:Var": 4,
+                "term_evals_total": 11,
+                "where_evals": 1,
+                "where_evals_first": 1,
+                "where_rejects": 1
+              },
+              "name": "one_stage_incomplete",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": ""
+              },
+              "elapsed_ns": 11880,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 110,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 8,
+                "term_eval:Eq": 4,
+                "term_eval:Var": 8,
+                "term_evals_total": 21,
+                "where_evals": 2,
+                "where_evals_first": 2,
+                "where_rejects": 1
+              },
+              "name": "stages_complete_uncommitted",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "consumed_label": "",
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 1,
+                "selected_label": ""
+              },
+              "elapsed_ns": 17460,
+              "metrics": {
+                "bindings_cloned": 2,
+                "cand_enum": 4,
+                "cand_enum_first": 4,
+                "cand_enum_local": 3,
+                "cand_enum_scan": 1,
+                "cand_tested": 4,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "leaf_visits": 2,
+                "rule_effect_attr_set_attempts": 2,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 4,
+                "scheduler_external_poll_slots": 6,
+                "scheduler_fixedpoint_probe_slots": 5,
+                "scheduler_passes": 3,
+                "scheduler_plan_ns": 210,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 2,
+                "term_eval:Attr": 16,
+                "term_eval:Eq": 7,
+                "term_eval:Var": 16,
+                "term_evals_total": 41,
+                "where_evals": 3,
+                "where_evals_first": 3
+              },
+              "name": "committed",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 3,
+                "progress_steps": 2,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            }
+          ],
+          "distribution": "tied_max",
+          "expected_consumed": "",
+          "n": 64
+        }
+      ],
+      "pid": 26,
+      "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+      "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]",
+      "started_inputs": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "425e086594e50335ca917e330206fec9bd8c778d4e58d2c5dd0d06cc61bc41ee",
+        "native_extension_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_extension_sha256": "260cf6063acbfb2fb83a7bfbe8b0bbe35afa951d3142539fbd868edf331d3afa",
+        "source_sha256": {
+          "docs/research/engine_substrate/SUBSTRATE_COMMITTED_RESULT_CONSUMER_GATE_V1_1_PREREG_20260928.md": "9458ef15ddd649b8b7cfd8c56994be028b0c34d8e9b03a6d36160dc667b0fa45",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+          "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+          "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+          "runners/dsl/src/term.rs": "0b91be836a6a7fe4587fb2ec3a944fdd6fb461838ca25151b1358c2158705fce",
+          "scripts/analyze_substrate_committed_result_consumer_gate_v1_1.py": "5aa43065c4e034d10cfff39446ebca45d6380a25f1b14a66005acf8de4974465",
+          "scripts/substrate_committed_result_consumer_gate_v1_1.py": "483fb43be6dc0f15e9b8d5ea11e7eff49cda1bd7fc48928b9fe20a4d4d737cc1"
+        }
+      },
+      "worker_id": 2
+    },
+    {
+      "cells": [
+        {
+          "checkpoints": [
+            {
+              "attrs": {
+                "count_revision": 0,
+                "decision_revision": 0,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": "stale"
+              },
+              "elapsed_ns": 84511,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 420,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 4,
+                "term_eval:Eq": 2,
+                "term_eval:Var": 4,
+                "term_evals_total": 11,
+                "where_evals": 1,
+                "where_evals_first": 1,
+                "where_rejects": 1
+              },
+              "name": "one_stage_incomplete",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": "p001"
+              },
+              "elapsed_ns": 12840,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 120,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 8,
+                "term_eval:Eq": 4,
+                "term_eval:Var": 8,
+                "term_evals_total": 21,
+                "where_evals": 2,
+                "where_evals_first": 2,
+                "where_rejects": 1
+              },
+              "name": "stages_complete_uncommitted",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "consumed_label": "p001",
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 1,
+                "selected_label": "p001"
+              },
+              "elapsed_ns": 28370,
+              "metrics": {
+                "bindings_cloned": 2,
+                "cand_enum": 4,
+                "cand_enum_first": 4,
+                "cand_enum_local": 3,
+                "cand_enum_scan": 1,
+                "cand_tested": 4,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "leaf_visits": 2,
+                "rule_effect_attr_set_attempts": 2,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 4,
+                "scheduler_external_poll_slots": 6,
+                "scheduler_fixedpoint_probe_slots": 5,
+                "scheduler_passes": 3,
+                "scheduler_plan_ns": 190,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 2,
+                "term_eval:Attr": 16,
+                "term_eval:Eq": 7,
+                "term_eval:Var": 16,
+                "term_evals_total": 41,
+                "where_evals": 3,
+                "where_evals_first": 3
+              },
+              "name": "committed",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 3,
+                "progress_steps": 2,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            }
+          ],
+          "distribution": "unique_max",
+          "expected_consumed": "p001",
+          "n": 2
+        },
+        {
+          "checkpoints": [
+            {
+              "attrs": {
+                "count_revision": 0,
+                "decision_revision": 0,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": "stale"
+              },
+              "elapsed_ns": 17170,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 160,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 4,
+                "term_eval:Eq": 2,
+                "term_eval:Var": 4,
+                "term_evals_total": 11,
+                "where_evals": 1,
+                "where_evals_first": 1,
+                "where_rejects": 1
+              },
+              "name": "one_stage_incomplete",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": ""
+              },
+              "elapsed_ns": 11420,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 80,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 8,
+                "term_eval:Eq": 4,
+                "term_eval:Var": 8,
+                "term_evals_total": 21,
+                "where_evals": 2,
+                "where_evals_first": 2,
+                "where_rejects": 1
+              },
+              "name": "stages_complete_uncommitted",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "consumed_label": "",
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 1,
+                "selected_label": ""
+              },
+              "elapsed_ns": 15740,
+              "metrics": {
+                "bindings_cloned": 2,
+                "cand_enum": 4,
+                "cand_enum_first": 4,
+                "cand_enum_local": 3,
+                "cand_enum_scan": 1,
+                "cand_tested": 4,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "leaf_visits": 2,
+                "rule_effect_attr_set_attempts": 2,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 4,
+                "scheduler_external_poll_slots": 6,
+                "scheduler_fixedpoint_probe_slots": 5,
+                "scheduler_passes": 3,
+                "scheduler_plan_ns": 190,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 2,
+                "term_eval:Attr": 16,
+                "term_eval:Eq": 7,
+                "term_eval:Var": 16,
+                "term_evals_total": 41,
+                "where_evals": 3,
+                "where_evals_first": 3
+              },
+              "name": "committed",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 3,
+                "progress_steps": 2,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            }
+          ],
+          "distribution": "tied_max",
+          "expected_consumed": "",
+          "n": 2
+        },
+        {
+          "checkpoints": [
+            {
+              "attrs": {
+                "count_revision": 0,
+                "decision_revision": 0,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": "stale"
+              },
+              "elapsed_ns": 16970,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 170,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 4,
+                "term_eval:Eq": 2,
+                "term_eval:Var": 4,
+                "term_evals_total": 11,
+                "where_evals": 1,
+                "where_evals_first": 1,
+                "where_rejects": 1
+              },
+              "name": "one_stage_incomplete",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": "p007"
+              },
+              "elapsed_ns": 11560,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 60,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 8,
+                "term_eval:Eq": 4,
+                "term_eval:Var": 8,
+                "term_evals_total": 21,
+                "where_evals": 2,
+                "where_evals_first": 2,
+                "where_rejects": 1
+              },
+              "name": "stages_complete_uncommitted",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "consumed_label": "p007",
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 1,
+                "selected_label": "p007"
+              },
+              "elapsed_ns": 14820,
+              "metrics": {
+                "bindings_cloned": 2,
+                "cand_enum": 4,
+                "cand_enum_first": 4,
+                "cand_enum_local": 3,
+                "cand_enum_scan": 1,
+                "cand_tested": 4,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "leaf_visits": 2,
+                "rule_effect_attr_set_attempts": 2,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 4,
+                "scheduler_external_poll_slots": 6,
+                "scheduler_fixedpoint_probe_slots": 5,
+                "scheduler_passes": 3,
+                "scheduler_plan_ns": 150,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 2,
+                "term_eval:Attr": 16,
+                "term_eval:Eq": 7,
+                "term_eval:Var": 16,
+                "term_evals_total": 41,
+                "where_evals": 3,
+                "where_evals_first": 3
+              },
+              "name": "committed",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 3,
+                "progress_steps": 2,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            }
+          ],
+          "distribution": "unique_max",
+          "expected_consumed": "p007",
+          "n": 8
+        },
+        {
+          "checkpoints": [
+            {
+              "attrs": {
+                "count_revision": 0,
+                "decision_revision": 0,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": "stale"
+              },
+              "elapsed_ns": 16290,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 190,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 4,
+                "term_eval:Eq": 2,
+                "term_eval:Var": 4,
+                "term_evals_total": 11,
+                "where_evals": 1,
+                "where_evals_first": 1,
+                "where_rejects": 1
+              },
+              "name": "one_stage_incomplete",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": ""
+              },
+              "elapsed_ns": 10450,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 60,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 8,
+                "term_eval:Eq": 4,
+                "term_eval:Var": 8,
+                "term_evals_total": 21,
+                "where_evals": 2,
+                "where_evals_first": 2,
+                "where_rejects": 1
+              },
+              "name": "stages_complete_uncommitted",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "consumed_label": "",
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 1,
+                "selected_label": ""
+              },
+              "elapsed_ns": 16010,
+              "metrics": {
+                "bindings_cloned": 2,
+                "cand_enum": 4,
+                "cand_enum_first": 4,
+                "cand_enum_local": 3,
+                "cand_enum_scan": 1,
+                "cand_tested": 4,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "leaf_visits": 2,
+                "rule_effect_attr_set_attempts": 2,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 4,
+                "scheduler_external_poll_slots": 6,
+                "scheduler_fixedpoint_probe_slots": 5,
+                "scheduler_passes": 3,
+                "scheduler_plan_ns": 210,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 2,
+                "term_eval:Attr": 16,
+                "term_eval:Eq": 7,
+                "term_eval:Var": 16,
+                "term_evals_total": 41,
+                "where_evals": 3,
+                "where_evals_first": 3
+              },
+              "name": "committed",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 3,
+                "progress_steps": 2,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            }
+          ],
+          "distribution": "tied_max",
+          "expected_consumed": "",
+          "n": 8
+        },
+        {
+          "checkpoints": [
+            {
+              "attrs": {
+                "count_revision": 0,
+                "decision_revision": 0,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": "stale"
+              },
+              "elapsed_ns": 16030,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 180,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 4,
+                "term_eval:Eq": 2,
+                "term_eval:Var": 4,
+                "term_evals_total": 11,
+                "where_evals": 1,
+                "where_evals_first": 1,
+                "where_rejects": 1
+              },
+              "name": "one_stage_incomplete",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": "p031"
+              },
+              "elapsed_ns": 15190,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 50,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 8,
+                "term_eval:Eq": 4,
+                "term_eval:Var": 8,
+                "term_evals_total": 21,
+                "where_evals": 2,
+                "where_evals_first": 2,
+                "where_rejects": 1
+              },
+              "name": "stages_complete_uncommitted",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "consumed_label": "p031",
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 1,
+                "selected_label": "p031"
+              },
+              "elapsed_ns": 19260,
+              "metrics": {
+                "bindings_cloned": 2,
+                "cand_enum": 4,
+                "cand_enum_first": 4,
+                "cand_enum_local": 3,
+                "cand_enum_scan": 1,
+                "cand_tested": 4,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "leaf_visits": 2,
+                "rule_effect_attr_set_attempts": 2,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 4,
+                "scheduler_external_poll_slots": 6,
+                "scheduler_fixedpoint_probe_slots": 5,
+                "scheduler_passes": 3,
+                "scheduler_plan_ns": 170,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 2,
+                "term_eval:Attr": 16,
+                "term_eval:Eq": 7,
+                "term_eval:Var": 16,
+                "term_evals_total": 41,
+                "where_evals": 3,
+                "where_evals_first": 3
+              },
+              "name": "committed",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 3,
+                "progress_steps": 2,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            }
+          ],
+          "distribution": "unique_max",
+          "expected_consumed": "p031",
+          "n": 32
+        },
+        {
+          "checkpoints": [
+            {
+              "attrs": {
+                "count_revision": 0,
+                "decision_revision": 0,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": "stale"
+              },
+              "elapsed_ns": 18490,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 160,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 4,
+                "term_eval:Eq": 2,
+                "term_eval:Var": 4,
+                "term_evals_total": 11,
+                "where_evals": 1,
+                "where_evals_first": 1,
+                "where_rejects": 1
+              },
+              "name": "one_stage_incomplete",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": ""
+              },
+              "elapsed_ns": 11510,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 60,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 8,
+                "term_eval:Eq": 4,
+                "term_eval:Var": 8,
+                "term_evals_total": 21,
+                "where_evals": 2,
+                "where_evals_first": 2,
+                "where_rejects": 1
+              },
+              "name": "stages_complete_uncommitted",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "consumed_label": "",
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 1,
+                "selected_label": ""
+              },
+              "elapsed_ns": 15610,
+              "metrics": {
+                "bindings_cloned": 2,
+                "cand_enum": 4,
+                "cand_enum_first": 4,
+                "cand_enum_local": 3,
+                "cand_enum_scan": 1,
+                "cand_tested": 4,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "leaf_visits": 2,
+                "rule_effect_attr_set_attempts": 2,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 4,
+                "scheduler_external_poll_slots": 6,
+                "scheduler_fixedpoint_probe_slots": 5,
+                "scheduler_passes": 3,
+                "scheduler_plan_ns": 180,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 2,
+                "term_eval:Attr": 16,
+                "term_eval:Eq": 7,
+                "term_eval:Var": 16,
+                "term_evals_total": 41,
+                "where_evals": 3,
+                "where_evals_first": 3
+              },
+              "name": "committed",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 3,
+                "progress_steps": 2,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            }
+          ],
+          "distribution": "tied_max",
+          "expected_consumed": "",
+          "n": 32
+        },
+        {
+          "checkpoints": [
+            {
+              "attrs": {
+                "count_revision": 0,
+                "decision_revision": 0,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": "stale"
+              },
+              "elapsed_ns": 19020,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 180,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 4,
+                "term_eval:Eq": 2,
+                "term_eval:Var": 4,
+                "term_evals_total": 11,
+                "where_evals": 1,
+                "where_evals_first": 1,
+                "where_rejects": 1
+              },
+              "name": "one_stage_incomplete",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": "p063"
+              },
+              "elapsed_ns": 17820,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 100,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 8,
+                "term_eval:Eq": 4,
+                "term_eval:Var": 8,
+                "term_evals_total": 21,
+                "where_evals": 2,
+                "where_evals_first": 2,
+                "where_rejects": 1
+              },
+              "name": "stages_complete_uncommitted",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "consumed_label": "p063",
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 1,
+                "selected_label": "p063"
+              },
+              "elapsed_ns": 26610,
+              "metrics": {
+                "bindings_cloned": 2,
+                "cand_enum": 4,
+                "cand_enum_first": 4,
+                "cand_enum_local": 3,
+                "cand_enum_scan": 1,
+                "cand_tested": 4,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "leaf_visits": 2,
+                "rule_effect_attr_set_attempts": 2,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 4,
+                "scheduler_external_poll_slots": 6,
+                "scheduler_fixedpoint_probe_slots": 5,
+                "scheduler_passes": 3,
+                "scheduler_plan_ns": 180,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 2,
+                "term_eval:Attr": 16,
+                "term_eval:Eq": 7,
+                "term_eval:Var": 16,
+                "term_evals_total": 41,
+                "where_evals": 3,
+                "where_evals_first": 3
+              },
+              "name": "committed",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 3,
+                "progress_steps": 2,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            }
+          ],
+          "distribution": "unique_max",
+          "expected_consumed": "p063",
+          "n": 64
+        },
+        {
+          "checkpoints": [
+            {
+              "attrs": {
+                "count_revision": 0,
+                "decision_revision": 0,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": "stale"
+              },
+              "elapsed_ns": 19330,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 180,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 4,
+                "term_eval:Eq": 2,
+                "term_eval:Var": 4,
+                "term_evals_total": 11,
+                "where_evals": 1,
+                "where_evals_first": 1,
+                "where_rejects": 1
+              },
+              "name": "one_stage_incomplete",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 0,
+                "selected_label": ""
+              },
+              "elapsed_ns": 12540,
+              "metrics": {
+                "cand_enum": 2,
+                "cand_enum_first": 2,
+                "cand_enum_local": 1,
+                "cand_enum_scan": 1,
+                "cand_tested": 2,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 2,
+                "scheduler_external_poll_slots": 2,
+                "scheduler_fixedpoint_probe_slots": 1,
+                "scheduler_passes": 1,
+                "scheduler_plan_ns": 90,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 1,
+                "term_eval:Attr": 8,
+                "term_eval:Eq": 4,
+                "term_eval:Var": 8,
+                "term_evals_total": 21,
+                "where_evals": 2,
+                "where_evals_first": 2,
+                "where_rejects": 1
+              },
+              "name": "stages_complete_uncommitted",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 1,
+                "progress_steps": 0,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            },
+            {
+              "attrs": {
+                "consumed_label": "",
+                "count_revision": 1,
+                "decision_revision": 1,
+                "max_revision": 1,
+                "resolved_revision": 1,
+                "selected_label": ""
+              },
+              "elapsed_ns": 17700,
+              "metrics": {
+                "bindings_cloned": 2,
+                "cand_enum": 4,
+                "cand_enum_first": 4,
+                "cand_enum_local": 3,
+                "cand_enum_scan": 1,
+                "cand_tested": 4,
+                "epochs": 1,
+                "ffi_calls": 1,
+                "ffi_items": 1,
+                "leaf_visits": 2,
+                "rule_effect_attr_set_attempts": 2,
+                "rule_enumerations": 2,
+                "scheduler_dirty_vector_slots": 4,
+                "scheduler_external_poll_slots": 6,
+                "scheduler_fixedpoint_probe_slots": 5,
+                "scheduler_passes": 3,
+                "scheduler_plan_ns": 160,
+                "scheduler_selected_rules": 2,
+                "term_eval:And": 2,
+                "term_eval:Attr": 16,
+                "term_eval:Eq": 7,
+                "term_eval:Var": 16,
+                "term_evals_total": 41,
+                "where_evals": 3,
+                "where_evals_first": 3
+              },
+              "name": "committed",
+              "report": {
+                "budget_overshoot": 0,
+                "cycle_detection_enabled": true,
+                "passes_completed": 3,
+                "progress_steps": 2,
+                "requested_progress_budget": 1000,
+                "status": "fixed_point"
+              }
+            }
+          ],
+          "distribution": "tied_max",
+          "expected_consumed": "",
+          "n": 64
+        }
+      ],
+      "pid": 45,
+      "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+      "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]",
+      "started_inputs": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "425e086594e50335ca917e330206fec9bd8c778d4e58d2c5dd0d06cc61bc41ee",
+        "native_extension_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_extension_sha256": "260cf6063acbfb2fb83a7bfbe8b0bbe35afa951d3142539fbd868edf331d3afa",
+        "source_sha256": {
+          "docs/research/engine_substrate/SUBSTRATE_COMMITTED_RESULT_CONSUMER_GATE_V1_1_PREREG_20260928.md": "9458ef15ddd649b8b7cfd8c56994be028b0c34d8e9b03a6d36160dc667b0fa45",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+          "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+          "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+          "runners/dsl/src/term.rs": "0b91be836a6a7fe4587fb2ec3a944fdd6fb461838ca25151b1358c2158705fce",
+          "scripts/analyze_substrate_committed_result_consumer_gate_v1_1.py": "5aa43065c4e034d10cfff39446ebca45d6380a25f1b14a66005acf8de4974465",
+          "scripts/substrate_committed_result_consumer_gate_v1_1.py": "483fb43be6dc0f15e9b8d5ea11e7eff49cda1bd7fc48928b9fe20a4d4d737cc1"
+        }
+      },
+      "worker_id": 3
+    }
+  ]
+}

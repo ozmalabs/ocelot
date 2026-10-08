@@ -1,0 +1,55 @@
+{
+  "capture_sha256": "4e182e1532d572b0dab365d1b07e2ab1283d4d3380ee9536897a7fb551982188",
+  "checks": {
+    "case_matrix_exact": true,
+    "effect_trace_complete": true,
+    "effect_trace_localizes_exactly": true,
+    "endpoint_baseline_is_ambiguous": true,
+    "endpoint_target_visibility": true,
+    "event_reports_have_no_effect_map": true,
+    "lock_hash": true,
+    "runner_analyzer_hashes_locked": true,
+    "schema": true,
+    "single_progressed_firing": true,
+    "source_lock_stable": true,
+    "three_independent_workers": true,
+    "worker_rows_replicate": true
+  },
+  "claim_limit": "Effect traces exactly localize the changed effect index on these synthetic bound-variable cases when the input is restricted to native event reports plus the failing node. This does not compare against a full rule rematch/source-analysis baseline, establish human/task utility, or generalize to natural workloads.",
+  "lock_sha256": "70c9ffa6467175828a63f858be13d92fb3d877748dbf92a44898b00871ff81f1",
+  "passed": true,
+  "schema": "ThoughtexperimentEffectTraceDiagnosisV1Analysis",
+  "summary": {
+    "effect_trace_exact_accuracy": 1.0,
+    "endpoint_only_first_candidate_accuracy": 0.125,
+    "heldout_cases": 80,
+    "mean_candidate_reduction_factor": 15.0,
+    "size_strata": {
+      "4": {
+        "cases": 20,
+        "effect_trace_exact_hits": 20,
+        "endpoint_candidate_count": 4,
+        "endpoint_first_candidate_hits": 6
+      },
+      "8": {
+        "cases": 20,
+        "effect_trace_exact_hits": 20,
+        "endpoint_candidate_count": 8,
+        "endpoint_first_candidate_hits": 2
+      },
+      "16": {
+        "cases": 20,
+        "effect_trace_exact_hits": 20,
+        "endpoint_candidate_count": 16,
+        "endpoint_first_candidate_hits": 2
+      },
+      "32": {
+        "cases": 20,
+        "effect_trace_exact_hits": 20,
+        "endpoint_candidate_count": 32,
+        "endpoint_first_candidate_hits": 0
+      }
+    },
+    "worker_replicates": 3
+  }
+}

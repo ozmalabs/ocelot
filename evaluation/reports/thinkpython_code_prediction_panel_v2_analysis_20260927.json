@@ -1,0 +1,1870 @@
+{
+  "checks": {
+    "all_rows_each": true,
+    "distinct_pids": true,
+    "eligible_count_18": true,
+    "fixed_case_count_36": true,
+    "frame_independent_reconstruction": true,
+    "hash_schedule_arguments_match": true,
+    "oracle_completed_all_cases": false,
+    "parent_lock_stable": true,
+    "two_workers": true,
+    "worker_locks_stable": true,
+    "worker_prediction_parity": true,
+    "workers_succeeded": true
+  },
+  "pass": false,
+  "summary": {
+    "candidate_count": 18,
+    "case_count": 36,
+    "claim_boundary": "Typed native-Term prediction versus independent bounded AST interpretation on the 36 calls in a statically selected Think Python subset; no broad general-code capability estimate.",
+    "workers": [
+      {
+        "abstentions": 26,
+        "accuracy_all_cases": 0.2777777777777778,
+        "accuracy_when_predicted": 1.0,
+        "boot_failures": 11,
+        "boot_loaded": 731,
+        "boot_total": 742,
+        "boot_wall_ns": 11955701506,
+        "by_function": {
+          "absolute_value": {
+            "abstentions": 2,
+            "cases": 4,
+            "correct": 2,
+            "predictions": 2
+          },
+          "add_all": {
+            "abstentions": 0,
+            "cases": 2,
+            "correct": 2,
+            "predictions": 2
+          },
+          "avoids": {
+            "abstentions": 2,
+            "cases": 2,
+            "correct": 0,
+            "predictions": 0
+          },
+          "different_words": {
+            "abstentions": 2,
+            "cases": 2,
+            "correct": 0,
+            "predictions": 0
+          },
+          "distance": {
+            "abstentions": 0,
+            "cases": 2,
+            "correct": 2,
+            "predictions": 2
+          },
+          "factorial": {
+            "abstentions": 2,
+            "cases": 2,
+            "correct": 0,
+            "predictions": 0
+          },
+          "first": {
+            "abstentions": 2,
+            "cases": 2,
+            "correct": 0,
+            "predictions": 0
+          },
+          "has_no_e": {
+            "abstentions": 2,
+            "cases": 2,
+            "correct": 0,
+            "predictions": 0
+          },
+          "is_abecedarian": {
+            "abstentions": 2,
+            "cases": 2,
+            "correct": 0,
+            "predictions": 0
+          },
+          "is_divisible": {
+            "abstentions": 0,
+            "cases": 4,
+            "correct": 4,
+            "predictions": 4
+          },
+          "min_max": {
+            "abstentions": 2,
+            "cases": 2,
+            "correct": 0,
+            "predictions": 0
+          },
+          "shift": {
+            "abstentions": 2,
+            "cases": 2,
+            "correct": 0,
+            "predictions": 0
+          },
+          "tail": {
+            "abstentions": 2,
+            "cases": 2,
+            "correct": 0,
+            "predictions": 0
+          },
+          "uses_all": {
+            "abstentions": 2,
+            "cases": 2,
+            "correct": 0,
+            "predictions": 0
+          },
+          "uses_only": {
+            "abstentions": 4,
+            "cases": 4,
+            "correct": 0,
+            "predictions": 0
+          }
+        },
+        "case_count": 36,
+        "case_results": [
+          {
+            "abstained": false,
+            "case_index": 0,
+            "correct": true,
+            "cpu_ns": 294251137,
+            "error_type": null,
+            "expected": {
+              "type": "float",
+              "value": 0.0
+            },
+            "function": "distance",
+            "minted_observation_count": 1,
+            "oracle_error": null,
+            "prediction": {
+              "type": "float",
+              "value": 0.0
+            },
+            "receipt_delta": 1,
+            "sample_id": [
+              "ch06_thinkpython2007.txt",
+              6
+            ],
+            "wall_ns": 41563951
+          },
+          {
+            "abstained": false,
+            "case_index": 1,
+            "correct": true,
+            "cpu_ns": 3991851,
+            "error_type": null,
+            "expected": {
+              "type": "float",
+              "value": 0.0
+            },
+            "function": "distance",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": {
+              "type": "float",
+              "value": 0.0
+            },
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch06_thinkpython2007.txt",
+              6
+            ],
+            "wall_ns": 3984445
+          },
+          {
+            "abstained": false,
+            "case_index": 0,
+            "correct": true,
+            "cpu_ns": 3098121,
+            "error_type": null,
+            "expected": {
+              "type": "bool",
+              "value": true
+            },
+            "function": "is_divisible",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": {
+              "type": "bool",
+              "value": true
+            },
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch06_thinkpython2007.txt",
+              17
+            ],
+            "wall_ns": 3092960
+          },
+          {
+            "abstained": false,
+            "case_index": 1,
+            "correct": true,
+            "cpu_ns": 5317771,
+            "error_type": null,
+            "expected": {
+              "type": "bool",
+              "value": false
+            },
+            "function": "is_divisible",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": {
+              "type": "bool",
+              "value": false
+            },
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch06_thinkpython2007.txt",
+              17
+            ],
+            "wall_ns": 5312865
+          },
+          {
+            "abstained": true,
+            "case_index": 0,
+            "correct": false,
+            "cpu_ns": 28988888,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "bool",
+              "value": false
+            },
+            "function": "has_no_e",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 1,
+            "sample_id": [
+              "ch09_thinkpython2010.txt",
+              5
+            ],
+            "wall_ns": 29088130
+          },
+          {
+            "abstained": true,
+            "case_index": 1,
+            "correct": false,
+            "cpu_ns": 7007402,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "bool",
+              "value": true
+            },
+            "function": "has_no_e",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch09_thinkpython2010.txt",
+              5
+            ],
+            "wall_ns": 6997445
+          },
+          {
+            "abstained": true,
+            "case_index": 0,
+            "correct": false,
+            "cpu_ns": 4225891,
+            "error_type": "EmitError",
+            "expected": null,
+            "function": "shift",
+            "minted_observation_count": 0,
+            "oracle_error": "TypeError",
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch13_thinkpython2014.txt",
+              21
+            ],
+            "wall_ns": 4710591
+          },
+          {
+            "abstained": true,
+            "case_index": 1,
+            "correct": false,
+            "cpu_ns": 4178831,
+            "error_type": "EmitError",
+            "expected": null,
+            "function": "shift",
+            "minted_observation_count": 0,
+            "oracle_error": "TypeError",
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch13_thinkpython2014.txt",
+              21
+            ],
+            "wall_ns": 4170698
+          },
+          {
+            "abstained": true,
+            "case_index": 0,
+            "correct": false,
+            "cpu_ns": 6909752,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "bool",
+              "value": true
+            },
+            "function": "uses_only",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch19_thinkpython2020.txt",
+              22
+            ],
+            "wall_ns": 7178387
+          },
+          {
+            "abstained": true,
+            "case_index": 1,
+            "correct": false,
+            "cpu_ns": 6960512,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "bool",
+              "value": false
+            },
+            "function": "uses_only",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch19_thinkpython2020.txt",
+              22
+            ],
+            "wall_ns": 7068275
+          },
+          {
+            "abstained": true,
+            "case_index": 0,
+            "correct": false,
+            "cpu_ns": 713010,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "int",
+              "value": 1
+            },
+            "function": "factorial",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch06_thinkpython2007.txt",
+              21
+            ],
+            "wall_ns": 4347618
+          },
+          {
+            "abstained": true,
+            "case_index": 1,
+            "correct": false,
+            "cpu_ns": 936270,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "NoneType",
+              "value": null
+            },
+            "function": "factorial",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch06_thinkpython2007.txt",
+              21
+            ],
+            "wall_ns": 2197704
+          },
+          {
+            "abstained": true,
+            "case_index": 0,
+            "correct": false,
+            "cpu_ns": 8179432,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "bool",
+              "value": true
+            },
+            "function": "avoids",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch09_thinkpython2010.txt",
+              6
+            ],
+            "wall_ns": 8168984
+          },
+          {
+            "abstained": true,
+            "case_index": 1,
+            "correct": false,
+            "cpu_ns": 6108731,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "bool",
+              "value": false
+            },
+            "function": "avoids",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch09_thinkpython2010.txt",
+              6
+            ],
+            "wall_ns": 6120860
+          },
+          {
+            "abstained": true,
+            "case_index": 0,
+            "correct": false,
+            "cpu_ns": 2823791,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "list",
+              "value": [
+                {
+                  "type": "int",
+                  "value": 3
+                },
+                {
+                  "type": "int",
+                  "value": 2
+                }
+              ]
+            },
+            "function": "tail",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch10_thinkpython2011.txt",
+              44
+            ],
+            "wall_ns": 2819238
+          },
+          {
+            "abstained": true,
+            "case_index": 1,
+            "correct": false,
+            "cpu_ns": 2809701,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "list",
+              "value": [
+                {
+                  "type": "int",
+                  "value": 5
+                }
+              ]
+            },
+            "function": "tail",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch10_thinkpython2011.txt",
+              44
+            ],
+            "wall_ns": 2813489
+          },
+          {
+            "abstained": true,
+            "case_index": 0,
+            "correct": false,
+            "cpu_ns": 3865781,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "bool",
+              "value": false
+            },
+            "function": "is_abecedarian",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch09_thinkpython2010.txt",
+              10
+            ],
+            "wall_ns": 3953576
+          },
+          {
+            "abstained": true,
+            "case_index": 1,
+            "correct": false,
+            "cpu_ns": 4055191,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "bool",
+              "value": true
+            },
+            "function": "is_abecedarian",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch09_thinkpython2010.txt",
+              10
+            ],
+            "wall_ns": 4834822
+          },
+          {
+            "abstained": true,
+            "case_index": 0,
+            "correct": false,
+            "cpu_ns": 4963371,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "bool",
+              "value": true
+            },
+            "function": "uses_all",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch09_thinkpython2010.txt",
+              8
+            ],
+            "wall_ns": 4957052
+          },
+          {
+            "abstained": true,
+            "case_index": 1,
+            "correct": false,
+            "cpu_ns": 5415941,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "bool",
+              "value": false
+            },
+            "function": "uses_all",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch09_thinkpython2010.txt",
+              8
+            ],
+            "wall_ns": 5417136
+          },
+          {
+            "abstained": false,
+            "case_index": 0,
+            "correct": true,
+            "cpu_ns": 3891701,
+            "error_type": null,
+            "expected": {
+              "type": "int",
+              "value": 6
+            },
+            "function": "add_all",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": {
+              "type": "int",
+              "value": 6
+            },
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch10_thinkpython2011.txt",
+              18
+            ],
+            "wall_ns": 3886106
+          },
+          {
+            "abstained": false,
+            "case_index": 1,
+            "correct": true,
+            "cpu_ns": 3787392,
+            "error_type": null,
+            "expected": {
+              "type": "int",
+              "value": 9
+            },
+            "function": "add_all",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": {
+              "type": "int",
+              "value": 9
+            },
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch10_thinkpython2011.txt",
+              18
+            ],
+            "wall_ns": 3781025
+          },
+          {
+            "abstained": true,
+            "case_index": 0,
+            "correct": false,
+            "cpu_ns": 25893657,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "tuple",
+              "value": [
+                {
+                  "type": "int",
+                  "value": 1
+                },
+                {
+                  "type": "int",
+                  "value": 3
+                }
+              ]
+            },
+            "function": "min_max",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 1,
+            "sample_id": [
+              "ch12_thinkpython2013.txt",
+              18
+            ],
+            "wall_ns": 25896529
+          },
+          {
+            "abstained": true,
+            "case_index": 1,
+            "correct": false,
+            "cpu_ns": 4127341,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "tuple",
+              "value": [
+                {
+                  "type": "int",
+                  "value": 4
+                },
+                {
+                  "type": "int",
+                  "value": 5
+                }
+              ]
+            },
+            "function": "min_max",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch12_thinkpython2013.txt",
+              18
+            ],
+            "wall_ns": 4120457
+          },
+          {
+            "abstained": true,
+            "case_index": 0,
+            "correct": false,
+            "cpu_ns": 28921958,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "int",
+              "value": 4
+            },
+            "function": "absolute_value",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 1,
+            "sample_id": [
+              "ch06_thinkpython2007.txt",
+              4
+            ],
+            "wall_ns": 28928008
+          },
+          {
+            "abstained": true,
+            "case_index": 1,
+            "correct": false,
+            "cpu_ns": 4313661,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "NoneType",
+              "value": null
+            },
+            "function": "absolute_value",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch06_thinkpython2007.txt",
+              4
+            ],
+            "wall_ns": 4308398
+          },
+          {
+            "abstained": false,
+            "case_index": 0,
+            "correct": true,
+            "cpu_ns": 3296151,
+            "error_type": null,
+            "expected": {
+              "type": "int",
+              "value": 4
+            },
+            "function": "absolute_value",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": {
+              "type": "int",
+              "value": 4
+            },
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch06_thinkpython2007.txt",
+              3
+            ],
+            "wall_ns": 3290151
+          },
+          {
+            "abstained": false,
+            "case_index": 1,
+            "correct": true,
+            "cpu_ns": 3244641,
+            "error_type": null,
+            "expected": {
+              "type": "int",
+              "value": 0
+            },
+            "function": "absolute_value",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": {
+              "type": "int",
+              "value": 0
+            },
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch06_thinkpython2007.txt",
+              3
+            ],
+            "wall_ns": 3239511
+          },
+          {
+            "abstained": true,
+            "case_index": 0,
+            "correct": false,
+            "cpu_ns": 32934519,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "int",
+              "value": 2
+            },
+            "function": "different_words",
+            "minted_observation_count": 1,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 1,
+            "sample_id": [
+              "ch13_thinkpython2014.txt",
+              7
+            ],
+            "wall_ns": 32927205
+          },
+          {
+            "abstained": true,
+            "case_index": 1,
+            "correct": false,
+            "cpu_ns": 3815191,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "int",
+              "value": 0
+            },
+            "function": "different_words",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch13_thinkpython2014.txt",
+              7
+            ],
+            "wall_ns": 3808564
+          },
+          {
+            "abstained": true,
+            "case_index": 0,
+            "correct": false,
+            "cpu_ns": 5960321,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "bool",
+              "value": true
+            },
+            "function": "uses_only",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch09_thinkpython2010.txt",
+              7
+            ],
+            "wall_ns": 5961349
+          },
+          {
+            "abstained": true,
+            "case_index": 1,
+            "correct": false,
+            "cpu_ns": 5039342,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "bool",
+              "value": false
+            },
+            "function": "uses_only",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch09_thinkpython2010.txt",
+              7
+            ],
+            "wall_ns": 5032862
+          },
+          {
+            "abstained": true,
+            "case_index": 0,
+            "correct": false,
+            "cpu_ns": 3576481,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "str",
+              "value": "a"
+            },
+            "function": "first",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch06_thinkpython2007.txt",
+              30
+            ],
+            "wall_ns": 3582094
+          },
+          {
+            "abstained": true,
+            "case_index": 1,
+            "correct": false,
+            "cpu_ns": 3491371,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "str",
+              "value": "x"
+            },
+            "function": "first",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch06_thinkpython2007.txt",
+              30
+            ],
+            "wall_ns": 3486783
+          },
+          {
+            "abstained": false,
+            "case_index": 0,
+            "correct": true,
+            "cpu_ns": 3401571,
+            "error_type": null,
+            "expected": {
+              "type": "bool",
+              "value": true
+            },
+            "function": "is_divisible",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": {
+              "type": "bool",
+              "value": true
+            },
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch06_thinkpython2007.txt",
+              15
+            ],
+            "wall_ns": 3396462
+          },
+          {
+            "abstained": false,
+            "case_index": 1,
+            "correct": true,
+            "cpu_ns": 3347111,
+            "error_type": null,
+            "expected": {
+              "type": "bool",
+              "value": false
+            },
+            "function": "is_divisible",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": {
+              "type": "bool",
+              "value": false
+            },
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch06_thinkpython2007.txt",
+              15
+            ],
+            "wall_ns": 3342282
+          }
+        ],
+        "correct": 10,
+        "coverage": 0.2777777777777778,
+        "minted_observation_count": 2,
+        "peak_rss_bytes": 1954627584,
+        "predictions": 10,
+        "receipt_count": 5,
+        "replicate": 0
+      },
+      {
+        "abstentions": 26,
+        "accuracy_all_cases": 0.2777777777777778,
+        "accuracy_when_predicted": 1.0,
+        "boot_failures": 11,
+        "boot_loaded": 731,
+        "boot_total": 742,
+        "boot_wall_ns": 12227909520,
+        "by_function": {
+          "absolute_value": {
+            "abstentions": 2,
+            "cases": 4,
+            "correct": 2,
+            "predictions": 2
+          },
+          "add_all": {
+            "abstentions": 0,
+            "cases": 2,
+            "correct": 2,
+            "predictions": 2
+          },
+          "avoids": {
+            "abstentions": 2,
+            "cases": 2,
+            "correct": 0,
+            "predictions": 0
+          },
+          "different_words": {
+            "abstentions": 2,
+            "cases": 2,
+            "correct": 0,
+            "predictions": 0
+          },
+          "distance": {
+            "abstentions": 0,
+            "cases": 2,
+            "correct": 2,
+            "predictions": 2
+          },
+          "factorial": {
+            "abstentions": 2,
+            "cases": 2,
+            "correct": 0,
+            "predictions": 0
+          },
+          "first": {
+            "abstentions": 2,
+            "cases": 2,
+            "correct": 0,
+            "predictions": 0
+          },
+          "has_no_e": {
+            "abstentions": 2,
+            "cases": 2,
+            "correct": 0,
+            "predictions": 0
+          },
+          "is_abecedarian": {
+            "abstentions": 2,
+            "cases": 2,
+            "correct": 0,
+            "predictions": 0
+          },
+          "is_divisible": {
+            "abstentions": 0,
+            "cases": 4,
+            "correct": 4,
+            "predictions": 4
+          },
+          "min_max": {
+            "abstentions": 2,
+            "cases": 2,
+            "correct": 0,
+            "predictions": 0
+          },
+          "shift": {
+            "abstentions": 2,
+            "cases": 2,
+            "correct": 0,
+            "predictions": 0
+          },
+          "tail": {
+            "abstentions": 2,
+            "cases": 2,
+            "correct": 0,
+            "predictions": 0
+          },
+          "uses_all": {
+            "abstentions": 2,
+            "cases": 2,
+            "correct": 0,
+            "predictions": 0
+          },
+          "uses_only": {
+            "abstentions": 4,
+            "cases": 4,
+            "correct": 0,
+            "predictions": 0
+          }
+        },
+        "case_count": 36,
+        "case_results": [
+          {
+            "abstained": false,
+            "case_index": 0,
+            "correct": true,
+            "cpu_ns": 303143164,
+            "error_type": null,
+            "expected": {
+              "type": "float",
+              "value": 0.0
+            },
+            "function": "distance",
+            "minted_observation_count": 1,
+            "oracle_error": null,
+            "prediction": {
+              "type": "float",
+              "value": 0.0
+            },
+            "receipt_delta": 1,
+            "sample_id": [
+              "ch06_thinkpython2007.txt",
+              6
+            ],
+            "wall_ns": 39975270
+          },
+          {
+            "abstained": false,
+            "case_index": 1,
+            "correct": true,
+            "cpu_ns": 3922002,
+            "error_type": null,
+            "expected": {
+              "type": "float",
+              "value": 0.0
+            },
+            "function": "distance",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": {
+              "type": "float",
+              "value": 0.0
+            },
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch06_thinkpython2007.txt",
+              6
+            ],
+            "wall_ns": 3916436
+          },
+          {
+            "abstained": false,
+            "case_index": 0,
+            "correct": true,
+            "cpu_ns": 3048620,
+            "error_type": null,
+            "expected": {
+              "type": "bool",
+              "value": true
+            },
+            "function": "is_divisible",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": {
+              "type": "bool",
+              "value": true
+            },
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch06_thinkpython2007.txt",
+              17
+            ],
+            "wall_ns": 3043710
+          },
+          {
+            "abstained": false,
+            "case_index": 1,
+            "correct": true,
+            "cpu_ns": 5218752,
+            "error_type": null,
+            "expected": {
+              "type": "bool",
+              "value": false
+            },
+            "function": "is_divisible",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": {
+              "type": "bool",
+              "value": false
+            },
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch06_thinkpython2007.txt",
+              17
+            ],
+            "wall_ns": 5213075
+          },
+          {
+            "abstained": true,
+            "case_index": 0,
+            "correct": false,
+            "cpu_ns": 23005536,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "bool",
+              "value": false
+            },
+            "function": "has_no_e",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 1,
+            "sample_id": [
+              "ch09_thinkpython2010.txt",
+              5
+            ],
+            "wall_ns": 23009279
+          },
+          {
+            "abstained": true,
+            "case_index": 1,
+            "correct": false,
+            "cpu_ns": 4632561,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "bool",
+              "value": true
+            },
+            "function": "has_no_e",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch09_thinkpython2010.txt",
+              5
+            ],
+            "wall_ns": 4625950
+          },
+          {
+            "abstained": true,
+            "case_index": 0,
+            "correct": false,
+            "cpu_ns": 2922081,
+            "error_type": "EmitError",
+            "expected": null,
+            "function": "shift",
+            "minted_observation_count": 0,
+            "oracle_error": "TypeError",
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch13_thinkpython2014.txt",
+              21
+            ],
+            "wall_ns": 2916560
+          },
+          {
+            "abstained": true,
+            "case_index": 1,
+            "correct": false,
+            "cpu_ns": 2903641,
+            "error_type": "EmitError",
+            "expected": null,
+            "function": "shift",
+            "minted_observation_count": 0,
+            "oracle_error": "TypeError",
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch13_thinkpython2014.txt",
+              21
+            ],
+            "wall_ns": 2898369
+          },
+          {
+            "abstained": true,
+            "case_index": 0,
+            "correct": false,
+            "cpu_ns": 5248772,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "bool",
+              "value": true
+            },
+            "function": "uses_only",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch19_thinkpython2020.txt",
+              22
+            ],
+            "wall_ns": 5242974
+          },
+          {
+            "abstained": true,
+            "case_index": 1,
+            "correct": false,
+            "cpu_ns": 4668801,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "bool",
+              "value": false
+            },
+            "function": "uses_only",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch19_thinkpython2020.txt",
+              22
+            ],
+            "wall_ns": 4662050
+          },
+          {
+            "abstained": true,
+            "case_index": 0,
+            "correct": false,
+            "cpu_ns": 517400,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "int",
+              "value": 1
+            },
+            "function": "factorial",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch06_thinkpython2007.txt",
+              21
+            ],
+            "wall_ns": 511734
+          },
+          {
+            "abstained": true,
+            "case_index": 1,
+            "correct": false,
+            "cpu_ns": 496720,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "NoneType",
+              "value": null
+            },
+            "function": "factorial",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch06_thinkpython2007.txt",
+              21
+            ],
+            "wall_ns": 491093
+          },
+          {
+            "abstained": true,
+            "case_index": 0,
+            "correct": false,
+            "cpu_ns": 5574532,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "bool",
+              "value": true
+            },
+            "function": "avoids",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch09_thinkpython2010.txt",
+              6
+            ],
+            "wall_ns": 5568227
+          },
+          {
+            "abstained": true,
+            "case_index": 1,
+            "correct": false,
+            "cpu_ns": 5375381,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "bool",
+              "value": false
+            },
+            "function": "avoids",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch09_thinkpython2010.txt",
+              6
+            ],
+            "wall_ns": 5369085
+          },
+          {
+            "abstained": true,
+            "case_index": 0,
+            "correct": false,
+            "cpu_ns": 2880721,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "list",
+              "value": [
+                {
+                  "type": "int",
+                  "value": 3
+                },
+                {
+                  "type": "int",
+                  "value": 2
+                }
+              ]
+            },
+            "function": "tail",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch10_thinkpython2011.txt",
+              44
+            ],
+            "wall_ns": 2875298
+          },
+          {
+            "abstained": true,
+            "case_index": 1,
+            "correct": false,
+            "cpu_ns": 3079161,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "list",
+              "value": [
+                {
+                  "type": "int",
+                  "value": 5
+                }
+              ]
+            },
+            "function": "tail",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch10_thinkpython2011.txt",
+              44
+            ],
+            "wall_ns": 3070200
+          },
+          {
+            "abstained": true,
+            "case_index": 0,
+            "correct": false,
+            "cpu_ns": 3818031,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "bool",
+              "value": false
+            },
+            "function": "is_abecedarian",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch09_thinkpython2010.txt",
+              10
+            ],
+            "wall_ns": 3811615
+          },
+          {
+            "abstained": true,
+            "case_index": 1,
+            "correct": false,
+            "cpu_ns": 4285211,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "bool",
+              "value": true
+            },
+            "function": "is_abecedarian",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch09_thinkpython2010.txt",
+              10
+            ],
+            "wall_ns": 4278599
+          },
+          {
+            "abstained": true,
+            "case_index": 0,
+            "correct": false,
+            "cpu_ns": 4865252,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "bool",
+              "value": true
+            },
+            "function": "uses_all",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch09_thinkpython2010.txt",
+              8
+            ],
+            "wall_ns": 4858681
+          },
+          {
+            "abstained": true,
+            "case_index": 1,
+            "correct": false,
+            "cpu_ns": 4900751,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "bool",
+              "value": false
+            },
+            "function": "uses_all",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch09_thinkpython2010.txt",
+              8
+            ],
+            "wall_ns": 4894622
+          },
+          {
+            "abstained": false,
+            "case_index": 0,
+            "correct": true,
+            "cpu_ns": 4030661,
+            "error_type": null,
+            "expected": {
+              "type": "int",
+              "value": 6
+            },
+            "function": "add_all",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": {
+              "type": "int",
+              "value": 6
+            },
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch10_thinkpython2011.txt",
+              18
+            ],
+            "wall_ns": 4024416
+          },
+          {
+            "abstained": false,
+            "case_index": 1,
+            "correct": true,
+            "cpu_ns": 3770441,
+            "error_type": null,
+            "expected": {
+              "type": "int",
+              "value": 9
+            },
+            "function": "add_all",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": {
+              "type": "int",
+              "value": 9
+            },
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch10_thinkpython2011.txt",
+              18
+            ],
+            "wall_ns": 3764504
+          },
+          {
+            "abstained": true,
+            "case_index": 0,
+            "correct": false,
+            "cpu_ns": 25912887,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "tuple",
+              "value": [
+                {
+                  "type": "int",
+                  "value": 1
+                },
+                {
+                  "type": "int",
+                  "value": 3
+                }
+              ]
+            },
+            "function": "min_max",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 1,
+            "sample_id": [
+              "ch12_thinkpython2013.txt",
+              18
+            ],
+            "wall_ns": 25905468
+          },
+          {
+            "abstained": true,
+            "case_index": 1,
+            "correct": false,
+            "cpu_ns": 4072161,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "tuple",
+              "value": [
+                {
+                  "type": "int",
+                  "value": 4
+                },
+                {
+                  "type": "int",
+                  "value": 5
+                }
+              ]
+            },
+            "function": "min_max",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch12_thinkpython2013.txt",
+              18
+            ],
+            "wall_ns": 4065197
+          },
+          {
+            "abstained": true,
+            "case_index": 0,
+            "correct": false,
+            "cpu_ns": 27418358,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "int",
+              "value": 4
+            },
+            "function": "absolute_value",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 1,
+            "sample_id": [
+              "ch06_thinkpython2007.txt",
+              4
+            ],
+            "wall_ns": 27416289
+          },
+          {
+            "abstained": true,
+            "case_index": 1,
+            "correct": false,
+            "cpu_ns": 4184201,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "NoneType",
+              "value": null
+            },
+            "function": "absolute_value",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch06_thinkpython2007.txt",
+              4
+            ],
+            "wall_ns": 4176847
+          },
+          {
+            "abstained": false,
+            "case_index": 0,
+            "correct": true,
+            "cpu_ns": 3264531,
+            "error_type": null,
+            "expected": {
+              "type": "int",
+              "value": 4
+            },
+            "function": "absolute_value",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": {
+              "type": "int",
+              "value": 4
+            },
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch06_thinkpython2007.txt",
+              3
+            ],
+            "wall_ns": 3258061
+          },
+          {
+            "abstained": false,
+            "case_index": 1,
+            "correct": true,
+            "cpu_ns": 3179951,
+            "error_type": null,
+            "expected": {
+              "type": "int",
+              "value": 0
+            },
+            "function": "absolute_value",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": {
+              "type": "int",
+              "value": 0
+            },
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch06_thinkpython2007.txt",
+              3
+            ],
+            "wall_ns": 3174371
+          },
+          {
+            "abstained": true,
+            "case_index": 0,
+            "correct": false,
+            "cpu_ns": 31926208,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "int",
+              "value": 2
+            },
+            "function": "different_words",
+            "minted_observation_count": 1,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 1,
+            "sample_id": [
+              "ch13_thinkpython2014.txt",
+              7
+            ],
+            "wall_ns": 31919767
+          },
+          {
+            "abstained": true,
+            "case_index": 1,
+            "correct": false,
+            "cpu_ns": 3816561,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "int",
+              "value": 0
+            },
+            "function": "different_words",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch13_thinkpython2014.txt",
+              7
+            ],
+            "wall_ns": 3810575
+          },
+          {
+            "abstained": true,
+            "case_index": 0,
+            "correct": false,
+            "cpu_ns": 4682181,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "bool",
+              "value": true
+            },
+            "function": "uses_only",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch09_thinkpython2010.txt",
+              7
+            ],
+            "wall_ns": 4686000
+          },
+          {
+            "abstained": true,
+            "case_index": 1,
+            "correct": false,
+            "cpu_ns": 4635041,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "bool",
+              "value": false
+            },
+            "function": "uses_only",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch09_thinkpython2010.txt",
+              7
+            ],
+            "wall_ns": 4630201
+          },
+          {
+            "abstained": true,
+            "case_index": 0,
+            "correct": false,
+            "cpu_ns": 3277401,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "str",
+              "value": "a"
+            },
+            "function": "first",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch06_thinkpython2007.txt",
+              30
+            ],
+            "wall_ns": 3271621
+          },
+          {
+            "abstained": true,
+            "case_index": 1,
+            "correct": false,
+            "cpu_ns": 3300341,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "str",
+              "value": "x"
+            },
+            "function": "first",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": null,
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch06_thinkpython2007.txt",
+              30
+            ],
+            "wall_ns": 3294491
+          },
+          {
+            "abstained": false,
+            "case_index": 0,
+            "correct": true,
+            "cpu_ns": 3571341,
+            "error_type": null,
+            "expected": {
+              "type": "bool",
+              "value": true
+            },
+            "function": "is_divisible",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": {
+              "type": "bool",
+              "value": true
+            },
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch06_thinkpython2007.txt",
+              15
+            ],
+            "wall_ns": 3566033
+          },
+          {
+            "abstained": false,
+            "case_index": 1,
+            "correct": true,
+            "cpu_ns": 3315311,
+            "error_type": null,
+            "expected": {
+              "type": "bool",
+              "value": false
+            },
+            "function": "is_divisible",
+            "minted_observation_count": 0,
+            "oracle_error": null,
+            "prediction": {
+              "type": "bool",
+              "value": false
+            },
+            "receipt_delta": 0,
+            "sample_id": [
+              "ch06_thinkpython2007.txt",
+              15
+            ],
+            "wall_ns": 3309981
+          }
+        ],
+        "correct": 10,
+        "coverage": 0.2777777777777778,
+        "minted_observation_count": 2,
+        "peak_rss_bytes": 1951768576,
+        "predictions": 10,
+        "receipt_count": 5,
+        "replicate": 1
+      }
+    ]
+  }
+}

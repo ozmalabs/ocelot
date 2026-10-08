@@ -1,0 +1,17 @@
+{
+  "checks": {
+    "ambiguous_owner_currently_transitions_both": true,
+    "ambiguous_owner_was_detected": true,
+    "missing_owner_does_not_transition": true,
+    "raw_inputs_match_lock": true,
+    "raw_lock_digest_matches": true,
+    "six_interleaved_checkpoints_replicate": true,
+    "source_stable_workers_and_postrun": true,
+    "three_distinct_pids": true
+  },
+  "finding": "Explicit identity preserves the intended interleaved lifecycle sequence; missing identity transitions neither Goal. However, native rules transition both Goals when one event has two for_goal edges. Ambiguous owner uniqueness is not enforced by the current native transition rules.",
+  "limits": "Fixture-level native rule semantics only; not thread concurrency, live action producer execution, performance, or general scheduler completeness.",
+  "lock_sha256": "9b46abec587172ae0b5854faaa433d602775ca8d88a8d3424d1dc8959dfaf1ef",
+  "raw_sha256": "eae616c45ec1683a9af54ccfa6668df4bd682d306b2c886911802c15b8e84afb",
+  "schema_version": 1
+}

@@ -1,0 +1,207 @@
+{
+  "cases": [
+    {
+      "arm": "daemon_full",
+      "baseline_meta_shapes": [
+        "feedback_control",
+        "associative_recall",
+        "competitive_inhibition",
+        "prediction_minus_observation",
+        "hierarchical_invariance_buildup",
+        "global_message_passing",
+        "selective_gating",
+        "delayed_persistence",
+        "modular_isolation",
+        "relational_structure_match",
+        "spatial_dynamics"
+      ],
+      "before": {
+        "flags": {
+          "blink_bridge_enabled": null,
+          "depth_infer_enabled": null,
+          "gen_infer_enabled": null,
+          "time_infer_enabled": null
+        },
+        "loader_complete": false,
+        "loader_failed": [
+          "acoustic_cue_vocab:ValueError:seed node missing local_id",
+          "character_tom:ValueError:seed node missing local_id",
+          "reading_constructions:ValueError:seed node missing local_id",
+          "conceptual_categories:ValueError:seed node missing local_id",
+          "cue_investigator:ValueError:seed node missing local_id",
+          "named_compound_heads:ValueError:seed node missing local_id",
+          "reading_skeleton:ValueError:seed node missing local_id",
+          "vision_change:ValueError:seed node missing local_id",
+          "qwen3_reaped_isa_full:ValueError:seed ref must be an object",
+          "qwen3_reaped_knowledge:ValueError:seed ref must be an object",
+          "qwen3_reaped_knowledge_scaled:ValueError:seed ref must be an object"
+        ],
+        "loader_loaded": 729,
+        "loader_total": 740,
+        "meta_shape_growth_loaded": true,
+        "seed_ids_selected_or_attempted": 740,
+        "shape_decode_loop_loaded": true,
+        "shape_vocabulary_loaded": true
+      },
+      "teach": [
+        {
+          "minted_meta_shapes": [
+            "feedback_control",
+            "associative_recall",
+            "competitive_inhibition",
+            "prediction_minus_observation",
+            "hierarchical_invariance_buildup",
+            "global_message_passing",
+            "selective_gating",
+            "delayed_persistence",
+            "modular_isolation",
+            "relational_structure_match",
+            "spatial_dynamics"
+          ],
+          "observation_count": 1,
+          "saved": true,
+          "status": "residual"
+        },
+        {
+          "minted_meta_shapes": [
+            "feedback_control",
+            "associative_recall",
+            "competitive_inhibition",
+            "prediction_minus_observation",
+            "hierarchical_invariance_buildup",
+            "global_message_passing",
+            "selective_gating",
+            "delayed_persistence",
+            "modular_isolation",
+            "relational_structure_match",
+            "spatial_dynamics",
+            "ms_is_a_slot_a_slot_b"
+          ],
+          "new_meta_shapes": [
+            "ms_is_a_slot_a_slot_b"
+          ],
+          "observation_count": 2,
+          "saved": true,
+          "status": "recognized"
+        }
+      ]
+    },
+    {
+      "arm": "daemon_chat",
+      "baseline_meta_shapes": [],
+      "before": {
+        "flags": {
+          "blink_bridge_enabled": null,
+          "depth_infer_enabled": null,
+          "gen_infer_enabled": null,
+          "time_infer_enabled": null
+        },
+        "meta_shape_growth_loaded": false,
+        "seed_ids_selected_or_attempted": 27,
+        "seed_load_failures": [],
+        "shape_decode_loop_loaded": false,
+        "shape_vocabulary_loaded": false
+      },
+      "teach": [
+        {
+          "minted_meta_shapes": [],
+          "observation_count": 1,
+          "saved": true,
+          "status": "pending"
+        },
+        {
+          "minted_meta_shapes": [],
+          "new_meta_shapes": [],
+          "observation_count": 2,
+          "saved": true,
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "arm": "daemon_embodied",
+      "baseline_meta_shapes": [],
+      "before": {
+        "flags": {
+          "blink_bridge_enabled": null,
+          "depth_infer_enabled": null,
+          "gen_infer_enabled": null,
+          "time_infer_enabled": null
+        },
+        "meta_shape_growth_loaded": false,
+        "seed_ids_selected_or_attempted": 7,
+        "seed_load_failures": [],
+        "shape_decode_loop_loaded": false,
+        "shape_vocabulary_loaded": false
+      },
+      "teach": [
+        {
+          "minted_meta_shapes": [],
+          "observation_count": 1,
+          "saved": true,
+          "status": "pending"
+        },
+        {
+          "minted_meta_shapes": [],
+          "new_meta_shapes": [],
+          "observation_count": 2,
+          "saved": true,
+          "status": "pending"
+        }
+      ]
+    }
+  ],
+  "chat_seed_ids": [
+    "relations",
+    "intent",
+    "conversation",
+    "discourse",
+    "conversation_reply",
+    "reference_resolution",
+    "language_foundation",
+    "lang_production",
+    "communication_concepts",
+    "grounding"
+  ],
+  "core_seed_ids": [
+    "decision_core",
+    "learning_core",
+    "perception_core",
+    "epistemics_core",
+    "motor_core",
+    "experimentation_core",
+    "goal_construction",
+    "self_monitoring",
+    "memory_core",
+    "reflex_core",
+    "theorem_core",
+    "affective_state_core",
+    "dual_process_core",
+    "episodic_working_memory_core",
+    "adaptive_control_core",
+    "generative_world_model",
+    "default_mode_core"
+  ],
+  "engine": "engine f5543ca01527 @ /home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+  "native_extension_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+  "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+  "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+  "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]",
+  "run_id": "substrate-induction-runtime-activation-census-v2-20260926",
+  "schema_version": 2,
+  "scope": "One process, fresh adapters reproducing the daemon full, chat, and embodied boot branches. Checkpoint resume is excluded. Two intentionally repeated authored teach() examples probe MetaShape activation, not natural frequency or learning quality.",
+  "source_sha256": {
+    "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+    "domains/meta_shape.py": "0366a4c21c172bb72e8245909ffef4d24bc22edea8bf6f23a1bea08240a6ec9f",
+    "domains/teach.py": "86a4d03373dfd57a724d328844d10003d5c2eb23faf64a715b82cbef9a6ce9f1",
+    "runners/dsl/python/substrate_rs/_native.build.json": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+    "scripts/jabberwock_daemon.py": "40f607acaa48b6020db596582a2520ab3a6bb4b00f90f92a1113dd4874a5c67d",
+    "scripts/substrate_induction_runtime_activation_census_v2.py": "dcf1e51fb1dc18c9dd6cf22543baa9ddffddaba5cb931169ddf181a223302ccd",
+    "seeds/meta_shape_growth.json": "5e7ff7671705c0ffb7c15ac9fb37e86c2cce5c05fc6dd8b0541e7e762cf6d65a",
+    "seeds/shape_vocabulary.json": "936481e46e81e37c813f16b1a5926cba2f5390b8c94888ef3b1cb454e981d565",
+    "substrate/boot_all.py": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+    "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+    "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+    "substrate/world_adapter.py": "1b67e1d6baf31ef9d39bce5cb9b442b46043b248e92b4661f534372643f3ff3a"
+  }
+}

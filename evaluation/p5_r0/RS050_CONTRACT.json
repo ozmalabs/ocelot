@@ -1,0 +1,59 @@
+{
+  "schema": "P5R0RS050ContractV1",
+  "evidence_schema": "P5R0RS050EvidenceV1",
+  "invocation_schema": "P5R0RS050InvocationV1",
+  "identity_schema": "P5R0SupervisorIdentityV1",
+  "evidence_fields": [
+    "schema",
+    "run_id",
+    "lock_digest",
+    "closure_digest",
+    "resource_profile_digest",
+    "supervisor_identity",
+    "supervisor_evidence",
+    "worker_invocations",
+    "invocations",
+    "claim_boundary",
+    "contract_digest",
+    "evidence_digest"
+  ],
+  "identity_fields": [
+    "schema",
+    "supervisor_id",
+    "authority_key_digest",
+    "authentication_method",
+    "identity_digest"
+  ],
+  "invocation_fields": [
+    "schema",
+    "run_id",
+    "lock_digest",
+    "closure_digest",
+    "supervisor_digest",
+    "task_id",
+    "sequence",
+    "worker_exit",
+    "timed_out",
+    "oom",
+    "process_group_killed",
+    "cleanup_verified",
+    "observed",
+    "resource_profile_digest",
+    "resource_observation_digest",
+    "evidence_digest"
+  ],
+  "authentication_methods": [
+    "external_signature",
+    "attested_channel"
+  ],
+  "invariants": [
+    "invocation sequences are contiguous one-based integers",
+    "every invocation binds run, lock, closure, supervisor, task, sequence, and resource profile",
+    "timeouts and OOM require nonzero exit, process-group kill, and verified cleanup",
+    "observed lifecycle evidence requires verified cleanup",
+    "aggregate counts and outcomes equal the invocation ledger",
+    "digests are recomputed from canonical fields",
+    "structural validation never authenticates or promotes evidence"
+  ],
+  "claim_boundary": "Authenticated external supervisor/resource evidence only; no native result, release, adoption, independent evaluation, or promotion claim."
+}

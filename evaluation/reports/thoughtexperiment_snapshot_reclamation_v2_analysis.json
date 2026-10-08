@@ -1,0 +1,651 @@
+{
+  "all_checks_pass": true,
+  "analyzer_sha256": "sha256:01fae71f9db0c8ffe46b677c63ccb1807a2f7c183742530bca4ada6d00ddb926",
+  "checks": {
+    "all_memory_stages_present": true,
+    "all_primary_and_branch_semantics_pass": true,
+    "complete_size_backend_repeat_grid": true,
+    "complete_warmup_and_measurement_schedule": true,
+    "engine_fingerprint_current": true,
+    "expected_45_measured_workers": true,
+    "source_and_runner_hashes_match_capture": true,
+    "unique_fresh_process_per_measured_worker": true
+  },
+  "checks_passed": 8,
+  "checks_total": 8,
+  "interpretation_limit": "PSS/RSS deltas are current whole-process readings relative to baseline; negative post-drop values reflect runtime/allocator/process noise and are not a reclamation guarantee. One host and one synthetic fixture.",
+  "protocol": "THOUGHTEXPERIMENT_SNAPSHOT_RECLAMATION_V2",
+  "raw_sha256": "sha256:e0e5432201150dfb1661944dfc2b34035738e317edd0cd00bbf4688f7a9da77e",
+  "summary": [
+    {
+      "all_semantic_gates_pass": true,
+      "backend": "full_copy",
+      "median_stage_delta_kib": {
+        "branch_dropped_snapshot_live": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 212.0,
+          "Pss": 276.0,
+          "Rss": 276.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "branch_live": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 708.0,
+          "Pss": 772.0,
+          "Rss": 772.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "branch_written": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 708.0,
+          "Pss": 772.0,
+          "Rss": 772.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "primary_dropped": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": -2024.0,
+          "Pss": -1960.0,
+          "Rss": -1960.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "snapshot_dropped": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": -1512.0,
+          "Pss": -1448.0,
+          "Rss": -1448.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "snapshot_live": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 212.0,
+          "Pss": 276.0,
+          "Rss": 276.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "verification_branch_dropped": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 420.0,
+          "Pss": 484.0,
+          "Rss": 484.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        }
+      },
+      "size_added_nodes": 0
+    },
+    {
+      "all_semantic_gates_pass": true,
+      "backend": "shared_graph_pages",
+      "median_stage_delta_kib": {
+        "branch_dropped_snapshot_live": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 708.0,
+          "Pss": 772.0,
+          "Rss": 772.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "branch_live": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 708.0,
+          "Pss": 772.0,
+          "Rss": 772.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "branch_written": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 708.0,
+          "Pss": 772.0,
+          "Rss": 772.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "primary_dropped": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": -1628.0,
+          "Pss": -1564.0,
+          "Rss": -1564.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "snapshot_dropped": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": -1116.0,
+          "Pss": -1052.0,
+          "Rss": -1052.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "snapshot_live": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 220.0,
+          "Pss": 284.0,
+          "Rss": 284.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "verification_branch_dropped": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 708.0,
+          "Pss": 772.0,
+          "Rss": 772.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        }
+      },
+      "size_added_nodes": 0
+    },
+    {
+      "all_semantic_gates_pass": true,
+      "backend": "shared_slabs",
+      "median_stage_delta_kib": {
+        "branch_dropped_snapshot_live": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 704.0,
+          "Pss": 768.0,
+          "Rss": 768.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "branch_live": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 704.0,
+          "Pss": 768.0,
+          "Rss": 768.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "branch_written": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 704.0,
+          "Pss": 768.0,
+          "Rss": 768.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "primary_dropped": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": -2044.0,
+          "Pss": -1980.0,
+          "Rss": -1980.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "snapshot_dropped": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": -1532.0,
+          "Pss": -1468.0,
+          "Rss": -1468.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "snapshot_live": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 216.0,
+          "Pss": 280.0,
+          "Rss": 280.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "verification_branch_dropped": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 704.0,
+          "Pss": 768.0,
+          "Rss": 768.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        }
+      },
+      "size_added_nodes": 0
+    },
+    {
+      "all_semantic_gates_pass": true,
+      "backend": "full_copy",
+      "median_stage_delta_kib": {
+        "branch_dropped_snapshot_live": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 2792.0,
+          "Pss": 2856.0,
+          "Rss": 2856.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "branch_live": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 3260.0,
+          "Pss": 3324.0,
+          "Rss": 3324.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "branch_written": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 3288.0,
+          "Pss": 3352.0,
+          "Rss": 3352.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "primary_dropped": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 2748.0,
+          "Pss": 2812.0,
+          "Rss": 2812.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "snapshot_dropped": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 3260.0,
+          "Pss": 3324.0,
+          "Rss": 3324.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "snapshot_live": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 212.0,
+          "Pss": 276.0,
+          "Rss": 276.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "verification_branch_dropped": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 3260.0,
+          "Pss": 3324.0,
+          "Rss": 3324.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        }
+      },
+      "size_added_nodes": 10000
+    },
+    {
+      "all_semantic_gates_pass": true,
+      "backend": "shared_graph_pages",
+      "median_stage_delta_kib": {
+        "branch_dropped_snapshot_live": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 216.0,
+          "Pss": 280.0,
+          "Rss": 280.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "branch_live": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 712.0,
+          "Pss": 776.0,
+          "Rss": 776.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "branch_written": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 712.0,
+          "Pss": 776.0,
+          "Rss": 776.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "primary_dropped": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": -944.0,
+          "Pss": -880.0,
+          "Rss": -880.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "snapshot_dropped": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": -432.0,
+          "Pss": -368.0,
+          "Rss": -368.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "snapshot_live": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 216.0,
+          "Pss": 280.0,
+          "Rss": 280.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "verification_branch_dropped": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 428.0,
+          "Pss": 492.0,
+          "Rss": 492.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        }
+      },
+      "size_added_nodes": 10000
+    },
+    {
+      "all_semantic_gates_pass": true,
+      "backend": "shared_slabs",
+      "median_stage_delta_kib": {
+        "branch_dropped_snapshot_live": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 216.0,
+          "Pss": 280.0,
+          "Rss": 280.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "branch_live": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 712.0,
+          "Pss": 776.0,
+          "Rss": 776.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "branch_written": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 712.0,
+          "Pss": 776.0,
+          "Rss": 776.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "primary_dropped": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": -944.0,
+          "Pss": -880.0,
+          "Rss": -880.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "snapshot_dropped": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": -432.0,
+          "Pss": -368.0,
+          "Rss": -368.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "snapshot_live": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 216.0,
+          "Pss": 280.0,
+          "Rss": 280.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "verification_branch_dropped": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 428.0,
+          "Pss": 492.0,
+          "Rss": 492.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        }
+      },
+      "size_added_nodes": 10000
+    },
+    {
+      "all_semantic_gates_pass": true,
+      "backend": "full_copy",
+      "median_stage_delta_kib": {
+        "branch_dropped_snapshot_live": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 27796.0,
+          "Pss": 27860.0,
+          "Rss": 27860.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "branch_live": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 27768.0,
+          "Pss": 27832.0,
+          "Rss": 27832.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "branch_written": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 27796.0,
+          "Pss": 27860.0,
+          "Rss": 27860.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "primary_dropped": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 27284.0,
+          "Pss": 27348.0,
+          "Rss": 27348.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "snapshot_dropped": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 27796.0,
+          "Pss": 27860.0,
+          "Rss": 27860.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "snapshot_live": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 10932.0,
+          "Pss": 10996.0,
+          "Rss": 10996.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "verification_branch_dropped": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 27796.0,
+          "Pss": 27860.0,
+          "Rss": 27860.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        }
+      },
+      "size_added_nodes": 50000
+    },
+    {
+      "all_semantic_gates_pass": true,
+      "backend": "shared_graph_pages",
+      "median_stage_delta_kib": {
+        "branch_dropped_snapshot_live": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 708.0,
+          "Pss": 772.0,
+          "Rss": 772.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "branch_live": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 708.0,
+          "Pss": 772.0,
+          "Rss": 772.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "branch_written": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 708.0,
+          "Pss": 772.0,
+          "Rss": 772.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "primary_dropped": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": -664.0,
+          "Pss": -600.0,
+          "Rss": -600.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "snapshot_dropped": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": -152.0,
+          "Pss": -88.0,
+          "Rss": -88.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "snapshot_live": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 220.0,
+          "Pss": 284.0,
+          "Rss": 284.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "verification_branch_dropped": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 708.0,
+          "Pss": 772.0,
+          "Rss": 772.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        }
+      },
+      "size_added_nodes": 50000
+    },
+    {
+      "all_semantic_gates_pass": true,
+      "backend": "shared_slabs",
+      "median_stage_delta_kib": {
+        "branch_dropped_snapshot_live": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 11808.0,
+          "Pss": 11872.0,
+          "Rss": 11872.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "branch_live": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 11780.0,
+          "Pss": 11844.0,
+          "Rss": 11844.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "branch_written": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 11808.0,
+          "Pss": 11872.0,
+          "Rss": 11872.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "primary_dropped": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 11296.0,
+          "Pss": 11360.0,
+          "Rss": 11360.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "snapshot_dropped": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 11808.0,
+          "Pss": 11872.0,
+          "Rss": 11872.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "snapshot_live": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 2940.0,
+          "Pss": 3004.0,
+          "Rss": 3004.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        },
+        "verification_branch_dropped": {
+          "Private_Clean": 64.0,
+          "Private_Dirty": 11808.0,
+          "Pss": 11872.0,
+          "Rss": 11872.0,
+          "Shared_Clean": 0.0,
+          "Shared_Dirty": 0.0,
+          "Swap": 0.0
+        }
+      },
+      "size_added_nodes": 50000
+    }
+  ]
+}

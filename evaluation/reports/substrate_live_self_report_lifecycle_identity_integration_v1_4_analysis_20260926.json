@@ -1,0 +1,28 @@
+{
+  "checks": {
+    "all_worker_and_postrun_fingerprints_stable": true,
+    "event_identity_shape_repeats": true,
+    "five_controls_pass": true,
+    "live_producer_events_have_one_goal_owner": true,
+    "raw_lock_matches_current_sources": false,
+    "runner_gates_pass": true,
+    "three_distinct_fresh_pids": true
+  },
+  "conclusion": "The amended producer emits Goal-bound selection, execution, and result events on the live self_report route. Native identity-constrained rules resolve each successful Goal and close it; omission/swapped-link/duplicate-result/faculty-failure controls pass. Scope is limited to this action route and two sequential same-recipient turns.",
+  "control_checks": {
+    "correct_link_selects_only_owner": true,
+    "duplicate_result_is_idempotent_and_closed": true,
+    "faculty_failure_blocks_and_closes": true,
+    "omitted_link_selects_no_goal": true,
+    "swapped_link_follows_explicit_edge": true
+  },
+  "metrics": {
+    "distinct_pids": 3,
+    "median_full_seed_boot_seconds": 12.299758141,
+    "median_turn_seconds": 2.1111562265,
+    "replicates": 3
+  },
+  "raw_capture": "evaluation/reports/substrate_live_self_report_lifecycle_identity_integration_v1_4_20260926.json",
+  "raw_sha256": "1ce516622c1dca4e68a386e6ad958eac8db15544723515cf900a520f7579c0ff",
+  "schema_version": 1
+}

@@ -1,0 +1,93 @@
+{
+  "all_checks_pass": true,
+  "checks": {
+    "ambiguous_candidate_rows_are_withdrawn": true,
+    "candidate_unattributed_equals_global_minus_attributed": true,
+    "stable_residual_profile": true,
+    "term_categories_partition_global_total": true,
+    "three_audited_workers": true
+  },
+  "limits": "The 753 no-row classification follows the source counter's sentinel behavior; there is no dedicated unattributed-Term counter. The ambiguous-ID Term counts are aggregated under colliding local indices and must not be read as per-rule costs. This post-hoc analysis explains attribution accounting, not the application-level origin of each evaluation.",
+  "raw_sha256": "99962ed3335bb82ec907d6284f339821ab075070dbffe7b7b9f42e2d824c5a07",
+  "scale_audit_source_sha256": "fc2228a45a44796dd1d5a13777805bf300520371ff28ec4040070150752307d4",
+  "schema_version": 1,
+  "source_interpretation": {
+    "candidate": "cand_tested increments globally. When a rule audit ID is missing, identity-mismatched, or marked ambiguous, cand_tested increments cand_tested_unattributed; on metadata collision, prior candidate_tests attribution for that ID is removed.",
+    "inference": "The repeated 753 count is global Term evaluations with no per-rule row, consistent with Term evaluations outside an active CURRENT_RULE context. The 1,708 evaluations under nine ambiguous IDs have no unique rule identity. Thus only the unambiguous-ID subtotal is safely attributable to a named rule in this capture.",
+    "terms": "term_eval increments global and per-rule term counters through per_rule_bump. per_rule_bump returns without recording when CURRENT_RULE is the NO_RULE sentinel. A rule ID marked ambiguous does not cause term_evaluations rows to be withdrawn on metadata collision."
+  },
+  "workers": [
+    {
+      "ambiguous_rule_ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        8,
+        9
+      ],
+      "candidate_attributed": 678013,
+      "candidate_rows_for_ambiguous_ids": 0,
+      "candidate_tests": 678432,
+      "candidate_unattributed": 419,
+      "replicate": 2,
+      "term_evaluations_all_rule_rows": 3676109,
+      "term_evaluations_ambiguous_ids": 1708,
+      "term_evaluations_global": 3676862,
+      "term_evaluations_unambiguous_ids": 3674401,
+      "term_evaluations_without_rule_row": 753,
+      "term_evaluations_without_unambiguous_rule_identity": 2461
+    },
+    {
+      "ambiguous_rule_ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        8,
+        9
+      ],
+      "candidate_attributed": 678013,
+      "candidate_rows_for_ambiguous_ids": 0,
+      "candidate_tests": 678432,
+      "candidate_unattributed": 419,
+      "replicate": 1,
+      "term_evaluations_all_rule_rows": 3676109,
+      "term_evaluations_ambiguous_ids": 1708,
+      "term_evaluations_global": 3676862,
+      "term_evaluations_unambiguous_ids": 3674401,
+      "term_evaluations_without_rule_row": 753,
+      "term_evaluations_without_unambiguous_rule_identity": 2461
+    },
+    {
+      "ambiguous_rule_ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        8,
+        9
+      ],
+      "candidate_attributed": 678013,
+      "candidate_rows_for_ambiguous_ids": 0,
+      "candidate_tests": 678432,
+      "candidate_unattributed": 419,
+      "replicate": 0,
+      "term_evaluations_all_rule_rows": 3676109,
+      "term_evaluations_ambiguous_ids": 1708,
+      "term_evaluations_global": 3676862,
+      "term_evaluations_unambiguous_ids": 3674401,
+      "term_evaluations_without_rule_row": 753,
+      "term_evaluations_without_unambiguous_rule_identity": 2461
+    }
+  ]
+}

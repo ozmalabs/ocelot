@@ -1,0 +1,202 @@
+{
+  "all_checks_pass": true,
+  "analysis_id": "substrate_scheduler_work_trace_v1_analysis_20260928",
+  "checks": {
+    "per_worker_semantic_and_counter_gates": true,
+    "replicates_zero_one_two": true,
+    "three_fresh_processes": true,
+    "three_workers": true,
+    "top_level_source_lock_stable": true,
+    "worker_source_lock_stable": true,
+    "workers_match_counter_totals": true,
+    "workers_match_graph_sha256": true,
+    "workers_match_trace_distinct_rows": true,
+    "workers_match_trace_weighted_events": true,
+    "workers_match_work_totals": true
+  },
+  "claim_boundary": "One synthetic rule_edits/fb_samples fixture and one monolithic run_rules operation per worker. Exact work/counter parity does not establish scheduler trace recall or general workload coverage.",
+  "input_path": "evaluation/reports/substrate_scheduler_work_trace_v1_20260928.json",
+  "schema_version": 1,
+  "worker_profiles": [
+    {
+      "checks": {
+        "access_trace_no_drops": true,
+        "fb_samples_drain_batches_match": true,
+        "fb_samples_drained_items_match": true,
+        "fb_samples_enqueues_match": true,
+        "fb_samples_producer_and_drain_uids": true,
+        "fixed_point": true,
+        "four_grid_cells": true,
+        "one_operation_id": true,
+        "one_seen_edge": true,
+        "only_registered_work_kinds": true,
+        "rule_edits_drain_batches_match": true,
+        "rule_edits_drained_items_match": true,
+        "rule_edits_enqueues_match": true,
+        "rule_edits_producer_and_drain_uids": true,
+        "scheduler_work_matches_scale_counters": true,
+        "three_passes": true,
+        "two_progress_steps": true,
+        "work_trace_no_drops": true
+      },
+      "counter_totals": {
+        "deferred_queue:fb_samples:drain_batches": 1,
+        "deferred_queue:fb_samples:drained_items": 1,
+        "deferred_queue:fb_samples:enqueued_items": 1,
+        "deferred_queue:rule_edits:drain_batches": 1,
+        "deferred_queue:rule_edits:drained_items": 1,
+        "deferred_queue:rule_edits:enqueued_items": 1,
+        "scheduler_dirty_vector_slots": 4,
+        "scheduler_external_poll_slots": 6,
+        "scheduler_fixedpoint_probe_slots": 4,
+        "scheduler_passes": 3,
+        "scheduler_selected_rules": 4
+      },
+      "graph_sha256": "16b40e3be9c3164377c89f5dd8fa8af8eb65d0881969f85717dfc9bc9e560aa5",
+      "replicate": 0,
+      "timing_counters_ns": {
+        "deferred_queue:fb_samples:drain_ns": 14420,
+        "deferred_queue:rule_edits:drain_ns": 25290,
+        "scheduler_plan_ns": 630
+      },
+      "trace_distinct_rows": 6,
+      "trace_weighted_events": 6,
+      "work_operation_ids": [
+        1
+      ],
+      "work_totals": {
+        "deferred_queue_drain_batches:1": 1,
+        "deferred_queue_drain_batches:3": 1,
+        "deferred_queue_drained_items:1": 1,
+        "deferred_queue_drained_items:3": 1,
+        "deferred_queue_enqueue_items:1": 1,
+        "deferred_queue_enqueue_items:3": 1,
+        "scheduler_dirty_vector_slots:None": 4,
+        "scheduler_external_poll_slots:None": 6,
+        "scheduler_fixedpoint_probe_slots:None": 4,
+        "scheduler_pass:None": 3,
+        "scheduler_selected_rules:None": 4
+      }
+    },
+    {
+      "checks": {
+        "access_trace_no_drops": true,
+        "fb_samples_drain_batches_match": true,
+        "fb_samples_drained_items_match": true,
+        "fb_samples_enqueues_match": true,
+        "fb_samples_producer_and_drain_uids": true,
+        "fixed_point": true,
+        "four_grid_cells": true,
+        "one_operation_id": true,
+        "one_seen_edge": true,
+        "only_registered_work_kinds": true,
+        "rule_edits_drain_batches_match": true,
+        "rule_edits_drained_items_match": true,
+        "rule_edits_enqueues_match": true,
+        "rule_edits_producer_and_drain_uids": true,
+        "scheduler_work_matches_scale_counters": true,
+        "three_passes": true,
+        "two_progress_steps": true,
+        "work_trace_no_drops": true
+      },
+      "counter_totals": {
+        "deferred_queue:fb_samples:drain_batches": 1,
+        "deferred_queue:fb_samples:drained_items": 1,
+        "deferred_queue:fb_samples:enqueued_items": 1,
+        "deferred_queue:rule_edits:drain_batches": 1,
+        "deferred_queue:rule_edits:drained_items": 1,
+        "deferred_queue:rule_edits:enqueued_items": 1,
+        "scheduler_dirty_vector_slots": 4,
+        "scheduler_external_poll_slots": 6,
+        "scheduler_fixedpoint_probe_slots": 4,
+        "scheduler_passes": 3,
+        "scheduler_selected_rules": 4
+      },
+      "graph_sha256": "16b40e3be9c3164377c89f5dd8fa8af8eb65d0881969f85717dfc9bc9e560aa5",
+      "replicate": 1,
+      "timing_counters_ns": {
+        "deferred_queue:fb_samples:drain_ns": 14730,
+        "deferred_queue:rule_edits:drain_ns": 26140,
+        "scheduler_plan_ns": 610
+      },
+      "trace_distinct_rows": 6,
+      "trace_weighted_events": 6,
+      "work_operation_ids": [
+        1
+      ],
+      "work_totals": {
+        "deferred_queue_drain_batches:1": 1,
+        "deferred_queue_drain_batches:3": 1,
+        "deferred_queue_drained_items:1": 1,
+        "deferred_queue_drained_items:3": 1,
+        "deferred_queue_enqueue_items:1": 1,
+        "deferred_queue_enqueue_items:3": 1,
+        "scheduler_dirty_vector_slots:None": 4,
+        "scheduler_external_poll_slots:None": 6,
+        "scheduler_fixedpoint_probe_slots:None": 4,
+        "scheduler_pass:None": 3,
+        "scheduler_selected_rules:None": 4
+      }
+    },
+    {
+      "checks": {
+        "access_trace_no_drops": true,
+        "fb_samples_drain_batches_match": true,
+        "fb_samples_drained_items_match": true,
+        "fb_samples_enqueues_match": true,
+        "fb_samples_producer_and_drain_uids": true,
+        "fixed_point": true,
+        "four_grid_cells": true,
+        "one_operation_id": true,
+        "one_seen_edge": true,
+        "only_registered_work_kinds": true,
+        "rule_edits_drain_batches_match": true,
+        "rule_edits_drained_items_match": true,
+        "rule_edits_enqueues_match": true,
+        "rule_edits_producer_and_drain_uids": true,
+        "scheduler_work_matches_scale_counters": true,
+        "three_passes": true,
+        "two_progress_steps": true,
+        "work_trace_no_drops": true
+      },
+      "counter_totals": {
+        "deferred_queue:fb_samples:drain_batches": 1,
+        "deferred_queue:fb_samples:drained_items": 1,
+        "deferred_queue:fb_samples:enqueued_items": 1,
+        "deferred_queue:rule_edits:drain_batches": 1,
+        "deferred_queue:rule_edits:drained_items": 1,
+        "deferred_queue:rule_edits:enqueued_items": 1,
+        "scheduler_dirty_vector_slots": 4,
+        "scheduler_external_poll_slots": 6,
+        "scheduler_fixedpoint_probe_slots": 4,
+        "scheduler_passes": 3,
+        "scheduler_selected_rules": 4
+      },
+      "graph_sha256": "16b40e3be9c3164377c89f5dd8fa8af8eb65d0881969f85717dfc9bc9e560aa5",
+      "replicate": 2,
+      "timing_counters_ns": {
+        "deferred_queue:fb_samples:drain_ns": 12470,
+        "deferred_queue:rule_edits:drain_ns": 25940,
+        "scheduler_plan_ns": 710
+      },
+      "trace_distinct_rows": 6,
+      "trace_weighted_events": 6,
+      "work_operation_ids": [
+        1
+      ],
+      "work_totals": {
+        "deferred_queue_drain_batches:1": 1,
+        "deferred_queue_drain_batches:3": 1,
+        "deferred_queue_drained_items:1": 1,
+        "deferred_queue_drained_items:3": 1,
+        "deferred_queue_enqueue_items:1": 1,
+        "deferred_queue_enqueue_items:3": 1,
+        "scheduler_dirty_vector_slots:None": 4,
+        "scheduler_external_poll_slots:None": 6,
+        "scheduler_fixedpoint_probe_slots:None": 4,
+        "scheduler_pass:None": 3,
+        "scheduler_selected_rules:None": 4
+      }
+    }
+  ]
+}

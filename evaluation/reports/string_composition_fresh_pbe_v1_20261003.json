@@ -1,0 +1,6202 @@
+{
+  "cases": {
+    "main": [
+      {
+        "ablation_no_retrieval": false,
+        "arm": "main",
+        "attempts": 1.0,
+        "boot_ns": 51152151,
+        "construction": "retrieved_exemplar",
+        "enumerate_outcome": null,
+        "excluded": [],
+        "failure_reason": "holdout_disagreement",
+        "family": "casefold_count",
+        "gap_filed": false,
+        "gap_reason": null,
+        "holdout": {
+          "all_ok": false,
+          "n": 3,
+          "n_ok": 0,
+          "rows": [
+            {
+              "expected": 0,
+              "got": false,
+              "inputs": {
+                "s": "-_?Ayc,z_-bDb-"
+              },
+              "ok": false,
+              "trap": null
+            },
+            {
+              "expected": 0,
+              "got": false,
+              "inputs": {
+                "s": " bbbac-zy,!!ba"
+              },
+              "ok": false,
+              "trap": null
+            },
+            {
+              "expected": 0,
+              "got": false,
+              "inputs": {
+                "s": "x?,Ddec_-Ee-dBC-"
+              },
+              "ok": false,
+              "trap": null
+            }
+          ]
+        },
+        "ir": {
+          "stmts": [
+            {
+              "default": null,
+              "name": "s",
+              "type": "ProgDefFnParam"
+            },
+            {
+              "name": "number_ctr",
+              "type": "ProgAssignVar",
+              "value": {
+                "type": "Lit",
+                "value": 0
+              }
+            },
+            {
+              "body": {
+                "cond": {
+                  "cond": {
+                    "a": {
+                      "index": {
+                        "name": "i",
+                        "type": "Var"
+                      },
+                      "obj": {
+                        "name": "s",
+                        "type": "Var"
+                      },
+                      "type": "ProgSubscript"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "0"
+                    },
+                    "type": "Gte"
+                  },
+                  "other": {
+                    "a": {
+                      "index": {
+                        "name": "i",
+                        "type": "Var"
+                      },
+                      "obj": {
+                        "name": "s",
+                        "type": "Var"
+                      },
+                      "type": "ProgSubscript"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "0"
+                    },
+                    "type": "Gte"
+                  },
+                  "then": {
+                    "a": {
+                      "index": {
+                        "name": "i",
+                        "type": "Var"
+                      },
+                      "obj": {
+                        "name": "s",
+                        "type": "Var"
+                      },
+                      "type": "ProgSubscript"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "9"
+                    },
+                    "type": "Lte"
+                  },
+                  "type": "IfThenElse"
+                },
+                "orelse": null,
+                "then": {
+                  "name": "number_ctr",
+                  "op": "add",
+                  "type": "ProgAugAssign",
+                  "value": {
+                    "type": "Lit",
+                    "value": 1
+                  }
+                },
+                "type": "ProgIfStmt"
+              },
+              "iter": {
+                "args": [
+                  {
+                    "args": [
+                      {
+                        "name": "s",
+                        "type": "Var"
+                      }
+                    ],
+                    "name": "len",
+                    "recv": null,
+                    "type": "ProgCallExtern"
+                  }
+                ],
+                "name": "range",
+                "recv": null,
+                "type": "ProgCallExtern"
+              },
+              "orelse": null,
+              "type": "ProgForEach",
+              "var": "i"
+            },
+            {
+              "type": "ProgReturn",
+              "value": {
+                "a": {
+                  "name": "s",
+                  "type": "Var"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "a-cD -dE,Cex--Bab"
+                },
+                "type": "Eq"
+              }
+            }
+          ],
+          "type": "ProgSeq"
+        },
+        "n_counterexamples": 0,
+        "outcome": "accepted_holdout_fail",
+        "python_render": {
+          "exec_agree": false,
+          "render_ok": true,
+          "rows": [
+            {
+              "inputs": {
+                "s": "-_?Ayc,z_-bDb-"
+              },
+              "ok": false,
+              "prog_eval": false,
+              "python": "raise:name 'range' is not defined"
+            },
+            {
+              "inputs": {
+                "s": " bbbac-zy,!!ba"
+              },
+              "ok": false,
+              "prog_eval": false,
+              "python": "raise:name 'range' is not defined"
+            },
+            {
+              "inputs": {
+                "s": "x?,Ddec_-Ee-dBC-"
+              },
+              "ok": false,
+              "prog_eval": false,
+              "python": "raise:name 'range' is not defined"
+            }
+          ],
+          "source": "def fresh_casefold_count_01(s):\n    number_ctr = 0\n    for i in range(len(s)):\n        if ((s[i] <= '9') if (s[i] >= '0') else (s[i] >= '0')):\n            number_ctr += 1\n    return (s == 'a-cD -dE,Cex--Bab')\n"
+        },
+        "readback": {
+          "construction": "retrieved_exemplar",
+          "enumerate": {
+            "distinct": null,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": null
+          },
+          "enumerate_outcome": null,
+          "gap_reason": null,
+          "retrieval": {
+            "accept_edit": {
+              "hole_term": {
+                "a": {
+                  "name": "str",
+                  "type": "Var"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "a-cD -dE,Cex--Bab"
+                },
+                "type": "Eq"
+              },
+              "kind": "retrieved_as_skeleton",
+              "masked_stmt_index": 3
+            },
+            "accept_perm": [
+              0
+            ],
+            "accept_task_id": 764.0,
+            "n_candidates": 5.0,
+            "rung_reached": "d"
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": null,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 64333932,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": null,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "accepted",
+        "stratum": "casefold_count",
+        "task_id": "fresh_casefold_count_01"
+      },
+      {
+        "ablation_no_retrieval": false,
+        "arm": "main",
+        "attempts": 1.0,
+        "boot_ns": 56597483,
+        "construction": "retrieved_exemplar",
+        "enumerate_outcome": null,
+        "excluded": [],
+        "failure_reason": null,
+        "family": "casefold_count",
+        "gap_filed": false,
+        "gap_reason": null,
+        "holdout": {
+          "all_ok": true,
+          "n": 3,
+          "n_ok": 3,
+          "rows": [
+            {
+              "expected": 0,
+              "got": 0,
+              "inputs": {
+                "s": "A!y_ Ea-D-ae,!b"
+              },
+              "ok": true,
+              "trap": null
+            },
+            {
+              "expected": 0,
+              "got": 0,
+              "inputs": {
+                "s": "ab!AC-a,yb_-!-_ "
+              },
+              "ok": true,
+              "trap": null
+            },
+            {
+              "expected": 0,
+              "got": 0,
+              "inputs": {
+                "s": "BCBa,zAzaBd"
+              },
+              "ok": true,
+              "trap": null
+            }
+          ]
+        },
+        "ir": {
+          "stmts": [
+            {
+              "default": null,
+              "name": "s",
+              "type": "ProgDefFnParam"
+            },
+            {
+              "name": "number_ctr",
+              "type": "ProgAssignVar",
+              "value": {
+                "type": "Lit",
+                "value": 0
+              }
+            },
+            {
+              "body": {
+                "cond": {
+                  "cond": {
+                    "a": {
+                      "index": {
+                        "name": "i",
+                        "type": "Var"
+                      },
+                      "obj": {
+                        "name": "s",
+                        "type": "Var"
+                      },
+                      "type": "ProgSubscript"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "0"
+                    },
+                    "type": "Gte"
+                  },
+                  "other": {
+                    "a": {
+                      "index": {
+                        "name": "i",
+                        "type": "Var"
+                      },
+                      "obj": {
+                        "name": "s",
+                        "type": "Var"
+                      },
+                      "type": "ProgSubscript"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "0"
+                    },
+                    "type": "Gte"
+                  },
+                  "then": {
+                    "a": {
+                      "index": {
+                        "name": "i",
+                        "type": "Var"
+                      },
+                      "obj": {
+                        "name": "s",
+                        "type": "Var"
+                      },
+                      "type": "ProgSubscript"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "9"
+                    },
+                    "type": "Lte"
+                  },
+                  "type": "IfThenElse"
+                },
+                "orelse": null,
+                "then": {
+                  "name": "number_ctr",
+                  "op": "add",
+                  "type": "ProgAugAssign",
+                  "value": {
+                    "type": "Lit",
+                    "value": 1
+                  }
+                },
+                "type": "ProgIfStmt"
+              },
+              "iter": {
+                "args": [
+                  {
+                    "args": [
+                      {
+                        "name": "s",
+                        "type": "Var"
+                      }
+                    ],
+                    "name": "len",
+                    "recv": null,
+                    "type": "ProgCallExtern"
+                  }
+                ],
+                "name": "range",
+                "recv": null,
+                "type": "ProgCallExtern"
+              },
+              "orelse": null,
+              "type": "ProgForEach",
+              "var": "i"
+            },
+            {
+              "type": "ProgReturn",
+              "value": {
+                "name": "number_ctr",
+                "type": "Var"
+              }
+            }
+          ],
+          "type": "ProgSeq"
+        },
+        "n_counterexamples": 0,
+        "outcome": "accepted_holdout_ok",
+        "python_render": {
+          "exec_agree": false,
+          "render_ok": true,
+          "rows": [
+            {
+              "inputs": {
+                "s": "A!y_ Ea-D-ae,!b"
+              },
+              "ok": false,
+              "prog_eval": 0,
+              "python": "raise:name 'range' is not defined"
+            },
+            {
+              "inputs": {
+                "s": "ab!AC-a,yb_-!-_ "
+              },
+              "ok": false,
+              "prog_eval": 0,
+              "python": "raise:name 'range' is not defined"
+            },
+            {
+              "inputs": {
+                "s": "BCBa,zAzaBd"
+              },
+              "ok": false,
+              "prog_eval": 0,
+              "python": "raise:name 'range' is not defined"
+            }
+          ],
+          "source": "def fresh_casefold_count_02(s):\n    number_ctr = 0\n    for i in range(len(s)):\n        if ((s[i] <= '9') if (s[i] >= '0') else (s[i] >= '0')):\n            number_ctr += 1\n    return number_ctr\n"
+        },
+        "readback": {
+          "construction": "retrieved_exemplar",
+          "enumerate": {
+            "distinct": null,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": null
+          },
+          "enumerate_outcome": null,
+          "gap_reason": null,
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": 764.0,
+            "n_candidates": 5.0,
+            "rung_reached": "a"
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": null,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 25098332,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": null,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "accepted",
+        "stratum": "casefold_count",
+        "task_id": "fresh_casefold_count_02"
+      },
+      {
+        "ablation_no_retrieval": false,
+        "arm": "main",
+        "attempts": 1.0,
+        "boot_ns": 52964985,
+        "construction": "retrieved_exemplar",
+        "enumerate_outcome": null,
+        "excluded": [],
+        "failure_reason": "holdout_disagreement",
+        "family": "casefold_count",
+        "gap_filed": false,
+        "gap_reason": null,
+        "holdout": {
+          "all_ok": false,
+          "n": 3,
+          "n_ok": 0,
+          "rows": [
+            {
+              "expected": 0,
+              "got": 1,
+              "inputs": {
+                "s": "DAx-AcxCzE"
+              },
+              "ok": false,
+              "trap": null
+            },
+            {
+              "expected": 0,
+              "got": 1,
+              "inputs": {
+                "s": "_!B-Bb_-E?_az"
+              },
+              "ok": false,
+              "trap": null
+            },
+            {
+              "expected": 0,
+              "got": 1,
+              "inputs": {
+                "s": "zeADzaeED?zC___"
+              },
+              "ok": false,
+              "trap": null
+            }
+          ]
+        },
+        "ir": {
+          "stmts": [
+            {
+              "default": null,
+              "name": "s",
+              "type": "ProgDefFnParam"
+            },
+            {
+              "name": "number_ctr",
+              "type": "ProgAssignVar",
+              "value": {
+                "type": "Lit",
+                "value": 0
+              }
+            },
+            {
+              "body": {
+                "cond": {
+                  "cond": {
+                    "a": {
+                      "index": {
+                        "name": "i",
+                        "type": "Var"
+                      },
+                      "obj": {
+                        "name": "s",
+                        "type": "Var"
+                      },
+                      "type": "ProgSubscript"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "0"
+                    },
+                    "type": "Gte"
+                  },
+                  "other": {
+                    "a": {
+                      "index": {
+                        "name": "i",
+                        "type": "Var"
+                      },
+                      "obj": {
+                        "name": "s",
+                        "type": "Var"
+                      },
+                      "type": "ProgSubscript"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "0"
+                    },
+                    "type": "Gte"
+                  },
+                  "then": {
+                    "a": {
+                      "index": {
+                        "name": "i",
+                        "type": "Var"
+                      },
+                      "obj": {
+                        "name": "s",
+                        "type": "Var"
+                      },
+                      "type": "ProgSubscript"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "9"
+                    },
+                    "type": "Lte"
+                  },
+                  "type": "IfThenElse"
+                },
+                "orelse": null,
+                "then": {
+                  "name": "number_ctr",
+                  "op": "add",
+                  "type": "ProgAugAssign",
+                  "value": {
+                    "type": "Lit",
+                    "value": 1
+                  }
+                },
+                "type": "ProgIfStmt"
+              },
+              "iter": {
+                "args": [
+                  {
+                    "args": [
+                      {
+                        "name": "s",
+                        "type": "Var"
+                      }
+                    ],
+                    "name": "len",
+                    "recv": null,
+                    "type": "ProgCallExtern"
+                  }
+                ],
+                "name": "range",
+                "recv": null,
+                "type": "ProgCallExtern"
+              },
+              "orelse": null,
+              "type": "ProgForEach",
+              "var": "i"
+            },
+            {
+              "type": "ProgReturn",
+              "value": {
+                "a": {
+                  "type": "Lit",
+                  "value": 1
+                },
+                "b": {
+                  "sub": {
+                    "type": "Lit",
+                    "value": " "
+                  },
+                  "text": {
+                    "name": "s",
+                    "type": "Var"
+                  },
+                  "type": "StrCount"
+                },
+                "type": "Minus"
+              }
+            }
+          ],
+          "type": "ProgSeq"
+        },
+        "n_counterexamples": 0,
+        "outcome": "accepted_holdout_fail",
+        "python_render": {
+          "exec_agree": null,
+          "gaps": [
+            "render_gap:StrCount in python"
+          ],
+          "refusals": [],
+          "render_ok": false
+        },
+        "readback": {
+          "construction": "retrieved_exemplar",
+          "enumerate": {
+            "distinct": null,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": null
+          },
+          "enumerate_outcome": null,
+          "gap_reason": null,
+          "retrieval": {
+            "accept_edit": {
+              "hole_term": {
+                "a": {
+                  "type": "Lit",
+                  "value": 1
+                },
+                "b": {
+                  "sub": {
+                    "type": "Lit",
+                    "value": " "
+                  },
+                  "text": {
+                    "name": "str",
+                    "type": "Var"
+                  },
+                  "type": "StrCount"
+                },
+                "type": "Minus"
+              },
+              "kind": "retrieved_as_skeleton",
+              "masked_stmt_index": 3
+            },
+            "accept_perm": [
+              0
+            ],
+            "accept_task_id": 764.0,
+            "n_candidates": 5.0,
+            "rung_reached": "d"
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": null,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 99953465,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": null,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "accepted",
+        "stratum": "casefold_count",
+        "task_id": "fresh_casefold_count_03"
+      },
+      {
+        "ablation_no_retrieval": false,
+        "arm": "main",
+        "attempts": 0.0,
+        "boot_ns": 56083279,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "casefold_split",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 6866,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": 5.0,
+            "rung_reached": "none"
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 678768143,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "casefold_split",
+        "task_id": "fresh_casefold_split_01"
+      },
+      {
+        "ablation_no_retrieval": false,
+        "arm": "main",
+        "attempts": 0.0,
+        "boot_ns": 52329161,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "casefold_split",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 5669,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": 5.0,
+            "rung_reached": "none"
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 588816414,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "casefold_split",
+        "task_id": "fresh_casefold_split_02"
+      },
+      {
+        "ablation_no_retrieval": false,
+        "arm": "main",
+        "attempts": 0.0,
+        "boot_ns": 50860549,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "casefold_split",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 6323,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": 5.0,
+            "rung_reached": "none"
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 614997675,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "casefold_split",
+        "task_id": "fresh_casefold_split_03"
+      },
+      {
+        "ablation_no_retrieval": false,
+        "arm": "main",
+        "attempts": 0.0,
+        "boot_ns": 53475279,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "reverse_then_split",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 15974,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": 5.0,
+            "rung_reached": "none"
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 551771560,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "reverse_then_split",
+        "task_id": "fresh_reverse_then_split_01"
+      },
+      {
+        "ablation_no_retrieval": false,
+        "arm": "main",
+        "attempts": 0.0,
+        "boot_ns": 51397523,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "reverse_then_split",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 15964,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": 5.0,
+            "rung_reached": "none"
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 573320165,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "reverse_then_split",
+        "task_id": "fresh_reverse_then_split_02"
+      },
+      {
+        "ablation_no_retrieval": false,
+        "arm": "main",
+        "attempts": 0.0,
+        "boot_ns": 44533381,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "reverse_then_split",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 15943,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": 5.0,
+            "rung_reached": "none"
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 556153313,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "reverse_then_split",
+        "task_id": "fresh_reverse_then_split_03"
+      },
+      {
+        "ablation_no_retrieval": false,
+        "arm": "main",
+        "attempts": 0.0,
+        "boot_ns": 51658755,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "remove_separator",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 5993,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": 5.0,
+            "rung_reached": "none"
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 658965058,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "remove_separator",
+        "task_id": "fresh_remove_separator_01"
+      },
+      {
+        "ablation_no_retrieval": false,
+        "arm": "main",
+        "attempts": 0.0,
+        "boot_ns": 55423723,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "remove_separator",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 14330,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": 5.0,
+            "rung_reached": "none"
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 671236662,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "remove_separator",
+        "task_id": "fresh_remove_separator_02"
+      },
+      {
+        "ablation_no_retrieval": false,
+        "arm": "main",
+        "attempts": 0.0,
+        "boot_ns": 47198221,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "remove_separator",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 16622,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": 5.0,
+            "rung_reached": "none"
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 707305617,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "remove_separator",
+        "task_id": "fresh_remove_separator_03"
+      },
+      {
+        "ablation_no_retrieval": false,
+        "arm": "main",
+        "attempts": 0.0,
+        "boot_ns": 103932375,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "reverse_then_replace",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 17916,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": 5.0,
+            "rung_reached": "none"
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 903055142,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "reverse_then_replace",
+        "task_id": "fresh_reverse_then_replace_01"
+      },
+      {
+        "ablation_no_retrieval": false,
+        "arm": "main",
+        "attempts": 0.0,
+        "boot_ns": 53252587,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "reverse_then_replace",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 14717,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": 5.0,
+            "rung_reached": "none"
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 1083742003,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "reverse_then_replace",
+        "task_id": "fresh_reverse_then_replace_02"
+      },
+      {
+        "ablation_no_retrieval": false,
+        "arm": "main",
+        "attempts": 0.0,
+        "boot_ns": 55795297,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "reverse_then_replace",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 10924,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": 5.0,
+            "rung_reached": "none"
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 941676886,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "reverse_then_replace",
+        "task_id": "fresh_reverse_then_replace_03"
+      },
+      {
+        "ablation_no_retrieval": false,
+        "arm": "main",
+        "attempts": 0.0,
+        "boot_ns": 55765246,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "split_reverse_tokens",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 16005,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": 5.0,
+            "rung_reached": "none"
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 930064367,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "split_reverse_tokens",
+        "task_id": "fresh_split_reverse_tokens_01"
+      },
+      {
+        "ablation_no_retrieval": false,
+        "arm": "main",
+        "attempts": 0.0,
+        "boot_ns": 60160189,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "split_reverse_tokens",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 15945,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": 5.0,
+            "rung_reached": "none"
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 915360163,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "split_reverse_tokens",
+        "task_id": "fresh_split_reverse_tokens_02"
+      },
+      {
+        "ablation_no_retrieval": false,
+        "arm": "main",
+        "attempts": 0.0,
+        "boot_ns": 45377957,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "split_reverse_tokens",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 15895,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": 5.0,
+            "rung_reached": "none"
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 868516484,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "split_reverse_tokens",
+        "task_id": "fresh_split_reverse_tokens_03"
+      }
+    ],
+    "main_replay": [
+      {
+        "ablation_no_retrieval": false,
+        "arm": "main_replay",
+        "attempts": 1.0,
+        "boot_ns": 45213245,
+        "construction": "retrieved_exemplar",
+        "enumerate_outcome": null,
+        "excluded": [],
+        "failure_reason": "holdout_disagreement",
+        "family": "casefold_count",
+        "gap_filed": false,
+        "gap_reason": null,
+        "holdout": {
+          "all_ok": false,
+          "n": 3,
+          "n_ok": 0,
+          "rows": [
+            {
+              "expected": 0,
+              "got": false,
+              "inputs": {
+                "s": "-_?Ayc,z_-bDb-"
+              },
+              "ok": false,
+              "trap": null
+            },
+            {
+              "expected": 0,
+              "got": false,
+              "inputs": {
+                "s": " bbbac-zy,!!ba"
+              },
+              "ok": false,
+              "trap": null
+            },
+            {
+              "expected": 0,
+              "got": false,
+              "inputs": {
+                "s": "x?,Ddec_-Ee-dBC-"
+              },
+              "ok": false,
+              "trap": null
+            }
+          ]
+        },
+        "ir": {
+          "stmts": [
+            {
+              "default": null,
+              "name": "s",
+              "type": "ProgDefFnParam"
+            },
+            {
+              "name": "number_ctr",
+              "type": "ProgAssignVar",
+              "value": {
+                "type": "Lit",
+                "value": 0
+              }
+            },
+            {
+              "body": {
+                "cond": {
+                  "cond": {
+                    "a": {
+                      "index": {
+                        "name": "i",
+                        "type": "Var"
+                      },
+                      "obj": {
+                        "name": "s",
+                        "type": "Var"
+                      },
+                      "type": "ProgSubscript"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "0"
+                    },
+                    "type": "Gte"
+                  },
+                  "other": {
+                    "a": {
+                      "index": {
+                        "name": "i",
+                        "type": "Var"
+                      },
+                      "obj": {
+                        "name": "s",
+                        "type": "Var"
+                      },
+                      "type": "ProgSubscript"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "0"
+                    },
+                    "type": "Gte"
+                  },
+                  "then": {
+                    "a": {
+                      "index": {
+                        "name": "i",
+                        "type": "Var"
+                      },
+                      "obj": {
+                        "name": "s",
+                        "type": "Var"
+                      },
+                      "type": "ProgSubscript"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "9"
+                    },
+                    "type": "Lte"
+                  },
+                  "type": "IfThenElse"
+                },
+                "orelse": null,
+                "then": {
+                  "name": "number_ctr",
+                  "op": "add",
+                  "type": "ProgAugAssign",
+                  "value": {
+                    "type": "Lit",
+                    "value": 1
+                  }
+                },
+                "type": "ProgIfStmt"
+              },
+              "iter": {
+                "args": [
+                  {
+                    "args": [
+                      {
+                        "name": "s",
+                        "type": "Var"
+                      }
+                    ],
+                    "name": "len",
+                    "recv": null,
+                    "type": "ProgCallExtern"
+                  }
+                ],
+                "name": "range",
+                "recv": null,
+                "type": "ProgCallExtern"
+              },
+              "orelse": null,
+              "type": "ProgForEach",
+              "var": "i"
+            },
+            {
+              "type": "ProgReturn",
+              "value": {
+                "a": {
+                  "name": "s",
+                  "type": "Var"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "a-cD -dE,Cex--Bab"
+                },
+                "type": "Eq"
+              }
+            }
+          ],
+          "type": "ProgSeq"
+        },
+        "n_counterexamples": 0,
+        "outcome": "accepted_holdout_fail",
+        "python_render": {
+          "exec_agree": false,
+          "render_ok": true,
+          "rows": [
+            {
+              "inputs": {
+                "s": "-_?Ayc,z_-bDb-"
+              },
+              "ok": false,
+              "prog_eval": false,
+              "python": "raise:name 'range' is not defined"
+            },
+            {
+              "inputs": {
+                "s": " bbbac-zy,!!ba"
+              },
+              "ok": false,
+              "prog_eval": false,
+              "python": "raise:name 'range' is not defined"
+            },
+            {
+              "inputs": {
+                "s": "x?,Ddec_-Ee-dBC-"
+              },
+              "ok": false,
+              "prog_eval": false,
+              "python": "raise:name 'range' is not defined"
+            }
+          ],
+          "source": "def fresh_casefold_count_01(s):\n    number_ctr = 0\n    for i in range(len(s)):\n        if ((s[i] <= '9') if (s[i] >= '0') else (s[i] >= '0')):\n            number_ctr += 1\n    return (s == 'a-cD -dE,Cex--Bab')\n"
+        },
+        "readback": {
+          "construction": "retrieved_exemplar",
+          "enumerate": {
+            "distinct": null,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": null
+          },
+          "enumerate_outcome": null,
+          "gap_reason": null,
+          "retrieval": {
+            "accept_edit": {
+              "hole_term": {
+                "a": {
+                  "name": "str",
+                  "type": "Var"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "a-cD -dE,Cex--Bab"
+                },
+                "type": "Eq"
+              },
+              "kind": "retrieved_as_skeleton",
+              "masked_stmt_index": 3
+            },
+            "accept_perm": [
+              0
+            ],
+            "accept_task_id": 764.0,
+            "n_candidates": 5.0,
+            "rung_reached": "d"
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": null,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 74010667,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": null,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "accepted",
+        "stratum": "casefold_count",
+        "task_id": "fresh_casefold_count_01"
+      },
+      {
+        "ablation_no_retrieval": false,
+        "arm": "main_replay",
+        "attempts": 1.0,
+        "boot_ns": 42005591,
+        "construction": "retrieved_exemplar",
+        "enumerate_outcome": null,
+        "excluded": [],
+        "failure_reason": null,
+        "family": "casefold_count",
+        "gap_filed": false,
+        "gap_reason": null,
+        "holdout": {
+          "all_ok": true,
+          "n": 3,
+          "n_ok": 3,
+          "rows": [
+            {
+              "expected": 0,
+              "got": 0,
+              "inputs": {
+                "s": "A!y_ Ea-D-ae,!b"
+              },
+              "ok": true,
+              "trap": null
+            },
+            {
+              "expected": 0,
+              "got": 0,
+              "inputs": {
+                "s": "ab!AC-a,yb_-!-_ "
+              },
+              "ok": true,
+              "trap": null
+            },
+            {
+              "expected": 0,
+              "got": 0,
+              "inputs": {
+                "s": "BCBa,zAzaBd"
+              },
+              "ok": true,
+              "trap": null
+            }
+          ]
+        },
+        "ir": {
+          "stmts": [
+            {
+              "default": null,
+              "name": "s",
+              "type": "ProgDefFnParam"
+            },
+            {
+              "name": "number_ctr",
+              "type": "ProgAssignVar",
+              "value": {
+                "type": "Lit",
+                "value": 0
+              }
+            },
+            {
+              "body": {
+                "cond": {
+                  "cond": {
+                    "a": {
+                      "index": {
+                        "name": "i",
+                        "type": "Var"
+                      },
+                      "obj": {
+                        "name": "s",
+                        "type": "Var"
+                      },
+                      "type": "ProgSubscript"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "0"
+                    },
+                    "type": "Gte"
+                  },
+                  "other": {
+                    "a": {
+                      "index": {
+                        "name": "i",
+                        "type": "Var"
+                      },
+                      "obj": {
+                        "name": "s",
+                        "type": "Var"
+                      },
+                      "type": "ProgSubscript"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "0"
+                    },
+                    "type": "Gte"
+                  },
+                  "then": {
+                    "a": {
+                      "index": {
+                        "name": "i",
+                        "type": "Var"
+                      },
+                      "obj": {
+                        "name": "s",
+                        "type": "Var"
+                      },
+                      "type": "ProgSubscript"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "9"
+                    },
+                    "type": "Lte"
+                  },
+                  "type": "IfThenElse"
+                },
+                "orelse": null,
+                "then": {
+                  "name": "number_ctr",
+                  "op": "add",
+                  "type": "ProgAugAssign",
+                  "value": {
+                    "type": "Lit",
+                    "value": 1
+                  }
+                },
+                "type": "ProgIfStmt"
+              },
+              "iter": {
+                "args": [
+                  {
+                    "args": [
+                      {
+                        "name": "s",
+                        "type": "Var"
+                      }
+                    ],
+                    "name": "len",
+                    "recv": null,
+                    "type": "ProgCallExtern"
+                  }
+                ],
+                "name": "range",
+                "recv": null,
+                "type": "ProgCallExtern"
+              },
+              "orelse": null,
+              "type": "ProgForEach",
+              "var": "i"
+            },
+            {
+              "type": "ProgReturn",
+              "value": {
+                "name": "number_ctr",
+                "type": "Var"
+              }
+            }
+          ],
+          "type": "ProgSeq"
+        },
+        "n_counterexamples": 0,
+        "outcome": "accepted_holdout_ok",
+        "python_render": {
+          "exec_agree": false,
+          "render_ok": true,
+          "rows": [
+            {
+              "inputs": {
+                "s": "A!y_ Ea-D-ae,!b"
+              },
+              "ok": false,
+              "prog_eval": 0,
+              "python": "raise:name 'range' is not defined"
+            },
+            {
+              "inputs": {
+                "s": "ab!AC-a,yb_-!-_ "
+              },
+              "ok": false,
+              "prog_eval": 0,
+              "python": "raise:name 'range' is not defined"
+            },
+            {
+              "inputs": {
+                "s": "BCBa,zAzaBd"
+              },
+              "ok": false,
+              "prog_eval": 0,
+              "python": "raise:name 'range' is not defined"
+            }
+          ],
+          "source": "def fresh_casefold_count_02(s):\n    number_ctr = 0\n    for i in range(len(s)):\n        if ((s[i] <= '9') if (s[i] >= '0') else (s[i] >= '0')):\n            number_ctr += 1\n    return number_ctr\n"
+        },
+        "readback": {
+          "construction": "retrieved_exemplar",
+          "enumerate": {
+            "distinct": null,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": null
+          },
+          "enumerate_outcome": null,
+          "gap_reason": null,
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": 764.0,
+            "n_candidates": 5.0,
+            "rung_reached": "a"
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": null,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 17295102,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": null,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "accepted",
+        "stratum": "casefold_count",
+        "task_id": "fresh_casefold_count_02"
+      },
+      {
+        "ablation_no_retrieval": false,
+        "arm": "main_replay",
+        "attempts": 1.0,
+        "boot_ns": 45257836,
+        "construction": "retrieved_exemplar",
+        "enumerate_outcome": null,
+        "excluded": [],
+        "failure_reason": "holdout_disagreement",
+        "family": "casefold_count",
+        "gap_filed": false,
+        "gap_reason": null,
+        "holdout": {
+          "all_ok": false,
+          "n": 3,
+          "n_ok": 0,
+          "rows": [
+            {
+              "expected": 0,
+              "got": 1,
+              "inputs": {
+                "s": "DAx-AcxCzE"
+              },
+              "ok": false,
+              "trap": null
+            },
+            {
+              "expected": 0,
+              "got": 1,
+              "inputs": {
+                "s": "_!B-Bb_-E?_az"
+              },
+              "ok": false,
+              "trap": null
+            },
+            {
+              "expected": 0,
+              "got": 1,
+              "inputs": {
+                "s": "zeADzaeED?zC___"
+              },
+              "ok": false,
+              "trap": null
+            }
+          ]
+        },
+        "ir": {
+          "stmts": [
+            {
+              "default": null,
+              "name": "s",
+              "type": "ProgDefFnParam"
+            },
+            {
+              "name": "number_ctr",
+              "type": "ProgAssignVar",
+              "value": {
+                "type": "Lit",
+                "value": 0
+              }
+            },
+            {
+              "body": {
+                "cond": {
+                  "cond": {
+                    "a": {
+                      "index": {
+                        "name": "i",
+                        "type": "Var"
+                      },
+                      "obj": {
+                        "name": "s",
+                        "type": "Var"
+                      },
+                      "type": "ProgSubscript"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "0"
+                    },
+                    "type": "Gte"
+                  },
+                  "other": {
+                    "a": {
+                      "index": {
+                        "name": "i",
+                        "type": "Var"
+                      },
+                      "obj": {
+                        "name": "s",
+                        "type": "Var"
+                      },
+                      "type": "ProgSubscript"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "0"
+                    },
+                    "type": "Gte"
+                  },
+                  "then": {
+                    "a": {
+                      "index": {
+                        "name": "i",
+                        "type": "Var"
+                      },
+                      "obj": {
+                        "name": "s",
+                        "type": "Var"
+                      },
+                      "type": "ProgSubscript"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "9"
+                    },
+                    "type": "Lte"
+                  },
+                  "type": "IfThenElse"
+                },
+                "orelse": null,
+                "then": {
+                  "name": "number_ctr",
+                  "op": "add",
+                  "type": "ProgAugAssign",
+                  "value": {
+                    "type": "Lit",
+                    "value": 1
+                  }
+                },
+                "type": "ProgIfStmt"
+              },
+              "iter": {
+                "args": [
+                  {
+                    "args": [
+                      {
+                        "name": "s",
+                        "type": "Var"
+                      }
+                    ],
+                    "name": "len",
+                    "recv": null,
+                    "type": "ProgCallExtern"
+                  }
+                ],
+                "name": "range",
+                "recv": null,
+                "type": "ProgCallExtern"
+              },
+              "orelse": null,
+              "type": "ProgForEach",
+              "var": "i"
+            },
+            {
+              "type": "ProgReturn",
+              "value": {
+                "a": {
+                  "type": "Lit",
+                  "value": 1
+                },
+                "b": {
+                  "sub": {
+                    "type": "Lit",
+                    "value": " "
+                  },
+                  "text": {
+                    "name": "s",
+                    "type": "Var"
+                  },
+                  "type": "StrCount"
+                },
+                "type": "Minus"
+              }
+            }
+          ],
+          "type": "ProgSeq"
+        },
+        "n_counterexamples": 0,
+        "outcome": "accepted_holdout_fail",
+        "python_render": {
+          "exec_agree": null,
+          "gaps": [
+            "render_gap:StrCount in python"
+          ],
+          "refusals": [],
+          "render_ok": false
+        },
+        "readback": {
+          "construction": "retrieved_exemplar",
+          "enumerate": {
+            "distinct": null,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": null
+          },
+          "enumerate_outcome": null,
+          "gap_reason": null,
+          "retrieval": {
+            "accept_edit": {
+              "hole_term": {
+                "a": {
+                  "type": "Lit",
+                  "value": 1
+                },
+                "b": {
+                  "sub": {
+                    "type": "Lit",
+                    "value": " "
+                  },
+                  "text": {
+                    "name": "str",
+                    "type": "Var"
+                  },
+                  "type": "StrCount"
+                },
+                "type": "Minus"
+              },
+              "kind": "retrieved_as_skeleton",
+              "masked_stmt_index": 3
+            },
+            "accept_perm": [
+              0
+            ],
+            "accept_task_id": 764.0,
+            "n_candidates": 5.0,
+            "rung_reached": "d"
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": null,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 76790778,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": null,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "accepted",
+        "stratum": "casefold_count",
+        "task_id": "fresh_casefold_count_03"
+      },
+      {
+        "ablation_no_retrieval": false,
+        "arm": "main_replay",
+        "attempts": 0.0,
+        "boot_ns": 50470776,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "casefold_split",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 6866,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": 5.0,
+            "rung_reached": "none"
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 668486315,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "casefold_split",
+        "task_id": "fresh_casefold_split_01"
+      },
+      {
+        "ablation_no_retrieval": false,
+        "arm": "main_replay",
+        "attempts": 0.0,
+        "boot_ns": 54075574,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "casefold_split",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 5669,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": 5.0,
+            "rung_reached": "none"
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 543935801,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "casefold_split",
+        "task_id": "fresh_casefold_split_02"
+      },
+      {
+        "ablation_no_retrieval": false,
+        "arm": "main_replay",
+        "attempts": 0.0,
+        "boot_ns": 51060781,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "casefold_split",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 6323,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": 5.0,
+            "rung_reached": "none"
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 597911013,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "casefold_split",
+        "task_id": "fresh_casefold_split_03"
+      },
+      {
+        "ablation_no_retrieval": false,
+        "arm": "main_replay",
+        "attempts": 0.0,
+        "boot_ns": 58424687,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "reverse_then_split",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 15974,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": 5.0,
+            "rung_reached": "none"
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 527436334,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "reverse_then_split",
+        "task_id": "fresh_reverse_then_split_01"
+      },
+      {
+        "ablation_no_retrieval": false,
+        "arm": "main_replay",
+        "attempts": 0.0,
+        "boot_ns": 53230777,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "reverse_then_split",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 15964,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": 5.0,
+            "rung_reached": "none"
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 606862431,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "reverse_then_split",
+        "task_id": "fresh_reverse_then_split_02"
+      },
+      {
+        "ablation_no_retrieval": false,
+        "arm": "main_replay",
+        "attempts": 0.0,
+        "boot_ns": 55674585,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "reverse_then_split",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 15943,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": 5.0,
+            "rung_reached": "none"
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 564470375,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "reverse_then_split",
+        "task_id": "fresh_reverse_then_split_03"
+      },
+      {
+        "ablation_no_retrieval": false,
+        "arm": "main_replay",
+        "attempts": 0.0,
+        "boot_ns": 51866177,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "remove_separator",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 5993,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": 5.0,
+            "rung_reached": "none"
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 687658698,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "remove_separator",
+        "task_id": "fresh_remove_separator_01"
+      },
+      {
+        "ablation_no_retrieval": false,
+        "arm": "main_replay",
+        "attempts": 0.0,
+        "boot_ns": 47681085,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "remove_separator",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 14330,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": 5.0,
+            "rung_reached": "none"
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 706663212,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "remove_separator",
+        "task_id": "fresh_remove_separator_02"
+      },
+      {
+        "ablation_no_retrieval": false,
+        "arm": "main_replay",
+        "attempts": 0.0,
+        "boot_ns": 47440413,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "remove_separator",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 16622,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": 5.0,
+            "rung_reached": "none"
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 691725447,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "remove_separator",
+        "task_id": "fresh_remove_separator_03"
+      },
+      {
+        "ablation_no_retrieval": false,
+        "arm": "main_replay",
+        "attempts": 0.0,
+        "boot_ns": 53089636,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "reverse_then_replace",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 17916,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": 5.0,
+            "rung_reached": "none"
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 883505722,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "reverse_then_replace",
+        "task_id": "fresh_reverse_then_replace_01"
+      },
+      {
+        "ablation_no_retrieval": false,
+        "arm": "main_replay",
+        "attempts": 0.0,
+        "boot_ns": 62669928,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "reverse_then_replace",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 14717,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": 5.0,
+            "rung_reached": "none"
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 979217994,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "reverse_then_replace",
+        "task_id": "fresh_reverse_then_replace_02"
+      },
+      {
+        "ablation_no_retrieval": false,
+        "arm": "main_replay",
+        "attempts": 0.0,
+        "boot_ns": 47579234,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "reverse_then_replace",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 10924,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": 5.0,
+            "rung_reached": "none"
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 919653197,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "reverse_then_replace",
+        "task_id": "fresh_reverse_then_replace_03"
+      },
+      {
+        "ablation_no_retrieval": false,
+        "arm": "main_replay",
+        "attempts": 0.0,
+        "boot_ns": 49129525,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "split_reverse_tokens",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 16005,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": 5.0,
+            "rung_reached": "none"
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 932987199,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "split_reverse_tokens",
+        "task_id": "fresh_split_reverse_tokens_01"
+      },
+      {
+        "ablation_no_retrieval": false,
+        "arm": "main_replay",
+        "attempts": 0.0,
+        "boot_ns": 55622055,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "split_reverse_tokens",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 15945,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": 5.0,
+            "rung_reached": "none"
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 927456776,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "split_reverse_tokens",
+        "task_id": "fresh_split_reverse_tokens_02"
+      },
+      {
+        "ablation_no_retrieval": false,
+        "arm": "main_replay",
+        "attempts": 0.0,
+        "boot_ns": 63934358,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "split_reverse_tokens",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 15895,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": 5.0,
+            "rung_reached": "none"
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 882613282,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "split_reverse_tokens",
+        "task_id": "fresh_split_reverse_tokens_03"
+      }
+    ],
+    "no_retrieval": [
+      {
+        "ablation_no_retrieval": true,
+        "arm": "no_retrieval",
+        "attempts": 0.0,
+        "boot_ns": 70363968,
+        "construction": null,
+        "enumerate_outcome": "ok",
+        "excluded": [],
+        "failure_reason": "holdout_disagreement",
+        "family": "casefold_count",
+        "gap_filed": false,
+        "gap_reason": null,
+        "holdout": {
+          "all_ok": false,
+          "n": 3,
+          "n_ok": 0,
+          "rows": [
+            {
+              "expected": 0,
+              "got": false,
+              "inputs": {
+                "s": "-_?Ayc,z_-bDb-"
+              },
+              "ok": false,
+              "trap": null
+            },
+            {
+              "expected": 0,
+              "got": false,
+              "inputs": {
+                "s": " bbbac-zy,!!ba"
+              },
+              "ok": false,
+              "trap": null
+            },
+            {
+              "expected": 0,
+              "got": false,
+              "inputs": {
+                "s": "x?,Ddec_-Ee-dBC-"
+              },
+              "ok": false,
+              "trap": null
+            }
+          ]
+        },
+        "ir": {
+          "stmts": [
+            {
+              "default": null,
+              "name": "s",
+              "type": "ProgDefFnParam"
+            },
+            {
+              "type": "ProgReturn",
+              "value": {
+                "a": {
+                  "name": "s",
+                  "type": "Var"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "a-cD -dE,Cex--Bab"
+                },
+                "type": "Eq"
+              }
+            }
+          ],
+          "type": "ProgSeq"
+        },
+        "n_counterexamples": 0,
+        "outcome": "accepted_holdout_fail",
+        "python_render": {
+          "exec_agree": true,
+          "render_ok": true,
+          "rows": [
+            {
+              "inputs": {
+                "s": "-_?Ayc,z_-bDb-"
+              },
+              "ok": true,
+              "prog_eval": false,
+              "python": false
+            },
+            {
+              "inputs": {
+                "s": " bbbac-zy,!!ba"
+              },
+              "ok": true,
+              "prog_eval": false,
+              "python": false
+            },
+            {
+              "inputs": {
+                "s": "x?,Ddec_-Ee-dBC-"
+              },
+              "ok": true,
+              "prog_eval": false,
+              "python": false
+            }
+          ],
+          "source": "def fresh_casefold_count_01(s):\n    return (s == 'a-cD -dE,Cex--Bab')\n"
+        },
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 48,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": 3,
+            "tested": 918
+          },
+          "enumerate_outcome": "ok",
+          "gap_reason": null,
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": null,
+            "rung_reached": null
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 9037609,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "accepted",
+        "stratum": "casefold_count",
+        "task_id": "fresh_casefold_count_01"
+      },
+      {
+        "ablation_no_retrieval": true,
+        "arm": "no_retrieval",
+        "attempts": 2.0,
+        "boot_ns": 49824331,
+        "construction": null,
+        "enumerate_outcome": "ok",
+        "excluded": [
+          null
+        ],
+        "failure_reason": "no_shape",
+        "family": "casefold_count",
+        "gap_filed": true,
+        "gap_reason": "no_shape",
+        "n_counterexamples": 4,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 1574,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": 7,
+            "tested": 82642
+          },
+          "enumerate_outcome": "ok",
+          "gap_reason": "no_shape",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": null,
+            "rung_reached": null
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 173994141,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "casefold_count",
+        "task_id": "fresh_casefold_count_02"
+      },
+      {
+        "ablation_no_retrieval": true,
+        "arm": "no_retrieval",
+        "attempts": 0.0,
+        "boot_ns": 49326877,
+        "construction": null,
+        "enumerate_outcome": "ok",
+        "excluded": [],
+        "failure_reason": "holdout_disagreement",
+        "family": "casefold_count",
+        "gap_filed": false,
+        "gap_reason": null,
+        "holdout": {
+          "all_ok": false,
+          "n": 3,
+          "n_ok": 0,
+          "rows": [
+            {
+              "expected": 0,
+              "got": 1,
+              "inputs": {
+                "s": "DAx-AcxCzE"
+              },
+              "ok": false,
+              "trap": null
+            },
+            {
+              "expected": 0,
+              "got": 1,
+              "inputs": {
+                "s": "_!B-Bb_-E?_az"
+              },
+              "ok": false,
+              "trap": null
+            },
+            {
+              "expected": 0,
+              "got": 1,
+              "inputs": {
+                "s": "zeADzaeED?zC___"
+              },
+              "ok": false,
+              "trap": null
+            }
+          ]
+        },
+        "ir": {
+          "stmts": [
+            {
+              "default": null,
+              "name": "s",
+              "type": "ProgDefFnParam"
+            },
+            {
+              "type": "ProgReturn",
+              "value": {
+                "a": {
+                  "type": "Lit",
+                  "value": 1
+                },
+                "b": {
+                  "sub": {
+                    "type": "Lit",
+                    "value": " "
+                  },
+                  "text": {
+                    "name": "s",
+                    "type": "Var"
+                  },
+                  "type": "StrCount"
+                },
+                "type": "Minus"
+              }
+            }
+          ],
+          "type": "ProgSeq"
+        },
+        "n_counterexamples": 0,
+        "outcome": "accepted_holdout_fail",
+        "python_render": {
+          "exec_agree": null,
+          "gaps": [
+            "render_gap:StrCount in python"
+          ],
+          "refusals": [],
+          "render_ok": false
+        },
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 239,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": 5,
+            "tested": 8731
+          },
+          "enumerate_outcome": "ok",
+          "gap_reason": null,
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": null,
+            "rung_reached": null
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 15775821,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "accepted",
+        "stratum": "casefold_count",
+        "task_id": "fresh_casefold_count_03"
+      },
+      {
+        "ablation_no_retrieval": true,
+        "arm": "no_retrieval",
+        "attempts": 0.0,
+        "boot_ns": 62115175,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "casefold_split",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 6866,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": null,
+            "rung_reached": null
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 508971875,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "casefold_split",
+        "task_id": "fresh_casefold_split_01"
+      },
+      {
+        "ablation_no_retrieval": true,
+        "arm": "no_retrieval",
+        "attempts": 0.0,
+        "boot_ns": 60968567,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "casefold_split",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 5669,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": null,
+            "rung_reached": null
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 427413659,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "casefold_split",
+        "task_id": "fresh_casefold_split_02"
+      },
+      {
+        "ablation_no_retrieval": true,
+        "arm": "no_retrieval",
+        "attempts": 0.0,
+        "boot_ns": 44383779,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "casefold_split",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 6323,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": null,
+            "rung_reached": null
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 452343811,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "casefold_split",
+        "task_id": "fresh_casefold_split_03"
+      },
+      {
+        "ablation_no_retrieval": true,
+        "arm": "no_retrieval",
+        "attempts": 0.0,
+        "boot_ns": 48235859,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "reverse_then_split",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 15974,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": null,
+            "rung_reached": null
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 461174937,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "reverse_then_split",
+        "task_id": "fresh_reverse_then_split_01"
+      },
+      {
+        "ablation_no_retrieval": true,
+        "arm": "no_retrieval",
+        "attempts": 0.0,
+        "boot_ns": 42573766,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "reverse_then_split",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 15964,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": null,
+            "rung_reached": null
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 437220144,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "reverse_then_split",
+        "task_id": "fresh_reverse_then_split_02"
+      },
+      {
+        "ablation_no_retrieval": true,
+        "arm": "no_retrieval",
+        "attempts": 0.0,
+        "boot_ns": 59903988,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "reverse_then_split",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 15943,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": null,
+            "rung_reached": null
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 405304899,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "reverse_then_split",
+        "task_id": "fresh_reverse_then_split_03"
+      },
+      {
+        "ablation_no_retrieval": true,
+        "arm": "no_retrieval",
+        "attempts": 0.0,
+        "boot_ns": 54025313,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "remove_separator",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 5993,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": null,
+            "rung_reached": null
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 266949221,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "remove_separator",
+        "task_id": "fresh_remove_separator_01"
+      },
+      {
+        "ablation_no_retrieval": true,
+        "arm": "no_retrieval",
+        "attempts": 0.0,
+        "boot_ns": 42291893,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "remove_separator",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 14330,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": null,
+            "rung_reached": null
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 324904074,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "remove_separator",
+        "task_id": "fresh_remove_separator_02"
+      },
+      {
+        "ablation_no_retrieval": true,
+        "arm": "no_retrieval",
+        "attempts": 0.0,
+        "boot_ns": 46143042,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "remove_separator",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 16622,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": null,
+            "rung_reached": null
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 343102764,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "remove_separator",
+        "task_id": "fresh_remove_separator_03"
+      },
+      {
+        "ablation_no_retrieval": true,
+        "arm": "no_retrieval",
+        "attempts": 0.0,
+        "boot_ns": 51595884,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "reverse_then_replace",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 17916,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": null,
+            "rung_reached": null
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 326538696,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "reverse_then_replace",
+        "task_id": "fresh_reverse_then_replace_01"
+      },
+      {
+        "ablation_no_retrieval": true,
+        "arm": "no_retrieval",
+        "attempts": 0.0,
+        "boot_ns": 51842566,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "reverse_then_replace",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 14717,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": null,
+            "rung_reached": null
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 397935121,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "reverse_then_replace",
+        "task_id": "fresh_reverse_then_replace_02"
+      },
+      {
+        "ablation_no_retrieval": true,
+        "arm": "no_retrieval",
+        "attempts": 0.0,
+        "boot_ns": 57390638,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "reverse_then_replace",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 10924,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": null,
+            "rung_reached": null
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 354353578,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "reverse_then_replace",
+        "task_id": "fresh_reverse_then_replace_03"
+      },
+      {
+        "ablation_no_retrieval": true,
+        "arm": "no_retrieval",
+        "attempts": 0.0,
+        "boot_ns": 64666124,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "split_reverse_tokens",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 16005,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": null,
+            "rung_reached": null
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 393307856,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "split_reverse_tokens",
+        "task_id": "fresh_split_reverse_tokens_01"
+      },
+      {
+        "ablation_no_retrieval": true,
+        "arm": "no_retrieval",
+        "attempts": 0.0,
+        "boot_ns": 48445390,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "split_reverse_tokens",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 15945,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": null,
+            "rung_reached": null
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 371064414,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "split_reverse_tokens",
+        "task_id": "fresh_split_reverse_tokens_02"
+      },
+      {
+        "ablation_no_retrieval": true,
+        "arm": "no_retrieval",
+        "attempts": 0.0,
+        "boot_ns": 45036004,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "split_reverse_tokens",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 15895,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": null,
+            "solution_size": null,
+            "tested": 200000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": null,
+            "rung_reached": null
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 382882465,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "split_reverse_tokens",
+        "task_id": "fresh_split_reverse_tokens_03"
+      }
+    ],
+    "no_retrieval_escalated": [
+      {
+        "ablation_no_retrieval": true,
+        "arm": "no_retrieval_escalated",
+        "attempts": 0.0,
+        "boot_ns": 59317804,
+        "construction": null,
+        "enumerate_outcome": "ok",
+        "excluded": [],
+        "failure_reason": "holdout_disagreement",
+        "family": "casefold_count",
+        "gap_filed": false,
+        "gap_reason": null,
+        "holdout": {
+          "all_ok": false,
+          "n": 3,
+          "n_ok": 0,
+          "rows": [
+            {
+              "expected": 0,
+              "got": false,
+              "inputs": {
+                "s": "-_?Ayc,z_-bDb-"
+              },
+              "ok": false,
+              "trap": null
+            },
+            {
+              "expected": 0,
+              "got": false,
+              "inputs": {
+                "s": " bbbac-zy,!!ba"
+              },
+              "ok": false,
+              "trap": null
+            },
+            {
+              "expected": 0,
+              "got": false,
+              "inputs": {
+                "s": "x?,Ddec_-Ee-dBC-"
+              },
+              "ok": false,
+              "trap": null
+            }
+          ]
+        },
+        "ir": {
+          "stmts": [
+            {
+              "default": null,
+              "name": "s",
+              "type": "ProgDefFnParam"
+            },
+            {
+              "type": "ProgReturn",
+              "value": {
+                "a": {
+                  "name": "s",
+                  "type": "Var"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "a-cD -dE,Cex--Bab"
+                },
+                "type": "Eq"
+              }
+            }
+          ],
+          "type": "ProgSeq"
+        },
+        "n_counterexamples": 0,
+        "outcome": "accepted_holdout_fail",
+        "python_render": {
+          "exec_agree": true,
+          "render_ok": true,
+          "rows": [
+            {
+              "inputs": {
+                "s": "-_?Ayc,z_-bDb-"
+              },
+              "ok": true,
+              "prog_eval": false,
+              "python": false
+            },
+            {
+              "inputs": {
+                "s": " bbbac-zy,!!ba"
+              },
+              "ok": true,
+              "prog_eval": false,
+              "python": false
+            },
+            {
+              "inputs": {
+                "s": "x?,Ddec_-Ee-dBC-"
+              },
+              "ok": true,
+              "prog_eval": false,
+              "python": false
+            }
+          ],
+          "source": "def fresh_casefold_count_01(s):\n    return (s == 'a-cD -dE,Cex--Bab')\n"
+        },
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 48,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": 500000.0,
+            "solution_size": 3,
+            "tested": 918
+          },
+          "enumerate_outcome": "ok",
+          "gap_reason": null,
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": null,
+            "rung_reached": null
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 7385417,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "accepted",
+        "stratum": "casefold_count",
+        "task_id": "fresh_casefold_count_01"
+      },
+      {
+        "ablation_no_retrieval": true,
+        "arm": "no_retrieval_escalated",
+        "attempts": 2.0,
+        "boot_ns": 69311900,
+        "construction": null,
+        "enumerate_outcome": "ok",
+        "excluded": [
+          null
+        ],
+        "failure_reason": "no_shape",
+        "family": "casefold_count",
+        "gap_filed": true,
+        "gap_reason": "no_shape",
+        "n_counterexamples": 4,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 1574,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": 500000.0,
+            "solution_size": 7,
+            "tested": 82642
+          },
+          "enumerate_outcome": "ok",
+          "gap_reason": "no_shape",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": null,
+            "rung_reached": null
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 164462998,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "casefold_count",
+        "task_id": "fresh_casefold_count_02"
+      },
+      {
+        "ablation_no_retrieval": true,
+        "arm": "no_retrieval_escalated",
+        "attempts": 0.0,
+        "boot_ns": 43360322,
+        "construction": null,
+        "enumerate_outcome": "ok",
+        "excluded": [],
+        "failure_reason": "holdout_disagreement",
+        "family": "casefold_count",
+        "gap_filed": false,
+        "gap_reason": null,
+        "holdout": {
+          "all_ok": false,
+          "n": 3,
+          "n_ok": 0,
+          "rows": [
+            {
+              "expected": 0,
+              "got": 1,
+              "inputs": {
+                "s": "DAx-AcxCzE"
+              },
+              "ok": false,
+              "trap": null
+            },
+            {
+              "expected": 0,
+              "got": 1,
+              "inputs": {
+                "s": "_!B-Bb_-E?_az"
+              },
+              "ok": false,
+              "trap": null
+            },
+            {
+              "expected": 0,
+              "got": 1,
+              "inputs": {
+                "s": "zeADzaeED?zC___"
+              },
+              "ok": false,
+              "trap": null
+            }
+          ]
+        },
+        "ir": {
+          "stmts": [
+            {
+              "default": null,
+              "name": "s",
+              "type": "ProgDefFnParam"
+            },
+            {
+              "type": "ProgReturn",
+              "value": {
+                "a": {
+                  "type": "Lit",
+                  "value": 1
+                },
+                "b": {
+                  "sub": {
+                    "type": "Lit",
+                    "value": " "
+                  },
+                  "text": {
+                    "name": "s",
+                    "type": "Var"
+                  },
+                  "type": "StrCount"
+                },
+                "type": "Minus"
+              }
+            }
+          ],
+          "type": "ProgSeq"
+        },
+        "n_counterexamples": 0,
+        "outcome": "accepted_holdout_fail",
+        "python_render": {
+          "exec_agree": null,
+          "gaps": [
+            "render_gap:StrCount in python"
+          ],
+          "refusals": [],
+          "render_ok": false
+        },
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 239,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": 500000.0,
+            "solution_size": 5,
+            "tested": 8731
+          },
+          "enumerate_outcome": "ok",
+          "gap_reason": null,
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": null,
+            "rung_reached": null
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 17333072,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "accepted",
+        "stratum": "casefold_count",
+        "task_id": "fresh_casefold_count_03"
+      },
+      {
+        "ablation_no_retrieval": true,
+        "arm": "no_retrieval_escalated",
+        "attempts": 0.0,
+        "boot_ns": 52445291,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "casefold_split",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 27815,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": 500000.0,
+            "solution_size": null,
+            "tested": 500000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": null,
+            "rung_reached": null
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 1571586984,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "casefold_split",
+        "task_id": "fresh_casefold_split_01"
+      },
+      {
+        "ablation_no_retrieval": true,
+        "arm": "no_retrieval_escalated",
+        "attempts": 0.0,
+        "boot_ns": 48212629,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "casefold_split",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 23424,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": 500000.0,
+            "solution_size": null,
+            "tested": 500000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": null,
+            "rung_reached": null
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 1163110058,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "casefold_split",
+        "task_id": "fresh_casefold_split_02"
+      },
+      {
+        "ablation_no_retrieval": true,
+        "arm": "no_retrieval_escalated",
+        "attempts": 0.0,
+        "boot_ns": 46852029,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "casefold_split",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 25738,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": 500000.0,
+            "solution_size": null,
+            "tested": 500000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": null,
+            "rung_reached": null
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 1321672159,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "casefold_split",
+        "task_id": "fresh_casefold_split_03"
+      },
+      {
+        "ablation_no_retrieval": true,
+        "arm": "no_retrieval_escalated",
+        "attempts": 0.0,
+        "boot_ns": 41204705,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "reverse_then_split",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 19250,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": 500000.0,
+            "solution_size": null,
+            "tested": 500000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": null,
+            "rung_reached": null
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 1027957972,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "reverse_then_split",
+        "task_id": "fresh_reverse_then_split_01"
+      },
+      {
+        "ablation_no_retrieval": true,
+        "arm": "no_retrieval_escalated",
+        "attempts": 0.0,
+        "boot_ns": 53030046,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "reverse_then_split",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 18895,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": 500000.0,
+            "solution_size": null,
+            "tested": 500000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": null,
+            "rung_reached": null
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 1109126422,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "reverse_then_split",
+        "task_id": "fresh_reverse_then_split_02"
+      },
+      {
+        "ablation_no_retrieval": true,
+        "arm": "no_retrieval_escalated",
+        "attempts": 0.0,
+        "boot_ns": 52514621,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "reverse_then_split",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 23167,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": 500000.0,
+            "solution_size": null,
+            "tested": 500000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": null,
+            "rung_reached": null
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 1027738619,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "reverse_then_split",
+        "task_id": "fresh_reverse_then_split_03"
+      },
+      {
+        "ablation_no_retrieval": true,
+        "arm": "no_retrieval_escalated",
+        "attempts": 0.0,
+        "boot_ns": 57749601,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "remove_separator",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 34246,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": 500000.0,
+            "solution_size": null,
+            "tested": 500000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": null,
+            "rung_reached": null
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 1157580941,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "remove_separator",
+        "task_id": "fresh_remove_separator_01"
+      },
+      {
+        "ablation_no_retrieval": true,
+        "arm": "no_retrieval_escalated",
+        "attempts": 0.0,
+        "boot_ns": 52783224,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "remove_separator",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 18526,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": 500000.0,
+            "solution_size": null,
+            "tested": 500000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": null,
+            "rung_reached": null
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 881941902,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "remove_separator",
+        "task_id": "fresh_remove_separator_02"
+      },
+      {
+        "ablation_no_retrieval": true,
+        "arm": "no_retrieval_escalated",
+        "attempts": 0.0,
+        "boot_ns": 51845807,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "remove_separator",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 25403,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": 500000.0,
+            "solution_size": null,
+            "tested": 500000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": null,
+            "rung_reached": null
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 1021087315,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "remove_separator",
+        "task_id": "fresh_remove_separator_03"
+      },
+      {
+        "ablation_no_retrieval": true,
+        "arm": "no_retrieval_escalated",
+        "attempts": 0.0,
+        "boot_ns": 52504861,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "reverse_then_replace",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 28165,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": 500000.0,
+            "solution_size": null,
+            "tested": 500000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": null,
+            "rung_reached": null
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 998938466,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "reverse_then_replace",
+        "task_id": "fresh_reverse_then_replace_01"
+      },
+      {
+        "ablation_no_retrieval": true,
+        "arm": "no_retrieval_escalated",
+        "attempts": 0.0,
+        "boot_ns": 53379118,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "reverse_then_replace",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 16477,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": 500000.0,
+            "solution_size": null,
+            "tested": 500000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": null,
+            "rung_reached": null
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 866665923,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "reverse_then_replace",
+        "task_id": "fresh_reverse_then_replace_02"
+      },
+      {
+        "ablation_no_retrieval": true,
+        "arm": "no_retrieval_escalated",
+        "attempts": 0.0,
+        "boot_ns": 34634244,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "reverse_then_replace",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 26585,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": 500000.0,
+            "solution_size": null,
+            "tested": 500000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": null,
+            "rung_reached": null
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 875460099,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "reverse_then_replace",
+        "task_id": "fresh_reverse_then_replace_03"
+      },
+      {
+        "ablation_no_retrieval": true,
+        "arm": "no_retrieval_escalated",
+        "attempts": 0.0,
+        "boot_ns": 45392117,
+        "construction": null,
+        "enumerate_outcome": "ok",
+        "excluded": [],
+        "failure_reason": null,
+        "family": "split_reverse_tokens",
+        "gap_filed": false,
+        "gap_reason": null,
+        "holdout": {
+          "all_ok": true,
+          "n": 3,
+          "n_ok": 3,
+          "rows": [
+            {
+              "expected": [
+                "waf",
+                "adffZ",
+                "ad"
+              ],
+              "got": null,
+              "inputs": {
+                "s": "faw:Zffda:da"
+              },
+              "ok": true,
+              "trap": null
+            },
+            {
+              "expected": [
+                "udZXYe",
+                "uwXd",
+                "ueceY"
+              ],
+              "got": null,
+              "inputs": {
+                "s": "eYXZdu:dXwu:Yeceu"
+              },
+              "ok": true,
+              "trap": null
+            },
+            {
+              "expected": [
+                "ffY",
+                "wvYcYeu",
+                "efaY"
+              ],
+              "got": null,
+              "inputs": {
+                "s": "Yff:ueYcYvw:Yafe"
+              },
+              "ok": true,
+              "trap": null
+            }
+          ]
+        },
+        "ir": {
+          "stmts": [
+            {
+              "default": null,
+              "name": "s",
+              "type": "ProgDefFnParam"
+            },
+            {
+              "type": "ProgReturn",
+              "value": {
+                "source": {
+                  "sep": {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  "text": {
+                    "name": "s",
+                    "type": "Var"
+                  },
+                  "type": "Split"
+                },
+                "type": "MapList",
+                "value": {
+                  "seq": {
+                    "name": "__item",
+                    "type": "Var"
+                  },
+                  "type": "Reverse"
+                },
+                "var_name": "__item"
+              }
+            }
+          ],
+          "type": "ProgSeq"
+        },
+        "n_counterexamples": 0,
+        "outcome": "accepted_holdout_ok",
+        "python_render": {
+          "exec_agree": null,
+          "gaps": [
+            "render_gap:MapList in python",
+            "render_gap:Split in python",
+            "render_gap:Reverse in python"
+          ],
+          "refusals": [],
+          "render_ok": false
+        },
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 18919,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": 500000.0,
+            "solution_size": 9,
+            "tested": 498455
+          },
+          "enumerate_outcome": "ok",
+          "gap_reason": null,
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": null,
+            "rung_reached": null
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 956262176,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "accepted",
+        "stratum": "split_reverse_tokens",
+        "task_id": "fresh_split_reverse_tokens_01"
+      },
+      {
+        "ablation_no_retrieval": true,
+        "arm": "no_retrieval_escalated",
+        "attempts": 0.0,
+        "boot_ns": 53615740,
+        "construction": null,
+        "enumerate_outcome": "failed",
+        "excluded": [],
+        "failure_reason": "enumerate_failed",
+        "family": "split_reverse_tokens",
+        "gap_filed": true,
+        "gap_reason": "enumerate_failed",
+        "n_counterexamples": 0,
+        "outcome": "gapped",
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 18898,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": 500000.0,
+            "solution_size": null,
+            "tested": 500000
+          },
+          "enumerate_outcome": "failed",
+          "gap_reason": "enumerate_failed",
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": null,
+            "rung_reached": null
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 949469733,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "gapped",
+        "stratum": "split_reverse_tokens",
+        "task_id": "fresh_split_reverse_tokens_02"
+      },
+      {
+        "ablation_no_retrieval": true,
+        "arm": "no_retrieval_escalated",
+        "attempts": 0.0,
+        "boot_ns": 35673412,
+        "construction": null,
+        "enumerate_outcome": "ok",
+        "excluded": [],
+        "failure_reason": null,
+        "family": "split_reverse_tokens",
+        "gap_filed": false,
+        "gap_reason": null,
+        "holdout": {
+          "all_ok": true,
+          "n": 3,
+          "n_ok": 3,
+          "rows": [
+            {
+              "expected": [
+                "cceaXv",
+                "ZZwd",
+                "YYXZd"
+              ],
+              "got": null,
+              "inputs": {
+                "s": "vXaecc;dwZZ;dZXYY"
+              },
+              "ok": true,
+              "trap": null
+            },
+            {
+              "expected": [
+                "ffudfvb",
+                "dZe",
+                "fYd",
+                "YXuca"
+              ],
+              "got": null,
+              "inputs": {
+                "s": "bvfduff;eZd;dYf;acuXY"
+              },
+              "ok": true,
+              "trap": null
+            },
+            {
+              "expected": [
+                "feZfc",
+                "Xc",
+                "beub"
+              ],
+              "got": null,
+              "inputs": {
+                "s": "cfZef;cX;bueb"
+              },
+              "ok": true,
+              "trap": null
+            }
+          ]
+        },
+        "ir": {
+          "stmts": [
+            {
+              "default": null,
+              "name": "s",
+              "type": "ProgDefFnParam"
+            },
+            {
+              "type": "ProgReturn",
+              "value": {
+                "source": {
+                  "sep": {
+                    "type": "Lit",
+                    "value": ";"
+                  },
+                  "text": {
+                    "name": "s",
+                    "type": "Var"
+                  },
+                  "type": "Split"
+                },
+                "type": "MapList",
+                "value": {
+                  "seq": {
+                    "name": "__item",
+                    "type": "Var"
+                  },
+                  "type": "Reverse"
+                },
+                "var_name": "__item"
+              }
+            }
+          ],
+          "type": "ProgSeq"
+        },
+        "n_counterexamples": 0,
+        "outcome": "accepted_holdout_ok",
+        "python_render": {
+          "exec_agree": null,
+          "gaps": [
+            "render_gap:MapList in python",
+            "render_gap:Split in python",
+            "render_gap:Reverse in python"
+          ],
+          "refusals": [],
+          "render_ok": false
+        },
+        "readback": {
+          "construction": null,
+          "enumerate": {
+            "distinct": 18742,
+            "grounded_constants": [],
+            "operator_shape": null,
+            "ops": [],
+            "requested_candidate_budget": 500000.0,
+            "solution_size": 9,
+            "tested": 492930
+          },
+          "enumerate_outcome": "ok",
+          "gap_reason": null,
+          "retrieval": {
+            "accept_edit": null,
+            "accept_perm": null,
+            "accept_task_id": null,
+            "n_candidates": null,
+            "rung_reached": null
+          },
+          "rungs": {
+            "codebook": null,
+            "descend": null,
+            "enumerate": 1.0,
+            "exact": null,
+            "lattice": null
+          }
+        },
+        "recognized": true,
+        "route_ns": 1041030022,
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "status": "accepted",
+        "stratum": "split_reverse_tokens",
+        "task_id": "fresh_split_reverse_tokens_03"
+      }
+    ]
+  },
+  "design": {
+    "arm_order": "main/no_retrieval/no_retrieval_escalated/main_replay on even ordinals; no_retrieval/main/main_replay/no_retrieval_escalated on odd",
+    "arms": [
+      "main",
+      "no_retrieval",
+      "no_retrieval_escalated",
+      "main_replay"
+    ],
+    "escalated_candidate_budget": 500000,
+    "held_out": 3,
+    "revealed": 4,
+    "suite_id": "substrate-string-composition-fresh-v1",
+    "task_count": 18
+  },
+  "environment": {
+    "controls": {
+      "OZMA_NO_LLM": "1",
+      "OZMA_SEED_PERSIST_DISABLED": "1",
+      "PYTHONHASHSEED": null
+    },
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+  },
+  "fixture_sha256": "525dd3c5a7d1ca8e0d75c3845428857a66fd219688bcc6009b8af41787255f47",
+  "protocol_version": "string-pbe-contrast-v1",
+  "provenance": {
+    "command": "PYTHONPATH=runners/dsl/python:.:scripts OZMA_NO_LLM=1 OZMA_SEED_PERSIST_DISABLED=1 python3 scripts/substrate_string_pbe_contrast_benchmark.py",
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "dirty_worktree": true,
+    "native_extension_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+    "sha256": {
+      "benchmark_protocol": "0d0a2e66df62f2ff9080b3f31838c368a9f4e6c18ad90d8ba0ccb37fb02f17e9",
+      "cargo_lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+      "codebook_adapter": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+      "codebook_seed": "7e135b9d20febaa9b62cd470691a4cdfe6a5871a9837cccb5727b82168186b50",
+      "current_source_wrapper": "daf2d5aa4dde2c56bbcea3b909fbcab7199ef4a40b3e26009b04150b55276051",
+      "fixture": "525dd3c5a7d1ca8e0d75c3845428857a66fd219688bcc6009b8af41787255f47",
+      "harness": "0bc5e84dacc3fe2fcaf0e289fe5afa89472e3b9491ebc1a56cb7a722256edf5b",
+      "independent_analyzer": "194ec4660f9985bcbdd20a0c52e11a9a5bc13f1a59448b474e44fdd3e4e2d625",
+      "native_build_manifest": "64e45893f9005846a1c53dcaac562fb9c9fb280292f411cfc839f929a68eabf7",
+      "native_extension": "6f060694601cf8266b68d083bce201d4da8710cc4d5b1ebbcb548952b8de4397",
+      "native_synthesizer": "f3ae5dd0b15f0fef1713fa92ccb563e4b573dd94b626f0bfed58413298ee6203",
+      "p4_adapter": "52c01df0e08483b3ad5b35c45da27f92b70805957f068995fbfbd8c57b9cae2b",
+      "p4_runner": "0cdaf29c0db08c36ac50e18a1a99e5c2eaed77a26cd68e5e5952a451a94b3df5",
+      "p4_seed": "9d657f4409e470626f3bb9adc1236b7c6c59976a7a1b16b38e566813324916bd",
+      "preregistration": "8c330b911485387195c7e224be9f863c47815248fe2a0b7508a5a3a3f984f8b1",
+      "retrieval_adapter": "c726c87171ece5ae722105da74dd5afde66e0d9a02e4138f06df2dfd777e2055",
+      "retrieval_seed": "f5ee12ac48bb2c509d49514caf74a67f71b0378b3fdf87b3563afd77e5c6c041",
+      "task_generator": "d33b3a06140b1a8d803629dd527805ba4508e36c2b204038cc0c6b79916f5c59"
+    }
+  },
+  "run_id": "string-composition-fresh-pbe-v1-20261003",
+  "run_state": "prelocked_fresh_task_family",
+  "schema_version": 1,
+  "source_lock_sha256": "820b1e4322f8f3a8a467f02ac60f89d1f7ee622875b1623e2207a077c55df4cf",
+  "summary": {
+    "arms": {
+      "main": {
+        "accepted": 3,
+        "accepted_holdout_fail": 2,
+        "boot_seconds_sum": 0.997958141,
+        "candidate_budget_requests": {
+          "None": 15
+        },
+        "enumerated": 15,
+        "exact_holdout_pass": 1,
+        "n": 18,
+        "outcome_counts": {
+          "accepted_holdout_fail": 2,
+          "accepted_holdout_ok": 1,
+          "gapped": 15
+        },
+        "route_seconds_sum": 11.433135381,
+        "tested_candidates": 3000000
+      },
+      "main_replay": {
+        "accepted": 3,
+        "accepted_holdout_fail": 2,
+        "boot_seconds_sum": 0.934426263,
+        "candidate_budget_requests": {
+          "None": 15
+        },
+        "enumerated": 15,
+        "exact_holdout_pass": 1,
+        "n": 18,
+        "outcome_counts": {
+          "accepted_holdout_fail": 2,
+          "accepted_holdout_ok": 1,
+          "gapped": 15
+        },
+        "route_seconds_sum": 11.288680343,
+        "tested_candidates": 3000000
+      },
+      "no_retrieval": {
+        "accepted": 2,
+        "accepted_holdout_fail": 2,
+        "boot_seconds_sum": 0.949133164,
+        "candidate_budget_requests": {
+          "None": 18
+        },
+        "enumerated": 18,
+        "exact_holdout_pass": 0,
+        "n": 18,
+        "outcome_counts": {
+          "accepted_holdout_fail": 2,
+          "gapped": 16
+        },
+        "route_seconds_sum": 6.052275085,
+        "tested_candidates": 3092291
+      },
+      "no_retrieval_escalated": {
+        "accepted": 4,
+        "accepted_holdout_fail": 2,
+        "boot_seconds_sum": 0.903827471,
+        "candidate_budget_requests": {
+          "500000.0": 18
+        },
+        "enumerated": 18,
+        "exact_holdout_pass": 2,
+        "n": 18,
+        "outcome_counts": {
+          "accepted_holdout_fail": 2,
+          "accepted_holdout_ok": 2,
+          "gapped": 14
+        },
+        "route_seconds_sum": 16.158810278,
+        "tested_candidates": 7583676
+      }
+    },
+    "category_summary": {
+      "main": {
+        "casefold_count": {
+          "accepted": 3,
+          "accepted_holdout_fail": 2,
+          "boot_seconds_sum": 0.160714619,
+          "candidate_budget_requests": {},
+          "enumerated": 0,
+          "exact_holdout_pass": 1,
+          "n": 3,
+          "outcome_counts": {
+            "accepted_holdout_fail": 2,
+            "accepted_holdout_ok": 1
+          },
+          "route_seconds_sum": 0.189385729,
+          "tested_candidates": 0
+        },
+        "casefold_split": {
+          "accepted": 0,
+          "accepted_holdout_fail": 0,
+          "boot_seconds_sum": 0.159272989,
+          "candidate_budget_requests": {
+            "None": 3
+          },
+          "enumerated": 3,
+          "exact_holdout_pass": 0,
+          "n": 3,
+          "outcome_counts": {
+            "gapped": 3
+          },
+          "route_seconds_sum": 1.882582232,
+          "tested_candidates": 600000
+        },
+        "remove_separator": {
+          "accepted": 0,
+          "accepted_holdout_fail": 0,
+          "boot_seconds_sum": 0.154280699,
+          "candidate_budget_requests": {
+            "None": 3
+          },
+          "enumerated": 3,
+          "exact_holdout_pass": 0,
+          "n": 3,
+          "outcome_counts": {
+            "gapped": 3
+          },
+          "route_seconds_sum": 2.037507337,
+          "tested_candidates": 600000
+        },
+        "reverse_then_replace": {
+          "accepted": 0,
+          "accepted_holdout_fail": 0,
+          "boot_seconds_sum": 0.212980259,
+          "candidate_budget_requests": {
+            "None": 3
+          },
+          "enumerated": 3,
+          "exact_holdout_pass": 0,
+          "n": 3,
+          "outcome_counts": {
+            "gapped": 3
+          },
+          "route_seconds_sum": 2.928474031,
+          "tested_candidates": 600000
+        },
+        "reverse_then_split": {
+          "accepted": 0,
+          "accepted_holdout_fail": 0,
+          "boot_seconds_sum": 0.149406183,
+          "candidate_budget_requests": {
+            "None": 3
+          },
+          "enumerated": 3,
+          "exact_holdout_pass": 0,
+          "n": 3,
+          "outcome_counts": {
+            "gapped": 3
+          },
+          "route_seconds_sum": 1.681245038,
+          "tested_candidates": 600000
+        },
+        "split_reverse_tokens": {
+          "accepted": 0,
+          "accepted_holdout_fail": 0,
+          "boot_seconds_sum": 0.161303392,
+          "candidate_budget_requests": {
+            "None": 3
+          },
+          "enumerated": 3,
+          "exact_holdout_pass": 0,
+          "n": 3,
+          "outcome_counts": {
+            "gapped": 3
+          },
+          "route_seconds_sum": 2.713941014,
+          "tested_candidates": 600000
+        }
+      },
+      "main_replay": {
+        "casefold_count": {
+          "accepted": 3,
+          "accepted_holdout_fail": 2,
+          "boot_seconds_sum": 0.132476672,
+          "candidate_budget_requests": {},
+          "enumerated": 0,
+          "exact_holdout_pass": 1,
+          "n": 3,
+          "outcome_counts": {
+            "accepted_holdout_fail": 2,
+            "accepted_holdout_ok": 1
+          },
+          "route_seconds_sum": 0.168096547,
+          "tested_candidates": 0
+        },
+        "casefold_split": {
+          "accepted": 0,
+          "accepted_holdout_fail": 0,
+          "boot_seconds_sum": 0.155607131,
+          "candidate_budget_requests": {
+            "None": 3
+          },
+          "enumerated": 3,
+          "exact_holdout_pass": 0,
+          "n": 3,
+          "outcome_counts": {
+            "gapped": 3
+          },
+          "route_seconds_sum": 1.810333129,
+          "tested_candidates": 600000
+        },
+        "remove_separator": {
+          "accepted": 0,
+          "accepted_holdout_fail": 0,
+          "boot_seconds_sum": 0.146987675,
+          "candidate_budget_requests": {
+            "None": 3
+          },
+          "enumerated": 3,
+          "exact_holdout_pass": 0,
+          "n": 3,
+          "outcome_counts": {
+            "gapped": 3
+          },
+          "route_seconds_sum": 2.086047357,
+          "tested_candidates": 600000
+        },
+        "reverse_then_replace": {
+          "accepted": 0,
+          "accepted_holdout_fail": 0,
+          "boot_seconds_sum": 0.163338798,
+          "candidate_budget_requests": {
+            "None": 3
+          },
+          "enumerated": 3,
+          "exact_holdout_pass": 0,
+          "n": 3,
+          "outcome_counts": {
+            "gapped": 3
+          },
+          "route_seconds_sum": 2.782376913,
+          "tested_candidates": 600000
+        },
+        "reverse_then_split": {
+          "accepted": 0,
+          "accepted_holdout_fail": 0,
+          "boot_seconds_sum": 0.167330049,
+          "candidate_budget_requests": {
+            "None": 3
+          },
+          "enumerated": 3,
+          "exact_holdout_pass": 0,
+          "n": 3,
+          "outcome_counts": {
+            "gapped": 3
+          },
+          "route_seconds_sum": 1.69876914,
+          "tested_candidates": 600000
+        },
+        "split_reverse_tokens": {
+          "accepted": 0,
+          "accepted_holdout_fail": 0,
+          "boot_seconds_sum": 0.168685938,
+          "candidate_budget_requests": {
+            "None": 3
+          },
+          "enumerated": 3,
+          "exact_holdout_pass": 0,
+          "n": 3,
+          "outcome_counts": {
+            "gapped": 3
+          },
+          "route_seconds_sum": 2.743057257,
+          "tested_candidates": 600000
+        }
+      },
+      "no_retrieval": {
+        "casefold_count": {
+          "accepted": 2,
+          "accepted_holdout_fail": 2,
+          "boot_seconds_sum": 0.169515176,
+          "candidate_budget_requests": {
+            "None": 3
+          },
+          "enumerated": 3,
+          "exact_holdout_pass": 0,
+          "n": 3,
+          "outcome_counts": {
+            "accepted_holdout_fail": 2,
+            "gapped": 1
+          },
+          "route_seconds_sum": 0.198807571,
+          "tested_candidates": 92291
+        },
+        "casefold_split": {
+          "accepted": 0,
+          "accepted_holdout_fail": 0,
+          "boot_seconds_sum": 0.167467521,
+          "candidate_budget_requests": {
+            "None": 3
+          },
+          "enumerated": 3,
+          "exact_holdout_pass": 0,
+          "n": 3,
+          "outcome_counts": {
+            "gapped": 3
+          },
+          "route_seconds_sum": 1.388729345,
+          "tested_candidates": 600000
+        },
+        "remove_separator": {
+          "accepted": 0,
+          "accepted_holdout_fail": 0,
+          "boot_seconds_sum": 0.142460248,
+          "candidate_budget_requests": {
+            "None": 3
+          },
+          "enumerated": 3,
+          "exact_holdout_pass": 0,
+          "n": 3,
+          "outcome_counts": {
+            "gapped": 3
+          },
+          "route_seconds_sum": 0.934956059,
+          "tested_candidates": 600000
+        },
+        "reverse_then_replace": {
+          "accepted": 0,
+          "accepted_holdout_fail": 0,
+          "boot_seconds_sum": 0.160829088,
+          "candidate_budget_requests": {
+            "None": 3
+          },
+          "enumerated": 3,
+          "exact_holdout_pass": 0,
+          "n": 3,
+          "outcome_counts": {
+            "gapped": 3
+          },
+          "route_seconds_sum": 1.078827395,
+          "tested_candidates": 600000
+        },
+        "reverse_then_split": {
+          "accepted": 0,
+          "accepted_holdout_fail": 0,
+          "boot_seconds_sum": 0.150713613,
+          "candidate_budget_requests": {
+            "None": 3
+          },
+          "enumerated": 3,
+          "exact_holdout_pass": 0,
+          "n": 3,
+          "outcome_counts": {
+            "gapped": 3
+          },
+          "route_seconds_sum": 1.30369998,
+          "tested_candidates": 600000
+        },
+        "split_reverse_tokens": {
+          "accepted": 0,
+          "accepted_holdout_fail": 0,
+          "boot_seconds_sum": 0.158147518,
+          "candidate_budget_requests": {
+            "None": 3
+          },
+          "enumerated": 3,
+          "exact_holdout_pass": 0,
+          "n": 3,
+          "outcome_counts": {
+            "gapped": 3
+          },
+          "route_seconds_sum": 1.147254735,
+          "tested_candidates": 600000
+        }
+      },
+      "no_retrieval_escalated": {
+        "casefold_count": {
+          "accepted": 2,
+          "accepted_holdout_fail": 2,
+          "boot_seconds_sum": 0.171990026,
+          "candidate_budget_requests": {
+            "500000.0": 3
+          },
+          "enumerated": 3,
+          "exact_holdout_pass": 0,
+          "n": 3,
+          "outcome_counts": {
+            "accepted_holdout_fail": 2,
+            "gapped": 1
+          },
+          "route_seconds_sum": 0.189181487,
+          "tested_candidates": 92291
+        },
+        "casefold_split": {
+          "accepted": 0,
+          "accepted_holdout_fail": 0,
+          "boot_seconds_sum": 0.147509949,
+          "candidate_budget_requests": {
+            "500000.0": 3
+          },
+          "enumerated": 3,
+          "exact_holdout_pass": 0,
+          "n": 3,
+          "outcome_counts": {
+            "gapped": 3
+          },
+          "route_seconds_sum": 4.056369201,
+          "tested_candidates": 1500000
+        },
+        "remove_separator": {
+          "accepted": 0,
+          "accepted_holdout_fail": 0,
+          "boot_seconds_sum": 0.162378632,
+          "candidate_budget_requests": {
+            "500000.0": 3
+          },
+          "enumerated": 3,
+          "exact_holdout_pass": 0,
+          "n": 3,
+          "outcome_counts": {
+            "gapped": 3
+          },
+          "route_seconds_sum": 3.060610158,
+          "tested_candidates": 1500000
+        },
+        "reverse_then_replace": {
+          "accepted": 0,
+          "accepted_holdout_fail": 0,
+          "boot_seconds_sum": 0.140518223,
+          "candidate_budget_requests": {
+            "500000.0": 3
+          },
+          "enumerated": 3,
+          "exact_holdout_pass": 0,
+          "n": 3,
+          "outcome_counts": {
+            "gapped": 3
+          },
+          "route_seconds_sum": 2.741064488,
+          "tested_candidates": 1500000
+        },
+        "reverse_then_split": {
+          "accepted": 0,
+          "accepted_holdout_fail": 0,
+          "boot_seconds_sum": 0.146749372,
+          "candidate_budget_requests": {
+            "500000.0": 3
+          },
+          "enumerated": 3,
+          "exact_holdout_pass": 0,
+          "n": 3,
+          "outcome_counts": {
+            "gapped": 3
+          },
+          "route_seconds_sum": 3.164823013,
+          "tested_candidates": 1500000
+        },
+        "split_reverse_tokens": {
+          "accepted": 2,
+          "accepted_holdout_fail": 0,
+          "boot_seconds_sum": 0.134681269,
+          "candidate_budget_requests": {
+            "500000.0": 3
+          },
+          "enumerated": 3,
+          "exact_holdout_pass": 2,
+          "n": 3,
+          "outcome_counts": {
+            "accepted_holdout_ok": 2,
+            "gapped": 1
+          },
+          "route_seconds_sum": 2.946761931,
+          "tested_candidates": 1491385
+        }
+      }
+    },
+    "main_fingerprint": "5d476f5b69f90fb9815a92e059e6d3a845128158a6da63db40fc67272659b3b1",
+    "main_replay_exact_match": true,
+    "main_replay_fingerprint": "5d476f5b69f90fb9815a92e059e6d3a845128158a6da63db40fc67272659b3b1",
+    "paired_bootstrap_95": {
+      "draws": 10000,
+      "percentile_95_interval": [
+        0.0,
+        0.16666666666666666
+      ],
+      "seed": 20260925,
+      "stratification": "six registered task families"
+    },
+    "paired_main_vs_no_retrieval": {
+      "main_only": 1,
+      "neither": 17
+    },
+    "paired_pass_rate_difference_main_minus_no_retrieval": 0.05555555555555555,
+    "parent_peak_rss_kib": 158536,
+    "parent_system_cpu_seconds": 1.409147,
+    "parent_user_cpu_seconds": 47.450495000000004,
+    "wall_seconds": 49.08510484104045
+  },
+  "task_generator_sha256": "d33b3a06140b1a8d803629dd527805ba4508e36c2b204038cc0c6b79916f5c59"
+}

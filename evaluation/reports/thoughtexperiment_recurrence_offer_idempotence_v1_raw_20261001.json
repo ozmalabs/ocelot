@@ -1,0 +1,145 @@
+{
+  "captured_utc": "2026-10-01T07:45:01Z",
+  "engine_fingerprint": "4036d3738ccc0e1f0fa3a6ef00ab3e271c1205921ca074a3f02334919a46d6ee",
+  "gates": {
+    "faulty_duplicate_offers": true,
+    "only_guard_removed": true,
+    "primary_unchanged": true,
+    "repair_branch_exactly_one_offer": true,
+    "repair_branch_fixedpoint": true,
+    "source_stable": true,
+    "three_fresh_workers": true
+  },
+  "native_binary": {
+    "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+    "sha256": "b9f398c75ceb12a5d519235efb6b3ec403d1b153a576aad6def528c2d48a7617"
+  },
+  "protocol": {
+    "backend": "native full-copy experiment fork",
+    "candidate_repair": "restore original authored mrl_offer_due_once rule",
+    "closure_sweeps": 5,
+    "fault": "remove only Not Exists(candidate.has_mint_offer)",
+    "rules_per_sweep": 100,
+    "workers": 3
+  },
+  "schema": "ThoughtexperimentRecurrenceOfferIdempotenceV1",
+  "source_hashes": {
+    "evaluation/substrate_capability/thoughtexperiment_recurrence_offer_idempotence_v1.py": "81f11494472cd93cb7dee1557851d624997179de7585c232b41feb34868906cf",
+    "seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+    "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+    "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+  },
+  "workers": [
+    {
+      "faulty": {
+        "closure_progress": [
+          101,
+          105,
+          105,
+          105,
+          105
+        ],
+        "offer_count": 75,
+        "only_guard_removed": true
+      },
+      "pid": 3,
+      "primary_preserved": true,
+      "repair_branch": {
+        "added_original_rule_index": 25,
+        "closure_progress": [
+          9,
+          0,
+          0,
+          0,
+          0
+        ],
+        "final_fixedpoint_progress": 0,
+        "offer_count": 1,
+        "removed_faulty_rule": true,
+        "restored_original_where": true
+      },
+      "source_hashes": {
+        "evaluation/substrate_capability/thoughtexperiment_recurrence_offer_idempotence_v1.py": "81f11494472cd93cb7dee1557851d624997179de7585c232b41feb34868906cf",
+        "seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+      },
+      "source_stable": true,
+      "worker_index": 0
+    },
+    {
+      "faulty": {
+        "closure_progress": [
+          101,
+          105,
+          105,
+          105,
+          105
+        ],
+        "offer_count": 75,
+        "only_guard_removed": true
+      },
+      "pid": 35,
+      "primary_preserved": true,
+      "repair_branch": {
+        "added_original_rule_index": 25,
+        "closure_progress": [
+          9,
+          0,
+          0,
+          0,
+          0
+        ],
+        "final_fixedpoint_progress": 0,
+        "offer_count": 1,
+        "removed_faulty_rule": true,
+        "restored_original_where": true
+      },
+      "source_hashes": {
+        "evaluation/substrate_capability/thoughtexperiment_recurrence_offer_idempotence_v1.py": "81f11494472cd93cb7dee1557851d624997179de7585c232b41feb34868906cf",
+        "seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+      },
+      "source_stable": true,
+      "worker_index": 1
+    },
+    {
+      "faulty": {
+        "closure_progress": [
+          101,
+          105,
+          105,
+          105,
+          105
+        ],
+        "offer_count": 75,
+        "only_guard_removed": true
+      },
+      "pid": 67,
+      "primary_preserved": true,
+      "repair_branch": {
+        "added_original_rule_index": 25,
+        "closure_progress": [
+          9,
+          0,
+          0,
+          0,
+          0
+        ],
+        "final_fixedpoint_progress": 0,
+        "offer_count": 1,
+        "removed_faulty_rule": true,
+        "restored_original_where": true
+      },
+      "source_hashes": {
+        "evaluation/substrate_capability/thoughtexperiment_recurrence_offer_idempotence_v1.py": "81f11494472cd93cb7dee1557851d624997179de7585c232b41feb34868906cf",
+        "seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+      },
+      "source_stable": true,
+      "worker_index": 2
+    }
+  ]
+}

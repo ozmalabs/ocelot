@@ -1,0 +1,30 @@
+{
+  "checks": {
+    "each_goal_maps_only_to_its_turn_origin": true,
+    "each_run_has_two_distinct_instruction_origins": true,
+    "no_goal_cross_links_in_capture": true,
+    "no_goal_lifecycle_transitions": true,
+    "no_selection_execution_or_result_events": true,
+    "producer_shape_replicates": true,
+    "raw_lock_matches_current_sources": true,
+    "same_recipient_per_run": true,
+    "three_fresh_processes": true
+  },
+  "conclusion": "The live path preserves distinct origin links for two same-recipient instruction Goals across three fresh full-seed runs. It emits no selection, execution, action_result, or Goal transition events in this probe. This demonstrates ingress provenance only, not downstream action lifecycle identity or general action execution.",
+  "metrics": {
+    "distinct_pids": 3,
+    "event_kinds": {
+      "action_result": 0,
+      "execution": 0,
+      "instruction": 2,
+      "selection": 0
+    },
+    "median_full_seed_boot_seconds": 12.269834201,
+    "median_per_turn_seconds": 2.081575635,
+    "median_two_turn_seconds": 4.16315127,
+    "replicates": 3
+  },
+  "raw_capture": "evaluation/reports/substrate_live_multi_goal_origin_identity_v1_20260926.json",
+  "raw_sha256": "9435666e35dbbdcb3ac4d2dd5534f7923800a95789438d7d71dfcfc547aaeaaf",
+  "schema_version": 1
+}

@@ -1,0 +1,259 @@
+{
+  "command": "PYTHONPATH=runners/dsl/python:. python3 scripts/substrate_cyclic_cap_pilot.py",
+  "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+  "dirty": true,
+  "environment": {
+    "PYTHONPATH": "runners/dsl/python:."
+  },
+  "executor_source_sha256": {
+    "runners/dsl/src/py.rs": "1dfaad8ed9032ff17932d47ea825918b3c84f193d6ab706616962b6ce45c2783",
+    "runners/dsl/src/rewrite.rs": "3c4721f8fe34e3ddf7e9a1c5ff3a1f9124fd0637cb2ef40ae29461adb59462ab",
+    "runners/dsl/src/substrate.rs": "fbcd56f6cdd21b568927f038328def50f5ef461cc0351627c547872596c2b64e"
+  },
+  "harness_sha256": "4f9f652f0c2ca293f47f269f1692bdea94096547e7a74ef9729a6a8f9656c406",
+  "input": "Two nodes; one pilot_toggle_a edge; A->B and B->A rules each delete the matched edge and add its counterpart.",
+  "limits": [
+    "One synthetic two-rule oscillation only.",
+    "max_steps is measured through the public run_rules API; this pilot does not alter cap semantics.",
+    "No wall-time, CPU-time, or memory cap is applied; opt-in graph-state cycle detection is included as a separate condition.",
+    "Project-self-custodied; no independent evaluator is involved."
+  ],
+  "native_build_record_sha256": "0a230802e876fed450eda500922860005e2203324da0cc7deab2c726cd6ca3c3",
+  "native_extension_sha256": "2e31b4f92f4d58b537c51ad1205b7ba54c0111ed5c9104e0fd2448220e1b030e",
+  "platform": "Linux-6.8.0-137-generic-x86_64-with-glibc2.39",
+  "protocol": "exploratory cyclic progress-cap diagnostic v2 (benchmark protocol 1.1)",
+  "protocol_sha256": "6386e6a619d46527d1c0522ac0e370f4067d41c1341f415b01bd7f2afe5cb624",
+  "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]",
+  "records": [
+    {
+      "primary_wall_time_ns": 40721,
+      "requested_max_steps": 1,
+      "returned_progress_steps": 2,
+      "returned_steps_exceed_cap": true,
+      "state_after_primary": {
+        "toggle_a": true,
+        "toggle_b": false
+      },
+      "state_after_probe": {
+        "toggle_a": true,
+        "toggle_b": false
+      },
+      "still_unsettled_after_primary": true,
+      "terminal_probe_progress_steps": 2,
+      "typed_legacy_parity": true,
+      "typed_report": {
+        "budget_overshoot": 1,
+        "cycle_detection_enabled": false,
+        "passes_completed": 1,
+        "progress_steps": 2,
+        "requested_progress_budget": 1,
+        "status": "progress_budget_reached"
+      },
+      "typed_state_after_primary": {
+        "toggle_a": true,
+        "toggle_b": false
+      },
+      "typed_terminal_probe_progress_steps": 2
+    },
+    {
+      "primary_wall_time_ns": 6881,
+      "requested_max_steps": 2,
+      "returned_progress_steps": 2,
+      "returned_steps_exceed_cap": false,
+      "state_after_primary": {
+        "toggle_a": true,
+        "toggle_b": false
+      },
+      "state_after_probe": {
+        "toggle_a": true,
+        "toggle_b": false
+      },
+      "still_unsettled_after_primary": true,
+      "terminal_probe_progress_steps": 2,
+      "typed_legacy_parity": true,
+      "typed_report": {
+        "budget_overshoot": 0,
+        "cycle_detection_enabled": false,
+        "passes_completed": 1,
+        "progress_steps": 2,
+        "requested_progress_budget": 2,
+        "status": "progress_budget_reached"
+      },
+      "typed_state_after_primary": {
+        "toggle_a": true,
+        "toggle_b": false
+      },
+      "typed_terminal_probe_progress_steps": 2
+    },
+    {
+      "primary_wall_time_ns": 8460,
+      "requested_max_steps": 3,
+      "returned_progress_steps": 4,
+      "returned_steps_exceed_cap": true,
+      "state_after_primary": {
+        "toggle_a": true,
+        "toggle_b": false
+      },
+      "state_after_probe": {
+        "toggle_a": true,
+        "toggle_b": false
+      },
+      "still_unsettled_after_primary": true,
+      "terminal_probe_progress_steps": 2,
+      "typed_legacy_parity": true,
+      "typed_report": {
+        "budget_overshoot": 1,
+        "cycle_detection_enabled": false,
+        "passes_completed": 2,
+        "progress_steps": 4,
+        "requested_progress_budget": 3,
+        "status": "progress_budget_reached"
+      },
+      "typed_state_after_primary": {
+        "toggle_a": true,
+        "toggle_b": false
+      },
+      "typed_terminal_probe_progress_steps": 2
+    },
+    {
+      "primary_wall_time_ns": 13200,
+      "requested_max_steps": 4,
+      "returned_progress_steps": 4,
+      "returned_steps_exceed_cap": false,
+      "state_after_primary": {
+        "toggle_a": true,
+        "toggle_b": false
+      },
+      "state_after_probe": {
+        "toggle_a": true,
+        "toggle_b": false
+      },
+      "still_unsettled_after_primary": true,
+      "terminal_probe_progress_steps": 2,
+      "typed_legacy_parity": true,
+      "typed_report": {
+        "budget_overshoot": 0,
+        "cycle_detection_enabled": false,
+        "passes_completed": 2,
+        "progress_steps": 4,
+        "requested_progress_budget": 4,
+        "status": "progress_budget_reached"
+      },
+      "typed_state_after_primary": {
+        "toggle_a": true,
+        "toggle_b": false
+      },
+      "typed_terminal_probe_progress_steps": 2
+    },
+    {
+      "primary_wall_time_ns": 13700,
+      "requested_max_steps": 8,
+      "returned_progress_steps": 8,
+      "returned_steps_exceed_cap": false,
+      "state_after_primary": {
+        "toggle_a": true,
+        "toggle_b": false
+      },
+      "state_after_probe": {
+        "toggle_a": true,
+        "toggle_b": false
+      },
+      "still_unsettled_after_primary": true,
+      "terminal_probe_progress_steps": 2,
+      "typed_legacy_parity": true,
+      "typed_report": {
+        "budget_overshoot": 0,
+        "cycle_detection_enabled": false,
+        "passes_completed": 4,
+        "progress_steps": 8,
+        "requested_progress_budget": 8,
+        "status": "progress_budget_reached"
+      },
+      "typed_state_after_primary": {
+        "toggle_a": true,
+        "toggle_b": false
+      },
+      "typed_terminal_probe_progress_steps": 2
+    },
+    {
+      "condition": "opt_in_cycle_detection",
+      "interpretation": "repeated-state detection stops the orbit but does not make it a fixed point",
+      "legacy_scoped_progress_steps": 2,
+      "legacy_scoped_state": {
+        "toggle_a": true,
+        "toggle_b": false
+      },
+      "requested_max_steps": 100,
+      "returned_progress_steps": 2,
+      "returned_steps_exceed_cap": false,
+      "state_after_primary": {
+        "toggle_a": true,
+        "toggle_b": false
+      },
+      "still_unsettled_after_primary": true,
+      "terminal_probe_progress_steps": 2,
+      "typed_legacy_parity": true,
+      "typed_report": {
+        "budget_overshoot": 0,
+        "cycle_detection_enabled": true,
+        "passes_completed": 1,
+        "progress_steps": 2,
+        "requested_progress_budget": 100,
+        "status": "repeated_graph_state"
+      }
+    },
+    {
+      "condition": "immediate_fixed_point",
+      "typed_report": {
+        "budget_overshoot": 0,
+        "cycle_detection_enabled": false,
+        "passes_completed": 1,
+        "progress_steps": 0,
+        "requested_progress_budget": 10,
+        "status": "fixed_point"
+      }
+    },
+    {
+      "condition": "zero_budget_then_resume",
+      "done_edge_after_resume": true,
+      "resume_report": {
+        "budget_overshoot": 0,
+        "cycle_detection_enabled": false,
+        "passes_completed": 2,
+        "progress_steps": 1,
+        "requested_progress_budget": 10,
+        "status": "fixed_point"
+      },
+      "seed_preserved_after_zero_budget": true,
+      "typed_report": {
+        "budget_overshoot": 0,
+        "cycle_detection_enabled": false,
+        "passes_completed": 0,
+        "progress_steps": 0,
+        "requested_progress_budget": 0,
+        "status": "progress_budget_reached"
+      }
+    },
+    {
+      "condition": "one_shot_exact_budget_then_probe",
+      "done_edge_after_budget_call": true,
+      "follow_up_report": {
+        "budget_overshoot": 0,
+        "cycle_detection_enabled": false,
+        "passes_completed": 1,
+        "progress_steps": 0,
+        "requested_progress_budget": 10,
+        "status": "fixed_point"
+      },
+      "typed_report": {
+        "budget_overshoot": 0,
+        "cycle_detection_enabled": false,
+        "passes_completed": 1,
+        "progress_steps": 1,
+        "requested_progress_budget": 1,
+        "status": "progress_budget_reached"
+      }
+    }
+  ],
+  "tracked_patch_sha256": "dd2e3699e87ab1a46dc52bff412fb953214caf6e7e2eea57e24ab4d97f4c808d"
+}

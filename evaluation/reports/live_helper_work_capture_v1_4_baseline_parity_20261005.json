@@ -1,0 +1,23 @@
+{
+  "checks": {
+    "graph_semantics_match_by_worker": true,
+    "helper_events_are_additional_and_nonzero": true,
+    "non_helper_work_trace_matches": true,
+    "request_prompt_reply_and_access_trace_match": true,
+    "same_replicate_ids": true,
+    "task_outcomes_match_after_volatile_fields_removed": true
+  },
+  "claim_boundary": "This comparison supports task outcome and observed-access parity for the same selected route. It is post-hoc, does not replace an instrumented-vs-uninstrumented paired timing study, and does not establish helper locality or natural-task prevalence.",
+  "comparison": "v1.3 baseline vs. v1.4 instrumented capture; timing, process IDs, and source receipts excluded from semantic equality",
+  "inputs": {
+    "baseline_sha256": "1864a228605baf8374a4cf7ea3ed772812b8baeb4bc514d8b7e5b154e60ce231",
+    "instrumented_sha256": "bf8efe07b7be556a22a52c5d4f716fee8c4c25c1c1e02d3f80b4d5ea2a75f39e"
+  },
+  "run_id": "live-helper-work-capture-v1.4-baseline-parity-posthoc-20261005",
+  "schema_version": 1,
+  "summary": {
+    "helper_event_rows": 48,
+    "helper_work_units": 54126,
+    "requests": 6
+  }
+}

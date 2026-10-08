@@ -1,0 +1,178 @@
+{
+  "analyzer_sha256": "ea299f8d7d14758a6051952097e7d54a02b5b4b8536b681adb6ec2dc77de9ca5",
+  "capture_sha256": "c3b53dd32d9d0b2640d95b79629a7198edbf8b6bf92d85a3a76d6df20b0ee9ae",
+  "checks": {
+    "all_mode_measurements_present": true,
+    "analyzer_hash_matches_lock": true,
+    "complete_fixture_values_complete": true,
+    "correction_analyzer_hash_recorded": true,
+    "direct_deferred_final_writer_matches_graph": true,
+    "direct_deferred_identity_alternation": true,
+    "direct_deferred_overlap_status_is_budgeted": true,
+    "direct_deferred_transition_detail": [
+      [
+        1,
+        "identity_direct",
+        false,
+        "<ABSENT>",
+        99
+      ],
+      [
+        2,
+        "identity_deferred",
+        true,
+        99,
+        0
+      ],
+      [
+        4,
+        "identity_direct",
+        false,
+        0,
+        99
+      ],
+      [
+        5,
+        "identity_deferred",
+        true,
+        99,
+        0
+      ],
+      [
+        7,
+        "identity_direct",
+        false,
+        0,
+        99
+      ],
+      [
+        8,
+        "identity_deferred",
+        true,
+        99,
+        0
+      ],
+      [
+        10,
+        "identity_direct",
+        false,
+        0,
+        99
+      ],
+      [
+        11,
+        "identity_deferred",
+        true,
+        99,
+        0
+      ],
+      [
+        13,
+        "identity_direct",
+        false,
+        0,
+        99
+      ]
+    ],
+    "event_assignments_independently_recomputed": true,
+    "event_before_values_match_ordered_replay": true,
+    "event_replay_details": {
+      "byte_cap": {
+        "complete": false,
+        "event_before_values_match_ordered_replay": true,
+        "replayed_final_edges_match": true,
+        "replayed_final_nodes_match": false
+      },
+      "deferred": {
+        "complete": true,
+        "event_before_values_match_ordered_replay": true,
+        "replayed_final_edges_match": true,
+        "replayed_final_nodes_match": true
+      },
+      "direct": {
+        "complete": true,
+        "event_before_values_match_ordered_replay": true,
+        "replayed_final_edges_match": true,
+        "replayed_final_nodes_match": true
+      },
+      "direct_deferred_overlap": {
+        "complete": true,
+        "event_before_values_match_ordered_replay": true,
+        "replayed_final_edges_match": true,
+        "replayed_final_nodes_match": true
+      },
+      "object_cap": {
+        "complete": false,
+        "event_before_values_match_ordered_replay": true,
+        "replayed_final_edges_match": true,
+        "replayed_final_nodes_match": false
+      },
+      "overlap": {
+        "complete": true,
+        "event_before_values_match_ordered_replay": true,
+        "replayed_final_edges_match": true,
+        "replayed_final_nodes_match": true
+      }
+    },
+    "event_replay_matches_final_graph": true,
+    "event_snapshot_json_measured": true,
+    "expected_direct_and_deferred_writers_observed": true,
+    "fixture_set_exact": true,
+    "lock_matches_capture": true,
+    "locked_analyzer_stable": true,
+    "no_events_dropped": true,
+    "object_cap_truncates_explicitly": true,
+    "ordinary_traced_exact_modes_match": true,
+    "overlap_last_writer_identified": true,
+    "overlap_transition_detail": [
+      [
+        "writer_one",
+        0,
+        1
+      ],
+      [
+        "writer_two",
+        1,
+        2
+      ]
+    ],
+    "overlap_value_chain_exact": true,
+    "oversized_value_fails_closed": true,
+    "reported_budget_metadata_consistent": true,
+    "runner_hash_matches_lock": true,
+    "schema_correct": true,
+    "snapshot_field_deltas_independently_recomputed": true,
+    "source_lock_stable": true,
+    "three_distinct_workers": true,
+    "workers_semantically_replicate": true
+  },
+  "claim_limit": "Independent graph-snapshot reconstruction and target-event matching are validated for these bounded fixtures. Ambiguous overlaps remain unresolved; this is not native event-local attribution, causal necessity, diagnosis, or general self-repair.",
+  "corrected_analyzer_sha256": "88fefdd51fa0b20334c69f381806c503de46e62ec23dd184308506cc6d4bb8bf",
+  "lock_sha256": "82c3b705b7ef170670a50795adb42d4f4e162772476bd1ef7824c8d5f7c1c2a1",
+  "passed": true,
+  "prior_analysis_passed": false,
+  "prior_analysis_sha256": "432f26fa56d916f9a7e08e5f4ec513b15349dcd2f01204a6a3759b8c66c6f005",
+  "schema": "ThoughtexperimentEventValueAttributionV1_2_3Analysis",
+  "summary": {
+    "all_fields_uniquely_attributed": false,
+    "ambiguous_fields": 2,
+    "changed_fields": 532,
+    "distinct_pids": 3,
+    "fixtures": 6,
+    "observed_writers": [
+      "direct_writer",
+      "identity_deferred",
+      "identity_direct",
+      "many_object_writer",
+      "oversize_writer",
+      "trace_direct_control",
+      "trans_frame_identity_assignment",
+      "writer_one",
+      "writer_two"
+    ],
+    "progress_budget": 3,
+    "uncovered_fields": 0,
+    "uniquely_attributed_fields": 530,
+    "workers": 3
+  }
+}

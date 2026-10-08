@@ -1,0 +1,40 @@
+{
+  "all_checks_pass": true,
+  "checks": {
+    "all_branches_verified_and_fixedpoint": true,
+    "all_queries_reach_three_hypothesis_binary_maximum": true,
+    "all_query_pools_have_100_inputs": true,
+    "both_ordered_swap_candidates_enumerated": true,
+    "compact_residual_returned_to_primary": true,
+    "cue_free_composer_abstains": true,
+    "each_prediction_pool_covers_three_hypotheses": true,
+    "fault_fails_nonzero_heldout_each_worker": true,
+    "forward_passes_all_heldouts": true,
+    "four_complete_workers": true,
+    "graph_input_validation_fails_closed": true,
+    "graph_term_selects_same_unique_winner": true,
+    "graph_tie_and_zero_controls_abstain": true,
+    "oracle_retains_forward_only_all_conditions": true,
+    "primary_preserved_in_order_and_score": true,
+    "random_probe_is_not_better_than_selector": true,
+    "reverse_fails_nonzero_heldout_each_worker": true,
+    "source_hashes_match_across_stages": true
+  },
+  "cost_summary": {
+    "active_queries": 32,
+    "host_generated_hypotheses_per_worker": 3,
+    "mean_branch_fork_ms": 0.13824124531249998,
+    "mean_candidate_patch_ms": 0.210003111875,
+    "mean_closure_ms": 0.012156758854166666,
+    "mean_composer_attempt_ms": 23.18074775,
+    "mean_host_candidate_enumeration_ms": 0.40355075,
+    "mean_selector_cpu_ms": 142.72521684375,
+    "mean_selector_wall_ms": 148.00502396875
+  },
+  "mean_graph_term_selection_ms": 0.204853375,
+  "mean_residual_return_ms": 0.01502290625,
+  "mean_selection_branch_fork_ms": 0.0238255,
+  "preregistered_entropy_check": "one bit is mathematically unattainable for a binary-output partition of three hypotheses; all queries attain the 0.918295834-bit 1-vs-2 maximum",
+  "schema": "AttributeSiteActiveChoiceV3Analysis",
+  "scope": "Native-Term active query selection and graph-resident unique candidate scoring among three host-supplied hypotheses on one fresh rule; cue-free composer abstains; oracle released after orders freeze."
+}
