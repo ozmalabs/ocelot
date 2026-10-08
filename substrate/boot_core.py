@@ -21,9 +21,16 @@ CORE_SEEDS = ("decision_core", "learning_core", "perception_core",
               "epistemics_core", "motor_core", "experimentation_core",
               "goal_construction", "self_monitoring", "memory_core",
               "reflex_core", "theorem_core", "affective_state_core",
-              "dual_process_core", "episodic_working_memory_core",
+              "episodic_working_memory_core",
               "adaptive_control_core", "generative_world_model",
               "default_mode_core")
+# `dual_process_core` (System-1/System-2 arbitration) is AVAILABLE, not
+# required: it is a registered seed that any agent or experiment may load
+# (load_seeds_into(s, ag, ["dual_process_core"]) or a seed that depends on
+# it), but it is not part of the minimal core. When loaded, its enabled
+# DualProcessPolicy switches tick()'s Default plan to DualProcess; unlabelled
+# legacy rules still settle there (cognitive_cycle::run_unlabelled_legacy).
+OPTIONAL_CORE_SEEDS = ("dual_process_core",)
 
 
 def _add_edge(inner, src, edge_type, tgt):
@@ -100,10 +107,13 @@ def installed_seeds(s) -> dict:
     Seed{id,version} nodes that `load_seeds_into` records.
     """
     out = {}
-    for n in s.nodes():
-        node = s.node(n)
-        if node["type"] == "Seed":
-            out[node["attrs"]["id"]] = n
+    # Query the native type index directly. Walking every graph node here is
+    # quadratic work in the live conversation lifecycle: receive_utterance
+    # asks for installed seed evidence repeatedly, while the graph contains
+    # many unrelated event/mention/receipt nodes. The typed query returns the
+    # same graph-resident Seed records without materializing unrelated nodes.
+    for n in s.nodes("Seed"):
+        out[s.node(n)["attrs"]["id"]] = n
     return out
 
 
@@ -138,12 +148,10 @@ def load_seeds_into(s, agent, seed_ids):
     inner = s._inner
     present = installed_seeds(s)
     summary_installed = set()
-    for n in s.nodes():
-        node = s.node(n)
-        if node["type"] == "SeedSummary":
-            sid = node["attrs"].get("seed_id")
-            if sid:
-                summary_installed.add(sid)
+    for n in s.nodes("SeedSummary"):
+        sid = s.node(n)["attrs"].get("seed_id")
+        if sid:
+            summary_installed.add(sid)
     for seed in REGISTRY.resolve(list(seed_ids)):  # dependency-closure, topo
         if seed.id in present or seed.id in summary_installed:
             continue

@@ -40,7 +40,7 @@ from domains import llm_hf_forward as hf
 from domains import llm_knowledge_seed as ks
 
 MODEL = "/applications/data/model_graph_work/Qwen3.8-4B-Distill"
-OUT = "seeds/generated/qwen3_relation_calibration.json"
+OUT = "domain_data/llm_harvest/qwen3_relation_calibration.json"
 BATCH = 16
 RNG = np.random.default_rng(0)
 

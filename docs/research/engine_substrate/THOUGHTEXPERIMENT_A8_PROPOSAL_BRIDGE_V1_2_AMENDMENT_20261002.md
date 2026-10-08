@@ -1,0 +1,8 @@
+# Thoughtexperiment A8 proposal bridge v1.2 — canonical rule-clause parity amendment
+
+**Date:** 2026-10-02  
+**Reason:** v1.1 still failed the pre-scoring source-attribution gate. Runtime tracing isolated the second failure: after the graph mint rule fires, the active composer rules exported by the native engine use a normalized effect wire shape (including tuple wrappers and omitted container discriminants) that differs structurally from the source manifest. The strict direct-dictionary comparison therefore treats an equivalent active judge rule as stale and prevents the subsequent graph judge call.
+
+The next implementation may canonicalize these two representations for parity checks, but it must preserve fail-closed behavior. The comparison must retain all source-significant distinctions in match clauses, guards, effect operators, literal values, and ordering. Add explicit positive parity cases for a loaded/fired rule and negative cases for changed effect values, changed operators, changed guards, and changed ordering. If the native representation cannot preserve a source distinction, reject the rule and keep the bridge gate closed rather than assuming equivalence.
+
+Run a new source lock and fresh four-worker order capture under the original v1 protocol. Do not score held-out cases unless every prompted call reports `served_by: graph`, builds the expected `flip_comparison` for `hop_descend_gradient`, preserves the primary target, and every no-cue call reports graph service with abstention. Preserve the v1 and v1.1 captures unchanged. This amendment only authorizes source-parity repair and a new order-stage gate; it does not claim proposal utility or self-improvement.

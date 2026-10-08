@@ -1,0 +1,23 @@
+# CAN cross-frame mutation matrix — diagnostic v1.1
+
+**Run:** 2026-09-25. **Evidence grade:** hash-locked discovery after a failed first fixture. **Runner:** [`substrate_can_boundary_mutation_matrix_v1_1.py`](../../../scripts/substrate_can_boundary_mutation_matrix_v1_1.py). **Independent analyzer:** [`analyze_substrate_can_boundary_mutation_matrix_v1_1.py`](../../../scripts/analyze_substrate_can_boundary_mutation_matrix_v1_1.py).
+
+The original preregistration is [`SUBSTRATE_CAN_BOUNDARY_MUTATION_MATRIX_PREREG_20260925.md`](SUBSTRATE_CAN_BOUNDARY_MUTATION_MATRIX_PREREG_20260925.md). Version 1 failed its registered activity/control checks: its “insert” arm began with the edge already present, and its deletion fixture did not change the state of any surviving node, so that negative control could not detect stale state. The failed v1 runner/raw report and lock are retained at [`substrate_can_boundary_mutation_matrix.py`](../../../scripts/substrate_can_boundary_mutation_matrix.py), [`substrate_can_boundary_mutation_matrix_20260925.json`](../../../evaluation/reports/substrate_can_boundary_mutation_matrix_20260925.json), and [`can_boundary_mutation_matrix_lock_20260925.json`](../../../evaluation/substrate_capability/can_boundary_mutation_matrix_lock_20260925.json).
+
+The post-result v1.1 fixture correction and classification are recorded in [`SUBSTRATE_CAN_BOUNDARY_MUTATION_MATRIX_AMENDMENT_20260925.md`](SUBSTRATE_CAN_BOUNDARY_MUTATION_MATRIX_AMENDMENT_20260925.md). The insertion case now omits the edge initially; the deletion case uses `external_field(c3)=0`, `external_field(c4)=1` so c3 depends on its boundary neighbor. Since the amendment responds to observed v1 results, v1.1 is discovery evidence, not a confirmatory rerun.
+
+## v1.1 results
+
+The discovery matrix covers N=8/16/32, four-node frames, and eight mutations: cross-frame edge insertion/deletion/weight replacement, external-field and identity-field writes, node birth into a new frame, boundary-adjacent node deletion, and a mixed edge-weight plus external-field write. All 24 event/reference pairs settled under the cap, had identical active-node/state projections, and had zero independently recomputed residual. Every mutation changed the state or active-node projection.
+
+Omitted-initial-notification controls at N=8 for insertion, birth, and deletion each disagreed with the full rescan and had one independently recomputed residual (3/3). All v1.1 cases used a caller-supplied affected-frame set. The loaded native engine matched current source (`own`; no stale Rust files); runner, seed, native artifact, preregistration/amendment, and relevant Rust-source hashes are captured in [`can_boundary_mutation_matrix_v1_1_discovery_lock_20260925.json`](../../../evaluation/substrate_capability/can_boundary_mutation_matrix_v1_1_discovery_lock_20260925.json).
+
+The independent analyzer verified the exact locked cell set, provenance hashes, event/full state parity, zero residuals recomputed from saved fields/active masks/weights, and all three negative controls. Its output is [`substrate_can_boundary_mutation_matrix_v1_1_analysis_20260925.json`](../../../evaluation/reports/substrate_can_boundary_mutation_matrix_v1_1_analysis_20260925.json); raw records are [`substrate_can_boundary_mutation_matrix_v1_1_20260925.json`](../../../evaluation/reports/substrate_can_boundary_mutation_matrix_v1_1_20260925.json).
+
+Progress applications were equal between event and full-rescan arms in all 24 cells. The runner also reports event frame turns and full-scan rounds, but these are not a matched work unit and do not imply a cost advantage. No wall time or allocations were measured.
+
+## Claim boundary and next gate
+
+This evidence validates caller-notified propagation on one authored path topology and one 3-state native update rule. The event queue is Python; both arms use the same native scoped settlement; the analyzer is a separate local-equation evaluator rather than a second engine. The node-birth arm creates a new frame; the deletion arm removes one selected boundary-adjacent node. This does not test arbitrary node mutation sequences, multiple interacting rule families, dynamic aliasing, native writer-to-frame notifications, natural frame discovery, or workload prevalence.
+
+Next build a fresh confirmatory mutation suite with independently selected fixture parameters. Add multiple deletions/births, replacement and duplicate-mint controls, and an authored workload; after those pass, instrument native effect-to-frame notification and compare with full recomputation. Measure actual frame visits, candidate work, partition maintenance, and memory before any speed or tractability claim.

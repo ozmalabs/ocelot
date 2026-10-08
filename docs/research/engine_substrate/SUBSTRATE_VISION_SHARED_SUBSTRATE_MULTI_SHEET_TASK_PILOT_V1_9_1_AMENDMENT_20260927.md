@@ -1,0 +1,5 @@
+# V1.9.1 extension: full-closure replay of global joint-sheet cap cases
+
+V1.9's eight global both-sheet presentations reached the 512-pass instrumentation ceiling with continuing `act` changes. This amendment replays only those eight exact conditions from the same prepared graph checkpoint using the ordinary native full-closure call, cycle detection enabled, and the preregistered cumulative progress ceiling of 1.6M. It records exact source/input hashes, terminal class, total progress, passes, and elapsed time. This is a replay from the same initial graph and input, not a continuation from the 512-pass graph state; the v1.8 preflight established graph/work/status parity between one-pass slices and full closure for representative cycle and fixed-point cases. Native full closure avoids Python full-graph hashing on every pass and can settle farther within a practical diagnostic run.
+
+The amendment answers whether each case reaches a fixed point, an exact repeated state, or the larger work cap. It does not estimate prevalence or generalize beyond the one root-scoped-adapted graph.

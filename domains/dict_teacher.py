@@ -20,10 +20,13 @@ callable.
 """
 from __future__ import annotations
 
+import os
+import sys
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, Callable
 
-from .wiki_teacher import extract_subject       # share subject extraction
+from .question_subject import extract_subject
 
 
 # Part-of-speech tag → human-readable, used to flavour the answer text.
@@ -43,30 +46,50 @@ _WN = None
 
 
 def _wordnet():
-    """Lazy import. Triggers NLTK to download the corpus on first use if
-    it isn't already on disk."""
+    """Open the installed WordNet corpus on first lookup, without downloading."""
     global _WN
     if _WN is None:
-        import nltk
-        # download is a no-op if the corpus is already present
-        try:
-            from nltk.corpus import wordnet as wn
-            _ = wn.synsets("test")
-        except LookupError:
-            nltk.download("wordnet", quiet=True)
-            nltk.download("omw-1.4", quiet=True)
-            from nltk.corpus import wordnet as wn
+        if not is_available():
+            return None
+        from nltk.corpus import wordnet as wn
+        # Force corpus opening here so a broken installation is an honest miss,
+        # not a teacher that appears available until its first request.
+        wn.synsets("test")
         _WN = wn
     return _WN
 
 
+def _nltk_data_roots() -> tuple[Path, ...]:
+    """Resolve standard NLTK data directories without importing NLTK.
+
+    Importing NLTK's WordNet reader during daemon boot eagerly builds several
+    large in-memory indices. Availability is only a filesystem question here;
+    the reader itself remains a first-lookup cost.
+    """
+    roots = [Path(p).expanduser() for p in os.environ.get("NLTK_DATA", "").split(os.pathsep) if p]
+    home = Path.home()
+    prefix = Path(sys.prefix)
+    roots.extend((
+        home / "nltk_data",
+        prefix / "nltk_data",
+        prefix / "share" / "nltk_data",
+        prefix / "lib" / "nltk_data",
+        Path("/usr/share/nltk_data"),
+        Path("/usr/local/share/nltk_data"),
+        Path("/usr/lib/nltk_data"),
+        Path("/usr/local/lib/nltk_data"),
+    ))
+    # Preserve order while avoiding duplicate stat calls.
+    return tuple(dict.fromkeys(roots))
+
+
 def is_available() -> bool:
-    """Cheap probe: does this process have wordnet ready to query?"""
-    try:
-        _wordnet()
-        return True
-    except Exception:
-        return False
+    """Cheap, side-effect-free probe for an installed WordNet corpus."""
+    return any(
+        (root / "corpora" / "wordnet").is_dir()
+        or (root / "corpora" / "wordnet.zip").is_file()
+        for root in _nltk_data_roots()
+    )
 
 
 # ----------------------------------------------------------------------------
@@ -99,6 +122,8 @@ def lookup(word: str) -> Entry | None:
     if suppress_wordnet(word):
         return None
     wn = _wordnet()
+    if wn is None:
+        return None
     candidates: list[str] = []
 
     def add(w: str) -> None:

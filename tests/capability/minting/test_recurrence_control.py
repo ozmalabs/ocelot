@@ -201,7 +201,12 @@ def test_recurrence_minted_axis_reaches_native_authored_operation(monkeypatch):
     active_rule = next(rule for rule in grounded["rules"] if rule["name"] == rule_name)
     active_where = json.dumps(active_rule["where"], sort_keys=True)
     assert "capability_keys" not in active_where
-    assert "residual_predicates" not in active_where
+    # The standing consumer must not be restricted to the bootstrap concern's
+    # predicate set (no `"test"`-membership guard). Since tranche 3 it DOES read
+    # residual_predicates for one exclusion: it must not take a
+    # conversation-REPLAY axis, which only the replay family can test.
+    assert '"value": "test"' not in active_where
+    assert '"value": "replay"' in active_where
     gate_calls.clear()  # exclude the deliberate composer bootstrap from replay tracing
 
     world = substrate.add_node(

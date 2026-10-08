@@ -1,0 +1,9 @@
+# Recurrence repair candidate-count scale v1 — preregistration
+
+**Question:** How do branch cost, closure throughput, CPU overlap, and sampled memory change as the recurrence repair evaluates more candidate concepts on a fixed graph?
+
+Hold the noise graph at 100k unrelated path nodes and vary the recurrence candidates through 1, 16, 64, and 128. Cross eager full-copy and shared graph-page forks with fanout 1 and 8. Each cell runs paired sequential and concurrent waves in three fresh processes (48 workers). Each branch installs the same authored idempotence repair, executes five closure rounds, checks exactly one offer per candidate, verifies fixed point and restoration, and leaves primary graph/rule state unchanged. Candidate oracle lookup uses a single pass to build a recurrence-key index per branch, so candidate readout does not rescan the node set for every candidate. Record wave wall time, experiments/s, summed thread CPU/CPU-wall, and sampled RSS/PSS at 10 ms.
+
+**Gates:** 48 distinct fresh processes; every candidate-count/backend/fanout cell; actual candidate cardinality equals the protocol; exact sequential/concurrent branch-signature parity; every candidate passes the offer oracle; primary isolation; stable sources and native binary match the pre-run lock; finite positive timings and nonnegative memory deltas.
+
+**Limits:** One authored recurrence-repair task and candidate family, fixed 100k synthetic noise graph, one host, three repeats per cell. Candidate count is not diversity or acquisition difficulty: candidates share an authored repair structure. Timings include graph rule closure and branch setup and are not a pure rule-matcher microbenchmark. PSS is 10 ms sampled, not allocator/kernel peak. This does not test candidate discovery, induction, or natural-task distributions.

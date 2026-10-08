@@ -1,0 +1,168 @@
+{
+  "schema": "P5R0DISPATCH049GCSCapabilityDefinitionV1",
+  "classification": "repository_definition_only_non_release",
+  "status": "blocked_pending_reviewed_iam_and_confidential_space_credential",
+  "operation": {
+    "id": "ingest_generated_bundle_to_gcs",
+    "order": 4,
+    "scope": ["ingest_generated_bundle_to_gcs"],
+    "depends_on": ["bind_self_custodied_authority_and_kms"],
+    "later_operations_enabled": false,
+    "allowed_actions": ["gcs.create_only_or_exact_generation_match"],
+    "forbidden_actions": ["gcs.list", "gcs.delete", "gcs.overwrite", "credential_generation"],
+    "cloud_operations": [],
+    "mutations_performed": false
+  },
+  "dependency": {
+    "operation_id": "bind_self_custodied_authority_and_kms",
+    "required_terminal_status": "verified_repository_binding_review_only",
+    "binding_review_path": "services/p5_r0_evaluator/deploy/rs-069r18r12-binding-review.json",
+    "binding_review_digest": "sha256:c8e186d51eb0dcce6d3b2db4939f0e62af69ee88fc5ada19c4ad8c878245fd61",
+    "approval_path": "services/p5_r0_evaluator/deploy/rs-069r18r12-operation-3-approval.json",
+    "approval_digest": "sha256:cfa0b7cc40f288282fdb432538460fc65cc4b0c8d3d247c73786fd4fa5cc9dd0",
+    "ledger_path": "var/p5-r0-rs069/operation-3-r18r12-ledger.jsonl",
+    "ledger_head_digest": "sha256:30a59807d8dbf7aa2529d4efab406b4dcd5e87597442be71045827c816833329",
+    "verified_event_digest": "sha256:bbb534870778e46c38c6e0fc03dbc36f47f5f78c6127b12ef2e8557877f0a727"
+  },
+  "destination": {
+    "project_id": "ocelot-proof",
+    "project_number": "141633828616",
+    "bucket": "p5-evaluator-ocelot-proof-141633828616",
+    "prefix": "p5-r0/operation-4",
+    "run_id": "rs069r18r13-op4-04a98e3e",
+    "namespace": "gs://p5-evaluator-ocelot-proof-141633828616/p5-r0/operation-4/rs069r18r13-op4-04a98e3e/{object_suffix}",
+    "visibility": {
+      "required": "private",
+      "uniform_bucket_level_access": true,
+      "public_access_prevention": "inherited",
+      "public_principals_allowed": false,
+      "private_truth_suffix": "private-truth/case-store.json",
+      "worker_public_output": false
+    }
+  },
+  "wif_binding": {
+    "provider": "//iam.googleapis.com/projects/141633828616/locations/global/workloadIdentityPools/p5-cs-pool/providers/p5-cs-production",
+    "principal": "principalSet://iam.googleapis.com/projects/141633828616/locations/global/workloadIdentityPools/p5-cs-pool/attribute.image_digest/sha256:394a0707d1e162315bdf22de4ff034a7cf75a32b919cef6f12bba501521be11c",
+    "attribute": "image_digest",
+    "image_digest": "sha256:394a0707d1e162315bdf22de4ff034a7cf75a32b919cef6f12bba501521be11c",
+    "attribute_mapping": {
+      "google.subject": "assertion.sub",
+      "attribute.image_digest": "assertion.submods.container.image_digest",
+      "attribute.project_number": "assertion.submods.gce.project_number",
+      "attribute.project_id": "assertion.submods.gce.project_id",
+      "attribute.zone": "assertion.submods.gce.zone",
+      "attribute.debug_state": "assertion.dbgstat",
+      "attribute.tee": "assertion.swname",
+      "attribute.hardware_model": "assertion.hwmodel",
+      "attribute.secure_boot": "assertion.secboot",
+      "attribute.workload": "assertion.submods.container.env.P5R0_EXPECTED_WORKLOAD",
+      "attribute.confidential_space_smoke": "assertion.submods.container.env.P5R0_CONFIDENTIAL_SPACE_SMOKE"
+    },
+    "attribute_condition_terms": [
+      "assertion.aud == 'https://sts.googleapis.com'",
+      "assertion.iss == 'https://confidentialcomputing.googleapis.com'",
+      "assertion.sub.startsWith('https://www.googleapis.com/compute/v1/projects/ocelot-proof/zones/us-east1-b/instances/')",
+      "assertion.submods.container.image_digest == 'sha256:394a0707d1e162315bdf22de4ff034a7cf75a32b919cef6f12bba501521be11c'",
+      "assertion.submods.gce.project_number == '141633828616'",
+      "assertion.submods.gce.project_id == 'ocelot-proof'",
+      "assertion.submods.gce.zone == 'us-east1-b'",
+      "assertion.dbgstat == 'disabled-since-boot'",
+      "assertion.swname == 'CONFIDENTIAL_SPACE'",
+      "assertion.hwmodel == 'GCP_AMD_SEV'",
+      "assertion.submods.container.env.P5R0_EXPECTED_WORKLOAD == 'evaluator'",
+      "assertion.submods.container.env.P5R0_CONFIDENTIAL_SPACE_SMOKE == '0'",
+      "assertion.secboot == true"
+    ]
+  },
+  "capability_service_account": {
+    "email": "p5-r0-gcs-only@ocelot-proof.iam.gserviceaccount.com",
+    "resource": "projects/ocelot-proof/serviceAccounts/p5-r0-gcs-only@ocelot-proof.iam.gserviceaccount.com"
+  },
+  "iam": {
+    "state": "desired_not_applied",
+    "bucket_writer": {
+      "role": "projects/ocelot-proof/roles/p5R0Operation4BundleWriterV1",
+      "permissions": ["storage.objects.create", "storage.objects.get"],
+      "member": "serviceAccount:p5-r0-gcs-only@ocelot-proof.iam.gserviceaccount.com",
+      "condition_title": "p5_r0_r18r13_op4_exact_run",
+      "condition_expression": "resource.name.startsWith('projects/_/buckets/p5-evaluator-ocelot-proof-141633828616/objects/p5-r0/operation-4/rs069r18r13-op4-04a98e3e/')",
+      "forbidden_permissions": ["storage.objects.list", "storage.objects.delete", "storage.objects.update"]
+    },
+    "remove_broad_grant": {
+      "member": "serviceAccount:p5-evaluator@ocelot-proof.iam.gserviceaccount.com",
+      "role": "roles/storage.objectAdmin",
+      "required": true
+    },
+    "token_creator": {
+      "member": "principalSet://iam.googleapis.com/projects/141633828616/locations/global/workloadIdentityPools/p5-cs-pool/attribute.image_digest/sha256:394a0707d1e162315bdf22de4ff034a7cf75a32b919cef6f12bba501521be11c",
+      "role": "roles/iam.serviceAccountTokenCreator",
+      "resource": "projects/ocelot-proof/serviceAccounts/p5-r0-gcs-only@ocelot-proof.iam.gserviceaccount.com"
+    },
+    "public_principals_allowed": false
+  },
+  "credential_source": {
+    "status": "required_but_not_injected",
+    "origin": "Confidential Space only",
+    "launcher_socket": "/run/container_launcher/teeserver.sock",
+    "attestation_issuer": "https://confidentialcomputing.googleapis.com",
+    "attestation_audience": "https://sts.googleapis.com",
+    "wif_provider": "//iam.googleapis.com/projects/141633828616/locations/global/workloadIdentityPools/p5-cs-pool/providers/p5-cs-production",
+    "sts_endpoint": "https://sts.googleapis.com/v1/token",
+    "iam_credentials_endpoint": "https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/p5-r0-gcs-only@ocelot-proof.iam.gserviceaccount.com:generateAccessToken",
+    "iam_credentials_method": "generateAccessToken",
+    "target_service_account": "p5-r0-gcs-only@ocelot-proof.iam.gserviceaccount.com",
+    "delivery": "injected short-lived access token to the explicit GCS client",
+    "expiry": "bounded by federated source expiry and 3600 seconds",
+    "ambient_credentials_allowed": false,
+    "service_account_key_allowed": false,
+    "credential_export_allowed": false,
+    "adc_discovery_allowed": false
+  },
+  "artifacts": {
+    "source_packet_path": "services/p5_r0_evaluator/deploy/rs069r18r13-gcs-boundary-packet-v1.json",
+    "source_packet_digest": "sha256:a8c313f6e5b775b4ba48a8e8ff4cc5e2561c560930c4e89ec2e9666fb509c447",
+    "artifact_index_path": "var/p5-r0-diagnostic-inputs/artifact-index.json",
+    "artifact_index_digest": "sha256:04a98e3e48685228fd68ea757de276fe1c1a7ce347bd027a2756a48595897768",
+    "unsigned_lock_digest": "sha256:4fc80599aa0cc99881983cdb1270720de6d5c3f99c47701cf471da409d29a3df",
+    "objects": [
+      {"id":"bundle_input_manifest","suffix":"public/production-bundle-input-manifest.json","private":false,"artifact_digest":"sha256:21953231da13dfd66c767bb25277460cf36e29ac03ec6b2dba6cb4e611eb6296","file_digest":"sha256:bff9a31e91aae8847c6da471c9064b8d143ab937d8a42bb6101cecb7ea24b8ab","expected_generation":0},
+      {"id":"control_commitment","suffix":"public/control-commitment.json","private":false,"artifact_digest":"sha256:ac9cefc8910d3cec2053259e5a053c7bdd34ed0e9381fe920a9b4b19878c5f58","file_digest":"sha256:3cd9a8c2257b8cd0b760b569f16e5a5ae9f59aa230f7825b37d20a63548f17fe","expected_generation":0},
+      {"id":"evaluator_contract","suffix":"public/evaluator-contract.json","private":false,"artifact_digest":"sha256:26fac134fb8b791ca9c775fce4496e04a983ba49b686c354ed8e9e58388545d8","file_digest":"sha256:b1bcf8780a322295b358cb23cafb280b31268ce17b22f6e40f876980c658324a","expected_generation":0},
+      {"id":"lock_signing_request","suffix":"public/lock-signing-request.json","private":false,"artifact_digest":"sha256:922085ca833426751f89610dc2274d10f82efe758ee3b92e9d6c9441db20292d","file_digest":"sha256:0e8d1f306446ba4e62d31f3eaab523430b372671772db0593516a702bee5f45e","expected_generation":0},
+      {"id":"manifest","suffix":"public/manifest.json","private":false,"artifact_digest":"sha256:190fe19fe7f70b181f11f0b375cf6241a2cc2c0c49abbf2b52f8ce8899b2f01a","file_digest":"sha256:78694af8056e5d141546ba15b9e489aa3afe7e05e74653bb94ab0b00cb4794d5","expected_generation":0},
+      {"id":"policy","suffix":"public/policy.json","private":false,"artifact_digest":"sha256:d5c2ff10446ea6461f834ecfad00f058dd413b9b3f2f3334ad2c4f05be772c30","file_digest":"sha256:d5c2ff10446ea6461f834ecfad00f058dd413b9b3f2f3334ad2c4f05be772c30","expected_generation":0},
+      {"id":"private_store","suffix":"private-truth/case-store.json","private":true,"artifact_digest":"sha256:0ec34adc958b2565aa24599be477c3e6b3488e83df9e8f1811715262ea7b55e1","file_digest":"sha256:3f5ea60328d4bc0cd8dfd4dd86c90de76d70753b39a2fe04561189d49b3c37a7","expected_generation":0},
+      {"id":"provenance","suffix":"public/generator-provenance.json","private":false,"artifact_digest":"sha256:e0b15350c51674059af068e1aa11729cb45bd870aef483a63ede1d4ad603277f","file_digest":"sha256:e0b15350c51674059af068e1aa11729cb45bd870aef483a63ede1d4ad603277f","expected_generation":0},
+      {"id":"split","suffix":"public/split.json","private":false,"artifact_digest":"sha256:def0707ed51e7947b5d3360075b474385aafd9011a75398efb397863db8cd125","file_digest":"sha256:a6947d5b134526bd93a11f4d2a6cdf74af0bc0091f48783f3f2f1bfbef99883f","expected_generation":0},
+      {"id":"task_set","suffix":"public/task-set.json","private":false,"artifact_digest":"sha256:725b59168b83b2305e76500774ddca6e0b59185cec3527bf2d6133e657c29aa7","file_digest":"sha256:46351848f1dbb1d81335e8ec6801418b30cd000d765e0544e67233f20c28d915","expected_generation":0},
+      {"id":"worker_contract","suffix":"public/worker-contract.json","private":false,"artifact_digest":"sha256:ef49d15e32038675ed04266e28eb9079956c2647b00e572e50a6bd3b17ebceb3","file_digest":"sha256:b9aad635ffba2b2e308c8d118ac9eb52ef55043c12004d135c1f2b364933a316","expected_generation":0}
+    ]
+  },
+  "implementation_bindings": [
+    {"path":"services/p5_r0_evaluator/confidential_space.py","symbols":["LauncherTokenSource.fetch","GoogleSTSClient.exchange","CapabilityFactory._impersonate","CapabilityFactory._storage_client"]},
+    {"path":"services/p5_r0_evaluator/timing_bridge_auth.py","symbols":["IAMCredentialsAccessTokenFactory.__call__"]},
+    {"path":"services/p5_r0_evaluator/store.py","symbols":["GCSStore.__init__","GCSStore.get","GCSStore.create"]}
+  ],
+  "observed_state": {
+    "project": {"project_id":"ocelot-proof","project_number":"141633828616","lifecycle_state":"ACTIVE"},
+    "bucket": {"exists":true,"project_id":"ocelot-proof","uniform_bucket_level_access":true,"public_access_prevention":"inherited","public_principals_observed":false,"wif_roles":["roles/storage.objectUser"],"wif_principal":"principalSet://iam.googleapis.com/projects/141633828616/locations/global/workloadIdentityPools/p5-cs-pool/attribute.image_digest/sha256:0a42a061ac593c7dd4e21e90fab7b8bb62d1836666e5507549fb4194b18dcca7","wif_condition":"resource.name.startsWith('projects/_/buckets/p5-evaluator-ocelot-proof-141633828616/objects/v3/')"},
+    "capability_service_account": {"exists":true,"email":"p5-evaluator@ocelot-proof.iam.gserviceaccount.com","bucket_roles":["roles/storage.objectAdmin"],"service_account_roles":["roles/iam.workloadIdentityUser"],"token_creator_observed":false},
+    "observed_wif_principal": "principalSet://iam.googleapis.com/projects/141633828616/locations/global/workloadIdentityPools/p5-cs-pool/attribute.image_digest/sha256:0a42a061ac593c7dd4e21e90fab7b8bb62d1836666e5507549fb4194b18dcca7",
+    "observed_wif_condition": "resource.name.startsWith('projects/_/buckets/p5-evaluator-ocelot-proof-141633828616/objects/v3/')",
+    "object_probe": {"count":11,"http_404_count":11,"generation_observed":false},
+    "cloud_mutations_observed_by_packet": []
+  },
+  "apply_boundary": {
+    "apply_performed": false,
+    "cloud_operations": [],
+    "credentials_created": false,
+    "credentials_exported": false,
+    "credential_injected": false,
+    "kms_called": false,
+    "gcs_called": false,
+    "master_runsheet_modified": false,
+    "later_operations_enabled": false,
+    "required_later_boundary": "Apply IAM/WIF/token-creator through reviewed IaC, re-observe exact state, inject only an expiring Confidential Space-derived token, then obtain a fresh child approval before one operation-4 attempt."
+  },
+  "definition_digest": "sha256:705c5323a8bf8f300547d2051cf128825b03e0415c334dd452cd4e9db0280ee2"
+}

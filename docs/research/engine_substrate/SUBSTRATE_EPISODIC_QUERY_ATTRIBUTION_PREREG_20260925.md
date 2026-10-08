@@ -1,0 +1,11 @@
+# Preregistration: per-query matcher cost attribution for episodic recall
+
+**Question.** Which native rule and matcher counters grow when one exact episodic retrieval request is run against a restored graph with more stored Episodes?
+
+**Workload.** At N = 6, 24, 78, and 192, run three independently written checkpoints. Each writer stores N observed exact-cue route events, settles binding closure, and checkpoints. For each checkpoint use two fresh readers: (1) uninstrumented control, and (2) identical request with native global and per-rule scale audit enabled. Both add one request for index `N//2` and tick once. The request is added before enabling/resetting audit so counters attribute the native cognitive tick, not fixture construction. Readers are distinct processes; no preceding recall requests exist in the graph.
+
+**Scoring and invariants.** Both readers must return the same exact expected summary, one recalled candidate, recalled provenance, and not-observed status. Stored Episode count must equal N. Capture uninstrumented and instrumented tick time separately; report the instrumented wall-time ratio as an audit-overhead diagnostic, not as normal runtime. Capture all global `scale_audit_snapshot` counters and all per-rule counter rows, mapping rule indices to names from `rule_access_sets`. Record process ID, graph size, task progress, and RSS.
+
+**Measures.** Candidate enumeration/test counts, where evaluations/rejections, rule enumerations and repeats, term evaluations/units, effects, graph writes, and per-rule attribution as exposed by the currently built native extension. Report zero-valued/unavailable counters rather than dropping them. Compare counter slopes over N and identify the dominant rules/metrics; do not assert a formal complexity class from four sizes.
+
+**Claim boundary.** This attributes one exact-key tick for the authored episodic seed, in a synthetic disconnected-event workload. It does not measure full perception, semantic cue normalization, application-domain frames, natural graph topology, all-key repeated-request work, or native operation cost outside instrumented sites. The scale audit is opt-in and per-rule attribution adds overhead; the uninstrumented arm remains the wall-time reference.

@@ -57,3 +57,35 @@ def test_indexed_ingress_is_referent_equivalent_to_full_ledger():
     full_edges = len(full.inner.neighbours(full.agent, "knows_concept"))
     assert indexed_edges < 100
     assert full_edges > indexed_edges
+
+
+def test_question_ingress_matches_full_ledger_with_bounded_candidates():
+    """Meta/self questions need their held graph evidence, not global links."""
+    indexed = WorldAdapter(seeds=())
+    full = WorldAdapter(seeds=())
+    load_all_seeds(indexed)
+    load_all_seeds(full)
+    full._backfill_knows_concept()
+
+    indexed_reply = indexed.converse(
+        "How are you organised?", speech_act="question")
+    full_reply = full.converse(
+        "How are you organised?", speech_act="question")
+    indexed_mid = indexed._last_turn_inbound
+    full_mid = full._last_turn_inbound
+    indexed_i = indexed.s.node(indexed_mid)["attrs"][
+        "communication_interpretation_id"]
+    full_i = full.s.node(full_mid)["attrs"][
+        "communication_interpretation_id"]
+
+    assert indexed_reply == full_reply
+    assert indexed.s.node(indexed_i)["attrs"].get("cognitive_disposition") == \
+        full.s.node(full_i)["attrs"].get("cognitive_disposition") == "answer"
+    assert indexed._native_reflective_answer_selected(indexed_mid)
+    assert full._native_reflective_answer_selected(full_mid)
+    assert any(indexed.s.node(node)["attrs"].get("status") == "released"
+               for node in indexed.s.nodes("ProductionGateReceipt")
+               if indexed.s.node(node)["attrs"].get("turn_message_id")
+               == int(indexed_mid.value))
+    assert len(indexed.inner.neighbours(indexed.agent, "knows_concept")) < 100
+    assert len(full.inner.neighbours(full.agent, "knows_concept")) > 100

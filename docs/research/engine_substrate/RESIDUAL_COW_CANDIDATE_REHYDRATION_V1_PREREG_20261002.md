@@ -1,0 +1,9 @@
+# Residual CoW candidate rehydration v1 preregistration
+
+This follow-up tests whether a validated candidate can be serialized into the post-induction graph residual, returned through the existing shared-graph-pages Thoughtexperiment branch, read back from the host, and still pass held-out scoring. It uses the four cardinal inversion positives from residual-cue v1. The paired deep-copy controls and nine abstention controls are already covered by [residual CoW return v1](RESIDUAL_COW_RETURN_V1_RESULTS_20261002.md).
+
+After branch composition, first score the candidate object on held-out states. If it passes, serialize the target and candidate rule into a `ThoughtexperimentCandidateResidual` node in the branch. Finish the derived-only journal, verify the host is unchanged, and apply the graph delta against the captured revision. Read the residual node from the host, deserialize its rule, verify its semantic digest, and score that reconstructed candidate in a fresh evaluator context. Do not merge branch-native rewrite rules.
+
+For worker 0, also mutate an unrelated host `Game` attribute after capturing the revision. Attempting to apply with the stale revision must raise and leave the already-mutated host state unchanged. Then apply using the current revision and perform the same rehydration checks. This tests optimistic conflict refusal and subsequent valid return; it does not simulate concurrent writers or authorize production adoption.
+
+Pass requires all four original and rehydrated candidates to select `flip_comparison` and pass exact held-out outcomes, verified receipt and candidate digest; exact host rule-store preservation; exact derived graph-delta application; and stale-revision rejection without a partial write. Scope is one authored navigation rule family on the partial shared-graph-pages backend.

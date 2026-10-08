@@ -1,0 +1,9 @@
+# Directed-frame wakeup v1.1 amendment
+
+The original preregistered v1 run completed, but its omission-sensitivity criterion failed. The full and event arms matched with zero full-graph residual in all three directed topologies. However, scenario evidence at the selected target changed no state in the leaves-to-hub case, and in the other cases changed a state without producing a nonzero residual outside the target frame. Thus the omission control did not establish that a dependency wakeup was necessary. The v1 lock and raw report are preserved unchanged.
+
+## Narrow amendment
+
+Keep the same 12 Bigville-constructed frames, three directed topologies, edge weight 1.0, and full/event/omission policies. Change only the state intervention to make the dependency direction observable: after frame construction, remove only the intra-frame `causal_influence` edges, set every Concept's external and identity fields and state to zero, then inject the locked directed cross-frame edges. Set the selected target Concept's `external_field` to +1.0 immediately before settlement. Under the authored update equation, this forces that target Concept from zero to +1; adjacent source Concepts reading it through outgoing `causal_influence` edges should then update. The omission arm runs only the directly changed frame, so the independent full-graph residual must expose any missed dependent wakeups.
+
+This isolates scheduler direction and wakeup behavior; it no longer measures authored scenario-evidence response or resident-specific intra-frame CAN coupling. All other gates remain: full and event arms must terminate at zero independently recomputed residual, and the omission control must have a changed target state plus positive residual for each topology. If a topology does not produce the predeclared propagation, preserve the result and report sensitivity failure.

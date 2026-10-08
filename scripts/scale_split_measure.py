@@ -106,7 +106,7 @@ def buckets(c: dict) -> dict:
 # chosen (PROTOCOL §13).
 def _n_drive_rules() -> int:
     import json as _j
-    with open(os.path.join(ROOT, "seeds", "vision_change.json")) as f:
+    with open(os.path.join(ROOT, "domain_data", "vision_change.json")) as f:
         return len(_j.load(f).get("rules", []))
 
 

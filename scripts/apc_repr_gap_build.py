@@ -43,6 +43,7 @@ import numpy as np
 from collections import defaultdict
 import scripts.apc_fair_pool_falsification as FP   # helpers: utt_feats, resample, _traj, ci_from_detail
 import scripts.jabberwock_contrastive_speaker_invariant as CI
+from scripts.apc_run_capture import git_revision, json_safe, runtime_record, sha256_file, source_record, write_capture
 
 LIBRI = "/home/matt/data/LibriSpeech"
 TRAIN_TREE = os.path.join(LIBRI, "train-clean-100")
@@ -131,8 +132,14 @@ def znorm_apply(feats, mu, sd):
 
 
 def main():
-    if len(sys.argv) > 1 and sys.argv[1] == "--extract-bigtrain":
+    if "--extract-bigtrain" in sys.argv[1:]:
         _extract_bigtrain(); return
+    output = None
+    if "--output" in sys.argv[1:]:
+        i = sys.argv.index("--output")
+        if i + 1 >= len(sys.argv):
+            raise SystemExit("--output requires a path")
+        output = sys.argv[i + 1]
 
     import resource
     resource.setrlimit(resource.RLIMIT_AS, (16 * 1024**3, 16 * 1024**3))
@@ -265,6 +272,7 @@ def main():
         det = nat.apc_recall_detail(arr.reshape(-1).tolist(), n, T, dim, wi.tolist(), si.tolist(),
                                     CAPQ, NPOS, NNEG, 0)
         r = FP.ci_from_detail(det, BOOT)
+        raw_details[name] = json_safe(det)
         print(f"  {name:>28}  dim={dim:4d}  recall {r['recall']:.3f} "
               f"[{r['recall_ci'][0]:.3f},{r['recall_ci'][1]:.3f}]  AUC {r['auc']:.3f} "
               f"[{r['auc_ci'][0]:.3f},{r['auc_ci'][1]:.3f}]", flush=True)
@@ -272,6 +280,7 @@ def main():
 
     print(f"\n--- ★ SCORING on the fair pool (cap_q={CAPQ}, boot={BOOT}) ---")
     res = {}
+    raw_details = {}
     order = ["AR-APC (baseline)", "masked-CPC (objective)", "masked-CPC SHUFFLED (ctrl)"]
     if ml_big is not None:
         order.append("masked-CPC +DATA")
@@ -307,6 +316,49 @@ def main():
     peak = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024**2
     print(f"  [memory] peak RSS: {peak:.2f} GiB")
     print("=" * 96)
+    if output:
+        native_path = nat.__file__
+        payload = {
+            "experiment": "apc_representation_gap_build_step_c",
+            "git_revision": git_revision(FP.ROOT),
+            "working_tree_note": "Source hashes below are authoritative for captured code; git revision alone does not describe dirty changes.",
+            "runtime": runtime_record(),
+            "config": {k: v for k, v in {
+                "TE_CAP": TE_CAP, "T": T, "DH": DH, "EPOCHS": EPOCHS,
+                "LR": LR, "MASK_PROB": MASK_PROB, "MASK_SPAN": MASK_SPAN,
+                "DT": DT, "NCE_TAU": NCE_TAU, "BATCH": BATCH,
+                "KAHEAD": KAHEAD, "LIFT_MODES": LIFT_M, "CAPQ": CAPQ,
+                "NPOS": NPOS, "NNEG": NNEG, "BOOT": BOOT, "CI_BOOTSTRAP_SEED": 0,
+                "BIG_SPK": BIG_SPK, "BIG_UTTS_PER": BIG_UTTS_PER,
+                "BIG_CAP": BIG_CAP, "W2V_LAYER": W2V_LAYER,
+                "W2V_PCA": W2V_PCA,
+            }.items()},
+            "inputs": {name: {"path": path, "sha256": sha256_file(path)}
+                       for name, path in {"train_cache": TRAIN_CACHE,
+                                          "test_cache": W2V_CACHE,
+                                          "big_train_cache": BIG_CACHE}.items()},
+            "sources": source_record(FP.ROOT, ["scripts/apc_fair_pool_falsification.py",
+                                               "scripts/apc_repr_gap_build.py",
+                                               "scripts/apc_run_capture.py",
+                                               "scripts/jabberwock_contrastive_speaker_invariant.py",
+                                               "scripts/librispeech_wer.py",
+                                               "runners/dsl/Cargo.toml", "runners/dsl/src/apc.rs",
+                                               "runners/dsl/src/py.rs"]),
+            "native_extension": {"path": native_path, "sha256": sha256_file(native_path)},
+            "pool": {"words": words, "speakers": spk,
+                     "word_ids": wi.tolist(), "speaker_ids": si.tolist()},
+            "metrics": json_safe(res),
+            "raw_detail_vectors": raw_details,
+            "raw_detail_layout": "Per representation: [n_query, query_hit_flags..., n_positive_distances, positive_distances..., n_negative_distances, negative_distances...]. Bootstrap uses seed 0.",
+            "verdict": {"baseline_recall": base, "wav2vec_recall": w2v,
+                        "gap": gap, "best_non_control_variant": best_name,
+                        "best_non_control_gap_closed_percent": best_close,
+                        "gate_50_percent_passed": bool(gate),
+                        "objective_vs_shuffled_control": obj - ctrl},
+            "resources": {"peak_rss_gib": peak},
+        }
+        write_capture(output, payload)
+        print(f"  [capture] wrote {output}", flush=True)
 
 
 if __name__ == "__main__":

@@ -49,11 +49,11 @@ def _add_edge(s, src, et, tgt):
 
 
 _CHANGE_SEED = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                            "seeds", "vision_change.json")
+                            "domain_data", "vision_change.json")
 
 
 def _install_change_rules(s) -> list:
-    """Install `seeds/vision_change.json` — the drive DECISION as graph data —
+    """Install `domain_data/vision_change.json` — the drive DECISION as graph data —
     and return its rule indices in file order. Mechanical seed I/O.
 
     FIND-OR-CREATE on the params node, and that is load-bearing, not tidiness:
@@ -91,7 +91,7 @@ class WaveWorld:
         self.h = h
         self.w = w
         self.rng = np.random.default_rng(seed)
-        # THE DRIVE DECISION IS THE GRAPH'S (seeds/vision_change.json). This
+        # THE DRIVE DECISION IS THE GRAPH'S (domain_data/vision_change.json). This
         # adapter installs that seed's rules and remembers their indices so it
         # can drive them AS A PHASE (`apply_rule_once`) between `drive()` (which
         # writes the luminance FACTS) and `_mark_bursts` (which reads `driven`).
@@ -231,7 +231,7 @@ class WaveWorld:
         So this method now writes only FACTS — `lum_raw` (this frame's
         luminance), `lum_prev` (last frame's), `lum_seen`, and the frame's own
         `frame_median` — and the DECISION of what counts as `driven` is the
-        `ch_*` rules in `seeds/vision_change.json`: `ch_drive_median` reproduces
+        `ch_*` rules in `domain_data/vision_change.json`: `ch_drive_median` reproduces
         the old split verbatim under the complementary `change < 0.5` guard
         (PROTOCOL §9 — the default reproduces byte-identically), and the
         transient/sustained channels replace it when `change = 1`. A cell's

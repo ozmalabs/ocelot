@@ -1,0 +1,11 @@
+# Phase-0 dense-map interpolation v1 preregistration
+
+**Question.** Does increasing trained spatial coverage from four corner sites to a nine-site grid improve frozen location prediction at untrained positions between the sites?
+
+**Training.** Six fresh workers use seeds 24–29, a 16×16 retina, nine WUnits, and identical filled 3×3 masks centered at the Cartesian grid `(3,8,13) × (3,8,13)`. Each site receives 4,000 presentations in one contiguous block, for 36,000 steps at `ph0_eta=0.005`. Rotate the site order by seed modulo nine. This blocked schedule was selected because the source-locked four-site replication localized every trained site in all six workers under blocking, while interleaving localized all four in only two of six. No learner or scoring changes are made.
+
+**Frozen probes.** Freeze plasticity and probe the nine trained sites and sixteen held-out sites in `{5,6,10,11} × {5,6,10,11}` three times each (75 probes/worker, 450 total). These held-out integer coordinates lie between grid centers and have unique nearest trained sites. Record all learned fields and native activation/winner values; require exact weight preservation.
+
+**Scoring.** Independently recompute receptive-field centers/spreads, each activation from the captured weights, and WTA. Report: localized-field coverage of the nine trained sites (`center distance <1`, `spread <3`); trained-site exact localization; held-out exact localization; and held-out nearest-site-region accuracy, where the winning unit is assigned to the closest trained-site center to its learned field center. Nearest-region agreement is a discrete map prediction, not continuous interpolation. Also publish the full held-out confusion matrix, field centers, and per-seed outcomes.
+
+**Gates and limits.** Lock runner, analyzer, protocol, engine/native fingerprint, all source and seed hashes before training. Require six workers, exact 4,000 exposures/site, 36,000 steps, eight transitions, exact input writes, 75 probes/worker, unique winners, positive runtime progress, unchanged frozen weights, activation/winner parity, and stable inputs. This evaluates one authored binary retinotopy learner and one geometry. A positive result would motivate replication on another grid origin and feature family; it would not establish natural vision or general capability.

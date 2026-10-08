@@ -41,6 +41,10 @@
 //! touching the interner.
 
 use std::sync::Arc;
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+use std::cell::Cell;
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+use std::hash::{Hash, Hasher};
 
 use rustc_hash::FxHashMap;
 use smallvec::SmallVec;
@@ -50,6 +54,41 @@ use crate::term::{
     anti_unify_values, covers_value, evaluate, fixed_count_value, Env, EvalCtx, TermArena, TermIdx,
 };
 use crate::value::{cmp_value, SurfaceKind, Value};
+
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+thread_local! {
+    static PREFILTER_IDENTITY_VALUE_COMPARISONS: Cell<u64> = const { Cell::new(0) };
+    static PREFILTER_EXACT_ARITHMETIC_CHECKS: Cell<u64> = const { Cell::new(0) };
+}
+
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+#[derive(Clone)]
+struct PrefilterIdentityKey(Vec<Value>);
+
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+impl PartialEq for PrefilterIdentityKey {
+    fn eq(&self, other: &Self) -> bool {
+        let mut equal = self.0.len() == other.0.len();
+        for (left, right) in self.0.iter().zip(&other.0) {
+            if crate::scale_audit::enabled() {
+                PREFILTER_IDENTITY_VALUE_COMPARISONS.with(|n| n.set(n.get().saturating_add(1)));
+            }
+            if left != right { equal = false; break; }
+        }
+        equal
+    }
+}
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+impl Eq for PrefilterIdentityKey {}
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+impl Hash for PrefilterIdentityKey {
+    fn hash<H: Hasher>(&self, state: &mut H) { self.0.hash(state); }
+}
+
+#[inline]
+fn trace_scanned_node(ctx: &EvalCtx, node: crate::graph::NodeID) {
+    crate::access_trace::note_node_type_and_attrs(ctx.graph, node);
+}
 
 /// Build a `Value::Surface(Text, ..)` from a `&str` — the output-key /
 /// output-text constructor that needs no interner access at all.
@@ -138,6 +177,7 @@ fn json_to_value_scoped(
 
 /// A single held part read off a `codebook_type` node — the Rust twin of
 /// `_load_shape_signatures`'s per-entry `(kind, signature, source)`.
+#[derive(Clone)]
 struct Part {
     /// Dict key equivalent — used for `used`/`exclude` membership tests.
     name: String,
@@ -164,6 +204,50 @@ struct Part {
     /// only by `DimInfer`, but loaded here once so all three Terms share
     /// one codebook reader.
     dim_types: Option<Vec<String>>,
+}
+
+/// One fully validated parsed codebook plus an order-preserving index for
+/// ShapeDecode's case-insensitive name aperture. It is scoped to one
+/// immutable EvalCtx, so no graph mutation invalidation is needed.
+pub(crate) struct LoadedCodebook {
+    parts: Vec<Part>,
+    extra: FxHashMap<String, Sym>,
+    positions_by_folded_name: FxHashMap<String, Vec<usize>>,
+}
+
+impl LoadedCodebook {
+    fn new(parts: Vec<Part>, extra: FxHashMap<String, Sym>) -> Self {
+        let mut positions_by_folded_name: FxHashMap<String, Vec<usize>> = FxHashMap::default();
+        for (position, part) in parts.iter().enumerate() {
+            positions_by_folded_name
+                .entry(part.name.to_lowercase())
+                .or_default()
+                .push(position);
+        }
+        Self {
+            parts,
+            extra,
+            positions_by_folded_name,
+        }
+    }
+
+    fn select(&self, scope: Option<&std::collections::HashSet<String>>) -> Vec<Part> {
+        let Some(names) = scope else {
+            return self.parts.clone();
+        };
+        let mut positions = Vec::new();
+        for name in names {
+            if let Some(found) = self.positions_by_folded_name.get(name) {
+                positions.extend_from_slice(found);
+            }
+        }
+        positions.sort_unstable();
+        positions.dedup();
+        positions
+            .into_iter()
+            .map(|i| self.parts[i].clone())
+            .collect()
+    }
 }
 
 /// Read a string-SHAPED attr `Value` — accepts BOTH a frozen
@@ -255,11 +339,54 @@ fn load_parts(
     extra: &mut FxHashMap<String, Sym>,
     next_id: &mut u32,
 ) -> Vec<Part> {
+    load_parts_with_scope(ctx, codebook_type, extra, next_id, None)
+}
+
+/// Scoped variant used by GenInfer. It tests the scope attribute before
+/// parsing signatures or building Parts, so unrelated frames do not enter
+/// matrix candidate evaluation.
+fn load_parts_with_scope(
+    ctx: &EvalCtx,
+    codebook_type: Sym,
+    extra: &mut FxHashMap<String, Sym>,
+    next_id: &mut u32,
+    scope_filter: Option<&Value>,
+) -> Vec<Part> {
     let mut order: Vec<String> = Vec::new();
     let mut by_name: FxHashMap<String, Part> = FxHashMap::default();
+    let scope_key = scope_filter.and_then(|_| ctx.interner.lookup("scope_id"));
+    if scope_filter.is_some() && scope_key.is_none() {
+        return Vec::new();
+    }
+    let indexed_scope = scope_filter
+        .zip(scope_key)
+        .is_some_and(|(scope, key)| ctx.graph.has_attr_index(codebook_type, key));
+    let population = if indexed_scope {
+        let (Some(scope), Some(key)) = (scope_filter, scope_key) else {
+            unreachable!("indexed scope requires a scope value and key")
+        };
+        crate::access_trace::note_helper_work(56, 1);
+        let nodes = ctx.graph.nodes_where(codebook_type, key, scope);
+        crate::access_trace::note_helper_work(57, nodes.len() as u64);
+        nodes
+    } else {
+        ctx.graph.nodes_of_type(codebook_type)
+    };
 
-    for nid in ctx.graph.nodes_of_type(codebook_type) {
+    for nid in population {
+        if !indexed_scope {
+            crate::access_trace::note_helper_work(47, 1);
+        }
         let node = ctx.graph.node(nid);
+        if !indexed_scope {
+            if let (Some(scope), Some(key)) = (scope_filter, scope_key) {
+                if node.attrs.get(&key) != Some(scope) {
+                    continue;
+                }
+            }
+        }
+        crate::access_trace::note_helper_work(48, node.attrs.len() as u64);
+        trace_scanned_node(ctx, nid);
         let mut name_val: Option<Value> = None;
         let mut sig_val: Option<Value> = None;
         let mut kind_val: Option<Value> = None;
@@ -348,6 +475,7 @@ fn load_parts(
         if !by_name.contains_key(&name) {
             order.push(name.clone());
         }
+        crate::access_trace::note_helper_work(49, 1);
         by_name.insert(
             name.clone(),
             Part {
@@ -471,6 +599,11 @@ struct Generator {
     /// inferred matrix rides in as data and `apply_linear_once` reads it —
     /// no new Rust dispatch arm per discovered map.
     matrix: Vec<i64>,
+    /// Flattened output-major quadratic coefficients for `kind="quadratic2"`:
+    /// two rows over `[x,y,x²,xy,y²]`. This is a separate graph-data payload;
+    /// polynomial coefficients are never stored under the linear `matrix`
+    /// attribute.
+    coefficients: Vec<i64>,
     /// The integer OFFSET vector for a `kind == "translate"` (affine
     /// pure-translation) generator — one step maps a coord slot `v -> v +
     /// offset[j]` with NO wrap and NO origin-normalization (see
@@ -487,6 +620,53 @@ struct Generator {
     /// is skipped in `load_generators`, the same graceful skip as a bad
     /// `matrix`.
     offset: Vec<i64>,
+    /// `kind == "composite"` only: the generator's FLATTENED primitive step
+    /// sequence, resolved at load time from its `steps` (generator names)
+    /// and `ks` attrs (RECURSIVE_SELF_IMPROVEMENT_PLAN WP5). A composite may
+    /// name another composite; it is expanded into primitives, so a minted
+    /// chunk becomes a single codebook entry that DimInfer composes with one
+    /// more step -- the length-<=2 search then reaches arbitrary depth
+    /// through growth, not through a wider search. Empty for other kinds.
+    composite: Vec<PrimStep>,
+    /// `retired` attr truthy: the generator still RESOLVES as a step of a
+    /// composite that names it, but is not itself a decode candidate (chunk
+    /// retention, tranche 2 gate 3). Absent -> false (all historical seeds).
+    retired: bool,
+}
+
+/// One resolved primitive step of a `composite` generator.
+#[derive(Clone)]
+struct PrimStep {
+    kind: String,
+    coord_dims: Vec<i64>,
+    modulus: i64,
+    matrix: Vec<i64>,
+    coefficients: Vec<i64>,
+    offset: Vec<i64>,
+    k: i64,
+}
+
+/// Maximum flattened primitive steps in a composite (a resource bound, not a
+/// semantic one: a deeper chunk is skipped at load like any malformed entry).
+const COMPOSITE_MAX_STEPS: usize = 32;
+
+/// Apply generator `gen` `k` times; a composite applies its flattened
+/// primitive sequence `k` times.
+fn apply_gen_k(gen: &Generator, sig: &[Value], k: i64) -> Option<Vec<Value>> {
+    if gen.kind == "composite" {
+        let mut cur = sig.to_vec();
+        for _ in 0..k.max(0) {
+            for st in &gen.composite {
+                cur = apply_generator_k_with_coefficients(
+                    &st.kind, &st.coord_dims, &cur, st.modulus, &st.matrix, &st.coefficients, &st.offset, st.k,
+                )?;
+            }
+        }
+        return Some(cur);
+    }
+    apply_generator_k_with_coefficients(
+        &gen.kind, &gen.coord_dims, sig, gen.modulus, &gen.matrix, &gen.coefficients, &gen.offset, k,
+    )
 }
 
 /// Read every `generator_type`-typed node into an ordered generator list —
@@ -502,8 +682,11 @@ struct Generator {
 fn load_generators(ctx: &EvalCtx, generator_type: Sym) -> Vec<Generator> {
     let mut order: Vec<String> = Vec::new();
     let mut by_name: FxHashMap<String, Generator> = FxHashMap::default();
+    let mut pending_composites: Vec<(String, Vec<String>, Vec<i64>)> = Vec::new();
 
     for nid in ctx.graph.nodes_of_type(generator_type) {
+        crate::access_trace::note_helper_work(55, 1);
+        trace_scanned_node(ctx, nid);
         let node = ctx.graph.node(nid);
         let mut name_val: Option<Value> = None;
         let mut kind_val: Option<Value> = None;
@@ -511,7 +694,11 @@ fn load_generators(ctx: &EvalCtx, generator_type: Sym) -> Vec<Generator> {
         let mut params_val: Option<Value> = None;
         let mut modulus_val: Option<Value> = None;
         let mut matrix_val: Option<Value> = None;
+        let mut coefficients_val: Option<Value> = None;
         let mut offset_val: Option<Value> = None;
+        let mut steps_val: Option<Value> = None;
+        let mut ks_val: Option<Value> = None;
+        let mut retired = false;
         for (k, v) in node.attrs.iter() {
             match ctx.interner.resolve(*k) {
                 "name" => name_val = Some(v.clone()),
@@ -520,7 +707,11 @@ fn load_generators(ctx: &EvalCtx, generator_type: Sym) -> Vec<Generator> {
                 "params" => params_val = Some(v.clone()),
                 "modulus" => modulus_val = Some(v.clone()),
                 "matrix" => matrix_val = Some(v.clone()),
+                "coefficients" => coefficients_val = Some(v.clone()),
                 "offset" => offset_val = Some(v.clone()),
+                "steps" => steps_val = Some(v.clone()),
+                "ks" => ks_val = Some(v.clone()),
+                "retired" => retired = v.truthy(),
                 _ => {}
             }
         }
@@ -544,6 +735,40 @@ fn load_generators(ctx: &EvalCtx, generator_type: Sym) -> Vec<Generator> {
             }
             None => name.clone(),
         };
+        if kind == "composite" {
+            // Steps are resolved after every node is read (they may name
+            // generators declared later, or other composites).
+            let names: Option<Vec<String>> = match &steps_val {
+                Some(Value::Tuple(xs) | Value::List(xs)) => xs
+                    .iter()
+                    .map(|x| match x {
+                        Value::Str(sy) => Some(ctx.interner.resolve(*sy).to_string()),
+                        Value::Surface(_, b) => std::str::from_utf8(b).ok().map(str::to_string),
+                        _ => None,
+                    })
+                    .collect(),
+                _ => None,
+            };
+            let ks = ks_val.as_ref().and_then(|v| parse_int_list(v, ctx.interner));
+            let params = params_val
+                .as_ref()
+                .and_then(|v| parse_int_list(v, ctx.interner))
+                .unwrap_or_else(|| vec![1]);
+            if let (Some(names), Some(ks)) = (names, ks) {
+                if !names.is_empty() && names.len() == ks.len() && !params.is_empty() {
+                    if !by_name.contains_key(&name) {
+                        order.push(name.clone());
+                    }
+                    pending_composites.push((name.clone(), names, ks));
+                    by_name.insert(name.clone(), Generator {
+                        name: name.clone(), name_val: nv, kind, coord_dims: Vec::new(), params,
+                        modulus: 0, matrix: Vec::new(), coefficients: Vec::new(), offset: Vec::new(),
+                        composite: Vec::new(), retired,
+                    });
+                }
+            }
+            continue;
+        }
         let Some(coord_dims) = coord_dims_val
             .as_ref()
             .and_then(|v| parse_int_list(v, ctx.interner))
@@ -584,6 +809,17 @@ fn load_generators(ctx: &EvalCtx, generator_type: Sym) -> Vec<Generator> {
                 continue;
             }
         }
+        let coefficients: Vec<i64> = coefficients_val
+            .as_ref()
+            .and_then(|v| parse_int_list(v, ctx.interner))
+            .unwrap_or_default();
+        if kind == "quadratic2"
+            && (!cfg!(feature = "geninfer_quadratic_map_solver")
+                || coord_dims.len() != 2
+                || coefficients.len() != 10)
+        {
+            continue;
+        }
         // The `offset` attr (a flattened Int list) is read only for a
         // `"translate"` generator; every other kind ignores it. A
         // `"translate"` generator whose offset length ≠ coord_dims is
@@ -608,14 +844,63 @@ fn load_generators(ctx: &EvalCtx, generator_type: Sym) -> Vec<Generator> {
                 params,
                 modulus,
                 matrix,
+                coefficients,
                 offset,
+                composite: Vec::new(),
+                retired,
             },
         );
+    }
+
+    // Resolve composites to flattened primitive sequences. Iterates to a
+    // fixed point so a composite may name a composite; an unresolvable
+    // (missing, cyclic, or over-long) composite is dropped -- inapplicable,
+    // the same graceful skip as any malformed generator.
+    let mut unresolved = pending_composites;
+    loop {
+        let before = unresolved.len();
+        let mut next = Vec::new();
+        for (name, steps, ks) in unresolved {
+            let mut flat: Vec<PrimStep> = Vec::new();
+            let mut ok = true;
+            for (st, k) in steps.iter().zip(&ks) {
+                match by_name.get(st) {
+                    Some(g) if g.kind == "composite" && !g.composite.is_empty() => {
+                        for _ in 0..(*k).max(0) { flat.extend(g.composite.iter().cloned()); }
+                    }
+                    Some(g) if g.kind != "composite" => flat.push(PrimStep {
+                        kind: g.kind.clone(), coord_dims: g.coord_dims.clone(), modulus: g.modulus,
+                        matrix: g.matrix.clone(), coefficients: g.coefficients.clone(),
+                        offset: g.offset.clone(), k: *k,
+                    }),
+                    _ => { ok = false; break; }
+                }
+            }
+            if ok && !flat.is_empty() && flat.len() <= COMPOSITE_MAX_STEPS {
+                let mut cd: Vec<i64> = flat.iter().flat_map(|p| p.coord_dims.iter().copied()).collect();
+                cd.sort_unstable();
+                cd.dedup();
+                if let Some(g) = by_name.get_mut(&name) {
+                    g.composite = flat;
+                    g.coord_dims = cd;
+                }
+            } else if ok {
+                // over-long or empty: leave unresolved -> dropped below
+            } else {
+                next.push((name, steps, ks));
+            }
+        }
+        if next.is_empty() || next.len() == before {
+            break;
+        }
+        unresolved = next;
     }
 
     order
         .into_iter()
         .filter_map(|nm| by_name.remove(&nm))
+        .filter(|g| g.kind != "composite" || !g.composite.is_empty())
+        .filter(|g| !g.retired)
         .collect()
 }
 
@@ -896,6 +1181,43 @@ fn apply_translate_once(sig: &[Value], coord_dims: &[i64], offset: &[i64]) -> Op
     Some(out)
 }
 
+/// Apply a 2-D total-degree-at-most-two map with no intercept. Coefficients
+/// are flattened output-major over `[x,y,x²,xy,y²]`; a uniform translation
+/// remains the shared residual check's responsibility. Checked i128
+/// arithmetic and checked narrowing make overflow an inapplicable candidate.
+#[cfg(feature = "geninfer_quadratic_map_solver")]
+fn apply_quadratic2_once(
+    sig: &[Value],
+    coord_dims: &[i64],
+    coefficients: &[i64],
+) -> Option<Vec<Value>> {
+    if sig.is_empty() || coord_dims.len() != 2 || coefficients.len() != 10 {
+        return None;
+    }
+    let ix = usize::try_from(coord_dims[0]).ok()?;
+    let iy = usize::try_from(coord_dims[1]).ok()?;
+    let xs = coord_ints(sig, ix)?;
+    let ys = coord_ints(sig, iy)?;
+    let min_x = *xs.iter().min()?;
+    let min_y = *ys.iter().min()?;
+    let mut out = sig.to_vec();
+    for (i, rel) in out.iter_mut().enumerate() {
+        let x = (xs[i] as i128).checked_sub(min_x as i128)?;
+        let y = (ys[i] as i128).checked_sub(min_y as i128)?;
+        let features = [x, y, x.checked_mul(x)?, x.checked_mul(y)?, y.checked_mul(y)?];
+        for axis in 0..2 {
+            let mut value = 0i128;
+            for j in 0..5 {
+                value = value.checked_add(
+                    (coefficients[axis * 5 + j] as i128).checked_mul(features[j])?,
+                )?;
+            }
+            *rel = set_coord(rel, if axis == 0 { ix } else { iy }, i64::try_from(value).ok()?);
+        }
+    }
+    Some(out)
+}
+
 /// Dispatch one primitive generator STEP by `kind`. `"rotation90"` needs
 /// exactly a `[row_dim, col_dim]` pair; `"reflection_r"`/`"reflection_c"`
 /// each need only ONE axis — `coord_dims.first()` for `"reflection_r"`,
@@ -916,6 +1238,7 @@ fn apply_generator_once(
     sig: &[Value],
     modulus: i64,
     matrix: &[i64],
+    coefficients: &[i64],
     offset: &[i64],
 ) -> Option<Vec<Value>> {
     match kind {
@@ -930,6 +1253,8 @@ fn apply_generator_once(
         "scale2" => scale_pow2_once(sig, coord_dims),
         "modular" => modular_step_once(sig, coord_dims, modulus),
         "linear" => apply_linear_once(sig, coord_dims, matrix),
+        #[cfg(feature = "geninfer_quadratic_map_solver")]
+        "quadratic2" => apply_quadratic2_once(sig, coord_dims, coefficients),
         "translate" => apply_translate_once(sig, coord_dims, offset),
         _ => None,
     }
@@ -951,9 +1276,22 @@ fn apply_generator_k(
     offset: &[i64],
     k: i64,
 ) -> Option<Vec<Value>> {
+    apply_generator_k_with_coefficients(kind, coord_dims, sig, modulus, matrix, &[], offset, k)
+}
+
+fn apply_generator_k_with_coefficients(
+    kind: &str,
+    coord_dims: &[i64],
+    sig: &[Value],
+    modulus: i64,
+    matrix: &[i64],
+    coefficients: &[i64],
+    offset: &[i64],
+    k: i64,
+) -> Option<Vec<Value>> {
     let mut cur = sig.to_vec();
     for _ in 0..k.max(0) {
-        cur = apply_generator_once(kind, coord_dims, &cur, modulus, matrix, offset)?;
+        cur = apply_generator_once(kind, coord_dims, &cur, modulus, matrix, coefficients, offset)?;
     }
     Some(cur)
 }
@@ -1114,6 +1452,51 @@ fn apply_scope(
     parts.retain(|p| scope.contains(&p.name.to_lowercase()));
 }
 
+fn load_codebook_cached(ctx: &mut EvalCtx, codebook_type: Sym) -> Arc<LoadedCodebook> {
+    if let Some(cached) = ctx.shape_codebooks.get(&codebook_type) {
+        crate::access_trace::note_helper_work(59, 1);
+        return Arc::clone(cached);
+    }
+    crate::access_trace::note_helper_work(58, 1);
+    let mut extra = FxHashMap::default();
+    let mut next_id = u32::MAX;
+    let parts = load_parts(ctx, codebook_type, &mut extra, &mut next_id);
+    let loaded = Arc::new(LoadedCodebook::new(parts, extra));
+    ctx.shape_codebooks
+        .insert(codebook_type, Arc::clone(&loaded));
+    loaded
+}
+
+/// Load the complete codebook before evaluating filters (preserving malformed
+/// unrelated-entry behavior), then use the per-EvalCtx folded-name index to
+/// select a scope without rescanning/copying every Part for each nested call.
+fn scoped_parts_from_cached_codebook(
+    loaded: &LoadedCodebook,
+    exclude_idx: Option<TermIdx>,
+    scope_idx: Option<TermIdx>,
+    arena: &TermArena,
+    env: &mut Env,
+    ctx: &mut EvalCtx,
+) -> Vec<Part> {
+    let excludes = exclude_idx
+        .map(|idx| evaluate(arena, idx, env, ctx))
+        .map(|value| collect_part_names(&value, ctx, "exclude"))
+        .unwrap_or_default();
+    let scope_value = scope_idx
+        .map(|idx| evaluate(arena, idx, env, ctx))
+        .unwrap_or(Value::None);
+    let scope = if scope_is_declared(&scope_value) {
+        Some(collect_part_names(&scope_value, ctx, "codebook_scope"))
+    } else {
+        None
+    };
+    let mut parts = loaded.select(scope.as_ref());
+    if !excludes.is_empty() {
+        parts.retain(|part| !excludes.contains(&part.name.to_lowercase()));
+    }
+    parts
+}
+
 /// One `plan` entry — the Rust twin of `compose_design_for_goal`'s
 /// per-step dict (`step`/`part`/`kind`/`source`/`shape_fit`/`covers`/`why`).
 #[derive(Clone)]
@@ -1171,6 +1554,8 @@ fn load_relation_cue_index(ctx: &EvalCtx) -> FxHashMap<Vec<String>, String> {
         return idx;
     };
     for nid in ctx.graph.nodes_of_type(cue_type) {
+        crate::access_trace::note_helper_work(50, 1);
+        trace_scanned_node(ctx, nid);
         let node = ctx.graph.node(nid);
         let mut name: Option<String> = None;
         let mut rel: Option<Value> = None;
@@ -1619,16 +2004,28 @@ pub(crate) fn eval_shape_decode(
     env: &mut Env,
     ctx: &mut EvalCtx,
 ) -> Value {
+    let _helper_work =
+        crate::access_trace::enter_helper_scope(crate::access_trace::HELPER_SHAPE_DECODE);
     let wild_val = wild_value(wild);
 
     // Codebook: read parts, then apply `exclude` (case-insensitive on the
     // part's own name), preserving first-occurrence order throughout —
     // matches `_load_shape_signatures` + the dict-comprehension filter.
-    let mut extra: FxHashMap<String, Sym> = FxHashMap::default();
-    let mut next_id: u32 = u32::MAX;
-    let mut parts = load_parts(ctx, codebook_type, &mut extra, &mut next_id);
-    apply_exclude(&mut parts, exclude_idx, arena, env, ctx);
-    apply_scope(&mut parts, scope_idx, arena, env, ctx);
+    let (parts, extra) = if scope_idx.is_some()
+        && crate::access_trace::shape_codebook_cache_enabled()
+    {
+        let loaded = load_codebook_cached(ctx, codebook_type);
+        let parts =
+            scoped_parts_from_cached_codebook(&loaded, exclude_idx, scope_idx, arena, env, ctx);
+        (parts, loaded.extra.clone())
+    } else {
+        let mut extra: FxHashMap<String, Sym> = FxHashMap::default();
+        let mut next_id: u32 = u32::MAX;
+        let mut parts = load_parts(ctx, codebook_type, &mut extra, &mut next_id);
+        apply_exclude(&mut parts, exclude_idx, arena, env, ctx);
+        apply_scope(&mut parts, scope_idx, arena, env, ctx);
+        (parts, extra)
+    };
 
     if parts.is_empty() {
         return finish(
@@ -1722,6 +2119,7 @@ pub(crate) fn eval_shape_decode(
                 if state.used.contains(&part.name) {
                     continue;
                 }
+                crate::access_trace::note_helper_work(52, 1);
                 let (fit, covered) = score_part_for_residual(
                     &state.residual,
                     sig,
@@ -1753,6 +2151,7 @@ pub(crate) fn eval_shape_decode(
                     break 'search;
                 }
                 expansions += 1;
+                crate::access_trace::note_helper_work(51, 1);
                 let why = format!(
                     "the held shape-matcher rated '{}' fit {} and its Covers Term accepts {} residual relation(s)",
                     part.name, fit, ncov
@@ -2003,6 +2402,7 @@ fn build_candidate(
     sorted_o: &[Value],
     max_dims: usize,
     extra_rev: &FxHashMap<Sym, String>,
+    fuse_structural_slots: bool,
 ) -> Option<Candidate> {
     let mut sorted_h = sig.to_vec();
     sorted_h.sort_by(cmp_value);
@@ -2026,47 +2426,80 @@ fn build_candidate(
     // reflected rather than papered over. One `term_units` call per loop, never
     // per iteration.
     let mut pairs: u64 = 0;
-    // Structural prefilter: EVERY aligned pair must be a same-arity Tuple
-    // with the SAME predicate (slot 0).
-    for (h, o) in sorted_h.iter().zip(sorted_o.iter()) {
-        pairs += 1;
-        let (Value::Tuple(ht) | Value::List(ht), Value::Tuple(ot) | Value::List(ot)) = (h, o)
-        else {
-            crate::scale_audit::term_units(pairs);
-            return None;
-        };
-        if ht.is_empty() || ht.len() != ot.len() || ht[0] != ot[0] {
-            crate::scale_audit::term_units(pairs);
-            return None;
-        }
-    }
-    crate::scale_audit::term_units(pairs);
-
     // Which slots (k>=1) actually differ anywhere, and which observation
     // relations differ at all (for residual reporting).
     let mut dims_seen: std::collections::BTreeSet<i64> = std::collections::BTreeSet::new();
     let mut mismatches: Vec<Value> = Vec::new();
-    // SCALE AUDIT — the per-SLOT comparison count, which is the finer-grained
-    // half of the same work (see the prefilter above).
     let mut slot_cmps: u64 = 0;
-    for (h, o) in sorted_h.iter().zip(sorted_o.iter()) {
-        let (Value::Tuple(ht) | Value::List(ht), Value::Tuple(ot) | Value::List(ot)) = (h, o)
-        else {
-            continue;
-        };
-        let mut relation_mismatched = false;
-        for k in 1..ht.len() {
-            slot_cmps += 1;
-            if ht[k] != ot[k] {
-                relation_mismatched = true;
-                dims_seen.insert(k as i64);
+    if fuse_structural_slots {
+        // Experimental fast path: perform the same structural check and slot
+        // comparisons in one traversal. Slot audit units on a structural
+        // failure include work already done for preceding pairs, reflecting
+        // the actual fused traversal; the baseline returns before its slot
+        // traversal in that case.
+        for (h, o) in sorted_h.iter().zip(sorted_o.iter()) {
+            pairs += 1;
+            let (Value::Tuple(ht) | Value::List(ht), Value::Tuple(ot) | Value::List(ot)) = (h, o)
+            else {
+                crate::scale_audit::term_units(pairs);
+                crate::scale_audit::term_units(slot_cmps);
+                return None;
+            };
+            if ht.is_empty() || ht.len() != ot.len() || ht[0] != ot[0] {
+                crate::scale_audit::term_units(pairs);
+                crate::scale_audit::term_units(slot_cmps);
+                return None;
+            }
+            let mut relation_mismatched = false;
+            for k in 1..ht.len() {
+                slot_cmps += 1;
+                if ht[k] != ot[k] {
+                    relation_mismatched = true;
+                    dims_seen.insert(k as i64);
+                }
+            }
+            if relation_mismatched {
+                mismatches.push(o.clone());
             }
         }
-        if relation_mismatched {
-            mismatches.push(o.clone());
+        crate::scale_audit::term_units(pairs);
+        crate::scale_audit::term_units(slot_cmps);
+    } else {
+        // Baseline two-pass validator: reject malformed/predicate-mismatched
+        // candidates before examining transformable slots.
+        for (h, o) in sorted_h.iter().zip(sorted_o.iter()) {
+            pairs += 1;
+            let (Value::Tuple(ht) | Value::List(ht), Value::Tuple(ot) | Value::List(ot)) = (h, o)
+            else {
+                crate::scale_audit::term_units(pairs);
+                return None;
+            };
+            if ht.is_empty() || ht.len() != ot.len() || ht[0] != ot[0] {
+                crate::scale_audit::term_units(pairs);
+                return None;
+            }
         }
+        crate::scale_audit::term_units(pairs);
+
+        for (h, o) in sorted_h.iter().zip(sorted_o.iter()) {
+            let (Value::Tuple(ht) | Value::List(ht), Value::Tuple(ot) | Value::List(ot)) = (h, o)
+            else {
+                continue;
+            };
+            let mut relation_mismatched = false;
+            for k in 1..ht.len() {
+                slot_cmps += 1;
+                if ht[k] != ot[k] {
+                    relation_mismatched = true;
+                    dims_seen.insert(k as i64);
+                }
+            }
+            if relation_mismatched {
+                mismatches.push(o.clone());
+            }
+        }
+        crate::scale_audit::term_units(slot_cmps);
     }
-    crate::scale_audit::term_units(slot_cmps);
     let dims_needed: Vec<i64> = dims_seen.into_iter().collect();
 
     if dims_needed.is_empty() {
@@ -2336,6 +2769,8 @@ pub(crate) fn eval_transform_decode(
     env: &mut Env,
     ctx: &mut EvalCtx,
 ) -> Value {
+    let _helper_work =
+        crate::access_trace::enter_helper_scope(crate::access_trace::HELPER_TRANSFORM_DECODE);
     let mut extra: FxHashMap<String, Sym> = FxHashMap::default();
     let mut next_id: u32 = u32::MAX;
     let mut parts = load_parts(ctx, codebook_type, &mut extra, &mut next_id);
@@ -2361,6 +2796,7 @@ pub(crate) fn eval_transform_decode(
     let candidates: Vec<Candidate> = parts
         .iter()
         .filter_map(|part| {
+            crate::access_trace::note_helper_work(51, 1);
             build_candidate(
                 part.name.clone(),
                 part.name_val.clone(),
@@ -2368,6 +2804,7 @@ pub(crate) fn eval_transform_decode(
                 &sorted_o,
                 max_dims,
                 &extra_rev,
+                false,
             )
         })
         .collect();
@@ -2531,8 +2968,8 @@ fn enc_generator(g: &Generator) -> String {
     let mut s = String::new();
     let _ = write!(
         s,
-        "G|{}|{:?}|{}|cd{:?}|p{:?}|m{}|mx{:?}|of{:?}",
-        g.name, g.name_val, g.kind, g.coord_dims, g.params, g.modulus, g.matrix, g.offset
+        "G|{}|{:?}|{}|cd{:?}|p{:?}|m{}|mx{:?}|q{:?}|of{:?}",
+        g.name, g.name_val, g.kind, g.coord_dims, g.params, g.modulus, g.matrix, g.coefficients, g.offset
     );
     s
 }
@@ -2597,11 +3034,14 @@ pub(crate) fn eval_dim_infer(
     codebook_type: Sym,
     exclude_idx: Option<TermIdx>,
     generator_type: Sym,
+    grain: i64,
     max_dims: i64,
     field: Sym,
     env: &mut Env,
     ctx: &mut EvalCtx,
 ) -> Value {
+    let _helper_work =
+        crate::access_trace::enter_helper_scope(crate::access_trace::HELPER_DIM_INFER);
     let mut extra: FxHashMap<String, Sym> = FxHashMap::default();
     let mut next_id: u32 = u32::MAX;
     let mut parts = load_parts(ctx, codebook_type, &mut extra, &mut next_id);
@@ -2610,12 +3050,28 @@ pub(crate) fn eval_dim_infer(
     let generators = load_generators(ctx, generator_type);
 
     let goal_val = evaluate(arena, goal_idx, env, ctx);
-    let goal: Vec<Value> = match &goal_val {
+    let mut goal: Vec<Value> = match &goal_val {
         Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_) => {
             goal_val.iter().cloned().collect()
         }
         _ => Vec::new(),
     };
+    if grain > 0 {
+        let slots = |dts: &[String]| -> Vec<usize> {
+            dts.iter().enumerate().filter(|(_, t)| t.starts_with("coord:")).map(|(i, _)| i).collect()
+        };
+        if let Some(dts) = parts.iter().find_map(|p| p.dim_types.clone()) {
+            goal = requantize(&goal, &slots(&dts), grain);
+            if coarse_degenerate(&goal, &slots(&dts)) {
+                goal.clear(); // no coarse explanation of a degenerate collapse
+            }
+        }
+        for part in parts.iter_mut() {
+            if let Some(dts) = part.dim_types.clone() {
+                part.sig = requantize(&part.sig, &slots(&dts), grain);
+            }
+        }
+    }
     let max_dims_usize = max_dims.max(0) as usize;
 
     // THE ARGUMENT-RECORDING SITE (VISION_DIM_INFER_ARGS_PREREG.md). Placed
@@ -2670,6 +3126,7 @@ pub(crate) fn eval_dim_infer(
             &sorted_o,
             max_dims_usize,
             &extra_rev,
+            false,
         ) else {
             return;
         };
@@ -2749,15 +3206,8 @@ pub(crate) fn eval_dim_infer(
         for gen in &eligible {
             for &k in &gen.params {
                 checked += 1;
-                let Some(transformed) = apply_generator_k(
-                    &gen.kind,
-                    &gen.coord_dims,
-                    &part.sig,
-                    gen.modulus,
-                    &gen.matrix,
-                    &gen.offset,
-                    k,
-                ) else {
+                crate::access_trace::note_helper_work(51, 1);
+                let Some(transformed) = apply_gen_k(gen, &part.sig, k) else {
                     continue;
                 };
                 try_candidate(
@@ -2796,15 +3246,7 @@ pub(crate) fn eval_dim_infer(
 
         for gen_a in &eligible {
             for &k_a in &gen_a.params {
-                let Some(transformed_a) = apply_generator_k(
-                    &gen_a.kind,
-                    &gen_a.coord_dims,
-                    &part.sig,
-                    gen_a.modulus,
-                    &gen_a.matrix,
-                    &gen_a.offset,
-                    k_a,
-                ) else {
+                let Some(transformed_a) = apply_gen_k(gen_a, &part.sig, k_a) else {
                     continue;
                 };
                 for gen_b in &eligible {
@@ -2813,21 +3255,14 @@ pub(crate) fn eval_dim_infer(
                     }
                     for &k_b in &gen_b.params {
                         checked += 1;
+                        crate::access_trace::note_helper_work(51, 1);
                         // The skip sits HERE — after `checked`, so the returned
                         // attempt count is byte-identical, and before the
                         // `O(N x slots)` work, which is the entire saving.
                         if explained_at_length_1 {
                             continue;
                         }
-                        let Some(transformed_ab) = apply_generator_k(
-                            &gen_b.kind,
-                            &gen_b.coord_dims,
-                            &transformed_a,
-                            gen_b.modulus,
-                            &gen_b.matrix,
-                            &gen_b.offset,
-                            k_b,
-                        ) else {
+                        let Some(transformed_ab) = apply_gen_k(gen_b, &transformed_a, k_b) else {
                             continue;
                         };
                         try_candidate(
@@ -2952,11 +3387,478 @@ pub(crate) fn eval_dim_infer(
 struct GenAttempt {
     base_val: Value,
     base_name: String,
+    kind: String,
     coord_dims: Vec<i64>,
     matrix: Vec<i64>,
+    coefficients: Vec<i64>,
     transforms: Vec<DimTransform>,
     residual_dims: usize,
     abs_sum: i64,
+}
+
+/// Recover a unique integer matrix from full-rank, identity-aligned rows.
+/// This is used only by the opt-in non-2-D GenInfer path. The stable key is
+/// predicate plus explicitly typed `id` slots; if those do not identify each
+/// relation uniquely, the solver abstains instead of guessing an alignment.
+fn infer_full_rank_integer_matrix(
+    source: &[Value],
+    target: &[Value],
+    dim_types: &[String],
+    coord_dims: &[i64],
+    bound: i64,
+) -> Option<Vec<i64>> {
+    let mut identity_key_comparisons = 0u64;
+    #[cfg(feature = "geninfer_full_rank_identity_join_work_audit")]
+    let track_identity_work = crate::scale_audit::enabled();
+    #[cfg(not(feature = "geninfer_full_rank_identity_join_work_audit"))]
+    let track_identity_work = false;
+    let result = infer_full_rank_integer_matrix_impl(
+        source, target, dim_types, coord_dims, bound,
+        &mut identity_key_comparisons, track_identity_work,
+    );
+    #[cfg(feature = "geninfer_full_rank_identity_join_work_audit")]
+    if track_identity_work {
+        crate::scale_audit::gen_infer_full_rank_identity_key_comparisons(identity_key_comparisons);
+    }
+    result
+}
+
+fn infer_full_rank_integer_matrix_impl(
+    source: &[Value],
+    target: &[Value],
+    dim_types: &[String],
+    coord_dims: &[i64],
+    bound: i64,
+    identity_key_comparisons: &mut u64,
+    track_identity_work: bool,
+) -> Option<Vec<i64>> {
+    let d = coord_dims.len();
+    if !matches!(d, 1 | 3) || source.len() != target.len() || source.len() <= d {
+        return None;
+    }
+    let mut stable_slots = vec![0usize];
+    stable_slots.extend(dim_types.iter().enumerate().filter_map(|(i, t)| (t == "id").then_some(i)));
+    if stable_slots.len() < 2 || stable_slots.iter().any(|&i| i >= dim_types.len()) {
+        return None;
+    }
+    let key_equal = |a: &[Value], b: &[Value], comparisons: &mut u64| -> bool {
+        stable_slots.iter().all(|&i| {
+            if track_identity_work { *comparisons += 1; }
+            a.get(i) == b.get(i)
+        })
+    };
+    #[cfg(feature = "geninfer_full_rank_sorted_identity_join")]
+    let aligned_targets = (|| -> Option<Vec<usize>> {
+        // The join comparator must be a total order over eligible keys, and
+        // comparator equality must never silently broaden Value equality.
+        // In particular cmp_value maps NaN comparisons to Equal and compares
+        // mixed numeric variants by value. Keep the opt-in fast path to
+        // primitive, totally ordered keys until compound-key semantics have
+        // dedicated differential coverage.
+        let safe_identity_key = |value: &Value| matches!(
+            value,
+            Value::None | Value::Bool(_) | Value::Int(_) | Value::Str(_) | Value::Node(_)
+        );
+        let mut source_keys = Vec::with_capacity(source.len());
+        let mut target_keys = Vec::with_capacity(target.len());
+        for (index, value) in source.iter().enumerate() {
+            let row = relation_values(value)?;
+            if row.len() != dim_types.len() { return None; }
+            let key = stable_slots.iter().map(|&i| row.get(i).cloned()).collect::<Option<Vec<_>>>()?;
+            if key.iter().any(|value| !safe_identity_key(value)) { return None; }
+            source_keys.push((key, index));
+        }
+        for (index, value) in target.iter().enumerate() {
+            let row = relation_values(value)?;
+            if row.len() != dim_types.len() { return None; }
+            let key = stable_slots.iter().map(|&i| row.get(i).cloned()).collect::<Option<Vec<_>>>()?;
+            if key.iter().any(|value| !safe_identity_key(value)) { return None; }
+            target_keys.push((key, index));
+        }
+        let mut key_cmp = |a: &[Value], b: &[Value]| {
+            for (x, y) in a.iter().zip(b) {
+                if track_identity_work { *identity_key_comparisons += 1; }
+                let order = cmp_value(x, y);
+                if order != std::cmp::Ordering::Equal { return order; }
+            }
+            a.len().cmp(&b.len())
+        };
+        source_keys.sort_by(|a, b| key_cmp(&a.0, &b.0));
+        target_keys.sort_by(|a, b| key_cmp(&a.0, &b.0));
+        if source_keys.windows(2).any(|w| key_cmp(&w[0].0, &w[1].0) == std::cmp::Ordering::Equal)
+            || target_keys.windows(2).any(|w| key_cmp(&w[0].0, &w[1].0) == std::cmp::Ordering::Equal)
+        { return None; }
+        let mut aligned = vec![usize::MAX; source.len()];
+        let (mut si, mut ti) = (0usize, 0usize);
+        while si < source_keys.len() && ti < target_keys.len() {
+            match key_cmp(&source_keys[si].0, &target_keys[ti].0) {
+                std::cmp::Ordering::Less => return None,
+                std::cmp::Ordering::Greater => ti += 1,
+                std::cmp::Ordering::Equal => {
+                    if source_keys[si].0 != target_keys[ti].0 { return None; }
+                    aligned[source_keys[si].1] = target_keys[ti].1;
+                    si += 1;
+                    ti += 1;
+                }
+            }
+        }
+        if si != source_keys.len() || ti != target_keys.len() || aligned.iter().any(|&i| i == usize::MAX) {
+            return None;
+        }
+        Some(aligned)
+    })();
+    let mut used = vec![false; target.len()];
+    let mut pairs: Vec<(Vec<i128>, Vec<i128>)> = Vec::with_capacity(source.len());
+    for (source_index, src) in source.iter().enumerate() {
+        #[cfg(not(feature = "geninfer_full_rank_sorted_identity_join"))]
+        let _ = source_index;
+        let sr = relation_values(src)?;
+        if sr.len() != dim_types.len() {
+            return None;
+        }
+        #[cfg(feature = "geninfer_full_rank_sorted_identity_join")]
+        let i = if let Some(aligned) = &aligned_targets {
+            aligned[source_index]
+        } else {
+            // Ordering can be coarser or finer than Value equality for some
+            // variants (for example Bool/Int). Preserve the baseline contract
+            // by falling back to the exact nested join whenever the sorted
+            // merge cannot prove an unambiguous correspondence.
+            let mut found = None;
+            for (i, dst) in target.iter().enumerate() {
+                let dr = relation_values(dst)?;
+                if dr.len() != dim_types.len() { return None; }
+                if key_equal(sr, dr, identity_key_comparisons) {
+                    if found.is_some() || used[i] { return None; }
+                    found = Some(i);
+                }
+            }
+            found?
+        };
+        #[cfg(not(feature = "geninfer_full_rank_sorted_identity_join"))]
+        let i = {
+            let mut found = None;
+            for (i, dst) in target.iter().enumerate() {
+                let dr = relation_values(dst)?;
+                if dr.len() != dim_types.len() { return None; }
+                if key_equal(sr, dr, identity_key_comparisons) {
+                    if found.is_some() || used[i] { return None; }
+                    found = Some(i);
+                }
+            }
+            found?
+        };
+        if used[i] {
+            return None;
+        }
+        used[i] = true;
+        let mut sx = Vec::with_capacity(d);
+        let mut ty = Vec::with_capacity(d);
+        for &slot in coord_dims {
+            let slot = usize::try_from(slot).ok()?;
+            let Value::Int(x) = sr.get(slot)? else { return None };
+            let dr = relation_values(&target[i])?;
+            let Value::Int(y) = dr.get(slot)? else { return None };
+            sx.push(*x as i128);
+            ty.push(*y as i128);
+        }
+        pairs.push((sx, ty));
+    }
+    if used.iter().any(|v| !v) || pairs.len() <= d {
+        return None;
+    }
+
+    // Build a full-rank basis of source displacements relative to one row.
+    let source_origin = &pairs[0].0;
+    let target_origin = &pairs[0].1;
+    let mut basis: Vec<Vec<i128>> = Vec::with_capacity(d);
+    let mut target_basis: Vec<Vec<i128>> = Vec::with_capacity(d);
+    for (sx, ty) in pairs.iter().skip(1) {
+        let vector: Vec<i128> = sx.iter().zip(source_origin).map(|(x, o)| x - o).collect();
+        if vector.iter().all(|x| *x == 0) {
+            continue;
+        }
+        let mut trial = basis.clone();
+        trial.push(vector.clone());
+        if !independent_displacement_rows(&trial, d)? {
+            continue;
+        }
+        basis.push(vector);
+        target_basis.push(ty.iter().zip(target_origin).map(|(y, o)| y - o).collect());
+        if basis.len() == d {
+            break;
+        }
+    }
+    if basis.len() != d {
+        return None;
+    }
+    let denominator = determinant_small(&basis)?;
+    if denominator == 0 {
+        return None;
+    }
+
+    // Cramer's rule on this at-most-3x3 system. Every division is exact;
+    // checked i128 arithmetic makes overflow an explicit abstention.
+    let mut matrix = vec![0i64; d * d];
+    for output_axis in 0..d {
+        for input_axis in 0..d {
+            let mut replaced = basis.clone();
+            for row in 0..d {
+                replaced[row][input_axis] = target_basis[row][output_axis];
+            }
+            let numerator = determinant_small(&replaced)?;
+            if numerator % denominator != 0 {
+                return None;
+            }
+            let value = numerator / denominator;
+            if value < -(bound as i128) || value > bound as i128 {
+                return None;
+            }
+            matrix[output_axis * d + input_axis] = i64::try_from(value).ok()?;
+        }
+    }
+    // Verify every aligned pair, not just the selected basis.
+    for (sx, ty) in &pairs {
+        for output_axis in 0..d {
+            let mut predicted = 0i128;
+            for input_axis in 0..d {
+                predicted = predicted.checked_add(
+                    (matrix[output_axis * d + input_axis] as i128)
+                        .checked_mul(sx[input_axis] - source_origin[input_axis])?,
+                )?;
+            }
+            if predicted != ty[output_axis] - target_origin[output_axis] {
+                return None;
+            }
+        }
+    }
+    Some(matrix)
+}
+
+fn relation_values(value: &Value) -> Option<&[Value]> {
+    match value {
+        Value::Tuple(xs) | Value::List(xs) => Some(xs.as_slice()),
+        _ => None,
+    }
+}
+
+fn independent_displacement_rows(rows: &[Vec<i128>], d: usize) -> Option<bool> {
+    match (d, rows.len()) {
+        (1, 1) => Some(rows[0][0] != 0),
+        (3, 1) => Some(rows[0].iter().any(|x| *x != 0)),
+        (3, 2) => {
+            let a = &rows[0];
+            let b = &rows[1];
+            let cross = [
+                a[1].checked_mul(b[2])?.checked_sub(a[2].checked_mul(b[1])?)?,
+                a[2].checked_mul(b[0])?.checked_sub(a[0].checked_mul(b[2])?)?,
+                a[0].checked_mul(b[1])?.checked_sub(a[1].checked_mul(b[0])?)?,
+            ];
+            Some(cross.iter().any(|x| *x != 0))
+        }
+        (3, 3) => Some(determinant_small(rows)? != 0),
+        _ => None,
+    }
+}
+
+/// Exact determinant for the dimensions admitted by the feature-gated solver.
+fn determinant_small(matrix: &[Vec<i128>]) -> Option<i128> {
+    match matrix.len() {
+        1 if matrix[0].len() == 1 => Some(matrix[0][0]),
+        2 if matrix.iter().all(|r| r.len() == 2) => matrix[0][0]
+            .checked_mul(matrix[1][1])?
+            .checked_sub(matrix[0][1].checked_mul(matrix[1][0])?),
+        3 if matrix.iter().all(|r| r.len() == 3) => {
+            let a = matrix[0][0].checked_mul(
+                matrix[1][1].checked_mul(matrix[2][2])?
+                    .checked_sub(matrix[1][2].checked_mul(matrix[2][1])?)?,
+            )?;
+            let b = matrix[0][1].checked_mul(
+                matrix[1][0].checked_mul(matrix[2][2])?
+                    .checked_sub(matrix[1][2].checked_mul(matrix[2][0])?)?,
+            )?;
+            let c = matrix[0][2].checked_mul(
+                matrix[1][0].checked_mul(matrix[2][1])?
+                    .checked_sub(matrix[1][1].checked_mul(matrix[2][0])?)?,
+            )?;
+            a.checked_sub(b)?.checked_add(c)
+        }
+        _ => None,
+    }
+}
+
+#[cfg(feature = "geninfer_quadratic_map_solver")]
+#[derive(Clone, Copy)]
+struct ExactRat {
+    numerator: i128,
+    denominator: i128,
+}
+
+#[cfg(feature = "geninfer_quadratic_map_solver")]
+fn gcd_i128_checked(mut a: i128, mut b: i128) -> Option<i128> {
+    a = a.checked_abs()?;
+    b = b.checked_abs()?;
+    while b != 0 {
+        let r = a % b;
+        a = b;
+        b = r;
+    }
+    Some(a.max(1))
+}
+
+#[cfg(feature = "geninfer_quadratic_map_solver")]
+impl ExactRat {
+    fn new(mut numerator: i128, mut denominator: i128) -> Option<Self> {
+        if denominator == 0 { return None; }
+        if denominator < 0 {
+            numerator = numerator.checked_neg()?;
+            denominator = denominator.checked_neg()?;
+        }
+        let gcd = gcd_i128_checked(numerator, denominator)?;
+        Some(Self { numerator: numerator / gcd, denominator: denominator / gcd })
+    }
+    fn integer(value: i128) -> Self { Self { numerator: value, denominator: 1 } }
+    fn is_zero(self) -> bool { self.numerator == 0 }
+    fn add(self, other: Self) -> Option<Self> {
+        let g = gcd_i128_checked(self.denominator, other.denominator)?;
+        let a = other.denominator / g;
+        let b = self.denominator / g;
+        Self::new(self.numerator.checked_mul(a)?.checked_add(other.numerator.checked_mul(b)?)?,
+                  self.denominator.checked_mul(a)?)
+    }
+    fn sub(self, other: Self) -> Option<Self> {
+        Self::new(other.numerator.checked_neg()?, other.denominator)?.add(self)
+    }
+    fn mul(self, other: Self) -> Option<Self> {
+        let g1 = gcd_i128_checked(self.numerator, other.denominator)?;
+        let g2 = gcd_i128_checked(other.numerator, self.denominator)?;
+        Self::new((self.numerator / g1).checked_mul(other.numerator / g2)?,
+                  (self.denominator / g2).checked_mul(other.denominator / g1)?)
+    }
+    fn div(self, other: Self) -> Option<Self> {
+        if other.numerator == 0 { return None; }
+        self.mul(Self::new(other.denominator, other.numerator)?)
+    }
+}
+
+#[cfg(feature = "geninfer_quadratic_map_solver")]
+fn infer_quadratic2_coefficients(
+    source: &[Value],
+    target: &[Value],
+    dim_types: &[String],
+    coord_dims: &[i64],
+) -> Result<Vec<i64>, &'static str> {
+    if coord_dims.len() != 2 || source.len() != target.len() || source.len() < 7 {
+        return Err("unsupported_shape");
+    }
+    let mut stable_slots = vec![0usize];
+    stable_slots.extend(dim_types.iter().enumerate().filter_map(|(i, t)| (t == "id").then_some(i)));
+    if stable_slots.len() < 2 { return Err("identity_missing"); }
+    let mut used = vec![false; target.len()];
+    let mut aligned = Vec::with_capacity(source.len());
+    for src in source {
+        let sr = relation_values(src).ok_or("malformed_relation")?;
+        if sr.len() != dim_types.len() { return Err("malformed_relation"); }
+        let mut found = None;
+        for (i, dst) in target.iter().enumerate() {
+            let dr = relation_values(dst).ok_or("malformed_relation")?;
+            if dr.len() != dim_types.len() { return Err("malformed_relation"); }
+            if stable_slots.iter().all(|&slot| sr.get(slot) == dr.get(slot)) {
+                if found.is_some() || used[i] { return Err("identity_ambiguous"); }
+                found = Some(i);
+            }
+        }
+        let i = found.ok_or("identity_incomplete")?;
+        used[i] = true;
+        aligned.push(i);
+    }
+    if used.iter().any(|v| !v) { return Err("identity_incomplete"); }
+
+    let ix = usize::try_from(coord_dims[0]).map_err(|_| "malformed_relation")?;
+    let iy = usize::try_from(coord_dims[1]).map_err(|_| "malformed_relation")?;
+    let mut raw_x = Vec::with_capacity(source.len());
+    let mut raw_y = Vec::with_capacity(source.len());
+    let mut raw_u = Vec::with_capacity(source.len());
+    let mut raw_v = Vec::with_capacity(source.len());
+    for (si, &ti) in aligned.iter().enumerate() {
+        let sr = relation_values(&source[si]).ok_or("malformed_relation")?;
+        let tr = relation_values(&target[ti]).ok_or("malformed_relation")?;
+        let (Some(Value::Int(x)), Some(Value::Int(y)), Some(Value::Int(u)), Some(Value::Int(v))) =
+            (sr.get(ix), sr.get(iy), tr.get(ix), tr.get(iy)) else { return Err("non_integer"); };
+        raw_x.push(*x); raw_y.push(*y); raw_u.push(*u); raw_v.push(*v);
+    }
+    let min_x = *raw_x.iter().min().ok_or("unsupported_shape")? as i128;
+    let min_y = *raw_y.iter().min().ok_or("unsupported_shape")? as i128;
+    let mut design: Vec<[i128; 5]> = Vec::with_capacity(source.len() - 1);
+    let mut outputs: Vec<[i128; 2]> = Vec::with_capacity(source.len() - 1);
+    let (x0, y0) = (raw_x[0] as i128 - min_x, raw_y[0] as i128 - min_y);
+    let phi = |x: i128, y: i128| -> Option<[i128; 5]> {
+        Some([x, y, x.checked_mul(x)?, x.checked_mul(y)?, y.checked_mul(y)?])
+    };
+    let base_phi = phi(x0, y0).ok_or("overflow")?;
+    for i in 1..source.len() {
+        let x = (raw_x[i] as i128).checked_sub(min_x).ok_or("overflow")?;
+        let y = (raw_y[i] as i128).checked_sub(min_y).ok_or("overflow")?;
+        let f = phi(x, y).ok_or("overflow")?;
+        let mut row = [0i128; 5];
+        for j in 0..5 { row[j] = f[j].checked_sub(base_phi[j]).ok_or("overflow")?; }
+        design.push(row);
+        outputs.push([
+            (raw_u[i] as i128).checked_sub(raw_u[0] as i128).ok_or("overflow")?,
+            (raw_v[i] as i128).checked_sub(raw_v[0] as i128).ok_or("overflow")?,
+        ]);
+    }
+
+    let mut a: Vec<Vec<ExactRat>> = design.iter().zip(&outputs).map(|(row, out)| {
+        row.iter().map(|v| ExactRat::integer(*v))
+            .chain(out.iter().map(|v| ExactRat::integer(*v))).collect()
+    }).collect();
+    let mut pivot_rows = Vec::with_capacity(5);
+    let mut pivot_row = 0usize;
+    for col in 0..5 {
+        let Some(pivot) = (pivot_row..a.len()).find(|&r| !a[r][col].is_zero()) else { continue };
+        a.swap(pivot_row, pivot);
+        let divisor = a[pivot_row][col];
+        for c in 0..7 { a[pivot_row][c] = a[pivot_row][c].div(divisor).ok_or("overflow")?; }
+        let pivot_values = a[pivot_row].clone();
+        for r in 0..a.len() {
+            if r == pivot_row || a[r][col].is_zero() { continue; }
+            let factor = a[r][col];
+            for c in 0..7 {
+                a[r][c] = a[r][c].sub(factor.mul(pivot_values[c]).ok_or("overflow")?).ok_or("overflow")?;
+            }
+        }
+        pivot_rows.push(pivot_row);
+        pivot_row += 1;
+    }
+    if pivot_rows.len() != 5 { return Err("rank_deficient"); }
+    for row in &a {
+        if row[..5].iter().all(|v| v.is_zero()) && (!row[5].is_zero() || !row[6].is_zero()) {
+            return Err("residual_mismatch");
+        }
+    }
+    let mut coefficients = Vec::with_capacity(10);
+    for axis in 0..2 {
+        for &r in &pivot_rows {
+            let value = a[r][5 + axis];
+            if value.denominator != 1 { return Err("non_integral"); }
+            if value.numerator < -8 || value.numerator > 8 { return Err("coefficient_bound"); }
+            coefficients.push(i64::try_from(value.numerator).map_err(|_| "overflow")?);
+        }
+    }
+    // Exact overdetermined consistency check, including every validation row.
+    for i in 0..design.len() {
+        for axis in 0..2 {
+            let mut predicted = 0i128;
+            for j in 0..5 {
+                predicted = predicted.checked_add(
+                    (coefficients[axis * 5 + j] as i128).checked_mul(design[i][j]).ok_or("overflow")?
+                ).ok_or("overflow")?;
+            }
+            if predicted != outputs[i][axis] { return Err("residual_mismatch"); }
+        }
+    }
+    Ok(coefficients)
 }
 
 /// Evaluate `GenInfer` — the GENERATOR-MINTING op, the DELTA on `DimInfer`
@@ -2991,34 +3893,76 @@ struct GenAttempt {
 /// row-major — mint as the `matrix` attr) / `coord_dims` (Tuple of Ints —
 /// mint as `coord_dims`) / `ncoord` (Int) / `residual_dims` (Int) /
 /// `transforms` (leftover per-dim deltas, same shape as `DimInfer`) /
-/// `dims` / `checked` (matrices tried). Integer lattice only; the 2-D
-/// case (`n == 2`) is enumerated — a higher-`n` part is skipped (an
-/// honest scope limit: `(2B+1)^(n²)` is only tractable at `n = 2`, and 2-D
-/// is the shape/vision lattice this rung targets).
+/// `dims` / `checked` (candidate matrices passed to validation). Integer
+/// lattice only. The default path enumerates 2-D matrices; an opt-in exact
+/// full-rank solver admits 1-D and 3-D candidates. Rank-deficient or
+/// ambiguously aligned higher-dimensional parts are skipped.
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn eval_gen_infer(
     arena: &TermArena,
     goal_idx: TermIdx,
     codebook_type: Sym,
     exclude_idx: Option<TermIdx>,
+    scope_value: Value,
+    require_scope: bool,
+    quadratic_enabled: bool,
+    linear_prefilter_enabled: bool,
+    grain: i64,
+    mdl_enabled: bool,
     max_dims: i64,
     field: Sym,
     env: &mut Env,
     ctx: &mut EvalCtx,
 ) -> Value {
+    let _helper_work =
+        crate::access_trace::enter_helper_scope(crate::access_trace::HELPER_GEN_INFER);
+    crate::scale_audit::gen_infer_kernel_call();
     let mut extra: FxHashMap<String, Sym> = FxHashMap::default();
     let mut next_id: u32 = u32::MAX;
-    let mut parts = load_parts(ctx, codebook_type, &mut extra, &mut next_id);
+    let mut parts = if scope_value == Value::None {
+        if require_scope {
+            Vec::new()
+        } else {
+            load_parts(ctx, codebook_type, &mut extra, &mut next_id)
+        }
+    } else {
+        load_parts_with_scope(
+            ctx,
+            codebook_type,
+            &mut extra,
+            &mut next_id,
+            Some(&scope_value),
+        )
+    };
     apply_exclude(&mut parts, exclude_idx, arena, env, ctx);
     let extra_rev: FxHashMap<Sym, String> = extra.iter().map(|(k, v)| (*v, k.clone())).collect();
 
     let goal_val = evaluate(arena, goal_idx, env, ctx);
-    let goal: Vec<Value> = match &goal_val {
+    let mut goal: Vec<Value> = match &goal_val {
         Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_) => {
             goal_val.iter().cloned().collect()
         }
         _ => Vec::new(),
     };
+    // WP3 grain: re-quantize coordinate slots of base and goal to a coarser
+    // grain before ANY search, so every exact stage (and the enumerator)
+    // runs unchanged at that grain. In-frame values stay integer.
+    if grain > 0 {
+        let coord_slots = |dts: &[String]| -> Vec<usize> {
+            dts.iter().enumerate().filter(|(_, t)| t.starts_with("coord:")).map(|(i, _)| i).collect()
+        };
+        if let Some(dts) = parts.iter().find_map(|p| p.dim_types.clone()) {
+            goal = requantize(&goal, &coord_slots(&dts), grain);
+            if coarse_degenerate(&goal, &coord_slots(&dts)) {
+                goal.clear();
+            }
+        }
+        for part in parts.iter_mut() {
+            if let Some(dts) = part.dim_types.clone() {
+                part.sig = requantize(&part.sig, &coord_slots(&dts), grain);
+            }
+        }
+    }
     let max_dims_usize = max_dims.max(0) as usize;
     let mut sorted_o = goal.clone();
     sorted_o.sort_by(cmp_value);
@@ -3053,7 +3997,34 @@ pub(crate) fn eval_gen_infer(
         .unwrap_or(0);
 
     let mut checked: i64 = 0;
+    let mut eligible_bases: u64 = 0;
+    let mut apply_rejects: u64 = 0;
+    let mut candidate_rejects: u64 = 0;
+    let mut residual_rejects: u64 = 0;
+    let mut candidate_survivors: u64 = 0;
+    let mut bases_by_bound: FxHashMap<i64, u64> = FxHashMap::default();
+    let mut full_rank_bases: u64 = 0;
+    let mut full_rank_refusals: u64 = 0;
+    let mut full_rank_attempts: u64 = 0;
+    let mut full_rank_apply_rejects: u64 = 0;
+    let mut full_rank_candidate_rejects: u64 = 0;
+    let mut full_rank_residual_rejects: u64 = 0;
+    let mut full_rank_survivors: u64 = 0;
     let mut best: Option<GenAttempt> = None;
+    #[cfg(feature = "geninfer_linear_exact_prefilter")]
+    let (mut prefilter_attempts, mut prefilter_solved, mut prefilter_no_fit, mut prefilter_fallback, mut prefilter_input_relations) = (0u64, 0u64, 0u64, 0u64, 0u64);
+    #[cfg(feature = "geninfer_linear_exact_prefilter")]
+    let (mut prefilter_identity_comparisons, mut prefilter_arithmetic_checks) = (0u64, 0u64);
+    #[cfg(feature = "geninfer_linear_exact_prefilter")]
+    let (mut prefilter_no_fit_reasons, mut prefilter_fallback_reasons): (FxHashMap<&'static str,u64>, FxHashMap<&'static str,u64>) = (FxHashMap::default(), FxHashMap::default());
+    #[cfg(feature = "geninfer_linear_exact_prefilter")]
+    let (mut rowf_attempts, mut rowf_solved, mut rowf_no_candidate, mut rowf_fallback, mut rowf_row_evaluations) = (0u64, 0u64, 0u64, 0u64, 0u64);
+    #[cfg(feature = "geninfer_linear_exact_prefilter")]
+    let (mut rowf_no_candidate_reasons, mut rowf_fallback_reasons): (FxHashMap<&'static str,u64>, FxHashMap<&'static str,u64>) = (FxHashMap::default(), FxHashMap::default());
+    #[cfg(feature = "geninfer_linear_exact_prefilter")]
+    let (mut corr_attempts, mut corr_found, mut corr_no_candidate, mut corr_fallback, mut corr_hypotheses, mut corr_validations) = (0u64, 0u64, 0u64, 0u64, 0u64, 0u64);
+    #[cfg(feature = "geninfer_linear_exact_prefilter")]
+    let (mut corr_no_candidate_reasons, mut corr_fallback_reasons): (FxHashMap<&'static str,u64>, FxHashMap<&'static str,u64>) = (FxHashMap::default(), FxHashMap::default());
 
     for part in &parts {
         let Some(dim_types) = &part.dim_types else {
@@ -3067,8 +4038,95 @@ pub(crate) fn eval_gen_infer(
             .collect();
         let n = coord_dims.len();
         if n != 2 {
-            // Integer 2-D lattice only (tractability + the target frame);
-            // higher n is an honest scope limit, reported not faked.
+            if cfg!(feature = "geninfer_full_rank_matrix_solver")
+                && matches!(n, 1 | 3)
+            {
+                let base_bound: i64 = coord_dims
+                    .iter()
+                    .filter_map(|&d| {
+                        let idx = usize::try_from(d).ok()?;
+                        let vs = coord_ints(&part.sig, idx)?;
+                        let mn = *vs.iter().min()?;
+                        vs.iter().map(|v| (v - mn).abs()).max()
+                    })
+                    .max()
+                    .unwrap_or(0);
+                let b = goal_bound.max(base_bound);
+                if b > 0 {
+                    full_rank_bases += 1;
+                    match infer_full_rank_integer_matrix(
+                        &part.sig,
+                        &goal,
+                        dim_types,
+                        &coord_dims,
+                        b,
+                    ) {
+                        Some(matrix) if matrix.iter().any(|v| *v != 0) => {
+                            let is_identity = (0..n).all(|r| {
+                                (0..n).all(|c| matrix[r * n + c] == i64::from(r == c))
+                            });
+                            if is_identity {
+                                full_rank_refusals += 1;
+                                continue;
+                            }
+                            checked += 1;
+                            full_rank_attempts += 1;
+                            crate::access_trace::note_helper_work(51, 1);
+                            let Some(transformed) =
+                                apply_linear_once(&part.sig, &coord_dims, &matrix)
+                            else {
+                                full_rank_apply_rejects += 1;
+                                continue;
+                            };
+                            let Some(cand) = build_candidate(
+                                part.name.clone(),
+                                part.name_val.clone(),
+                                &transformed,
+                                &sorted_o,
+                                max_dims_usize,
+                                &extra_rev,
+                                cfg!(feature = "geninfer_fused_candidate_validation"),
+                            ) else {
+                                full_rank_candidate_rejects += 1;
+                                continue;
+                            };
+                            if cand.transforms.len() != cand.dims_needed.len() {
+                                full_rank_residual_rejects += 1;
+                                continue;
+                            }
+                            full_rank_survivors += 1;
+                            let abs_sum = matrix.iter().fold(0i64, |sum, v| {
+                                sum.saturating_add(v.saturating_abs())
+                            });
+                            let att = GenAttempt {
+                                base_val: cand.name_val.clone(),
+                                base_name: cand.name.clone(),
+                                kind: "linear".to_string(),
+                                coord_dims: coord_dims.clone(),
+                                matrix,
+                                coefficients: Vec::new(),
+                                transforms: cand.transforms,
+                                residual_dims: cand.dims_needed.len(),
+                                abs_sum,
+                            };
+                            let take = match &best {
+                                None => true,
+                                Some(cur) => {
+                                    (att.residual_dims, att.abs_sum, &att.matrix, &att.base_name)
+                                        < (cur.residual_dims, cur.abs_sum, &cur.matrix, &cur.base_name)
+                                }
+                            };
+                            if take {
+                                best = Some(att);
+                            }
+                        }
+                        _ => full_rank_refusals += 1,
+                    }
+                }
+            }
+            // The exact-solve path is deliberately feature-gated and only
+            // admits uniquely identifiable 1-D/3-D maps. Other dimensions
+            // and rank-deficient inputs retain the documented refusal.
             continue;
         }
         // Base's own normalized extent contributes to the bound too — a map
@@ -3091,6 +4149,109 @@ pub(crate) fn eval_gen_infer(
         if b <= 0 {
             continue;
         }
+        eligible_bases += 1;
+        *bases_by_bound.entry(b).or_insert(0) += 1;
+
+        // With the opt-in exact prefilter, uniquely aligned full-rank data
+        // determines at most one integer linear map. A proved fit is checked
+        // through the ordinary candidate path; a proved non-fit skips the
+        // combinatorial matrix loop. Any ambiguity or unsupported value falls
+        // through to the historical exhaustive search.
+        #[cfg(feature = "geninfer_linear_exact_prefilter")]
+        if linear_prefilter_enabled {
+            prefilter_attempts += 1;
+            prefilter_input_relations = prefilter_input_relations.saturating_add((part.sig.len() + goal.len()) as u64);
+            PREFILTER_IDENTITY_VALUE_COMPARISONS.with(|n| n.set(0));
+            PREFILTER_EXACT_ARITHMETIC_CHECKS.with(|n| n.set(0));
+            let prefilter_result = infer_exact_2d_linear_prefilter(&part.sig, &goal, dim_types, &coord_dims, b);
+            PREFILTER_IDENTITY_VALUE_COMPARISONS.with(|n| prefilter_identity_comparisons = prefilter_identity_comparisons.saturating_add(n.get()));
+            PREFILTER_EXACT_ARITHMETIC_CHECKS.with(|n| prefilter_arithmetic_checks = prefilter_arithmetic_checks.saturating_add(n.get()));
+            match prefilter_result {
+                ExactLinearPrefilter::Solved(matrix) => {
+                    prefilter_solved += 1;
+                    let identity = matrix == [1, 0, 0, 1];
+                    if !identity {
+                        checked += 1;
+                        crate::access_trace::note_helper_work(51, 1);
+                        if let Some(transformed) = apply_linear_once(&part.sig, &coord_dims, &matrix) {
+                            if let Some(cand) = build_candidate(
+                                part.name.clone(), part.name_val.clone(), &transformed,
+                                &sorted_o, max_dims_usize, &extra_rev,
+                                cfg!(feature = "geninfer_fused_candidate_validation"),
+                            ) {
+                                if cand.transforms.len() == cand.dims_needed.len() {
+                                    candidate_survivors += 1;
+                                    let abs_sum = matrix.iter().fold(0i64, |s, v| s.saturating_add(v.saturating_abs()));
+                                    let att = GenAttempt {
+                                        base_val: cand.name_val.clone(), base_name: cand.name.clone(),
+                                        kind: "linear".to_string(), coord_dims: coord_dims.clone(),
+                                        matrix, coefficients: Vec::new(), transforms: cand.transforms,
+                                        residual_dims: cand.dims_needed.len(), abs_sum,
+                                    };
+                                    if best.as_ref().is_none_or(|cur| (att.residual_dims, att.abs_sum, &att.matrix, &att.base_name) < (cur.residual_dims, cur.abs_sum, &cur.matrix, &cur.base_name)) { best = Some(att); }
+                                } else { residual_rejects += 1; }
+                            } else { candidate_rejects += 1; }
+                        } else { apply_rejects += 1; }
+                    }
+                    continue;
+                }
+                ExactLinearPrefilter::ProvenNoFit(reason) => { prefilter_no_fit += 1; *prefilter_no_fit_reasons.entry(reason).or_insert(0) += 1; continue; },
+                ExactLinearPrefilter::Fallback(reason) => {
+                    prefilter_fallback += 1; *prefilter_fallback_reasons.entry(reason).or_insert(0) += 1;
+                    rowf_attempts += 1;
+                    match infer_row_factorized_2d_linear(&part.sig, &sorted_o, &coord_dims, b, max_dims_usize, &extra_rev, &mut rowf_row_evaluations) {
+                        RowFactorizedSearch::Solved(matrix, expected_dims) => {
+                            checked += 1;
+                            crate::access_trace::note_helper_work(51, 1);
+                            let validated = apply_linear_once(&part.sig, &coord_dims, &matrix).and_then(|transformed| build_candidate(
+                                part.name.clone(), part.name_val.clone(), &transformed,
+                                &sorted_o, max_dims_usize, &extra_rev,
+                                cfg!(feature = "geninfer_fused_candidate_validation"),
+                            )).filter(|cand| cand.transforms.len() == cand.dims_needed.len() && cand.dims_needed.len() == expected_dims);
+                            if let Some(cand) = validated {
+                                rowf_solved += 1;
+                                candidate_survivors += 1;
+                                let abs_sum = matrix.iter().fold(0i64, |s, v| s.saturating_add(v.saturating_abs()));
+                                let att = GenAttempt {
+                                    base_val: cand.name_val.clone(), base_name: cand.name.clone(),
+                                    kind: "linear".to_string(), coord_dims: coord_dims.clone(),
+                                    matrix, coefficients: Vec::new(), transforms: cand.transforms,
+                                    residual_dims: cand.dims_needed.len(), abs_sum,
+                                };
+                                if best.as_ref().is_none_or(|cur| (att.residual_dims, att.abs_sum, &att.matrix, &att.base_name) < (cur.residual_dims, cur.abs_sum, &cur.matrix, &cur.base_name)) { best = Some(att); }
+                                continue;
+                            }
+                            // Defensive: a disagreement with the validator
+                            // hands the base to the historical enumerator.
+                            rowf_fallback += 1; *rowf_fallback_reasons.entry("validation_mismatch").or_insert(0) += 1;
+                        }
+                        RowFactorizedSearch::NoCandidate(r) => { rowf_no_candidate += 1; *rowf_no_candidate_reasons.entry(r).or_insert(0) += 1; continue; }
+                        RowFactorizedSearch::Fallback(r) => { rowf_fallback += 1; *rowf_fallback_reasons.entry(r).or_insert(0) += 1; }
+                    }
+                    corr_attempts += 1;
+                    match infer_correspondence_2d_linear(&part.name, &part.name_val, &part.sig, &sorted_o, &coord_dims, b, max_dims_usize, &extra_rev, &mut corr_hypotheses, &mut corr_validations) {
+                        CorrespondenceSearch::Found(matrix, cand) => {
+                            corr_found += 1;
+                            candidate_survivors += 1;
+                            checked += 1;
+                            let abs_sum = matrix.iter().fold(0i64, |s, v| s.saturating_add(v.saturating_abs()));
+                            let att = GenAttempt {
+                                base_val: cand.name_val.clone(), base_name: cand.name.clone(),
+                                kind: "linear".to_string(), coord_dims: coord_dims.clone(),
+                                matrix, coefficients: Vec::new(), transforms: cand.transforms,
+                                residual_dims: cand.dims_needed.len(), abs_sum,
+                            };
+                            if best.as_ref().is_none_or(|cur| (att.residual_dims, att.abs_sum, &att.matrix, &att.base_name) < (cur.residual_dims, cur.abs_sum, &cur.matrix, &cur.base_name)) { best = Some(att); }
+                            continue;
+                        }
+                        CorrespondenceSearch::NoCandidate(r) => { corr_no_candidate += 1; *corr_no_candidate_reasons.entry(r).or_insert(0) += 1; continue; }
+                        CorrespondenceSearch::Fallback(r) => { corr_fallback += 1; *corr_fallback_reasons.entry(r).or_insert(0) += 1; }
+                    }
+                }
+            }
+        }
+        #[cfg(not(feature = "geninfer_linear_exact_prefilter"))]
+        let _ = linear_prefilter_enabled;
 
         // Enumerate every integer 2×2 matrix with entries in [-b, b].
         for m00 in -b..=b {
@@ -3104,8 +4265,10 @@ pub(crate) fn eval_gen_infer(
                         }
                         let matrix = vec![m00, m01, m10, m11];
                         checked += 1;
+                        crate::access_trace::note_helper_work(51, 1);
                         let Some(transformed) = apply_linear_once(&part.sig, &coord_dims, &matrix)
                         else {
+                            apply_rejects += 1;
                             continue;
                         };
                         let Some(cand) = build_candidate(
@@ -3115,18 +4278,24 @@ pub(crate) fn eval_gen_infer(
                             &sorted_o,
                             max_dims_usize,
                             &extra_rev,
+                            cfg!(feature = "geninfer_fused_candidate_validation"),
                         ) else {
+                            candidate_rejects += 1;
                             continue;
                         };
                         if cand.transforms.len() != cand.dims_needed.len() {
+                            residual_rejects += 1;
                             continue;
                         }
+                        candidate_survivors += 1;
                         let abs_sum = m00.abs() + m01.abs() + m10.abs() + m11.abs();
                         let att = GenAttempt {
                             base_val: cand.name_val.clone(),
                             base_name: cand.name.clone(),
+                            kind: "linear".to_string(),
                             coord_dims: coord_dims.clone(),
                             matrix,
+                            coefficients: Vec::new(),
                             transforms: cand.transforms,
                             residual_dims: cand.dims_needed.len(),
                             abs_sum,
@@ -3147,6 +4316,102 @@ pub(crate) fn eval_gen_infer(
         }
     }
 
+    #[cfg(feature = "geninfer_quadratic_map_solver")]
+    let mut quadratic_attempts = 0u64;
+    #[cfg(feature = "geninfer_quadratic_map_solver")]
+    let mut quadratic_refusals: FxHashMap<&'static str, u64> = FxHashMap::default();
+    #[cfg(feature = "geninfer_quadratic_map_solver")]
+    let mut quadratic_validation_rejects = 0u64;
+    #[cfg(feature = "geninfer_quadratic_map_solver")]
+    let mut quadratic_survivors = 0u64;
+
+    // Occam gate: the experimental fixed-size polynomial solve is reached
+    // only when the historical matrix/codebook search found no exact fit,
+    // the Cargo feature is present, and the caller explicitly enabled it.
+    #[cfg(feature = "geninfer_quadratic_map_solver")]
+    if best.is_none() && quadratic_enabled {
+        for part in &parts {
+            let Some(dim_types) = &part.dim_types else { continue };
+            let coord_dims: Vec<i64> = dim_types.iter().enumerate()
+                .filter(|(_, t)| t.starts_with("coord:"))
+                .map(|(i, _)| i as i64).collect();
+            if coord_dims.len() != 2 { continue; }
+            quadratic_attempts += 1;
+            let coefficients = match infer_quadratic2_coefficients(
+                &part.sig, &goal, dim_types, &coord_dims,
+            ) {
+                Ok(value) => value,
+                Err(reason) => {
+                    *quadratic_refusals.entry(reason).or_insert(0) += 1;
+                    continue;
+                }
+            };
+            let Some(transformed) = apply_quadratic2_once(&part.sig, &coord_dims, &coefficients) else {
+                *quadratic_refusals.entry("apply_overflow").or_insert(0) += 1;
+                continue;
+            };
+            let Some(cand) = build_candidate(
+                part.name.clone(), part.name_val.clone(), &transformed, &sorted_o,
+                max_dims_usize, &extra_rev, false,
+            ) else {
+                quadratic_validation_rejects += 1;
+                continue;
+            };
+            if cand.transforms.len() != cand.dims_needed.len() {
+                quadratic_validation_rejects += 1;
+                continue;
+            }
+            quadratic_survivors += 1;
+            let abs_sum = coefficients.iter().fold(0i64, |sum, c| sum.saturating_add(c.saturating_abs()));
+            let att = GenAttempt {
+                base_val: cand.name_val.clone(),
+                base_name: cand.name.clone(),
+                kind: "quadratic2".to_string(),
+                coord_dims: coord_dims.clone(),
+                matrix: Vec::new(),
+                coefficients,
+                transforms: cand.transforms,
+                residual_dims: cand.dims_needed.len(),
+                abs_sum,
+            };
+            let take = match &best {
+                None => true,
+                Some(cur) => (att.residual_dims, att.abs_sum, &att.coefficients, &att.base_name)
+                    < (cur.residual_dims, cur.abs_sum, &cur.coefficients, &cur.base_name),
+            };
+            if take { best = Some(att); }
+        }
+    }
+
+    #[allow(unused_mut)]
+    let mut mdl: Option<(Vec<i64>, Vec<i64>, Vec<Value>, i64, i64)> = None; // (matrix, coord_dims, outliers, bits, raw_bits)
+    #[cfg(feature = "geninfer_grain_mdl")]
+    if best.is_none() && mdl_enabled {
+        for part in &parts {
+            let Some(dim_types) = &part.dim_types else { continue };
+            let coord_dims: Vec<i64> = dim_types.iter().enumerate()
+                .filter(|(_, t)| t.starts_with("coord:")).map(|(i, _)| i as i64).collect();
+            if coord_dims.len() != 2 { continue; }
+            let base_bound: i64 = coord_dims.iter().filter_map(|&d| {
+                let vs = coord_ints(&part.sig, d as usize)?; let mn = *vs.iter().min()?; vs.iter().map(|v| (v - mn).abs()).max()
+            }).max().unwrap_or(0);
+            let b = goal_bound.max(base_bound);
+            if b <= 0 { continue; }
+            if let Some((m, outl, bits, raw)) = infer_mdl_2d_linear(&part.sig, &goal, &coord_dims, b) {
+                if mdl.as_ref().is_none_or(|cur| bits < cur.3) {
+                    best = Some(GenAttempt {
+                        base_val: part.name_val.clone(), base_name: part.name.clone(), kind: "linear".to_string(),
+                        coord_dims: coord_dims.clone(), matrix: m.clone(), coefficients: Vec::new(),
+                        transforms: Vec::new(), residual_dims: 0,
+                        abs_sum: m.iter().map(|x| x.abs()).sum(),
+                    });
+                    mdl = Some((m, coord_dims.clone(), outl, bits, raw));
+                }
+            }
+        }
+    }
+    #[cfg(not(feature = "geninfer_grain_mdl"))]
+    let _ = mdl_enabled;
     let result = match &best {
         Some(win) => {
             let transforms_out: SmallVec<[Value; 4]> =
@@ -3157,24 +4422,38 @@ pub(crate) fn eval_gen_infer(
                 .collect();
             let matrix_out: SmallVec<[Value; 4]> =
                 win.matrix.iter().map(|m| Value::Int(*m)).collect();
+            let coefficients_out: SmallVec<[Value; 4]> =
+                win.coefficients.iter().map(|c| Value::Int(*c)).collect();
             let coord_dims_out: SmallVec<[Value; 4]> =
                 win.coord_dims.iter().map(|d| Value::Int(*d)).collect();
             Value::Dict(Arc::from(vec![
                 (surf("explained"), Value::Bool(true)),
                 (surf("base"), win.base_val.clone()),
+                (surf("kind"), surf(&win.kind)),
                 (surf("matrix"), Value::Tuple(Arc::new(matrix_out))),
+                (surf("coefficients"), Value::Tuple(Arc::new(coefficients_out))),
                 (surf("coord_dims"), Value::Tuple(Arc::new(coord_dims_out))),
                 (surf("ncoord"), Value::Int(win.coord_dims.len() as i64)),
                 (surf("residual_dims"), Value::Int(win.residual_dims as i64)),
                 (surf("transforms"), Value::Tuple(Arc::new(transforms_out))),
                 (surf("dims"), Value::Tuple(Arc::new(dims_val))),
                 (surf("checked"), Value::Int(checked)),
+                (surf("grain"), Value::Int(grain)),
+                (surf("witness"), surf(if mdl.is_some() { "mdl" } else { "exact" })),
+                (surf("outliers"), Value::Tuple(Arc::new(mdl.as_ref().map(|m| m.2.iter().cloned().collect()).unwrap_or_default()))),
+                (surf("mdl_bits"), mdl.as_ref().map(|m| Value::Int(m.3)).unwrap_or(Value::None)),
+                (surf("raw_bits"), mdl.as_ref().map(|m| Value::Int(m.4)).unwrap_or(Value::None)),
             ]))
         }
         None => Value::Dict(Arc::from(vec![
+            (surf("grain"), Value::Int(grain)),
+            (surf("witness"), Value::None),
+            (surf("outliers"), Value::Tuple(Arc::new(SmallVec::new()))),
             (surf("explained"), Value::Bool(false)),
             (surf("base"), Value::None),
+            (surf("kind"), Value::None),
             (surf("matrix"), Value::Tuple(Arc::new(SmallVec::new()))),
+            (surf("coefficients"), Value::Tuple(Arc::new(SmallVec::new()))),
             (surf("coord_dims"), Value::Tuple(Arc::new(SmallVec::new()))),
             (surf("ncoord"), Value::Int(0)),
             (surf("residual_dims"), Value::Int(0)),
@@ -3183,7 +4462,491 @@ pub(crate) fn eval_gen_infer(
             (surf("checked"), Value::Int(checked)),
         ])),
     };
+    crate::scale_audit::gen_infer_search_result(
+        eligible_bases,
+        checked as u64,
+        apply_rejects,
+        candidate_rejects,
+        residual_rejects,
+        candidate_survivors,
+        &bases_by_bound,
+    );
+    crate::scale_audit::gen_infer_full_rank_result(
+        full_rank_bases,
+        full_rank_refusals,
+        full_rank_attempts,
+        full_rank_apply_rejects,
+        full_rank_candidate_rejects,
+        full_rank_residual_rejects,
+        full_rank_survivors,
+    );
+    #[cfg(feature = "geninfer_linear_exact_prefilter")]
+    crate::scale_audit::gen_infer_linear_prefilter_result(
+        prefilter_attempts, prefilter_solved, prefilter_no_fit, prefilter_fallback,
+        prefilter_input_relations, prefilter_identity_comparisons, prefilter_arithmetic_checks,
+        &prefilter_no_fit_reasons, &prefilter_fallback_reasons,
+    );
+    #[cfg(feature = "geninfer_linear_exact_prefilter")]
+    crate::scale_audit::gen_infer_row_factorized_result(
+        rowf_attempts, rowf_solved, rowf_no_candidate, rowf_fallback, rowf_row_evaluations,
+        &rowf_no_candidate_reasons, &rowf_fallback_reasons,
+    );
+    #[cfg(feature = "geninfer_linear_exact_prefilter")]
+    crate::scale_audit::gen_infer_correspondence_result(
+        corr_attempts, corr_found, corr_no_candidate, corr_fallback, corr_hypotheses, corr_validations,
+        &corr_no_candidate_reasons, &corr_fallback_reasons,
+    );
+    #[cfg(feature = "geninfer_quadratic_map_solver")]
+    crate::scale_audit::gen_infer_quadratic_result(
+        quadratic_enabled, quadratic_attempts, &quadratic_refusals,
+        quadratic_validation_rejects, quadratic_survivors,
+    );
     finish(result, field, ctx.interner, None)
+}
+
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+enum ExactLinearPrefilter { Solved(Vec<i64>), ProvenNoFit(&'static str), Fallback(&'static str) }
+
+/// Prove the unique 2-D integer matrix from a complete, unique typed
+/// predicate+id join and two independent source displacements.
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+fn infer_exact_2d_linear_prefilter(source: &[Value], target: &[Value], dim_types: &[String], dims: &[i64], bound: i64) -> ExactLinearPrefilter {
+    macro_rules! checked { ($operation:expr) => {{ if crate::scale_audit::enabled() { PREFILTER_EXACT_ARITHMETIC_CHECKS.with(|n| n.set(n.get().saturating_add(1))); } $operation }} }
+    if dims.len() != 2 { return ExactLinearPrefilter::Fallback("unsupported_dimensions"); }
+    // `apply_linear_once` preserves relation count and `build_candidate`
+    // rejects unequal counts before inspecting any relation. This is an
+    // unconditional proof that every enumerated matrix would be rejected.
+    if source.len() != target.len() { return ExactLinearPrefilter::ProvenNoFit("relation_count_mismatch"); }
+    if source.len() < 3 { return ExactLinearPrefilter::Fallback("rank_deficient"); }
+    let ids: Vec<usize> = dim_types.iter().enumerate().filter_map(|(i,t)| (t == "id").then_some(i)).collect();
+    if ids.is_empty() { return ExactLinearPrefilter::Fallback("missing_identity"); }
+    // v1.4 soundness guards (residual-family divergence census, 2026-10-06).
+    // The historical enumerator aligns relations by canonical tuple sort and
+    // accepts generator-plus-residual decompositions, including per-predicate
+    // (tier-2) coordinate shifts. The identity-joined affine proof below
+    // coincides with that semantics only when (a) the canonical sort order is
+    // fixed by the identity key, i.e. every slot before the first coordinate
+    // is `id` and no `id` slot follows a coordinate, and (b) there is exactly
+    // one predicate value, so tier-2 per-predicate shifts reduce to the single
+    // global shift the affine proof already allows. Anything else is handed
+    // back to the enumerator unchanged.
+    let first_coord = dims.iter().copied().min().unwrap_or(0).max(0) as usize;
+    if first_coord <= 1 || ids.iter().any(|&i| i > first_coord) || (1..first_coord).any(|i| dim_types.get(i).map(String::as_str) != Some("id")) {
+        return ExactLinearPrefilter::Fallback("identity_not_sort_prefix");
+    }
+    {
+        let pred_of = |r: &Value| relation_values(r).and_then(|row| row.first().cloned());
+        let Some(p0) = source.first().and_then(pred_of) else { return ExactLinearPrefilter::Fallback("malformed_relation") };
+        for r in source.iter().chain(target.iter()) {
+            match pred_of(r) {
+                Some(p) if p == p0 => {}
+                Some(_) => return ExactLinearPrefilter::Fallback("multiple_predicates"),
+                None => return ExactLinearPrefilter::Fallback("malformed_relation"),
+            }
+        }
+    }
+    let mut slots = vec![0usize]; slots.extend(ids);
+    let mut target_by_key: FxHashMap<PrefilterIdentityKey, usize> = FxHashMap::default();
+    for (i, t) in target.iter().enumerate() {
+        let Some(row) = relation_values(t) else { return ExactLinearPrefilter::Fallback("malformed_relation") };
+        if row.len() != dim_types.len() { return ExactLinearPrefilter::Fallback("malformed_relation_width"); }
+        let Some(key) = slots.iter().map(|&k| row.get(k).cloned()).collect::<Option<Vec<_>>>() else { return ExactLinearPrefilter::Fallback("missing_identity_slot") };
+        if target_by_key.insert(PrefilterIdentityKey(key), i).is_some() { return ExactLinearPrefilter::Fallback("ambiguous_identity"); }
+    }
+    let mut aligned = Vec::with_capacity(source.len());
+    let mut used = vec![false; target.len()];
+    for s in source {
+        let Some(sr) = relation_values(s) else { return ExactLinearPrefilter::Fallback("malformed_relation") };
+        if sr.len() != dim_types.len() { return ExactLinearPrefilter::Fallback("malformed_relation_width"); }
+        let Some(key) = slots.iter().map(|&k| sr.get(k).cloned()).collect::<Option<Vec<_>>>() else { return ExactLinearPrefilter::Fallback("missing_identity_slot") };
+        let Some(&matches) = target_by_key.get(&PrefilterIdentityKey(key)) else { return ExactLinearPrefilter::Fallback("missing_identity_match") };
+        if used[matches] { return ExactLinearPrefilter::Fallback("ambiguous_identity"); }
+        let tr = relation_values(&target[matches]).unwrap();
+        let source_key = slots.iter().filter_map(|&k| sr.get(k).cloned()).collect::<Vec<_>>();
+        let target_key = slots.iter().filter_map(|&k| tr.get(k).cloned()).collect::<Vec<_>>();
+        if PrefilterIdentityKey(source_key) != PrefilterIdentityKey(target_key) { return ExactLinearPrefilter::Fallback("identity_confirmation_mismatch"); }
+        used[matches] = true;
+        let exact_int = |v: Option<&Value>| match v { Some(Value::Int(n)) => Some(*n), _ => None };
+        let (Some(x0), Some(x1), Some(y0), Some(y1)) = (
+            exact_int(sr.get(dims[0] as usize)), exact_int(sr.get(dims[1] as usize)),
+            exact_int(tr.get(dims[0] as usize)), exact_int(tr.get(dims[1] as usize))) else { return ExactLinearPrefilter::Fallback("unsupported_coordinates") };
+        aligned.push(([x0 as i128,x1 as i128],[y0 as i128,y1 as i128]));
+    }
+    if used.iter().any(|v| !v) { return ExactLinearPrefilter::Fallback("incomplete_identity_join"); }
+    let (origin_x, origin_y) = aligned[0];
+    let Some(a) = (1..aligned.len()).find(|&i| aligned[i].0 != origin_x) else { return ExactLinearPrefilter::Fallback("rank_deficient"); };
+    let u = [aligned[a].0[0]-origin_x[0], aligned[a].0[1]-origin_x[1]];
+    let mut basis = None;
+    for bidx in a+1..aligned.len() {
+        let v = [aligned[bidx].0[0]-origin_x[0], aligned[bidx].0[1]-origin_x[1]];
+        let Some(det) = checked!(u[0].checked_mul(v[1])).and_then(|x| checked!(u[1].checked_mul(v[0])).and_then(|y| checked!(x.checked_sub(y)))) else { return ExactLinearPrefilter::Fallback("arithmetic_overflow"); };
+        if det != 0 { basis = Some((bidx, v, det)); break; }
+    }
+    let Some((bidx, v, det)) = basis else { return ExactLinearPrefilter::Fallback("rank_deficient"); };
+    let du = [aligned[a].1[0]-origin_y[0], aligned[a].1[1]-origin_y[1]];
+    let dv = [aligned[bidx].1[0]-origin_y[0], aligned[bidx].1[1]-origin_y[1]];
+    let mut m = Vec::with_capacity(4);
+    for row in 0..2 {
+        let Some(n0) = checked!(du[row].checked_mul(v[1])).and_then(|x| checked!(u[1].checked_mul(dv[row])).and_then(|y| checked!(x.checked_sub(y)))) else { return ExactLinearPrefilter::Fallback("arithmetic_overflow"); };
+        let Some(n1) = checked!(u[0].checked_mul(dv[row])).and_then(|x| checked!(du[row].checked_mul(v[0])).and_then(|y| checked!(x.checked_sub(y)))) else { return ExactLinearPrefilter::Fallback("arithmetic_overflow"); };
+        let (Some(r0),Some(r1)) = (checked!(n0.checked_rem(det)),checked!(n1.checked_rem(det))) else { return ExactLinearPrefilter::Fallback("arithmetic_overflow"); };
+        if r0 != 0 || r1 != 0 { return ExactLinearPrefilter::ProvenNoFit("nonintegral_coefficients"); }
+        let (Some(c0),Some(c1)) = (checked!(n0.checked_div(det)),checked!(n1.checked_div(det))) else { return ExactLinearPrefilter::Fallback("arithmetic_overflow"); };
+        if c0 < -(bound as i128) || c0 > bound as i128 || c1 < -(bound as i128) || c1 > bound as i128 { return ExactLinearPrefilter::ProvenNoFit("coefficient_out_of_bound"); }
+        let (Ok(c0),Ok(c1)) = (checked!(i64::try_from(c0)),checked!(i64::try_from(c1))) else { return ExactLinearPrefilter::Fallback("coefficient_conversion_overflow"); };
+        m.extend([c0,c1]);
+    }
+    for (x,y) in &aligned {
+        for row in 0..2 {
+            let Some(pred) = checked!((m[row*2] as i128).checked_mul(x[0])).and_then(|a| checked!((m[row*2+1] as i128).checked_mul(x[1])).and_then(|b| checked!(a.checked_add(b)))) else { return ExactLinearPrefilter::Fallback("arithmetic_overflow"); };
+            let Some(got) = checked!((m[row*2] as i128).checked_mul(origin_x[0])).and_then(|a| checked!((m[row*2+1] as i128).checked_mul(origin_x[1])).and_then(|b| checked!(a.checked_add(b)))).and_then(|a| checked!((y[row]-origin_y[row]).checked_add(a))) else { return ExactLinearPrefilter::Fallback("arithmetic_overflow"); };
+            if pred != got { return ExactLinearPrefilter::ProvenNoFit("row_residual"); }
+        }
+    }
+    ExactLinearPrefilter::Solved(m)
+}
+
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+enum RowFactorizedSearch { Solved(Vec<i64>, usize), NoCandidate(&'static str), Fallback(&'static str) }
+
+/// v1.4 row-factorized exact search: the historical enumerator's selection,
+/// computed in O(n·(2b+1)^2) per output row instead of O(n·(2b+1)^4).
+///
+/// Soundness argument (checked against the enumerator by
+/// `exact_linear_prefilter_row_factorized_matches_enumerator_*` tests):
+/// when every source row has the same container kind and length and the
+/// prefix of slots before the first coordinate is unique under `cmp_value`,
+/// the canonical sort `build_candidate` applies to a transformed base is the
+/// same permutation for every matrix (transforms only rewrite coordinate
+/// slots). Alignment is therefore fixed. `build_candidate` then accepts iff
+/// (a) the M-independent structural check passes, (b) every slot is
+/// consistent, and (c) the total transform count is within `max_dims`; the
+/// per-slot decision and transform count for coordinate slot `r` depend only
+/// on matrix row `r`. The Occam key `(transform count, L1, matrix)` is a sum
+/// over rows plus a lexicographic order, so keeping, per row and per
+/// `(count, L1)` class, the two lexicographically smallest rows is enough to
+/// recover the enumerator's unique winner (two, to skip the excluded
+/// identity). Unsupported inputs fall back to the enumerator unchanged.
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+fn infer_row_factorized_2d_linear(source: &[Value], sorted_o: &[Value], dims: &[i64], bound: i64,
+    max_dims: usize, extra_rev: &FxHashMap<Sym, String>, row_evaluations: &mut u64) -> RowFactorizedSearch {
+    use std::cmp::Ordering;
+    if dims.len() != 2 || bound <= 0 { return RowFactorizedSearch::Fallback("unsupported_dimensions"); }
+    if source.len() != sorted_o.len() || source.is_empty() { return RowFactorizedSearch::Fallback("relation_count"); }
+    let (Ok(d0), Ok(d1)) = (usize::try_from(dims[0]), usize::try_from(dims[1])) else { return RowFactorizedSearch::Fallback("unsupported_dimensions") };
+    let first_coord = d0.min(d1);
+    if first_coord == 0 || d0 == d1 { return RowFactorizedSearch::Fallback("identity_not_sort_prefix"); }
+    let rows_of = |v: &Value| match v { Value::Tuple(t) => Some((false, t.clone())), Value::List(t) => Some((true, t.clone())), _ => None };
+    let Some((kind0, first)) = rows_of(&source[0]) else { return RowFactorizedSearch::Fallback("malformed_relation") };
+    let width = first.len();
+    if width <= d0.max(d1) { return RowFactorizedSearch::Fallback("malformed_relation_width"); }
+    let mut src = Vec::with_capacity(source.len());
+    for r in source {
+        let Some((kind, t)) = rows_of(r) else { return RowFactorizedSearch::Fallback("malformed_relation") };
+        if kind != kind0 || t.len() != width { return RowFactorizedSearch::Fallback("malformed_relation_width"); }
+        let (Some(Value::Int(_)), Some(Value::Int(_))) = (t.get(d0), t.get(d1)) else { return RowFactorizedSearch::Fallback("unsupported_coordinates") };
+        src.push(r.clone());
+    }
+    // Fixed alignment: sort the base once; with a unique prefix this is the
+    // permutation every transformed base sorts to.
+    src.sort_by(cmp_value);
+    let prefix_cmp = |a: &Value, b: &Value| -> Ordering {
+        let (Some((_, x)), Some((_, y))) = (rows_of(a), rows_of(b)) else { return Ordering::Equal };
+        for k in 0..first_coord { let c = cmp_value(&x[k], &y[k]); if c != Ordering::Equal { return c; } }
+        Ordering::Equal
+    };
+    if src.windows(2).any(|w| prefix_cmp(&w[0], &w[1]) == Ordering::Equal) {
+        return RowFactorizedSearch::Fallback("non_unique_source_prefix");
+    }
+    // M-independent structure (build_candidate's first pass).
+    let mut tgt: Vec<SmallVec<[Value; 4]>> = Vec::with_capacity(sorted_o.len());
+    for (h, o) in src.iter().zip(sorted_o.iter()) {
+        let (Some((_, ht)), Some((_, ot))) = (rows_of(h), rows_of(o)) else { return RowFactorizedSearch::NoCandidate("structural_mismatch") };
+        if ht.is_empty() || ht.len() != ot.len() || ht[0] != ot[0] { return RowFactorizedSearch::NoCandidate("structural_mismatch"); }
+        tgt.push(ot.iter().cloned().collect());
+    }
+    for ot in &tgt {
+        for &d in &[d0, d1] {
+            if !matches!(ot[d], Value::Int(_) | Value::Float(_)) { return RowFactorizedSearch::Fallback("symbolic_coordinate_target"); }
+        }
+    }
+    // Non-coordinate slots: copy the aligned target coordinates into the base
+    // so only M-independent slots can differ; prefixes are untouched so the
+    // copy sorts identically.
+    let pinned: Vec<Value> = src.iter().zip(tgt.iter()).map(|(h, ot)| {
+        let (kind, ht) = rows_of(h).expect("checked");
+        let mut v: SmallVec<[Value; 4]> = ht.iter().cloned().collect();
+        v[d0] = ot[d0].clone(); v[d1] = ot[d1].clone();
+        if kind { Value::List(Arc::new(v)) } else { Value::Tuple(Arc::new(v)) }
+    }).collect();
+    let Some(other) = build_candidate(String::new(), Value::None, &pinned, sorted_o, usize::MAX, extra_rev, false) else {
+        return RowFactorizedSearch::NoCandidate("structural_mismatch");
+    };
+    if other.transforms.len() != other.dims_needed.len() { return RowFactorizedSearch::NoCandidate("non_coordinate_inconsistent"); }
+    let t_other = other.transforms.len();
+    if t_other > max_dims { return RowFactorizedSearch::NoCandidate("non_coordinate_budget"); }
+    // Normalized base coordinates (apply_linear_once: v - per-axis min).
+    let col = |d: usize| -> Vec<i64> { src.iter().map(|r| match rows_of(r).expect("checked").1[d] { Value::Int(i) => i, _ => 0 }).collect() };
+    let (c0, c1) = (col(d0), col(d1));
+    let (m0, m1) = (*c0.iter().min().unwrap(), *c1.iter().min().unwrap());
+    let v0: Vec<i64> = c0.iter().map(|x| x - m0).collect();
+    let v1: Vec<i64> = c1.iter().map(|x| x - m1).collect();
+    let as_f64 = |v: &Value| match v { Value::Int(i) => *i as f64, Value::Float(f) => *f, _ => 0.0 };
+    // Per row: (count, l1) -> two lexicographically smallest (a, c).
+    let mut classes: [std::collections::BTreeMap<(usize, i64), SmallVec<[(i64, i64); 2]>>; 2] = Default::default();
+    for (row, &slot) in [d0, d1].iter().enumerate() {
+        let obs: Vec<&Value> = tgt.iter().map(|ot| &ot[slot]).collect();
+        let preds: Vec<&Value> = tgt.iter().map(|ot| &ot[0]).collect();
+        for a in -bound..=bound {
+            for c in -bound..=bound {
+                *row_evaluations = row_evaluations.saturating_add(1);
+                let h: Vec<i64> = v0.iter().zip(&v1).map(|(x, y)| a.wrapping_mul(*x).wrapping_add(c.wrapping_mul(*y))).collect();
+                let differs = h.iter().zip(&obs).any(|(hv, o)| Value::Int(*hv) != **o);
+                let count = if !differs { Some(0usize) } else {
+                    let deltas: Vec<f64> = h.iter().zip(&obs).map(|(hv, o)| as_f64(o) - *hv as f64).collect();
+                    if deltas.iter().all(|d| (d - deltas[0]).abs() < 1e-9) { Some(1) } else {
+                        // tier 2: per-predicate uniform groups; nonzero groups count.
+                        let mut groups: Vec<(&Value, f64)> = Vec::new();
+                        let mut ok = true;
+                        for (p, d) in preds.iter().zip(&deltas) {
+                            match groups.iter().find(|(q, _)| *q == *p) {
+                                Some((_, g)) => if (d - g).abs() >= 1e-9 { ok = false; break; },
+                                None => groups.push((*p, *d)),
+                            }
+                        }
+                        ok.then(|| groups.iter().filter(|(_, g)| g.abs() >= 1e-9).count())
+                    }
+                };
+                let Some(count) = count else { continue };
+                if t_other + count > max_dims { continue; }
+                let entry = classes[row].entry((count, a.abs() + c.abs())).or_default();
+                if entry.len() < 2 { entry.push((a, c)); } // (a, c) visited in ascending lexicographic order
+            }
+        }
+    }
+    let mut best: Option<((usize, i64, [i64; 4]), Vec<i64>)> = None;
+    for (&(t0, l0), r0s) in &classes[0] {
+        for (&(t1, l1), r1s) in &classes[1] {
+            let total = t_other + t0 + t1;
+            if total > max_dims { continue; }
+            for &(a0, b0) in r0s {
+                let pick = r1s.iter().find(|&&(a1, b1)| [a0, b0, a1, b1] != [1, 0, 0, 1]);
+                if let Some(&(a1, b1)) = pick {
+                    let key = (total, l0 + l1, [a0, b0, a1, b1]);
+                    if best.as_ref().is_none_or(|(k, _)| key < *k) { best = Some((key, vec![a0, b0, a1, b1])); }
+                    break; // later r0 entries in this class are lexicographically larger
+                }
+            }
+        }
+    }
+    match best { Some(((t, _, _), m)) => RowFactorizedSearch::Solved(m, t), None => RowFactorizedSearch::NoCandidate("no_consistent_row_pair") }
+}
+
+/// v1.4 correspondence-complete candidate generation for frames whose sort
+/// alignment depends on the matrix (no unique identity prefix).
+///
+/// Completeness lemma: if the historical enumerator accepts `M`, every
+/// aligned pair shares its predicate (structural check) and, within one
+/// predicate block, every coordinate slot has one uniform delta (tier 1 or a
+/// tier-2 group). Hence for any three source rows `a,b,c` of one block there
+/// are target rows `i,j,k` of that block with `M(b-a) = y_j - y_i` and
+/// `M(c-a) = y_k - y_i`; when `b-a`, `c-a` are independent this determines
+/// `M`. Enumerating the `n_p^3` target triples of the smallest full-rank
+/// block therefore yields a superset of every accepted matrix. Each distinct
+/// in-bound integral hypothesis is then judged by the enumerator's own
+/// validator (`apply_linear_once` + `build_candidate`) and ranked by the same
+/// Occam key, so the selected winner is the enumerator's.
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+enum CorrespondenceSearch { Found(Vec<i64>, Candidate), NoCandidate(&'static str), Fallback(&'static str) }
+
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+#[allow(clippy::too_many_arguments)]
+fn infer_correspondence_2d_linear(part_name: &str, part_val: &Value, source: &[Value], sorted_o: &[Value], dims: &[i64], bound: i64,
+    max_dims: usize, extra_rev: &FxHashMap<Sym, String>, hypotheses: &mut u64, validations: &mut u64) -> CorrespondenceSearch {
+    if dims.len() != 2 || bound <= 0 { return CorrespondenceSearch::Fallback("unsupported_dimensions"); }
+    let (Ok(d0), Ok(d1)) = (usize::try_from(dims[0]), usize::try_from(dims[1])) else { return CorrespondenceSearch::Fallback("unsupported_dimensions") };
+    let int_xy = |r: &Value| -> Option<(Value, i64, i64)> {
+        let (Value::Tuple(t) | Value::List(t)) = r else { return None };
+        match (t.first(), t.get(d0), t.get(d1)) { (Some(p), Some(Value::Int(x)), Some(Value::Int(y))) => Some((p.clone(), *x, *y)), _ => None }
+    };
+    let mut src = Vec::with_capacity(source.len());
+    for r in source { let Some(v) = int_xy(r) else { return CorrespondenceSearch::Fallback("unsupported_coordinates") }; src.push(v); }
+    let mut tgt = Vec::with_capacity(sorted_o.len());
+    for r in sorted_o { let Some(v) = int_xy(r) else { return CorrespondenceSearch::Fallback("non_integer_target_coordinates") }; tgt.push(v); }
+    // Pick the smallest predicate block (by target size) that has a full-rank source triple.
+    let mut preds: Vec<Value> = Vec::new();
+    for (p, _, _) in &src { if !preds.contains(p) { preds.push(p.clone()); } }
+    let mut choice: Option<(usize, [(i64, i64); 3], Vec<(i64, i64)>)> = None;
+    for p in &preds {
+        let block: Vec<(i64, i64)> = src.iter().filter(|(q, _, _)| q == p).map(|(_, x, y)| (*x, *y)).collect();
+        let targets: Vec<(i64, i64)> = tgt.iter().filter(|(q, _, _)| q == p).map(|(_, x, y)| (*x, *y)).collect();
+        if targets.len() != block.len() { return CorrespondenceSearch::NoCandidate("predicate_block_count_mismatch"); }
+        let a = block[0];
+        let Some(&b) = block.iter().find(|q| **q != a) else { continue };
+        let u = (b.0 - a.0, b.1 - a.1);
+        let Some(&c) = block.iter().find(|q| { let v = (q.0 - a.0, q.1 - a.1); u.0 * v.1 - u.1 * v.0 != 0 }) else { continue };
+        if choice.as_ref().is_none_or(|(n, _, _)| targets.len() < *n) { choice = Some((targets.len(), [a, b, c], targets)); }
+    }
+    let Some((_, [a, b, c], targets)) = choice else { return CorrespondenceSearch::Fallback("no_full_rank_predicate_block") };
+    let (u, v) = ((b.0 - a.0) as i128, (b.1 - a.1) as i128);
+    let (w0, w1) = ((c.0 - a.0) as i128, (c.1 - a.1) as i128);
+    let det = u * w1 - v * w0; // [u w] columns: u = (u, v), w = (w0, w1)
+    let bnd = bound as i128;
+    let mut seen: rustc_hash::FxHashSet<[i64; 4]> = rustc_hash::FxHashSet::default();
+    let mut best: Option<((usize, i64, [i64; 4]), Candidate)> = None;
+    for yi in &targets {
+        for yj in &targets {
+            let e = ((yj.0 - yi.0) as i128, (yj.1 - yi.1) as i128);
+            for yk in &targets {
+                *hypotheses = hypotheses.saturating_add(1);
+                let f = ((yk.0 - yi.0) as i128, (yk.1 - yi.1) as i128);
+                // Row r: [m_r0 m_r1]·[u w] = [e_r f_r]  =>  m_r0 = (e_r w1 - f_r v)/det, m_r1 = (f_r u - e_r w0)/det
+                let mut m = [0i64; 4];
+                let mut ok = true;
+                for (row, (er, fr)) in [(e.0, f.0), (e.1, f.1)].into_iter().enumerate() {
+                    let n0 = er * w1 - fr * v;
+                    let n1 = fr * u - er * w0;
+                    if n0 % det != 0 || n1 % det != 0 { ok = false; break; }
+                    let (c0, c1) = (n0 / det, n1 / det);
+                    if c0.abs() > bnd || c1.abs() > bnd { ok = false; break; }
+                    m[row * 2] = c0 as i64; m[row * 2 + 1] = c1 as i64;
+                }
+                if !ok || m == [1, 0, 0, 1] || !seen.insert(m) { continue; }
+                *validations = validations.saturating_add(1);
+                let Some(transformed) = apply_linear_once(source, dims, &m) else { continue };
+                let Some(cand) = build_candidate(part_name.to_string(), part_val.clone(), &transformed, sorted_o, max_dims, extra_rev,
+                    cfg!(feature = "geninfer_fused_candidate_validation")) else { continue };
+                if cand.transforms.len() != cand.dims_needed.len() { continue; }
+                let key = (cand.dims_needed.len(), m.iter().map(|x| x.abs()).sum::<i64>(), m);
+                if best.as_ref().is_none_or(|(k, _)| key < *k) { best = Some((key, cand)); }
+            }
+        }
+    }
+    match best { Some(((_, _, m), cand)) => CorrespondenceSearch::Found(m.to_vec(), cand), None => CorrespondenceSearch::NoCandidate("no_validated_correspondence") }
+}
+
+/// A re-quantized signature is DEGENERATE at a coarse grain when it no longer
+/// carries orientation: fewer than 3 relations, or it fills its own 2-D
+/// bounding box (a solid block is fixed by every D4 map and matches any block
+/// of the same size). Tranche 4: tiny novel shapes and scrambled support
+/// collapse to such blocks, which made the grain ladder recognise them.
+fn coarse_degenerate(sig: &[Value], slots: &[usize]) -> bool {
+    if sig.len() < 3 {
+        return true;
+    }
+    if slots.len() != 2 {
+        return false;
+    }
+    let (Some(a), Some(b)) = (coord_ints(sig, slots[0]), coord_ints(sig, slots[1])) else { return false };
+    let span = |v: &[i64]| v.iter().max().unwrap_or(&0) - v.iter().min().unwrap_or(&0) + 1;
+    let cells: rustc_hash::FxHashSet<(i64, i64)> = a.iter().copied().zip(b.iter().copied()).collect();
+    (cells.len() as i64) >= span(&a) * span(&b)
+}
+
+/// Re-quantize the given coordinate slots of every relation to grain `g`:
+/// `floor((v - min) / 2^g)` per slot (WP3). Non-Int slots are left as-is.
+/// Relations that become identical at the coarser grain collapse to one
+/// (the quotient: at that grain they are literally the same relation).
+fn requantize(sig: &[Value], slots: &[usize], g: i64) -> Vec<Value> {
+    let step = 1i64 << g.clamp(0, 30);
+    let mut out = sig.to_vec();
+    for &idx in slots {
+        let Some(vs) = coord_ints(sig, idx) else { continue };
+        let Some(&mn) = vs.iter().min() else { continue };
+        for (rel, v) in out.iter_mut().zip(vs) {
+            *rel = set_coord(rel, idx, (v - mn).div_euclid(step));
+        }
+    }
+    if g > 0 {
+        out.sort_by(cmp_value);
+        out.dedup_by(|a, b| cmp_value(a, b) == std::cmp::Ordering::Equal);
+    }
+    out
+}
+
+/// MDL witness for a 2-D integer linear map (WP3, feature `geninfer_grain_mdl`).
+///
+/// Exact arithmetic; the approximation is in WHICH ROWS the map explains, not
+/// in any coordinate tolerance. Hypotheses come from correspondences of up to
+/// four disjoint anchor triples of the base (so a single outlier cannot hide
+/// the map from every anchor). For each in-bound integral hypothesis M and
+/// translation t fixed by its correspondence, a relation is explained iff
+/// `M·(x − min) + t` reproduces a goal relation EXACTLY (multiset match on the
+/// whole tuple). Description length: matrix bits (sum of per-entry
+/// `bits(|m|)+1`) + translation bits + `row_bits` per unexplained goal row.
+/// Accepted iff unexplained rows < half the goal and the total beats the raw
+/// cost `n·row_bits` (describing the goal without the map). Returns
+/// (matrix, unexplained goal rows, bits, raw_bits).
+#[cfg(feature = "geninfer_grain_mdl")]
+fn infer_mdl_2d_linear(source: &[Value], target: &[Value], dims: &[i64], bound: i64) -> Option<(Vec<i64>, Vec<Value>, i64, i64)> {
+    if dims.len() != 2 || source.len() < 3 || source.len() != target.len() { return None; }
+    let (d0, d1) = (usize::try_from(dims[0]).ok()?, usize::try_from(dims[1]).ok()?);
+    let xs0 = coord_ints(source, d0)?; let xs1 = coord_ints(source, d1)?;
+    let ys0 = coord_ints(target, d0)?; let ys1 = coord_ints(target, d1)?;
+    let (m0, m1) = (*xs0.iter().min()?, *xs1.iter().min()?);
+    let src: Vec<(i64, i64)> = xs0.iter().zip(&xs1).map(|(a, b)| (a - m0, b - m1)).collect();
+    let tgt: Vec<(i64, i64)> = ys0.iter().zip(&ys1).map(|(a, b)| (*a, *b)).collect();
+    let n = target.len();
+    let span = |v: &[i64]| v.iter().max().unwrap_or(&0) - v.iter().min().unwrap_or(&0);
+    let bits = |x: i64| 64 - (x.unsigned_abs()).leading_zeros() as i64;
+    let row_bits = bits(span(&ys0)) + bits(span(&ys1)) + 2;
+    let raw = n as i64 * row_bits;
+    // goal multiset keyed by full tuple
+    // Keyed by element vector so Tuple/List containers compare equal, as
+    // `build_candidate`'s element-wise comparison does.
+    let key_of = |r: &Value| -> Option<Vec<Value>> { relation_values(r).map(|x| x.to_vec()) };
+    let mut goal_count: FxHashMap<Vec<Value>, (i64, Value)> = FxHashMap::default();
+    for t in target { goal_count.entry(key_of(t)?).or_insert((0, t.clone())).0 += 1; }
+    // anchor triples: greedy disjoint full-rank triples
+    let mut anchors: Vec<[usize; 3]> = Vec::new();
+    let mut used = vec![false; src.len()];
+    'outer: while anchors.len() < 4 {
+        let free: Vec<usize> = (0..src.len()).filter(|&i| !used[i]).collect();
+        for &a in &free { for &b in &free { if b <= a { continue; } for &c in &free { if c <= b { continue; }
+            let (u, v) = ((src[b].0 - src[a].0, src[b].1 - src[a].1), (src[c].0 - src[a].0, src[c].1 - src[a].1));
+            if u.0 * v.1 - u.1 * v.0 != 0 { anchors.push([a, b, c]); used[a] = true; used[b] = true; used[c] = true; continue 'outer; }
+        }}}
+        break;
+    }
+    let mut best: Option<(i64, Vec<i64>, Vec<Value>)> = None;
+    let mut seen: rustc_hash::FxHashSet<([i64; 4], (i64, i64))> = rustc_hash::FxHashSet::default();
+    for [a, b, c] in anchors {
+        let (u, v) = ((src[b].0 - src[a].0, src[b].1 - src[a].1), (src[c].0 - src[a].0, src[c].1 - src[a].1));
+        let det = u.0 * v.1 - u.1 * v.0;
+        for ya in &tgt { for yb in &tgt { for yc in &tgt {
+            let e = (yb.0 - ya.0, yb.1 - ya.1); let f = (yc.0 - ya.0, yc.1 - ya.1);
+            let mut m = [0i64; 4]; let mut ok = true;
+            for (row, (er, fr)) in [(e.0, f.0), (e.1, f.1)].into_iter().enumerate() {
+                let n0 = er * v.1 - fr * u.1; let n1 = fr * u.0 - er * v.0;
+                if n0 % det != 0 || n1 % det != 0 { ok = false; break; }
+                let (c0, c1) = (n0 / det, n1 / det);
+                if c0.abs() > bound || c1.abs() > bound { ok = false; break; }
+                m[row * 2] = c0; m[row * 2 + 1] = c1;
+            }
+            if !ok || m == [1, 0, 0, 1] || m == [0, 0, 0, 0] { continue; }
+            let t = (ya.0 - (m[0] * src[a].0 + m[1] * src[a].1), ya.1 - (m[2] * src[a].0 + m[3] * src[a].1));
+            if !seen.insert((m, t)) { continue; }
+            let mut remaining = goal_count.clone();
+            let mut matched = 0usize;
+            for (i, rel) in source.iter().enumerate() {
+                let (x, y) = src[i];
+                let img = set_coord(&set_coord(rel, d0, m[0] * x + m[1] * y + t.0), d1, m[2] * x + m[3] * y + t.1);
+                if let Some((cnt, _)) = key_of(&img).and_then(|k| remaining.get_mut(&k)) { if *cnt > 0 { *cnt -= 1; matched += 1; } }
+            }
+            let outliers = n - matched;
+            if 2 * outliers >= n { continue; }
+            let mbits: i64 = m.iter().map(|x| bits(*x) + 1).sum::<i64>() + bits(t.0) + bits(t.1) + 2;
+            let total = mbits + outliers as i64 * row_bits;
+            if total >= raw { continue; }
+            if best.as_ref().is_none_or(|(bt, bm, _)| (total, m.to_vec()) < (*bt, bm.clone())) {
+                let mut out_rows = Vec::new();
+                for (_, (cnt, rel)) in remaining { for _ in 0..cnt { out_rows.push(rel.clone()); } }
+                out_rows.sort_by(cmp_value);
+                best = Some((total, m.to_vec(), out_rows));
+            }
+        }}}
+    }
+    best.map(|(bits_total, m, out)| (m, out, bits_total, raw))
 }
 
 /// Greatest common divisor of two non-negative integers (Euclid). `gcd(0,0)
@@ -3273,6 +5036,8 @@ pub(crate) fn eval_ratio_infer(
     env: &mut Env,
     ctx: &mut EvalCtx,
 ) -> Value {
+    let _helper_work =
+        crate::access_trace::enter_helper_scope(crate::access_trace::HELPER_RATIO_INDUCE);
     let mut extra: FxHashMap<String, Sym> = FxHashMap::default();
     let mut next_id: u32 = u32::MAX;
     let parts = load_parts(ctx, codebook_type, &mut extra, &mut next_id);
@@ -3412,6 +5177,7 @@ pub(crate) fn eval_ratio_infer(
         let tol: i128 = (resolution.max(0) as i128) * (r.num as i128 + r.den as i128);
         for row in &ext {
             checked += 1;
+            crate::access_trace::note_helper_work(51, 1);
             let residual = row[j] as i128 * r.den as i128 - row[ref_pos] as i128 * r.num as i128;
             if residual.abs() > tol {
                 return unexplained(checked, ctx);
@@ -4583,6 +6349,8 @@ pub(crate) fn eval_time_infer(
     env: &mut Env,
     ctx: &mut EvalCtx,
 ) -> Value {
+    let _helper_work =
+        crate::access_trace::enter_helper_scope(crate::access_trace::HELPER_TIME_INFER);
     let mut extra: FxHashMap<String, Sym> = FxHashMap::default();
     let mut next_id: u32 = u32::MAX;
     let parts = load_parts(ctx, codebook_type, &mut extra, &mut next_id);
@@ -4704,6 +6472,7 @@ pub(crate) fn eval_time_infer(
                             continue;
                         }
                         checked += 1;
+                        crate::access_trace::note_helper_work(51, 1);
                         let matrix = vec![m00, m01, m10, m11];
                         if let Some(t) = apply_linear_once(f0, &coord_dims, &matrix) {
                             if frames_equal(&t, f1) {
@@ -4983,6 +6752,8 @@ pub(crate) fn eval_support_infer(
     env: &mut Env,
     ctx: &mut EvalCtx,
 ) -> Value {
+    let _helper_work =
+        crate::access_trace::enter_helper_scope(crate::access_trace::HELPER_SUPPORT_INFER);
     let mut extra: FxHashMap<String, Sym> = FxHashMap::default();
     let mut next_id: u32 = u32::MAX;
     let parts = load_parts(ctx, codebook_type, &mut extra, &mut next_id);
@@ -5358,6 +7129,8 @@ pub(crate) fn eval_blink_bridge(
     env: &mut Env,
     ctx: &mut EvalCtx,
 ) -> Value {
+    let _helper_work =
+        crate::access_trace::enter_helper_scope(crate::access_trace::HELPER_BLINK_BRIDGE);
     let mut extra: FxHashMap<String, Sym> = FxHashMap::default();
     let mut next_id: u32 = u32::MAX;
     let parts = load_parts(ctx, codebook_type, &mut extra, &mut next_id);
@@ -5471,6 +7244,7 @@ pub(crate) fn eval_blink_bridge(
                                 continue;
                             }
                             checked += 1;
+                            crate::access_trace::note_helper_work(51, 1);
                             let m = vec![m00, m01, m10, m11];
                             if let Some(t) = apply_linear_once(f0, &coord_dims, &m) {
                                 if frames_equal(&t, f1) {
@@ -5683,6 +7457,8 @@ pub(crate) fn eval_gap_abduce(
     env: &mut Env,
     ctx: &mut EvalCtx,
 ) -> Value {
+    let _helper_work =
+        crate::access_trace::enter_helper_scope(crate::access_trace::HELPER_GAP_ABDUCE);
     let mut extra: FxHashMap<String, Sym> = FxHashMap::default();
     let mut next_id: u32 = u32::MAX;
     let parts = load_parts(ctx, codebook_type, &mut extra, &mut next_id);
@@ -5860,6 +7636,7 @@ pub(crate) fn eval_gap_abduce(
                             continue;
                         }
                         checked += 1;
+                        crate::access_trace::note_helper_work(51, 1);
                         let m = vec![m00, m01, m10, m11];
                         if let Some(t) =
                             apply_generator_k("linear", &coord_dims, &f_before, 0, &m, &[], steps)
@@ -5980,6 +7757,8 @@ pub(crate) fn eval_gap_verify(
     env: &mut Env,
     ctx: &mut EvalCtx,
 ) -> Value {
+    let _helper_work =
+        crate::access_trace::enter_helper_scope(crate::access_trace::HELPER_GAP_VERIFY);
     let mut extra: FxHashMap<String, Sym> = FxHashMap::default();
     let mut next_id: u32 = u32::MAX;
     let parts = load_parts(ctx, codebook_type, &mut extra, &mut next_id);
@@ -6354,6 +8133,7 @@ pub(crate) fn eval_gap_verify(
                             continue;
                         }
                         checked += 1;
+                        crate::access_trace::note_helper_work(51, 1);
                         let m = vec![m00, m01, m10, m11];
                         if let Some(t) =
                             apply_generator_k("linear", &coord_dims, &fig_before, 0, &m, &[], steps)
@@ -6550,6 +8330,8 @@ pub(crate) fn eval_depth_infer(
     env: &mut Env,
     ctx: &mut EvalCtx,
 ) -> Value {
+    let _helper_work =
+        crate::access_trace::enter_helper_scope(crate::access_trace::HELPER_DEPTH_INFER);
     let mut extra: FxHashMap<String, Sym> = FxHashMap::default();
     let mut next_id: u32 = u32::MAX;
     let parts = load_parts(ctx, codebook_type, &mut extra, &mut next_id);
@@ -6642,6 +8424,7 @@ pub(crate) fn eval_depth_infer(
         };
         for i in 0..sub.len() - 1 {
             checked += 1;
+            crate::access_trace::note_helper_work(51, 1);
             match infer_translate_offset(&sub[i], &sub[i + 1], &coord_dims) {
                 Some(o) if o == off => {}
                 _ => return unexplained("non_constant_velocity", checked, ctx),
@@ -7021,6 +8804,7 @@ fn td_transfer_one(
 fn load_mechanisms(ctx: &EvalCtx, mechanism_type: Sym) -> Vec<Value> {
     let mut out: Vec<Value> = Vec::new();
     for nid in ctx.graph.nodes_of_type(mechanism_type) {
+        trace_scanned_node(ctx, nid);
         let node = ctx.graph.node(nid);
         let mut name_val: Option<Value> = None;
         let mut meta_shape_val: Option<Value> = None;
@@ -7080,6 +8864,7 @@ const MECHANISM_TRANSFER_ROLE: &str = "mechanism_transfer";
 fn codebook_type_from_registry(ctx: &EvalCtx) -> Option<Sym> {
     let registry_type = ctx.interner.lookup(CODEBOOK_REGISTRY_TYPE)?;
     for nid in ctx.graph.nodes_of_type(registry_type) {
+        trace_scanned_node(ctx, nid);
         let node = ctx.graph.node(nid);
         let mut role: Option<String> = None;
         let mut node_type: Option<String> = None;
@@ -7230,7 +9015,9 @@ fn ms_score_shapes(ctx: &EvalCtx, rels: &[MsRel]) -> Vec<(MsEvidence, String, Va
     };
 
     for shape_id in ctx.graph.nodes_of_type(metashape_sym) {
+        trace_scanned_node(ctx, shape_id);
         // A MetaShape with no truthy `name` is skipped (Python `if name:`).
+        crate::access_trace::note(2, shape_id.0, name_key.0, crate::access_trace::NO_ID);
         let name_val = match ctx.graph.node(shape_id).attrs.get(&name_key) {
             Some(v) => v.clone(),
             None => continue,
@@ -7241,7 +9028,9 @@ fn ms_score_shapes(ctx: &EvalCtx, rels: &[MsRel]) -> Vec<(MsEvidence, String, Va
         };
         let mut ev = MsEvidence::default();
         let mut kw_seen: std::collections::BTreeSet<String> = Default::default();
+        crate::access_trace::note_out_edges(ctx.graph, shape_id, Some(has_principle));
         for p_id in ctx.graph.neighbours(shape_id, Some(has_principle)) {
+            crate::access_trace::note(2, p_id.0, keywords_key.0, crate::access_trace::NO_ID);
             let kws = match ctx.graph.node(p_id).attrs.get(&keywords_key) {
                 Some(Value::Tuple(items) | Value::List(items)) => items,
                 _ => continue,
@@ -7471,6 +9260,7 @@ pub(crate) fn eval_meta_shape_mint(
     ) else {
         return empty(ctx);
     };
+    crate::access_trace::note(2, obs_id.0, sig_key.0, crate::access_trace::NO_ID);
     let Some(my_sig) = ctx.graph.node(obs_id).attrs.get(&sig_key).cloned() else {
         return empty(ctx);
     };
@@ -7485,6 +9275,7 @@ pub(crate) fn eval_meta_shape_mint(
     let mut group_sigs: Vec<Value> = Vec::new();
     let mut leader = true;
     for nid in ctx.graph.nodes_of_type(obs_type) {
+        trace_scanned_node(ctx, nid);
         let node = ctx.graph.node(nid);
         let ok_status = node
             .attrs
@@ -7537,6 +9328,7 @@ pub(crate) fn eval_meta_shape_mint(
     let mut all_obs = 0usize;
     let mut pred_doc_count: std::collections::BTreeMap<String, usize> = Default::default();
     for nid in ctx.graph.nodes_of_type(obs_type) {
+        trace_scanned_node(ctx, nid);
         let Some(sig) = ctx.graph.node(nid).attrs.get(&sig_key) else {
             continue;
         };
@@ -7730,6 +9522,402 @@ mod tests {
     use super::*;
     use crate::graph::{NodeID, TypedGraph};
     use crate::term::TermNode;
+
+    #[cfg(feature = "geninfer_linear_exact_prefilter")]
+    fn prefilter_rows(points: &[(i64, i64)], nonlinear: bool) -> Vec<Value> {
+        points.iter().enumerate().map(|(i, &(x, y))| {
+            let out_y = if nonlinear { y + x * x } else { x - y };
+            tuple_of(vec![Value::Int(0), Value::Int(i as i64), Value::Int(2*x+y), Value::Int(out_y)])
+        }).collect()
+    }
+
+    #[cfg(feature = "geninfer_linear_exact_prefilter")]
+    #[test]
+    fn exact_linear_prefilter_recovers_integer_map_and_refuses_nonlinear_shape() {
+        let points = [(0, 0), (1, 0), (0, 1), (1, 1), (2, 1)];
+        let source: Vec<Value> = points.iter().enumerate().map(|(i, &(x,y))|
+            tuple_of(vec![Value::Int(0), Value::Int(i as i64), Value::Int(x), Value::Int(y)])).collect();
+        let dim_types = vec!["pred".into(), "id".into(), "coord:r".into(), "coord:c".into()];
+        assert!(matches!(infer_exact_2d_linear_prefilter(&source, &prefilter_rows(&points, false), &dim_types, &[2,3], 8), ExactLinearPrefilter::Solved(m) if m == vec![2,1,1,-1]));
+        assert!(matches!(infer_exact_2d_linear_prefilter(&source, &prefilter_rows(&points, true), &dim_types, &[2,3], 16), ExactLinearPrefilter::ProvenNoFit(_)));
+    }
+
+    #[cfg(feature = "geninfer_linear_exact_prefilter")]
+    #[test]
+    fn exact_linear_prefilter_work_counters_are_audit_gated() {
+        let _guard = crate::scale_audit::exclusive();
+        let points = [(0,0),(1,0),(0,1),(1,1)];
+        let source: Vec<Value> = points.iter().enumerate().map(|(i,&(x,y))|
+            tuple_of(vec![Value::Int(0),Value::Int(i as i64),Value::Int(x),Value::Int(y)])).collect();
+        let target = prefilter_rows(&points, false);
+        let dim_types = vec!["pred".into(),"id".into(),"coord:r".into(),"coord:c".into()];
+        crate::scale_audit::set_enabled(false);
+        PREFILTER_IDENTITY_VALUE_COMPARISONS.with(|n| n.set(0));
+        PREFILTER_EXACT_ARITHMETIC_CHECKS.with(|n| n.set(0));
+        let _ = infer_exact_2d_linear_prefilter(&source,&target,&dim_types,&[2,3],4);
+        assert_eq!(PREFILTER_IDENTITY_VALUE_COMPARISONS.with(Cell::get), 0);
+        assert_eq!(PREFILTER_EXACT_ARITHMETIC_CHECKS.with(Cell::get), 0);
+
+        crate::scale_audit::set_enabled(true);
+        let _ = infer_exact_2d_linear_prefilter(&source,&target,&dim_types,&[2,3],4);
+        assert!(PREFILTER_IDENTITY_VALUE_COMPARISONS.with(Cell::get) > 0);
+        assert!(PREFILTER_EXACT_ARITHMETIC_CHECKS.with(Cell::get) > 0);
+        crate::scale_audit::set_enabled(false);
+    }
+
+    #[cfg(feature = "geninfer_linear_exact_prefilter")]
+    #[test]
+    fn exact_linear_prefilter_falls_back_on_duplicate_keys_and_rank_deficiency() {
+        let dim_types = vec!["pred".into(), "id".into(), "coord:r".into(), "coord:c".into()];
+        let points = [(0,0), (1,1), (2,2), (3,3)];
+        let source: Vec<Value> = points.iter().enumerate().map(|(i, &(x,y))|
+            tuple_of(vec![Value::Int(0), Value::Int(i as i64), Value::Int(x), Value::Int(y)])).collect();
+        assert!(matches!(infer_exact_2d_linear_prefilter(&source, &source, &dim_types, &[2,3], 4), ExactLinearPrefilter::Fallback(_)));
+        let mut duplicate = source.clone();
+        duplicate[3] = duplicate[2].clone();
+        assert!(matches!(infer_exact_2d_linear_prefilter(&duplicate, &source, &dim_types, &[2,3], 4), ExactLinearPrefilter::Fallback(_)));
+    }
+
+    #[cfg(feature = "geninfer_linear_exact_prefilter")]
+    #[test]
+    fn exact_linear_prefilter_proves_relation_count_mismatch_is_no_fit() {
+        let dim_types = vec!["pred".into(), "id".into(), "coord:r".into(), "coord:c".into()];
+        let source = vec![tuple_of(vec![Value::Int(0),Value::Int(1),Value::Int(0),Value::Int(0)])];
+        let target = vec![source[0].clone(), source[0].clone()];
+        assert!(matches!(infer_exact_2d_linear_prefilter(&source, &target, &dim_types, &[2,3], 1), ExactLinearPrefilter::ProvenNoFit(_)));
+        let extra = FxHashMap::default();
+        assert!(build_candidate("base".into(), Value::None, &source, &target, 2, &extra, false).is_none());
+    }
+
+    #[cfg(feature = "geninfer_linear_exact_prefilter")]
+    #[test]
+    fn exact_linear_prefilter_refuses_noninteger_or_unmatched_identity_and_supports_multiple_ids() {
+        let dim_types=vec!["pred".into(),"id".into(),"coord:r".into(),"coord:c".into()];
+        let points=[(0,0),(1,0),(0,1),(1,1)];
+        let source:Vec<Value>=points.iter().enumerate().map(|(i,&(x,y))|tuple_of(vec![Value::Int(0),Value::Int(i as i64),Value::Int(x),Value::Int(y)])).collect();
+        let mut noninteger=source.clone();
+        noninteger[2]=tuple_of(vec![Value::Int(0),Value::Int(2),Value::Float(0.5),Value::Int(3)]);
+        assert!(matches!(infer_exact_2d_linear_prefilter(&source,&noninteger,&dim_types,&[2,3],4),ExactLinearPrefilter::Fallback(_)));
+        let no_id_types=vec!["pred".into(),"coord:r".into(),"coord:c".into()];
+        assert!(matches!(infer_exact_2d_linear_prefilter(&source,&source,&no_id_types,&[1,2],2),ExactLinearPrefilter::Fallback(_)));
+        let mut missing=source.clone();
+        missing[3]=tuple_of(vec![Value::Int(0),Value::Int(99),Value::Int(1),Value::Int(1)]);
+        assert!(matches!(infer_exact_2d_linear_prefilter(&source,&missing,&dim_types,&[2,3],2),ExactLinearPrefilter::Fallback(_)));
+
+        let multi_types=vec!["pred".into(),"id".into(),"id".into(),"coord:r".into(),"coord:c".into()];
+        let multi_source:Vec<Value>=points.iter().enumerate().map(|(i,&(x,y))|tuple_of(vec![Value::Int(0),Value::Int(i as i64),Value::Int((i+20) as i64),Value::Int(x),Value::Int(y)])).collect();
+        let multi_target:Vec<Value>=points.iter().enumerate().map(|(i,&(x,y))|tuple_of(vec![Value::Int(0),Value::Int(i as i64),Value::Int((i+20) as i64),Value::Int(2*x+y),Value::Int(x-y)])).collect();
+        assert!(matches!(infer_exact_2d_linear_prefilter(&multi_source,&multi_target,&multi_types,&[3,4],4),ExactLinearPrefilter::Solved(m) if m==vec![2,1,1,-1]));
+    }
+
+    #[cfg(feature = "geninfer_linear_exact_prefilter")]
+    #[test]
+    fn exact_linear_prefilter_recovers_every_matrix_in_small_exhaustive_corpus() {
+        let dim_types = vec!["pred".into(), "id".into(), "coord:r".into(), "coord:c".into()];
+        let point_sets: [&[(i64,i64)]; 4] = [
+            &[(0,0),(1,0),(0,1)],
+            &[(0,0),(1,0),(1,1)],
+            &[(0,0),(0,1),(1,1)],
+            &[(0,0),(1,0),(0,1),(1,1)],
+        ];
+        let empty_extra: FxHashMap<Sym,String> = FxHashMap::default();
+        let mut oracle_hash=0xcbf29ce484222325u64;
+        let mut oracle_cases=0u64;
+        for (set_idx, points) in point_sets.iter().enumerate() {
+            let source: Vec<Value> = points.iter().enumerate().map(|(i, &(x,y))|
+                tuple_of(vec![Value::Int(0), Value::Int(i as i64), Value::Int(x), Value::Int(y)])).collect();
+            for a in -2i64..=2 { for b in -2i64..=2 { for c in -2i64..=2 { for d in -2i64..=2 {
+                let target: Vec<Value> = points.iter().enumerate().map(|(i, &(x,y))|
+                    tuple_of(vec![Value::Int(0), Value::Int(i as i64), Value::Int(a*x+b*y), Value::Int(c*x+d*y)])).collect();
+                let bound = [2usize,3usize].iter().flat_map(|&slot| {
+                    let values: Vec<i64> = target.iter().filter_map(|r| Some(relation_values(r)?.get(slot)?.as_i64())).collect();
+                    let min = *values.iter().min()?;
+                    Some(values.iter().map(|v| (v-min).abs()).max().unwrap_or(0))
+                }).max().unwrap_or(0).max(1);
+                let sorted_goal = { let mut v=target.clone(); v.sort_by(cmp_value); v };
+                let expected = historical_linear_enum_for_test(&source, &sorted_goal, &dim_types, bound, &empty_extra);
+                let actual = match infer_exact_2d_linear_prefilter(&source, &target, &dim_types, &[2,3], bound) {
+                    ExactLinearPrefilter::Solved(matrix) if matrix == [1,0,0,1] => None,
+                    ExactLinearPrefilter::Solved(matrix) => selected_candidate_for_test(&source, &sorted_goal, &dim_types, matrix, &empty_extra),
+                    ExactLinearPrefilter::ProvenNoFit(_) => None,
+                    ExactLinearPrefilter::Fallback(_) => historical_linear_enum_for_test(&source, &sorted_goal, &dim_types, bound, &empty_extra),
+                };
+                assert_eq!(actual, expected, "set {set_idx}, matrix [{a},{b},{c},{d}]");
+                let record=match &expected {
+                    None => format!("{set_idx}:{a},{b},{c},{d}:none\n"),
+                    Some((m,residual,transforms)) => {
+                        let ts=transforms.iter().map(|v| match v {
+                            Value::Dict(items) => format!("{:?}",items),
+                            other => format!("{other:?}"),
+                        }).collect::<Vec<_>>().join(";");
+                        format!("{set_idx}:{a},{b},{c},{d}:{m:?}:{residual}:{ts}\n")
+                    }
+                };
+                for byte in record.bytes() { oracle_hash=(oracle_hash ^ u64::from(byte)).wrapping_mul(0x100000001b3); }
+                oracle_cases+=1;
+            }}}}
+        }
+        println!("GENINFER_PREFILTER_ENUMERATOR_ORACLE cases={oracle_cases} fnv1a64={oracle_hash:016x}");
+    }
+
+    /// v1.4 guards: inputs whose enumerator semantics differ from the
+    /// identity-joined affine proof must fall back, not be "proved". The
+    /// multi-predicate case is a concrete counterexample found by the residual
+    /// census: a predicate-local shift is accepted by the enumerator as a
+    /// generator-plus-residual decomposition that the old prefilter rejected.
+    #[cfg(feature = "geninfer_linear_exact_prefilter")]
+    #[test]
+    fn exact_linear_prefilter_v1_4_guards_fall_back_where_enumerator_semantics_differ() {
+        let dim_types = vec!["pred".into(), "id".into(), "coord:r".into(), "coord:c".into()];
+        let extra: FxHashMap<Sym,String> = FxHashMap::default();
+        // two predicates, M = swap, predicate-1 rows shifted by +1 on r
+        let pts = [(0,0,0),(0,1,0),(0,0,1),(1,1,1)];
+        let source: Vec<Value> = pts.iter().enumerate().map(|(i,&(p,x,y))| tuple_of(vec![Value::Int(p),Value::Int(i as i64),Value::Int(x),Value::Int(y)])).collect();
+        let target: Vec<Value> = pts.iter().enumerate().map(|(i,&(p,x,y))| tuple_of(vec![Value::Int(p),Value::Int(i as i64),Value::Int(y + i64::from(p==1)),Value::Int(x)])).collect();
+        let sorted_goal = { let mut v=target.clone(); v.sort_by(cmp_value); v };
+        assert!(historical_linear_enum_for_test(&source, &sorted_goal, &dim_types, 2, &extra).is_some(), "enumerator accepts a residual decomposition");
+        assert!(matches!(infer_exact_2d_linear_prefilter(&source, &target, &dim_types, &[2,3], 2), ExactLinearPrefilter::Fallback("multiple_predicates")));
+        // identity slot after the coordinates: canonical sort is not an identity join
+        let late_id = vec!["pred".into(), "coord:r".into(), "coord:c".into(), "id".into()];
+        let src: Vec<Value> = [(0,0),(1,0),(0,1)].iter().enumerate().map(|(i,&(x,y))| tuple_of(vec![Value::Int(0),Value::Int(x),Value::Int(y),Value::Int(i as i64)])).collect();
+        assert!(matches!(infer_exact_2d_linear_prefilter(&src, &src, &late_id, &[1,2], 2), ExactLinearPrefilter::Fallback("identity_not_sort_prefix")));
+        // relation-count mismatch remains an unconditional proof
+        let short = src[..2].to_vec();
+        assert!(matches!(infer_exact_2d_linear_prefilter(&src, &short, &late_id, &[1,2], 2), ExactLinearPrefilter::ProvenNoFit("relation_count_mismatch")));
+    }
+
+    /// Diagnostic differential (not part of the frozen v1.2 oracle): compare
+    /// the production prefilter dispatch with the historical enumerator on
+    /// targets that are NOT exact linear images — predicate-local shifts,
+    /// global translations, single-row perturbations, and identity
+    /// relabelings — where the enumerator may accept a generator-plus-residual
+    /// decomposition. Prints per-family divergence counts; asserts nothing so
+    /// the census itself can be recorded.
+    #[cfg(feature = "geninfer_linear_exact_prefilter")]
+    #[test]
+    #[ignore]
+    fn exact_linear_prefilter_residual_family_divergence_census() {
+        let dim_types = vec!["pred".into(), "id".into(), "coord:r".into(), "coord:c".into()];
+        // (pred, x, y); sets 0-2 have two predicates so tier-2 predicate-local
+        // residuals exist; sets 3-4 are single-predicate controls where the
+        // v1.4 guards admit the exact proof.
+        let point_sets: [&[(i64,i64,i64)]; 5] = [
+            &[(0,0,0),(0,1,0),(1,0,1),(1,1,1)],
+            &[(0,0,0),(0,2,0),(0,0,1),(1,1,1),(1,2,2)],
+            &[(0,0,0),(0,1,0),(0,0,1),(1,1,1)],
+            &[(0,0,0),(0,1,0),(0,0,1),(0,1,1)],
+            &[(0,0,0),(0,2,0),(0,0,1),(0,1,1),(0,2,2)],
+        ];
+        let empty_extra: FxHashMap<Sym,String> = FxHashMap::default();
+        let families = ["exact", "global_translate", "pred1_shift_r", "pred1_shift_c", "single_row_r", "id_swap"];
+        for fam in families {
+            // index 0 = multi-predicate sets, 1 = single-predicate sets
+            let (mut cases, mut agree, mut diverge, mut solved, mut nofit, mut fallback, mut enum_accepts) = ([0u64;2],[0u64;2],[0u64;2],[0u64;2],[0u64;2],[0u64;2],[0u64;2]);
+            let mut first: [Option<String>;2] = [None, None];
+            for (set_idx, points) in point_sets.iter().enumerate() {
+                let k = usize::from(set_idx >= 3);
+                let source: Vec<Value> = points.iter().enumerate().map(|(i,&(p,x,y))|
+                    tuple_of(vec![Value::Int(p), Value::Int(i as i64), Value::Int(x), Value::Int(y)])).collect();
+                for a in -2i64..=2 { for b in -2i64..=2 { for c in -2i64..=2 { for d in -2i64..=2 {
+                    if a*d - b*c == 0 { continue; }
+                    let mut rows: Vec<(i64,i64,i64,i64)> = points.iter().enumerate().map(|(i,&(p,x,y))| (p, i as i64, a*x+b*y, c*x+d*y)).collect();
+                    // normalise to the per-axis min so only the perturbation is residual
+                    let mr = rows.iter().map(|r| r.2).min().unwrap();
+                    let mc = rows.iter().map(|r| r.3).min().unwrap();
+                    for r in rows.iter_mut() { r.2 -= mr; r.3 -= mc; }
+                    match fam {
+                        "exact" => {}
+                        "global_translate" => for r in rows.iter_mut() { r.2 += 3; r.3 -= 2; },
+                        "pred1_shift_r" => for r in rows.iter_mut() { if r.0 == 1 { r.2 += 1; } },
+                        "pred1_shift_c" => for r in rows.iter_mut() { if r.0 == 1 { r.3 += 1; } },
+                        "single_row_r" => { let last = rows.len()-1; rows[last].2 += 1; },
+                        "id_swap" => { let (i0, i1) = (rows[0].1, rows[1].1); rows[0].1 = i1; rows[1].1 = i0; },
+                        _ => unreachable!(),
+                    }
+                    let target: Vec<Value> = rows.iter().map(|&(p,i,x,y)| tuple_of(vec![Value::Int(p),Value::Int(i),Value::Int(x),Value::Int(y)])).collect();
+                    let extent = |sig: &[Value]| [2usize,3usize].iter().filter_map(|&slot| {
+                        let vs = coord_ints(sig, slot)?; let mn = *vs.iter().min()?; vs.iter().map(|v| (v-mn).abs()).max()
+                    }).max().unwrap_or(0);
+                    let bound = extent(&target).max(extent(&source));
+                    if bound <= 0 { continue; }
+                    let sorted_goal = { let mut v=target.clone(); v.sort_by(cmp_value); v };
+                    let expected = historical_linear_enum_for_test(&source, &sorted_goal, &dim_types, bound, &empty_extra);
+                    if expected.is_some() { enum_accepts[k] += 1; }
+                    let actual = match infer_exact_2d_linear_prefilter(&source, &target, &dim_types, &[2,3], bound) {
+                        ExactLinearPrefilter::Solved(matrix) => { solved[k] += 1; if matrix == [1,0,0,1] { None } else { selected_candidate_for_test(&source, &sorted_goal, &dim_types, matrix, &empty_extra) } },
+                        ExactLinearPrefilter::ProvenNoFit(_) => { nofit[k] += 1; None },
+                        ExactLinearPrefilter::Fallback(_) => { fallback[k] += 1; expected.clone() },
+                    };
+                    cases[k] += 1;
+                    let _ = set_idx;
+                    if actual == expected { agree[k] += 1; } else {
+                        diverge[k] += 1;
+                        if first[k].is_none() { first[k] = Some(format!("set {set_idx} M=[{a},{b},{c},{d}] expected={:?} actual={:?}", expected.as_ref().map(|e| (&e.0, e.1)), actual.as_ref().map(|e| (&e.0, e.1)))); }
+                    }
+                }}}}
+            }
+            for (k, class) in ["multi_predicate", "single_predicate"].iter().enumerate() {
+                println!("GENINFER_PREFILTER_RESIDUAL_CENSUS family={fam} class={class} cases={} agree={} diverge={} solved={} no_fit={} fallback={} enumerator_accepts={} first_divergence={}", cases[k], agree[k], diverge[k], solved[k], nofit[k], fallback[k], enum_accepts[k], first[k].clone().unwrap_or_else(|| "none".into()));
+                if *class == "single_predicate" { assert_eq!(diverge[k], 0, "single-predicate divergence in {fam}"); }
+            }
+        }
+    }
+
+    /// Production dispatch order for one 2-D base: affine prefilter, then the
+    /// row-factorized search, then the historical enumerator.
+    #[cfg(feature = "geninfer_linear_exact_prefilter")]
+    fn production_dispatch_for_test(source: &[Value], target: &[Value], dim_types: &[String], bound: i64, extra: &FxHashMap<Sym,String>, path: &mut [u64; 8]) -> Option<(Vec<i64>,usize,Vec<Value>)> {
+        let sorted_goal = { let mut v=target.to_vec(); v.sort_by(cmp_value); v };
+        match infer_exact_2d_linear_prefilter(source, target, dim_types, &[2,3], bound) {
+            ExactLinearPrefilter::Solved(m) => { path[0] += 1; if m == [1,0,0,1] { None } else { selected_candidate_for_test(source, &sorted_goal, dim_types, m, extra) } }
+            ExactLinearPrefilter::ProvenNoFit(_) => { path[1] += 1; None }
+            ExactLinearPrefilter::Fallback(_) => {
+                let mut work = 0u64;
+                match infer_row_factorized_2d_linear(source, &sorted_goal, &[2,3], bound, 2, extra, &mut work) {
+                    RowFactorizedSearch::Solved(m, t) => {
+                        path[2] += 1;
+                        let got = selected_candidate_for_test(source, &sorted_goal, dim_types, m, extra);
+                        assert_eq!(got.as_ref().map(|g| g.1), Some(t), "row-factorized winner failed validation");
+                        got
+                    }
+                    RowFactorizedSearch::NoCandidate(_) => { path[3] += 1; None }
+                    RowFactorizedSearch::Fallback(_) => {
+                        let (mut h, mut v) = (0u64, 0u64);
+                        match infer_correspondence_2d_linear("base", &Value::Int(1), source, &sorted_goal, &[2,3], bound, 2, extra, &mut h, &mut v) {
+                            CorrespondenceSearch::Found(m, cand) => { path[6] += 1; Some((m, cand.dims_needed.len(), cand.transforms.iter().map(DimTransform::to_value).collect())) }
+                            CorrespondenceSearch::NoCandidate(_) => { path[7] += 1; None }
+                            CorrespondenceSearch::Fallback(_) => { path[4] += 1; historical_linear_enum_for_test(source, &sorted_goal, dim_types, bound, extra) }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[cfg(feature = "geninfer_linear_exact_prefilter")]
+    #[test]
+    fn exact_linear_prefilter_row_factorized_matches_enumerator_on_counterexamples() {
+        let dim_types = vec!["pred".into(), "id".into(), "coord:r".into(), "coord:c".into()];
+        let extra: FxHashMap<Sym,String> = FxHashMap::default();
+        let row = |p: i64, i: i64, x: i64, y: i64| tuple_of(vec![Value::Int(p),Value::Int(i),Value::Int(x),Value::Int(y)]);
+        let mut path = [0u64; 8];
+        // multi-predicate shift (the v1.3 divergence), rank-deficient collinear, missing identity
+        let pts = [(0,0,0),(0,1,0),(0,0,1),(1,1,1)];
+        let src: Vec<Value> = pts.iter().enumerate().map(|(i,&(p,x,y))| row(p,i as i64,x,y)).collect();
+        let shifted: Vec<Value> = pts.iter().enumerate().map(|(i,&(p,x,y))| row(p,i as i64,y + i64::from(p==1),x)).collect();
+        let line: Vec<Value> = (0..5).map(|i| row(0,i,i,0)).collect();
+        let line_img: Vec<Value> = (0..5).map(|i| row(0,i,2*i,i)).collect();
+        let mut orphan = src.clone(); orphan[3] = row(1,99,1,1);
+        let csq: Vec<Value> = [(0,0),(1,0),(0,1),(2,1)].iter().map(|&(x,y)| row(0,0,x,y)).collect();
+        let crot: Vec<Value> = [(0,0),(1,0),(0,1),(2,1)].iter().map(|&(x,y)| row(0,0,y,2-x)).collect();
+        for (s, t) in [(&src, &shifted), (&line, &line_img), (&src, &orphan), (&src, &src), (&csq, &crot), (&csq, &csq)] {
+            let extent = |sig: &[Value]| [2usize,3usize].iter().filter_map(|&slot| { let vs = coord_ints(sig, slot)?; let mn = *vs.iter().min()?; vs.iter().map(|v| (v-mn).abs()).max() }).max().unwrap_or(0);
+            let bound = extent(t).max(extent(s)).max(1);
+            let sorted_goal = { let mut v=t.clone(); v.sort_by(cmp_value); v };
+            let expected = historical_linear_enum_for_test(s, &sorted_goal, &dim_types, bound, &extra);
+            let actual = production_dispatch_for_test(s, t, &dim_types, bound, &extra, &mut path);
+            assert_eq!(actual, expected);
+        }
+        assert!(path[2] + path[3] >= 3 && path[6] + path[7] >= 2, "row-factorized and correspondence paths exercised: {path:?}");
+    }
+
+    /// Ignored census: full production dispatch versus the historical
+    /// enumerator over residual families, multi-predicate, rank-deficient and
+    /// identity-perturbed inputs. Every case must agree.
+    #[cfg(feature = "geninfer_linear_exact_prefilter")]
+    #[test]
+    #[ignore]
+    fn exact_linear_prefilter_row_factorized_matches_enumerator_census() {
+        let dim_types = vec!["pred".into(), "id".into(), "coord:r".into(), "coord:c".into()];
+        let point_sets: [&[(i64,i64,i64)]; 6] = [
+            &[(0,0,0),(0,1,0),(1,0,1),(1,1,1)],
+            &[(0,0,0),(0,2,0),(0,0,1),(1,1,1),(1,2,2)],
+            &[(0,0,0),(0,1,0),(0,0,1),(0,1,1)],
+            &[(0,0,0),(0,1,1),(0,2,2),(0,3,3)],          // rank 1
+            &[(0,0,0),(0,1,0),(1,2,0),(1,3,0)],          // rank 1, two predicates
+            &[(0,0,0),(0,0,0),(0,1,0),(0,0,1)],          // repeated coordinates, unique ids
+        ];
+        let extra: FxHashMap<Sym,String> = FxHashMap::default();
+        let families = ["exact", "global_translate", "pred1_shift_r", "single_row_r", "id_swap", "missing_id", "duplicate_id", "constant_id_exact", "constant_id_pred1_shift_r", "constant_id_single_row_r"];
+        let mut total_div = 0u64;
+        for fam in families {
+            let (mut cases, mut diverge) = (0u64, 0u64);
+            let mut path = [0u64; 8];
+            let mut first: Option<String> = None;
+            for (set_idx, points) in point_sets.iter().enumerate() {
+                let mut source: Vec<Value> = points.iter().enumerate().map(|(i,&(p,x,y))|
+                    tuple_of(vec![Value::Int(p), Value::Int(i as i64), Value::Int(x), Value::Int(y)])).collect();
+                if fam.starts_with("constant_id") { for r in source.iter_mut() { let t = relation_values(r).unwrap().to_vec(); *r = tuple_of(vec![t[0].clone(), Value::Int(0), t[2].clone(), t[3].clone()]); } }
+                if fam == "duplicate_id" { let last = source.len()-1; let (p,_,x,y) = (points[last].0, 0, points[last].1, points[last].2); source[last] = tuple_of(vec![Value::Int(p),Value::Int(0),Value::Int(x),Value::Int(y)]); }
+                for a in -2i64..=2 { for b in -2i64..=2 { for c in -2i64..=2 { for d in -2i64..=2 {
+                    let mut rows: Vec<(i64,i64,i64,i64)> = points.iter().enumerate().map(|(i,&(p,x,y))| (p, i as i64, a*x+b*y, c*x+d*y)).collect();
+                    let mr = rows.iter().map(|r| r.2).min().unwrap();
+                    let mc = rows.iter().map(|r| r.3).min().unwrap();
+                    for r in rows.iter_mut() { r.2 -= mr; r.3 -= mc; }
+                    match fam {
+                        "exact" | "duplicate_id" | "constant_id_exact" => {}
+                        "constant_id_pred1_shift_r" => for r in rows.iter_mut() { if r.0 == 1 { r.2 += 1; } },
+                        "constant_id_single_row_r" => { let last = rows.len()-1; rows[last].2 += 1; },
+                        "global_translate" => for r in rows.iter_mut() { r.2 += 3; r.3 -= 2; },
+                        "pred1_shift_r" => for r in rows.iter_mut() { if r.0 == 1 { r.2 += 1; } },
+                        "single_row_r" => { let last = rows.len()-1; rows[last].2 += 1; },
+                        "id_swap" => { let (i0, i1) = (rows[0].1, rows[1].1); rows[0].1 = i1; rows[1].1 = i0; },
+                        "missing_id" => { let last = rows.len()-1; rows[last].1 = 99; },
+                        _ => unreachable!(),
+                    }
+                    if fam.starts_with("constant_id") { for r in rows.iter_mut() { r.1 = 0; } }
+                    let target: Vec<Value> = rows.iter().map(|&(p,i,x,y)| tuple_of(vec![Value::Int(p),Value::Int(i),Value::Int(x),Value::Int(y)])).collect();
+                    let extent = |sig: &[Value]| [2usize,3usize].iter().filter_map(|&slot| {
+                        let vs = coord_ints(sig, slot)?; let mn = *vs.iter().min()?; vs.iter().map(|v| (v-mn).abs()).max()
+                    }).max().unwrap_or(0);
+                    let bound = extent(&target).max(extent(&source));
+                    if bound <= 0 { continue; }
+                    let sorted_goal = { let mut v=target.clone(); v.sort_by(cmp_value); v };
+                    let expected = historical_linear_enum_for_test(&source, &sorted_goal, &dim_types, bound, &extra);
+                    if expected.is_some() { path[5] += 1; }
+                    let actual = production_dispatch_for_test(&source, &target, &dim_types, bound, &extra, &mut path);
+                    cases += 1;
+                    if actual != expected {
+                        diverge += 1;
+                        if first.is_none() { first = Some(format!("set {set_idx} M=[{a},{b},{c},{d}] expected={:?} actual={:?}", expected.as_ref().map(|e| (&e.0, e.1)), actual.as_ref().map(|e| (&e.0, e.1)))); }
+                    }
+                }}}}
+            }
+            println!("GENINFER_ROW_FACTORIZED_CENSUS family={fam} cases={cases} diverge={diverge} affine_solved={} affine_no_fit={} rowf_solved={} rowf_no_candidate={} corr_found={} corr_no_candidate={} enumerator_fallback={} enumerator_accepts={} first_divergence={}", path[0], path[1], path[2], path[3], path[6], path[7], path[4], path[5], first.unwrap_or_else(|| "none".into()));
+            total_div += diverge;
+        }
+        assert_eq!(total_div, 0);
+    }
+
+    #[cfg(feature = "geninfer_linear_exact_prefilter")]
+    fn selected_candidate_for_test(source: &[Value], sorted_goal: &[Value], dim_types: &[String], matrix: Vec<i64>, extra: &FxHashMap<Sym,String>) -> Option<(Vec<i64>,usize,Vec<Value>)> {
+        let dims = vec![2,3];
+        let transformed = apply_linear_once(source, &dims, &matrix)?;
+        let candidate = build_candidate("base".into(), Value::Int(1), &transformed, sorted_goal, 2, extra, false)?;
+        if candidate.transforms.len() != candidate.dims_needed.len() { return None; }
+        let _ = dim_types;
+        Some((matrix,candidate.dims_needed.len(),candidate.transforms.iter().map(DimTransform::to_value).collect()))
+    }
+
+    #[cfg(feature = "geninfer_linear_exact_prefilter")]
+    fn historical_linear_enum_for_test(source: &[Value], sorted_goal: &[Value], _dim_types: &[String], bound: i64, extra: &FxHashMap<Sym,String>) -> Option<(Vec<i64>,usize,Vec<Value>)> {
+        let dims=vec![2,3];
+        let mut best: Option<(Vec<i64>,usize,Vec<Value>,i64)> = None;
+        for a in -bound..=bound { for b in -bound..=bound { for c in -bound..=bound { for d in -bound..=bound {
+            if [a,b,c,d] == [1,0,0,1] { continue; }
+            let matrix=vec![a,b,c,d];
+            let Some(transformed)=apply_linear_once(source,&dims,&matrix) else { continue };
+            let Some(candidate)=build_candidate("base".into(),Value::Int(1),&transformed,sorted_goal,2,extra,false) else { continue };
+            if candidate.transforms.len()!=candidate.dims_needed.len() { continue; }
+            let residual=candidate.dims_needed.len();
+            let abs_sum=matrix.iter().map(|x|x.abs()).sum::<i64>();
+            let key=(residual,abs_sum,&matrix);
+            if best.as_ref().is_none_or(|(m,r,_,s)| key < (*r,*s,m)) {
+                best=Some((matrix,residual,candidate.transforms.iter().map(DimTransform::to_value).collect(),abs_sum));
+            }
+        }}}}
+        best.map(|(m,r,t,_)|(m,r,t))
+    }
 
     /// `name`/`signature`/`kind` ShapeSignature node, mirroring
     /// `_load_shape_signatures`'s expected attr shape.
@@ -9371,6 +11559,7 @@ mod dim_infer_tests {
             codebook_type,
             exclude: None,
             generator_type,
+            grain: None,
             max_dims,
             field: field_sym,
         });
@@ -9405,6 +11594,7 @@ mod dim_infer_tests {
             codebook_type,
             exclude: None,
             generator_type,
+            grain: None,
             max_dims,
             field: field_sym,
         });

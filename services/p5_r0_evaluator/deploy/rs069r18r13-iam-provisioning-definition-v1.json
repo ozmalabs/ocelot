@@ -1,0 +1,141 @@
+{
+  "schema": "P5R0DISPATCH050GCSIAMProvisioningDefinitionV1",
+  "classification": "repository_definition_only_non_release",
+  "status": "blocked_pending_fresh_prestate_child_approval_and_signed_environment",
+  "dispatch_id": "DISPATCH-050",
+  "review": {
+    "master_run": "P5-MASTER-001",
+    "review_id": "P5-MASTER-001/REVIEW-050",
+    "source_packet_path": "services/p5_r0_evaluator/deploy/rs069r18r13-gcs-boundary-packet-v1.json",
+    "source_packet_digest": "sha256:a8c313f6e5b775b4ba48a8e8ff4cc5e2561c560930c4e89ec2e9666fb509c447",
+    "source_capability_definition_path": "services/p5_r0_evaluator/deploy/gcs-capability-definition.json",
+    "source_capability_definition_digest": "sha256:705c5323a8bf8f300547d2051cf128825b03e0415c334dd452cd4e9db0280ee2",
+    "master_runsheet_modified": false,
+    "cloud_operations_performed": [],
+    "credentials_created": false
+  },
+  "operation": {
+    "id": "provision_gcs_only_iam_boundary",
+    "order": 0,
+    "scope": ["provision_gcs_only_iam_boundary"],
+    "depends_on": ["bind_self_custodied_authority_and_kms", "reviewed_gcs_capability_definition"],
+    "later_operations_enabled": false,
+    "direct_cloud_commands": false,
+    "apply_interface": "injected reviewed IaC executor only",
+    "cloud_operations": [],
+    "mutations_performed": false
+  },
+  "target": {
+    "project_id": "ocelot-proof",
+    "project_number": "141633828616",
+    "bucket": "p5-evaluator-ocelot-proof-141633828616",
+    "exact_run_prefix": "p5-r0/operation-4/rs069r18r13-op4-04a98e3e/",
+    "visibility": {
+      "required": "private",
+      "uniform_bucket_level_access": true,
+      "public_access_prevention": "inherited",
+      "public_principals_allowed": false
+    }
+  },
+  "service_accounts": {
+    "existing_kms_capable_account": "p5-evaluator@ocelot-proof.iam.gserviceaccount.com",
+    "gcs_only_required": true,
+    "gcs_only_account": "p5-r0-gcs-only@ocelot-proof.iam.gserviceaccount.com",
+    "gcs_only_resource": "projects/ocelot-proof/serviceAccounts/p5-r0-gcs-only@ocelot-proof.iam.gserviceaccount.com",
+    "reason": "The observed capability account has project-level roles/cloudkms.signerVerifier and must not be reused for a GCS-only capability."
+  },
+  "custom_role": {
+    "resource": "projects/ocelot-proof/roles/p5R0Operation4BundleWriterV1",
+    "title": "P5 R0 operation 4 bundle writer",
+    "stage": "GA",
+    "permissions": ["storage.objects.create", "storage.objects.get"],
+    "condition_title": "p5_r0_r18r13_op4_exact_run",
+    "condition_expression": "resource.name.startsWith('projects/_/buckets/p5-evaluator-ocelot-proof-141633828616/objects/p5-r0/operation-4/rs069r18r13-op4-04a98e3e/')",
+    "forbidden_permissions": ["storage.objects.list", "storage.objects.delete", "storage.objects.update", "storage.buckets.get"]
+  },
+  "wif_binding": {
+    "provider": "//iam.googleapis.com/projects/141633828616/locations/global/workloadIdentityPools/p5-cs-pool/providers/p5-cs-production",
+    "principal": "principalSet://iam.googleapis.com/projects/141633828616/locations/global/workloadIdentityPools/p5-cs-pool/attribute.image_digest/sha256:394a0707d1e162315bdf22de4ff034a7cf75a32b919cef6f12bba501521be11c",
+    "attribute": "image_digest",
+    "image_digest": "sha256:394a0707d1e162315bdf22de4ff034a7cf75a32b919cef6f12bba501521be11c",
+    "token_creator_role": "roles/iam.serviceAccountTokenCreator",
+    "target_resource": "projects/ocelot-proof/serviceAccounts/p5-r0-gcs-only@ocelot-proof.iam.gserviceaccount.com",
+    "direct_bucket_access": false
+  },
+  "bucket_bindings": {
+    "grant": {
+      "member": "serviceAccount:p5-r0-gcs-only@ocelot-proof.iam.gserviceaccount.com",
+      "role": "projects/ocelot-proof/roles/p5R0Operation4BundleWriterV1",
+      "condition": {
+        "title": "p5_r0_r18r13_op4_exact_run",
+        "expression": "resource.name.startsWith('projects/_/buckets/p5-evaluator-ocelot-proof-141633828616/objects/p5-r0/operation-4/rs069r18r13-op4-04a98e3e/')"
+      }
+    },
+    "remove": [
+      {
+        "member": "serviceAccount:p5-evaluator@ocelot-proof.iam.gserviceaccount.com",
+        "role": "roles/storage.objectAdmin",
+        "condition": null
+      },
+      {
+        "member": "principalSet://iam.googleapis.com/projects/141633828616/locations/global/workloadIdentityPools/p5-cs-pool/attribute.image_digest/sha256:0a42a061ac593c7dd4e21e90fab7b8bb62d1836666e5507549fb4194b18dcca7",
+        "role": "roles/storage.objectUser",
+        "condition": {
+          "expression": "resource.name.startsWith('projects/_/buckets/p5-evaluator-ocelot-proof-141633828616/objects/v3/')"
+        }
+      }
+    ],
+    "public_principals_allowed": false
+  },
+  "prestate_contract": {
+    "schema": "P5R0DISPATCH050IAMPrestateV1",
+    "required": ["project", "bucket", "bucket_policy", "existing_account_policy", "target_account", "custom_role"],
+    "approval_artifact_path": "var/p5-r0-rs069/rs069r18r13-iam-approval.json",
+    "expected_prestate_artifact_path": "var/p5-r0-rs069/rs069r18r13-iam-expected-prestate.json",
+    "version_fields": "Each existing IAM policy/role must carry exactly one observed etag or fingerprint; missing or ambiguous versions fail closed.",
+    "fresh_capture_required": true,
+    "capture_read_only": true,
+    "expected_current_observation": {
+      "existing_account_bucket_role": "roles/storage.objectAdmin",
+      "existing_account_project_role": "roles/cloudkms.signerVerifier",
+      "target_account_exists": "not_observed",
+      "custom_role_exists": "not_observed"
+    }
+  },
+  "apply_order": [
+    "capture_and_digest_fresh_read_only_prestate",
+    "ensure_gcs_only_service_account_without_key_material",
+    "create_or_reconcile_exact_custom_role",
+    "atomically_update_bucket_policy_add_exact_writer_and_remove_broad_or_stale_grants",
+    "atomically_update_gcs_only_service_account_policy_add_exact_token_creator",
+    "reobserve_and_verify_exact_poststate_and_private_visibility"
+  ],
+  "rollback": {
+    "required_on_any_post_mutation_failure": true,
+    "order": ["restore_service_account_policy_from_prestate", "restore_bucket_policy_from_prestate", "restore_custom_role_from_prestate"],
+    "verification": "reobserve all restored policies/role and require exact prestate digests and versions",
+    "ambiguous_state": "manual_review_no_retry",
+    "created_service_account": "never delete automatically; manual review is required if creation succeeds before a later step fails"
+  },
+  "poststate": {
+    "required": true,
+    "bucket_policy": "exactly the reviewed grant, with both listed stale/broad grants absent and no public principals",
+    "target_account_policy": "exactly one roles/iam.serviceAccountTokenCreator binding for the reviewed principal",
+    "custom_role": "exactly storage.objects.create and storage.objects.get",
+    "service_account": "gcs-only account exists and has no key material or KMS role",
+    "receipt": "IAM digests plus project, bucket, service-account, principal, and role condition must be recorded before operation-4 child approval"
+  },
+  "execution_boundary": {
+    "apply_performed": false,
+    "cloud_operations": [],
+    "credentials_created": false,
+    "credentials_exported": false,
+    "master_runsheet_modified": false,
+    "later_operations_enabled": false,
+    "child_approval_required": true,
+    "signed_environment_required": true,
+    "first_safe_apply_boundary": "After fresh read-only prestate capture, exact child approval, reviewed IaC executor selection, and signed-environment credential readiness; apply only through this definition.",
+    "forbidden": ["direct gcloud mutation", "service-account key creation", "credential export", "ambient ADC", "direct WIF principal bucket access", "object listing", "object deletion", "object overwrite", "downstream enablement"]
+  },
+  "definition_digest": "sha256:817ce6cff5f25487ba131a2d587fbcd489a52245e3a8173aa6320862ed49ce25"
+}

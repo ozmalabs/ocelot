@@ -9,7 +9,7 @@ import os
 
 import pytest
 
-SEED = "seeds/generated/qwen3_reaped_knowledge.json"
+SEED = "domain_data/llm_harvest/qwen3_reaped_knowledge.json"
 CAN_SEED = "seeds/can_native_reimplementation.json"
 
 

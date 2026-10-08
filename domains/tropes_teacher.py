@@ -34,7 +34,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable
 
-from .wiki_teacher import extract_subject  # share interrogative-stripping
+from .question_subject import extract_subject
 
 
 # ---------------------------------------------------------------------------

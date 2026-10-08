@@ -1,0 +1,7 @@
+# GenMint extended-horizon analysis amendment v2.1
+
+The locked v2 capture contains the preregistered 3 matrices × 3 layouts × 2 induction arms × 6 reuse counts × 5 repetitions = 540 workers. Its first analysis incorrectly expected 90 design cells; the correct count is 108 (3 × 3 × 2 × 6), with five workers per cell. The initial analyzer and its failed analysis are preserved. The capture, protocol, runner, schedule, and all worker outputs are unchanged.
+
+This amendment corrects only the distinct-cell denominator and analyzer-hash check. The corrected analyzer is a separate source file; it verifies the original analyzer bytes against the pre-run lock and writes a separate v2.1 analysis record. No outcome criteria were changed: worker failures, acquisition, prediction, route classification, runtime crossover, and measured costs remain as preregistered. The amended analysis passes only if it independently verifies the same 540 worker records, full randomized schedule, 108 balanced cells, all heldout inputs/targets, deterministic repeated outcomes, source/native/lock integrity, and route scoring.
+
+See [initial v2 analysis](../../../evaluation/reports/substrate_genmint_matrix_reuse_v2_analysis_20260926.json), [corrected analysis](../../../evaluation/reports/substrate_genmint_matrix_reuse_v2_1_analysis_20260926.json), [v2 analyzer](../../../scripts/analyze_genmint_matrix_reuse_probe_v2.py), and [v2.1 analyzer](../../../scripts/analyze_genmint_matrix_reuse_probe_v2_1.py).

@@ -143,13 +143,21 @@ def test_grounded_self_improvement_still_mints_concern_parity(agent):
 
 def test_ungrounded_self_improvement_still_clarifies_parity(agent):
     # PARITY: an ungrounded target still asks for clarification and mints
-    # NOTHING -- and clarification counts as handled (no spurious gap).
-    before = len(list(agent.s.nodes("SelfConcern")))
+    # no request/gap concern -- and clarification counts as handled. Lazy boot
+    # integrity findings can be created on the first live turn; they are
+    # unrelated to this event and are excluded from the assertion.
+    def request_concerns():
+        return {
+            node for node in agent.s.nodes("SelfConcern")
+            if agent.s.node(node)["attrs"].get("kind") != "boot_integrity"
+        }
+
+    before = request_concerns()
     reply = agent.converse("Improve your florbnax.", speech_act="request")
     assert "sure i understand" in reply.lower() or "clarif" in reply.lower() \
         or "which part" in reply.lower()
-    assert len(list(agent.s.nodes("SelfConcern"))) == before, (
-        "an uncertain request must not file any concern/gap")
+    assert request_concerns() == before, (
+        "an uncertain request must not file any request concern/gap")
     mid = agent._last_turn_inbound
     assert agent.s.node(mid)["attrs"].get("instruction_outcome") == "handled"
 

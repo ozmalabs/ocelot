@@ -1,0 +1,3 @@
+# Thoughtexperiment combined journal v1.2.10 amendment
+
+The initial v1.2.9 lock did not yield a capture because the runner called `graph_diff` on the wrapper rather than the native `_inner` object. The failed attempt and lock are preserved; the corrected v1.2.10 runner calls `_inner.graph_diff`, receives a new lock, and completes three workers. The run did not checkpoint its phase baseline, and worker RSS combines all fixtures and modes. Therefore it establishes total sparse residual parity and timing only, not derived-only correctness or per-arm memory. See [results](THOUGHTEXPERIMENT_EVENT_VALUE_ATTRIBUTION_V1_2_10_RESULTS_20261005.md) and [protocol](THOUGHTEXPERIMENT_EVENT_VALUE_ATTRIBUTION_V1_2_10_PREREG_20261005.md).

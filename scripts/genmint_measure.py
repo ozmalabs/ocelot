@@ -7,13 +7,21 @@ draw from seeds 25000-25399 (declared). Run from the gamma-substrate dir:
     PYTHONPATH=runners/dsl/python:. python scripts/genmint_measure.py
 """
 from __future__ import annotations
-import json, random, sys
+import hashlib, json, os, random, sys, time
+from pathlib import Path
 
 from domains.engine_provenance import engine_preamble, provenance_line
 engine_preamble()
 
 from substrate.boot_core import boot_core          # noqa: E402
 from domains import reflective_faculty as rf        # noqa: E402
+from substrate_rs import _native                   # noqa: E402
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def sha256(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 DT = ["pred", "coord:r", "coord:c", "val"]
 # asymmetric L-tetromino: its shear/unimodular images land on distinct cell
@@ -69,7 +77,19 @@ def run_one(enabled, goal):
 
 
 def main():
-    R = {"engine": provenance_line()}
+    started = time.perf_counter()
+    native_path = Path(_native.__file__).resolve()
+    R = {"engine": provenance_line(),
+         "provenance": {
+             "source_sha256": {
+                 rel: sha256(ROOT / rel) for rel in (
+                     "scripts/genmint_measure.py", "seeds/shape_decode_loop.json",
+                     "domains/reflective_faculty.py", "domains/engine_provenance.py",
+                     "runners/dsl/src/shape_decode.rs", "runners/dsl/src/term.rs",
+                     "runners/dsl/python/substrate_rs/_native.build.json")},
+             "native_extension_path": str(native_path),
+             "native_extension_sha256": sha256(native_path),
+         }}
     ok = {}
     print("ENGINE:", R["engine"])
 
@@ -220,8 +240,13 @@ def main():
     print(f"  OVERTURN (bounded to integer-linear class): {overturn}")
     print("=" * 68)
 
-    json.dump(R, open("results/genmint_measure.json", "w"), indent=1, default=str)
-    print("wrote results/genmint_measure.json")
+    R["runtime_seconds"] = round(time.perf_counter() - started, 6)
+    output = Path(os.environ.get("GENMINT_OUTPUT", "results/genmint_measure.json"))
+    if not output.is_absolute():
+        output = Path.cwd() / output
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(R, indent=1, default=str) + "\n")
+    print(f"wrote {output}")
     return 0 if overturn else 1
 
 

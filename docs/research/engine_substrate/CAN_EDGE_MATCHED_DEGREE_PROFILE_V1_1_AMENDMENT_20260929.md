@@ -1,0 +1,5 @@
+# Edge-matched degree-profile inference v1.1 amendment (2026-09-29)
+
+The v1 runner monkey-patched the shared partial-q-tree generator while importing the v1 inference harness. That caused both `sparse_partial_qtree` and `hub_partial_qtree` labels to execute the hub construction. The v1 capture therefore remains useful for checking exact extraction, certificates, oracle parity, and no mutation, but it contains no valid comparison between those two labels and must not be used as evidence that the degree profiles or costs match.
+
+V1.1 gives the hub family its own fixture dispatch and leaves the existing sparse partial-q-tree generator intact. It repeats all 54 workers under a new protocol/source lock, with the same N/E/q design, independent oracle, integrity gates, and degree/profile measurements. The v1 raw capture and lock are retained unchanged for auditability. Any residual overlap in the measured degree statistics after this correction is a result to report, not a reason to relabel or filter cases.

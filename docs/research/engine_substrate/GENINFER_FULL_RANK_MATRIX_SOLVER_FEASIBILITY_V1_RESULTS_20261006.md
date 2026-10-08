@@ -1,0 +1,11 @@
+# GenInfer full-rank matrix solver feasibility v1 results
+
+The exact rational solver recovered all three authored 1-D, 2-D, and 3-D integer matrices, reproduced every training relation, and predicted every separate held-out point. The repeated-origin rank-deficient controls abstained in all three dimensions. Measured prototype solve times were 0.030, 0.053, and 0.105 ms on this host; these are algorithm-prototype timings, not native Substrate timings.
+
+For the same data-derived bounds, exhaustive enumeration would consider 4, 2,400, and 387,420,488 matrices in dimensions 1, 2, and 3. The probe therefore demonstrates a viable route for uniquely identifiable full-rank frames, where exact elimination plus full-data verification avoids enumerating the matrix space. It does not resolve rank-deficient frames, where many matrices can fit the training observations, nor prove an acquisition prior or candidate-ranking rule for those cases.
+
+At the time of this Python-only probe, native GenInfer skipped coordinate counts other than two; this probe itself does not exercise graph loading, residual construction, minting, or re-decode. The subsequent opt-in native implementation and its exploratory paired capture are recorded in [native comparison results](GENINFER_FULL_RANK_NATIVE_COMPARISON_V1_RESULTS_20261006.md). Rank-deficient induction and dimensions above three remain unsupported by that implementation.
+
+The follow-up preregistered [v1.1 native comparison](GENINFER_FULL_RANK_NATIVE_COMPARISON_V1_1_RESULTS_20261006.md) now confirms integration on the registered positive and refusal families, with three workers per case family. It also makes the next scaling issue visible: stable identity alignment is currently quadratic in relation count.
+
+Reproduction: [preregistration](GENINFER_FULL_RANK_MATRIX_SOLVER_FEASIBILITY_V1_PREREG_20261006.md), [runner](../../../evaluation/substrate_capability/geninfer_full_rank_matrix_solver_feasibility_v1.py), [independent analyzer](../../../evaluation/substrate_capability/analyze_geninfer_full_rank_matrix_solver_feasibility_v1.py), [capture](../../../evaluation/reports/geninfer_full_rank_matrix_solver_feasibility_v1_20261006.json), and [analysis](../../../evaluation/reports/geninfer_full_rank_matrix_solver_feasibility_v1_analysis_20261006.json). All independent analysis gates pass.

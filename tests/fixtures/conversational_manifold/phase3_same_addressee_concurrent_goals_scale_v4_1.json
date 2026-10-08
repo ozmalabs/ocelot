@@ -1,0 +1,9 @@
+{
+  "schema": "phase3_same_addressee_concurrent_goals_scale.v1.1",
+  "goal_counts": [16, 32, 64],
+  "construction_order": "create all origin requests and Goals first, then create each task's selection, execution, and action_result events in task order",
+  "shared_recipient": true,
+  "task_link": "every operation event has an explicit for_goal edge to its intended Goal",
+  "expected_transition_indices": "for goal i at N+i, transition events are [N+3*i, N+3*i+1, N+3*i+2]",
+  "intended_semantics": "same-addressee Goals remain independent because task identity is carried by each operation event's for_goal edge"
+}

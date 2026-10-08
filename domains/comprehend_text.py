@@ -128,6 +128,13 @@ from domains import preposition_roles as _prep_roles
 # instruction ("Pray the nature"). They are stripped before parsing so the
 # ornate question/instruction underneath reaches its real intent.
 _POLITENESS_MARKERS = frozenset({"pray", "kindly", "prithee", "please"})
+# English adapter lexemes whose clause-initial, comma-delimited use contributes
+# a corrective discourse relation. Cognition receives the neutral relation,
+# never the surface marker.
+_CORRECTION_DISCOURSE_MARKERS = frozenset({"actually", "instead", "rather", "no"})
+# Lexical class of attention-directed predicates used to type a polite
+# vocative as a social coordination act rather than a world action.
+_ATTENTION_PREDICATES = frozenset({"listen", "attend"})
 
 # Leading imperative verbs that ENUMERATE / REPORT HELD DATA (name/list one of X)
 # — a satisfiable instruction the agent answers from its own graph, not an act.
@@ -151,8 +158,16 @@ _MODAL_REQUEST_PREFIXES = frozenset({"can", "could", "would", "will"})
 _ACCOUNT_VERBS = frozenset({"describe", "tell", "report", "explain", "say",
                             "show", "state", "account"})
 _PERCEPTION_CUES = frozenset({"perceive", "see", "seeing", "look", "looking",
-                              "around", "there", "scene", "observe", "view",
+                              "around", "scene", "observe", "view",
                               "front", "behind", "watch", "sense"})
+
+# English language-adapter temporal/conditional connectors. Their presence is
+# emitted as neutral `deferred_condition` evidence; the cognition layer consumes
+# that typed relation without knowing these lexical forms.
+_TEMPORAL_CONDITION_CONNECTORS = frozenset({
+    "when", "until", "after", "before", "once", "while", "unless",
+})
+_ACTION_SEQUENCE_CONNECTORS = frozenset({"then"})
 
 # The SAME self-reference cue set comprehend_question gates its meta table on
 # (data, not table logic) — a question carrying one of these is ABOUT the agent.
@@ -208,22 +223,30 @@ def _has_self_cue(frame: dict) -> bool:
     return any(w in _SELF_CUES for w in _all_words(frame))
 
 
-def _detect_reflexive_rule(substrate: Any, gaps: list[dict]) -> Optional[str]:
+def _detect_reflexive_rule(agent: Any, gaps: list[dict]) -> Optional[str]:
     """A gap token that names a RuleSummary ACTUALLY HELD in the graph — a
     discovered fact (not a guess): `self_model._find_rule_summaries` is the
     SAME exact-match lookup `self_model_rule` answers from. Returns the
     surface that hit, or None."""
+    substrate = getattr(agent, "s", agent)
     if substrate is None:
         return None
-    for g in gaps:
-        surf = (g.get("surface") or "").strip(",.;:?!")
-        if len(surf) < 3:
-            continue
-        try:
-            hits = _self_model._find_rule_summaries(substrate, surf)
-        except Exception:
-            hits = []
-        if hits:
+    candidates = [(g.get("surface") or "").strip(",.;:?!") for g in gaps]
+    candidates = [surf for surf in candidates if len(surf) >= 3]
+    try:
+        index = getattr(agent, "_rule_summary_lookup_index", None)
+        if not isinstance(index, dict):
+            index = _self_model._build_rule_summary_exact_index(substrate)
+            try:
+                setattr(agent, "_rule_summary_lookup_index", index)
+            except Exception:
+                pass
+        hits_by_surface = _self_model._find_rule_summaries_many_indexed(
+            substrate, candidates, index=index)
+    except Exception:
+        hits_by_surface = {}
+    for surf in candidates:
+        if hits_by_surface.get(surf):
             return surf
     return None
 
@@ -323,7 +346,7 @@ def kind_signals(agent, text: str) -> dict:
     makes; nothing here decides the kind."""
     stripped = _strip_politeness(agent, text or "")
     try:
-        frame = _cg.parse_with_gaps(stripped, getattr(agent, "s", agent))
+        frame = _cg.parse_with_gaps(stripped, agent)
     except Exception:  # noqa: BLE001 — unparseable input still classifies (ends-? only)
         frame = {}
     return _signals_of(stripped, frame)
@@ -349,7 +372,7 @@ def first_imperative_evidence(agent: Any, text: str, *, first_role: str | None =
         if stripped == (text or ""):
             return False
         if first_role is None or first_pos is None:
-            frame = _cg.parse_with_gaps(stripped, getattr(agent, "s", agent))
+            frame = _cg.parse_with_gaps(stripped, agent)
             first = _first_element(frame)
             first_role = first.get("role") if first else None
             first_pos = first.get("pos") if first else None
@@ -494,13 +517,30 @@ def _is_polar_capability_question(rel: dict) -> bool:
 def _hypothetical_assumption(frame: dict, raw: str = "") -> str | None:
     """Mechanical read of a counterfactual clause ('if you had a body') on a polar
     capability question. Returns the assumed affordance phrase, or None."""
-    import re
     text = raw or " ".join((e.get("surface") or "") for e in (frame.get("elements") or []))
-    m = re.search(
-        r"\bif\s+(?:you|i)\s+had\s+(?:a |an |the )?(.+?)(?:\?|$|,|\s+would|\s+could|\s+can)",
-        text, re.IGNORECASE)
-    if m:
-        return m.group(1).strip().rstrip("?.,;")
+    tokens = _ws_tokens(text)
+    normalized = [token.strip("\"'()[]{}.,!?;:").casefold()
+                  for token in tokens]
+    for start in range(max(0, len(tokens) - 2)):
+        if (normalized[start] != "if"
+                or normalized[start + 1] not in {"you", "i"}
+                or normalized[start + 2] != "had"):
+            continue
+        cursor = start + 3
+        if cursor < len(tokens) and normalized[cursor] in {"a", "an", "the"}:
+            cursor += 1
+        assumption = []
+        for token in tokens[cursor:]:
+            word = token.strip("\"'()[]{}.,!?;:")
+            if not word:
+                continue
+            if word.casefold() in {"would", "could", "can"}:
+                break
+            assumption.append(word)
+            if any(mark in token for mark in ("?", ",")):
+                break
+        if assumption:
+            return " ".join(assumption).rstrip("?.,;")
     return None
 
 
@@ -522,6 +562,17 @@ def _self_process_verb(frame: dict):
 
 
 def _topic_nominal(rel: dict) -> Optional[dict]:
+    # In a polar action question, the grammatical subject is the actor slot,
+    # not the topic being asked about ("Should we use the north route?",
+    # "Can you repair the gate?"). Keep it as the relation subject, but route
+    # the object nominal through the ordinary topic lookup. Questions without
+    # an object retain the established subject-first behavior.
+    predicate = rel.get("predicate") or {}
+    if (rel.get("focus") == "polar"
+            and predicate.get("role") == "content"
+            and predicate.get("pos") == "verb"
+            and rel.get("object") is not None):
+        return rel.get("object")
     return rel.get("subject") or rel.get("object") or rel.get("oblique")
 
 
@@ -558,43 +609,52 @@ def _graph_referent_available(agent: Any, target: str) -> bool:
     return False
 
 
-def _graph_discourse_binding_available(agent: Any) -> bool:
-    """Return whether the graph binds the current discourse topic.
+def _graph_discourse_binding_available(agent: Any, discourse_scope=None) -> bool:
+    """Return whether prior grounded discourse in this event's scope binds a topic.
 
-    This is deliberately stronger than seeing a pronoun or a lexical
-    ``Concept``.  A current topic must also have an in-focus
-    ``DiscourseReferent`` (or a supported reference-resolution evidence
-    record).  The result is a language-neutral binding fact for the cognition
-    layer; it is not an answer or a surface-text heuristic.
+    Global ``CurrentTopic`` and referent salience are compatibility projections,
+    not sufficient evidence for an event-scoped reference. A binding here must
+    come from a grounded topic in the same discourse state and participant
+    direction; standalone and overlapping events do not inherit an antecedent
+    merely because participants match.
     """
     substrate = getattr(agent, "s", agent)
-    if substrate is None:
+    if substrate is None or not isinstance(discourse_scope, dict):
+        return False
+    state = discourse_scope.get("state_id")
+    speaker = discourse_scope.get("speaker_id")
+    addressee = discourse_scope.get("addressee_id")
+    relation = discourse_scope.get("interaction_relation")
+    if (state is None or speaker is None or addressee is None
+            or relation not in {"response", "continuation"}
+            or not substrate.has_node(state)):
         return False
     try:
-        topics = {
-            str(substrate.node(node)["attrs"].get("name") or "").strip().lower()
-            for node in substrate.nodes("CurrentTopic")
-        }
-        topics.discard("")
-        if not topics:
-            return False
-        for node in substrate.nodes("DiscourseReferent"):
-            attrs = substrate.node(node)["attrs"]
-            concept = str(attrs.get("concept") or "").strip().lower()
-            if concept in topics and attrs.get("cognitive_status") == "in_focus":
-                return True
-        for node in substrate.nodes("ReferenceResolutionEvidence"):
-            attrs = substrate.node(node)["attrs"]
-            if (attrs.get("epistemic_status") == "supported"
-                    and str(attrs.get("concept") or "").strip().lower() in topics):
-                return True
+        events = list(substrate.neighbours(state, "has_event"))
+        events.sort(key=lambda event: int(
+            substrate.node(event)["attrs"].get("event_index", -1)),
+                    reverse=True)
+        for event in events:
+            if not substrate.has_node(event):
+                continue
+            attrs = substrate.node(event)["attrs"]
+            topic = str(attrs.get("topic") or "").strip()
+            if not topic:
+                continue
+            if speaker is not None and speaker not in set(
+                    substrate.neighbours(event, "from_speaker")):
+                continue
+            if addressee is not None and addressee not in set(
+                    substrate.neighbours(event, "to_addressee")):
+                continue
+            return True
     except Exception:
         return False
     return False
 
 
 def _language_adapter_evidence(agent: Any, frame: Optional[dict], rel: Optional[dict],
-                               *, kind: str) -> dict[str, Any]:
+                               *, kind: str, discourse_scope=None) -> dict[str, Any]:
     """Emit semantic evidence consumed by graph grounding/arbitration.
 
     This intentionally does not name English concepts or inspect reply text.
@@ -604,6 +664,383 @@ def _language_adapter_evidence(agent: Any, frame: Optional[dict], rel: Optional[
     frame = frame or {}
     rel = rel or {}
     elements = frame.get("elements") or []
+
+    # A greeting can be a co-occurring act rather than the whole utterance.
+    # Keep the English adapter's lexical recognition at this language boundary
+    # and preserve the polar question as a second act; neither overwrites the
+    # other's neutral force. Other language adapters can emit the same ordered
+    # `communicative_acts` contract from their own constructions.
+    if kind == "question" and rel.get("focus") == "polar" and len(elements) > 2:
+        greeting_forms = (
+            ("hi",), ("hello",), ("hey",), ("greetings",),
+            ("good", "morning"), ("good", "afternoon"),
+            ("good", "evening"),
+        )
+        surfaces = [str(element.get("surface") or "") for element in elements]
+        for form in greeting_forms:
+            if len(surfaces) <= len(form):
+                continue
+            normalized = [surface.strip(".,;:?!").casefold()
+                          for surface in surfaces[:len(form)]]
+            delimiter = surfaces[len(form) - 1].rstrip()
+            if (tuple(normalized) == form
+                    and delimiter.endswith(",")):
+                evidence["communicative_acts"] = [
+                    {"act_type": "greeting", "force": "social_action"},
+                    {"act_type": "polar_question",
+                     "force": "information_request"},
+                ]
+                break
+
+    graph = getattr(agent, "s", None)
+    concept_cache = getattr(agent, "_communication_semantic_concepts", None)
+    if not isinstance(concept_cache, dict):
+        concept_cache = {}
+        try:
+            setattr(agent, "_communication_semantic_concepts", concept_cache)
+        except Exception:
+            pass
+
+    def _semantic_concept(surface: Any) -> dict[str, Any]:
+        name = str(surface or "").strip(".,;:?!").lower()
+        if not name or graph is None:
+            return {}
+        node = concept_cache.get(name)
+        if node is None:
+            lookup = getattr(agent, "_concept_by_name", None)
+            if callable(lookup):
+                node = lookup(name)
+                # Content may provide a thin lexical Concept before a later
+                # seed contributes its typed semantic metadata. Prefer that
+                # typed duplicate when one exists; the first name match is
+                # not necessarily the authoritative graph concept.
+                if node is not None:
+                    matches = getattr(getattr(agent, "inner", None),
+                                      "nodes_where", None)
+                    if callable(matches):
+                        typed = [candidate for candidate in matches(
+                            "Concept", "name", name)
+                                 if (agent.s.node(candidate)["attrs"].get(
+                                     "kind") or agent.s.node(candidate)[
+                                         "attrs"].get("semantic_role"))]
+                        if typed:
+                            node = typed[0]
+            else:
+                node = next((candidate for candidate in graph.nodes("Concept")
+                             if str(graph.node(candidate)["attrs"].get(
+                                 "name") or "").lower() == name), None)
+            if node is None:
+                return {}
+            concept_cache[name] = node
+        if not graph.has_node(node):
+            concept_cache.pop(name, None)
+            return {}
+        return dict(graph.node(node)["attrs"])
+
+    # Discourse relation is independent of clause force: a declarative
+    # correction has no action predicate, so this cue must be collected before
+    # the imperative/action-specific extraction below.
+    if elements:
+        first_surface = str(elements[0].get("surface") or "")
+        has_initial_comma = first_surface.endswith(",") or (
+            len(elements) > 1
+            and str(elements[1].get("surface") or "").strip() == ",")
+        initial_marker = first_surface.strip(".,;:?!").lower()
+        no_correction = (
+            initial_marker == "no" and kind == "statement"
+            and str((rel.get("predicate") or {}).get("pos") or "") == "copula")
+        if has_initial_comma and (
+                initial_marker in _CORRECTION_DISCOURSE_MARKERS
+                or no_correction):
+            evidence["discourse_relation"] = "correction"
+
+    # A parsed subject-predicate declarative is neutral assertion evidence,
+    # including eventive predicates rather than only copulas. Keep modal
+    # ability/permission and deficiency frames out: those need their own
+    # communicative-force evidence and must not be collapsed into assertion.
+    # Other language adapters can emit the same category from their clause
+    # analysis without sharing this adapter's surface or POS representation.
+    predicate = rel.get("predicate") or {}
+    subject = rel.get("subject")
+    negation_marked = False
+    negation_index = None
+    for index, element in enumerate(elements):
+        pos = str(element.get("pos") or "").lower()
+        role = str(element.get("role") or "").lower()
+        if pos not in {"adv", "adverb", "negation", "negative", "particle"} \
+                and not (role == "function" and pos in {"auxiliary", "function"}):
+            continue
+        surface = str(element.get("surface") or "").strip(",.;:?!").lower()
+        attrs = _semantic_concept(element.get("surface"))
+        marker_semantics = (
+            str(attrs.get("definition") or "") + " "
+            + str(attrs.get("description") or "") + " "
+            + str(attrs.get("semantic_role") or "")
+        ).lower()
+        # The English parser's typed `not` adverb is a language-adapter
+        # negation marker even when the current seed closure has no separate
+        # Concept record for it. Other languages must emit the same neutral
+        # operator from their own grammar; cognition never sees this lexeme.
+        if "negation" in marker_semantics or (
+                surface == "not" and pos in {"adv", "adverb"}):
+            negation_marked = True
+            negation_index = index
+            break
+    if kind == "question" and rel.get("focus") == "polar":
+        # A language adapter exports the polarity of the queried proposition
+        # as neutral parse evidence. Native cognition compares this with an
+        # accepted graph proposition; the surface marker itself never selects
+        # the answer.
+        evidence["question_polarity"] = (
+            "negated" if negation_marked else "affirmed")
+    if (kind == "statement" and negation_index is not None
+            and isinstance(predicate, dict)):
+        predicate_surface = str(predicate.get("surface") or "").strip(
+            ",.;:?!").lower()
+        predicate_index = next((index for index, element in enumerate(elements)
+                                if str(element.get("surface") or "").strip(
+                                    ",.;:?!").lower() == predicate_surface), None)
+        if predicate_index is not None and predicate_index < negation_index:
+            # A predicative adjective may itself be the selected relation
+            # predicate ("was outdated,"). Include its trailing punctuation;
+            # otherwise changing the relation from the copula to the semantic
+            # complement hides the contrast boundary from this adapter cue.
+            predicate_has_comma = str(
+                elements[predicate_index].get("surface") or "").rstrip().endswith(",")
+            comma_after_predicate = predicate_has_comma or any(
+                str(element.get("surface") or "").rstrip().endswith(",")
+                for element in elements[predicate_index + 1:negation_index])
+            contrasted_nominal = any(
+                element.get("role") == "content"
+                and str(element.get("pos") or "").lower()
+                in {"noun", "pronoun"}
+                for element in elements[negation_index + 1:])
+            if comma_after_predicate and contrasted_nominal:
+                # A post-predicate negative alternative marks a correction
+                # relation ("P, not Q"). A simple negative predicate ("P is
+                # not Q") has no post-predicate comma and remains an ordinary
+                # assertion; graph rules decide the discourse disposition.
+                evidence["discourse_relation"] = "correction"
+    subject_surface = str((subject or {}).get("surface") or "").strip(
+        ".,;:?!").lower()
+    predicate_surface = str(predicate.get("surface") or "").strip(
+        ".,;:?!").lower()
+    if kind == "statement" and negation_marked:
+        subject_concept = _semantic_concept(subject_surface)
+        state_predicate_surface = predicate_surface
+        if predicate.get("pos") == "copula":
+            copula_index = next((index for index, element in enumerate(elements)
+                                 if str(element.get("surface") or "").strip(
+                                     ".,;:?!").lower() == predicate_surface), -1)
+            complement = next((element for element in elements[copula_index + 1:]
+                               if element.get("role") == "content"
+                               and element.get("pos") == "adj"), None)
+            if complement is not None:
+                state_predicate_surface = str(
+                    complement.get("surface") or "").strip(
+                        ".,;:?!").lower()
+        predicate_concept = _semantic_concept(state_predicate_surface)
+        if (subject_concept.get("kind") == "dynamic_predication"
+                and predicate_concept.get("semantic_role") ==
+                "availability_state"):
+            evidence["action_availability"] = "unavailable"
+        if (isinstance(subject, dict)
+                and subject.get("pos") == "pronoun"
+                and predicate_concept.get("semantic_role") ==
+                "epistemic_confidence_state"
+                and rel.get("focus") == "selection"
+                and isinstance(rel.get("object"), dict)):
+            # The adapter reports an unresolved selected proposition as a
+            # neutral information-seeking act. It does not choose whether to
+            # repair, answer, or learn; graph arbitration handles that next.
+            evidence["explicit_uncertainty"] = True
+            evidence["communicative_force"] = "information_request"
+    if (kind == "statement" and negation_marked
+            and subject_surface in {"i", "we"}
+            and predicate_surface == "understand"):
+        # The parsed first-person negative cognition frame is an adapter-level
+        # report of failed understanding. Transport a neutral repair act;
+        # native arbitration, not this English parse, selects the disposition.
+        evidence["communicative_force"] = "repair_or_defer"
+        evidence["communicative_act"] = "nonunderstanding_report"
+        evidence["repair_evidence"] = "nonunderstanding_report"
+    if (kind == "statement" and isinstance(subject, dict)
+            and isinstance(predicate, dict)):
+        first_verb_index = next((i for i, element in enumerate(elements)
+                                 if element.get("role") == "content"
+                                 and element.get("pos") == "verb"), None)
+        first_verb = (elements[first_verb_index] if first_verb_index is not None
+                      else None)
+        modal_action_or_refusal = False
+        modal_element = first_verb
+        preceding_elements = (elements[:first_verb_index]
+                              if first_verb_index is not None else elements)
+        for preceding in reversed(preceding_elements):
+            if (preceding.get("role") != "function"
+                    or preceding.get("pos") not in {"auxiliary", "aux"}):
+                continue
+            candidate_surface = str(preceding.get("surface") or "").strip(
+                ".,;:?!").lower()
+            candidate_attrs = _semantic_concept(candidate_surface)
+            candidate_definition = (
+                str(candidate_attrs.get("definition") or "") + " "
+                + str(candidate_attrs.get("description") or "")).lower()
+            if (candidate_attrs.get("semantic_role")
+                    or candidate_attrs.get("modality")
+                    or "modal" in candidate_definition
+                    or "deficiency cue" in candidate_definition):
+                modal_element = preceding
+                break
+        if modal_element is not None:
+            modal_surface = str(modal_element.get("surface") or "").strip(
+                ".,;:?!").lower()
+            modal_has_complement = first_verb is not None or any(
+                (element.get("role") == "content"
+                 and element.get("pos") == "verb")
+                or (element.get("role") == "function"
+                    and element.get("pos") in {"copula", "auxiliary", "aux"})
+                for element in elements[elements.index(modal_element) + 1:])
+            attrs = _semantic_concept(modal_surface)
+            definition = (str(attrs.get("definition") or "") + " "
+                          + str(attrs.get("description") or "")).lower()
+            role = str(attrs.get("semantic_role") or
+                       attrs.get("modality") or "").lower()
+            deficiency = "deficiency cue" in definition
+            ability_permission = (
+                role in {"permission", "permission_modality",
+                         "ability_permission", "ability"}
+                or "ability or permission" in definition)
+            predicate_semantics = _semantic_concept(
+                str((predicate or {}).get("surface") or ""))
+            cognitive_process = (
+                predicate_semantics.get("kind") == "mental_predicate"
+                or predicate_semantics.get("semantic_role") ==
+                "cognitive_process")
+            modal_action_or_refusal = (
+                (deficiency and not cognitive_process)
+                or (modal_has_complement and ability_permission))
+            # The adapter transports a typed modal act; native rules arbitrate
+            # whether it is an offer, refusal, or another disposition.
+            subject_surface = str((subject or {}).get("surface") or "")
+            first_person_subject = (
+                (subject or {}).get("pos") == "pronoun"
+                and subject_surface.strip(".,;:?!").lower() in {"i", "we"})
+            if first_person_subject and modal_action_or_refusal:
+                if deficiency:
+                    evidence["communicative_force"] = "refusal"
+                    evidence["communicative_act"] = "inability_action"
+                    evidence["communicative_act_evidence"] = (
+                        "first_person_modal_inability_action")
+                elif ability_permission and modal_has_complement:
+                    target = rel.get("object") or rel.get("oblique")
+                    target_name = str((target or {}).get("surface") or "")
+                    evidence["communicative_force"] = "social_action"
+                    evidence["communicative_act"] = "ability_action_offer"
+                    evidence["communicative_act_evidence"] = (
+                        "first_person_ability_action_offer")
+                    unresolved_target_gap = any(
+                        element.get("role") == "gap"
+                        and index > (first_verb_index or -1)
+                        for index, element in enumerate(elements))
+                    evidence["offer_target_status"] = (
+                        "concept_available" if target_name
+                        and _semantic_concept(target_name)
+                        else "unresolved" if target_name or unresolved_target_gap
+                        else "missing")
+            subject_attrs = _semantic_concept(subject_surface)
+            if deficiency and subject_attrs.get("kind") == "speech_function":
+                evidence["communication_failure"] = True
+        first_verb_matches_predicate = (
+            first_verb is None
+            or str(first_verb.get("surface") or "").strip(".,;:?!").lower()
+            == str(predicate.get("surface") or "").strip(".,;:?!").lower()
+        )
+        copular_predication = predicate.get("pos") == "copula"
+        if (not modal_action_or_refusal
+                and (not negation_marked
+                     or evidence.get("discourse_relation") == "correction")
+                and (first_verb_matches_predicate or copular_predication)):
+            evidence["statement_act"] = "assertion"
+
+    # A confirmation question is about whether the interlocutors share a
+    # proposition, not an invitation to retrieve a dictionary sense of its
+    # topic. Emit a typed confirmation category and the parsed proposition
+    # focus; native arbitration decides whether the graph has enough support.
+    if kind == "question" and rel.get("focus") == "reason":
+        # A topic-level causal database cannot explain a particular past
+        # event. Preserve the adapter's typed event scope so graph cognition
+        # does not mistake an entity-level cause claim for an event account.
+        # Other language adapters can emit the same neutral category from
+        # their own tense/aspect/construction analysis.
+        if any(e.get("role") == "function" and e.get("pos") == "auxiliary"
+               and str(e.get("surface") or "").strip(".,;:?!").lower()
+               in {"did", "was", "were", "had"}
+               for e in elements):
+            evidence["relation_scope"] = "event_specific"
+    if (kind == "question" and rel.get("focus") == "polar"
+            and str(predicate.get("surface") or "").strip(".,;:?!").lower()
+            in {"confirm", "verify", "check"}
+            and isinstance(rel.get("object"), dict)):
+        evidence["confirmation_request"] = "proposition_confirmation"
+        evidence["repair_focus"] = str(
+            rel["object"].get("surface") or "").strip(".,;:?!")
+
+    # A modal followed by a perfect auxiliary and a lexical predicate is
+    # adapter-level evidence of epistemic possibility (e.g. "may have
+    # misread"). Keep this deliberately narrower than a bare modal: bare
+    # modals are ambiguous between epistemic, permission, ability, and
+    # obligation readings. The neutral category can be emitted by other
+    # language adapters without exposing English tokens to cognition.
+    content_elements = [e for e in elements if e.get("role") == "content"]
+    function_elements = [e for e in elements if e.get("role") == "function"]
+    if kind == "statement":
+        for index, element in enumerate(elements):
+            if (element.get("role") != "function"
+                    or element.get("pos") not in {"auxiliary", "aux"}):
+                continue
+            modal_surface = str(element.get("surface") or "").strip(
+                ".,;:?!").lower()
+            modal_attrs = _semantic_concept(modal_surface)
+            modal_role = str(modal_attrs.get("semantic_role")
+                             or modal_attrs.get("modality") or "").lower()
+            modal_definition = (
+                str(modal_attrs.get("definition") or "") + " "
+                + str(modal_attrs.get("description") or "")).lower()
+            if (modal_role != "epistemic_possibility"
+                    and "epistemic possibility" not in modal_definition
+                    and not ("modal" in modal_definition
+                             and "possibility" in modal_definition)):
+                continue
+            next_predicate = next((j for j in range(index + 1, len(elements))
+                                   if elements[j].get("role") == "content"
+                                   and elements[j].get("pos") == "verb"), None)
+            perfect_auxiliary = any(
+                e.get("role") == "function" and e.get("pos") == "auxiliary"
+                and str(e.get("surface") or "").strip(".,;:?!").lower()
+                in {"have", "has", "had"}
+                for e in elements[index + 1:next_predicate]
+            ) if next_predicate is not None else False
+            if perfect_auxiliary and next_predicate is not None:
+                evidence["modality_evidence"] = "epistemic_possibility"
+                object_slot = rel.get("object")
+                if (isinstance(object_slot, dict)
+                        and object_slot.get("pos") == "pronoun"):
+                    evidence.update({
+                        "repair_evidence": "uncertain_proposition_reference",
+                        "repair_focus": str(
+                            object_slot.get("surface") or ""
+                        ).strip(".,;:?!"),
+                    })
+                break
+
+    # A bracketed ASR placeholder is transport-level evidence that no usable
+    # utterance was decoded, not ordinary lexical uncertainty. Surface this as
+    # a typed adapter failure so native arbitration can keep `error` distinct
+    # from a repair of an intelligible but unresolved request.
+    transport_failures = {"[unintelligible]", "[inaudible]"}
+    if any(str(element.get("surface") or "").strip().lower()
+           in transport_failures for element in elements):
+        evidence["communication_failure"] = "input_unintelligible"
 
     # A locative/thematic PP is a world-state dependency.  The preposition
     # role comes from the language adapter's held role faculty; the cognition
@@ -656,16 +1093,38 @@ def _language_adapter_evidence(agent: Any, frame: Optional[dict], rel: Optional[
     # A selection focus with an unresolved nominal/verb residual is a repair
     # request, even when a second-person subject is present.  The subject's
     # person is not evidence that the question is about the agent.
+    selection_without_event_binding = (
+        (rel.get("subject") or {}).get("role") == "function"
+        and rel.get("object") is None and rel.get("oblique") is None
+        and bool(frame.get("gaps")))
+    event_selection_without_history = (
+        (rel.get("subject") or {}).get("pos") == "noun"
+        and (rel.get("predicate") or {}).get("pos") == "verb"
+        and rel.get("object") is None and rel.get("oblique") is None
+        and any(element.get("pos") in {"adv", "adverb"}
+                and element.get("role") == "content"
+                for element in elements))
     if (kind == "question" and frame.get("focus") == "selection"
-            and (rel.get("subject") or {}).get("role") == "function"
-            and rel.get("object") is None and rel.get("oblique") is None
-            and frame.get("gaps")):
+            and (selection_without_event_binding
+                 or event_selection_without_history)):
         focus = next((str(e.get("surface") or "").strip(".,;:?!")
                       for e in elements if e.get("role") == "content"
                       and e.get("pos") == "noun"), None)
         evidence.update({"repair_evidence": "unresolved_selection",
                          "referent_status": "unresolved",
                          "repair_focus": focus or "selection"})
+        # Project this adapter's lexical target classification into the
+        # shared semantic category consumed by native selection rules. Other
+        # language adapters provide the same category from their own lexicons;
+        # cognition never branches on this English-language focus string.
+        if focus and focus.casefold() == "rule":
+            evidence["selection_target_kind"] = "rule"
+        if event_selection_without_history:
+            # Temporal/event selection is explicit, but this graph currently
+            # carries no matching execution-history binding. Preserve the
+            # event-specific scope for native repair; never reinterpret the
+            # final adverb as an object or synthesize a rule-history answer.
+            evidence["relation_scope"] = "event_specific"
 
     # Demonstrative determiners create deictic reference evidence.  The
     # object noun may itself be a held Concept, but that does not resolve the
@@ -682,6 +1141,21 @@ def _language_adapter_evidence(agent: Any, frame: Optional[dict], rel: Optional[
                 evidence.update({"deictic_reference": True,
                                  "referent_status": "supported" if resolved else "unresolved",
                                  "referent_target": obj})
+        # A locative adverb is itself the unresolved referent in constructions
+        # such as "describe the place over there". Keep that distinct from an
+        # explicit request to report the agent's perceived scene (which needs
+        # an attached world and is handled by `_is_perception_request`).
+        locative = next((str(element.get("surface") or "").strip(",.;:?!").lower()
+                         for element in elements
+                         if element.get("role") == "content"
+                         and element.get("pos") == "adv"
+                         and str(element.get("surface") or "").strip(",.;:?!").lower()
+                         in {"here", "there"}), None)
+        if locative:
+            resolved = _graph_referent_available(agent, locative)
+            evidence.update({"deictic_reference": True,
+                             "referent_status": "supported" if resolved else "unresolved",
+                             "referent_target": locative})
 
     # A declarative self-report can be a knowledge-deficit repair event. The
     # adapter exposes this only when its graph-resident predicate concept has
@@ -710,35 +1184,56 @@ def _language_adapter_evidence(agent: Any, frame: Optional[dict], rel: Optional[
                 })
                 break
 
-    # A modal/action frame is authority evidence emitted by the language
-    # adapter. It is structural (typed heads plus an actor slot), not a list
-    # of English permission words; cognition still requires a graph-resident
-    # authority decision before release.
-    content = [e for e in elements if e.get("role") == "content"]
-    modal_semantic = False
-    if content:
-        modal_name = str(content[0].get("surface") or "").strip(
+    # A typed modal plus an actor/action frame can request an authority or
+    # recommendation judgment. The modal category comes from its graph
+    # Concept, regardless of whether the language adapter placed it in a
+    # function or content slot. This emits evidence only; cognition still
+    # requires an event-scoped graph decision before release.
+    content = content_elements
+    typed_modal = None
+    typed_modal_attrs = {}
+    modal_candidates = list(content[:1]) + [
+        element for element in function_elements
+        if element.get("pos") in {"auxiliary", "aux"}
+    ]
+    for modal_element in modal_candidates:
+        modal_name = str(modal_element.get("surface") or "").strip(
             ".,;:?!").lower()
-        graph = getattr(agent, "s", None)
-        for node in graph.nodes("Concept") if graph is not None else ():
-            attrs = graph.node(node)["attrs"]
-            if str(attrs.get("name") or "").lower() != modal_name:
-                continue
-            definition = str(attrs.get("definition") or "").lower()
-            role = str(attrs.get("semantic_role") or attrs.get("modality") or "").lower()
-            if (role in {"permission", "permission_modality", "ability_permission"}
-                    or ("permission" in definition and "modal" in definition)):
-                modal_semantic = True
-                break
-    if (kind == "question" and modal_semantic and len(content) >= 2
-            and any(e.get("role") == "function" and e.get("pos") == "pronoun"
-                    for e in elements)
-            and content[0].get("pos") == "verb"
-            and content[1].get("pos") == "verb"):
+        # Use the exact indexed Concept lookup; non-WorldAdapter providers
+        # retain the helper's graph-scan fallback.
+        attrs = _semantic_concept(modal_name)
+        if not attrs:
+            continue
+        definition = str(attrs.get("definition") or "").lower()
+        role = str(attrs.get("semantic_role") or attrs.get("modality") or "").lower()
+        if (role in {
+                "permission", "permission_modality", "ability_permission",
+                "obligation", "deontic_obligation", "expectation",
+                "decision_modality",
+        } or ("modal" in definition and any(category in definition for category in (
+                "permission", "obligation", "expectation")))):
+            typed_modal = modal_element
+            typed_modal_attrs = attrs
+            break
+    action = (rel.get("predicate") if isinstance(rel.get("predicate"), dict)
+              and rel["predicate"].get("pos") == "verb" else None)
+    if (kind == "question" and not evidence.get("confirmation_request")
+            and typed_modal is not None and action is not None
+            and isinstance(rel.get("subject"), dict)
+            and rel["subject"].get("pos") == "pronoun"):
+        modal_definition = str(typed_modal_attrs.get("definition") or "").lower()
+        modal_role = str(typed_modal_attrs.get("semantic_role") or "")
+        evidence["authority_request_kind"] = (
+            "decision_recommendation"
+            if modal_role in {"obligation", "deontic_obligation", "expectation",
+                              "decision_modality"}
+            or any(category in modal_definition
+                   for category in ("obligation", "expectation"))
+            else "permission_or_capability")
         evidence.update({
             "authority_request": True,
             "modality_evidence": "typed_modal_action_frame",
-            "action_predicate": str(content[1].get("surface") or "").strip(
+            "action_predicate": str(action.get("surface") or "").strip(
                 ".,;:?!"),
         })
 
@@ -747,16 +1242,50 @@ def _language_adapter_evidence(agent: Any, frame: Optional[dict], rel: Optional[
     # from graph-resident discourse state, never from the pronoun itself.
     relation_slots = (rel.get("subject"), rel.get("object"),
                       rel.get("oblique"))
+    participant_pronouns = {
+        "i", "me", "my", "mine", "myself", "we", "us", "our",
+        "ours", "ourselves", "you", "your", "yours", "yourself",
+        "yourselves",
+    }
     if (kind == "question"
-            and any(isinstance(slot, dict) and slot.get("pos") == "pronoun"
+            and any(isinstance(slot, dict)
+                    and slot.get("pos") == "pronoun"
+                    and str(slot.get("surface") or "").strip(
+                        ".,;:?!").casefold() not in participant_pronouns
                     for slot in relation_slots)
-            and _graph_discourse_binding_available(agent)):
+            and _graph_discourse_binding_available(agent, discourse_scope)):
         evidence.update({
             "resolved_reference_status": "supported",
             "resolved_reference_evidence": (
-                "CommunicationInterpretation -> CurrentTopic.name + "
-                "DiscourseReferent.concept"),
+                "DiscourseState -> prior DiscourseEvent.topic "
+                "(same speaker/addressee scope)"),
         })
+
+    # Export only the grammar's typed definite-subject cue. A native authored
+    # rule joins this with prior event/participant/action-target evidence and
+    # owns whether that subject resolves to a discourse referent.
+    if (kind == "statement"
+            and evidence.get("discourse_relation") == "correction"
+            and isinstance(subject, dict)
+            and str(subject.get("pos") or "").lower() == "noun"):
+        subject_surface = str(subject.get("surface") or "").strip(
+            ".,;:?!").casefold()
+        subject_index = next((index for index, element in enumerate(elements)
+                              if str(element.get("surface") or "").strip(
+                                  ".,;:?!").casefold() == subject_surface
+                              and str(element.get("pos") or "").lower()
+                              == "noun"), None)
+        determiner = (elements[subject_index - 1]
+                      if subject_index is not None and subject_index > 0
+                      else {})
+        definite = (
+            str(determiner.get("role") or "").lower() == "function"
+            and str(determiner.get("pos") or "").lower() == "determiner"
+            and str(determiner.get("surface") or "").strip(
+                ".,;:?!").casefold() == "the")
+        if definite and subject_surface:
+            evidence["definite_nominal_reference"] = 1.0
+            evidence["referential_head"] = subject_surface
 
     # Directive structure is language-adapter evidence, not a cognition
     # ontology or an English command list.  The adapter's held verb-head
@@ -768,7 +1297,21 @@ def _language_adapter_evidence(agent: Any, frame: Optional[dict], rel: Optional[
         content_indices = [i for i, e in enumerate(elements)
                            if e.get("role") == "content"]
         predicate_indices = []
-        if content_indices:
+        unresolved_action_head = bool(
+            first.get("role") == "gap"
+            and first.get("pos") == "by-position")
+        if unresolved_action_head:
+            # Preserve a clause-initial untyped head as the requested action
+            # predicate. Do not promote a later object noun (for example,
+            # ``door``) into the action merely because the real verb is OOV.
+            focus = str(first.get("surface") or "").strip(".,;:?!")
+            if focus:
+                evidence.update({
+                    "referent_status": "unresolved",
+                    "repair_evidence": "unresolved_action_head",
+                    "repair_focus": focus,
+                })
+        elif content_indices:
             if first.get("role") == "focus":
                 # A typed temporal focus introduces the action clause; skip
                 # its descriptive complement and select the next supported
@@ -780,7 +1323,63 @@ def _language_adapter_evidence(agent: Any, frame: Optional[dict], rel: Optional[
                                             .strip(".,;:?!"))),
                     content_indices[0]))
             else:
-                predicate_indices.append(content_indices[0])
+                # A comma-delimited initial constituent can be a discourse
+                # marker or vocative rather than the imperative head. Parse
+                # the following clause independently (after stripping a
+                # recognized politeness marker) and map its first content
+                # head back to the original frame. Otherwise preserve the
+                # leading content head: sparse POS can tag a true imperative
+                # like "Check" as a noun, while later nouns may also be
+                # verb-ambiguous.
+                first_verb_index = next(
+                    (i for i in content_indices
+                     if elements[i].get("pos") == "verb"), None)
+                # Only a comma before the clause's first verb can introduce a
+                # fronted discourse marker/vocative. A later comma belongs to
+                # the command's content (for example, a comma in text being
+                # read); reparsing its suffix would replace the real command
+                # head with an unrelated verb/adjective from that content.
+                comma_index = next((i for i, element in enumerate(elements)
+                                    if str(element.get("surface") or "").endswith(",")
+                                    and (first_verb_index is None
+                                         or i < first_verb_index)), None)
+                if comma_index is not None:
+                    clause = " ".join(str(element.get("surface") or "")
+                                      for element in elements[comma_index + 1:])
+                    clause = _strip_politeness(agent, clause)
+                    clause_frame = _cg.parse_with_gaps(
+                        clause, agent)
+                    clause_content = next(
+                        (element for element in clause_frame.get("elements", [])
+                         if element.get("role") == "content"), None)
+                    clause_head_norm = str(
+                        (clause_content or {}).get("surface") or ""
+                    ).strip(".,;:?!").lower()
+                    clause_head_index = next(
+                        (i for i in content_indices if i > comma_index
+                         and str(elements[i].get("surface") or "")
+                         .strip(".,;:?!").lower() == clause_head_norm), None)
+                    if clause_head_index is not None:
+                        predicate_indices.append(clause_head_index)
+                if not predicate_indices:
+                    first_content_index = content_indices[0]
+                    first_content = elements[first_content_index]
+                    preceded_by_conjunction = any(
+                        elements[i].get("pos") == "conjunction"
+                        for i in range(first_content_index))
+                    if (preceded_by_conjunction
+                            and first_content.get("pos") == "adv"
+                            and first_verb_index is not None
+                            and first_verb_index > first_content_index):
+                        # In a continuation such as "And then inspect the
+                        # pump", the connective and temporal adverb introduce
+                        # the clause; neither is its action predicate. Use the
+                        # first typed verb head after that structure, while
+                        # preserving the legacy leading-content fallback for
+                        # noun-tagged imperatives.
+                        predicate_indices.append(first_verb_index)
+                    else:
+                        predicate_indices.append(first_content_index)
             # Coordinate clause boundaries are structural evidence. The first
             # content element after a conjunction is another action head;
             # following content remains that clause's target.
@@ -797,24 +1396,162 @@ def _language_adapter_evidence(agent: Any, frame: Optional[dict], rel: Optional[
                           for i in predicate_indices]
             evidence["action_predicates"] = predicates
             evidence["action_predicate"] = predicates[0]
+            initial_comma = next((i for i, element in enumerate(elements)
+                                  if str(element.get("surface") or "").endswith(",")),
+                                 None)
+            if initial_comma == 0:
+                suffix = " ".join(str(element.get("surface") or "")
+                                  for element in elements[1:])
+                polite_suffix = _strip_politeness(agent, suffix)
+                initial_is_vocative = (
+                    elements[0].get("role") == "content"
+                    and elements[0].get("pos") in {"noun", "name"})
+                polite_attention = (
+                    polite_suffix != suffix
+                    and predicates[0].strip(".,;:?!").lower()
+                    in _ATTENTION_PREDICATES)
+                if initial_is_vocative and polite_attention:
+                    evidence["social_act_evidence"] = (
+                        "addressed_attention_request")
             first_index = predicate_indices[0]
-            target_element = next(
+            # A typed anaphoric complement outranks an intervening gerund
+            # predicate ("stop working on that"): the pronoun is the action's
+            # unresolved target, while the gerund remains part of the action
+            # phrase. Otherwise use the first typed content argument, skipping
+            # adjectival modifiers; this keeps a noun head ("first concern")
+            # rather than its prenominal modifier as the target.
+            anaphoric_target = next(
+                (e for e in rel.get("obliques", [])
+                 if e.get("role") == "function" and e.get("pos") == "pronoun"),
+                None)
+            target_element = anaphoric_target or next(
                 (e for e in elements[first_index + 1:]
-                 if (e.get("role") == "content"
+                 if ((e.get("role") == "content" and e.get("pos") != "adj")
                      or (e.get("role") == "function"
                          and e.get("pos") == "pronoun"))
                  and str(e.get("surface") or "").strip(".,;:?!")),
                 None)
+            if (target_element is not None and anaphoric_target is None
+                    and target_element.get("pos") != "pronoun"):
+                # Resolve the argument head inside the action's own clause.
+                # Sparse POS can tag the head of a noun compound as a verb
+                # when it follows a noun modifier ("open the north gate").
+                # The held action-head faculty has already selected the
+                # predicate; among the remaining nominal heads before the next
+                # clause/function boundary, the rightmost noun-like element is
+                # the argument head, even if POS marks that token `verb` but
+                # did not select it as another action predicate.
+                target_start = elements.index(target_element)
+                action_predicate_set = set(predicate_indices)
+                target_end = next(
+                    (i for i in range(first_index + 1, len(elements))
+                     if (elements[i].get("pos") in {
+                             "conjunction", "preposition", "postposition"}
+                         or (elements[i].get("pos") == "adv"
+                             and str(elements[i].get("surface") or "")
+                             .strip(".,;:?!").lower()
+                             in _ACTION_SEQUENCE_CONNECTORS)
+                         or (i in action_predicate_set and i != first_index))),
+                    len(elements))
+                argument_heads = [
+                    i for i in range(max(first_index + 1, target_start), target_end)
+                    if elements[i].get("role") == "content"
+                    and elements[i].get("pos") in {"noun", "verb", "name"}
+                    and i not in action_predicate_set
+                ]
+                if argument_heads:
+                    target_element = elements[argument_heads[-1]]
             if target_element is not None:
-                target = str(target_element.get("surface") or "").strip(
+                target_index = elements.index(target_element)
+                target_head = str(target_element.get("surface") or "").strip(
                     ".,;:?!")
+                target = target_head
+                if (anaphoric_target is None
+                        and target_element.get("pos") != "pronoun"):
+                    # Keep prenominal content when repairing a sparse-POS head
+                    # ("north gate" -> head `gate`). The action Goal needs the
+                    # full argument phrase; the separately recorded head makes
+                    # the adapter's disambiguation inspectable without
+                    # throwing away modifier evidence used by grounding.
+                    phrase_start = target_start
+                    for index in range(target_start - 1, first_index, -1):
+                        element = elements[index]
+                        if (element.get("role") == "content"
+                                and element.get("pos") == "adj"):
+                            phrase_start = index
+                            continue
+                        if (element.get("role") == "function"
+                                and element.get("pos") == "determiner"):
+                            phrase_start = index
+                            continue
+                        break
+                    phrase_parts = []
+                    for index, element in enumerate(
+                            elements[phrase_start:target_index + 1],
+                            start=phrase_start):
+                        if (element.get("role") == "content"
+                                and element.get("pos")
+                                in {"noun", "adj", "name", "verb"}
+                                and index not in action_predicate_set):
+                            part = str(element.get("surface") or "").strip(
+                                ".,;:?!")
+                            if part:
+                                phrase_parts.append(part)
+                    if phrase_parts:
+                        target = " ".join(part for part in phrase_parts if part)
+                        modifiers = phrase_parts[:-1]
+                        if modifiers:
+                            evidence["action_target_modifiers"] = modifiers
+                        # Keep the parsed nominal's source-language surface
+                        # separately from its normalized semantic target. The
+                        # native goal stores the latter; realization may use
+                        # the former to preserve determiners such as "the".
+                        target_surface_parts = []
+                        for element in elements[phrase_start:target_index + 1]:
+                            if (element.get("role") == "content"
+                                    and element.get("pos") in {
+                                        "noun", "adj", "name", "verb"}
+                                    or element.get("role") == "function"
+                                    and element.get("pos") == "determiner"):
+                                part = str(element.get("surface") or "").strip(
+                                    ".,;:?!")
+                                if part:
+                                    target_surface_parts.append(part)
+                        if target_surface_parts:
+                            evidence["action_target_surface"] = " ".join(
+                                target_surface_parts)
                 evidence["action_target"] = target
-                if target_element.get("pos") == "pronoun":
+                evidence["action_target_head"] = target_head
+                # Preserve an explicitly unresolved target as neutral adapter
+                # evidence. This is narrower than treating every parser gap as
+                # a missing referent (well-formed commands also carry benign
+                # residual gaps in this sparse grammar).
+                unknown_target = any(
+                    element.get("pos") == "adj"
+                    and str(element.get("surface") or "").strip(
+                        ".,;:?!").lower() in {"unknown", "unidentified"}
+                    for element in elements[first_index + 1:target_index])
+                if unknown_target:
+                    evidence.update({
+                        "referent_status": "unresolved",
+                        "repair_evidence": "unresolved_action_target",
+                        "repair_focus": target,
+                    })
+                target_surface = str(target_element.get("surface") or "").strip(
+                    ".,;:?!").casefold()
+                participant_pronouns = {
+                    "i", "me", "my", "mine", "myself", "we", "us",
+                    "our", "ours", "ourselves", "you", "your", "yours",
+                    "yourself", "yourselves",
+                }
+                if (target_element.get("pos") == "pronoun"
+                        and target_surface not in participant_pronouns):
                     # A pronoun is a typed reference expression, not a
                     # lexical action object.  Preserve its resolution state
                     # for cognition; do not bind it to the next adverb or
                     # invent a referent from surface order.
-                    resolved = _graph_discourse_binding_available(agent)
+                    resolved = _graph_discourse_binding_available(
+                        agent, discourse_scope)
                     evidence.update({
                         "anaphoric_reference": True,
                         "referent_status": "supported" if resolved else "unresolved",
@@ -822,10 +1559,52 @@ def _language_adapter_evidence(agent: Any, frame: Optional[dict], rel: Optional[
                     })
             if len(predicates) > 1:
                 evidence["action_sequence"] = predicates
+            # An unresolved head immediately after a typed sequential
+            # connector is not an ordinary object gap: it is an additional
+            # requested action whose predicate the adapter could not type.
+            # Preserve that clause-local fact for native arbitration rather
+            # than releasing the first action as if the compound were complete.
+            for connector_index, element in enumerate(elements):
+                connector = str(element.get("surface") or "").strip(
+                    ".,;:?!").casefold()
+                if connector not in _ACTION_SEQUENCE_CONNECTORS:
+                    continue
+                later_clause = elements[connector_index + 1:]
+                unresolved_head = next(
+                    (candidate for candidate in later_clause
+                     if candidate.get("role") in {"content", "gap"}
+                     and candidate.get("pos") not in {"adj", "adv"}),
+                    None)
+                if (unresolved_head is None
+                        or unresolved_head.get("role") != "gap"
+                        or unresolved_head.get("pos") != "by-position"):
+                    continue
+                focus = str(unresolved_head.get("surface") or "").strip(
+                    ".,;:?!")
+                if focus:
+                    evidence.update({
+                        "referent_status": "unresolved",
+                        "repair_evidence": "unresolved_sequence_action_head",
+                        "repair_focus": focus,
+                        "sequence_relation": "sequential",
+                        "sequence_status": "unresolved_action_head",
+                    })
+                    break
             if first.get("role") == "focus" and first.get("pos") in {
                     "time", "condition", "temporal"}:
                 evidence["deferred_condition"] = True
                 evidence["condition_evidence"] = "typed_temporal_focus"
+            elif any(
+                    str(element.get("surface") or "").strip(",.;:?!").lower()
+                    in _TEMPORAL_CONDITION_CONNECTORS
+                    and element.get("role") == "function"
+                    and any(
+                        later.get("role") == "content"
+                        and later.get("pos") == "verb"
+                        for later in elements[index + 1:])
+                    for index, element in enumerate(elements)):
+                evidence["deferred_condition"] = True
+                evidence["condition_evidence"] = "typed_temporal_connector"
             # The language adapter exposes the existing self-account faculty
             # when this typed action frame is an account request addressed to
             # the agent. This is evidence transport, not a new grounding
@@ -1297,7 +2076,7 @@ def _detect_self_process(substrate: Any, text: str) -> Optional[str]:
     if "how" not in toks or not (toks & _SELF_CUES):
         return None
     try:
-        frame = _cg.parse_with_gaps(text, substrate)
+        frame = _cg.parse_with_gaps(text, agent)
     except Exception:
         return None
     if frame.get("focus") != "manner" or _asks_self_structure(frame):
@@ -1310,7 +2089,8 @@ def _detect_self_process(substrate: Any, text: str) -> Optional[str]:
         return None
 
 
-def comprehend_text(agent: Any, text: str, *, kind: Optional[str] = None) -> Comprehension:
+def comprehend_text(agent: Any, text: str, *, kind: Optional[str] = None,
+                    discourse_scope=None) -> Comprehension:
     """Comprehend ARBITRARY text. `kind`, when given, is the speech-act KIND
     the GRAPH already decided (converse() runs the seeded speech_act_classify
     rules over the live inbound Message and passes the minted sak_kind back —
@@ -1429,7 +2209,11 @@ def comprehend_text(agent: Any, text: str, *, kind: Optional[str] = None) -> Com
         pred = _pw[0] if _pw else None
         return Comprehension(
             raw=original, kind="instruction",
-            dispatch={"path": "honest_no_world", "predicate": pred},
+            dispatch={"path": "honest_no_world", "predicate": pred,
+                      "language_evidence": {
+                          "world_dependency": "perceptual_scene",
+                          "world_support": "missing",
+                      }},
             intent="honest_no_world",
             note="a perception request but no world/scene is attached (honest, not 'understood')")
 
@@ -1444,12 +2228,20 @@ def comprehend_text(agent: Any, text: str, *, kind: Optional[str] = None) -> Com
         # unobserved spatial scene. Preserve legitimate table/meta routes; only
         # withdraw the external route when the world dependency is explicit and
         # graph state lacks the required scene.
-        table_frame = _cg.parse_with_gaps(text, substrate)
+        table_frame = _cg.parse_with_gaps(text, agent)
         table_rel = _cg.compose_relation(table_frame)
         table_evidence = _language_adapter_evidence(
-            agent, table_frame, table_rel, kind="question")
+            agent, table_frame, table_rel, kind="question",
+            discourse_scope=discourse_scope)
         table_dispatch = {"path": "table", "spec": spec, "table_kind": spec.kind}
-        if (table_evidence.get("world_dependency") == "spatial_relation"
+        # The held question faculty's explicit meta target names an
+        # agent-resident capability, not a referent in the external scene.
+        # A broad PP parse can still report spatial-looking evidence (e.g.
+        # "gaps ... in your knowledge"), but that must not erase this
+        # independently selected graph-faculty route.
+        is_graph_meta = bool(getattr(spec, "meta_target", None))
+        if (not is_graph_meta
+                and table_evidence.get("world_dependency") == "spatial_relation"
                 and table_evidence.get("world_support") == "missing"):
             table_dispatch.update({
                 "path": "frontier",
@@ -1466,7 +2258,7 @@ def comprehend_text(agent: Any, text: str, *, kind: Optional[str] = None) -> Com
                     else f"table:{spec.kind}"),
             note="comprehended by the existing construction table (fast path)")
 
-    frame = _cg.parse_with_gaps(text, substrate)
+    frame = _cg.parse_with_gaps(text, agent)
     gaps = frame.get("gaps", [])
     # KIND is the GRAPH'S decision (Wave 4): the caller passed the live
     # Message's rule-minted sak_kind, or the same seed rules decide on a
@@ -1519,10 +2311,11 @@ def comprehend_text(agent: Any, text: str, *, kind: Optional[str] = None) -> Com
         rel = _cg.compose_relation(frame)
         comp.relation = rel
         semantic_evidence = _language_adapter_evidence(
-            agent, frame, rel, kind="question")
+            agent, frame, rel, kind="question",
+            discourse_scope=discourse_scope)
         if semantic_evidence:
             comp.dispatch["language_evidence"] = semantic_evidence
-        rule_name = _detect_reflexive_rule(substrate, gaps)
+        rule_name = _detect_reflexive_rule(agent, gaps)
         has_cue = _has_self_cue(frame)
         if semantic_evidence.get("repair_evidence") == "unresolved_selection":
             # Selection residuals are repair evidence, not evidence that the
@@ -1592,6 +2385,32 @@ def comprehend_text(agent: Any, text: str, *, kind: Optional[str] = None) -> Com
                                       "strategy": "polar_capability"}
                     comp.intent = f"ask_capability:{verb}"
                 return comp
+            elif (rel.get("focus") == "polar"
+                  and not any(
+                      str(element.get("surface") or "").strip(
+                          ",.;:?!").casefold() in _POLITENESS_MARKERS
+                      for element in frame.get("elements") or [])
+                  and str((rel.get("subject") or {}).get(
+                      "surface", "")).lower().strip(",.;:?!") in _SELF_CUES
+                  and (rel.get("object") is not None
+                       or rel.get("oblique") is not None)):
+                # Keep an object-bearing self-polar relation in the neutral
+                # information path so native graph arbitration can distinguish
+                # a grounded capability answer from an unsupported relation.
+                # The external object is a parse fact; the graph's capability
+                # and topic rules decide which evidence path (if any) applies.
+                # A recognized polite action request is excluded: "Would you
+                # kindly open the door?" is not an object-topic question.
+                topic_el = _topic_nominal(rel)
+                topic = (str((topic_el or {}).get("surface") or "")
+                         .strip(",.;:?!"))
+                if topic:
+                    comp.dispatch = {"path": "know", "concept": topic,
+                                     "pre_resolved": None}
+                    if semantic_evidence:
+                        comp.dispatch["language_evidence"] = semantic_evidence
+                    comp.intent = f"ask_world:{topic}"
+                    return comp
             elif frame.get("focus") == "manner" and not _asks_self_structure(frame):
                 # A generic reflexive "how do you <verb>" / "how does X come about"
                 # the agent has NO specific self-account for (no held-rule name, no
@@ -1619,7 +2438,9 @@ def comprehend_text(agent: Any, text: str, *, kind: Optional[str] = None) -> Com
             else:
                 comp.dispatch = {"path": "frontier",
                                   "reason": "reflexive question but no meta_target derivable "
-                                            f"(focus={frame.get('focus')!r})"}
+                                            f"(focus={frame.get('focus')!r})",
+                                  **({"language_evidence": semantic_evidence}
+                                     if semantic_evidence else {})}
                 comp.intent = "ask_self:unresolved"
         else:
             topic_el = _topic_nominal(rel)
@@ -1647,8 +2468,9 @@ def comprehend_text(agent: Any, text: str, *, kind: Optional[str] = None) -> Com
         rel = _cg.compose_relation(frame)
         comp.relation = rel
         semantic_evidence = _language_adapter_evidence(
-            agent, frame, rel, kind="instruction")
-        rule_name = _detect_reflexive_rule(substrate, gaps)
+            agent, frame, rel, kind="instruction",
+            discourse_scope=discourse_scope)
+        rule_name = _detect_reflexive_rule(agent, gaps)
         if rule_name:
             # an indirect information request ("Tell me about the rule X") —
             # a GROUNDED rule name promotes the imperative to a question,
@@ -1685,7 +2507,8 @@ def comprehend_text(agent: Any, text: str, *, kind: Optional[str] = None) -> Com
         rel = _cg.compose_relation(frame)
         comp.relation = rel
         semantic_evidence = _language_adapter_evidence(
-            agent, frame, rel, kind="statement")
+            agent, frame, rel, kind="statement",
+            discourse_scope=discourse_scope)
         if semantic_evidence.get("repair_evidence") == "knowledge_deficit":
             comp.dispatch = {"path": "frontier", "relation": rel,
                              "reason": "knowledge deficit requires repair",

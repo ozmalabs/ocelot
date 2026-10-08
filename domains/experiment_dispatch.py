@@ -297,7 +297,7 @@ def _ingest_result(agent, exp, run_dir: Path) -> None:
     # OWN rules can read it (seeds/adoption_safety.json's regression veto).
     # Mechanical copy of what the child already decided/reported: only keys
     # actually present in result.json are carried, no defaults invented.
-    for key in ("flagged", "flagged_changed", "regressions"):
+    for key in ("flagged", "flagged_changed", "broken_fixes", "regressions"):
         if key in result:
             try:
                 I.set_attr(run, key, int(result.get(key) or 0))
@@ -305,7 +305,10 @@ def _ingest_result(agent, exp, run_dir: Path) -> None:
                 pass
     if "regressions" in result:
         try:
-            I.set_attr(exp, "regressions", int(result.get("regressions") or 0))
+            # A broken fix (flagged turn now fails: empty/error surface) is a
+            # regression for the adoption veto (seeds/adoption_safety.json).
+            I.set_attr(exp, "regressions", int(result.get("regressions") or 0)
+                       + int(result.get("broken_fixes") or 0))
         except Exception:  # noqa: BLE001
             pass
     # SELF-OPTIMISATION (efficiency objective): the conversation child's own

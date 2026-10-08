@@ -1,0 +1,7 @@
+# Residual CoW fanout memory v1 preregistration
+
+Measure the actual residual proposal workflow at a 100,000-unrelated-node host size, crossed with branch fanout 1/4/16 and full-copy/shared-graph-pages backends. Use three fresh-process repetitions per cell. Every branch receives the same faulted navigation task, derives the already measured cue, composes and scores a candidate on held-out cases, and packages a residual. After sampling the all-branches-live state, return one validated residual to the host and discard the remaining branches.
+
+Sample Linux `smaps_rollup` at host baseline after fixture construction, after branch forks, after candidate generation, after held-out validation/residual packaging, and after unreturned branches are dropped and the selected branch is dropped. Record host graph/rule state before exploration, after exploration, and after one explicit graph-delta return. Verify every candidate succeeds; no unreturned candidate artifact or rule-store change may reach the host. This is a current-PSS/RSS workload measurement, not kernel peak memory or allocator-live-byte accounting.
+
+Primary outcomes are current PSS/RSS deltas per stage, branch throughput, per-branch fork and candidate cost, retained branch count, and post-drop PSS/RSS relative to the pre-branch state. Source/native hashes and worker/cell schedule are locked. No natural-workload or general speed claim follows from this one synthetic navigation task and one host.

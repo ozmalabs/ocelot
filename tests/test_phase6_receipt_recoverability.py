@@ -5,6 +5,7 @@ from evaluation.phase6_receipt_recoverability import (
     MISSING,
     RECEIPT_BACKED,
     RELEASED_MISMATCH,
+    classify_event,
     measure_receipt_recoverability,
 )
 
@@ -161,3 +162,38 @@ def test_runtime_state_diagnostic_preserves_its_evidence_contract() -> None:
     assert diagnostic["release_state"] == "released"
     assert diagnostic["not_receipt_semantic_evidence"] is True
     assert result["dimension_counts"] == {}
+
+
+def test_typed_response_intents_are_compatible_with_their_input_force() -> None:
+    # These pairs are observed in ProductionGateReceipt fields.  They include
+    # response acts (clarification, acknowledgement, refusal/defer, and gap
+    # reporting), not merely a repetition of the input's speech-act label.
+    compatible = [
+        ("assertion", "acknowledge_receipt_without_endorsement"),
+        ("acknowledgement", "acknowledge_receipt_without_endorsement"),
+        ("assertion", "request"),
+        ("correction", "update_common_ground"),
+        ("correction", "request"),
+        ("request_information", "act"),
+        ("request_action", "inform"),
+        ("request_action", "defer"),
+        ("offer", "coordinate_socially"),
+        ("offer", "request"),
+        ("offer", "acknowledge_receipt_without_endorsement"),
+        ("social_action", "request"),
+    ]
+    for force, intent in compatible:
+        result = classify_event(
+            _event(f"{force}-{intent}", force=force),
+            {"production_gate_receipts": [_receipt(intent=intent)]},
+        )
+        assert result["classification"] == RECEIPT_BACKED, (force, intent, result)
+
+
+def test_unrelated_social_response_does_not_match_an_action_request() -> None:
+    result = classify_event(
+        _event("wrong-response", force="request_action"),
+        {"production_gate_receipts": [_receipt(intent="coordinate_socially")]},
+    )
+    assert result["classification"] == RELEASED_MISMATCH
+    assert result["dimensions"] == ["force"]

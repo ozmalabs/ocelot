@@ -1,0 +1,17 @@
+#!/usr/bin/env python3
+"""Independent analysis of where-reader Term/fan-out scaling panel."""
+import hashlib,json,statistics
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1];RAW=ROOT/"evaluation/reports/substrate_where_reader_term_fanout_v1_1_20260928.json";OUT=ROOT/"evaluation/reports/substrate_where_reader_term_fanout_v1_1_analysis_20260928.json"
+def median(rows,fn):return int(statistics.median(fn(r) for r in rows))
+def main():
+ raw=json.loads(RAW.read_text());runs=raw["runs"];checks={"runner_gates_pass":raw["all_checks_pass"] is True and all(raw["checks"].values()),"36_unique_workers":len(runs)==36 and len({r["pid"] for r in runs})==36,"off_incremental_graph_parity":all(r["arms"]["off"]["graph"]==r["arms"]["incremental"]["graph"] for r in runs),"unsound_falsifier_diverges":all(r["arms"]["unsound"]["open_count"]==0 and r["arms"]["incremental"]["open_count"]==r["n"] for r in runs),"candidate_pairs_equal_N_times_R":all(r["arms"]["incremental"]["metrics"].get("cand_enum",0)==r["n"]*r["reader_count"] for r in runs),"reachable_traversal_units_equal_N_squared_R":all(r["arms"]["incremental"]["initial_metrics"].get("term_unit:ReachableFrom",0)==r["n"]*r["n"]*r["reader_count"] for r in runs if r["family"]=="reachable"),"not_exists_initial_units_equal_N_times_R":all(r["arms"]["incremental"]["initial_metrics"].get("term_units_total",0)==r["n"]*r["reader_count"] for r in runs if r["family"]=="not_exists"),"manifest_success":raw["run_manifest"].get("exit_status")==0}
+ cells=[]
+ for family in ("reachable","not_exists"):
+  for n in (128,512):
+   for readers in (1,16,64):
+    rows=[r for r in runs if r["family"]==family and r["n"]==n and r["reader_count"]==readers]
+    cells.append({"family":family,"n":n,"reader_count":readers,"replicates":len(rows),"expected_candidate_pairs":n*readers,"arms":{mode:{"candidate_pairs":median(rows,lambda r:r["arms"][mode]["metrics"].get("cand_enum",0)),"rule_enumerations":median(rows,lambda r:r["arms"][mode]["metrics"].get("rule_enumerations",0)),"term_evaluations":median(rows,lambda r:r["arms"][mode]["metrics"].get("term_evals_total",0)),"term_units":median(rows,lambda r:r["arms"][mode]["metrics"].get("term_units_total",0)),"initial_term_evaluations":median(rows,lambda r:r["arms"][mode]["initial_metrics"].get("term_evals_total",0)),"initial_term_units":median(rows,lambda r:r["arms"][mode]["initial_metrics"].get("term_units_total",0)),"initial_reachable_units":median(rows,lambda r:r["arms"][mode]["initial_metrics"].get("term_unit:ReachableFrom",0)),"settle_wall_ns":median(rows,lambda r:r["arms"][mode]["settle_wall_ns"]),"delete_wall_ns":median(rows,lambda r:r["arms"][mode]["delete_wall_ns"]),"open_count":rows[0]["arms"][mode]["open_count"]} for mode in ("off","incremental","unsound")}})
+ checks["all_12_cells_recomputed"]=len(cells)==12 and all(c["replicates"]==3 and c["arms"]["incremental"]["candidate_pairs"]==c["expected_candidate_pairs"] for c in cells)
+ out={"analysis_id":"substrate-where-reader-term-fanout-v1-1-independent-analysis","raw_sha256":hashlib.sha256(RAW.read_bytes()).hexdigest(),"checks":checks,"checks_passed":sum(checks.values()),"checks_total":len(checks),"all_checks_pass":all(checks.values()),"cells":cells,"claim_boundary":raw["claim_boundary"]};OUT.write_text(json.dumps(out,indent=2,sort_keys=True)+"\n");print(json.dumps({"checks_passed":out["checks_passed"],"checks_total":out["checks_total"],"all_checks_pass":out["all_checks_pass"],"cells":cells},indent=2));return 0 if out["all_checks_pass"] else 1
+if __name__=="__main__":raise SystemExit(main())

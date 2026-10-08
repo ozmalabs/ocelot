@@ -41,7 +41,7 @@ from domains import llm_hf_forward as hf
 from domains import llm_knowledge_seed as ks
 
 MODEL = "/applications/data/model_graph_work/Qwen3.8-4B-Distill"
-OUT = "seeds/generated/qwen3_reaped_knowledge_scaled.json"
+OUT = "domain_data/llm_harvest/qwen3_reaped_knowledge_scaled.json"
 SOURCE = "qwen3"
 KNOWLEDGE_TRUST = 0.5
 BATCH = 32

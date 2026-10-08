@@ -86,6 +86,10 @@ mechanism (the growth ladder, the frame/continuum invariant that keeps
 in-graph values integer while cross-frame maps may be real-valued) and
 `docs/features/` generally for how it shows up in each subsystem.
 
+The separate bearer-authenticated OpenAI-compatible chat endpoint and its
+copy-on-write user/session model are documented in
+[`docs/features/OPENAI_COMPATIBLE_COW_API.md`](docs/features/OPENAI_COMPATIBLE_COW_API.md).
+
 ## Building
 
 ```bash
@@ -96,6 +100,10 @@ maturin develop --release
 This builds the `substrate_rs` Rust extension and installs it into the
 active Python environment. Two things worth knowing before you run a
 `--release` build:
+
+For a Python-runtime-only rebuild, `scripts/engine_build.sh --lib-only`
+builds and safely installs just the native library, then refreshes the same
+source-provenance record without relinking the Rust probe binaries.
 
 - **Memory.** `runners/dsl/.cargo/config.toml` caps `jobs = 4`. The release
   profile uses fat LTO + `codegen-units=1` for benchmark fidelity, which

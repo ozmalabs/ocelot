@@ -1,0 +1,5 @@
+# Anaphora order estimator v1.2 amendment (2026-09-29)
+
+The first v1 capture completed but used the loaded rule array as the index basis for source-clause requests; its exact cells did not represent the registered candidate order set. V1.1 corrected that encoder but its task-context variation showed that the native installer does not preserve the same requested-to-installed order map at every graph size. Both captures are retained as harness attempts and excluded from confirmatory results.
+
+V1.2 therefore uses every requested clause permutation as an estimator candidate and exact arm, records the installed order under each context/replicate, and compares predicted requests to the exact cost of their realized installed orders. It adds an untouched source-order audited arm per graph cell so the plain baseline has a matching native candidate-work reference. All task inputs, B budgets, estimator sampling rule, parity gates, and claim boundary remain fixed. V1.2 has distinct runner/analyzer/lock/raw/manifest/log paths. An exact-cell order mismatch or incomplete requested-order coverage invalidates the panel.

@@ -1,0 +1,5 @@
+# Thoughtexperiment graph-resident proposal selection v2 — censored pilot
+
+The v2 prototype reached graph-Term candidate scoring, but its independent analyzer correctly failed two gates. The intended tie fixture was not tied: its rows gave one candidate two matches and the other one. The run also placed CandidateProposal/CandidateEvidence nodes directly on the primary graph, so the primary-state isolation gate failed. The resulting output is not counted as a pass or capability result.
+
+The preregistered v3 capture fixes both problems: balanced tie evidence must abstain, and all scoring nodes are confined to a disposable snapshot branch. Only a compact winner residual is returned to the primary graph. See the [v3 protocol](THOUGHTEXPERIMENT_ATTRIBUTE_SITE_GRAPH_SELECTION_V3_PREREG_20261002.md) and [v3 results](THOUGHTEXPERIMENT_ATTRIBUTE_SITE_GRAPH_SELECTION_V3_RESULTS_20261002.md). The v2 lock and raw artifacts remain available for audit under `evaluation/substrate_capability/thoughtexperiment_attribute_site_active_choice_v2_lock_20261002.json` and `evaluation/reports/thoughtexperiment_attribute_site_active_choice_v2_*_20261002.json`.

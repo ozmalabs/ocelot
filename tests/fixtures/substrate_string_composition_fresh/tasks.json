@@ -1,0 +1,1273 @@
+{
+  "design": "18 seeded tasks in six two-stage string-composition strata; four revealed and three held-out rows per task",
+  "seed_rule": "random.Random(20261003 + one-based-task-index * 7919)",
+  "suite_id": "substrate-string-composition-fresh-v1",
+  "task_count": 18,
+  "tasks": [
+    {
+      "example_rows": [
+        {
+          "expected": 0,
+          "inputs": {
+            "s": " c-! dxbec-ye-"
+          }
+        },
+        {
+          "expected": 1,
+          "inputs": {
+            "s": "a-cD -dE,Cex--Bab"
+          }
+        },
+        {
+          "expected": 0,
+          "inputs": {
+            "s": " dEDDe??,ED,BcdxBB"
+          }
+        },
+        {
+          "expected": 0,
+          "inputs": {
+            "s": "-xy__Eb?ya-,C??D"
+          }
+        }
+      ],
+      "family": "casefold_count",
+      "held_out_rows": [
+        {
+          "expected": 0,
+          "inputs": {
+            "s": "-_?Ayc,z_-bDb-"
+          }
+        },
+        {
+          "expected": 0,
+          "inputs": {
+            "s": " bbbac-zy,!!ba"
+          }
+        },
+        {
+          "expected": 0,
+          "inputs": {
+            "s": "x?,Ddec_-Ee-dBC-"
+          }
+        }
+      ],
+      "id": "fresh_casefold_count_01",
+      "oracle_kind": "casefold_count",
+      "parameter": "ab",
+      "request_text": "Write a function that casefolds the input and counts non-overlapping occurrences of 'ab'."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": 0,
+          "inputs": {
+            "s": "x?ByACx,C__D?D"
+          }
+        },
+        {
+          "expected": 0,
+          "inputs": {
+            "s": "de_-AbBE-"
+          }
+        },
+        {
+          "expected": 0,
+          "inputs": {
+            "s": "zad?DCza?yx,C!b,"
+          }
+        },
+        {
+          "expected": 0,
+          "inputs": {
+            "s": "C_bABB!b"
+          }
+        }
+      ],
+      "family": "casefold_count",
+      "held_out_rows": [
+        {
+          "expected": 0,
+          "inputs": {
+            "s": "A!y_ Ea-D-ae,!b"
+          }
+        },
+        {
+          "expected": 0,
+          "inputs": {
+            "s": "ab!AC-a,yb_-!-_ "
+          }
+        },
+        {
+          "expected": 0,
+          "inputs": {
+            "s": "BCBa,zAzaBd"
+          }
+        }
+      ],
+      "id": "fresh_casefold_count_02",
+      "oracle_kind": "casefold_count",
+      "parameter": "xy",
+      "request_text": "Write a function that casefolds the input and counts non-overlapping occurrences of 'xy'."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": 0,
+          "inputs": {
+            "s": "zy,-xca?Bxy!! D"
+          }
+        },
+        {
+          "expected": 0,
+          "inputs": {
+            "s": "ecC ABByaCz_AAc"
+          }
+        },
+        {
+          "expected": 1,
+          "inputs": {
+            "s": "D!daBxc,EdbaCdEaz"
+          }
+        },
+        {
+          "expected": 1,
+          "inputs": {
+            "s": "dDc?Ee,,exyCde!"
+          }
+        }
+      ],
+      "family": "casefold_count",
+      "held_out_rows": [
+        {
+          "expected": 0,
+          "inputs": {
+            "s": "DAx-AcxCzE"
+          }
+        },
+        {
+          "expected": 0,
+          "inputs": {
+            "s": "_!B-Bb_-E?_az"
+          }
+        },
+        {
+          "expected": 0,
+          "inputs": {
+            "s": "zeADzaeED?zC___"
+          }
+        }
+      ],
+      "id": "fresh_casefold_count_03",
+      "oracle_kind": "casefold_count",
+      "parameter": "cd",
+      "request_text": "Write a function that casefolds the input and counts non-overlapping occurrences of 'cd'."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": [
+            " ",
+            "c",
+            "",
+            "y zd ",
+            "xb",
+            " bd",
+            ""
+          ],
+          "inputs": {
+            "s": " aCAay zd axbA bDa"
+          }
+        },
+        {
+          "expected": [
+            " e",
+            "dedzzb",
+            "",
+            "x",
+            "",
+            "ezcey"
+          ],
+          "inputs": {
+            "s": " eADedzzbaaxaAEzCey"
+          }
+        },
+        {
+          "expected": [
+            "b ceb",
+            "",
+            "bdcyc",
+            " bx",
+            "y"
+          ],
+          "inputs": {
+            "s": "b CEBaaBDcycA bxay"
+          }
+        },
+        {
+          "expected": [
+            "",
+            " ybb",
+            "bxx"
+          ],
+          "inputs": {
+            "s": "A yBBabxx"
+          }
+        }
+      ],
+      "family": "casefold_split",
+      "held_out_rows": [
+        {
+          "expected": [
+            " x",
+            "ybdz",
+            "bxyzy",
+            " dd",
+            "ec",
+            "xc",
+            "e ec"
+          ],
+          "inputs": {
+            "s": " xaybDzabxyzya dDaECaxcAE EC"
+          }
+        },
+        {
+          "expected": [
+            "zxdx",
+            "ydce ",
+            "",
+            "xbb",
+            "c",
+            "zc",
+            ""
+          ],
+          "inputs": {
+            "s": "zxDxAydCE aAxBBAcazCa"
+          }
+        },
+        {
+          "expected": [
+            "d",
+            "db",
+            "ee"
+          ],
+          "inputs": {
+            "s": "DadBAEE"
+          }
+        }
+      ],
+      "id": "fresh_casefold_split_01",
+      "oracle_kind": "casefold_split",
+      "parameter": "A",
+      "request_text": "Write a function that lowercases the input and then splits it on 'A', ignoring separator case."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": [
+            "yzxxacy",
+            "eac",
+            "ece"
+          ],
+          "inputs": {
+            "s": "yzxxacybEAcbece"
+          }
+        },
+        {
+          "expected": [
+            "xeaa e",
+            "",
+            "dacaaay",
+            "d",
+            "d"
+          ],
+          "inputs": {
+            "s": "xEAa ebBDAcAaAyBDbD"
+          }
+        },
+        {
+          "expected": [
+            "czz",
+            "cey d"
+          ],
+          "inputs": {
+            "s": "CzzBcEy d"
+          }
+        },
+        {
+          "expected": [
+            "",
+            "zzec",
+            "dz"
+          ],
+          "inputs": {
+            "s": "bzzecbdz"
+          }
+        }
+      ],
+      "family": "casefold_split",
+      "held_out_rows": [
+        {
+          "expected": [
+            "",
+            "zx",
+            "ee",
+            "",
+            "caax",
+            "adae",
+            ""
+          ],
+          "inputs": {
+            "s": "bzxBeebbcAAxbaDAeb"
+          }
+        },
+        {
+          "expected": [
+            "cad ",
+            "xy",
+            "addcad",
+            ""
+          ],
+          "inputs": {
+            "s": "cad BxybadDCaDb"
+          }
+        },
+        {
+          "expected": [
+            "daa",
+            "",
+            "z",
+            "",
+            "cy",
+            "",
+            "aee"
+          ],
+          "inputs": {
+            "s": "daabBzBBcybBaEE"
+          }
+        }
+      ],
+      "id": "fresh_casefold_split_02",
+      "oracle_kind": "casefold_split",
+      "parameter": "B",
+      "request_text": "Write a function that lowercases the input and then splits it on 'B', ignoring separator case."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": [
+            "b  ",
+            "beda",
+            "edee",
+            "ba",
+            "b by"
+          ],
+          "inputs": {
+            "s": "b  cbeDaCEDEEcbaCB by"
+          }
+        },
+        {
+          "expected": [
+            "",
+            "a",
+            "xe",
+            "",
+            "xabax ",
+            "day",
+            "eeede"
+          ],
+          "inputs": {
+            "s": "CAcxEccxabAx CdayCeEedE"
+          }
+        },
+        {
+          "expected": [
+            "bb",
+            "az",
+            "abea",
+            "ydbzxa"
+          ],
+          "inputs": {
+            "s": "bbCAzCAbEaCyDBzxa"
+          }
+        },
+        {
+          "expected": [
+            "bx",
+            "",
+            "edddxee",
+            "baa",
+            "deddx"
+          ],
+          "inputs": {
+            "s": "BxcCEdddxEeCbAacDEdDx"
+          }
+        }
+      ],
+      "family": "casefold_split",
+      "held_out_rows": [
+        {
+          "expected": [
+            "  d",
+            "",
+            "e",
+            "abb",
+            "ab",
+            "b",
+            "aaey",
+            "a",
+            "",
+            "b",
+            ""
+          ],
+          "inputs": {
+            "s": "  dccecabbcabcBCaAeycACcbc"
+          }
+        },
+        {
+          "expected": [
+            "ey ",
+            "ad xby"
+          ],
+          "inputs": {
+            "s": "ey cAd xby"
+          }
+        },
+        {
+          "expected": [
+            "",
+            "a",
+            "b",
+            "zeed",
+            "yz"
+          ],
+          "inputs": {
+            "s": "CaCbCzEEDCyz"
+          }
+        }
+      ],
+      "id": "fresh_casefold_split_03",
+      "oracle_kind": "casefold_split",
+      "parameter": "C",
+      "request_text": "Write a function that lowercases the input and then splits it on 'C', ignoring separator case."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": [
+            "vcXvfa",
+            "Zb",
+            "evYX"
+          ],
+          "inputs": {
+            "s": "XYve|bZ|afvXcv"
+          }
+        },
+        {
+          "expected": [
+            "bvcd",
+            "eadevc",
+            "ffva",
+            "vvu"
+          ],
+          "inputs": {
+            "s": "uvv|avff|cvedae|dcvb"
+          }
+        },
+        {
+          "expected": [
+            "dbvXXe",
+            "effcZf",
+            "avdY"
+          ],
+          "inputs": {
+            "s": "Ydva|fZcffe|eXXvbd"
+          }
+        },
+        {
+          "expected": [
+            "bbwafu",
+            "avdwXf",
+            "XaYdcu",
+            "YfwucwZ"
+          ],
+          "inputs": {
+            "s": "ZwcuwfY|ucdYaX|fXwdva|ufawbb"
+          }
+        }
+      ],
+      "family": "reverse_then_split",
+      "held_out_rows": [
+        {
+          "expected": [
+            "cYeacw",
+            "uwcedeX",
+            "uXeew"
+          ],
+          "inputs": {
+            "s": "weeXu|Xedecwu|wcaeYc"
+          }
+        },
+        {
+          "expected": [
+            "Yv",
+            "vdvYd"
+          ],
+          "inputs": {
+            "s": "dYvdv|vY"
+          }
+        },
+        {
+          "expected": [
+            "Zef",
+            "fY"
+          ],
+          "inputs": {
+            "s": "Yf|feZ"
+          }
+        }
+      ],
+      "id": "fresh_reverse_then_split_01",
+      "oracle_kind": "reverse_then_split",
+      "parameter": "|",
+      "request_text": "Write a function that reverses the entire input string and then splits it on '|'."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": [
+            "ecbfav",
+            "Zwewa",
+            "cvuud"
+          ],
+          "inputs": {
+            "s": "duuvc,awewZ,vafbce"
+          }
+        },
+        {
+          "expected": [
+            "uecdf",
+            "YXewa",
+            "uZXwa",
+            "dd"
+          ],
+          "inputs": {
+            "s": "dd,awXZu,aweXY,fdceu"
+          }
+        },
+        {
+          "expected": [
+            "fud",
+            "ew",
+            "vbfXfYc",
+            "ewXdua"
+          ],
+          "inputs": {
+            "s": "audXwe,cYfXfbv,we,duf"
+          }
+        },
+        {
+          "expected": [
+            "ueYcXue",
+            "daceX"
+          ],
+          "inputs": {
+            "s": "Xecad,euXcYeu"
+          }
+        }
+      ],
+      "family": "reverse_then_split",
+      "held_out_rows": [
+        {
+          "expected": [
+            "Yda",
+            "wXe",
+            "wawYfd",
+            "dfXY"
+          ],
+          "inputs": {
+            "s": "YXfd,dfYwaw,eXw,adY"
+          }
+        },
+        {
+          "expected": [
+            "ad",
+            "Yau"
+          ],
+          "inputs": {
+            "s": "uaY,da"
+          }
+        },
+        {
+          "expected": [
+            "XXewXY",
+            "uwZYc",
+            "cefd",
+            "bbYXX"
+          ],
+          "inputs": {
+            "s": "XXYbb,dfec,cYZwu,YXweXX"
+          }
+        }
+      ],
+      "id": "fresh_reverse_then_split_02",
+      "oracle_kind": "reverse_then_split",
+      "parameter": ",",
+      "request_text": "Write a function that reverses the entire input string and then splits it on ','."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": [
+            "ZwaXbX",
+            "dv",
+            "vav",
+            "wYcwff"
+          ],
+          "inputs": {
+            "s": "ffwcYw;vav;vd;XbXawZ"
+          }
+        },
+        {
+          "expected": [
+            "Xvfc",
+            "cbbXZfb",
+            "XeYf"
+          ],
+          "inputs": {
+            "s": "fYeX;bfZXbbc;cfvX"
+          }
+        },
+        {
+          "expected": [
+            "fdfdXb",
+            "euew",
+            "vve"
+          ],
+          "inputs": {
+            "s": "evv;weue;bXdfdf"
+          }
+        },
+        {
+          "expected": [
+            "YfXa",
+            "faa"
+          ],
+          "inputs": {
+            "s": "aaf;aXfY"
+          }
+        }
+      ],
+      "family": "reverse_then_split",
+      "held_out_rows": [
+        {
+          "expected": [
+            "aw",
+            "bf",
+            "aw",
+            "Xwuafdc"
+          ],
+          "inputs": {
+            "s": "cdfauwX;wa;fb;wa"
+          }
+        },
+        {
+          "expected": [
+            "eXY",
+            "fwXbaee",
+            "cfcuau",
+            "wYecf"
+          ],
+          "inputs": {
+            "s": "fceYw;uaucfc;eeabXwf;YXe"
+          }
+        },
+        {
+          "expected": [
+            "ddXYZew",
+            "fdYuYuw"
+          ],
+          "inputs": {
+            "s": "wuYuYdf;weZYXdd"
+          }
+        }
+      ],
+      "id": "fresh_reverse_then_split_03",
+      "oracle_kind": "reverse_then_split",
+      "parameter": ";",
+      "request_text": "Write a function that reverses the entire input string and then splits it on ';'."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": "cufXbaYcYeYww",
+          "inputs": {
+            "s": "cufXb-aYcYe-Yww"
+          }
+        },
+        {
+          "expected": "eXaYuaZcwYXudbaeXbbeZ",
+          "inputs": {
+            "s": "eXaYuaZ-cw-YXudb-aeXbbeZ"
+          }
+        },
+        {
+          "expected": "afbZbducvcucwvX",
+          "inputs": {
+            "s": "afbZbd-ucvcu-cwvX"
+          }
+        },
+        {
+          "expected": "YXfcedZcwYXZZeZcbXww",
+          "inputs": {
+            "s": "YXfce-dZcwYXZ-ZeZc-bXww"
+          }
+        }
+      ],
+      "family": "remove_separator",
+      "held_out_rows": [
+        {
+          "expected": "YdXYXaadeZZeed",
+          "inputs": {
+            "s": "Yd-XY-XaadeZ-Zeed"
+          }
+        },
+        {
+          "expected": "ffbbuYZZcbfwewdaea",
+          "inputs": {
+            "s": "ffbbuYZ-Zc-bfwe-wdaea"
+          }
+        },
+        {
+          "expected": "vfYvabYccadewddYZaaw",
+          "inputs": {
+            "s": "vfYvab-Ycca-dewdd-YZaaw"
+          }
+        }
+      ],
+      "id": "fresh_remove_separator_01",
+      "oracle_kind": "remove_separator",
+      "parameter": "-",
+      "request_text": "Write a function that splits the input on '-' and concatenates the resulting pieces without a separator."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": "avcawZuwZfwuu",
+          "inputs": {
+            "s": "av_cawZuw_Zfwuu"
+          }
+        },
+        {
+          "expected": "vdfZZfwa",
+          "inputs": {
+            "s": "vd_fZZfwa"
+          }
+        },
+        {
+          "expected": "awcYeedXvY",
+          "inputs": {
+            "s": "aw_cYeedX_vY"
+          }
+        },
+        {
+          "expected": "cfuwfXbeuv",
+          "inputs": {
+            "s": "cfuwfX_beuv"
+          }
+        }
+      ],
+      "family": "remove_separator",
+      "held_out_rows": [
+        {
+          "expected": "cdeZevucfevcvw",
+          "inputs": {
+            "s": "cdeZ_evucfev_cvw"
+          }
+        },
+        {
+          "expected": "cvdavvwXbwbeee",
+          "inputs": {
+            "s": "cvdavvw_Xb_wbeee"
+          }
+        },
+        {
+          "expected": "YecYveadw",
+          "inputs": {
+            "s": "Yec_Yveadw"
+          }
+        }
+      ],
+      "id": "fresh_remove_separator_02",
+      "oracle_kind": "remove_separator",
+      "parameter": "_",
+      "request_text": "Write a function that splits the input on '_' and concatenates the resulting pieces without a separator."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": "udXXvf",
+          "inputs": {
+            "s": "udX:Xvf"
+          }
+        },
+        {
+          "expected": "bffeafeZbefwYeaeXcbv",
+          "inputs": {
+            "s": "bffeaf:eZb:efwYe:aeXcbv"
+          }
+        },
+        {
+          "expected": "uvewZwYcfwcefXYZ",
+          "inputs": {
+            "s": "uvewZ:wYcfw:ce:fXYZ"
+          }
+        },
+        {
+          "expected": "dYZuabYYfedXwdfv",
+          "inputs": {
+            "s": "dYZuab:YY:fedX:wdfv"
+          }
+        }
+      ],
+      "family": "remove_separator",
+      "held_out_rows": [
+        {
+          "expected": "XbeXYYXvdu",
+          "inputs": {
+            "s": "XbeXYY:Xvdu"
+          }
+        },
+        {
+          "expected": "fvaZcavfXZuZYcaf",
+          "inputs": {
+            "s": "fvaZca:vfXZ:uZY:caf"
+          }
+        },
+        {
+          "expected": "uZaZwYfdabvddcfabdb",
+          "inputs": {
+            "s": "uZ:aZwYfda:bvddcfa:bdb"
+          }
+        }
+      ],
+      "id": "fresh_remove_separator_03",
+      "oracle_kind": "remove_separator",
+      "parameter": ":",
+      "request_text": "Write a function that splits the input on ':' and concatenates the resulting pieces without a separator."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": "yB_ zDzX-,",
+          "inputs": {
+            "s": ",-azDz _By"
+          }
+        },
+        {
+          "expected": "BxEzyBey A_BDXbzx",
+          "inputs": {
+            "s": "xzbaDB_A yeByzExB"
+          }
+        },
+        {
+          "expected": "EAyyCB_!-",
+          "inputs": {
+            "s": "-!_BCyyAE"
+          }
+        },
+        {
+          "expected": "?-y yC!_ye?,,AzB-D",
+          "inputs": {
+            "s": "D-BzA,,?ey_!Cy y-?"
+          }
+        }
+      ],
+      "family": "reverse_then_replace",
+      "held_out_rows": [
+        {
+          "expected": "?xC!z?Cbe-XDz yz",
+          "inputs": {
+            "s": "zy zDa-ebC?z!Cx?"
+          }
+        },
+        {
+          "expected": "Cz!ececb",
+          "inputs": {
+            "s": "bcece!zC"
+          }
+        },
+        {
+          "expected": "zX,!X d,Eb_y",
+          "inputs": {
+            "s": "y_bE,d a!,az"
+          }
+        }
+      ],
+      "id": "fresh_reverse_then_replace_01",
+      "oracle_kind": "reverse_then_replace",
+      "parameter": [
+        "a",
+        "X"
+      ],
+      "request_text": "Write a function that reverses the entire input and then replaces every 'a' with 'X'."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": " BQ-BDBQ,dC-D!d",
+          "inputs": {
+            "s": "d!D-Cd,eBDB-eB "
+          }
+        },
+        {
+          "expected": "? d-zxC-z?E",
+          "inputs": {
+            "s": "E?z-Cxz-d ?"
+          }
+        },
+        {
+          "expected": "Dd Ca_CQQ!!a?C",
+          "inputs": {
+            "s": "C?a!!eeC_aC dD"
+          }
+        },
+        {
+          "expected": "zC_a,xDc!aDaE_yyEz",
+          "inputs": {
+            "s": "zEyy_EaDa!cDx,a_Cz"
+          }
+        }
+      ],
+      "family": "reverse_then_replace",
+      "held_out_rows": [
+        {
+          "expected": "x-!?DxdD?y?c-xE",
+          "inputs": {
+            "s": "Ex-c?y?DdxD?!-x"
+          }
+        },
+        {
+          "expected": "CyzzBzAC db?-E",
+          "inputs": {
+            "s": "E-?bd CAzBzzyC"
+          }
+        },
+        {
+          "expected": "DCCD!b?c!",
+          "inputs": {
+            "s": "!c?b!DCCD"
+          }
+        }
+      ],
+      "id": "fresh_reverse_then_replace_02",
+      "oracle_kind": "reverse_then_replace",
+      "parameter": [
+        "e",
+        "Q"
+      ],
+      "request_text": "Write a function that reverses the entire input and then replaces every 'e' with 'Q'."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": "bAEByze,bBaA",
+          "inputs": {
+            "s": "AaBb,ezyBEAb"
+          }
+        },
+        {
+          "expected": "_c_,_ya zaz  z",
+          "inputs": {
+            "s": "z  zaz ay-,-c-"
+          }
+        },
+        {
+          "expected": "BCDA!E_C",
+          "inputs": {
+            "s": "C-E!ADCB"
+          }
+        },
+        {
+          "expected": "bCyE__,dd_C! D_D",
+          "inputs": {
+            "s": "D_D !C-dd,_-EyCb"
+          }
+        }
+      ],
+      "family": "reverse_then_replace",
+      "held_out_rows": [
+        {
+          "expected": "Db,?ECaA?cy_AycxBc",
+          "inputs": {
+            "s": "cBxcyA-yc?AaCE?,bD"
+          }
+        },
+        {
+          "expected": "ab!bB?cEc,xzBD",
+          "inputs": {
+            "s": "DBzx,cEc?Bb!ba"
+          }
+        },
+        {
+          "expected": "E ??AaCBaE_y!",
+          "inputs": {
+            "s": "!y-EaBCaA?? E"
+          }
+        }
+      ],
+      "id": "fresh_reverse_then_replace_03",
+      "oracle_kind": "reverse_then_replace",
+      "parameter": [
+        "-",
+        "_"
+      ],
+      "request_text": "Write a function that reverses the entire input and then replaces every '-' with '_'."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": [
+            "wcv",
+            "Zfwdfb",
+            "ewwa"
+          ],
+          "inputs": {
+            "s": "vcw:bfdwfZ:awwe"
+          }
+        },
+        {
+          "expected": [
+            "wZcwae",
+            "wa"
+          ],
+          "inputs": {
+            "s": "eawcZw:aw"
+          }
+        },
+        {
+          "expected": [
+            "XbeYXuZ",
+            "bXvv",
+            "fawdueY",
+            "dwv"
+          ],
+          "inputs": {
+            "s": "ZuXYebX:vvXb:Yeudwaf:vwd"
+          }
+        },
+        {
+          "expected": [
+            "YYc",
+            "wee",
+            "ba",
+            "dZucfZ"
+          ],
+          "inputs": {
+            "s": "cYY:eew:ab:ZfcuZd"
+          }
+        }
+      ],
+      "family": "split_reverse_tokens",
+      "held_out_rows": [
+        {
+          "expected": [
+            "waf",
+            "adffZ",
+            "ad"
+          ],
+          "inputs": {
+            "s": "faw:Zffda:da"
+          }
+        },
+        {
+          "expected": [
+            "udZXYe",
+            "uwXd",
+            "ueceY"
+          ],
+          "inputs": {
+            "s": "eYXZdu:dXwu:Yeceu"
+          }
+        },
+        {
+          "expected": [
+            "ffY",
+            "wvYcYeu",
+            "efaY"
+          ],
+          "inputs": {
+            "s": "Yff:ueYcYvw:Yafe"
+          }
+        }
+      ],
+      "id": "fresh_split_reverse_tokens_01",
+      "oracle_kind": "split_reverse_tokens",
+      "parameter": ":",
+      "request_text": "Write a function that splits the input on ':', reverses the characters of each token, and preserves token order."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": [
+            "fbccdv",
+            "cevuYf",
+            "cdYdcb",
+            "fZZYb"
+          ],
+          "inputs": {
+            "s": "vdccbf|fYuvec|bcdYdc|bYZZf"
+          }
+        },
+        {
+          "expected": [
+            "uea",
+            "cdb",
+            "cafZXe",
+            "ea"
+          ],
+          "inputs": {
+            "s": "aeu|bdc|eXZfac|ae"
+          }
+        },
+        {
+          "expected": [
+            "bZwc",
+            "XY",
+            "XbeZufd"
+          ],
+          "inputs": {
+            "s": "cwZb|YX|dfuZebX"
+          }
+        },
+        {
+          "expected": [
+            "Ybaf",
+            "bZau",
+            "ceZw"
+          ],
+          "inputs": {
+            "s": "fabY|uaZb|wZec"
+          }
+        }
+      ],
+      "family": "split_reverse_tokens",
+      "held_out_rows": [
+        {
+          "expected": [
+            "uZXfX",
+            "af"
+          ],
+          "inputs": {
+            "s": "XfXZu|fa"
+          }
+        },
+        {
+          "expected": [
+            "vdu",
+            "Ye"
+          ],
+          "inputs": {
+            "s": "udv|eY"
+          }
+        },
+        {
+          "expected": [
+            "ZYfaad",
+            "uYX",
+            "wveZZYX",
+            "wdXbX"
+          ],
+          "inputs": {
+            "s": "daafYZ|XYu|XYZZevw|XbXdw"
+          }
+        }
+      ],
+      "id": "fresh_split_reverse_tokens_02",
+      "oracle_kind": "split_reverse_tokens",
+      "parameter": "|",
+      "request_text": "Write a function that splits the input on '|', reverses the characters of each token, and preserves token order."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": [
+            "YeXe",
+            "auv",
+            "ubdZf"
+          ],
+          "inputs": {
+            "s": "eXeY;vua;fZdbu"
+          }
+        },
+        {
+          "expected": [
+            "Xu",
+            "vv"
+          ],
+          "inputs": {
+            "s": "uX;vv"
+          }
+        },
+        {
+          "expected": [
+            "ZueeefX",
+            "Ybdu",
+            "cuaaZ",
+            "ucb"
+          ],
+          "inputs": {
+            "s": "XfeeeuZ;udbY;Zaauc;bcu"
+          }
+        },
+        {
+          "expected": [
+            "fdXw",
+            "XcaXd"
+          ],
+          "inputs": {
+            "s": "wXdf;dXacX"
+          }
+        }
+      ],
+      "family": "split_reverse_tokens",
+      "held_out_rows": [
+        {
+          "expected": [
+            "cceaXv",
+            "ZZwd",
+            "YYXZd"
+          ],
+          "inputs": {
+            "s": "vXaecc;dwZZ;dZXYY"
+          }
+        },
+        {
+          "expected": [
+            "ffudfvb",
+            "dZe",
+            "fYd",
+            "YXuca"
+          ],
+          "inputs": {
+            "s": "bvfduff;eZd;dYf;acuXY"
+          }
+        },
+        {
+          "expected": [
+            "feZfc",
+            "Xc",
+            "beub"
+          ],
+          "inputs": {
+            "s": "cfZef;cX;bueb"
+          }
+        }
+      ],
+      "id": "fresh_split_reverse_tokens_03",
+      "oracle_kind": "split_reverse_tokens",
+      "parameter": ";",
+      "request_text": "Write a function that splits the input on ';', reverses the characters of each token, and preserves token order."
+    }
+  ]
+}

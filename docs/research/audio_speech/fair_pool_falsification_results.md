@@ -48,3 +48,20 @@ information ceiling that even a borrowed nonlinear network cannot lift* is **fal
 cross-speaker recall. There is large representational headroom (~0.27 → ~0.82) that a learned
 context-predictive/contrastive frame model captures. This licenses the Step-C representation-gap
 build (matched-compute APC variants aiming to close ≥50% of the fair gap from ~0.27 toward ~0.82).
+
+## Reanalysis capture support (2026-10-03)
+
+The scoring harness now accepts `--output PATH` and writes an atomic, versioned JSON capture for
+future runs. It records source and native-extension hashes, input-cache hashes, the ordered token
+and speaker pool, configuration including the deterministic bootstrap seed, summary metrics,
+verdict, peak RSS, and the raw Rust recall-detail vectors needed to recompute the reported
+statistics. Example:
+
+```sh
+PYTHONPATH=runners/dsl/python:.:scripts VENV_PY scripts/apc_fair_pool_falsification.py \
+  --output evaluation/reports/apc_fair_pool_run_<date>.json
+```
+
+This adds prospective reproducibility only. The historical result above still has no retained raw
+capture or source/data lock and cannot be reconstructed from the prose log alone. Captures may be
+large because they retain all positive and negative distance samples.

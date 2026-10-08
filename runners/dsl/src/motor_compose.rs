@@ -93,6 +93,24 @@ fn key_index(key: &str) -> usize {
     PREDICTED_KEYS.iter().position(|k| *k == key).unwrap()
 }
 
+#[inline]
+fn traced_neighbours(graph: &TypedGraph, node: NodeID, edge_type: Option<Sym>) -> Vec<NodeID> {
+    crate::access_trace::note_out_edges(graph, node, edge_type);
+    graph.neighbours(node, edge_type)
+}
+
+#[inline]
+fn traced_in_neighbours(graph: &TypedGraph, node: NodeID, edge_type: Option<Sym>) -> Vec<NodeID> {
+    crate::access_trace::note_in_edges(graph, node, edge_type);
+    graph.in_neighbours(node, edge_type)
+}
+
+#[inline]
+fn traced_has_attr(graph: &TypedGraph, node: NodeID, key: Sym) -> bool {
+    crate::access_trace::note(2, node.0, key.0, crate::access_trace::NO_ID);
+    graph.node(node).attrs.contains_key(&key)
+}
+
 fn fattr(graph: &TypedGraph, interner: &Interner, node: NodeID, key: &str) -> f64 {
     let Some(sym) = interner.lookup(key) else {
         return 0.0;
@@ -100,6 +118,7 @@ fn fattr(graph: &TypedGraph, interner: &Interner, node: NodeID, key: &str) -> f6
     if !graph.has_node(node) {
         return 0.0;
     }
+    crate::access_trace::note(2, node.0, sym.0, crate::access_trace::NO_ID);
     match graph.node(node).attrs.get(&sym) {
         Some(Value::Float(f)) => *f,
         Some(Value::Int(i)) => *i as f64,
@@ -116,6 +135,7 @@ fn fattr(graph: &TypedGraph, interner: &Interner, node: NodeID, key: &str) -> f6
 
 fn sattr(graph: &TypedGraph, interner: &Interner, node: NodeID, key: &str) -> Option<Sym> {
     let sym = interner.lookup(key)?;
+    crate::access_trace::note(2, node.0, sym.0, crate::access_trace::NO_ID);
     match graph.node(node).attrs.get(&sym) {
         Some(Value::Str(value)) => Some(*value),
         _ => None,
@@ -138,11 +158,11 @@ fn active_humanoid_basin_members(
         interner.lookup("includes_humanoid_phase_action_model"),
         desired_context,
     ) {
-        for program in graph.neighbours(episode, Some(seed_edge)) {
+        for program in traced_neighbours(graph, episode, Some(seed_edge)) {
             if sattr(graph, interner, program, "motor_task_context") != Some(desired_context) {
                 continue;
             }
-            members.extend(graph.neighbours(program, Some(member_edge)));
+            members.extend(traced_neighbours(graph, program, Some(member_edge)));
         }
     }
 
@@ -176,11 +196,11 @@ fn active_humanoid_basin_members(
         let paired = interner.lookup("paired_lower_support");
         let single = interner.lookup("single_lower_support");
         let unsupported = interner.lookup("unsupported");
-        for hint in graph.neighbours(episode, Some(considered_edge)) {
+        for hint in traced_neighbours(graph, episode, Some(considered_edge)) {
             if fattr(graph, interner, hint, "output_authority") != 0.0 {
                 continue;
             }
-            for source_stage in graph.neighbours(hint, Some(stage_edge)) {
+            for source_stage in traced_neighbours(graph, hint, Some(stage_edge)) {
                 let support = sattr(graph, interner, source_stage, "support_topology");
                 let support_matches = (support == paired && support_0 && support_1)
                     || (support == single && support_0 != support_1)
@@ -188,15 +208,16 @@ fn active_humanoid_basin_members(
                 if !support_matches {
                     continue;
                 }
-                for target_stage in graph.neighbours(source_stage, Some(transition_edge)) {
-                    for shape in graph.neighbours(target_stage, Some(target_shape_edge)) {
-                        for program in graph.in_neighbours(shape, Some(realizes_shape_edge)) {
+                for target_stage in traced_neighbours(graph, source_stage, Some(transition_edge)) {
+                    for shape in traced_neighbours(graph, target_stage, Some(target_shape_edge)) {
+                        for program in traced_in_neighbours(graph, shape, Some(realizes_shape_edge))
+                        {
                             if sattr(graph, interner, program, "motor_task_context")
                                 != Some(desired_context)
                             {
                                 continue;
                             }
-                            members.extend(graph.neighbours(program, Some(member_edge)));
+                            members.extend(traced_neighbours(graph, program, Some(member_edge)));
                         }
                     }
                 }
@@ -321,7 +342,7 @@ fn humanoid_composition_input_signature(
         // evidence attached to this model; a changed capability value must
         // invalidate the cache exactly like a changed model attr does.
         if let Some(cap_edge) = interner.lookup("has_embodied_effector_capability") {
-            let mut capabilities = graph.neighbours(*node, Some(cap_edge));
+            let mut capabilities = traced_neighbours(graph, *node, Some(cap_edge));
             capabilities.sort_unstable();
             for capability in capabilities {
                 capability.hash(&mut hasher);
@@ -339,7 +360,7 @@ fn humanoid_composition_input_signature(
         }
     }
     if let Some(edge) = interner.lookup("has_humanoid_synergy_model") {
-        let mut synergies = graph.neighbours(episode, Some(edge));
+        let mut synergies = traced_neighbours(graph, episode, Some(edge));
         synergies.sort_unstable();
         for node in synergies {
             node.hash(&mut hasher);
@@ -1093,7 +1114,7 @@ fn matched_capability_translation_per_joule(
     vertical_regime: f64,
 ) -> Option<f64> {
     let cap_edge = interner.lookup("has_embodied_effector_capability")?;
-    for capability in graph.neighbours(model_node, Some(cap_edge)) {
+    for capability in traced_neighbours(graph, model_node, Some(cap_edge)) {
         if fattr(graph, interner, capability, "coupling_regime") == coupling_regime
             && fattr(graph, interner, capability, "vertical_regime") == vertical_regime
         {
@@ -1177,7 +1198,7 @@ impl<'a> HumanoidComposer<'a> {
             .collect();
         let synergy_nodes = interner
             .lookup("has_humanoid_synergy_model")
-            .map(|edge| graph.neighbours(episode, Some(edge)))
+            .map(|edge| traced_neighbours(graph, episode, Some(edge)))
             .unwrap_or_default();
         let synergies = synergy_nodes
             .iter()
@@ -1676,6 +1697,7 @@ impl<'a> HumanoidComposer<'a> {
         let mut bounds = [0.0; 7];
         for (index, key) in HUMANOID_KEYS.iter().enumerate() {
             let symbol = self.interner.lookup(&format!("manifold_bound_{key}"))?;
+            crate::access_trace::note(2, self.episode.0, symbol.0, crate::access_trace::NO_ID);
             let value = match self.graph.node(self.episode).attrs.get(&symbol) {
                 Some(Value::Float(value)) => *value,
                 Some(Value::Int(value)) => *value as f64,
@@ -1704,7 +1726,7 @@ impl<'a> HumanoidComposer<'a> {
         .all(|key| {
             self.interner
                 .lookup(key)
-                .is_some_and(|symbol| self.graph.node(node).attrs.contains_key(&symbol))
+                .is_some_and(|symbol| traced_has_attr(self.graph, node, symbol))
         })
     }
 
@@ -2611,13 +2633,13 @@ pub fn motor_compose_member(
 ) -> bool {
     let mut model_nodes = interner
         .lookup("has_embodied_effector_model")
-        .map(|edge| graph.neighbours(episode, Some(edge)))
+        .map(|edge| traced_neighbours(graph, episode, Some(edge)))
         .unwrap_or_default();
     if model_nodes.is_empty() {
         let Some(edge) = interner.lookup("has_humanoid_phase_action_model") else {
             return false;
         };
-        model_nodes = graph.neighbours(episode, Some(edge));
+        model_nodes = traced_neighbours(graph, episode, Some(edge));
         model_nodes.sort_by(|a, b| {
             let oa = fattr(graph, interner, *a, "ordinal");
             let ob = fattr(graph, interner, *b, "ordinal");
@@ -2865,7 +2887,7 @@ pub fn future_manifold_projection_field(
     }
     let member_edge = interner.lookup("includes_embodied_effector_model");
     let mut members = member_edge
-        .map(|e| graph.neighbours(source, Some(e)))
+        .map(|e| traced_neighbours(graph, source, Some(e)))
         .unwrap_or_default();
     // Generic trajectory replay may certify a previously grounded humanoid
     // program rather than a just-open generic composition plan.  Both are
@@ -2876,12 +2898,12 @@ pub fn future_manifold_projection_field(
     if members.is_empty() {
         members = interner
             .lookup("includes_humanoid_phase_action_model")
-            .map(|e| graph.neighbours(source, Some(e)))
+            .map(|e| traced_neighbours(graph, source, Some(e)))
             .unwrap_or_default();
         humanoid_program = !members.is_empty()
             && interner
                 .lookup("has_humanoid_phase_action_model")
-                .is_some_and(|edge| !graph.neighbours(episode, Some(edge)).is_empty());
+                .is_some_and(|edge| !traced_neighbours(graph, episode, Some(edge)).is_empty());
     }
     if let Some(a) = addition {
         // `addition` denotes the second source being composed.  It may be an
@@ -2892,18 +2914,18 @@ pub fn future_manifold_projection_field(
         // through the same vocabulary used for `source`, while retaining the
         // atomic-model compatibility path.
         let mut addition_members = member_edge
-            .map(|e| graph.neighbours(a, Some(e)))
+            .map(|e| traced_neighbours(graph, a, Some(e)))
             .unwrap_or_default();
         let mut addition_is_humanoid_program = false;
         if addition_members.is_empty() {
             addition_members = interner
                 .lookup("includes_humanoid_phase_action_model")
-                .map(|e| graph.neighbours(a, Some(e)))
+                .map(|e| traced_neighbours(graph, a, Some(e)))
                 .unwrap_or_default();
             addition_is_humanoid_program = !addition_members.is_empty()
                 && interner
                     .lookup("has_humanoid_phase_action_model")
-                    .is_some_and(|edge| !graph.neighbours(episode, Some(edge)).is_empty());
+                    .is_some_and(|edge| !traced_neighbours(graph, episode, Some(edge)).is_empty());
         }
         if addition_members.is_empty() {
             addition_members.push(a);
@@ -2989,7 +3011,7 @@ fn future_manifold_episode_models(
 ) -> Vec<NodeID> {
     let mut models = interner
         .lookup("has_embodied_effector_model")
-        .map(|edge| graph.neighbours(episode, Some(edge)))
+        .map(|edge| traced_neighbours(graph, episode, Some(edge)))
         .unwrap_or_default();
     // Humanoid phase-action models are the body-local vocabulary for the
     // same learned analysis-by-synthesis evidence.  A humanoid episode does
@@ -2999,7 +3021,7 @@ fn future_manifold_episode_models(
     if models.is_empty() {
         models = interner
             .lookup("has_humanoid_phase_action_model")
-            .map(|edge| graph.neighbours(episode, Some(edge)))
+            .map(|edge| traced_neighbours(graph, episode, Some(edge)))
             .unwrap_or_default();
     }
     models
@@ -3557,7 +3579,7 @@ fn unique_neighbour(
     edge: &str,
 ) -> Option<NodeID> {
     let edge = interner.lookup(edge)?;
-    let neighbours = graph.neighbours(node, Some(edge));
+    let neighbours = traced_neighbours(graph, node, Some(edge));
     (neighbours.len() == 1).then_some(neighbours[0])
 }
 
@@ -3572,7 +3594,7 @@ fn humanoid_path_segments(
     current_transition: Option<NodeID>,
 ) -> Option<Vec<HumanoidPathSegment>> {
     let edge = interner.lookup("contains_embodied_program_transition")?;
-    let transitions = graph.neighbours(path, Some(edge));
+    let transitions = traced_neighbours(graph, path, Some(edge));
     let depth = fattr(graph, interner, path, "depth");
     if transitions.is_empty()
         || !depth.is_finite()
@@ -3692,7 +3714,7 @@ fn path_family_narrativium(
 ) -> Option<([f64; 7], [f64; 7])> {
     let candidate_edge = interner.lookup("has_pareto_candidate");
     let trajectories = candidate_edge
-        .map(|edge| graph.in_neighbours(selected, Some(edge)))
+        .map(|edge| traced_in_neighbours(graph, selected, Some(edge)))
         .unwrap_or_default();
     let mut candidates = if trajectories.is_empty() {
         vec![selected]
@@ -3700,7 +3722,7 @@ fn path_family_narrativium(
         if trajectories.len() != 1 {
             return None;
         }
-        graph.neighbours(trajectories[0], candidate_edge)
+        traced_neighbours(graph, trajectories[0], candidate_edge)
     };
     let selected_depth = fattr(graph, interner, selected, "depth");
     candidates.retain(|candidate| fattr(graph, interner, *candidate, "depth") == selected_depth);
@@ -3891,7 +3913,7 @@ fn rebind_humanoid_program_members(
         "includes_humanoid_action_model",
     ] {
         if let Some(member_edge) = interner.lookup(edge_name) {
-            for member in graph.neighbours(program, Some(member_edge)) {
+            for member in traced_neighbours(graph, program, Some(member_edge)) {
                 if !descriptors.contains(&member) {
                     descriptors.push(member);
                 }
@@ -3904,7 +3926,7 @@ fn rebind_humanoid_program_members(
     // resolving them here does not grant the retained program authority.
     if descriptors.is_empty() {
         if let Some(member_edge) = interner.lookup("has_humanoid_library_motor_member") {
-            descriptors = graph.neighbours(program, Some(member_edge));
+            descriptors = traced_neighbours(graph, program, Some(member_edge));
         }
     }
     if descriptors.is_empty() {
@@ -3960,7 +3982,10 @@ fn persistent_takeoff_development_evidence(
     let Some(active) = interner.lookup("has_active_embodied_developmental_capability") else {
         return false;
     };
-    let Some(development) = graph.neighbours(episode, Some(projects)).into_iter().next() else {
+    let Some(development) = traced_neighbours(graph, episode, Some(projects))
+        .into_iter()
+        .next()
+    else {
         return false;
     };
     let Some(capability) = graph
@@ -4003,12 +4028,12 @@ fn takeoff_recruitment_projection(
 
     let mut all_models = interner
         .lookup("has_humanoid_phase_action_model")
-        .map(|edge| graph.neighbours(episode, Some(edge)))
+        .map(|edge| traced_neighbours(graph, episode, Some(edge)))
         .unwrap_or_default();
     let Some(member_edge) = interner.lookup("includes_humanoid_phase_action_model") else {
         return unsupported;
     };
-    for member in graph.neighbours(program, Some(member_edge)) {
+    for member in traced_neighbours(graph, program, Some(member_edge)) {
         if !all_models.contains(&member) {
             all_models.push(member);
         }
@@ -4167,10 +4192,10 @@ fn future_humanoid_manifold_projection_for_path(
     };
     let mut all_models = interner
         .lookup("has_humanoid_phase_action_model")
-        .map(|edge| graph.neighbours(episode, Some(edge)))
+        .map(|edge| traced_neighbours(graph, episode, Some(edge)))
         .unwrap_or_default();
     if let Some(edge) = interner.lookup("has_humanoid_action_model") {
-        for model in graph.neighbours(episode, Some(edge)) {
+        for model in traced_neighbours(graph, episode, Some(edge)) {
             if !all_models.contains(&model) {
                 all_models.push(model);
             }
@@ -4184,7 +4209,7 @@ fn future_humanoid_manifold_projection_for_path(
     // nodes before constructing the analysis-by-synthesis model.
     if let Some(member_edge) = interner.lookup("includes_humanoid_phase_action_model") {
         for segment in &segments {
-            for member in graph.neighbours(segment.program, Some(member_edge)) {
+            for member in traced_neighbours(graph, segment.program, Some(member_edge)) {
                 if fattr(graph, interner, member, "exafferent") > 0.5
                     && !all_models.contains(&member)
                 {
@@ -4367,7 +4392,7 @@ fn cached_future_humanoid_manifold_projection_for_members(
 ) -> FutureProjectionReport {
     let mut all_models = interner
         .lookup("has_humanoid_phase_action_model")
-        .map(|edge| graph.neighbours(episode, Some(edge)))
+        .map(|edge| traced_neighbours(graph, episode, Some(edge)))
         .unwrap_or_default();
     all_models.sort_unstable();
     let mut members = member_nodes.to_vec();
@@ -4424,7 +4449,7 @@ fn future_humanoid_manifold_projection_for_members(
 ) -> FutureProjectionReport {
     let mut all_models = interner
         .lookup("has_humanoid_phase_action_model")
-        .map(|edge| graph.neighbours(episode, Some(edge)))
+        .map(|edge| traced_neighbours(graph, episode, Some(edge)))
         .unwrap_or_default();
     let exafferent_nodes: Vec<NodeID> = member_nodes
         .iter()
@@ -4502,7 +4527,7 @@ fn future_humanoid_manifold_projection_for_members(
             && keys.iter().all(|key| {
                 interner
                     .lookup(key)
-                    .is_some_and(|symbol| graph.node(program).attrs.contains_key(&symbol))
+                    .is_some_and(|symbol| traced_has_attr(graph, program, symbol))
             });
         complete_model
             .then(|| std::array::from_fn(|index| fattr(graph, interner, program, &keys[index])))
@@ -4864,7 +4889,10 @@ fn learning_safety_evidence(
     let Some(edge) = interner.lookup("has_learning_safety_context") else {
         return LearningSafetyEvidence::default();
     };
-    let Some(context) = graph.neighbours(episode, Some(edge)).into_iter().next() else {
+    let Some(context) = traced_neighbours(graph, episode, Some(edge))
+        .into_iter()
+        .next()
+    else {
         return LearningSafetyEvidence::default();
     };
     let evidence = LearningSafetyEvidence {

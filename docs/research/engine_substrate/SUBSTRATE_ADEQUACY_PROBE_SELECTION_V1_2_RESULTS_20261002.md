@@ -1,0 +1,16 @@
+# Adequacy probe selection under a fixed budget v1.2 — results
+
+The locked 720-row panel is source/native stable and passes all 10 independent analysis checks. It covers four authored cases, two policies, budgets 1/2/4, and 30 deterministic repetitions. The previous v1 and v1.1 captures are diagnostic: v1's alias domain had no fresh inputs after acquisition filtering; v1.1 exceeded native signed-integer range. V1.2 corrects both defects.
+
+| Case | Seeded hash candidate accepts | Maximum entropy candidate accepts | Held-out result |
+|---|---:|---:|---|
+| Wrong `x` vs represented `x + D(x)`, budget 1 | 27/30 | 0/30 | Wrong candidate fails all 30 |
+| Wrong `x` vs omitted `x + 2D(x)`, budget 1 | 29/30 | 0/30 | Wrong candidate fails all 30 |
+| Correct `x + D(x)` candidate, budget 1 | 30/30 | 30/30 | Correct candidate passes all 30 |
+| Wrong `x` on alias-only `x=1..12`, budget 1 | 30/30 | 30/30 | Wrong candidate fails all 30 |
+
+At budget 1, the current hash policy falsely accepts 56/60 broad-domain wrong candidates; maximum entropy accepts 0/60. It selects the sole witness `x=13` first in all 30 repetitions for each broad-domain case. Its correct-candidate control accepts and transfers on all 30 repetitions at every measured budget. On the alias-only domain, both policies accept the wrong candidate in all 30 repetitions: there is no distinguishing input to select. This is a direct, bounded demonstration that an alternative-hypothesis disagreement policy can improve adequacy when the domain includes a witness, while finite-domain aliasing remains a hard limit.
+
+The extra discrimination is computationally costly in this fixture. Median one-label decision time is about 0.4–0.45 ms for maximum entropy, versus about 0.0009 ms for seeded hash ordering; maximum entropy evaluates the candidate and alternatives across the whole domain. The hash policy's domain-order preprocessing occurs outside the timed decision loop, so these are marginal decision times rather than fully amortized end-to-end costs. Both exclude oracle/label latency and boot. The experiment does not establish production integration, general task rates, trustworthy oracle identity, or that this policy is worthwhile under natural hypothesis and domain distributions. Early stopping after a candidate mismatch is not measured.
+
+Artifacts: [amended protocol](SUBSTRATE_ADEQUACY_PROBE_SELECTION_V1_2_PREREG_20261002.md), [runner](../../../evaluation/substrate_capability/substrate_adequacy_probe_selection_v1_2.py), [lock](../../../evaluation/substrate_capability/substrate_adequacy_probe_selection_v1_2_lock_20261002.json), [independent analyzer](../../../evaluation/substrate_capability/analyze_substrate_adequacy_probe_selection_v1_2.py), [raw capture](../../../evaluation/reports/substrate_adequacy_probe_selection_v1_2_raw_20261002.json), and [analysis](../../../evaluation/reports/substrate_adequacy_probe_selection_v1_2_analysis_20261002.json). See the [v1 diagnostic capture](../../../evaluation/reports/substrate_adequacy_probe_selection_v1_raw_20261002.json) and [v1.1 diagnostic capture](../../../evaluation/reports/substrate_adequacy_probe_selection_v1_1_raw_20261002.json) for the disclosed protocol/representation failures.

@@ -1,0 +1,5 @@
+# V1.1 amendment: final-state readback timing
+
+The initial N=2 recurrence diagnostic exposed a protocol defect in the runner's acceptance check: it retained each observation's status immediately after that observation's own closure and then compared those stale snapshots as final state. The locked baseline refreshes all observation states after the complete sequence, allowing a later mint/re-decode cycle to change an earlier observation.
+
+This amendment changes only readback timing and acceptance coverage. The runner now preserves the per-observation settle snapshot separately, then refreshes every observation by ID after the sequence before checking final statuses. It additionally checks the sole minted shape's identity/support and the agent's codebook epoch. Workloads, rule variant, ordering, index mechanism, baseline, and size remain unchanged. The amended N=2 recurrent diagnostic is exploratory and does not authorize the remaining five cells or performance claims. The earlier failed report remains preserved as the first run's diagnostic; its stated semantic divergence is withdrawn pending this readback-corrected diagnostic.

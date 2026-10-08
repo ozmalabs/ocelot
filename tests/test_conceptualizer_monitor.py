@@ -85,6 +85,22 @@ def _fresh_agent() -> _Agent:
     return ag
 
 
+def test_pending_conceptualizer_requests_use_native_status_index():
+    ag = _fresh_agent()
+    for node_type in ("MessageShapeRequest", "MonitorRequest"):
+        stale = ag.s.add_node(node_type, {"status": "processed"})
+        pending = ag.s.add_node(node_type, {"status": "requested"})
+        malformed = ag.s.add_node(node_type, {"other": "not a request"})
+
+        selected = cc._requested_graph_nodes(ag.s, ag.inner, node_type)
+
+        assert selected == [pending]
+        assert stale not in selected
+        assert malformed not in selected
+        assert list(ag.inner.nodes_where(
+            node_type, "status", "requested")) == [pending]
+
+
 def _ground_all(ag, tag="cim_t"):
     """Ground ALL FOUR conceptualizer clauses in one call — authors all five rules (the two
     phase-1 rules + the three phase-2 monitor/commit rules) onto the same agent."""
@@ -218,6 +234,10 @@ def test_monitor_catches_ungrounded_shift_and_revises_before_commit():
     assert len(list(ag.s.nodes("MonitorRequest"))) == 2
     verdicts = [ag.s.node(n)["attrs"] for n in ag.s.nodes("Verdict")]
     assert sorted(v["recoverable"] for v in verdicts) == [False, True], "caught, then cleared"
+    pipeline = [ag.s.node(n)["attrs"] for n in ag.s.nodes("NativeConceptualizerReceipt")
+                if ag.s.node(n)["attrs"].get("cluster") == "conceptualizer.native_pipeline"][-1]
+    assert pipeline["rounds_executed"] == 3
+    assert pipeline["native_passes"] == 4
 
 
 # ===========================================================================
@@ -242,6 +262,10 @@ def test_monitor_passes_grounded_audience_commits_terse_unrevised():
     assert len(list(ag.s.nodes("MonitorRequest"))) == 1
     verdicts = [ag.s.node(n)["attrs"] for n in ag.s.nodes("Verdict")]
     assert len(verdicts) == 1 and verdicts[0]["recoverable"] is True
+    pipeline = [ag.s.node(n)["attrs"] for n in ag.s.nodes("NativeConceptualizerReceipt")
+                if ag.s.node(n)["attrs"].get("cluster") == "conceptualizer.native_pipeline"][-1]
+    assert pipeline["rounds_executed"] == 2
+    assert pipeline["native_passes"] == 2
 
 
 def test_grounded_vs_ungrounded_shift_contrast_same_meaning():
@@ -334,6 +358,11 @@ _ALLOWED_IF_PATTERNS = [
     re.compile(r"if committed_node is not None else"),
     re.compile(r"if intent_node is None:"),
     re.compile(r"if not utterance:"),
+    # Worklist presence/exhaustion only schedules native passes; production/
+    # commit/revise outcomes remain exclusively rule-authored.
+    re.compile(r"if shaped:"),
+    re.compile(r"if native_work_pending:"),
+    re.compile(r"if not shaped and not monitored:"),
     re.compile(r"if __name__"),
 ]
 

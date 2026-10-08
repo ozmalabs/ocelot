@@ -27,7 +27,10 @@ _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def seed_nodes(name: str) -> list[dict]:
-    with open(os.path.join(_ROOT, "seeds", f"{name}.json")) as f:
+    path = os.path.join(_ROOT, "seeds", f"{name}.json")
+    if not os.path.exists(path):                       # domain data (domain_data/, tranche 11)
+        path = os.path.join(_ROOT, "domain_data", f"{name}.json")
+    with open(path) as f:
         return json.load(f).get("nodes", []) or []
 
 
@@ -170,7 +173,7 @@ def ar1_disjointness() -> None:
     pred = collections.defaultdict(set)
     cnt = collections.Counter()
     nosig = collections.Counter()
-    for f in sorted(glob.glob(os.path.join(_ROOT, "seeds", "*.json"))):
+    for f in sorted(glob.glob(os.path.join(_ROOT, "seeds", "*.json")) + glob.glob(os.path.join(_ROOT, "domain_data", "*.json"))):
         try:
             d = json.load(open(f))
         except Exception:

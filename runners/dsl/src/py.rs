@@ -23,12 +23,15 @@ use crate::grammar::Grammar;
 use crate::graph::{EdgeKey, NodeID};
 use crate::jsonio::{grammar_from_json, grammar_to_json, term_from_json, term_to_json};
 use crate::persist::{decode_value, encode_value, graph_from_value, graph_to_value};
-use crate::substrate::{InadmissibleEdge as InadmissibleEdgeRs, Substrate as SubstrateRs};
+use crate::substrate::{
+    ExperimentSnapshot as ExperimentSnapshotRs, ExperimentSnapshotBackend,
+    InadmissibleEdge as InadmissibleEdgeRs, Substrate as SubstrateRs,
+};
 use crate::sym::Sym;
 use crate::term::{evaluate, Env, EvalCache, EvalCtx, TermArena, TermIdx};
 use crate::value::{cmp_value, SurfaceKind, Value};
 use pyo3::create_exception;
-use pyo3::exceptions::{PyException, PyKeyError, PyValueError};
+use pyo3::exceptions::{PyException, PyKeyError, PyRuntimeError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyFrozenSet, PyList, PySet, PyTuple};
 use rustc_hash::FxHashMap;
@@ -1298,6 +1301,159 @@ fn json_to_pyobj<'py>(py: Python<'py>, j: &J) -> PyResult<Bound<'py, PyAny>> {
     Ok(json_mod.call_method1("loads", (s,))?)
 }
 
+fn rule_write_event_to_json(
+    event: &crate::graph::RuleWriteEvent,
+    interner: &crate::sym::Interner,
+) -> J {
+    let edges: Vec<(u32, String, u32)> = event.edges.iter().map(|key| (
+        key.src.0,
+        interner.resolve(key.edge_type).to_string(),
+        key.tgt.0,
+    )).collect();
+    let encode_node = |node: &Option<crate::graph::NodeData>| -> J {
+        match node {
+            None => J::Null,
+            Some(node) => {
+                let attrs: serde_json::Map<String, J> = node.attrs.iter()
+                    .map(|(key, value)| (
+                        interner.resolve(*key).to_string(),
+                        crate::persist::encode_value(value, interner),
+                    ))
+                    .collect();
+                serde_json::json!({
+                    "type": interner.resolve(node.type_).to_string(),
+                    "attrs": J::Object(attrs),
+                })
+            }
+        }
+    };
+    let encode_attrs = |attrs: &Option<crate::graph::Attrs>| -> J {
+        match attrs {
+            None => J::Null,
+            Some(attrs) => {
+                let values: serde_json::Map<String, J> = attrs.iter()
+                    .map(|(key, value)| (
+                        interner.resolve(*key).to_string(),
+                        crate::persist::encode_value(value, interner),
+                    ))
+                    .collect();
+                J::Object(values)
+            }
+        }
+    };
+    let node_values: Vec<J> = event.node_values.iter().map(|snapshot| serde_json::json!({
+        "node_id": snapshot.node_id.0,
+        "before": encode_node(&snapshot.before),
+        "after": encode_node(&snapshot.after),
+    })).collect();
+    let edge_values: Vec<J> = event.edge_values.iter().map(|snapshot| {
+        serde_json::json!({
+            "edge": [snapshot.edge.src.0, interner.resolve(snapshot.edge.edge_type).to_string(), snapshot.edge.tgt.0],
+            "before": encode_attrs(&snapshot.before),
+            "after": encode_attrs(&snapshot.after),
+        })
+    }).collect();
+        let effect_snapshots: Vec<J> = event.effect_snapshots.iter().map(|effect| {
+        let node_values: Vec<J> = effect.node_values.iter().map(|snapshot| serde_json::json!({
+            "node_id": snapshot.node_id.0,
+            "before": encode_node(&snapshot.before),
+            "after": encode_node(&snapshot.after),
+        })).collect();
+        let edge_values: Vec<J> = effect.edge_values.iter().map(|snapshot| serde_json::json!({
+            "edge": [snapshot.edge.src.0, interner.resolve(snapshot.edge.edge_type).to_string(), snapshot.edge.tgt.0],
+            "before": encode_attrs(&snapshot.before),
+            "after": encode_attrs(&snapshot.after),
+        })).collect();
+        serde_json::json!({
+            "effect_index": effect.effect_index,
+            "node_ids": effect.node_ids.iter().map(|node| node.0).collect::<Vec<_>>(),
+            "edges": effect.edges.iter().map(|edge| serde_json::json!([edge.src.0, interner.resolve(edge.edge_type).to_string(), edge.tgt.0])).collect::<Vec<_>>(),
+            "node_values": node_values,
+            "edge_values": edge_values,
+            "values_truncated": effect.values_truncated,
+        })
+    }).collect();
+    serde_json::json!({
+        "rule_name": interner.resolve(event.rule_name),
+        "origin_rules": event.origin_rules.iter().map(|name| interner.resolve(*name).to_string()).collect::<Vec<_>>(),
+        "deferred": event.deferred,
+        "deferred_effect_origins": event.deferred_effect_origins.iter().map(|(rule, index)| serde_json::json!({"rule_name": interner.resolve(*rule).to_string(), "effect_index": index})).collect::<Vec<_>>(),
+        "deferred_rule_changes": event.deferred_rule_changes.iter().map(|change| serde_json::json!({
+            "target_rule_uid": change.target_rule_uid,
+            "field": interner.resolve(change.field).to_string(),
+            "previous_revision": change.previous_revision,
+            "revision": change.revision,
+            "previous_content_hash": change.previous_content_hash,
+            "content_hash": change.content_hash,
+            "committed": change.committed,
+            "error_code": change.error_code,
+        })).collect::<Vec<_>>(),
+        "progressed": event.progressed,
+        "node_ids": event.node_ids.iter().map(|node| node.0).collect::<Vec<_>>(),
+        "edges": edges,
+        "node_values": node_values,
+        "edge_values": edge_values,
+        "effect_snapshots": effect_snapshots,
+        "values_truncated": event.values_truncated,
+    })
+}
+
+fn rule_delta_report_to_pyobj<'py>(
+    py: Python<'py>,
+    report: &crate::substrate::RuleGraphDeltaReport,
+    interner: &crate::sym::Interner,
+) -> PyResult<Bound<'py, PyAny>> {
+    let status = match report.run.status {
+        crate::substrate::RuleRunStatus::FixedPoint => "fixed_point",
+        crate::substrate::RuleRunStatus::RepeatedGraphState => "repeated_graph_state",
+        crate::substrate::RuleRunStatus::ProgressBudgetReached => "progress_budget_reached",
+    };
+    let affected_edges: Vec<(u32, String, u32)> = report
+        .affected_edges
+        .iter()
+        .map(|key| {
+            (
+                key.src.0,
+                interner.resolve(key.edge_type).to_string(),
+                key.tgt.0,
+            )
+        })
+        .collect();
+    let rule_write_events: Vec<J> = report.rule_write_events.iter()
+        .map(|event| rule_write_event_to_json(event, interner))
+        .collect();
+    json_to_pyobj(
+        py,
+        &serde_json::json!({
+            "status": status,
+            "progress_steps": report.run.progress_steps,
+            "requested_progress_budget": report.run.requested_progress_budget,
+            "budget_overshoot": report.run.budget_overshoot,
+            "passes_completed": report.run.passes_completed,
+            "cycle_detection_enabled": report.run.cycle_detection_enabled,
+            "affected_nodes": report.affected_nodes.iter().map(|nid| nid.0).collect::<Vec<_>>(),
+            "affected_edges": affected_edges,
+            "rule_write_events": rule_write_events,
+            "rule_write_events_dropped": report.rule_write_events_dropped,
+            "rule_write_snapshots_truncated": report.rule_write_snapshots_truncated,
+            "rule_write_snapshot_bytes_estimated": report.rule_write_snapshot_bytes_estimated,
+            "rule_write_snapshot_budget_bytes": 4194304,
+            "rule_write_snapshot_objects": report.rule_write_snapshot_objects,
+            "rule_write_snapshot_budget_objects": 16384,
+            "rule_write_event_snapshot_budget_bytes": 65536,
+            "rule_write_event_snapshot_budget_objects": 512,
+            "rule_write_effect_snapshot_bytes": report.rule_write_effect_snapshot_bytes,
+            "rule_write_effect_snapshot_budget_bytes": 4194304,
+            "rule_write_effect_snapshot_objects": report.rule_write_effect_snapshot_objects,
+            "rule_write_effect_snapshot_budget_objects": 16384,
+            "rule_write_effect_snapshots_truncated": report.rule_write_effect_snapshots_truncated,
+            "affected_microtheories": report.affected_microtheories.iter().map(|nid| nid.0).collect::<Vec<_>>(),
+            "exact_graph_state_diff": report.exact_graph_state_diff,
+            "frame_notifications_complete": false,
+        }),
+    )
+}
+
 // --- graph-resident backtracking search ----------------------------------
 //
 // The strategy is graph-resident Term-trees (open / options / fail / accept /
@@ -1433,6 +1589,37 @@ pub struct PySubstrate {
     memory: Option<crate::memory::MemoryFaculty>,
 }
 
+/// Immutable reusable native base. It contains no Python hooks or external
+/// resources and can safely create independent `PySubstrate` branches.
+#[pyclass(name = "SubstrateSnapshot", module = "substrate_rs._native")]
+pub struct PySubstrateSnapshot {
+    inner: ExperimentSnapshotRs,
+}
+
+#[pymethods]
+impl PySubstrateSnapshot {
+    #[getter]
+    fn id(&self) -> u64 {
+        self.inner.id()
+    }
+
+    #[getter]
+    fn source_revision(&self) -> crate::substrate::ExperimentRevision {
+        self.inner.source_revision()
+    }
+
+    fn fork(&self) -> PyResult<PySubstrate> {
+        let branch = self.inner.fork().map_err(PyRuntimeError::new_err)?;
+        Ok(PySubstrate {
+            inner: Arc::new(Mutex::new(branch)),
+            hooks: FxHashMap::default(),
+            agent_thread: None,
+            agent_stop: Arc::new(std::sync::atomic::AtomicBool::new(false)),
+            memory: None,
+        })
+    }
+}
+
 #[pymethods]
 impl PySubstrate {
     #[new]
@@ -1446,6 +1633,301 @@ impl PySubstrate {
             agent_stop: Arc::new(std::sync::atomic::AtomicBool::new(false)),
             memory: None,
         }
+    }
+
+    /// Report the active global Rayon pool size for runtime diagnostics.
+    /// This does not create a Substrate worker pool or change scheduling.
+    fn rayon_current_num_threads(&self) -> usize {
+        rayon::current_num_threads()
+    }
+
+    /// Capture a backend-independent immutable snapshot for repeated forks.
+    /// Backend selection happens once here; consumers call `.fork()`.
+    fn snapshot(&self) -> PyResult<PySubstrateSnapshot> {
+        self._experiment_snapshot_with_backend("shared_graph_pages")
+    }
+
+    fn _experiment_snapshot_with_backend(&self, backend: &str) -> PyResult<PySubstrateSnapshot> {
+        if self.agent_thread.is_some() {
+            return Err(PyRuntimeError::new_err(
+                "cannot snapshot while the agent thread is active",
+            ));
+        }
+        if !self.hooks.is_empty() {
+            return Err(PyRuntimeError::new_err(
+                "cannot snapshot with Python lifecycle hooks attached",
+            ));
+        }
+        if self.memory.is_some() {
+            return Err(PyRuntimeError::new_err(
+                "cannot snapshot with an initialized Python memory faculty",
+            ));
+        }
+        let backend = match backend {
+            "full_copy" => ExperimentSnapshotBackend::FullCopy,
+            "shared_slabs" => ExperimentSnapshotBackend::SharedSlabs,
+            "shared_graph_pages" => ExperimentSnapshotBackend::SharedGraphPages,
+            other => {
+                return Err(PyValueError::new_err(format!(
+                    "unknown experiment snapshot backend: {other}"
+                )))
+            }
+        };
+        let snapshot = self
+            .inner
+            .lock()
+            .map_err(|_| PyRuntimeError::new_err("substrate mutex poisoned"))?
+            .experiment_snapshot_with_backend(backend)
+            .map_err(PyRuntimeError::new_err)?;
+        Ok(PySubstrateSnapshot { inner: snapshot })
+    }
+
+    /// Make an isolated deep-copy control branch. Refuse wrapper-owned state
+    /// that cannot be copied as part of the native Substrate value.
+    fn fork_full_copy_experiment(&self, py: Python<'_>) -> PyResult<Self> {
+        if self.agent_thread.is_some() {
+            return Err(PyRuntimeError::new_err(
+                "cannot fork experiment while the agent thread is active",
+            ));
+        }
+        if !self.hooks.is_empty() {
+            return Err(PyRuntimeError::new_err(
+                "cannot fork experiment with Python lifecycle hooks attached",
+            ));
+        }
+        if self.memory.is_some() {
+            return Err(PyRuntimeError::new_err(
+                "cannot fork experiment with an initialized Python memory faculty",
+            ));
+        }
+        let inner = Arc::clone(&self.inner);
+        let branch = py
+            .allow_threads(move || {
+                inner
+                    .lock()
+                    .map_err(|_| "substrate mutex poisoned")?
+                    .fork_full_copy_experiment()
+            })
+            .map_err(PyRuntimeError::new_err)?;
+        Ok(Self {
+            inner: Arc::new(Mutex::new(branch)),
+            hooks: FxHashMap::default(),
+            agent_thread: None,
+            agent_stop: Arc::new(std::sync::atomic::AtomicBool::new(false)),
+            memory: None,
+        })
+    }
+
+    /// Make an experimental branch sharing only the node/edge slab pages.
+    /// Graph indexes and other substrate state remain eager copies.
+    fn fork_shared_slab_experiment(&self, py: Python<'_>) -> PyResult<Self> {
+        if self.agent_thread.is_some() {
+            return Err(PyRuntimeError::new_err(
+                "cannot fork experiment while the agent thread is active",
+            ));
+        }
+        if !self.hooks.is_empty() {
+            return Err(PyRuntimeError::new_err(
+                "cannot fork experiment with Python lifecycle hooks attached",
+            ));
+        }
+        if self.memory.is_some() {
+            return Err(PyRuntimeError::new_err(
+                "cannot fork experiment with an initialized Python memory faculty",
+            ));
+        }
+        let inner = Arc::clone(&self.inner);
+        let branch = py
+            .allow_threads(move || {
+                inner
+                    .lock()
+                    .map_err(|_| "substrate mutex poisoned")?
+                    .fork_shared_slab_experiment()
+            })
+            .map_err(PyRuntimeError::new_err)?;
+        Ok(Self {
+            inner: Arc::new(Mutex::new(branch)),
+            hooks: FxHashMap::default(),
+            agent_thread: None,
+            agent_stop: Arc::new(std::sync::atomic::AtomicBool::new(false)),
+            memory: None,
+        })
+    }
+
+    /// Make an experimental branch sharing node/edge and top-level adjacency
+    /// pages. Hash indexes and other substrate state remain eager copies.
+    fn fork_shared_graph_pages_experiment(&self, py: Python<'_>) -> PyResult<Self> {
+        if self.agent_thread.is_some() {
+            return Err(PyRuntimeError::new_err(
+                "cannot fork experiment while the agent thread is active",
+            ));
+        }
+        if !self.hooks.is_empty() {
+            return Err(PyRuntimeError::new_err(
+                "cannot fork experiment with Python lifecycle hooks attached",
+            ));
+        }
+        if self.memory.is_some() {
+            return Err(PyRuntimeError::new_err(
+                "cannot fork experiment with an initialized Python memory faculty",
+            ));
+        }
+        let inner = Arc::clone(&self.inner);
+        let branch = py
+            .allow_threads(move || {
+                inner
+                    .lock()
+                    .map_err(|_| "substrate mutex poisoned")?
+                    .fork_shared_graph_pages_experiment()
+            })
+            .map_err(PyRuntimeError::new_err)?;
+        Ok(Self {
+            inner: Arc::new(Mutex::new(branch)),
+            hooks: FxHashMap::default(),
+            agent_thread: None,
+            agent_stop: Arc::new(std::sync::atomic::AtomicBool::new(false)),
+            memory: None,
+        })
+    }
+
+    /// Install a branch-local edge aperture while retaining the inherited
+    /// graph slabs. Returns the visible edge count after scoping.
+    fn set_experiment_edge_scope(&self, py: Python<'_>, node_ids: Vec<u32>, hops: usize) -> usize {
+        let inner = Arc::clone(&self.inner);
+        let focus: Vec<NodeID> = node_ids.into_iter().map(NodeID).collect();
+        py.allow_threads(move || {
+            let mut inner = inner.lock().expect("substrate mutex poisoned");
+            inner.graph.set_focus_edge_scope(&focus, hops)
+        })
+    }
+
+    /// Start sparse before-image tracking for thoughtexperiment residuals.
+    fn begin_experiment_delta_journal(&self) {
+        self.inner
+            .lock()
+            .expect("substrate mutex poisoned")
+            .graph
+            .begin_experiment_delta_log();
+    }
+
+    /// Start a thoughtexperiment residual journal with opt-in per-rule event
+    /// values in the same mutation log. This is additive; the ordinary
+    /// journal entry point remains cheaper and keeps its existing output.
+    fn begin_experiment_delta_journal_with_rule_attribution(&self) {
+        self.inner
+            .lock()
+            .expect("substrate mutex poisoned")
+            .graph
+            .begin_experiment_delta_log_with_rule_attribution();
+    }
+
+    /// Start a thoughtexperiment residual journal with event endpoint values
+    /// and the separately budgeted per-effect transition trace enabled.
+    fn begin_experiment_delta_journal_with_rule_effect_attribution(&self) {
+        self.inner
+            .lock()
+            .expect("substrate mutex poisoned")
+            .graph
+            .begin_experiment_delta_log_with_rule_effect_attribution();
+    }
+
+    /// Set the post-hypothesis baseline used for the derived-only residual.
+    fn checkpoint_experiment_delta_journal(&self) {
+        self.inner
+            .lock()
+            .expect("substrate mutex poisoned")
+            .graph
+            .checkpoint_experiment_delta_log();
+    }
+
+    /// Finish sparse tracking and return exact total and post-hypothesis
+    /// graph diffs in the same wire shape as `graph_diff`.
+    fn finish_experiment_delta_journal<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        let mut inner = self.inner.lock().expect("substrate mutex poisoned");
+        let rule_attribution_enabled = inner.graph.rule_write_attribution_enabled();
+        let log = inner.graph.finish_mutation_log();
+        let rule_write_events: Vec<J> = log.rule_write_events.iter()
+            .map(|event| rule_write_event_to_json(event, &inner.interner))
+            .collect();
+        let rule_write_events_dropped = log.rule_write_events_dropped;
+        let rule_write_snapshots_truncated = log.rule_write_snapshots_truncated;
+        let rule_write_snapshot_bytes_estimated = log.rule_write_snapshot_bytes;
+        let rule_write_snapshot_objects = log.rule_write_snapshot_objects;
+        let rule_write_effect_snapshot_bytes = log.rule_write_effect_snapshot_bytes;
+        let rule_write_effect_snapshot_objects = log.rule_write_effect_snapshot_objects;
+        let rule_write_effect_snapshots_truncated = log.rule_write_effect_snapshots_truncated;
+        let (Some(before_nodes), Some(before_edges), Some(phase_nodes), Some(phase_edges)) = (
+            log.before_nodes,
+            log.before_edges,
+            log.phase_before_nodes,
+            log.phase_before_edges,
+        ) else {
+            return Err(PyRuntimeError::new_err(
+                "experiment delta journal is not active or checkpointed",
+            ));
+        };
+        let conclusions = crate::persist::graph_experiment_delta(
+            &inner.graph,
+            &inner.interner,
+            &before_nodes,
+            &before_edges,
+        );
+        let derived_only = crate::persist::graph_experiment_delta(
+            &inner.graph,
+            &inner.interner,
+            &phase_nodes,
+            &phase_edges,
+        );
+        let mut result = serde_json::json!({
+            "conclusions": conclusions,
+            "derived_only": derived_only,
+        });
+        if rule_attribution_enabled {
+            result.as_object_mut().expect("journal result object")
+                .extend(serde_json::json!({
+                    "rule_write_events": rule_write_events,
+                    "rule_write_events_dropped": rule_write_events_dropped,
+                    "rule_write_snapshots_truncated": rule_write_snapshots_truncated,
+                    "rule_write_snapshot_bytes_estimated": rule_write_snapshot_bytes_estimated,
+                    "rule_write_snapshot_budget_bytes": 4194304,
+                    "rule_write_snapshot_objects": rule_write_snapshot_objects,
+                    "rule_write_snapshot_budget_objects": 16384,
+                    "rule_write_event_snapshot_budget_bytes": 65536,
+                    "rule_write_event_snapshot_budget_objects": 512,
+                    "rule_write_effect_snapshot_bytes": rule_write_effect_snapshot_bytes,
+                    "rule_write_effect_snapshot_budget_bytes": 4194304,
+                    "rule_write_effect_snapshot_objects": rule_write_effect_snapshot_objects,
+                    "rule_write_effect_snapshot_budget_objects": 16384,
+                    "rule_write_effect_snapshots_truncated": rule_write_effect_snapshots_truncated,
+                }).as_object().expect("attribution fields object").clone());
+        }
+        json_to_pyobj(py, &result)
+    }
+
+    /// Validate native and wrapper-owned state before a caller performs an
+    /// OS-level CoW fork. The caller still must establish single-threaded
+    /// process state and must not fork while any other native handle is used.
+    fn assert_experiment_fork_safe(&self) -> PyResult<()> {
+        if self.agent_thread.is_some() {
+            return Err(PyRuntimeError::new_err(
+                "cannot fork experiment while the agent thread is active",
+            ));
+        }
+        if !self.hooks.is_empty() {
+            return Err(PyRuntimeError::new_err(
+                "cannot fork experiment with Python lifecycle hooks attached",
+            ));
+        }
+        if self.memory.is_some() {
+            return Err(PyRuntimeError::new_err(
+                "cannot fork experiment with an initialized Python memory faculty",
+            ));
+        }
+        self.inner
+            .lock()
+            .map_err(|_| PyRuntimeError::new_err("substrate mutex poisoned"))?
+            .validate_experiment_fork()
+            .map_err(PyRuntimeError::new_err)
     }
 
     // --- autonomous agent loop -----------------------------------------
@@ -1588,7 +2070,34 @@ impl PySubstrate {
         manifest: &Bound<'_, PyAny>,
         root_node: Option<PyRef<'_, PyNodeID>>,
     ) -> PyResult<PyObject> {
-        let manifest_json = pyobj_to_json(py, manifest)?;
+        // Only these top-level fields have meaning to the native seed loader.
+        // Project before JSON encoding so large Python-side metadata (for
+        // example an encyclopedic nested `graph` payload) does not cross the
+        // PyO3 serialization boundary. The original dict remains untouched for
+        // Python boot/materialization consumers. Unknown top-level keys are
+        // intentionally ignored, even when their values are not JSON encodable.
+        const NATIVE_SEED_KEYS: [&str; 10] = [
+            "nodes",
+            "edges",
+            "productions",
+            "rules",
+            "reflexes",
+            "id",
+            "self_modification_patchable_rules",
+            "area",
+            "order",
+            "latency_class",
+        ];
+        let source = manifest
+            .downcast::<PyDict>()
+            .map_err(|_| PyValueError::new_err("seed manifest must be a JSON object"))?;
+        let native_manifest = PyDict::new_bound(py);
+        for key in NATIVE_SEED_KEYS {
+            if let Some(value) = source.get_item(key)? {
+                native_manifest.set_item(key, value)?;
+            }
+        }
+        let manifest_json = pyobj_to_json(py, native_manifest.as_any())?;
         let m = manifest_json
             .as_object()
             .ok_or_else(|| PyValueError::new_err("seed manifest must be a JSON object"))?;
@@ -1603,6 +2112,7 @@ impl PySubstrate {
         let mut nodes_added: usize = 0;
         let mut edges_added: usize = 0;
         let mut productions_added: usize = 0;
+        let local_node_ids: Vec<(u64, u32)>;
 
         // Process nodes + edges inside a single mutex hold so the local
         // → global map and the graph mutations stay consistent.
@@ -1632,6 +2142,10 @@ impl PySubstrate {
                     nodes_added += 1;
                 }
             }
+            local_node_ids = local_to_global
+                .iter()
+                .map(|(local_id, global_id)| (*local_id, global_id.0))
+                .collect();
 
             // 2) Edges: resolve src/tgt refs, then insert unchecked.
             if let Some(J::Array(edges)) = m.get("edges") {
@@ -1773,6 +2287,11 @@ impl PySubstrate {
 
         let summary = PyDict::new_bound(py);
         summary.set_item("nodes", nodes_added)?;
+        let local_node_map = PyDict::new_bound(py);
+        for (local_id, global_id) in local_node_ids {
+            local_node_map.set_item(local_id, global_id)?;
+        }
+        summary.set_item("local_node_ids", local_node_map)?;
         summary.set_item("edges", edges_added)?;
         summary.set_item("productions", productions_added)?;
         summary.set_item("rules", rules_added)?;
@@ -1896,6 +2415,42 @@ impl PySubstrate {
         Ok(removed)
     }
 
+    /// Remove an ordered batch of `(src_id, edge_type, tgt_id)` triples.
+    /// Affected graph vectors are compacted once per batch; successful
+    /// deletions still emit one `edge_deleted` hook each. Duplicate input
+    /// triples report true only at their first occurrence.
+    fn remove_edges_batch(
+        &mut self,
+        py: Python<'_>,
+        edges: Vec<(u32, String, u32)>,
+    ) -> PyResult<Vec<bool>> {
+        let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
+        let inner = &mut *__substrate_guard;
+        let keys: Vec<EdgeKey> = edges
+            .iter()
+            .map(|(src, edge_type, tgt)| EdgeKey {
+                src: NodeID(*src),
+                edge_type: inner.interner.intern(edge_type),
+                tgt: NodeID(*tgt),
+            })
+            .collect();
+        let outcomes = inner.remove_edges_batch(&keys);
+        for ((src, edge_type, tgt), removed) in edges.iter().zip(outcomes.iter()) {
+            if *removed {
+                self.fire_hook(
+                    py,
+                    "edge_deleted",
+                    &[
+                        Py::new(py, PyNodeID::from_node(NodeID(*src)))?.into_any(),
+                        edge_type.clone().into_py(py),
+                        Py::new(py, PyNodeID::from_node(NodeID(*tgt)))?.into_any(),
+                    ],
+                )?;
+            }
+        }
+        Ok(outcomes)
+    }
+
     fn remove_node(&mut self, py: Python<'_>, nid: PyRef<'_, PyNodeID>) -> PyResult<bool> {
         let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
         let inner = &mut *__substrate_guard;
@@ -1925,6 +2480,53 @@ impl PySubstrate {
             }
         }
         Ok(removed)
+    }
+
+    /// Remove a reflected Term tree without deleting Term descendants that
+    /// are still referenced from outside the tree. Ordinary `remove_node`
+    /// stays node-only. Returns removed and protected node IDs; malformed or
+    /// cyclic child structure is rejected before mutation.
+    fn remove_term_subgraph<'py>(
+        &mut self,
+        py: Python<'py>,
+        nid: PyRef<'_, PyNodeID>,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let root = nid.to_node();
+        let mut guard = self.inner.lock().expect("substrate mutex poisoned");
+        let report = guard
+            .remove_term_subgraph(root)
+            .map_err(PyValueError::new_err)?;
+        let removed_ids: Vec<u32> = report.removed.iter().map(|(node, _)| node.0).collect();
+        let protected_ids: Vec<u32> = report.protected.iter().map(|node| node.0).collect();
+        let mut first_hook_error = None;
+        for (node, former_type) in report.removed {
+            let type_name = guard.interner.resolve(former_type).to_string();
+            let node_py = match Py::new(py, PyNodeID::from_node(node)) {
+                Ok(value) => value.into_any(),
+                Err(err) => {
+                    if first_hook_error.is_none() {
+                        first_hook_error = Some(err);
+                    }
+                    continue;
+                }
+            };
+            if let Err(err) = self.fire_hook(py, "node_deleted", &[node_py, type_name.into_py(py)])
+            {
+                if first_hook_error.is_none() {
+                    first_hook_error = Some(err);
+                }
+            }
+        }
+        if let Some(err) = first_hook_error {
+            return Err(err);
+        }
+        json_to_pyobj(
+            py,
+            &serde_json::json!({
+                "removed_node_ids": removed_ids,
+                "protected_node_ids": protected_ids,
+            }),
+        )
     }
 
     fn set_attr(
@@ -2173,6 +2775,75 @@ impl PySubstrate {
         inner.graph.has_edge(src.to_node(), et, tgt.to_node())
     }
 
+    fn edge_attrs<'py>(
+        &self,
+        py: Python<'py>,
+        src: PyRef<'_, PyNodeID>,
+        edge_type: &str,
+        tgt: PyRef<'_, PyNodeID>,
+    ) -> PyResult<Option<Bound<'py, PyDict>>> {
+        let mut guard = self.inner.lock().expect("substrate mutex poisoned");
+        let inner = &mut *guard;
+        let Some(edge_type) = inner.interner.lookup(edge_type) else {
+            return Ok(None);
+        };
+        let Some(idx) = inner
+            .graph
+            .edge_idx(src.to_node(), edge_type, tgt.to_node())
+        else {
+            return Ok(None);
+        };
+        let result = PyDict::new_bound(py);
+        for (key, value) in &inner.graph.edge_attrs(idx).0 {
+            result.set_item(
+                inner.interner.resolve(*key),
+                value_to_py(py, value, &inner.interner)?,
+            )?;
+        }
+        Ok(Some(result))
+    }
+
+    /// Return every incoming and outgoing edge incident to `nid`, including
+    /// exact attributes. This is an O(degree(nid)) read used by deletion
+    /// before-image checks; callers that need the full graph should use
+    /// `graph_to_dict` instead.
+    fn incident_edges<'py>(
+        &self,
+        py: Python<'py>,
+        nid: PyRef<'_, PyNodeID>,
+    ) -> PyResult<Bound<'py, PyList>> {
+        let guard = self.inner.lock().expect("substrate mutex poisoned");
+        let inner = &*guard;
+        let node = nid.to_node();
+        let result = PyList::empty_bound(py);
+        if !inner.graph.has_node(node) {
+            return Ok(result);
+        }
+        let mut edge_ids = inner.graph.out_edges_slice(node, None).to_vec();
+        for idx in inner.graph.in_edges_slice(node, None) {
+            if !edge_ids.contains(idx) {
+                edge_ids.push(*idx);
+            }
+        }
+        for idx in edge_ids {
+            let edge = inner.graph.edge(idx);
+            let row = PyDict::new_bound(py);
+            row.set_item("src", edge.src.0)?;
+            row.set_item("type", inner.interner.resolve(edge.edge_type))?;
+            row.set_item("tgt", edge.tgt.0)?;
+            let attrs = PyDict::new_bound(py);
+            for (key, value) in &inner.graph.edge_attrs(idx).0 {
+                attrs.set_item(
+                    inner.interner.resolve(*key),
+                    value_to_py(py, value, &inner.interner)?,
+                )?;
+            }
+            row.set_item("attrs", attrs)?;
+            result.append(row)?;
+        }
+        Ok(result)
+    }
+
     #[pyo3(signature = (type_=None))]
     fn nodes(&self, type_: Option<&str>) -> Vec<PyNodeID> {
         let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
@@ -2234,6 +2905,20 @@ impl PySubstrate {
         let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
         let inner = &mut *__substrate_guard;
         inner.graph.node_count()
+    }
+
+    /// O(node-slab) next live NodeID used by atomic experiment writeback.
+    /// Avoids serializing the complete graph merely to allocate one ID.
+    fn next_live_node_id(&self) -> u64 {
+        let __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
+        __substrate_guard.graph.next_live_node_id()
+    }
+
+    /// Read-only logical TermArena size for lifecycle diagnostics. This is
+    /// the number of indexed AST nodes, not allocator capacity or RSS.
+    fn term_arena_len(&self) -> usize {
+        let __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
+        __substrate_guard.terms.len()
     }
 
     /// Self-instrumentation: per-rule accumulated cost. Returns a list of
@@ -2310,6 +2995,114 @@ impl PySubstrate {
         crate::scale_audit::set_enabled(on)
     }
 
+    /// Enable per-rule scale counters. Requires the global scale audit to be
+    /// enabled as well; attribution uses rule indices from the loaded native
+    /// rule vector and is intentionally opt-in because it adds map updates.
+    #[staticmethod]
+    fn scale_audit_set_per_rule_enabled(on: bool) {
+        crate::scale_audit::set_per_rule_enabled(on)
+    }
+
+    /// Per-rule counter rows: `(rule_index, metric, count)`.
+    #[staticmethod]
+    fn scale_audit_per_rule_snapshot() -> Vec<(u32, String, u64)> {
+        crate::scale_audit::per_rule_snapshot()
+    }
+
+    /// Clear the per-rule attribution table.
+    #[staticmethod]
+    fn scale_audit_per_rule_reset() {
+        crate::scale_audit::per_rule_reset()
+    }
+
+    /// Candidate-test counts by native rule index and zero-based match-edge position.
+    #[staticmethod]
+    fn scale_audit_match_clause_snapshot() -> Vec<(u32, usize, u64)> {
+        crate::scale_audit::match_clause_candidate_snapshot()
+    }
+
+    /// Candidate expansion counts keyed by semantic pattern edge, independent
+    /// of matcher clause order: `(rule_index, src_var, edge_type, tgt_var,
+    /// expansion_calls, candidates)`.
+    fn scale_audit_match_edge_snapshot(&self) -> Vec<(u32, String, String, String, u64, u64)> {
+        let guard = self.inner.lock().expect("substrate mutex poisoned");
+        crate::scale_audit::match_edge_candidate_snapshot()
+            .into_iter()
+            .map(|(rule, src, edge, tgt, calls, candidates)| {
+                (
+                    rule,
+                    guard.interner.resolve(crate::sym::Sym(src)).to_owned(),
+                    guard.interner.resolve(crate::sym::Sym(edge)).to_owned(),
+                    guard.interner.resolve(crate::sym::Sym(tgt)).to_owned(),
+                    calls,
+                    candidates,
+                )
+            })
+            .collect()
+    }
+
+    /// Matcher identity metadata: `(audit_id, name_symbol, name, match_arity)`.
+    #[staticmethod]
+    fn scale_audit_rule_metadata_snapshot() -> Vec<(u32, u32, String, usize, bool)> {
+        crate::scale_audit::rule_audit_metadata_snapshot()
+    }
+
+    /// Source identity for each process-local audit ID:
+    /// `(audit_id, store_instance_id, local_rule_index)`.
+    #[staticmethod]
+    fn scale_audit_rule_identity_snapshot() -> Vec<(u32, u64, u32)> {
+        crate::scale_audit::rule_audit_identity_snapshot()
+    }
+
+    /// Enable expensive capture of the first complete graph/rule state seen
+    /// by each matcher store in the current process. Disabled by default.
+    #[staticmethod]
+    fn scale_audit_set_rule_store_state_capture_enabled(on: bool) {
+        crate::scale_audit::set_rule_store_state_capture_enabled(on)
+    }
+
+    /// Clear captured store states before a new diagnostic window.
+    #[staticmethod]
+    fn scale_audit_reset_rule_store_state_snapshots() {
+        crate::scale_audit::reset_rule_store_state_snapshots()
+    }
+
+    /// Captured first-observation store states as `(store_id, JSON string)`.
+    #[staticmethod]
+    fn scale_audit_rule_store_state_snapshots() -> Vec<(u64, String)> {
+        crate::scale_audit::rule_store_state_snapshots()
+    }
+
+    /// Enable or disable the bounded concrete access trace for this substrate.
+    /// The recorder is process-global, but accepts events only from this
+    /// substrate's graph scope so local rule UIDs/node IDs cannot be mixed.
+    fn runtime_access_trace_set_enabled(&self, on: bool) {
+        let guard = self.inner.lock().expect("substrate mutex poisoned");
+        let scope = &guard.graph as *const crate::graph::TypedGraph as usize;
+        crate::access_trace::set_enabled(on, scope)
+    }
+
+    /// Enable scheduler/deferred operation-work capture across all graph
+    /// scopes in this process, without recording graph-access rows.
+    #[staticmethod]
+    fn runtime_work_trace_set_all_scopes_enabled(on: bool) {
+        crate::access_trace::set_work_all_scopes_enabled(on)
+    }
+
+    /// Measurement control for the ShapeDecode parsed-codebook cache.
+    /// Default is enabled; isolated baseline workers disable it before
+    /// evaluation to retain the full-scan reference path.
+    #[staticmethod]
+    fn runtime_shape_codebook_cache_set_enabled(on: bool) {
+        crate::access_trace::set_shape_codebook_cache_enabled(on)
+    }
+
+    /// Clear the bounded concrete rule access trace and its overflow count.
+    #[staticmethod]
+    fn runtime_access_trace_reset() {
+        crate::access_trace::reset()
+    }
+
     /// G5 RESPONSIVENESS — the verdict for one counter, as
     /// `"RESPONSIVE" | "BLIND" | "INERT"` (`g5.rs`).
     ///
@@ -2333,6 +3126,29 @@ impl PySubstrate {
     #[staticmethod]
     fn scale_audit_enabled() -> bool {
         crate::scale_audit::enabled()
+    }
+
+    /// Current audit gates: `(process_mode, calling_thread_override, per_rule_mode)`.
+    /// Use alongside `scale_audit_enabled()` to localise unexpected recording.
+    #[staticmethod]
+    fn scale_audit_mode_snapshot() -> (bool, bool, bool) {
+        crate::scale_audit::mode_snapshot()
+    }
+
+    /// Enable or disable the low-frequency audit-mode setter transition log.
+    #[staticmethod]
+    fn scale_audit_mode_trace_set_enabled(on: bool) {
+        crate::scale_audit::mode_trace_set_enabled(on)
+    }
+
+    #[staticmethod]
+    fn scale_audit_mode_trace_reset() {
+        crate::scale_audit::mode_trace_reset()
+    }
+
+    #[staticmethod]
+    fn scale_audit_mode_trace_snapshot() -> Vec<String> {
+        crate::scale_audit::mode_trace_snapshot()
     }
 
     /// DIAGNOSTIC — which distinct `DimInfer` argument-tuple each successive
@@ -2558,8 +3374,13 @@ impl PySubstrate {
         let inner = &mut *__substrate_guard;
         let json = pyobj_to_json_term(py, term_json, WireMode::Structural)?;
         let pre_parse = inner.terms.nodes.len();
-        let idx = term_from_json(&json, &mut inner.terms, &mut inner.interner)
-            .map_err(|e| PyValueError::new_err(format!("bad Term JSON: {:?}", e)))?;
+        let idx = match term_from_json(&json, &mut inner.terms, &mut inner.interner) {
+            Ok(idx) => idx,
+            Err(err) => {
+                inner.terms.nodes.truncate(pre_parse);
+                return Err(PyValueError::new_err(format!("bad Term JSON: {:?}", err)));
+            }
+        };
         let post_parse = inner.terms.nodes.len();
         let reg = inner.interner.intern(register);
         let cell_sym = inner.interner.intern("cell");
@@ -3015,9 +3836,20 @@ impl PySubstrate {
         // and truncate back after eval so repeated evaluate() calls
         // don't leak.
         let snapshot = inner.terms.nodes.len();
-        let idx = term_from_json(&json, &mut inner.terms, &mut inner.interner)
-            .map_err(|e| PyValueError::new_err(format!("bad Term JSON: {:?}", e)))?;
-        let mut env_v = pydict_to_env(py, env, &mut inner.interner)?;
+        let idx = match term_from_json(&json, &mut inner.terms, &mut inner.interner) {
+            Ok(idx) => idx,
+            Err(err) => {
+                inner.terms.nodes.truncate(snapshot);
+                return Err(PyValueError::new_err(format!("bad Term JSON: {:?}", err)));
+            }
+        };
+        let mut env_v = match pydict_to_env(py, env, &mut inner.interner) {
+            Ok(env) => env,
+            Err(err) => {
+                inner.terms.nodes.truncate(snapshot);
+                return Err(err);
+            }
+        };
         let mut cache = EvalCache::default();
         inner.counters.on_evaluation();
         // Split the &mut *inner borrow so we can hand mutable
@@ -3044,6 +3876,7 @@ impl PySubstrate {
         if let Some(target) = shape_target_copy {
             ctx = ctx.with_shape_target(target);
         }
+        let _host_evaluation_scope = crate::scale_audit::host_evaluation_scope();
         let v = evaluate(terms, idx, &mut env_v, &mut ctx);
         // Release the scratch Terms — concepts/productions live below
         // the snapshot so their TermIdx remain valid.
@@ -3264,13 +4097,188 @@ impl PySubstrate {
         let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
         let inner = &mut *__substrate_guard;
         let json = pyobj_to_json(py, rule_dict)?;
-        let mut rule = parse_rule_json(&json, &mut inner.terms, &mut inner.interner)
-            .map_err(|e| PyValueError::new_err(format!("bad rule JSON: {}", e)))?;
+        let terms_before = inner.terms.nodes.len();
+        let symbols_before = inner.interner.len();
+        let mut rule = match parse_rule_json(&json, &mut inner.terms, &mut inner.interner) {
+            Ok(rule) => rule,
+            Err(err) => {
+                inner.terms.nodes.truncate(terms_before);
+                inner.interner.truncate(symbols_before);
+                return Err(PyValueError::new_err(format!("bad rule JSON: {}", err)));
+            }
+        };
         // `add_rule` is the live authoring surface, not checkpoint restore:
         // copied install metadata must never make a newly-authored successor
         // immutable. `import_rules` below is the sole path that preserves it.
         rule.mutation_protected = false;
         Ok(inner.add_rule(rule).0)
+    }
+
+    /// Replace or remove one active rule by name without exporting and
+    /// deserializing the complete rule store. Intended for isolated
+    /// thoughtexperiment branches; all edits remain branch-local.
+    fn replace_active_rule_by_name(
+        &mut self,
+        py: Python<'_>,
+        rule_name: &str,
+        variant: Option<&Bound<'_, PyAny>>,
+    ) -> PyResult<bool> {
+        let replacement = variant.map(|value| pyobj_to_json(py, value)).transpose()?;
+        let rule_name = rule_name.to_owned();
+        let inner = Arc::clone(&self.inner);
+        py.allow_threads(move || -> Result<bool, String> {
+            let mut guard = inner
+                .lock()
+                .map_err(|_| "substrate mutex poisoned".to_string())?;
+            let Some(index) = guard
+                .rules
+                .iter()
+                .position(|rule| rule.active && guard.interner.resolve(rule.name) == rule_name)
+            else {
+                return Ok(false);
+            };
+            if let Some(json) = replacement {
+                let terms_before = guard.terms.nodes.len();
+                let symbols_before = guard.interner.len();
+                let parsed = {
+                    let substrate: &mut crate::substrate::Substrate = &mut guard;
+                    parse_rule_json(&json, &mut substrate.terms, &mut substrate.interner)
+                };
+                let mut rule = match parsed {
+                    Ok(rule) => rule,
+                    Err(err) => {
+                        guard.terms.nodes.truncate(terms_before);
+                        guard.interner.truncate(symbols_before);
+                        return Err(format!("bad rule JSON: {err}"));
+                    }
+                };
+                guard.remove_rule(crate::rewrite::RuleIdx(index as u32));
+                rule.mutation_protected = false;
+                guard.add_rule(rule);
+            } else {
+                guard.remove_rule(crate::rewrite::RuleIdx(index as u32));
+            }
+            Ok(true)
+        })
+        .map_err(PyValueError::new_err)
+    }
+
+    /// Replace one active rule only if the semantic graph/rule revision still
+    /// matches the caller's validated experiment base. Revision check,
+    /// parsing, and slot replacement share one substrate lock so stale
+    /// experiments cannot install a rule after validation.
+    fn replace_active_rule_by_name_if_revision(
+        &mut self,
+        py: Python<'_>,
+        expected_revision: crate::substrate::ExperimentRevision,
+        rule_name: &str,
+        variant: &Bound<'_, PyAny>,
+    ) -> PyResult<bool> {
+        let replacement = pyobj_to_json(py, variant)?;
+        let rule_name = rule_name.to_owned();
+        let inner = Arc::clone(&self.inner);
+        py.allow_threads(move || -> Result<bool, String> {
+            let mut guard = inner
+                .lock()
+                .map_err(|_| "substrate mutex poisoned".to_string())?;
+            let actual = guard.experiment_graph_rule_revision();
+            if actual != expected_revision {
+                return Err(format!(
+                    "stale experiment revision: expected {expected_revision:?}, current {actual:?}"
+                ));
+            }
+            let Some(index) = guard
+                .rules
+                .iter()
+                .position(|rule| rule.active && guard.interner.resolve(rule.name) == rule_name)
+            else {
+                return Ok(false);
+            };
+            let terms_before = guard.terms.nodes.len();
+            let symbols_before = guard.interner.len();
+            let parsed = {
+                let substrate: &mut crate::substrate::Substrate = &mut guard;
+                parse_rule_json(&replacement, &mut substrate.terms, &mut substrate.interner)
+            };
+            let mut rule = match parsed {
+                Ok(rule) => rule,
+                Err(err) => {
+                    guard.terms.nodes.truncate(terms_before);
+                    guard.interner.truncate(symbols_before);
+                    return Err(format!("bad rule JSON: {err}"));
+                }
+            };
+            let replacement_name = guard.interner.resolve(rule.name).to_owned();
+            if guard.rules.iter().enumerate().any(|(slot, active)| {
+                slot != index
+                    && active.active
+                    && guard.interner.resolve(active.name) == replacement_name
+            }) {
+                guard.terms.nodes.truncate(terms_before);
+                guard.interner.truncate(symbols_before);
+                return Err("replacement rule name already active".to_string());
+            }
+            guard.remove_rule(crate::rewrite::RuleIdx(index as u32));
+            rule.mutation_protected = false;
+            guard.add_rule(rule);
+            Ok(true)
+        })
+        .map_err(PyValueError::new_err)
+    }
+
+    /// Count active branch rules and remove every active rule with any of the
+    /// requested names without serializing the full rule store to Python.
+    fn experiment_rule_store_summary(
+        &self,
+        py: Python<'_>,
+        remove_names: Vec<String>,
+    ) -> (usize, Vec<String>) {
+        let inner = Arc::clone(&self.inner);
+        py.allow_threads(move || {
+            let mut guard = inner.lock().expect("substrate mutex poisoned");
+            let active_count = guard.rules.iter().filter(|rule| rule.active).count();
+            let mut removed = Vec::new();
+            for name in remove_names {
+                loop {
+                    let Some(index) = guard
+                        .rules
+                        .iter()
+                        .position(|rule| rule.active && guard.interner.resolve(rule.name) == name)
+                    else {
+                        break;
+                    };
+                    let rule_name = guard.interner.resolve(guard.rules[index].name).to_owned();
+                    guard.remove_rule(crate::rewrite::RuleIdx(index as u32));
+                    removed.push(rule_name);
+                }
+            }
+            (active_count, removed)
+        })
+    }
+
+    /// Register a rewrite rule with its caller-supplied match clause order.
+    /// This explicit control is intended for controlled matcher experiments;
+    /// ordinary installation should use `add_rule` and its cost heuristic.
+    fn add_rule_preserving_match_order(
+        &mut self,
+        py: Python<'_>,
+        rule_dict: &Bound<'_, PyAny>,
+    ) -> PyResult<u32> {
+        let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
+        let inner = &mut *__substrate_guard;
+        let json = pyobj_to_json(py, rule_dict)?;
+        let terms_before = inner.terms.nodes.len();
+        let symbols_before = inner.interner.len();
+        let mut rule = match parse_rule_json(&json, &mut inner.terms, &mut inner.interner) {
+            Ok(rule) => rule,
+            Err(err) => {
+                inner.terms.nodes.truncate(terms_before);
+                inner.interner.truncate(symbols_before);
+                return Err(PyValueError::new_err(format!("bad rule JSON: {}", err)));
+            }
+        };
+        rule.mutation_protected = false;
+        Ok(inner.add_rule_preserving_match_order(rule).0)
     }
 
     /// Stable identity/CAS metadata for one dense rule slot.
@@ -3290,6 +4298,220 @@ impl PySubstrate {
             guard.rules[rule_idx as usize].mutation_protected,
         )?;
         Ok(out)
+    }
+
+    /// Read the access sets that `derive_access` computed for each rule slot.
+    /// Resource strings are stable within the substrate's symbol vocabulary
+    /// (`edge:<name>`, `type:<name>`, `attr:<name>`); term-edge reads are
+    /// returned separately from match-edge drivers, and the final two tuple
+    /// fields preserve conservative dynamic-access flags. This is a diagnostic
+    /// readback for structural audits, not a second scheduler API.
+    fn rule_access_sets(
+        &self,
+    ) -> Vec<(
+        usize,
+        String,
+        bool,
+        Vec<String>,
+        Vec<String>,
+        Vec<String>,
+        bool,
+        bool,
+    )> {
+        let guard = self.inner.lock().expect("substrate mutex poisoned");
+        let resource = |key: &crate::rewrite::RuleKey| -> String {
+            match key {
+                crate::rewrite::RuleKey::Edge(sym) => {
+                    format!("edge:{}", guard.interner.resolve(*sym))
+                }
+                crate::rewrite::RuleKey::Type(sym) => {
+                    format!("type:{}", guard.interner.resolve(*sym))
+                }
+                crate::rewrite::RuleKey::Attr(sym) => {
+                    format!("attr:{}", guard.interner.resolve(*sym))
+                }
+            }
+        };
+        guard
+            .rules
+            .iter()
+            .enumerate()
+            .map(|(idx, rule)| {
+                let mut reads: Vec<String> = rule.read_set.iter().map(resource).collect();
+                let mut term_edge_reads: Vec<String> = rule
+                    .term_edge_reads
+                    .iter()
+                    .map(|sym| format!("edge:{}", guard.interner.resolve(*sym)))
+                    .collect();
+                let mut writes: Vec<String> = rule.write_set.iter().map(resource).collect();
+                reads.sort();
+                term_edge_reads.sort();
+                writes.sort();
+                (
+                    idx,
+                    guard.interner.resolve(rule.name).to_string(),
+                    rule.active,
+                    reads,
+                    term_edge_reads,
+                    writes,
+                    rule.reads_any,
+                    rule.writes_any,
+                )
+            })
+            .collect()
+    }
+
+    /// Snapshot concrete access events as
+    /// `(rule_uid, kind, node_id, resource_name, peer_node_id, count)` rows,
+    /// plus the number of events dropped after the distinct-event cap. A
+    /// `None` node/resource denotes an event such as a type query that has no
+    /// one concrete target. Symbols are resolved in this substrate's interner.
+    fn runtime_access_trace_snapshot(
+        &self,
+    ) -> (
+        Vec<(u64, String, Option<u32>, Option<String>, Option<u32>, u64)>,
+        u64,
+    ) {
+        let guard = self.inner.lock().expect("substrate mutex poisoned");
+        let scope = &guard.graph as *const crate::graph::TypedGraph as usize;
+        let (events, dropped) = crate::access_trace::snapshot(scope);
+        let rows = events
+            .into_iter()
+            .map(|(event, count)| {
+                let node = (event.node != crate::access_trace::NO_ID).then_some(event.node);
+                let peer = (event.peer != crate::access_trace::NO_ID).then_some(event.peer);
+                let resource = (event.resource != crate::access_trace::NO_ID).then(|| {
+                    guard
+                        .interner
+                        .resolve(crate::sym::Sym(event.resource))
+                        .to_string()
+                });
+                (
+                    event.rule_uid,
+                    crate::access_trace::kind_name(event.kind).to_string(),
+                    node,
+                    resource,
+                    peer,
+                    count,
+                )
+            })
+            .collect();
+        (rows, dropped)
+    }
+
+    /// Detailed variant for diagnostics whose peer field is a symbol rather
+    /// than a node ID (currently type-index queries). Preserves the original
+    /// snapshot API and exposes that peer separately as `peer_resource`.
+    fn runtime_access_trace_snapshot_detailed(
+        &self,
+    ) -> (
+        Vec<(
+            u64,
+            String,
+            Option<u32>,
+            Option<String>,
+            Option<u32>,
+            Option<String>,
+            u64,
+        )>,
+        u64,
+    ) {
+        let guard = self.inner.lock().expect("substrate mutex poisoned");
+        let scope = &guard.graph as *const crate::graph::TypedGraph as usize;
+        let (events, dropped) = crate::access_trace::snapshot(scope);
+        let rows = events
+            .into_iter()
+            .map(|(event, count)| {
+                let node = (event.node != crate::access_trace::NO_ID).then_some(event.node);
+                let is_type_query = matches!(event.kind, 16 | 32 | 33);
+                let peer_node = (!is_type_query && event.peer != crate::access_trace::NO_ID)
+                    .then_some(event.peer);
+                let resource = (event.resource != crate::access_trace::NO_ID).then(|| {
+                    guard
+                        .interner
+                        .resolve(crate::sym::Sym(event.resource))
+                        .to_string()
+                });
+                let peer_resource = (is_type_query && event.peer != crate::access_trace::NO_ID)
+                    .then(|| {
+                        guard
+                            .interner
+                            .resolve(crate::sym::Sym(event.peer))
+                            .to_string()
+                    });
+                (
+                    event.rule_uid,
+                    crate::access_trace::kind_name(event.kind).to_string(),
+                    node,
+                    resource,
+                    peer_node,
+                    peer_resource,
+                    count,
+                )
+            })
+            .collect();
+        (rows, dropped)
+    }
+
+    /// Snapshot scheduler and deferred-queue work separately from concrete
+    /// graph-access rows. Each row is
+    /// `(operation_id, producer_rule_uid, kind, subject, work_units)`; UID 0
+    /// identifies work outside a rule, and subject is a deferred-family code.
+    fn runtime_work_trace_snapshot(&self) -> (Vec<(u64, u64, String, Option<u32>, u64)>, u64) {
+        let guard = self.inner.lock().expect("substrate mutex poisoned");
+        let scope = &guard.graph as *const crate::graph::TypedGraph as usize;
+        let (events, dropped) = crate::access_trace::work_snapshot(scope);
+        let rows = events
+            .into_iter()
+            .map(|(event, units)| {
+                (
+                    event.operation_id,
+                    event.rule_uid,
+                    crate::access_trace::kind_name(event.kind).to_string(),
+                    (event.subject != crate::access_trace::NO_ID).then_some(event.subject),
+                    units,
+                )
+            })
+            .collect();
+        (rows, dropped)
+    }
+
+    /// Snapshot operation-work rows across all captured graph scopes as
+    /// `(scope_id, operation_id, producer_rule_uid, kind, subject, units)`.
+    #[staticmethod]
+    fn runtime_work_trace_all_scopes_snapshot(
+    ) -> (Vec<(usize, u64, u64, String, Option<u32>, u64)>, u64) {
+        let (events, dropped) = crate::access_trace::work_snapshot_all();
+        let rows = events
+            .into_iter()
+            .map(|(event, units)| {
+                (
+                    event.scope,
+                    event.operation_id,
+                    event.rule_uid,
+                    crate::access_trace::kind_name(event.kind).to_string(),
+                    (event.subject != crate::access_trace::NO_ID).then_some(event.subject),
+                    units,
+                )
+            })
+            .collect();
+        (rows, dropped)
+    }
+
+    /// Snapshot scheduler/deferred scale counters accumulated inside this
+    /// substrate's active run_rules operations. Unlike scale_audit_snapshot,
+    /// these rows are graph-scoped and can be reconciled with work-trace rows.
+    fn scale_audit_scoped_work_snapshot(&self) -> Vec<(String, u64)> {
+        let guard = self.inner.lock().expect("substrate mutex poisoned");
+        let scope = &guard.graph as *const crate::graph::TypedGraph as usize;
+        crate::scale_audit::scoped_work_snapshot(scope)
+    }
+
+    /// Snapshot scoped scheduler/deferred totals across all graph scopes as
+    /// `(scope_id, metric, units)` rows.
+    #[staticmethod]
+    fn scale_audit_scoped_work_snapshot_all() -> Vec<(usize, String, u64)> {
+        crate::scale_audit::scoped_work_snapshot_all()
     }
 
     /// Mechanical binding for the same CAS transaction graph rules invoke via
@@ -3373,6 +4595,133 @@ impl PySubstrate {
         })
     }
 
+    /// Open a native conversation-turn window for retaining rule progress.
+    fn begin_turn_rule_firing_capture(&mut self) {
+        let mut guard = self.inner.lock().expect("substrate mutex poisoned");
+        guard.begin_turn_rule_firing_capture();
+    }
+
+    /// Persist the captured last-progressing rule in the native graph. Returns
+    /// the RuleFiringHistory node ID, or None if no rule progressed this turn.
+    fn commit_turn_rule_firing_capture(
+        &mut self,
+        inbound: PyRef<'_, PyNodeID>,
+        agent: PyRef<'_, PyNodeID>,
+    ) -> Option<u32> {
+        let mut guard = self.inner.lock().expect("substrate mutex poisoned");
+        guard
+            .commit_turn_rule_firing_capture(inbound.to_node(), agent.to_node())
+            .map(|node| node.0)
+    }
+
+    /// Structured additive counterpart to `run_rules`. The legacy method
+    /// keeps its integer return and behavior; this method reports why it
+    /// returned and makes pass-granularity budget overshoot explicit.
+    #[pyo3(signature = (max_steps=100_000, detect_cycles=false))]
+    fn run_rules_report<'py>(
+        &mut self,
+        py: Python<'py>,
+        max_steps: usize,
+        detect_cycles: bool,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        crate::scale_audit::ffi(1, 0);
+        crate::scale_audit::begin_epoch();
+        let (report, last_progress_rule) = py.allow_threads(|| {
+            let mut guard = self.inner.lock().expect("substrate mutex poisoned");
+            let report = guard.run_rules_report(max_steps, detect_cycles);
+            let last_progress_rule = report
+                .last_progress_rule
+                .map(|name| guard.interner.resolve(name).to_owned());
+            (report, last_progress_rule)
+        });
+        let status = match report.status {
+            crate::substrate::RuleRunStatus::FixedPoint => "fixed_point",
+            crate::substrate::RuleRunStatus::RepeatedGraphState => "repeated_graph_state",
+            crate::substrate::RuleRunStatus::ProgressBudgetReached => "progress_budget_reached",
+        };
+        json_to_pyobj(
+            py,
+            &serde_json::json!({
+                "status": status,
+                "progress_steps": report.progress_steps,
+                "requested_progress_budget": report.requested_progress_budget,
+                "budget_overshoot": report.budget_overshoot,
+                "passes_completed": report.passes_completed,
+                "cycle_detection_enabled": report.cycle_detection_enabled,
+                "last_progress_rule": last_progress_rule,
+            }),
+        )
+    }
+
+    /// Opt-in mutation-site write-target observer around rule settlement.
+    /// It is conservative and may include no-op mutable accesses. Changed
+    /// edge endpoints are included in `affected_nodes`.
+    #[pyo3(signature = (max_steps=100_000, detect_cycles=false))]
+    fn run_rules_delta_report<'py>(
+        &mut self,
+        py: Python<'py>,
+        max_steps: usize,
+        detect_cycles: bool,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        crate::scale_audit::ffi(1, 0);
+        crate::scale_audit::begin_epoch();
+        let report = py.allow_threads(|| {
+            let mut guard = self.inner.lock().expect("substrate mutex poisoned");
+            guard.run_rules_delta_report(max_steps, detect_cycles)
+        });
+        let guard = self.inner.lock().expect("substrate mutex poisoned");
+        rule_delta_report_to_pyobj(py, &report, &guard.interner)
+    }
+
+    /// Mutation-site report with separately opted-in per-effect value traces.
+    #[pyo3(signature = (max_steps=100_000, detect_cycles=false))]
+    fn run_rules_effect_delta_report<'py>(
+        &mut self,
+        py: Python<'py>,
+        max_steps: usize,
+        detect_cycles: bool,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        crate::scale_audit::ffi(1, 0);
+        crate::scale_audit::begin_epoch();
+        let report = py.allow_threads(|| {
+            let mut guard = self.inner.lock().expect("substrate mutex poisoned");
+            guard.run_rules_effect_delta_report(max_steps, detect_cycles)
+        });
+        let guard = self.inner.lock().expect("substrate mutex poisoned");
+        rule_delta_report_to_pyobj(py, &report, &guard.interner)
+    }
+
+    /// Mutation-site report with bounded per-effect targets and no value copies.
+    #[pyo3(signature = (max_steps=100_000, detect_cycles=false))]
+    fn run_rules_effect_target_delta_report<'py>(&mut self, py: Python<'py>, max_steps: usize, detect_cycles: bool) -> PyResult<Bound<'py, PyAny>> {
+        crate::scale_audit::ffi(1, 0);
+        crate::scale_audit::begin_epoch();
+        let report = py.allow_threads(|| {
+            let mut guard = self.inner.lock().expect("substrate mutex poisoned");
+            guard.run_rules_effect_target_delta_report(max_steps, detect_cycles)
+        });
+        let guard = self.inner.lock().expect("substrate mutex poisoned");
+        rule_delta_report_to_pyobj(py, &report, &guard.interner)
+    }
+
+    /// Exact O(V+E) graph-state oracle for checking the mutation-site report.
+    #[pyo3(signature = (max_steps=100_000, detect_cycles=false))]
+    fn run_rules_snapshot_delta_report<'py>(
+        &mut self,
+        py: Python<'py>,
+        max_steps: usize,
+        detect_cycles: bool,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        crate::scale_audit::ffi(1, 0);
+        crate::scale_audit::begin_epoch();
+        let report = py.allow_threads(|| {
+            let mut guard = self.inner.lock().expect("substrate mutex poisoned");
+            guard.run_rules_snapshot_delta_report(max_steps, detect_cycles)
+        });
+        let guard = self.inner.lock().expect("substrate mutex poisoned");
+        rule_delta_report_to_pyobj(py, &report, &guard.interner)
+    }
+
     /// PER-MT SCOPED fixpoint (CAN_MT_SCOPED_RULES_PREREG/RESULTS.md).
     /// ADDITIVE — `run_rules`/`run_rules_settle` above are unchanged.
     /// `scope_mt=None` (the default) is byte-for-byte `run_rules`: the
@@ -3398,6 +4747,65 @@ impl PySubstrate {
             let mut guard = self.inner.lock().expect("substrate mutex poisoned");
             guard.run_rules_scoped(max_steps, detect_cycles, scope_node)
         })
+    }
+
+    /// Diagnostic only: time repeated construction/drop of the active-rule
+    /// snapshot used by scoped closure. Does not execute or mutate any rule.
+    #[pyo3(signature = (iterations=100))]
+    fn profile_scoped_rule_snapshot(
+        &self,
+        py: Python<'_>,
+        iterations: usize,
+    ) -> (usize, usize, u128) {
+        py.allow_threads(|| {
+            let guard = self.inner.lock().expect("substrate mutex poisoned");
+            guard.profile_scoped_rule_snapshot(iterations)
+        })
+    }
+
+    /// Scoped fixed point plus conservative graph write targets and owning
+    /// Microtheory IDs. Deferred effect queues are reported as pending
+    /// because this scoped path does not drain them between passes.
+    #[pyo3(signature = (scope_mt, max_steps=100_000, detect_cycles=false))]
+    fn run_rules_scoped_delta_report<'py>(
+        &mut self,
+        py: Python<'py>,
+        scope_mt: PyRef<'_, PyNodeID>,
+        max_steps: usize,
+        detect_cycles: bool,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        crate::scale_audit::ffi(1, 0);
+        crate::scale_audit::begin_epoch();
+        let scope_node = scope_mt.to_node();
+        let report = py.allow_threads(|| {
+            let mut guard = self.inner.lock().expect("substrate mutex poisoned");
+            guard.run_rules_scoped_delta_report(max_steps, detect_cycles, scope_node)
+        });
+        let guard = self.inner.lock().expect("substrate mutex poisoned");
+        let affected_edges: Vec<(u32, String, u32)> = report
+            .affected_edges
+            .iter()
+            .map(|key| {
+                (
+                    key.src.0,
+                    guard.interner.resolve(key.edge_type).to_string(),
+                    key.tgt.0,
+                )
+            })
+            .collect();
+        json_to_pyobj(
+            py,
+            &serde_json::json!({
+                "progress_steps": report.progress_steps,
+                "requested_progress_budget": report.requested_progress_budget,
+                "hit_progress_budget": report.hit_progress_budget,
+                "affected_nodes": report.affected_nodes.iter().map(|nid| nid.0).collect::<Vec<_>>(),
+                "affected_edges": affected_edges,
+                "affected_microtheories": report.affected_microtheories.iter().map(|nid| nid.0).collect::<Vec<_>>(),
+                "deferred_effects_pending": report.deferred_effects_pending,
+                "frame_notifications_complete": false,
+            }),
+        )
     }
 
     /// PER-AREA ASYNC SETTLEMENT (block 186000). **DEFAULT OFF and built
@@ -3477,6 +4885,9 @@ impl PySubstrate {
             .iter()
             .map(|a| serde_json::json!(name(*a)))
             .collect();
+        let residual_by_area: Vec<J> = report.residual_by_area.iter()
+            .map(|(area, residual)| serde_json::json!({"area": name(*area), "residual": residual}))
+            .collect();
         json_to_pyobj(
             py,
             &serde_json::json!({
@@ -3484,9 +4895,60 @@ impl PySubstrate {
                 "rounds": rounds,
                 "n_rounds": report.rounds.len(),
                 "areas": areas,
+                "residual_by_area": residual_by_area,
                 "hit_max_rounds": report.hit_max_rounds,
             }),
         )
+    }
+
+    /// Settle only selected rule areas and preserve all other dirty rules for
+    /// later continuation. Selected effects may wake rules in any area. The
+    /// report includes the residual count in every active area.
+    #[pyo3(signature = (areas, budget_per_area=0, max_rounds=100_000,
+                        snapshot_round=false))]
+    fn run_rules_settle_selected<'py>(
+        &mut self,
+        py: Python<'py>,
+        areas: Vec<String>,
+        budget_per_area: usize,
+        max_rounds: usize,
+        snapshot_round: bool,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        crate::scale_audit::ffi(1, 0);
+        crate::scale_audit::begin_epoch();
+        let report = {
+            let mut guard = self.inner.lock().expect("substrate mutex poisoned");
+            // `rule_areas()` serializes Sym::default() as "global". Preserve
+            // that round-trip here: interning the label would create a
+            // different Sym and silently select no default-area rules.
+            let selected: Vec<Sym> = areas.iter().map(|area| {
+                if area == "global" { Sym::default() }
+                else { guard.interner.intern(area) }
+            }).collect();
+            guard.run_rules_settle_selected(&selected, budget_per_area, max_rounds, snapshot_round)
+        };
+        let guard = self.inner.lock().expect("substrate mutex poisoned");
+        let name = |s: Sym| -> String {
+            if s == Sym::default() { "global".to_string() }
+            else { guard.interner.resolve(s).to_string() }
+        };
+        let rounds: Vec<J> = report.rounds.iter().map(|round| {
+            let rows: Vec<J> = round.rows.iter().map(|row| serde_json::json!({
+                "area": name(row.area), "dirty": row.dirty, "attempted": row.attempted,
+                "steps": row.steps, "carried": row.carried,
+            })).collect();
+            serde_json::json!({"steps": round.steps, "dirty_areas": round.dirty_areas,
+                               "residual": round.residual, "rows": rows})
+        }).collect();
+        let selected_areas: Vec<J> = report.areas.iter().map(|area| serde_json::json!(name(*area))).collect();
+        let residual_by_area: Vec<J> = report.residual_by_area.iter()
+            .map(|(area, residual)| serde_json::json!({"area": name(*area), "residual": residual}))
+            .collect();
+        json_to_pyobj(py, &serde_json::json!({
+            "steps": report.steps, "rounds": rounds, "n_rounds": report.rounds.len(),
+            "areas": selected_areas, "residual_by_area": residual_by_area,
+            "hit_max_rounds": report.hit_max_rounds,
+        }))
     }
 
     /// Relabel one rule's AREA — scheduling metadata only (no committed code
@@ -3496,7 +4958,8 @@ impl PySubstrate {
     fn set_rule_area(&mut self, rule_name: &str, area: &str) -> bool {
         let mut guard = self.inner.lock().expect("substrate mutex poisoned");
         let n = guard.interner.intern(rule_name);
-        let a = guard.interner.intern(area);
+        let a = if area == "global" { Sym::default() }
+            else { guard.interner.intern(area) };
         guard.set_rule_area(n, a)
     }
 
@@ -3643,6 +5106,52 @@ impl PySubstrate {
             .set_incremental_match_unsound(on);
     }
 
+    /// **EXPERIMENTAL, DEFAULT OFF.** Reuse repeated ReachableFrom results
+    /// within an unchanged graph phase; cleared on graph mutation.
+    fn set_reachable_cache(&mut self, on: bool) {
+        self.inner
+            .lock()
+            .expect("substrate mutex poisoned")
+            .set_reachable_cache(on);
+    }
+
+    /// Experimental cache counters and current retained-payload estimate.
+    /// The byte estimate excludes hash-table bucket/control storage and
+    /// allocator metadata/capacity slack.
+    fn reachable_cache_stats(&self) -> Vec<(String, u64)> {
+        let guard = self.inner.lock().expect("substrate mutex poisoned");
+        let (
+            hits,
+            misses,
+            entries,
+            result_values,
+            footprint_nodes,
+            map_capacity,
+            payload_bytes,
+            peak_entries,
+            peak_payload_bytes,
+        ) = guard.reachable_cache_stats();
+        vec![
+            ("hits".into(), hits),
+            ("misses".into(), misses),
+            ("entries".into(), entries),
+            ("result_values".into(), result_values),
+            ("footprint_nodes".into(), footprint_nodes),
+            ("map_capacity".into(), map_capacity),
+            ("estimated_payload_bytes".into(), payload_bytes),
+            ("peak_entries".into(), peak_entries),
+            ("peak_estimated_payload_bytes".into(), peak_payload_bytes),
+        ]
+    }
+
+    /// Reset cumulative hit/miss counters without clearing live cache entries.
+    fn reachable_cache_stats_reset(&mut self) {
+        self.inner
+            .lock()
+            .expect("substrate mutex poisoned")
+            .reachable_cache_stats_reset();
+    }
+
     /// PREDICATE RETRACTION (block 194000, ladder rung B), DEFAULT FALSE. When
     /// on, an external attr write to a node records the node against the covered
     /// where-rules that read the written key and KEEPS their cursors, instead of
@@ -3733,6 +5242,578 @@ impl PySubstrate {
             .lock()
             .expect("substrate mutex poisoned")
             .dirty_rule_names()
+    }
+
+    /// Snapshot the mutable scheduler state needed to reproduce rule selection.
+    /// Rule definitions and mutation-protection metadata are carried separately
+    /// by export_rules/import_rules_preserving_match_order.
+    fn rule_scheduler_checkpoint<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        let guard = self.inner.lock().expect("substrate mutex poisoned");
+        let cursors: Vec<Vec<J>> = guard
+            .rule_cursors
+            .iter()
+            .map(|row| {
+                let mut entries: Vec<_> = row
+                    .iter()
+                    .map(|(edge, (cursor, version))| {
+                        (
+                            guard.interner.resolve(*edge).to_owned(),
+                            *cursor as u64,
+                            *version,
+                        )
+                    })
+                    .collect();
+                entries.sort_by(|a, b| a.0.cmp(&b.0));
+                entries
+                    .into_iter()
+                    .map(|(edge, cursor, version)| {
+                        J::Array(vec![J::String(edge), J::from(cursor), J::from(version)])
+                    })
+                    .collect()
+            })
+            .collect();
+        let dirty_nodes: Vec<Vec<u32>> = guard
+            .rule_dirty_nodes
+            .iter()
+            .map(|nodes| {
+                let mut ids: Vec<u32> = nodes.iter().map(|node| node.0).collect();
+                ids.sort_unstable();
+                ids
+            })
+            .collect();
+        let shape = guard.active_shape_target.map(|shape| {
+            serde_json::json!({
+                "recursion": shape.recursion.as_str(),
+                "order_n": shape.order_n.0,
+                "abstraction": shape.abstraction.as_str(),
+            })
+        });
+        let attr_write_log: Vec<[J; 2]> = guard
+            .graph
+            .attr_write_log
+            .iter()
+            .map(|(node, key)| {
+                [
+                    J::from(node.0),
+                    J::String(guard.interner.resolve(*key).to_owned()),
+                ]
+            })
+            .collect();
+        let mut edge_delete_versions = guard.graph.edge_delete_versions_by_type_snapshot();
+        edge_delete_versions
+            .sort_by_key(|(edge_type, _)| guard.interner.resolve(*edge_type).to_owned());
+        let edge_delete_versions: Vec<[J; 2]> = edge_delete_versions
+            .into_iter()
+            .map(|(edge_type, version)| {
+                [
+                    J::String(guard.interner.resolve(edge_type).to_owned()),
+                    J::from(version),
+                ]
+            })
+            .collect();
+        let cache_counts = guard.eval_cache.checkpoint_entry_counts();
+        let cache_counts: Vec<usize> = cache_counts.into_iter().collect();
+        let mut neighbour_cache: Vec<_> = guard.eval_cache.neighbours.iter().collect();
+        neighbour_cache.sort_by_key(|((node, edge, is_in), _)| {
+            (node.0, guard.interner.resolve(*edge).to_owned(), *is_in)
+        });
+        let neighbour_cache: Vec<J> = neighbour_cache
+            .into_iter()
+            .map(|((node, edge, is_in), value)| J::Array(vec![
+                J::from(node.0),
+                J::String(guard.interner.resolve(*edge).to_owned()),
+                J::Bool(*is_in),
+                encode_value(value, &guard.interner),
+            ]))
+            .collect();
+        let mut filter_cache: Vec<_> = guard.eval_cache.filter.iter().collect();
+        filter_cache.sort_by_key(|((term, bindings), _)| {
+            (term.0, serde_json::to_string(&bindings.iter().map(|(sym, value)|
+                (guard.interner.resolve(*sym).to_owned(), encode_value(value, &guard.interner)))
+                .collect::<Vec<_>>()).unwrap_or_default())
+        });
+        let filter_cache: Vec<J> = filter_cache.into_iter().map(|((term, bindings), value)| {
+            let bindings: Vec<J> = bindings.iter().map(|(sym, value)| J::Array(vec![
+                J::String(guard.interner.resolve(*sym).to_owned()),
+                encode_value(value, &guard.interner),
+            ])).collect();
+            J::Array(vec![J::from(term.0), J::Array(bindings), encode_value(value, &guard.interner)])
+        }).collect();
+        let mut argmax_cache: Vec<_> = guard.eval_cache.argmax.iter().collect();
+        argmax_cache.sort_by_key(|((term, bindings), _)| {
+            (term.0, serde_json::to_string(&bindings.iter().map(|(sym, value)|
+                (guard.interner.resolve(*sym).to_owned(), encode_value(value, &guard.interner)))
+                .collect::<Vec<_>>()).unwrap_or_default())
+        });
+        let argmax_cache: Vec<J> = argmax_cache.into_iter().map(|((term, bindings), value)| {
+            let bindings: Vec<J> = bindings.iter().map(|(sym, value)| J::Array(vec![
+                J::String(guard.interner.resolve(*sym).to_owned()),
+                encode_value(value, &guard.interner),
+            ])).collect();
+            J::Array(vec![J::from(term.0), J::Array(bindings), encode_value(value, &guard.interner)])
+        }).collect();
+        let mut holds_cache: Vec<_> = guard.eval_cache.holds.iter().collect();
+        holds_cache.sort_by_key(|((concept, node, node2), _)| {
+            (guard.interner.resolve(*concept).to_owned(), node.map(|n| n.0), node2.map(|n| n.0))
+        });
+        let holds_cache: Vec<J> = holds_cache.into_iter().map(|((concept, node, node2), value)| J::Array(vec![
+            J::String(guard.interner.resolve(*concept).to_owned()),
+            node.map(|n| J::from(n.0)).unwrap_or(J::Null),
+            node2.map(|n| J::from(n.0)).unwrap_or(J::Null),
+            encode_value(value, &guard.interner),
+        ])).collect();
+        json_to_pyobj(
+            py,
+            &serde_json::json!({
+                "schema": "RuleSchedulerCheckpointV6",
+                "rule_count": guard.rules.len(),
+                "rule_dirty": guard.rule_dirty,
+                "rule_dirty_nodes": dirty_nodes,
+                "rule_cursors": cursors,
+                "edge_delete_version": guard.edge_delete_version,
+                "any_mutation": guard.any_mutation,
+                "attr_write_log": attr_write_log,
+                "edge_delete_versions_by_type": edge_delete_versions,
+                "eval_cache": {
+                    "entry_counts": cache_counts,
+                    "neighbours": neighbour_cache,
+                    "filter": filter_cache,
+                    "argmax": argmax_cache,
+                    "holds": holds_cache,
+                    "reachable_enabled": guard.eval_cache.reachable_enabled,
+                    "reachable_hits": guard.eval_cache.reachable_hits,
+                    "reachable_misses": guard.eval_cache.reachable_misses,
+                    "reachable_payload_bytes": guard.eval_cache.reachable_payload_bytes,
+                    "reachable_peak_payload_bytes": guard.eval_cache.reachable_peak_payload_bytes,
+                    "reachable_peak_entries": guard.eval_cache.reachable_peak_entries,
+                },
+                "flags": {
+                    "precise_dirty": guard.precise_dirty,
+                    "dirty_telemetry": guard.dirty_telemetry,
+                    "dirty_marks": guard.dirty_marks,
+                    "dirty_overaggressive": guard.dirty_overaggressive,
+                    "binding_projection": guard.binding_projection,
+                    "projection_overaggressive": guard.projection_overaggressive,
+                    "empty_match_proof": guard.empty_match_proof,
+                    "empty_match_proof_unsound": guard.empty_match_proof_unsound,
+                    "empty_match_skips": guard.empty_match_skips,
+                    "incremental_match": guard.incremental_match,
+                    "incremental_match_unsound": guard.incremental_match_unsound,
+                    "predicate_retraction": guard.predicate_retraction,
+                    "predicate_retraction_unsound": guard.predicate_retraction_unsound,
+                    "gamma_residual_capture": guard.gamma_residual_capture,
+                    "gamma_residual_root": guard.gamma_residual_root.map(|n| n.0),
+                    "active_shape_target": shape,
+                }
+            }),
+        )
+    }
+
+    /// Restore the scheduler checkpoint emitted above after graph and exact rule
+    /// import. Validate all dense vectors before mutating scheduler state.
+    fn restore_rule_scheduler_checkpoint(
+        &mut self,
+        py: Python<'_>,
+        checkpoint: &Bound<'_, PyAny>,
+    ) -> PyResult<()> {
+        let json = pyobj_to_json(py, checkpoint)?;
+        let obj = json
+            .as_object()
+            .ok_or_else(|| PyValueError::new_err("scheduler checkpoint must be an object"))?;
+        if obj.get("schema").and_then(J::as_str) != Some("RuleSchedulerCheckpointV6") {
+            return Err(PyValueError::new_err(
+                "unsupported scheduler checkpoint schema",
+            ));
+        }
+        let mut guard = self.inner.lock().expect("substrate mutex poisoned");
+        let count = obj
+            .get("rule_count")
+            .and_then(J::as_u64)
+            .ok_or_else(|| PyValueError::new_err("checkpoint missing rule_count"))?
+            as usize;
+        if count != guard.rules.len() {
+            return Err(PyValueError::new_err(
+                "scheduler checkpoint rule_count mismatch",
+            ));
+        }
+        let dirty = obj
+            .get("rule_dirty")
+            .and_then(J::as_array)
+            .ok_or_else(|| PyValueError::new_err("checkpoint missing rule_dirty"))?;
+        let nodes = obj
+            .get("rule_dirty_nodes")
+            .and_then(J::as_array)
+            .ok_or_else(|| PyValueError::new_err("checkpoint missing rule_dirty_nodes"))?;
+        let cursors = obj
+            .get("rule_cursors")
+            .and_then(J::as_array)
+            .ok_or_else(|| PyValueError::new_err("checkpoint missing rule_cursors"))?;
+        if dirty.len() != count || nodes.len() != count || cursors.len() != count {
+            return Err(PyValueError::new_err(
+                "scheduler checkpoint dense vector length mismatch",
+            ));
+        }
+        let mut parsed_dirty = Vec::with_capacity(count);
+        let mut parsed_nodes = Vec::with_capacity(count);
+        let mut parsed_cursors = Vec::with_capacity(count);
+        for i in 0..count {
+            parsed_dirty.push(
+                dirty[i]
+                    .as_bool()
+                    .ok_or_else(|| PyValueError::new_err("invalid rule_dirty bit"))?,
+            );
+            let node_row = nodes[i]
+                .as_array()
+                .ok_or_else(|| PyValueError::new_err("invalid dirty-node row"))?;
+            let mut node_set = rustc_hash::FxHashSet::default();
+            for node in node_row {
+                let id = node
+                    .as_u64()
+                    .filter(|id| *id <= u32::MAX as u64)
+                    .ok_or_else(|| PyValueError::new_err("invalid dirty node id"))?;
+                node_set.insert(NodeID(id as u32));
+            }
+            parsed_nodes.push(node_set);
+            let cursor_row = cursors[i]
+                .as_array()
+                .ok_or_else(|| PyValueError::new_err("invalid cursor row"))?;
+            let mut cursor_map = FxHashMap::default();
+            for entry in cursor_row {
+                let tuple = entry
+                    .as_array()
+                    .filter(|v| v.len() == 3)
+                    .ok_or_else(|| PyValueError::new_err("invalid cursor entry"))?;
+                let edge_name = tuple[0]
+                    .as_str()
+                    .ok_or_else(|| PyValueError::new_err("invalid cursor edge type"))?;
+                let cursor = tuple[1]
+                    .as_u64()
+                    .filter(|n| *n <= usize::MAX as u64)
+                    .ok_or_else(|| PyValueError::new_err("invalid cursor position"))?
+                    as usize;
+                let version = tuple[2]
+                    .as_u64()
+                    .ok_or_else(|| PyValueError::new_err("invalid cursor delete version"))?;
+                cursor_map.insert(guard.interner.intern(edge_name), (cursor, version));
+            }
+            parsed_cursors.push(cursor_map);
+        }
+        let edge_delete_version = obj
+            .get("edge_delete_version")
+            .and_then(J::as_u64)
+            .ok_or_else(|| PyValueError::new_err("checkpoint missing edge_delete_version"))?;
+        let any_mutation = obj
+            .get("any_mutation")
+            .and_then(J::as_bool)
+            .ok_or_else(|| PyValueError::new_err("checkpoint missing any_mutation"))?;
+        let flags = obj
+            .get("flags")
+            .and_then(J::as_object)
+            .ok_or_else(|| PyValueError::new_err("checkpoint missing flags"))?;
+        let flag = |name: &str| -> PyResult<bool> {
+            flags.get(name).and_then(J::as_bool).ok_or_else(|| {
+                PyValueError::new_err(format!("checkpoint missing boolean flag {name}"))
+            })
+        };
+        let precise_dirty = flag("precise_dirty")?;
+        let dirty_telemetry = flag("dirty_telemetry")?;
+        let dirty_marks_value = flags
+            .get("dirty_marks")
+            .and_then(J::as_array)
+            .filter(|x| x.len() == 9)
+            .ok_or_else(|| PyValueError::new_err("invalid dirty_marks"))?;
+        let mut dirty_marks = [0u64; 9];
+        for (i, value) in dirty_marks_value.iter().enumerate() {
+            dirty_marks[i] = value
+                .as_u64()
+                .ok_or_else(|| PyValueError::new_err("invalid dirty mark value"))?;
+        }
+        let dirty_overaggressive = flag("dirty_overaggressive")?;
+        let binding_projection = flag("binding_projection")?;
+        let projection_overaggressive = flag("projection_overaggressive")?;
+        let empty_match_proof = flag("empty_match_proof")?;
+        let empty_match_proof_unsound = flag("empty_match_proof_unsound")?;
+        let empty_match_skips_json = flags
+            .get("empty_match_skips")
+            .and_then(J::as_array)
+            .filter(|x| {
+                if empty_match_proof {
+                    x.len() == count
+                } else {
+                    x.is_empty() || x.len() == count
+                }
+            })
+            .ok_or_else(|| PyValueError::new_err("invalid empty_match_skips"))?;
+        let mut empty_match_skips = Vec::with_capacity(count);
+        for value in empty_match_skips_json {
+            empty_match_skips.push(
+                value
+                    .as_u64()
+                    .ok_or_else(|| PyValueError::new_err("invalid empty_match_skips value"))?,
+            );
+        }
+        let incremental_match = flag("incremental_match")?;
+        let incremental_match_unsound = flag("incremental_match_unsound")?;
+        let predicate_retraction = flag("predicate_retraction")?;
+        let predicate_retraction_unsound = flag("predicate_retraction_unsound")?;
+        let gamma_residual_capture = flag("gamma_residual_capture")?;
+        let gamma_residual_root = match flags.get("gamma_residual_root") {
+            Some(J::Null) => None,
+            Some(v) => Some(NodeID(
+                v.as_u64()
+                    .filter(|n| *n <= u32::MAX as u64)
+                    .ok_or_else(|| PyValueError::new_err("invalid gamma_residual_root"))?
+                    as u32,
+            )),
+            None => {
+                return Err(PyValueError::new_err(
+                    "checkpoint missing gamma_residual_root",
+                ))
+            }
+        };
+        let active_shape_target = match flags.get("active_shape_target") {
+            Some(J::Null) => None,
+            Some(shape) => {
+                let get_str = |key: &str| {
+                    shape.get(key).and_then(J::as_str).ok_or_else(|| {
+                        PyValueError::new_err(format!("invalid active_shape_target.{key}"))
+                    })
+                };
+                let recursion = crate::shape::RecursionKind::from_str(get_str("recursion")?)
+                    .ok_or_else(|| PyValueError::new_err("invalid active shape recursion"))?;
+                let abstraction = crate::shape::AbstractionKind::from_str(get_str("abstraction")?)
+                    .ok_or_else(|| PyValueError::new_err("invalid active shape abstraction"))?;
+                let order = shape
+                    .get("order_n")
+                    .and_then(J::as_u64)
+                    .filter(|n| *n <= u8::MAX as u64)
+                    .ok_or_else(|| PyValueError::new_err("invalid active shape order_n"))?
+                    as u8;
+                Some(crate::shape::Shape::new(
+                    recursion,
+                    crate::shape::OrderN(order),
+                    abstraction,
+                ))
+            }
+            None => {
+                return Err(PyValueError::new_err(
+                    "checkpoint missing active_shape_target",
+                ))
+            }
+        };
+        let attr_log_json = obj
+            .get("attr_write_log")
+            .and_then(J::as_array)
+            .ok_or_else(|| PyValueError::new_err("checkpoint missing attr_write_log"))?;
+        let mut attr_write_log = Vec::with_capacity(attr_log_json.len());
+        for item in attr_log_json {
+            let pair = item
+                .as_array()
+                .filter(|p| p.len() == 2)
+                .ok_or_else(|| PyValueError::new_err("invalid attr_write_log row"))?;
+            let id = pair[0]
+                .as_u64()
+                .filter(|n| *n <= u32::MAX as u64)
+                .ok_or_else(|| PyValueError::new_err("invalid attr_write_log node"))?;
+            let key = pair[1]
+                .as_str()
+                .ok_or_else(|| PyValueError::new_err("invalid attr_write_log key"))?;
+            attr_write_log.push((NodeID(id as u32), guard.interner.intern(key)));
+        }
+        let edge_versions_json = obj
+            .get("edge_delete_versions_by_type")
+            .and_then(J::as_array)
+            .ok_or_else(|| {
+                PyValueError::new_err("checkpoint missing edge_delete_versions_by_type")
+            })?;
+        let mut edge_versions = Vec::with_capacity(edge_versions_json.len());
+        let mut edge_types_seen = rustc_hash::FxHashSet::default();
+        for item in edge_versions_json {
+            let pair = item
+                .as_array()
+                .filter(|p| p.len() == 2)
+                .ok_or_else(|| PyValueError::new_err("invalid edge deletion version row"))?;
+            let name = pair[0]
+                .as_str()
+                .ok_or_else(|| PyValueError::new_err("invalid edge deletion version type"))?;
+            let version = pair[1]
+                .as_u64()
+                .ok_or_else(|| PyValueError::new_err("invalid edge deletion version"))?;
+            let edge_type = guard.interner.intern(name);
+            if !edge_types_seen.insert(edge_type) {
+                return Err(PyValueError::new_err(
+                    "duplicate edge deletion version type",
+                ));
+            }
+            edge_versions.push((edge_type, version));
+        }
+        let cache = obj
+            .get("eval_cache")
+            .and_then(J::as_object)
+            .ok_or_else(|| PyValueError::new_err("checkpoint missing eval_cache"))?;
+        let cache_counts = cache
+            .get("entry_counts")
+            .and_then(J::as_array)
+            .filter(|x| x.len() == 6)
+            .ok_or_else(|| PyValueError::new_err("invalid eval_cache.entry_counts"))?;
+        let mut parsed_cache_counts = [0u64; 6];
+        for (i, value) in cache_counts.iter().enumerate() {
+            parsed_cache_counts[i] = value
+                .as_u64()
+                .ok_or_else(|| PyValueError::new_err("invalid eval-cache count"))?;
+        }
+        if parsed_cache_counts[0] != 0 || parsed_cache_counts[5] != 0 {
+            return Err(PyValueError::new_err("cannot restore non-empty reachable or SD-operation cache entries"));
+        }
+        let neighbours_json = cache.get("neighbours").and_then(J::as_array)
+            .ok_or_else(|| PyValueError::new_err("checkpoint missing eval_cache.neighbours"))?;
+        if neighbours_json.len() as u64 != parsed_cache_counts[1] {
+            return Err(PyValueError::new_err("eval_cache.neighbours count mismatch"));
+        }
+        let mut restored_neighbours = FxHashMap::default();
+        for row in neighbours_json {
+            let row = row.as_array().filter(|row| row.len() == 4)
+                .ok_or_else(|| PyValueError::new_err("invalid eval_cache.neighbours row"))?;
+            let node = row[0].as_u64().filter(|n| *n <= u32::MAX as u64)
+                .ok_or_else(|| PyValueError::new_err("invalid cached neighbour node"))? as u32;
+            let edge = row[1].as_str().ok_or_else(|| PyValueError::new_err("invalid cached neighbour edge"))?;
+            let is_in = row[2].as_bool().ok_or_else(|| PyValueError::new_err("invalid cached neighbour direction"))?;
+            let value = decode_value(&row[3], &mut guard.interner);
+            restored_neighbours.insert((NodeID(node), guard.interner.intern(edge), is_in), value);
+        }
+        let filter_json = cache.get("filter").and_then(J::as_array)
+            .ok_or_else(|| PyValueError::new_err("checkpoint missing eval_cache.filter"))?;
+        if filter_json.len() as u64 != parsed_cache_counts[2] {
+            return Err(PyValueError::new_err("eval_cache.filter count mismatch"));
+        }
+        let mut restored_filter = FxHashMap::default();
+        for row in filter_json {
+            let row = row.as_array().filter(|row| row.len() == 3)
+                .ok_or_else(|| PyValueError::new_err("invalid eval_cache.filter row"))?;
+            let term = row[0].as_u64().filter(|n| *n <= u32::MAX as u64)
+                .ok_or_else(|| PyValueError::new_err("invalid cached filter term"))? as u32;
+            let bindings_json = row[1].as_array().ok_or_else(|| PyValueError::new_err("invalid cached filter bindings"))?;
+            let mut bindings = SmallVec::new();
+            for binding in bindings_json {
+                let binding = binding.as_array().filter(|binding| binding.len() == 2)
+                    .ok_or_else(|| PyValueError::new_err("invalid cached filter binding"))?;
+                let sym = binding[0].as_str().ok_or_else(|| PyValueError::new_err("invalid cached filter symbol"))?;
+                bindings.push((guard.interner.intern(sym), decode_value(&binding[1], &mut guard.interner)));
+            }
+            let value = decode_value(&row[2], &mut guard.interner);
+            restored_filter.insert((TermIdx(term), bindings), value);
+        }
+        let argmax_json = cache.get("argmax").and_then(J::as_array)
+            .ok_or_else(|| PyValueError::new_err("checkpoint missing eval_cache.argmax"))?;
+        if argmax_json.len() as u64 != parsed_cache_counts[3] {
+            return Err(PyValueError::new_err("eval_cache.argmax count mismatch"));
+        }
+        let mut restored_argmax = FxHashMap::default();
+        for row in argmax_json {
+            let row = row.as_array().filter(|row| row.len() == 3)
+                .ok_or_else(|| PyValueError::new_err("invalid eval_cache.argmax row"))?;
+            let term = row[0].as_u64().filter(|n| *n <= u32::MAX as u64)
+                .ok_or_else(|| PyValueError::new_err("invalid cached argmax term"))? as u32;
+            let bindings_json = row[1].as_array().ok_or_else(|| PyValueError::new_err("invalid cached argmax bindings"))?;
+            let mut bindings = SmallVec::new();
+            for binding in bindings_json {
+                let binding = binding.as_array().filter(|binding| binding.len() == 2)
+                    .ok_or_else(|| PyValueError::new_err("invalid cached argmax binding"))?;
+                let sym_name = binding[0].as_str().ok_or_else(|| PyValueError::new_err("invalid cached argmax symbol"))?;
+                let sym = guard.interner.intern(sym_name);
+                let value = decode_value(&binding[1], &mut guard.interner);
+                bindings.push((sym, value));
+            }
+            let value = decode_value(&row[2], &mut guard.interner);
+            restored_argmax.insert((TermIdx(term), bindings), value);
+        }
+        let holds_json = cache.get("holds").and_then(J::as_array)
+            .ok_or_else(|| PyValueError::new_err("checkpoint missing eval_cache.holds"))?;
+        if holds_json.len() as u64 != parsed_cache_counts[4] {
+            return Err(PyValueError::new_err("eval_cache.holds count mismatch"));
+        }
+        let mut restored_holds = FxHashMap::default();
+        for row in holds_json {
+            let row = row.as_array().filter(|row| row.len() == 4)
+                .ok_or_else(|| PyValueError::new_err("invalid eval_cache.holds row"))?;
+            let concept = row[0].as_str().ok_or_else(|| PyValueError::new_err("invalid cached Holds concept"))?;
+            let parse_node = |value: &J| -> PyResult<Option<NodeID>> {
+                if value.is_null() { return Ok(None); }
+                value.as_u64().filter(|n| *n <= u32::MAX as u64).map(|n| Some(NodeID(n as u32)))
+                    .ok_or_else(|| PyValueError::new_err("invalid cached Holds node"))
+            };
+            let node = parse_node(&row[1])?;
+            let node2 = parse_node(&row[2])?;
+            let value = decode_value(&row[3], &mut guard.interner);
+            restored_holds.insert((guard.interner.intern(concept), node, node2), value);
+        }
+        let reachable_enabled = cache
+            .get("reachable_enabled")
+            .and_then(J::as_bool)
+            .ok_or_else(|| PyValueError::new_err("checkpoint missing reachable_enabled"))?;
+        let reachable_hits = cache
+            .get("reachable_hits")
+            .and_then(J::as_u64)
+            .ok_or_else(|| PyValueError::new_err("checkpoint missing reachable_hits"))?;
+        let reachable_misses = cache
+            .get("reachable_misses")
+            .and_then(J::as_u64)
+            .ok_or_else(|| PyValueError::new_err("checkpoint missing reachable_misses"))?;
+        let reachable_payload_bytes = cache
+            .get("reachable_payload_bytes")
+            .and_then(J::as_u64)
+            .ok_or_else(|| PyValueError::new_err("checkpoint missing reachable_payload_bytes"))?;
+        let reachable_peak_payload_bytes = cache
+            .get("reachable_peak_payload_bytes")
+            .and_then(J::as_u64)
+            .ok_or_else(|| {
+                PyValueError::new_err("checkpoint missing reachable_peak_payload_bytes")
+            })?;
+        let reachable_peak_entries = cache
+            .get("reachable_peak_entries")
+            .and_then(J::as_u64)
+            .ok_or_else(|| PyValueError::new_err("checkpoint missing reachable_peak_entries"))?;
+        if parsed_cache_counts.iter().all(|count| *count == 0) && reachable_payload_bytes != 0 {
+            return Err(PyValueError::new_err(
+                "empty EvalCache has a non-zero retained payload estimate",
+            ));
+        }
+        guard.rule_dirty = parsed_dirty;
+        guard.rule_dirty_nodes = parsed_nodes;
+        guard.rule_cursors = parsed_cursors;
+        guard.edge_delete_version = edge_delete_version;
+        guard
+            .graph
+            .restore_edge_delete_versions_by_type(edge_versions);
+        guard.any_mutation = any_mutation;
+        guard.set_precise_dirty(precise_dirty);
+        guard.set_dirty_telemetry(dirty_telemetry);
+        guard.dirty_marks = dirty_marks;
+        guard.set_dirty_overaggressive(dirty_overaggressive);
+        guard.set_binding_projection(binding_projection);
+        guard.set_projection_overaggressive(projection_overaggressive);
+        guard.set_empty_match_proof(empty_match_proof);
+        guard.set_empty_match_proof_unsound(empty_match_proof_unsound);
+        guard.empty_match_skips = empty_match_skips;
+        guard.set_incremental_match(incremental_match);
+        guard.set_incremental_match_unsound(incremental_match_unsound);
+        guard.set_predicate_retraction(predicate_retraction);
+        guard.set_predicate_retraction_unsound(predicate_retraction_unsound);
+        guard.set_gamma_residual_capture(gamma_residual_capture);
+        guard.set_reachable_cache(reachable_enabled);
+        guard.eval_cache.reachable_hits = reachable_hits;
+        guard.eval_cache.reachable_misses = reachable_misses;
+        guard.eval_cache.neighbours = restored_neighbours;
+        guard.eval_cache.filter = restored_filter;
+        guard.eval_cache.argmax = restored_argmax;
+        guard.eval_cache.holds = restored_holds;
+        guard.eval_cache.reachable_payload_bytes = reachable_payload_bytes;
+        guard.eval_cache.reachable_peak_payload_bytes = reachable_peak_payload_bytes;
+        guard.eval_cache.reachable_peak_entries = reachable_peak_entries;
+        guard.gamma_residual_root = gamma_residual_root;
+        guard.active_shape_target = active_shape_target;
+        guard.graph.attr_write_log = attr_write_log;
+        Ok(())
     }
 
     /// DIAGNOSTIC: mark every rule dirty + invalidate every cursor. Lets a
@@ -4405,6 +6486,84 @@ impl PySubstrate {
         .steps
     }
 
+    /// Detached counterfactual execution plan: run graph-resident Rule nodes,
+    /// then the installed structural rewrite-rule store, against the same
+    /// substrate state. Kept separate from `tick` so its established Default
+    /// plan and production scheduling contract do not change.
+    #[pyo3(signature = (max_steps=100_000, detect_cycles=false))]
+    fn tick_graph_then_struct(
+        &mut self,
+        py: Python<'_>,
+        max_steps: usize,
+        detect_cycles: bool,
+    ) -> usize {
+        crate::scale_audit::ffi(1, 0);
+        crate::scale_audit::begin_epoch();
+        py.allow_threads(|| {
+            let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
+            let inner = &mut *__substrate_guard;
+            crate::cognitive_cycle::advance_cognitive_epoch(inner);
+            crate::cognitive_cycle::execute(
+                inner,
+                crate::cognitive_cycle::CyclePlan::GraphThenStruct,
+                max_steps,
+                detect_cycles,
+                false,
+                1,
+            )
+            .steps
+        })
+    }
+
+    /// Execute the identical native tick plan while recording selected graph
+    /// attributes immediately after named rules progress. The trace is opt-in,
+    /// bounded, and observational; `tick` above remains the default hot path.
+    #[pyo3(signature = (watch_rule_names, watch_node_ids, watch_attrs, max_events, max_steps=100_000, detect_cycles=false))]
+    fn tick_with_rule_state_trace<'py>(
+        &mut self,
+        py: Python<'py>,
+        watch_rule_names: Vec<String>,
+        watch_node_ids: Vec<u32>,
+        watch_attrs: Vec<String>,
+        max_events: usize,
+        max_steps: usize,
+        detect_cycles: bool,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let (steps, events, dropped_events) = py.allow_threads(|| {
+            let mut guard = self.inner.lock().expect("substrate mutex poisoned");
+            guard.tick_with_rule_state_trace(
+                max_steps,
+                detect_cycles,
+                &watch_rule_names,
+                &watch_node_ids,
+                &watch_attrs,
+                max_events,
+            )
+        });
+        let event_json: Vec<J> = events
+            .into_iter()
+            .map(|event| {
+                serde_json::json!({
+                    "pass_index": event.pass_index,
+                    "progress_step": event.progress_step,
+                    "rule_name": event.rule_name,
+                    "node_ids": event.node_ids,
+                    "attr_names": event.attr_names,
+                    "values": event.values,
+                })
+            })
+            .collect();
+        json_to_pyobj(
+            py,
+            &serde_json::json!({
+                "steps": steps,
+                "events": event_json,
+                "dropped_events": dropped_events,
+                "trace_truncated": dropped_events > 0,
+            }),
+        )
+    }
+
     /// Execute one explicit native phase plan. This is the migration seam for
     /// the historically different tick paths; it does not silently unify them.
     #[pyo3(signature = (plan, max_steps=100_000, detect_cycles=false, trace=false, n_workers=None))]
@@ -4672,18 +6831,20 @@ impl PySubstrate {
         let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
         let inner = &mut *__substrate_guard;
         let snapshot = inner.terms.nodes.len();
-        let open_idx = {
-            let j = pyobj_to_json_term(py, open, WireMode::Structural)?;
-            term_from_json(&j, &mut inner.terms, &mut inner.interner)
-                .map_err(|e| PyValueError::new_err(format!("bad open Term: {:?}", e)))?
-        };
-        let options_idx = {
-            let j = pyobj_to_json_term(py, options, WireMode::Structural)?;
-            term_from_json(&j, &mut inner.terms, &mut inner.interner)
-                .map_err(|e| PyValueError::new_err(format!("bad options Term: {:?}", e)))?
-        };
-        let mut opt_idx =
-            |t: Option<&Bound<'_, PyAny>>, label: &str| -> PyResult<Option<TermIdx>> {
+        let parsed = (|| -> PyResult<_> {
+            let open_idx = {
+                let j = pyobj_to_json_term(py, open, WireMode::Structural)?;
+                term_from_json(&j, &mut inner.terms, &mut inner.interner)
+                    .map_err(|e| PyValueError::new_err(format!("bad open Term: {:?}", e)))?
+            };
+            let options_idx = {
+                let j = pyobj_to_json_term(py, options, WireMode::Structural)?;
+                term_from_json(&j, &mut inner.terms, &mut inner.interner)
+                    .map_err(|e| PyValueError::new_err(format!("bad options Term: {:?}", e)))?
+            };
+            let mut opt_idx = |t: Option<&Bound<'_, PyAny>>,
+                               label: &str|
+             -> PyResult<Option<TermIdx>> {
                 match t {
                     None => Ok(None),
                     Some(b) => {
@@ -4696,11 +6857,29 @@ impl PySubstrate {
                     }
                 }
             };
-        let fail_idx = opt_idx(fail, "fail")?;
-        let value_idx = opt_idx(value, "value")?;
-        let accept_idx = opt_idx(accept, "accept")?;
-        let assign_sym = inner.interner.intern(assign_edge);
-        let env_v = pydict_to_env(py, env, &mut inner.interner)?;
+            let fail_idx = opt_idx(fail, "fail")?;
+            let value_idx = opt_idx(value, "value")?;
+            let accept_idx = opt_idx(accept, "accept")?;
+            let assign_sym = inner.interner.intern(assign_edge);
+            let env_v = pydict_to_env(py, env, &mut inner.interner)?;
+            Ok((
+                open_idx,
+                options_idx,
+                fail_idx,
+                value_idx,
+                accept_idx,
+                assign_sym,
+                env_v,
+            ))
+        })();
+        let (open_idx, options_idx, fail_idx, value_idx, accept_idx, assign_sym, env_v) =
+            match parsed {
+                Ok(parsed) => parsed,
+                Err(err) => {
+                    inner.terms.nodes.truncate(snapshot);
+                    return Err(err);
+                }
+            };
         let result = search_recurse(
             inner,
             open_idx,
@@ -4743,6 +6922,30 @@ impl PySubstrate {
         let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
         let inner = &mut *__substrate_guard;
         inner.rules.len()
+    }
+
+    /// O(1) revision token for primary graph/rule isolation checks in a
+    /// thoughtexperiment batch. Derived caches and execution telemetry are
+    /// intentionally outside this semantic revision contract.
+    fn experiment_graph_rule_revision(&self) -> crate::substrate::ExperimentRevision {
+        let __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
+        __substrate_guard.experiment_graph_rule_revision()
+    }
+
+    /// Atomically adopt a graph-diff residual if the primary graph and rule
+    /// revision still matches the branch base. The delta uses the exact wire
+    /// shape returned by `finish_experiment_delta_journal()`.
+    fn apply_experiment_graph_delta(
+        &mut self,
+        py: Python<'_>,
+        expected_revision: crate::substrate::ExperimentRevision,
+        delta: &Bound<'_, PyAny>,
+    ) -> PyResult<()> {
+        let delta = pyobj_to_json(py, delta)?;
+        let mut inner = self.inner.lock().expect("substrate mutex poisoned");
+        inner
+            .apply_experiment_graph_delta(expected_revision, &delta)
+            .map_err(PyRuntimeError::new_err)
     }
 
     /// Retract a rule installed by `add_rule`: it stops matching/firing in
@@ -4806,9 +7009,7 @@ impl PySubstrate {
         let arr: Vec<J> = inner
             .rules
             .iter()
-            .filter(|rule| {
-                rule.active && inner.interner.resolve(rule.name).starts_with(prefix)
-            })
+            .filter(|rule| rule.active && inner.interner.resolve(rule.name).starts_with(prefix))
             .map(|rule| rule_to_json(rule, &inner.terms, &inner.interner))
             .collect();
         json_to_pyobj(py, &J::Array(arr))
@@ -4840,18 +7041,87 @@ impl PySubstrate {
         let arr = json
             .as_array()
             .ok_or_else(|| PyValueError::new_err("import_rules: expected a list"))?;
+        let terms_before = inner.terms.nodes.len();
+        let symbols_before = inner.interner.len();
+        let mut parsed_rules = Vec::with_capacity(arr.len());
         for (i, rule_json) in arr.iter().enumerate() {
-            let rule = parse_rule_json(rule_json, &mut inner.terms, &mut inner.interner)
-                .map_err(|e| PyValueError::new_err(format!("import_rules: rule {}: {}", i, e)))?;
+            let rule = match parse_rule_json(rule_json, &mut inner.terms, &mut inner.interner) {
+                Ok(rule) => rule,
+                Err(err) => {
+                    inner.terms.nodes.truncate(terms_before);
+                    inner.interner.truncate(symbols_before);
+                    return Err(PyValueError::new_err(format!(
+                        "import_rules: rule {}: {}",
+                        i, err
+                    )));
+                }
+            };
             let active = rule_json
                 .get("active")
                 .and_then(|v| v.as_bool())
                 .unwrap_or(true);
+            parsed_rules.push((rule, active));
+        }
+        // Install only after every rule and embedded Term has parsed. This
+        // prevents a malformed suffix from leaving an observable rule prefix.
+        for (i, (rule, active)) in parsed_rules.into_iter().enumerate() {
             let idx = inner.add_rule(rule);
             debug_assert_eq!(
                 idx.0 as usize, i,
                 "import_rules: index drift from export order"
             );
+            if !active {
+                inner.remove_rule(idx);
+            }
+        }
+        Ok(inner.rules.len())
+    }
+
+    /// Replay an exported rule store without changing either its authored
+    /// match-clause order or mutation-protection metadata. Intended for exact
+    /// runtime-state reconstruction; ordinary loads should use import_rules.
+    fn import_rules_preserving_match_order(
+        &mut self,
+        py: Python<'_>,
+        rules: &Bound<'_, PyAny>,
+    ) -> PyResult<usize> {
+        let mut guard = self.inner.lock().expect("substrate mutex poisoned");
+        let inner = &mut *guard;
+        if !inner.rules.is_empty() {
+            return Err(PyValueError::new_err(
+                "import_rules_preserving_match_order: rule store must be empty",
+            ));
+        }
+        let json = pyobj_to_json(py, rules)?;
+        let arr = json.as_array().ok_or_else(|| {
+            PyValueError::new_err("import_rules_preserving_match_order: expected a list")
+        })?;
+        let terms_before = inner.terms.nodes.len();
+        let symbols_before = inner.interner.len();
+        let mut parsed_rules = Vec::with_capacity(arr.len());
+        for (i, rule_json) in arr.iter().enumerate() {
+            match parse_rule_json(rule_json, &mut inner.terms, &mut inner.interner) {
+                Ok(rule) => parsed_rules.push((
+                    rule,
+                    rule_json.get("active").and_then(J::as_bool).unwrap_or(true),
+                )),
+                Err(err) => {
+                    inner.terms.nodes.truncate(terms_before);
+                    inner.interner.truncate(symbols_before);
+                    return Err(PyValueError::new_err(format!(
+                        "import_rules_preserving_match_order: rule {}: {}",
+                        i, err
+                    )));
+                }
+            }
+        }
+        for (i, (rule, active)) in parsed_rules.into_iter().enumerate() {
+            let idx = inner.add_rule_preserving_match_order(rule);
+            if idx.0 as usize != i {
+                return Err(PyValueError::new_err(
+                    "rule index drift during exact import",
+                ));
+            }
             if !active {
                 inner.remove_rule(idx);
             }
@@ -8277,7 +10547,7 @@ impl PySubstrate {
         let parsed = grammar_from_json(&json, &mut inner.terms, &mut inner.interner)
             .map_err(|e| PyValueError::new_err(format!("bad production JSON: {:?}", e)))?;
         for p in parsed.productions {
-            inner.checker.grammar.add(p);
+            inner.add_production_no_mirror(p);
         }
         Ok(())
     }
@@ -8319,7 +10589,7 @@ impl PySubstrate {
         let parsed = grammar_from_json(&json, &mut inner.terms, &mut inner.interner)
             .map_err(|e| PyValueError::new_err(format!("bad production JSON: {:?}", e)))?;
         for p in parsed.productions {
-            inner.checker.grammar.add(p);
+            inner.add_production_no_mirror(p);
         }
         Ok(())
     }
@@ -8408,10 +10678,21 @@ impl PySubstrate {
     ) -> PyResult<()> {
         let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
         let inner = &mut *__substrate_guard;
-        let name_sym = inner.interner.intern(name);
         let json = pyobj_to_json(py, def_term)?;
-        let def_idx: TermIdx = term_from_json(&json, &mut inner.terms, &mut inner.interner)
-            .map_err(|e| PyValueError::new_err(format!("bad concept Term JSON: {:?}", e)))?;
+        let snapshot = inner.terms.nodes.len();
+        let symbols_snapshot = inner.interner.len();
+        let def_idx: TermIdx = match term_from_json(&json, &mut inner.terms, &mut inner.interner) {
+            Ok(idx) => idx,
+            Err(err) => {
+                inner.terms.nodes.truncate(snapshot);
+                inner.interner.truncate(symbols_snapshot);
+                return Err(PyValueError::new_err(format!(
+                    "bad concept Term JSON: {:?}",
+                    err
+                )));
+            }
+        };
+        let name_sym = inner.interner.intern(name);
         inner.define_concept(name_sym, def_idx);
         Ok(())
     }
@@ -8450,12 +10731,15 @@ impl PySubstrate {
     /// Returns:
     ///   {"nodes_added": [{id, type, attrs}, ...],
     ///    "nodes_removed": [id, ...],
+    ///    "nodes_removed_details": [{id, type, attrs}, ...],
     ///    "nodes_changed": [{id, attrs_before, attrs_after}, ...] (only
     ///                      the attr keys that differ; a node whose
     ///                      `type` itself changed also carries
     ///                      type_before/type_after),
-    ///    "edges_added": [{src, type, tgt}, ...],
-    ///    "edges_removed": [{src, type, tgt}, ...]}
+    ///    "edges_added": [{src, type, tgt, attrs}, ...],
+    ///    "edges_removed": [{src, type, tgt}, ...],
+    ///    "edges_removed_details": [{src, type, tgt, attrs}, ...],
+    ///    "edges_changed": [{src, type, tgt, attrs_before, attrs_after}, ...]}
     #[staticmethod]
     fn graph_diff<'py>(
         py: Python<'py>,
@@ -8673,6 +10957,40 @@ impl PySubstrate {
             &leaf_vec,
         )
         .map_err(|e| PyValueError::new_err(format!("consolidate failed: {}", e)))
+    }
+
+    /// Rebuild one in-memory shape-index entry from a durable record file.
+    fn memory_index_disk_record(
+        &mut self,
+        key: &str,
+        path: &str,
+        round: i64,
+        cat_vec: Vec<f64>,
+        leaf_vec: Vec<f64>,
+    ) -> PyResult<String> {
+        let mut guard = self.inner.lock().expect("substrate mutex poisoned");
+        let fac = self
+            .memory
+            .get_or_insert_with(crate::memory::MemoryFaculty::default);
+        fac.index_disk_record(key, path, round, &cat_vec, &leaf_vec)
+            .map_err(|e| PyValueError::new_err(format!("index disk record failed: {}", e)))
+    }
+
+    /// Remove an ambiguous key from every native shape cluster.
+    fn memory_unindex_disk_record(&mut self, key: &str) {
+        self.memory
+            .get_or_insert_with(crate::memory::MemoryFaculty::default)
+            .unindex_disk_record(key);
+    }
+
+    /// Exact-key durable recall, paging the containing cluster into this substrate.
+    fn memory_recall_by_key(&mut self, key: &str, round: i64) -> Option<PyNodeID> {
+        let mut guard = self.inner.lock().expect("substrate mutex poisoned");
+        let fac = self
+            .memory
+            .get_or_insert_with(crate::memory::MemoryFaculty::default);
+        fac.recall_by_key(&mut guard, key, round)
+            .map(PyNodeID::from_node)
     }
 
     /// Shuffle: evict cold clusters from RAM (disk copy persists). Returns
@@ -8990,9 +11308,20 @@ impl PySubstrate {
         let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
         let inner = &mut *__substrate_guard;
         let json = pyobj_to_json_term(py, term_json, WireMode::Structural)?;
-        let idx = term_from_json(&json, &mut inner.terms, &mut inner.interner)
-            .map_err(|e| PyValueError::new_err(format!("bad Term JSON: {:?}", e)))?;
-        let shape = inner.shape_of_term(idx);
+        // This JSON API has no stable TermIdx to reuse across calls. Keep its
+        // parsed tree scratch-local so repeated shape queries neither grow the
+        // persistent arena nor populate the TermIdx-keyed cache with one-shot
+        // entries. Internal callers with stable indices use shape_of_term().
+        let snapshot = inner.terms.nodes.len();
+        let idx = match term_from_json(&json, &mut inner.terms, &mut inner.interner) {
+            Ok(idx) => idx,
+            Err(err) => {
+                inner.terms.nodes.truncate(snapshot);
+                return Err(PyValueError::new_err(format!("bad Term JSON: {:?}", err)));
+            }
+        };
+        let shape = crate::shape::assess_shape(idx, &inner.terms);
+        inner.terms.nodes.truncate(snapshot);
         let d = pyo3::types::PyDict::new_bound(py);
         d.set_item("recursion", shape.recursion.as_str())?;
         d.set_item("order_n", shape.order_n.0 as i64)?;
@@ -9012,9 +11341,18 @@ impl PySubstrate {
         let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
         let inner = &mut *__substrate_guard;
         let json = pyobj_to_json_term(py, term_json, WireMode::Structural)?;
-        let idx = term_from_json(&json, &mut inner.terms, &mut inner.interner)
-            .map_err(|e| PyValueError::new_err(format!("bad Term JSON: {:?}", e)))?;
-        let shape = inner.shape_of_term(idx);
+        // The durable result is the graph Shape node; the parsed TermIdx is
+        // only needed while assessing it and must not pin an arena suffix.
+        let snapshot = inner.terms.nodes.len();
+        let idx = match term_from_json(&json, &mut inner.terms, &mut inner.interner) {
+            Ok(idx) => idx,
+            Err(err) => {
+                inner.terms.nodes.truncate(snapshot);
+                return Err(PyValueError::new_err(format!("bad Term JSON: {:?}", err)));
+            }
+        };
+        let shape = crate::shape::assess_shape(idx, &inner.terms);
+        inner.terms.nodes.truncate(snapshot);
         let nid = crate::shape::add_shape_node(inner, shape);
         Py::new(py, PyNodeID { value: nid.0 })
     }
@@ -9035,14 +11373,25 @@ impl PySubstrate {
         let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
         let inner = &mut *__substrate_guard;
         let json = pyobj_to_json_term(py, term_json, WireMode::Structural)?;
-        let idx = term_from_json(&json, &mut inner.terms, &mut inner.interner)
-            .map_err(|e| PyValueError::new_err(format!("bad Term JSON: {:?}", e)))?;
+        // Reflection persists the Term as graph data and returns only a
+        // NodeID; no TermIdx escapes this method. Release the just-parsed
+        // arena suffix on success or parse failure so repeated temporary
+        // reflection does not grow the substrate's persistent TermArena.
+        let snapshot = inner.terms.nodes.len();
+        let idx = match term_from_json(&json, &mut inner.terms, &mut inner.interner) {
+            Ok(idx) => idx,
+            Err(err) => {
+                inner.terms.nodes.truncate(snapshot);
+                return Err(PyValueError::new_err(format!("bad Term JSON: {:?}", err)));
+            }
+        };
         let nid = crate::reflect::term_to_subgraph(
             &inner.terms,
             idx,
             &mut inner.graph,
             &mut inner.interner,
         );
+        inner.terms.nodes.truncate(snapshot);
         Py::new(py, PyNodeID { value: nid.0 })
     }
 
@@ -9059,13 +11408,21 @@ impl PySubstrate {
         let inner = &mut *__substrate_guard;
         let nid = node.to_node();
         let snapshot = inner.terms.nodes.len();
-        let idx = crate::reflect::term_from_subgraph(
+        let idx = match crate::reflect::term_from_subgraph(
             &inner.graph,
             &inner.interner,
             nid,
             &mut inner.terms,
-        )
-        .map_err(|e| PyValueError::new_err(format!("not a Term subgraph: {:?}", e)))?;
+        ) {
+            Ok(idx) => idx,
+            Err(err) => {
+                inner.terms.nodes.truncate(snapshot);
+                return Err(PyValueError::new_err(format!(
+                    "not a Term subgraph: {:?}",
+                    err
+                )));
+            }
+        };
         let j = term_to_json(&inner.terms, idx, &inner.interner);
         inner.terms.nodes.truncate(snapshot);
         Ok(j.to_string())
@@ -9192,7 +11549,16 @@ pub fn parse_rule_json_pub(
     terms: &mut TermArena,
     interner: &mut crate::sym::Interner,
 ) -> Result<crate::rewrite::RewriteRule, String> {
-    parse_rule_json(j, terms, interner)
+    let terms_before = terms.nodes.len();
+    let symbols_before = interner.len();
+    match parse_rule_json(j, terms, interner) {
+        Ok(rule) => Ok(rule),
+        Err(err) => {
+            terms.nodes.truncate(terms_before);
+            interner.truncate(symbols_before);
+            Err(err)
+        }
+    }
 }
 
 fn parse_rule_json(
@@ -9282,9 +11648,33 @@ fn parse_rule_json(
         .get("match_type")
         .and_then(|v| v.as_str())
         .map(|s| interner.intern(s));
+    let scope_anchor_keys = [
+        "scope_anchor_var",
+        "scope_anchor_type",
+        "scope_anchor_owner_var",
+        "scope_anchor_owner_type",
+        "scope_anchor_owner_edge",
+    ];
+    let scope_anchor_values: Vec<Option<&str>> = scope_anchor_keys
+        .iter()
+        .map(|key| obj.get(*key).and_then(|value| value.as_str()))
+        .collect();
+    let scope_anchor_present = scope_anchor_values.iter().filter(|v| v.is_some()).count();
+    let scope_anchor = match scope_anchor_present {
+        0 => None,
+        5 => Some(crate::rewrite::ScopeAnchor {
+            anchor_var: interner.intern(scope_anchor_values[0].unwrap()),
+            anchor_type: interner.intern(scope_anchor_values[1].unwrap()),
+            owner_var: interner.intern(scope_anchor_values[2].unwrap()),
+            owner_type: interner.intern(scope_anchor_values[3].unwrap()),
+            owner_edge: interner.intern(scope_anchor_values[4].unwrap()),
+        }),
+        _ => return Err("scope anchor requires all five scope_anchor_* string fields".to_string()),
+    };
 
     // R10 (join-index wave): optional "index_hints" — a list of
-    // {"for_var","via_var","via_key","node_type","this_key"} dicts. Absent
+    // dynamic {"for_var","via_var","via_key","node_type","this_key"}
+    // or literal {"for_var","probe_value","node_type","this_key"} dicts. Absent
     // for every pre-existing rule (parses to the empty Vec, byte-identical
     // to before this field existed). See rewrite.rs::IndexJoinHint.
     let mut index_hints = Vec::new();
@@ -9298,10 +11688,20 @@ fn parse_rule_json(
                     .and_then(|v| v.as_str())
                     .ok_or_else(|| format!("index_hints item missing string field {k:?}"))
             };
+            let probe = if let Some(literal) = ho.get("probe_value") {
+                let value = literal.as_str().ok_or_else(|| {
+                    "index_hints probe_value currently requires a string literal".to_string()
+                })?;
+                crate::rewrite::IndexProbe::LiteralString(interner.intern(value))
+            } else {
+                crate::rewrite::IndexProbe::BoundAttr {
+                    via_var: interner.intern(get_str("via_var")?),
+                    via_key: interner.intern(get_str("via_key")?),
+                }
+            };
             index_hints.push(crate::rewrite::IndexJoinHint {
                 for_var: interner.intern(get_str("for_var")?),
-                via_var: interner.intern(get_str("via_var")?),
-                via_key: interner.intern(get_str("via_key")?),
+                probe,
                 node_type: interner.intern(get_str("node_type")?),
                 this_key: interner.intern(get_str("this_key")?),
             });
@@ -9322,6 +11722,7 @@ fn parse_rule_json(
         effects,
         batch,
         match_type,
+        scope_anchor,
         index_hints,
         ..Default::default()
     })
@@ -9377,6 +11778,13 @@ pub(crate) fn rule_to_json(
         "match_type": match_type_j,
         "active": rule.active,
     });
+    if let Some(anchor) = rule.scope_anchor {
+        out["scope_anchor_var"] = J::String(interner.resolve(anchor.anchor_var).to_string());
+        out["scope_anchor_type"] = J::String(interner.resolve(anchor.anchor_type).to_string());
+        out["scope_anchor_owner_var"] = J::String(interner.resolve(anchor.owner_var).to_string());
+        out["scope_anchor_owner_type"] = J::String(interner.resolve(anchor.owner_type).to_string());
+        out["scope_anchor_owner_edge"] = J::String(interner.resolve(anchor.owner_edge).to_string());
+    }
     // R10: emit "index_hints" ONLY when non-empty — every pre-existing rule
     // (no hints) round-trips byte-identically to the pre-R10 export dialect,
     // which fixture-parity gates (e.g. composer_driver_parity) compare
@@ -9387,13 +11795,38 @@ pub(crate) fn rule_to_json(
             .index_hints
             .iter()
             .map(|h| {
-                serde_json::json!({
-                    "for_var": interner.resolve(h.for_var),
-                    "via_var": interner.resolve(h.via_var),
-                    "via_key": interner.resolve(h.via_key),
-                    "node_type": interner.resolve(h.node_type),
-                    "this_key": interner.resolve(h.this_key),
-                })
+                let mut item = serde_json::Map::new();
+                item.insert(
+                    "for_var".into(),
+                    J::String(interner.resolve(h.for_var).to_string()),
+                );
+                item.insert(
+                    "node_type".into(),
+                    J::String(interner.resolve(h.node_type).to_string()),
+                );
+                item.insert(
+                    "this_key".into(),
+                    J::String(interner.resolve(h.this_key).to_string()),
+                );
+                match &h.probe {
+                    crate::rewrite::IndexProbe::BoundAttr { via_var, via_key } => {
+                        item.insert(
+                            "via_var".into(),
+                            J::String(interner.resolve(*via_var).to_string()),
+                        );
+                        item.insert(
+                            "via_key".into(),
+                            J::String(interner.resolve(*via_key).to_string()),
+                        );
+                    }
+                    crate::rewrite::IndexProbe::LiteralString(value) => {
+                        item.insert(
+                            "probe_value".into(),
+                            J::String(interner.resolve(*value).to_string()),
+                        );
+                    }
+                }
+                J::Object(item)
             })
             .collect();
         out["index_hints"] = J::Array(index_hints_j);
@@ -9934,10 +12367,19 @@ fn load_reflex_json(
         .get("stimulus")
         .ok_or_else(|| "missing 'stimulus'".to_string())?;
 
-    let idx = term_from_json(stimulus, &mut inner.terms, &mut inner.interner)
-        .map_err(|e| format!("bad stimulus Term: {:?}", e))?;
+    // The reflected graph is the durable stimulus representation; the
+    // parsed TermIdx is local to this conversion and must not pin arena nodes.
+    let terms_snapshot = inner.terms.nodes.len();
+    let idx = match term_from_json(stimulus, &mut inner.terms, &mut inner.interner) {
+        Ok(idx) => idx,
+        Err(err) => {
+            inner.terms.nodes.truncate(terms_snapshot);
+            return Err(format!("bad stimulus Term: {:?}", err));
+        }
+    };
     let stim_root =
         crate::reflect::term_to_subgraph(&inner.terms, idx, &mut inner.graph, &mut inner.interner);
+    inner.terms.nodes.truncate(terms_snapshot);
 
     let reflex_type = inner.interner.intern("Reflex");
     let mut attrs: FxHashMap<Sym, Value> = FxHashMap::default();
@@ -10107,11 +12549,19 @@ impl PySubstrate {
         let Some(callbacks) = self.hooks.get(event) else {
             return Ok(());
         };
+        let mut first_error = None;
         for cb in callbacks {
             let py_args = PyTuple::new_bound(py, args);
-            cb.bind(py).call1(py_args)?;
+            if let Err(err) = cb.bind(py).call1(py_args) {
+                if first_error.is_none() {
+                    first_error = Some(err);
+                }
+            }
         }
-        Ok(())
+        match first_error {
+            Some(err) => Err(err),
+            None => Ok(()),
+        }
     }
 }
 
@@ -12014,6 +14464,7 @@ pub(crate) fn register(m: &Bound<'_, PyModule>) -> PyResult<()> {
     )?;
     m.add_class::<PyNodeID>()?;
     m.add_class::<PySubstrate>()?;
+    m.add_class::<PySubstrateSnapshot>()?;
     m.add_class::<PyEffortDial>()?;
     #[cfg(feature = "gpu_me")]
     m.add_class::<GpuMeHandle>()?;
@@ -12112,6 +14563,26 @@ mod rule_checkpoint_tests {
 
     fn fresh_substrate() -> SubstrateRs {
         SubstrateRs::new(ConsistencyChecker::new(Grammar::new()))
+    }
+
+    #[test]
+    fn literal_index_hint_json_round_trips() {
+        let input = serde_json::json!({
+            "name": "literal_probe",
+            "match": [["agent", "received", "m"]],
+            "index_hints": [{
+                "for_var": "m",
+                "probe_value": "interlocutor",
+                "node_type": "Message",
+                "this_key": "from"
+            }]
+        });
+        let mut terms = TermArena::new();
+        let mut interner = crate::sym::Interner::new();
+        let parsed = parse_rule_json(&input, &mut terms, &mut interner).unwrap();
+        let exported = rule_to_json(&parsed, &terms, &interner);
+        assert_eq!(exported["index_hints"][0]["probe_value"], "interlocutor");
+        assert!(exported["index_hints"][0].get("via_var").is_none());
     }
 
     /// `export_rules`'s underlying `rule_to_json` + `import_rules`'s

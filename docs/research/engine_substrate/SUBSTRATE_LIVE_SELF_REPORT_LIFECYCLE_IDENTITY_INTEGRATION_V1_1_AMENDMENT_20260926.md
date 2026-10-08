@@ -1,0 +1,5 @@
+# Live self-report lifecycle identity integration v1.1 amendment
+
+The initial locked integration capture passed all five identity/failure controls, and the three live workers preserved their locked sources. The preregistered positive lifecycle projection failed because the native `resolved` rule added each Goal to `has_closed_goal` but left it in `has_active_goal`. The faculty-failure rule had the same terminal bookkeeping omission for `blocked` Goals. The capture is retained at the v1 paths and is a failed integration attempt; its semantic results are not pooled with v1.1.
+
+The narrow correction adds `remove_edge(state, has_active_goal, goal)` to the native resolve and failure transitions. No event kinds, event-to-Goal matching conditions, producer behavior, tasks, or evaluation gates change. V1.1 writes to new lock/raw/analysis paths and retains per-worker start/end plus parent-end source fingerprint checks. It must pass the same positive and five control gates, including exactly closed membership and no residual active membership for terminal Goals.

@@ -1,6 +1,6 @@
 {
  "id": "self_optimisation",
- "version": "1.2.0",
+ "version": "1.4.0",
  "depends_on": [],
  "capability_keys": [
   "self_optimisation_lab",
@@ -196,7 +196,7 @@
   },
   {
    "name": "judge_knob_experiment_outcome",
-   "comment": "RESIDUAL-CLOSURE (knob_edit family, v1.1.0): the verdict for a held-threshold (knob) experiment, judged on the family's DIRECT observable -- 'fewer spurious reforms' -- from the child's own CONTROLLED double-pass report (scripts/convo_child_run.py: control pass at the parent's held value, then apply the knob delta, then the variant pass; same process, same warm caches -- the run-15 protected-control lesson, never a cold child vs a warm parent). Correctness first: ANY regression refutes regardless of the reform count (and seeds/adoption_safety.json's veto would deny adoption anyway); then strictly fewer reform marks in the variant pass supports, a tied count is inconclusive (the knob moved nothing observable), MORE reforms refutes -- a knob trial that measures worse REFUTES, never adopts (the residual-closure directive's honest-judge requirement). Same match-clause 'analysed' sequencing as the performance judge (the engine-gotcha note in this seed's description applies); OVERRIDES the generic score-sign verdict for knob deltas exactly as the performance judge does for performance_objective deltas.",
+   "comment": "RESIDUAL-CLOSURE (knob_edit family, v1.1.0): the verdict for a held-threshold (knob) experiment, judged on the family's DIRECT observable -- 'fewer spurious reforms' -- from the child's own CONTROLLED double-pass report (scripts/convo_child_run.py: control pass at the parent's held value, then apply the knob delta, then the variant pass; same process, same warm caches -- the run-15 protected-control lesson, never a cold child vs a warm parent). Correctness first: ANY regression refutes regardless of the reform count (and seeds/adoption_safety.json's veto would deny adoption anyway); then strictly fewer reform marks in the variant pass supports, a tied count is inconclusive (the knob moved nothing observable), MORE reforms refutes -- a knob trial that measures worse REFUTES, never adopts (the residual-closure directive's honest-judge requirement). Same match-clause 'analysed' sequencing as the performance judge (the engine-gotcha note in this seed's description applies); OVERRIDES the generic score-sign verdict for knob deltas exactly as the performance judge does for performance_objective deltas. v1.3.0 (tranche 8): direction-aware -- delta.knob_direction=='increase_fires' supports MORE reform marks (the concern said the reform fires too rarely); absent/decrease_fires keeps the fewer-supports verdict.",
    "match": [
     [
      "exp",
@@ -319,22 +319,59 @@
        "other": {
         "type": "IfThenElse",
         "cond": {
-         "type": "Lt",
-         "a": {
-          "type": "Attr",
-          "node": {
-           "type": "Var",
-           "name": "exp"
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "delta"
+           },
+           "key": "knob_direction"
           },
-          "key": "variant_reforms"
+          "b": {
+           "type": "Lit",
+           "value": "increase_fires"
+          }
          },
-         "b": {
-          "type": "Attr",
-          "node": {
-           "type": "Var",
-           "name": "exp"
+         "then": {
+          "type": "Gt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "exp"
+           },
+           "key": "variant_reforms"
           },
-          "key": "control_reforms"
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "exp"
+           },
+           "key": "control_reforms"
+          }
+         },
+         "other": {
+          "type": "Lt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "exp"
+           },
+           "key": "variant_reforms"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "exp"
+           },
+           "key": "control_reforms"
+          }
          }
         },
         "then": {
@@ -1164,6 +1201,75 @@
        }
       }
      }
+    ]
+   ]
+  },
+  {
+   "name": "close_abstained_variant",
+   "comment": "An empty (abstained) variant is closed without dispatch or credit -- measured tranche 10: 'sort' spent 3 real child replays on empty cue_set_edit deltas.",
+   "match": [
+    [
+     "exp",
+     "has_delta",
+     "delta"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "delta"
+       },
+       "key": "variant_abstained"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "In",
+      "member": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "exp"
+       },
+       "key": "status"
+      },
+      "container": {
+       "type": "Lit",
+       "value": [
+        "requested",
+        "counterfactual_requested"
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "exp",
+     "status",
+     "done"
+    ],
+    [
+     "set_attr",
+     "exp",
+     "outcome",
+     "abstained"
+    ],
+    [
+     "set_attr",
+     "delta",
+     "judged_outcome",
+     "abstained"
     ]
    ]
   }

@@ -1,6 +1,6 @@
 {
  "id": "composer_experiment_graph",
- "version": "1.0.0",
+ "version": "1.1.0",
  "depends_on": [],
  "description": "domains/reflective_faculty.py's _compose_experiment_rule expressed as PURE GRAPH DATA -- THREE graph-resident meta-rules (Rule nodes, auto-fired by Substrate::tick's run_graph_rules): compose_experiment_judge_graph (judge alone), compose_experiment_adopt_graph (adopt alone), and compose_experiment_mint_parametric (the 'test'-anchored MINT branch -- REPLACES the five former exact-combo mint meta-rules: compose_experiment_mint_graph/_full_graph/_vary_graph/_embed_graph/_structure_graph, retired). The parametric rule mints author_experiment_from_residual_<tag> for ANY 'test'-anchored grounded-relation combination (not just the 5 combos the old per-combo rules hard-coded), driven by six boolean flags carried on the triggering ComposeRequest -- has_send/has_vary/has_judge/has_gradient/has_structure/has_embed (domains/reflective_faculty.py's _route_experiment_composer sets these from the grounded-relation set `rp`, one Attr read per flag, never a Python if/elif over rp itself). Design (see commit message / conversation record for the full derivation): (1) match/where/game select between exactly two literal shapes (with wi / without wi) via one top-level IfThenElse on has_send -- match is DATA assembled once when the meta-rule fires, so conditionally requiring `[ag knows wi]` needs no second rule. (2) The SeedDelta attrs dict's KEY SET differs by (vary-family x variant-family) -- vary-family in {none, vary, vary+embed} contributes skip_seeds/skip_seed_id/varied/variant_threshold; variant-family in {none, gradient, structure (priority)} contributes remove_rules/act_rule_varied/act_shift/edit_op_kind -- MkDict has fixed arity so key-set variation is resolved via IfThenElse selecting among distinctly-shaped MkDict trees (15 leaves: 3 vary-family states x [3 structure sub-states (abstained/inert/built, matching the PRE-EXISTING structure_graph key-presence convention) + 1 gradient state (uniform 5-key, matching the pre-existing full_graph convention) + 1 none state]). (3) The variant-family's HEAVY computation (the two-stage RuleSummary+EditOp Argmax and its RewriteTreeNodes/ListDrop/AttrKeyRanking/IndexAt+MkDict application chains -- reused VERBATIM from the retired full_graph/structure_graph rules' own Term trees, byte-identical, never re-derived) is evaluated EXACTLY ONCE via a shared `Let` binding into a small fixed-shape INTERMEDIATE result {remove_rules, act_rule_varied, act_shift, edit_op_kind, extra_item} -- never exposed as final attrs, so sentinel-padding non-applicable fields is safe -- instead of being duplicated once per vary-family state (which would have tripled the file size for no semantic reason). The vary-family's own embed judge-variant (also reused verbatim from the retired embed_graph rule, including its Let('shiftval', Div(Count(cr.residual_predicates),10.0)) binding) and the variant-family's `extra_item` are combined into `add_rules` via one shared Append chain, matching _compose_experiment_rule's own append-embed-then-append-gradient-or-structure order exactly. compose_experiment_judge_graph / compose_experiment_adopt_graph are UNCHANGED and fire independently (never re-mint the mint rule) -- domains/reflective_faculty.py's router fires mint (if 'test' in rp) + judge (if 'judge' in rp) + adopt (if 'adopt' in rp) and concatenates, the same shape the no-'test' family already established for judge/adopt. RESULT: served_by='graph' for EVERY grounded-relation combination that authors anything -- no 'test'-anchored partial combo is left to Python any more (the prior residual: test+send+judge+gradient without adopt, test+send+judge+structure without gradient co-grounded differently, bare test+vary+judge without send, vary+structure/gradient combined with each other, etc. -- all now graph-native, verified against the Python oracle via tests/test_experiment_composer_graph.py).",
  "nodes": [
@@ -680,8 +680,25 @@
              "type": "Lit",
              "value": "Game"
             }
+           },
+           {
+            "type": "Not",
+            "arg": {
+             "type": "In",
+             "member": {
+              "type": "Lit",
+              "value": "replay"
+             },
+             "container": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "axis"
+              },
+              "key": "residual_predicates"
+             }
+            }
            }
-
           ]
          }
         },
@@ -741,8 +758,25 @@
               "value": null
              }
             }
+           },
+           {
+            "type": "Not",
+            "arg": {
+             "type": "In",
+             "member": {
+              "type": "Lit",
+              "value": "replay"
+             },
+             "container": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "axis"
+              },
+              "key": "residual_predicates"
+             }
+            }
            }
-
           ]
          }
         }

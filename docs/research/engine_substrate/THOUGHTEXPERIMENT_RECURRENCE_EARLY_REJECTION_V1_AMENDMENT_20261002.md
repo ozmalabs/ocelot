@@ -1,0 +1,5 @@
+# Recurrence early-rejection v1 analysis amendment
+
+The locked analyzer first failed on a nested held-out record shape and did not produce an analysis artifact. The paired source-locked capture completed. The corrected analyzer iterates the stored `{baseline, bounded}` held-out arms explicitly; no runner, lock, order, or score data changed. As with the recurrence v1.1 result amendment, the corrected analyzer is post-capture and its source hash is not the analyzer hash frozen in the lock. The amended review passes 14/14 checks.
+
+The prior recurrence v1.1 report's per-episode runtime denominator was also corrected. Each worker timing summed 32 episodes (8 candidates × 4 repeats), not 128; the prior calculation divided by the across-worker total. Correct means are 459 ms training and 467 ms held-out per candidate episode, approximately four times the previously reported values. The source-locked raw timings did not change; the amended review is [v1.3](../../../evaluation/reports/thoughtexperiment_recurrence_graph_selection_v1_3_analysis_20261002.json).

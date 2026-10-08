@@ -1,0 +1,7 @@
+# Thoughtexperiment recurrence repair scale v1 preregistration
+
+Extend the measured recurrence-ledger rule-repair rehearsal to a linked graph of 1,000,000 unrelated nodes. Cross native eager full-copy and shared-graph-page branch backends with three fresh-process repetitions per backend (six workers). Reuse the established controlled fault: remove only the negative-existence guard from `mrl_offer_due_once`; the branch restores the authored guard and runs five bounded native closure sweeps.
+
+Every corrected branch must restore the exact authored `where` clause, emit exactly one offer for the target candidate, reach a zero-progress fixed point, and leave the primary revision, graph counts, and rule vector unchanged. Backend task and closure outcomes must match. Record 10 ms Linux `smaps_rollup` samples through branch drop and garbage collection, source/native provenance, total rehearsal time, and the task outcome. A separate analyzer gates all six fresh processes and checks semantic, isolation, source, and capture coverage requirements.
+
+Compare descriptively with the existing 100k/200k recurrence memory panel. This measures one synthetic linked-noise topology and one authored correction, not autonomous diagnosis, broad recurrence learning, natural-graph scaling, or asymptotic complexity. The sampler may miss short-lived peaks; sampled PSS is not exact allocation accounting. Check host memory before starting; stop if available memory drops below 12 GiB or system pressure rises sharply.

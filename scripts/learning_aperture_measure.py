@@ -18,8 +18,13 @@ every learning field, and separable only by `obs_established`.
 from __future__ import annotations
 
 import json
+import argparse
+import hashlib
 import os
+import platform
+import subprocess
 import sys
+import time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
@@ -97,8 +102,12 @@ def _summary(traj):
     }
 
 
-def main():
-    os.makedirs(OUTDIR, exist_ok=True)
+def _sha(path):
+    with open(path, "rb") as f:
+        return hashlib.sha256(f.read()).hexdigest()
+
+
+def main(output_path=None):
     LEARNABLE = [0, 3, 6, 9, 12, 15, 18, 21]      # differs from held=0
     MASTERED = [0, 0, 0, 0, 0, 0, 0, 0]           # genuinely matches held=0
 
@@ -119,7 +128,37 @@ def main():
         {"ticks": n, **_summary(_run(True, LEARNABLE, ticks=n))}
         for n in (24, 48, 96, 192)]
 
-    with open(os.path.join(OUTDIR, "results.json"), "w") as f:
+    native = os.path.join(ROOT, "runners", "dsl", "python", "substrate_rs", "_native.abi3.so")
+    build_record = os.path.join(ROOT, "runners", "dsl", "python", "substrate_rs", "_native.build.json")
+    gate_seed = os.path.join(ROOT, "seeds", "learning_aperture_gate.json")
+    learning_seed = os.path.join(ROOT, "seeds", f"{LP.SEED_ID}.json")
+    out["provenance"] = {
+        "repo_head": subprocess.run(
+            ["git", "-C", ROOT, "rev-parse", "HEAD"],
+            check=True, capture_output=True, text=True,
+        ).stdout.strip(),
+        "measured_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+        "command": " ".join(sys.argv),
+        "native_extension_sha256": _sha(native),
+        "native_extension_matches_build_manifest": _sha(native) == json.load(open(build_record))["engine_sha256"],
+        "build_manifest_sha256": _sha(build_record),
+        "learning_seed": os.path.relpath(learning_seed, ROOT),
+        "learning_seed_sha256": _sha(learning_seed),
+        "gate_seed_sha256": _sha(gate_seed),
+        "learning_progress_harness_sha256": _sha(os.path.join(ROOT, "scripts", "learning_progress_measure.py")),
+        "this_harness_sha256": _sha(__file__),
+        "python": sys.version,
+        "platform": platform.platform(),
+        "logical_cpu_count": os.cpu_count(),
+        "worktree_dirty": bool(subprocess.run(
+            ["git", "-C", ROOT, "status", "--porcelain"],
+            check=True, capture_output=True, text=True,
+        ).stdout.strip()),
+    }
+
+    output_path = output_path or os.path.join(OUTDIR, "results.json")
+    os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
+    with open(output_path, "w") as f:
         json.dump(out, f, indent=1)
 
     print("=== THE LEARNING HALF (real engine, shipped curiosity seed) ===\n")
@@ -134,8 +173,10 @@ def main():
     for row in out["exposure_sweep"]:
         print(f"    ticks={row['ticks']:4d} -> max_residual={row['max_residual']:.1f} "
               f"max_progress={row['max_progress']:.1f} ever_attended={row['ever_attended']:.0f}")
-    print(f"\n  wrote {os.path.join(OUTDIR, 'results.json')}")
+    print(f"\n  wrote {output_path}")
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--output", help="write a separate report file (default: legacy results path)")
+    main(parser.parse_args().output)

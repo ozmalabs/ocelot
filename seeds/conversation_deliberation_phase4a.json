@@ -5,6 +5,142 @@
   "productions": [],
   "rules": [
     {
+      "name": "cm4a_valuate_grounded_fact_continuation",
+      "area": "deliberation",
+      "order": 1.5,
+      "match": [["d", "has_candidate", "c"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "status"}, "b": {"type": "Lit", "value": "proposed"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "status"}, "b": {"type": "Lit", "value": "proposed"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "kind"}, "b": {"type": "Lit", "value": "turn_continuation_direct_fact"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "valuation_mode"}, "b": {"type": "Lit", "value": "authored_family_prior"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "expected_value"}, "b": {"type": "Lit", "value": 0.9}}}
+      ]},
+      "effects": [
+        ["set_attr", "c", "expected_value", 0.9],
+        ["set_attr", "c", "policy_source", "seed:grounded_fact_continuation"],
+        ["set_attr", "c", "decision_depth", "shallow"],
+        ["set_attr", "c", "policy_valued", 1.0]
+      ]
+    },
+    {
+      "name": "cm4a_valuate_transitive_frame_continuation",
+      "area": "deliberation", "order": 1.5,
+      "match": [["d", "has_candidate", "c"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "status"}, "b": {"type": "Lit", "value": "proposed"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "status"}, "b": {"type": "Lit", "value": "proposed"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "kind"}, "b": {"type": "Lit", "value": "turn_continuation_transitive_frame"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "valuation_mode"}, "b": {"type": "Lit", "value": "authored_family_prior"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "policy_valued"}, "b": {"type": "Lit", "value": 1.0}}}
+      ]},
+      "effects": [["set_attr", "c", "expected_value", 0.85], ["set_attr", "c", "decision_depth", "deep"], ["set_attr", "c", "policy_source", "seed:transitive_frame_continuation"], ["set_attr", "c", "policy_valued", 1.0]]
+    },
+    {
+      "name": "cm4a_valuate_transitive_fact_continuation",
+      "area": "deliberation", "order": 1.5,
+      "match": [["d", "has_candidate", "c"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "status"}, "b": {"type": "Lit", "value": "proposed"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "status"}, "b": {"type": "Lit", "value": "proposed"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "kind"}, "b": {"type": "Lit", "value": "turn_continuation_transitive_fact"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "valuation_mode"}, "b": {"type": "Lit", "value": "authored_family_prior"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "policy_valued"}, "b": {"type": "Lit", "value": 1.0}}}
+      ]},
+      "effects": [["set_attr", "c", "expected_value", 0.8], ["set_attr", "c", "decision_depth", "deep"], ["set_attr", "c", "policy_source", "seed:transitive_fact_continuation"], ["set_attr", "c", "policy_valued", 1.0]]
+    },
+    {
+      "name": "cm4a_valuate_transitive_relation_continuation",
+      "area": "deliberation", "order": 1.5,
+      "match": [["d", "has_candidate", "c"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "status"}, "b": {"type": "Lit", "value": "proposed"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "status"}, "b": {"type": "Lit", "value": "proposed"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "kind"}, "b": {"type": "Lit", "value": "turn_continuation_transitive_relation"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "valuation_mode"}, "b": {"type": "Lit", "value": "authored_family_prior"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "policy_valued"}, "b": {"type": "Lit", "value": 1.0}}}
+      ]},
+      "effects": [["set_attr", "c", "expected_value", 0.75], ["set_attr", "c", "decision_depth", "deep"], ["set_attr", "c", "policy_source", "seed:transitive_relation_continuation"], ["set_attr", "c", "policy_valued", 1.0]]
+    },
+    {
+      "name": "cm4a_valuate_direct_relation_continuation",
+      "area": "deliberation", "order": 1.5,
+      "match": [["d", "has_candidate", "c"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "status"}, "b": {"type": "Lit", "value": "proposed"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "status"}, "b": {"type": "Lit", "value": "proposed"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "kind"}, "b": {"type": "Lit", "value": "turn_continuation_direct_relation"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "valuation_mode"}, "b": {"type": "Lit", "value": "authored_family_prior"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "policy_valued"}, "b": {"type": "Lit", "value": 1.0}}}
+      ]},
+      "effects": [["set_attr", "c", "expected_value", 0.7], ["set_attr", "c", "decision_depth", "shallow"], ["set_attr", "c", "policy_source", "seed:direct_relation_continuation"], ["set_attr", "c", "policy_valued", 1.0]]
+    },
+    {
+      "name": "cm4a_valuate_held_frame_continuation",
+      "area": "deliberation", "order": 1.5,
+      "match": [["d", "has_candidate", "c"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "status"}, "b": {"type": "Lit", "value": "proposed"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "status"}, "b": {"type": "Lit", "value": "proposed"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "kind"}, "b": {"type": "Lit", "value": "turn_continuation_held_frame"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "valuation_mode"}, "b": {"type": "Lit", "value": "authored_family_prior"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "policy_valued"}, "b": {"type": "Lit", "value": 1.0}}}
+      ]},
+      "effects": [["set_attr", "c", "expected_value", 0.65], ["set_attr", "c", "decision_depth", "shallow"], ["set_attr", "c", "policy_source", "seed:held_frame_continuation"], ["set_attr", "c", "policy_valued", 1.0]]
+    },
+    {
+      "name": "cm4a_valuate_residual_frame_continuation",
+      "area": "deliberation", "order": 1.5,
+      "match": [["d", "has_candidate", "c"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "status"}, "b": {"type": "Lit", "value": "proposed"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "status"}, "b": {"type": "Lit", "value": "proposed"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "kind"}, "b": {"type": "Lit", "value": "turn_continuation_residual_frame"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "valuation_mode"}, "b": {"type": "Lit", "value": "authored_family_prior"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "policy_valued"}, "b": {"type": "Lit", "value": 1.0}}}
+      ]},
+      "effects": [["set_attr", "c", "expected_value", 0.6], ["set_attr", "c", "decision_depth", "deep"], ["set_attr", "c", "policy_source", "seed:residual_frame_continuation"], ["set_attr", "c", "policy_valued", 1.0]]
+    },
+    {
+      "name": "cm4a_valuate_residual_fact_continuation",
+      "area": "deliberation", "order": 1.5,
+      "match": [["d", "has_candidate", "c"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "status"}, "b": {"type": "Lit", "value": "proposed"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "status"}, "b": {"type": "Lit", "value": "proposed"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "kind"}, "b": {"type": "Lit", "value": "turn_continuation_residual_fact"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "valuation_mode"}, "b": {"type": "Lit", "value": "authored_family_prior"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "policy_valued"}, "b": {"type": "Lit", "value": 1.0}}}
+      ]},
+      "effects": [["set_attr", "c", "expected_value", 0.55], ["set_attr", "c", "decision_depth", "deep"], ["set_attr", "c", "policy_source", "seed:residual_fact_continuation"], ["set_attr", "c", "policy_valued", 1.0]]
+    },
+    {
+      "name": "cm4a_valuate_residual_inquiry_continuation",
+      "area": "deliberation", "order": 1.5,
+      "match": [["d", "has_candidate", "c"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "status"}, "b": {"type": "Lit", "value": "proposed"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "status"}, "b": {"type": "Lit", "value": "proposed"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "kind"}, "b": {"type": "Lit", "value": "turn_continuation_residual_inquiry"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "valuation_mode"}, "b": {"type": "Lit", "value": "authored_family_prior"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "policy_valued"}, "b": {"type": "Lit", "value": 1.0}}}
+      ]},
+      "effects": [["set_attr", "c", "expected_value", 0.5], ["set_attr", "c", "decision_depth", "deep"], ["set_attr", "c", "policy_source", "seed:residual_inquiry_continuation"], ["set_attr", "c", "policy_valued", 1.0]]
+    },
+    {
+      "name": "cm4a_valuate_follow_up_inquiry_continuation",
+      "area": "deliberation", "order": 1.5,
+      "match": [["d", "has_candidate", "c"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "status"}, "b": {"type": "Lit", "value": "proposed"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "status"}, "b": {"type": "Lit", "value": "proposed"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "kind"}, "b": {"type": "Lit", "value": "turn_continuation_follow_up_inquiry"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "valuation_mode"}, "b": {"type": "Lit", "value": "authored_family_prior"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "policy_valued"}, "b": {"type": "Lit", "value": 1.0}}}
+      ]},
+      "effects": [["set_attr", "c", "expected_value", 0.45], ["set_attr", "c", "decision_depth", "deep"], ["set_attr", "c", "policy_source", "seed:follow_up_inquiry_continuation"], ["set_attr", "c", "policy_valued", 1.0]]
+    },
+    {
       "name": "cm4a_reject_missing_grounding",
       "area": "deliberation",
       "order": 1,
@@ -28,6 +164,7 @@
       "where": {"type": "And", "items": [
         {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "status"}, "b": {"type": "Lit", "value": "proposed"}},
         {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "status"}, "b": {"type": "Lit", "value": "proposed"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "valuation_mode"}, "b": {"type": "Lit", "value": "complete_phase4_tuple"}},
         {"type": "Gte", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "grounding"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "grounding_floor"}},
         {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "score_epoch"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "epoch"}}}
       ]},
@@ -39,6 +176,26 @@
           {"type": "Minus", "a": {"type": "Lit", "value": 0.0}, "b": {"type": "Times", "items": [{"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "residual_cost"}, {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "residual_cost_gain"}]}}
         ]}}],
         ["set_attr", "c", "score_epoch", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "epoch"}}],
+        ["set_attr", "c", "valuation_trace", 1.0]
+      ]
+    },
+    {
+      "name": "cm4a_score_authored_family_prior",
+      "area": "deliberation", "order": 2,
+      "match": [["d", "has_candidate", "c"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "status"}, "b": {"type": "Lit", "value": "proposed"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "candidate_source"}, "b": {"type": "Lit", "value": "authored_family_prior"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "status"}, "b": {"type": "Lit", "value": "proposed"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "valuation_mode"}, "b": {"type": "Lit", "value": "authored_family_prior"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "policy_valued"}, "b": {"type": "Lit", "value": 1.0}},
+        {"type": "Gte", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "grounding"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "grounding_floor"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "score_epoch"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "epoch"}}}
+      ]},
+      "effects": [
+        ["set_attr", "c", "arbitration_score", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "expected_value"}}],
+        ["set_attr", "c", "score_epoch", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "epoch"}}],
+        ["set_attr", "c", "valuation_basis", "authored_family_prior"],
         ["set_attr", "c", "valuation_trace", 1.0]
       ]
     },

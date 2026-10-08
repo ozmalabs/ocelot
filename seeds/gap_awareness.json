@@ -1,6 +1,7 @@
 {
  "id": "gap_awareness",
- "version": "1.7.0",
+ "version": "1.9.0",
+ "_native_disposition_guard": "v1.8.0: note_unhandled_instruction_gap is now joined to the same graph-resident CommunicationInterpretation as the received Message. Its honest instruction-gap surface is suppressed whenever native cognition selected defer, answer, repair, blocked, error, or learn; parser kind plus mechanical unhandled outcome cannot override a selected communicative disposition.",
  "depends_on": [
   "intent",
   "solver_dispatch"
@@ -9,7 +10,7 @@
   "gap_detection",
   "file_self_concern"
  ],
- "_unhandled_instruction_note": "v1.6.0: NO MORE SILENT INSTRUCTION DEAD-ENDS. After the rule passes for a turn have run, the adapter MECHANICALLY records what happened to an instruction Message (world_adapter._record_instruction_outcome, the _answer_topic_reply/_record_self_account_gap outcome precedent): instruction_outcome='handled' iff some rule claimed the turn (the comprehended fixpoint marker) or minted a Goal comprehending it, else 'unhandled' -- a datum, not a decision. note_unhandled_instruction_gap then DECIDES an unhandled instruction is a capability gap: it files SelfConcern{source:'implicit', kind:'instruction', content:'<predicate> <content>'} (content-deduped + mint-once via instruction_gap_noted, like every gap rule here) AND mints the honest reply naming what it understood and that it filed the gap -- superseding the generic honest floor. The outcome is recorded BETWEEN rule passes (converse() runs one more comprehend() after recording), so the gap reply lands in the SAME turn. A previously-unhandled verb becomes handled by teaching a Concept{name:<verb>, instruction_route:<route>} (see comprehend_instruction v2.0.0) -- then instruction_outcome reads 'handled' and no gap is filed.",
+ "_unhandled_instruction_note": "v1.7.0: After the rule passes for a turn have run, the adapter mechanically records handled/unhandled outcome. note_unhandled_instruction_gap then files the graph-resident SelfConcern and mints the honest gap-report reply. It stamps self_improvement_route=filed_concern on the same inbound Message; this is typed graph evidence consumed by the existing instruction production-release bridge, not a host-side interpretation of reply text. The bridge releases the exact linked graph-authored reply only after structural readback of the reported gap and its topic. The output does not claim the requested instruction was executed.",
  "_upload_vision_note": "v1.5.0: when an image upload is held but lacks vision_summary (GraphEye not run at ingest), note_upload_vision_gap files SelfConcern{kind:reply_fix, content:upload_vision_wiring} on the first attachment follow-up.",
  "_self_account_note": "v1.3.0: a SELF-account gap. When the agent understands a question is about its OWN faculty ('how does your collapse function work') but holds no account of it, the reflexive path hits the honest self floor; the adapter records that outcome mechanically (self_account_unresolved=1.0 + self_account_topic = the self-thing asked about), and note_self_account_gap DECIDES it is a gap and files SelfConcern{source:'implicit', kind:'self_account', content:<the faculty>} (content-deduped, once per message). So a self-question the agent can't yet answer becomes a gap it FINDS about itself -- surfaced by _run_self_gaps, workable through the human-gated promote pipeline -- rather than a dead-end honest shrug.",
  "_dedup_note": "v1.1.0: both minting rules carry a content-dedup guard (Not Exists a SelfConcern whose content equals this gap's content), so a NEW gap is never filed twice. v1.2.0: the agent also RETRACTS pre-existing duplicates itself (legacy gaps filed before the guard) -- retire_duplicate_gap keeps ONE survivor per content and retires the rest, BATCH-SAFE without any node-id: the survivor is Argmin over the same-content active SelfConcerns (Argmin returns exactly one element from a fixed snapshot within a pass), and a SelfConcern is retired (status='retired' + del_edge has_self_concern) iff it is NOT identity-equal (Eq compares Value::Node by id) to that survivor. A unique gap is its own Argmin survivor, so it is never retired. SCOPED to source in {implicit, explicit_report} (the auto-FOUND gaps) -- conversation-sourced SelfConcerns are the human-gated promote flow and are never auto-retired. Runs in the agent's own run_rules fixpoint -- the agent fixing its own gap list, graph-native. The surfacing reader (reflective_faculty._run_self_gaps) skips status=='retired'.",
@@ -548,11 +549,21 @@
    ]
   },
   {
-   "name": "note_unhandled_instruction_gap",
-   "match": [
+  "name": "note_unhandled_instruction_gap",
+  "match": [
+   [
+    "agent",
+    "received",
+    "m"
+    ],
     [
      "agent",
-     "received",
+     "holds_interpretation",
+     "i"
+    ],
+    [
+     "i",
+     "interprets",
      "m"
     ]
    ],
@@ -602,6 +613,54 @@
       "b": {
        "type": "Lit",
        "value": "unhandled"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"},
+       "b": {"type": "Lit", "value": "defer"}
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"},
+       "b": {"type": "Lit", "value": "answer"}
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"},
+       "b": {"type": "Lit", "value": "repair"}
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"},
+       "b": {"type": "Lit", "value": "blocked"}
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"},
+       "b": {"type": "Lit", "value": "error"}
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"},
+       "b": {"type": "Lit", "value": "learn"}
       }
      },
      {
@@ -713,6 +772,12 @@
      "m",
      "instruction_gap_noted",
      1.0
+    ],
+    [
+     "set_attr",
+     "m",
+     "self_improvement_route",
+     "filed_concern"
     ],
     [
      "set_attr",
@@ -835,6 +900,358 @@
      "reply"
     ]
    ]
+  },
+  {
+    "name": "reply_known_instruction_gap",
+    "comment": "A REPEATED unhandled instruction whose gap is already filed: same guards as note_unhandled_instruction_gap, but the matching SelfConcern exists, so nothing new is filed; reply honestly that the gap is already filed (tranche 5; the dedup previously left the turn with no reply and the adapter error surface).",
+    "match": [
+      [
+        "agent",
+        "received",
+        "m"
+      ],
+      [
+        "agent",
+        "holds_interpretation",
+        "i"
+      ],
+      [
+        "i",
+        "interprets",
+        "m"
+      ]
+    ],
+    "where": {
+      "type": "And",
+      "items": [
+        {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "m"
+            },
+            "key": "comp_kind"
+          },
+          "b": {
+            "type": "Lit",
+            "value": "instruction"
+          }
+        },
+        {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "m"
+            },
+            "key": "from"
+          },
+          "b": {
+            "type": "Lit",
+            "value": "interlocutor"
+          }
+        },
+        {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "m"
+            },
+            "key": "instruction_outcome"
+          },
+          "b": {
+            "type": "Lit",
+            "value": "unhandled"
+          }
+        },
+        {
+          "type": "Not",
+          "arg": {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "i"
+              },
+              "key": "cognitive_disposition"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "defer"
+            }
+          }
+        },
+        {
+          "type": "Not",
+          "arg": {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "i"
+              },
+              "key": "cognitive_disposition"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "answer"
+            }
+          }
+        },
+        {
+          "type": "Not",
+          "arg": {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "i"
+              },
+              "key": "cognitive_disposition"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "repair"
+            }
+          }
+        },
+        {
+          "type": "Not",
+          "arg": {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "i"
+              },
+              "key": "cognitive_disposition"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "blocked"
+            }
+          }
+        },
+        {
+          "type": "Not",
+          "arg": {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "i"
+              },
+              "key": "cognitive_disposition"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "error"
+            }
+          }
+        },
+        {
+          "type": "Not",
+          "arg": {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "i"
+              },
+              "key": "cognitive_disposition"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "learn"
+            }
+          }
+        },
+        {
+          "type": "Not",
+          "arg": {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "m"
+              },
+              "key": "comp_predicate"
+            },
+            "b": {
+              "type": "Lit",
+              "value": null
+            }
+          }
+        },
+        {
+          "type": "Not",
+          "arg": {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "m"
+              },
+              "key": "comprehended"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          }
+        },
+        {
+          "type": "Not",
+          "arg": {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "m"
+              },
+              "key": "instruction_gap_noted"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          }
+        },
+        {
+          "type": "Exists",
+          "source": {
+            "type": "NodesOfType",
+            "node_type": "SelfConcern"
+          },
+          "var_name": "sc2",
+          "predicate": {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "sc2"
+              },
+              "key": "content"
+            },
+            "b": {
+              "type": "StringConcat",
+              "parts": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "m"
+                  },
+                  "key": "comp_predicate"
+                },
+                {
+                  "type": "Lit",
+                  "value": " "
+                },
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "m"
+                  },
+                  "key": "comp_content"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "effects": [
+      [
+        "set_attr",
+        "m",
+        "instruction_gap_noted",
+        1.0
+      ],
+      [
+        "set_attr",
+        "m",
+        "self_improvement_route",
+        "filed_concern"
+      ],
+      [
+        "set_attr",
+        "m",
+        "comprehended",
+        1.0
+      ],
+      [
+        "add_node",
+        "reply",
+        "Message",
+        {
+          "from": "agent",
+          "text": {
+            "__term__": {
+              "type": "StringConcat",
+              "parts": [
+                {
+                  "type": "Lit",
+                  "value": "I still hold no faculty to "
+                },
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "m"
+                  },
+                  "key": "comp_predicate"
+                },
+                {
+                  "type": "Lit",
+                  "value": " '"
+                },
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "m"
+                  },
+                  "key": "comp_content"
+                },
+                {
+                  "type": "Lit",
+                  "value": "' -- that gap is already filed for me to work on."
+                }
+              ]
+            }
+          }
+        }
+      ],
+      [
+        "add_edge",
+        "reply",
+        "responds_to",
+        "m"
+      ],
+      [
+        "add_edge",
+        "agent",
+        "sent",
+        "reply"
+      ]
+    ]
   },
   {
    "name": "note_self_account_gap",

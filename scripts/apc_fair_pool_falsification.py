@@ -39,6 +39,7 @@ for p in (os.path.join(ROOT, "runners", "dsl", "python"), ROOT, os.path.join(ROO
     sys.path.insert(0, p)
 import numpy as np
 from collections import defaultdict
+from scripts.apc_run_capture import git_revision, json_safe, runtime_record, sha256_file, source_record, write_capture
 
 VENV_PY = "/home/matt/ozma/internal/research/.venv/bin/python"
 LIBRI = "/home/matt/data/LibriSpeech"
@@ -231,8 +232,14 @@ def ci_from_detail(arr, boot, seed=0):
 #  MAIN (torch-free)
 # ============================================================================ #
 def main():
-    if len(sys.argv) > 1 and sys.argv[1] == "--extract-w2v":
+    if "--extract-w2v" in sys.argv[1:]:
         _extract_w2v(); return
+    output = None
+    if "--output" in sys.argv[1:]:
+        i = sys.argv.index("--output")
+        if i + 1 >= len(sys.argv):
+            raise SystemExit("--output requires a path")
+        output = sys.argv[i + 1]
 
     import resource
     resource.setrlimit(resource.RLIMIT_AS, (16 * 1024**3, 16 * 1024**3))
@@ -375,6 +382,7 @@ def main():
         det = nat.apc_recall_detail(arr.reshape(-1).tolist(), n, T, dim, wi.tolist(), si.tolist(),
                                     CAPQ, NPOS, NNEG, 0)
         r = ci_from_detail(det, BOOT)
+        raw_details[name] = json_safe(det)
         print(f"  {name:>30}  dim={dim:4d}  recall {r['recall']:.3f} "
               f"[{r['recall_ci'][0]:.3f},{r['recall_ci'][1]:.3f}]  "
               f"AUC {r['auc']:.3f} [{r['auc_ci'][0]:.3f},{r['auc_ci'][1]:.3f}]  "
@@ -386,6 +394,7 @@ def main():
           f"n_pos={NPOS}, n_neg={NNEG}, boot={BOOT}) ---")
     print(f"  {'representation':>30}  {'':>4}  NN-recall [95% CI]         ROC-AUC [95% CI]        d' [95% CI]")
     res = {}
+    raw_details = {}
     res["apc"] = score("APC (donkey=0)", R["APC (donkey=0)"])
     res["ref"] = score("REF MetricEncoder (donkey=0)", R["REF MetricEncoder (donkey=0)"])
     w2v_best_L, w2v_best = None, None
@@ -415,6 +424,42 @@ def main():
     peak = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024**2
     print(f"  [memory] peak RSS this process: {peak:.2f} GiB")
     print("=" * 96)
+    if output:
+        native_path = nat.__file__
+        payload = {
+            "experiment": "apc_fair_pool_falsification_step_a",
+            "git_revision": git_revision(ROOT),
+            "working_tree_note": "Source hashes below are authoritative for captured code; git revision alone does not describe dirty changes.",
+            "runtime": runtime_record(),
+            "config": {k: v for k, v in {
+                "TE_CAP": TE_CAP, "KTEST": KTEST, "UTTS": UTTS, "T": T,
+                "DH": DH, "KAHEAD": KAHEAD, "EPOCHS": EPOCHS, "LR": LR,
+                "DZ": DZ, "ME_EPOCHS": ME_EPOCHS, "ME_CAP": ME_CAP,
+                "TRAIN_CAP": TRAIN_CAP, "CAPQ": CAPQ, "NPOS": NPOS,
+                "NNEG": NNEG, "BOOT": BOOT, "CI_BOOTSTRAP_SEED": 0, "W2V_LAYERS": W2V_LAYERS,
+                "W2V_PCA": W2V_PCA, "LIFT_MODES": LIFT_M,
+            }.items()},
+            "inputs": {"train_cache": {"path": TRAIN_CACHE, "sha256": sha256_file(TRAIN_CACHE)},
+                       "test_cache": {"path": W2V_CACHE, "sha256": sha256_file(W2V_CACHE)}},
+            "sources": source_record(ROOT, ["scripts/apc_fair_pool_falsification.py",
+                                            "scripts/apc_run_capture.py",
+                                            "scripts/jabberwock_contrastive_speaker_invariant.py",
+                                            "scripts/librispeech_wer.py",
+                                            "runners/dsl/Cargo.toml", "runners/dsl/src/apc.rs",
+                                            "runners/dsl/src/py.rs"]),
+            "native_extension": {"path": native_path, "sha256": sha256_file(native_path)},
+            "pool": {"words": words, "speakers": spk,
+                     "word_ids": wi.tolist(), "speaker_ids": si.tolist()},
+            "metrics": json_safe(res),
+            "raw_detail_vectors": raw_details,
+            "raw_detail_layout": "Per representation: [n_query, query_hit_flags..., n_positive_distances, positive_distances..., n_negative_distances, negative_distances...]. Bootstrap uses seed 0.",
+            "verdict": {"best_donkey0": best_d0_name, "best_donkey0_recall": best_d0,
+                        "best_wav2vec_layer": w2v_best_L, "gap": w2v_best["recall"] - best_d0,
+                        "wav2vec_ci_dominates": bool(dominates)},
+            "resources": {"peak_rss_gib": peak},
+        }
+        write_capture(output, payload)
+        print(f"  [capture] wrote {output}", flush=True)
 
 
 if __name__ == "__main__":

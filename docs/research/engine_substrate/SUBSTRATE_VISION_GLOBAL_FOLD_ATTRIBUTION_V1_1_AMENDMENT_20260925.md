@@ -1,0 +1,5 @@
+# Global-fold attribution v1.1 amendment
+
+Date: 2026-09-25, after the v1 attribution report and before the direct-unit rerun. The v1 report remains valid as an invocation-count plus known-cardinality derivation. Inspection showed that the native scale audit counted `NodesOfType` calls but did not expose the collection cardinality scanned per call.
+
+A one-line instrumentation addition now calls the existing opt-in `scale_audit::term_units` counter with `nodes.len()` after `NodesOfType` obtains its typed node vector. This counts node values returned/materialized by that Term evaluation; it is not a CPU instruction count. With the audit disabled the helper returns immediately. The canonical `scripts/engine_build.sh` build completed and recorded the updated source fingerprint. The v1.1 run uses the same eight seed-4101 size/variant arms and 1,024-application budget, compares state/progress with the original uninstrumented scale record, and checks the direct per-variant count against the v1 derived value. No rule or production seed changed.

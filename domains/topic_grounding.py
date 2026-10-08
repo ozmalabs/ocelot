@@ -38,6 +38,7 @@ result back as graph data — the same admissible teacher-I/O loop as
 from __future__ import annotations
 
 import json
+from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import quote
 
 # --- web endpoints (HTTPS only — constructed here, never taken from input) ----
@@ -59,21 +60,36 @@ def _wiki_teacher(agent):
     self-teacher fallback chain (the daemon wires grammar→dictionary→wiki→
     tropes); else builds its own `WikiTeacher` over the on-disk `WIKI_DATA`
     snapshot. Returns None when no wiki snapshot is available on disk."""
-    from domains.wiki_teacher import WikiTeacher
+    # A previously attached teacher is the common daemon path. Check an
+    # already-loaded class without importing the module here; the module
+    # imports ``wiki_library`` and pyarrow at import time.
+    import sys
+
+    wiki_module = sys.modules.get("domains.wiki_teacher")
+    wiki_type = getattr(wiki_module, "WikiTeacher", None)
     t = getattr(agent, "_self_teacher", None)
     seen: set[int] = set()
     while t is not None and id(t) not in seen:
         seen.add(id(t))
-        if isinstance(t, WikiTeacher):
+        if ((wiki_type is not None and isinstance(t, wiki_type))
+                or (wiki_type is None
+                    and type(t).__name__ == "WikiTeacher"
+                    and type(t).__module__ == "domains.wiki_teacher")):
             return t
         t = getattr(t, "fallback", None)
-    # No attached wiki teacher — build one from disk.
+    # No attached wiki teacher. Avoid importing wiki_teacher/wiki_library
+    # (and their pyarrow dependency) unless a local snapshot could be used.
     try:
         from domains.libraries import WIKI_DATA
+        if not WIKI_DATA.exists():
+            return None
+        parquet_dir = WIKI_DATA / "enwiki" / "data"
+        if not parquet_dir.exists() or not next(
+                parquet_dir.glob("enwiki_namespace_0_*.parquet"), None):
+            return None
+        from domains.wiki_teacher import WikiTeacher
         from domains.wiki_library import WikipediaLibrary
         lib = WikipediaLibrary(data_dir=WIKI_DATA)
-        if lib.index_size() == 0:
-            return None
         return WikiTeacher(library=lib, include_related=0)
     except Exception:  # noqa: BLE001 -- no snapshot / index locked -> no local teacher
         return None
@@ -82,10 +98,10 @@ def _wiki_teacher(agent):
 def _ground_local(agent, phrase: str):
     """Ground `phrase` from the local Wikipedia library. Returns the memoised
     answer string, or None on a miss (no teacher / no article)."""
-    from domains.wiki_teacher import article_to_payload
     teacher = _wiki_teacher(agent)
     if teacher is None:
         return None
+    from domains.wiki_teacher import article_to_payload
     try:
         article = teacher.lookup(phrase)
     except Exception:  # noqa: BLE001 -- library read failure -> treat as a miss
@@ -195,7 +211,14 @@ def _is_disambiguation_extract(extract: str, summary: dict | None = None) -> boo
     if summary and str(summary.get("type") or "").lower() == "disambiguation":
         return True
     low = str(extract or "").lower().strip()
-    return low.endswith("may refer to:") or low == "may refer to:"
+    # REST summaries usually identify these explicitly by ``type``, but local
+    # library articles can flatten a disambiguation page into a header followed
+    # by its alternatives (e.g. ``Route or routes may refer to:Air route,...``).
+    # Only inspect the opening header: a normal article may discuss
+    # disambiguation later in its body without itself being one.
+    header = low.splitlines()[0] if low else ""
+    import re
+    return bool(re.match(r"^[^.!?\n]{1,160}\bmay refer to\s*:", header))
 
 
 def _summary_data(title: str, timeout: int, getter) -> dict | None:
@@ -207,18 +230,28 @@ def _summary_data(title: str, timeout: int, getter) -> dict | None:
     return data if isinstance(data, dict) else None
 
 
-def ingest_search_candidates(agent, req, query: str, *, timeout: int = 8,
-                             http_get=None, min_overlap: float = 0.8) -> int:
-    """Mechanical ingest: mint SearchCandidate nodes for each opensearch hit with
-    measured overlap_ratio and is_disambiguation — no selection. Returns count."""
+def retrieve_search_candidate_payloads(query: str, *, referent_status="supported",
+                                       referents=None,
+                                       referent_evidence_path="",
+                                       timeout: int = 8,
+                                       http_get=None) -> list[dict]:
+    """Fetch and shape immutable search-candidate payloads without graph access.
+
+    This is the I/O half of search fulfillment and can run away from the graph
+    owner. It returns data only: native rules still select candidates and the
+    graph-owner still commits the selected evidence. ``query`` and referents
+    must be caller-snapshotted values, never live graph handles.
+    """
     getter = http_get or _http_get
-    sub, native = agent.s, agent.inner
     titles = _opensearch_titles(query, timeout, getter, limit=5)
-    count = 0
-    native.set_attr(req, "min_overlap", float(min_overlap))
-    req_attrs = sub.node(req)["attrs"]
-    ref_status = str(req_attrs.get("referent_status") or "supported")
-    raw_refs = req_attrs.get("referents") or [query]
+    if http_get is None and len(titles) > 1:
+        with ThreadPoolExecutor(max_workers=min(4, len(titles))) as pool:
+            summaries = list(pool.map(
+                lambda title: _summary_data(title, timeout, getter), titles))
+    else:
+        summaries = [_summary_data(title, timeout, getter) for title in titles]
+    ref_status = str(referent_status or "supported")
+    raw_refs = referents or [query]
     if isinstance(raw_refs, str):
         raw_refs = [raw_refs]
     referents = [str(r).strip() for r in raw_refs if str(r).strip()]
@@ -228,8 +261,8 @@ def ingest_search_candidates(agent, req, query: str, *, timeout: int = 8,
         hay = (str(title_) + " " + str(extract_)).lower()
         return bool(terms) and all(t in hay for t in terms)
 
-    for title in titles:
-        summary = _summary_data(title, timeout, getter)
+    payloads = []
+    for title, summary in zip(titles, summaries):
         extract = (summary or {}).get("extract")
         if not extract or not str(extract).strip():
             continue
@@ -245,7 +278,7 @@ def ingest_search_candidates(agent, req, query: str, *, timeout: int = 8,
         coverage = [ref_covered(ref, title, extract) for ref in referents]
         coverage_complete = (ref_status == "supported" and bool(referents)
                              and all(coverage))
-        cn = sub.add_node("SearchCandidate", {
+        payloads.append({
             "title": str(title),
             "extract": _cap_answer(str(extract).strip()),
             "overlap_ratio": float(ratio),
@@ -258,13 +291,39 @@ def ingest_search_candidates(agent, req, query: str, *, timeout: int = 8,
             "referent_coverage": coverage,
             "referent_coverage_complete": 1.0 if coverage_complete else 0.0,
             "referent_evidence_path": str(
-                req_attrs.get("referent_evidence_path") or
+                referent_evidence_path or
                 "SearchRequest -> referent_evidence -> unknown"),
             "communication_event_claimed": 0.0,
         })
+    return payloads
+
+
+def commit_search_candidate_payloads(agent, req, payloads: list[dict], *,
+                                     min_overlap: float = 0.8) -> int:
+    """Commit fetched payloads as graph evidence on the graph-owning thread."""
+    sub, native = agent.s, agent.inner
+    if not native.has_node(req):
+        return 0
+    native.set_attr(req, "min_overlap", float(min_overlap))
+    count = 0
+    for payload in payloads:
+        cn = sub.add_node("SearchCandidate", dict(payload))
         native.add_edge_unchecked(req, "has_candidate", cn)
         count += 1
     return count
+
+
+def ingest_search_candidates(agent, req, query: str, *, timeout: int = 8,
+                             http_get=None, min_overlap: float = 0.8) -> int:
+    """Synchronous wrapper around I/O payload retrieval + graph-owner commit."""
+    req_attrs = agent.s.node(req)["attrs"] if agent.inner.has_node(req) else {}
+    payloads = retrieve_search_candidate_payloads(
+        str(query), referent_status=req_attrs.get("referent_status", "supported"),
+        referents=req_attrs.get("referents") or [query], timeout=timeout,
+        referent_evidence_path=req_attrs.get("referent_evidence_path", ""),
+        http_get=http_get)
+    return commit_search_candidate_payloads(
+        agent, req, payloads, min_overlap=min_overlap)
 
 
 def commit_selected_search(agent, req, query: str) -> str | None:
@@ -547,6 +606,21 @@ def topic_detail(agent, phrase: str, *, allow_web: bool = True,
     return chunks[:_MAX_DETAIL_CHUNKS]
 
 
+def detail_local_chunks(agent, phrase: str) -> list[str]:
+    """Local-only progressive detail lookup for the graph-owning caller."""
+    return _detail_local(agent, str(phrase or "").strip())[:_MAX_DETAIL_CHUNKS]
+
+
+def retrieve_detail_payload(phrase: str, *, timeout: int = 8,
+                            http_get=None) -> list[str]:
+    """Remote-only progressive-detail retrieval from immutable request text."""
+    phrase = str(phrase or "").strip()
+    if not phrase:
+        return []
+    return _detail_web(None, phrase, timeout=timeout,
+                       http_get=http_get)[:_MAX_DETAIL_CHUNKS]
+
+
 _COMPOSITION_REPLY_HINTS = frozenset({
     "composition", "composed", "consists of", "made of", "made up",
     "regolith", "basalt", "silicate", "lunar crust", "crust is",
@@ -617,5 +691,125 @@ def ground_topic_aspect(agent, concept: str, aspect: str, *, allow_web: bool = T
     return ground_topic(agent, concept, allow_web=allow_web, timeout=timeout)
 
 
+def ground_local_attempt(agent, phrase: str, aspect: str | None = None) -> dict:
+    """Run only the local-source half of grounding on the graph owner."""
+    phrase = str(phrase or "").strip()
+    if not phrase:
+        return {"settled": True, "answer": None}
+    if aspect == "made_of":
+        store = f"composition of {phrase}"
+        answer = _pick_composition_chunk(_detail_local(agent, phrase))
+        if answer is not None:
+            try:
+                agent.learn_from_teacher(
+                    store, {"answer": answer,
+                            "learn": [{"phrase": store, "answer": answer}]})
+                return {"settled": True, "answer": answer}
+            except Exception:  # noqa: BLE001
+                return {"settled": True, "answer": None}
+        # Preserve the legacy order: web detail is tried before the local
+        # composition-summary fallback. That second local lookup runs on the
+        # graph owner after remote detail returns if it still found no aspect.
+        return {"settled": False, "answer": None}
+
+    from domains.acronym_expand import expand_acronym
+    expanded = expand_acronym(phrase)
+    if expanded:
+        _clear_stale_acronym_answer(agent, phrase, expanded)
+        answer = _ground_local(agent, expanded)
+        if answer is not None:
+            try:
+                agent.learn_from_teacher(
+                    phrase, {"answer": answer,
+                            "learn": [{"phrase": phrase, "answer": answer}]})
+            except Exception:  # noqa: BLE001
+                pass
+            return {"settled": True, "answer": answer}
+    answer = _ground_local(agent, phrase)
+    return {"settled": answer is not None, "answer": answer}
+
+
+def _ground_web_payload(phrase: str, *, timeout: int, http_get=None) -> dict | None:
+    """Fetch/validate a summary payload without learning or graph access."""
+    getter = http_get or _http_get
+    title = _opensearch_title(phrase, timeout, getter)
+    if not title:
+        return None
+    extract = _summary_extract(title, timeout, getter)
+    if not extract or _is_disambiguation_extract(extract):
+        return None
+    return {"phrase": str(phrase), "title": title, "answer": _cap_answer(extract)}
+
+
+def retrieve_ground_payload(phrase: str, aspect: str | None = None, *,
+                            timeout: int = 8, http_get=None) -> dict:
+    """Fetch raw remote grounding evidence from immutable request values."""
+    phrase = str(phrase or "").strip()
+    if aspect == "made_of":
+        chunks = _detail_web(None, phrase, timeout=timeout, http_get=http_get)
+        fallback = None
+        if not _pick_composition_chunk(chunks):
+            fallback = _ground_web_payload(
+                f"composition of {phrase}", timeout=timeout, http_get=http_get)
+        return {"aspect": aspect, "detail_chunks": chunks,
+                "fallback": fallback}
+    from domains.acronym_expand import expand_acronym
+    expanded = expand_acronym(phrase)
+    attempts = []
+    if expanded:
+        payload = _ground_web_payload(expanded, timeout=timeout, http_get=http_get)
+        if payload:
+            attempts.append(payload)
+            return {"attempts": attempts}
+    payload = _ground_web_payload(phrase, timeout=timeout, http_get=http_get)
+    if payload:
+        attempts.append(payload)
+    return {"attempts": attempts}
+
+
+def commit_ground_payload(agent, phrase: str, aspect: str | None,
+                          payload: dict) -> str | None:
+    """Persist retrieved evidence on the graph-owning thread."""
+    phrase = str(phrase or "").strip()
+    if aspect == "made_of":
+        store = f"composition of {phrase}"
+        answer = _pick_composition_chunk(payload.get("detail_chunks") or [])
+        if answer is None:
+            local_answer = _ground_local(agent, store)
+            if local_answer is not None:
+                return local_answer if _looks_compositional(local_answer) else None
+            answer = str((payload.get("fallback") or {}).get("answer") or "") or None
+        if answer is None or not _looks_compositional(answer):
+            return None
+        try:
+            agent.learn_from_teacher(
+                store, {"answer": answer,
+                        "learn": [{"phrase": store, "answer": answer}]})
+            return answer
+        except Exception:  # noqa: BLE001
+            return None
+    for attempt in payload.get("attempts") or []:
+        answer = str(attempt.get("answer") or "").strip()
+        source_phrase = str(attempt.get("phrase") or phrase)
+        if not answer:
+            continue
+        try:
+            agent.learn_from_teacher(
+                source_phrase, {"answer": answer,
+                                "learn": [{"phrase": source_phrase,
+                                           "answer": answer}]})
+            if source_phrase != phrase:
+                agent.learn_from_teacher(
+                    phrase, {"answer": answer,
+                             "learn": [{"phrase": phrase, "answer": answer}]})
+            return answer
+        except Exception:  # noqa: BLE001
+            return None
+    return None
+
+
 __all__ = ["ground_topic", "resolve_and_ground", "topic_detail", "ground_topic_aspect",
+           "ground_local_attempt", "retrieve_ground_payload", "commit_ground_payload",
+           "detail_local_chunks", "retrieve_detail_payload",
+           "retrieve_search_candidate_payloads", "commit_search_candidate_payloads",
            "ingest_search_candidates", "commit_selected_search"]

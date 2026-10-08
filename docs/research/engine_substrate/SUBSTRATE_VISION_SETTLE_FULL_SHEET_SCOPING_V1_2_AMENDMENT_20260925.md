@@ -1,0 +1,5 @@
+# Full-sheet scoping comparison v1.2 amendment
+
+Date: 2026-09-25. V1 and v1.1 attempts and raw outputs are preserved. The authored engine's exact `SetAttr` equality stop is retained as a separate outcome; numerical convergence is evaluated independently.
+
+The v1.1 native `run_rules` driver is the correct batch execution path. Its outcome shows exact-fixpoint cap exits in three cases. Recomputing the actual registered settle equation on the terminal graph gives max residuals between 5.55e-17 and 2.22e-16, consistent with floating-point last-bit dither rather than material state change. V1.2 records the native exact-fixpoint-before-cap flag and independently measured equation residual per arm. Numerical convergence threshold is preregistered as max absolute equation residual <= 1e-12. Paired terminal state and native application count must still match exactly between global and scoped variants. This amendment does not reinterpret cap exits as engine termination and makes no timing claim.

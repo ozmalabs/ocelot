@@ -1,0 +1,42 @@
+{
+  "id": "communication_causal_identity_binding",
+  "version": "1.0.0",
+  "depends_on": ["communication_causal_retrieval"],
+  "description": "Bind a topic-level causal retrieval request to an explicitly verified external identity already represented in graph evidence. This does not verify retrieved claims or authorize answers.",
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "bind_causal_request_to_verified_topic_identity",
+      "comment": "Retrieval must not select an entity from a surface label. Only a verified graph identity attached to the graph-resolved topic is copied into the pending request.",
+      "match": [
+        ["agent", "holds_interpretation", "i"],
+        ["i", "interprets", "m"],
+        ["i", "requests_causal_retrieval", "request"],
+        ["request", "for_event", "m"],
+        ["request", "about_topic", "topic"],
+        ["m", "has_mention", "mention"],
+        ["mention", "refers_to", "topic"],
+        ["topic", "has_external_identity", "identity"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "TypeOf", "node": {"type": "Var", "name": "topic"}}, "b": {"type": "Lit", "value": "Concept"}},
+          {"type": "Eq", "a": {"type": "TypeOf", "node": {"type": "Var", "name": "identity"}}, "b": {"type": "Lit", "value": "ExternalIdentityEvidence"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "identity"}, "key": "schema"}, "b": {"type": "Lit", "value": "external_identity_evidence.v1"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "identity"}, "key": "provider"}, "b": {"type": "Lit", "value": "wikidata"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "identity"}, "key": "status"}, "b": {"type": "Lit", "value": "verified"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "identity"}, "key": "entity_id"}, "b": {"type": "Lit", "value": null}}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "request"}, "key": "status"}, "b": {"type": "Lit", "value": "requested"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "request"}, "key": "topic_entity_id"}, "b": {"type": "Lit", "value": null}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "request", "topic_entity_id", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "identity"}, "key": "entity_id"}}],
+        ["add_edge", "request", "bound_identity", "identity"]
+      ]
+    }
+  ]
+}

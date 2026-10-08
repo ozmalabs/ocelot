@@ -1,0 +1,55 @@
+{
+ "id": "macro_surprise_codebook",
+ "version": "1.0.0",
+ "depends_on": ["core"],
+ "description": "The macro-release numeric-surprise mechanism's TAUGHT DATA + the surprise-decode RULE (MACRO_SURPRISE_PREREG.md). A macro print (CPI/NFP) is a NUMBER whose forecast relevance is its SURPRISE vs expectation. The mechanical reads (macro_surprise.py) turn a print into a MacroSurpriseReading{series, surprise_sign, market} (surprise_sign = +1 if released ABOVE prior/trend, -1 below, 0 equal) -- this is I/O arithmetic, no decision. WHICH STANCE a (series, surprise_sign) is, is TAUGHT DATA: one MacroSurpriseSign node per (series, surprise_sign) carrying (stance, band_sign, direction, attr), authored at teach time (macro_codebook_entries: band_sign = surprise_sign * hawkish_sign, stance/direction table lookups) -- exactly the ToM arm's (symbol, motion) -> (stance, sign) CBSpeechAct codebook pattern. The DECISION -- which stance a surprise is -- is the seed RULE `ib_decode_macro_surprise`, an Eq-join of a MacroSurpriseReading's (series, surprise_sign) against a MacroSurpriseSign codebook entry, minting the SAME StanceReading shape the ToM arm's ib_decode_stance rule mints (stance/sign/direction/attr pulled OFF the joined codebook node, so macro-surprise COMPOSES with the ToM decode on the SAME <stance>_stance_for:<market> CAN Concept. No new belief mechanism; strict reuse of the stance Concepts + concept_apply_evidence; no Python computes the stance/direction.",
+ "microtheory": {
+  "name": "macro_surprise_codebook",
+  "description": "the per-series MacroSurpriseSign causal-semantics codebook (which sign of a macro surprise is hawkish) the macro-surprise read is typed against"
+ },
+ "nodes": [
+  {"local_id": 1, "type": "Concept", "attrs": {"name": "macro_surprise_codebook", "description": "sentinel: macro_surprise_codebook seed loaded (ensure_seeds idempotency guard)"}}
+ ],
+ "edges": [],
+ "productions": [],
+ "concepts": [],
+ "rules": [
+  {
+   "name": "ib_decode_macro_surprise",
+   "comment": "THE DECISION: a MacroSurpriseReading{series, surprise_sign, market} whose (series, surprise_sign) matches a MacroSurpriseSign codebook entry mints a StanceReading, pulling the stance/band_sign/direction/attr OFF the codebook entry (ms) -- NOT off the reading. The reading carries only the series + the bare surprise sign (I/O arithmetic: released above/below/inline the expectation); WHICH STANCE that (series, surprise_sign) is, is TAUGHT DATA on the MacroSurpriseSign node (band_sign = surprise_sign * hawkish_sign, stance/direction table lookups, authored at teach time by macro_codebook_entries -- the same mechanical expansion frame.codebook_entries does for the ToM codebook). This mirrors ib_decode_stance exactly: there the (symbol, motion) join pulls (stance, sign, direction) off the CBSpeechAct; here the (series, surprise_sign) join pulls them off the MacroSurpriseSign. Eq-join on series AND surprise_sign, guarded once per (macro_reading) by Not(Exists already-decoded). No surface-word cue matching; no Python computes the stance/direction -- the rule reads it off the joined codebook node.",
+   "match": [
+    ["mr", "is_macro_surprise_reading", "mr"],
+    ["ms", "is_macro_surprise_sign", "ms"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "mr"}, "key": "series"},
+      "b": {"type": "Attr", "node": {"type": "Var", "name": "ms"}, "key": "series"}},
+     {"type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "mr"}, "key": "surprise_sign"},
+      "b": {"type": "Attr", "node": {"type": "Var", "name": "ms"}, "key": "surprise_sign"}},
+     {"type": "Not",
+      "arg": {"type": "Exists",
+              "source": {"type": "Neighbours", "node": {"type": "Var", "name": "mr"}, "edge_type": "decoded_to"},
+              "var_name": "_ex",
+              "predicate": {"type": "Lit", "value": true}}}
+    ]
+   },
+   "effects": [
+    ["add_node", "sr", "StanceReading",
+     {"stance": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "ms"}, "key": "stance"}},
+      "sign": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "ms"}, "key": "band_sign"}},
+      "direction": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "ms"}, "key": "direction"}},
+      "market": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "mr"}, "key": "market"}},
+      "attr": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "ms"}, "key": "attr"}},
+      "symbol": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "mr"}, "key": "series"}},
+      "motion": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "mr"}, "key": "surprise_motion"}}}],
+    ["add_edge", "mr", "decoded_to", "sr"],
+    ["add_edge", "sr", "reads_macro_codebook", "ms"]
+   ]
+  }
+ ],
+ "goals": []
+}

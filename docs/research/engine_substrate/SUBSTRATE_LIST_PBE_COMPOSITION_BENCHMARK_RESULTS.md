@@ -1,0 +1,23 @@
+# List PBE composition benchmark results (2026-09-25)
+
+**Protocol:** [`SUBSTRATE_LIST_PBE_COMPOSITION_BENCHMARK_PREREG_20260925.md`](SUBSTRATE_LIST_PBE_COMPOSITION_BENCHMARK_PREREG_20260925.md), amended by [`SUBSTRATE_LIST_PBE_COMPOSITION_BENCHMARK_AMENDMENT_20260925.md`](SUBSTRATE_LIST_PBE_COMPOSITION_BENCHMARK_AMENDMENT_20260925.md). **Pre-run lock:** [`list_pbe_composition_benchmark_amended_lock_20260925.json`](../../../evaluation/substrate_capability/list_pbe_composition_benchmark_amended_lock_20260925.json). **Raw report:** [`substrate_list_pbe_composition_benchmark_amended_20260925.json`](../../../evaluation/reports/substrate_list_pbe_composition_benchmark_amended_20260925.json). **List-output re-evaluation:** [`substrate_list_pbe_composition_analysis_20260925.json`](../../../evaluation/reports/substrate_list_pbe_composition_analysis_20260925.json).
+
+## Result
+
+The amended v1.1 run completed 30 task specifications in three fresh-substrate conditions: full P4 main, frozen codebook/bigram ablation, and main replication. Main achieved 14/30 exact held-out passes (46.7%; descriptive Wilson 95% interval 30.2–63.9%), accepted 16 tasks, produced two accepted programs that failed holdout, and gapped on 14. The frozen arm had exactly the same outcomes, accepted IRs, holdout records, and route read-backs task-by-task. The main replication fingerprint exactly matched main. The paired pass difference was 0/30; the preregistered stratified paired bootstrap interval is [0, 0] because no task pair was discordant. This is a finite-suite observation, not evidence of equivalence on a broader population.
+
+By registered stratum, exact passes were reductions 5/5, projections 2/3, maps 1/5, filters 4/5, compositions 2/10, and out-of-inventory controls 0/2. The filter stratum includes one held-out false accept; the out-of-inventory stratum includes one false accept and one structural rejection. Seventeen cases reached enumeration per arm; 13 reached the 200,000-candidate ceiling. Candidate count was 2,625,774 per arm. This places much of the cost and failure mass in maps and compositions; it does not prove the generator distribution represents real tasks.
+
+Across all 90 task/condition runs, wall time was 28.38 s and process peak RSS was 340,324 KiB. Per-arm request-to-outcome wall time was 8.46 s for main and 8.48 s frozen, with median route latency 199 ms and 213 ms, p90 638 ms and 642 ms, and maximum 745 ms and 746 ms. The figures include Python orchestration and rule closure; process RSS includes imports and all arms. They are measured only on this 30-task workload and current machine.
+
+## Error analysis and interpretation
+
+The filter false accept is specific: `fresh_013_filter_gt_two` returns `[2, 4]` for an input whose expected output is `[4]`. The median control is accepted from an exemplar but fails all three holdouts (for example, it returns `0` for `[0, -5, -6, -7]`, whose expected median is `-5`). `fresh_030_unique_count` is structurally rejected. These are held-out checks outside the P4 accept decision and illustrate why accepted status alone is not a capability score.
+
+The full and frozen arms are identical on this suite. That means no measured gain from the specific added code-write constructions and ConstructionBigram rows removed by the frozen condition. Both arms retain the same exemplar store, starter shapes, and remaining P4 mechanisms, so this does not show that all learning or retrieval has zero value.
+
+The existing scorer compares list-valued outputs correctly but its raw row formatter omits those values (`got` is stored only for scalar results). The separate analysis artifact re-evaluates every accepted stored IR on the held-out inputs and records the complete outputs; the pass/fail verdicts agree with the original scorer. The first locked attempt stopped before scoring because the new fixture used `family` while the shared scorer required `stratum`; the failed attempt, original lock, and adapter-only v1.1 amendment are preserved and linked above.
+
+## Claim boundary and next experiment
+
+This is a preregistered pilot over one generated integer-list sample, mixing known primitives, changed input instances, new compositions, and two out-of-inventory controls. Thirty specs and six task strata do not establish tractability on natural distributions, cross-domain capability, learning value, minting, reuse, or transfer. Main and frozen equality is scoped to this pair of conditions and suite. The next step is a larger independently sourced task family with wider structural variation and enough held-out tasks to estimate paired gains; retain the end-to-end route instrumentation and explicitly include the cost of acquisition and repeated application.

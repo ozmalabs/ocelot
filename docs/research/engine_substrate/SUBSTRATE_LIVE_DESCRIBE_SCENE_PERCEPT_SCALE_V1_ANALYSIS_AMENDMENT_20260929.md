@@ -1,0 +1,7 @@
+# Percept-count scale v1 analysis amendment
+
+The 16-worker raw capture and runner summary are complete and source-stable. The runner printed `source_stable=true` and recorded 16 distinct PIDs, but exited nonzero because its inherited terminal guard still compared the unique PID count to 12. This is a post-capture driver gate bug; the independent analysis checks the preregistered 16-worker design and confirms the source lock, factorial, and all 16 unique workers.
+
+The locked analyzer contained a second analysis-only error: its fixed-input check subtracted Percept count from the `has_concept` membership count, although scene attachment adds `has_percept` edges and does not change `has_concept` memberships. The exact analyzer bytes matching the locked SHA are preserved as [`locked source`](../../../scripts/analyze_substrate_live_describe_scene_percept_scale_v1_locked_source.py). The corrected analyzer changes that invariant to require the observed pre-noise `has_concept` count to remain constant and adds its own SHA-256 to the analysis record. It passes all 13 gates over the immutable raw capture. Neither correction changes the captured workers or raw data.
+
+The results therefore rely on the corrected independent analysis rather than the runner's final exit status or the locked analyzer's erroneous invariant. Future scale runners must derive their terminal worker-count check from the declared factorial and verify analyzer invariants before freezing the lock.

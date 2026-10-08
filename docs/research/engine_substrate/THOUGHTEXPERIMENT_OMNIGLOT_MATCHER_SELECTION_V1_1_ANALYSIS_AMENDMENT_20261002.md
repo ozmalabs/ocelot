@@ -1,0 +1,3 @@
+# Omniglot matcher selection v1.1 analysis amendment
+
+The frozen v1.1 analyzer assumed held-out episode specifications were present in the orders file. The v1.1 runner intentionally generates them only after orders freeze, so the analyzer stopped on a schema lookup before computing gates. The v1.2 post-capture analyzer reads those specifications from the scores artifact and separately verifies that orders contain none. It changes no runner, protocol, source lock, order, score, or outcome data. The frozen analyzer remains available, and the corrected analysis reports its post-capture status explicitly.

@@ -38,6 +38,7 @@ impl CheckOutcome {
     }
 }
 
+#[derive(Clone)]
 pub struct ConsistencyChecker {
     pub grammar: Grammar,
 }

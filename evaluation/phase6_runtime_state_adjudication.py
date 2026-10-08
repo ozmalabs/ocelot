@@ -15,16 +15,16 @@ SCHEMA = "phase6_runtime_state_adjudication.v1"
 
 
 def _category(row: Mapping[str, Any]) -> str:
+    authority = row.get("authority")
+    if authority not in {"graph_readback", "native_graph_readback"}:
+        if row.get("evidence_available") is True:
+            # A coincident expected/observed label is not a verified state
+            # match when the source is only interpretation or adapter evidence.
+            return "disposition_authority_missing"
+        return "state_evidence_unavailable"
     if row.get("match"):
         return "state_match"
-    authority = row.get("authority")
-    if authority in {"graph_readback", "native_graph_readback"}:
-        return "graph_cognitive_state_mismatch"
-    if authority == "interpretation_readback_not_disposition":
-        return "disposition_authority_missing"
-    if row.get("evidence_available") is not True:
-        return "state_evidence_unavailable"
-    return "unclassified_state_mismatch"
+    return "graph_cognitive_state_mismatch"
 
 
 def adjudicate_runtime_state(

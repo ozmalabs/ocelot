@@ -1,0 +1,123 @@
+{
+  "id": "communication_standalone_assertion_reply",
+  "version": "1.2.0",
+  "depends_on": ["communication_intent_arbitration", "conversation_reply"],
+  "capability_keys": ["communication_standalone_assertion_reply"],
+  "description": "Graph-owned non-endorsing receipts for typed standalone assertions, response-position assertions, and response-position acknowledgements selected by native cognition.",
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "reply_to_deferred_standalone_assertion",
+      "comment": "Mint one neutral acknowledgment only when native arbitration selected defer for an adapter-typed standalone assertion outside a live turn. The acknowledgment is not common-ground acceptance or an action commitment.",
+      "match": [
+        ["agent", "holds_interpretation", "i"],
+        ["i", "interprets", "m"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "assertion_or_correction"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_statement_act"}, "b": {"type": "Lit", "value": "assertion"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_mode"}, "b": {"type": "Lit", "value": "non_turn"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_relation"}, "b": {"type": "Lit", "value": "standalone"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": "defer"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_goal"}, "b": {"type": "Lit", "value": "defer"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "arbitration_basis"}, "b": {"type": "Lit", "value": "standalone_nonturn_common_ground"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "standalone_assertion_reply_minted"}, "b": {"type": "Lit", "value": 1}}}
+      ]},
+      "effects": [
+        ["set_attr", "m", "standalone_assertion_reply_minted", 1],
+        ["add_node", "reply_act", "Concept", {"name": "acknowledgment", "description": "neutral receipt of a standalone assertion; does not endorse or adopt its proposition"}],
+        ["add_node", "reply", "Message", {"from": "agent", "native_standalone_assertion_reply_plan": "neutral_receipt"}],
+        ["add_edge", "reply", "has_speech_act", "reply_act"],
+        ["add_edge", "reply", "responds_to", "m"],
+        ["add_edge", "agent", "sent", "reply"]
+      ]
+    },
+    {
+      "name": "reply_to_deferred_response_assertion",
+      "comment": "A response-position assertion selected for defer receives one graph-owned neutral acknowledgment; the reply is not proposition acceptance.",
+      "match": [
+        ["agent", "holds_interpretation", "i"],
+        ["i", "interprets", "m"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "assertion_or_correction"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_statement_act"}, "b": {"type": "Lit", "value": "assertion"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_mode"}, "b": {"type": "Lit", "value": "turn_compatible"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_relation"}, "b": {"type": "Lit", "value": "response"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": "defer"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_goal"}, "b": {"type": "Lit", "value": "update_common_ground"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "arbitration_basis"}, "b": {"type": "Lit", "value": "response_statement_common_ground"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "response_assertion_reply_minted"}, "b": {"type": "Lit", "value": 1}}}
+      ]},
+      "effects": [
+        ["set_attr", "m", "response_assertion_reply_minted", 1],
+        ["add_node", "reply_act", "Concept", {"name": "acknowledgment", "description": "neutral receipt of a response-position assertion; does not endorse or adopt its proposition"}],
+        ["add_node", "reply", "Message", {"from": "agent", "native_standalone_assertion_reply_plan": "neutral_receipt", "native_response_assertion_reply": 1}],
+        ["add_edge", "reply", "has_speech_act", "reply_act"],
+        ["add_edge", "reply", "responds_to", "m"],
+        ["add_edge", "agent", "sent", "reply"]
+      ]
+    },
+    {
+      "name": "reply_to_deferred_typed_response_acknowledgement",
+      "comment": "A typed response acknowledgement receives a neutral receipt only after native cognition selected common-ground update. The reply acknowledges receipt and does not endorse the proposition.",
+      "match": [
+        ["agent", "holds_interpretation", "i"],
+        ["i", "interprets", "m"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "acknowledgement"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_mode"}, "b": {"type": "Lit", "value": "turn_compatible"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_relation"}, "b": {"type": "Lit", "value": "response"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": "defer"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_goal"}, "b": {"type": "Lit", "value": "update_common_ground"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "arbitration_basis"}, "b": {"type": "Lit", "value": "typed_acknowledgement"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "typed_acknowledgement_reply_minted"}, "b": {"type": "Lit", "value": 1}}}
+      ]},
+      "effects": [
+        ["set_attr", "m", "typed_acknowledgement_reply_minted", 1],
+        ["add_node", "reply_act", "Concept", {"name": "acknowledgment", "description": "neutral receipt of an interlocutor acknowledgement; does not endorse or adopt the acknowledged proposition"}],
+        ["add_node", "reply", "Message", {"from": "agent", "native_typed_acknowledgement_reply_plan": "neutral_receipt"}],
+        ["add_edge", "reply", "has_speech_act", "reply_act"],
+        ["add_edge", "reply", "responds_to", "m"],
+        ["add_edge", "agent", "sent", "reply"]
+      ]
+    },
+    {
+      "name": "reply_to_blocked_unavailable_action_response",
+      "comment": "A typed response-position report that an action is unavailable receives a neutral receipt only after native cognition blocked it. The acknowledgment does not endorse the report, authorize the action, or create an execution goal.",
+      "match": [
+        ["agent", "holds_interpretation", "i"],
+        ["i", "interprets", "m"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "assertion_or_correction"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_action_availability"}, "b": {"type": "Lit", "value": "unavailable"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_mode"}, "b": {"type": "Lit", "value": "turn_compatible"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_relation"}, "b": {"type": "Lit", "value": "response"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": "blocked"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_goal"}, "b": {"type": "Lit", "value": "act_or_clarify"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "arbitration_basis"}, "b": {"type": "Lit", "value": "unavailable_action_response"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "unavailable_action_reply_minted"}, "b": {"type": "Lit", "value": 1}}}
+      ]},
+      "effects": [
+        ["set_attr", "m", "unavailable_action_reply_minted", 1],
+        ["add_node", "reply_act", "Concept", {"name": "acknowledgment", "description": "neutral receipt of an unavailable-action report; does not endorse the report or authorize action"}],
+        ["add_node", "reply", "Message", {"from": "agent", "native_standalone_assertion_reply_plan": "neutral_receipt", "native_unavailable_action_reply": 1}],
+        ["add_edge", "reply", "has_speech_act", "reply_act"],
+        ["add_edge", "reply", "responds_to", "m"],
+        ["add_edge", "agent", "sent", "reply"]
+      ]
+    }
+  ]
+}

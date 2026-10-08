@@ -1,0 +1,9 @@
+# ReachableFrom internal rule-effect matrix v1 results
+
+This targeted post-fix panel crosses eight rule-effect families with cache off/on in five fresh workers each (40 workers): `AddEdge`, `DelEdge`, `AddNode`, `AddNodeIfAbsent`, `DelNode`, `SetAttr`, `SetAttrIfDifferent`, and `ReplaceValue`. Each cache-on run first retained a live reachability result before the mutator and later consumer rules were added. The mutator then ran earlier in the same pass as a `ReachableFrom` consumer.
+
+All nine runner gates and ten independent analyzer checks passed. In all 40 cache-on/off pairs, the later consumer derived the expected detection edge, progress steps matched, and final graphs were exact. Every cache-on run recorded at least one miss after rule effects began, showing that the prior memo did not survive the progressing mutator. The probe covers both positive reachability after insertion and negative membership after deletion/node replacement, plus effects that mutate node populations or attributes.
+
+This broadens evidence for immediate cache clearing across eight common effect classes in one minimal rule system. It does not cover `SetRuleClause`, rule patches, deferred framebuffer/identity/net effects, arbitrary dynamic Terms, concurrent execution, or other rule families. It makes no timing or natural-prevalence claim.
+
+Artifacts: [protocol](SUBSTRATE_REACHABLE_CACHE_EFFECT_MATRIX_V1_PREREG_20260928.md), [raw run](../../../evaluation/reports/substrate_reachable_cache_effect_matrix_v1_20260928.json), [independent analysis](../../../evaluation/reports/substrate_reachable_cache_effect_matrix_v1_analysis_20260928.json), [runner](../../../scripts/substrate_reachable_cache_effect_matrix_v1.py), [analyzer](../../../scripts/analyze_substrate_reachable_cache_effect_matrix_v1.py), [implementation](../../../runners/dsl/src/substrate.rs).

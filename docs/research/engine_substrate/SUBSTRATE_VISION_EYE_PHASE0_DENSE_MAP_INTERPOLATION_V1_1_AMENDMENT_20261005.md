@@ -1,0 +1,5 @@
+# Dense-map interpolation v1.1 analysis amendment
+
+The v1 capture contains six complete workers and 75 probes per worker, with exactly three probes at each of the 25 preregistered locations. Its runner nevertheless set `probe_matrix_exact` to expect `75 * REPEATS` probes (225), even though 75 already equals 25 locations × 3 repeats. This single bookkeeping defect caused the raw capture's aggregate `passed` flag to be false; every other original runner check is true.
+
+The raw capture is retained unchanged. The v1.1 independent analyzer verifies the locked runner and original analyzer hashes, all other runner gates, the corrected 25×3 matrix directly from raw rows, all 450 activation vectors and winners against independently recomputed receptive-field dot products, source-lock equality, and exact frozen-weight preservation. All eleven amended checks pass. No thresholds, observations, weights, or source files used during training were changed after capture. The result should be cited with this amendment and the v1.1 analysis, not as an all-green v1 runner capture.

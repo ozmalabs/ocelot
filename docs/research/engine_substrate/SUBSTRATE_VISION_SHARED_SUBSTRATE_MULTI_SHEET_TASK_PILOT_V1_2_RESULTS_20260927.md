@@ -1,0 +1,11 @@
+# Shared-substrate multi-sheet visual-task pilot v1.2 — diagnostic outcome
+
+The tagged v1.2 worker completed both 3,000-step retinal development passes and confirmed nonzero gains on both sheets (maximum absolute gains 0.527271 and 0.525831). The batched input writer passed its graph-equivalence preflight using the amended 1e-12 serializer tolerance. In an initial attempt, global-scope adaptation completed 2,000 paired presentations and all three K=16 readouts (480 closure calls each), but the final gate rejected the scope because a per-call report had not been preserved.
+
+The updated fail-fast run captured the first cap exactly: global adaptation presentation 213 returned `progress_budget_reached` at 200,000 progress steps after 199,992 passes, with zero overshoot. Among the first 213 paired presentations, 50 returned `fixed_point`, 162 returned `repeated_graph_state`, and one reached the budget. For comparison, the single-sheet K=16 v1.2 capture had zero budget hits in all six seed/scope arms: 12,000 adaptation and 2,880 readout calls total. The two-sheet graph has 5,969 nodes, 16,313 edges, and 170 rules. This is evidence of a rare high-work closure case under global full-rescan, not proof that closure cannot terminate. No task-effect contrast, replay equality, root-scoped result, or analyzer result is claimed.
+
+The first execution stopped earlier at the batch preflight because exact comparison crossed two independently restored graph serializations; an isolated replay showed only a pre-existing weight changing by 1e-16. The protocol amendment now uses 1e-12 graph equivalence and 12-decimal canonical digests. The successful preflight in this run validates that correction.
+
+## Next revision
+
+The next execution should resume at the budget boundary, because the engine preserves dirty graph state across calls, under a preregistered cumulative work bound. Retain every invocation's budget/status/progress and per-presentation cumulative work. If continuation reaches a terminal status within the bound, include the work cost in the task-level result; if it reaches the cumulative bound, persist the partial scope. Never count `progress_budget_reached` as settlement. This censored result is excluded from the global-versus-root-scoped task contrast.

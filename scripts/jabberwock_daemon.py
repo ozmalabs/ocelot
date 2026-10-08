@@ -114,7 +114,7 @@ HTTP API (fixed contract — a companion web UI is built against this exactly):
 Usage:
     PYTHONPATH=runners/dsl/python:. python3 scripts/jabberwock_daemon.py \\
         [--ckpt-dir DIR] [--interval SECS] [--tick-hz HZ] [--keep N] \\
-        [--seeds full|chat] [--socket PATH] [--http-port PORT] [--no-http] \\
+        [--seeds conversation|full|chat|embodied] [--socket PATH] [--http-port PORT] [--no-http] \\
         [--runs-dir DIR] [--dispatch-every N] [--fetch-every N] \\
         [--concern-every N] [--close-every N] [--world-every N] [--world-actions N] \\
         [--steer-every N] [--no-llm] [--shadow-read | --no-shadow-read] \\
@@ -155,6 +155,7 @@ pose affordance, and reset scenario.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import mimetypes
 import os
@@ -163,6 +164,7 @@ import socket
 import sys
 import tempfile
 import threading
+from concurrent.futures import ThreadPoolExecutor
 import time
 import urllib.parse
 from datetime import datetime, timezone
@@ -177,6 +179,7 @@ sys.path.insert(0, str(ROOT / "scripts"))  # arc_run / arc3_env / worlds.arc (st
 
 from substrate.world_adapter import WorldAdapter          # noqa: E402
 from substrate.boot_all import load_all_seeds              # noqa: E402
+from substrate.boot_profiles import prepass_conversation_turn  # noqa: E402
 from substrate.seed_loader import manifest_for              # noqa: E402
 import substrate_rs as srs                                  # noqa: E402
 from domains import self_extend_rust as ser                 # noqa: E402
@@ -190,6 +193,7 @@ from domains import auto_approve as auto_appr                # noqa: E402
 CHAT_SEEDS = ["relations", "intent", "conversation", "discourse", "conversation_reply",
               "reference_resolution", "language_foundation", "lang_production",
               "communication_concepts", "grounding"]
+DEFAULT_SEED_PROFILE = "conversation"
 
 WEB_DIR = ROOT / "web"
 
@@ -350,13 +354,126 @@ def _snapshots(ckpt_dir: Path) -> list[Path]:
                   key=lambda p: p.stat().st_mtime, reverse=True)
 
 
-def boot(ckpt_dir: Path, seeds: str):
+def _checkpoint_seed_profile(adapter: WorldAdapter) -> str | None:
+    """Read the graph-resident daemon seed-profile marker, if present."""
+    markers = adapter.s.nodes("DaemonSeedProfile")
+    profiles = {
+        str(adapter.s.node(node_id)["attrs"].get("profile", ""))
+        for node_id in markers
+    }
+    profiles.discard("")
+    if len(profiles) > 1 or (markers and not profiles):
+        raise RuntimeError("checkpoint has conflicting/invalid daemon seed-profile markers")
+    return next(iter(profiles), None)
+
+
+def _stamp_checkpoint_seed_profile(adapter: WorldAdapter, seeds: str) -> None:
+    """Persist profile identity in the graph so it travels with checkpoints."""
+    current = _checkpoint_seed_profile(adapter)
+    if current is not None and current != seeds:
+        raise RuntimeError(
+            f"cannot stamp {seeds!r} over checkpoint profile {current!r}")
+    if current is None:
+        adapter.s.add_node("DaemonSeedProfile", {"profile": seeds})
+
+
+def _load_conversation_content_prepass(path: Path | str | None):
+    """Read and canonicalize an operator-authored connected content pre-pass."""
+    if path is None:
+        return None
+    try:
+        payload = json.loads(Path(path).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeError(
+            f"cannot read conversation content pre-pass manifest: {exc}") from exc
+    if (not isinstance(payload, dict)
+            or payload.get("schema") != "conversation_content_prepass.v1"):
+        raise ValueError(
+            "content manifest schema must be conversation_content_prepass.v1")
+    allowed = {"schema", "content_candidates", "content_keys",
+               "scoped_content_refs", "sealed"}
+    unknown = sorted(set(payload) - allowed)
+    if unknown:
+        raise ValueError(f"content manifest has unsupported fields: {unknown}")
+    sealed = payload.get("sealed", False)
+    if not isinstance(sealed, bool):
+        raise ValueError("content manifest sealed must be a boolean")
+
+    def names(field):
+        value = payload.get(field, [])
+        if not isinstance(value, list):
+            raise ValueError(f"content manifest {field} must be a list")
+        normalized = []
+        for item in value:
+            if not isinstance(item, str) or not item.strip():
+                raise ValueError(
+                    f"content manifest {field} entries must be non-empty strings")
+            normalized.append(item.strip())
+        return sorted(set(normalized))
+
+    candidates = names("content_candidates")
+    content_keys = names("content_keys")
+    raw_scoped = payload.get("scoped_content_refs", {})
+    if not isinstance(raw_scoped, dict):
+        raise ValueError("content manifest scoped_content_refs must be an object")
+    scoped = {}
+    for raw_seed_id, raw_refs in raw_scoped.items():
+        seed_id = str(raw_seed_id).strip()
+        if not seed_id or not isinstance(raw_refs, list):
+            raise ValueError(
+                "scoped content refs require a seed id and a list of typed refs")
+        refs = set()
+        for ref in raw_refs:
+            if not isinstance(ref, dict):
+                raise ValueError("scoped content refs must be objects")
+            node_type, name = ref.get("type"), ref.get("name")
+            if (not isinstance(node_type, str) or not node_type.strip()
+                    or not isinstance(name, str) or not name.strip()):
+                raise ValueError(
+                    "scoped content ref requires non-empty type and name")
+            refs.add((node_type.strip(), name.strip()))
+        if not refs:
+            raise ValueError(f"content manifest has an empty ref group: {seed_id}")
+        scoped[seed_id] = [
+            {"type": node_type, "name": name}
+            for node_type, name in sorted(refs)
+        ]
+    if not candidates and not content_keys and not scoped:
+        raise ValueError("content manifest must select at least one content group")
+    canonical = {
+        "schema": "conversation_content_prepass.v1",
+        "content_candidates": candidates,
+        "content_keys": content_keys,
+        "sealed": sealed,
+        "scoped_content_refs": {
+            seed_id: scoped[seed_id] for seed_id in sorted(scoped)
+        },
+    }
+    digest = hashlib.sha256(json.dumps(
+        canonical, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")).hexdigest()
+    return {**canonical, "digest": digest}
+
+
+def _legacy_content_prepass_digest(prepass: dict) -> str:
+    """Digest format used before manifests recorded their sealed/open mode."""
+    legacy = {key: prepass[key] for key in (
+        "schema", "content_candidates", "content_keys",
+        "scoped_content_refs")}
+    return hashlib.sha256(json.dumps(
+        legacy, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")).hexdigest()
+
+
+def boot(ckpt_dir: Path, seeds: str, *, strict_profile: bool = False,
+         content_manifest: Path | str | None = None):
     """Resume from the newest checkpoint that loads (WorldAdapter.load); a
     corrupt/broken snapshot falls back to the next older. No checkpoint loads
-    -> fresh boot: `--seeds chat` for a fast small seed set (like
-    converse_demo), else the full seed closure (`load_all_seeds`, the same
-    `WorldAdapter(seeds=()); load_all_seeds(agent)` pattern used everywhere
-    else in this repo for a "full entity" boot). Returns (adapter, booted_from).
+    -> fresh boot: `--seeds chat` for a fast smoke-test set,
+    `--seeds conversation` for the validated connected conversational
+    dependency closure, or the full seed closure (`load_all_seeds`, the same
+    `WorldAdapter(seeds=()); load_all_seeds(agent)` pattern used elsewhere for
+    a "full entity" boot). Returns (adapter, booted_from).
 
     Every path (resumed or fresh) is then run through `domains.auto_approve.
     ensure_policy_node` (mint the AutoApprovePolicy node, `enabled: False`,
@@ -366,17 +483,87 @@ def boot(ckpt_dir: Path, seeds: str):
     process auto-installed, so any pause carried over in a resumed
     checkpoint is stale the instant this new process is up -- see that
     module's docstring)."""
+    prepass = _load_conversation_content_prepass(content_manifest)
+    if prepass is not None and seeds != "conversation":
+        raise ValueError(
+            "a conversation content manifest requires --seeds conversation")
+    requested_prepass_digest = prepass.get("digest") if prepass else None
     ckpt_dir.mkdir(parents=True, exist_ok=True)
     adapter = None
     booted_from = None
+    legacy_checkpoint_seen = False
+    mismatched_checkpoint_seen = False
+    mismatched_content_prepass_seen = False
     for snap in _snapshots(ckpt_dir):
         try:
             adapter = WorldAdapter.load(str(snap))
+            checkpoint_profile = _checkpoint_seed_profile(adapter)
+            if checkpoint_profile is None:
+                legacy_checkpoint_seen = True
+                if strict_profile:
+                    raise RuntimeError(
+                        f"checkpoint {snap.name} has no seed-profile identity; "
+                        "refusing ambiguous strict-profile resume")
+                log(f"warning: {snap.name} has no seed-profile identity; "
+                    "accepting legacy graph without claiming profile compatibility")
+            elif checkpoint_profile != seeds:
+                adapter = None
+                mismatched_checkpoint_seen = True
+                raise RuntimeError(
+                    f"checkpoint profile {checkpoint_profile!r} does not match "
+                    f"requested profile {seeds!r}")
+            if adapter is not None and seeds == "conversation":
+                profile_state = getattr(
+                    adapter, "_conversation_seed_profile_state", None)
+                checkpoint_prepass_digest = (
+                    profile_state.get("content_prepass_manifest_digest")
+                    if isinstance(profile_state, dict) else None)
+                if checkpoint_prepass_digest != requested_prepass_digest:
+                    legacy_digest = (
+                        _legacy_content_prepass_digest(prepass)
+                        if prepass is not None else None)
+                    if (isinstance(profile_state, dict)
+                            and checkpoint_prepass_digest == legacy_digest):
+                        # The old manifest contract always sealed content.
+                        # Its digest authenticates the same preloaded closure;
+                        # migrate only that exact legacy digest, update the
+                        # runtime mode, then bind the checkpoint to this digest.
+                        profile_state["incremental_content_loading"] = (
+                            not prepass.get("sealed", False))
+                        profile_state[
+                            "content_prepass_manifest_digest"] = \
+                            requested_prepass_digest
+                        log("migrated legacy conversation content manifest "
+                            "checkpoint to explicit loading mode")
+                    else:
+                        mismatched_content_prepass_seen = True
+                        adapter = None
+                        raise RuntimeError(
+                            "checkpoint conversation content pre-pass digest "
+                            "does not match requested manifest; refusing "
+                            "profile reuse")
             log(f"resumed <- {snap.name} ({adapter.s.node_count()} nodes)")
             booted_from = "checkpoint"
             break
         except Exception as e:  # noqa: BLE001 -- try the next-older snapshot
+            adapter = None
             log(f"checkpoint {snap.name} failed to load ({e}); trying older")
+
+    if mismatched_checkpoint_seen:
+        raise RuntimeError(
+            f"a newer checkpoint does not match requested seed profile {seeds!r}; "
+            "refusing to fall back to a potentially stale graph; existing "
+            "checkpoints were preserved")
+    if mismatched_content_prepass_seen:
+        raise RuntimeError(
+            "a newer checkpoint does not match the requested conversation "
+            "content pre-pass; refusing to fall back to a potentially stale "
+            "graph; existing checkpoints were preserved")
+    if adapter is None and strict_profile and legacy_checkpoint_seen:
+        raise RuntimeError(
+            "no compatible checkpoint found: one or more legacy checkpoints "
+            "lack seed-profile identity; preserve them and select/migrate a "
+            "checkpoint explicitly before strict-profile startup")
 
     if adapter is None:
         if seeds == "chat":
@@ -391,6 +578,39 @@ def boot(ckpt_dir: Path, seeds: str):
             except Exception as e:  # noqa: BLE001
                 log(f"  register lexicon skipped: {e}")
             log(f"fresh CHAT boot ({adapter.s.node_count()} nodes)")
+        elif seeds == "conversation":
+            # Production conversation boot uses the cached dependency/content
+            # pre-pass and its validated connected closure. Keep this distinct
+            # from the deliberately tiny chat smoke profile and the full
+            # all-faculty boot; an incomplete closure must not silently widen
+            # into an unbounded full boot.
+            from substrate.boot_profiles import load_conversation_seed_profile
+
+            adapter = WorldAdapter(seeds=())
+            rep = load_conversation_seed_profile(
+                adapter,
+                content_keys=(prepass or {}).get("content_keys", ()),
+                content_candidates=(prepass or {}).get("content_candidates"),
+                scoped_content_refs=(prepass or {}).get(
+                    "scoped_content_refs"),
+                content_prepass_manifest_digest=requested_prepass_digest,
+                # A manifest eagerly installs its connected closure but does
+                # not implicitly freeze future conversation vocabulary.
+                # Unknown later content still goes through the validated,
+                # dependency-closed provider path unless the operator marks
+                # this fixed workload explicitly sealed.
+                incremental_content_loading=(
+                    prepass is None or not prepass.get("sealed", False)))
+            if (not rep.get("selection_complete") or rep.get("failed")):
+                raise RuntimeError(
+                    "connected conversation seed profile failed: "
+                    f"selection_complete={rep.get('selection_complete')}, "
+                    f"failed={rep.get('failed')}")
+            log(f"fresh CONVERSATION boot: {rep['loaded']}/{rep['total']} "
+                f"connected seeds, {rep['concepts']} concepts, "
+                f"{len(rep.get('runtime_modules_warmed', []))} runtime "
+                f"modules prewarmed ({adapter.s.node_count()} nodes); "
+                f"content_prepass={'incremental' if prepass is None else 'sealed'}")
         elif seeds == "embodied":
             # Dependency-closed real-body profile. It loads the same
             # instruction, developmental, supervision, and motor graph used
@@ -416,6 +636,18 @@ def boot(ckpt_dir: Path, seeds: str):
                 f"({adapter.s.node_count()} nodes)")
         booted_from = "seeds"
 
+    reconcile_seed_ids = None
+    if booted_from == "checkpoint" and seeds == "conversation":
+        profile_state = getattr(
+            adapter, "_conversation_seed_profile_state", None)
+        loaded_seed_ids = (profile_state.get("loaded_seed_ids")
+                           if isinstance(profile_state, dict) else None)
+        if not loaded_seed_ids:
+            raise RuntimeError(
+                "conversation checkpoint has no recoverable connected seed "
+                "scope; refusing full-seed reconciliation")
+        reconcile_seed_ids = {str(seed_id) for seed_id in loaded_seed_ids}
+
     # SEED-ON-RESUME RECONCILIATION: a checkpoint captures the seed RULES that
     # existed when it was saved; seed edits made since (a new seed file, or a
     # new rule added to an existing one) are absent on resume, so the resumed
@@ -427,31 +659,36 @@ def boot(ckpt_dir: Path, seeds: str):
     # resume stay out of scope (a fresh boot handles those).
     if booted_from == "checkpoint":
         try:
-            n = _reconcile_seed_rules(adapter)
+            n = _reconcile_seed_rules(
+                adapter, seed_ids=reconcile_seed_ids)
             if n:
                 log(f"seed-reconcile: installed {n} seed rule(s) missing from the resumed checkpoint")
         except Exception as e:  # noqa: BLE001 -- never let reconciliation block boot
             log(f"seed-reconcile skipped ({type(e).__name__}: {e})")
         try:
-            nc = _reconcile_seed_concepts(adapter)
+            nc = _reconcile_seed_concepts(
+                adapter, seed_ids=reconcile_seed_ids)
             if nc:
                 log(f"seed-reconcile: installed {nc} seed Concept(s) missing from the resumed checkpoint")
         except Exception as e:  # noqa: BLE001 -- never let reconciliation block boot
             log(f"seed-reconcile (concepts) skipped ({type(e).__name__}: {e})")
         try:
-            nsp = _reconcile_seed_typed_nodes(adapter, "SelfProcess", "process")
+            nsp = _reconcile_seed_typed_nodes(
+                adapter, "SelfProcess", "process", seed_ids=reconcile_seed_ids)
             if nsp:
                 log(f"seed-reconcile: installed {nsp} seed SelfProcess account(s) missing from the resumed checkpoint")
         except Exception as e:  # noqa: BLE001 -- never let reconciliation block boot
             log(f"seed-reconcile (self-processes) skipped ({type(e).__name__}: {e})")
         try:
-            nrc = _reconcile_seed_typed_nodes(adapter, "RelationCue", "name")
+            nrc = _reconcile_seed_typed_nodes(
+                adapter, "RelationCue", "name", seed_ids=reconcile_seed_ids)
             if nrc:
                 log(f"seed-reconcile: installed {nrc} seed RelationCue(s) missing from the resumed checkpoint")
         except Exception as e:  # noqa: BLE001 -- never let reconciliation block boot
             log(f"seed-reconcile (relation-cues) skipped ({type(e).__name__}: {e})")
         try:
-            nvo = _reconcile_seed_typed_nodes(adapter, "VariationOp", "name")
+            nvo = _reconcile_seed_typed_nodes(
+                adapter, "VariationOp", "name", seed_ids=reconcile_seed_ids)
             if nvo:
                 log(f"seed-reconcile: installed {nvo} seed VariationOp(s) missing from the resumed checkpoint")
         except Exception as e:  # noqa: BLE001 -- never let reconciliation block boot
@@ -462,7 +699,9 @@ def boot(ckpt_dir: Path, seeds: str):
             # up by name) is a NODE, not a rule -- `_reconcile_seed_rules` never
             # installs it, so a resumed-from-checkpoint daemon booted before the
             # register existed would otherwise never see it.
-            nrg = _reconcile_seed_typed_nodes(adapter, "ShapeSignatureRegister", "name")
+            nrg = _reconcile_seed_typed_nodes(
+                adapter, "ShapeSignatureRegister", "name",
+                seed_ids=reconcile_seed_ids)
             if nrg:
                 log(f"seed-reconcile: installed {nrg} seed ShapeSignatureRegister(s) missing from the resumed checkpoint")
         except Exception as e:  # noqa: BLE001 -- never let reconciliation block boot
@@ -473,7 +712,8 @@ def boot(ckpt_dir: Path, seeds: str):
             # reads (via NodesOfType, not an edge — see that rule's own comment) is a
             # NODE, so `_reconcile_seed_rules` never installs it on a resumed
             # checkpoint older than this seed.
-            nhn = _reconcile_seed_typed_nodes(adapter, "HealthNorm", "metric")
+            nhn = _reconcile_seed_typed_nodes(
+                adapter, "HealthNorm", "metric", seed_ids=reconcile_seed_ids)
             if nhn:
                 log(f"seed-reconcile: installed {nhn} seed HealthNorm(s) missing from the resumed checkpoint")
         except Exception as e:  # noqa: BLE001 -- never let reconciliation block boot
@@ -485,7 +725,9 @@ def boot(ckpt_dir: Path, seeds: str):
             # (via NodesOfType, the SAME Argmax-by-key pattern as HealthNorm
             # above) is a NODE, so `_reconcile_seed_rules` never installs it
             # on a resumed checkpoint older than this seed.
-            nab = _reconcile_seed_typed_nodes(adapter, "ApertureBudget", "register")
+            nab = _reconcile_seed_typed_nodes(
+                adapter, "ApertureBudget", "register",
+                seed_ids=reconcile_seed_ids)
             if nab:
                 log(f"seed-reconcile: installed {nab} seed ApertureBudget(s) missing from the resumed checkpoint")
         except Exception as e:  # noqa: BLE001 -- never let reconciliation block boot
@@ -499,7 +741,8 @@ def boot(ckpt_dir: Path, seeds: str):
             # resumed daemon silently falls back to the static base values
             # (graceful, but not dynamic). Key-guarded by `name`, idempotent —
             # the same treatment every other seed-shipped node type above gets.
-            npr = _reconcile_seed_typed_nodes(adapter, "Program", "name")
+            npr = _reconcile_seed_typed_nodes(
+                adapter, "Program", "name", seed_ids=reconcile_seed_ids)
             if npr:
                 log(f"seed-reconcile: installed {npr} seed Program(s) missing from the resumed checkpoint")
         except Exception as e:  # noqa: BLE001 -- never let reconciliation block boot
@@ -510,13 +753,16 @@ def boot(ckpt_dir: Path, seeds: str):
             # priors-by-shape-matching for self-report reliability) ships
             # NODES only, so `_reconcile_seed_rules` never installs it on a
             # resumed checkpoint older than this wave.
-            nis = _reconcile_seed_typed_nodes(adapter, "InterlocutorShape", "name")
+            nis = _reconcile_seed_typed_nodes(
+                adapter, "InterlocutorShape", "name",
+                seed_ids=reconcile_seed_ids)
             if nis:
                 log(f"seed-reconcile: installed {nis} seed InterlocutorShape(s) missing from the resumed checkpoint")
         except Exception as e:  # noqa: BLE001 -- never let reconciliation block boot
             log(f"seed-reconcile (interlocutor-shapes) skipped ({type(e).__name__}: {e})")
         try:
-            nck = _reconcile_seed_capkeys(adapter)
+            nck = _reconcile_seed_capkeys(
+                adapter, seed_ids=reconcile_seed_ids)
             if nck:
                 log(f"seed-reconcile: backfilled {nck} seed CapKey edge(s) missing from the resumed checkpoint")
         except Exception as e:  # noqa: BLE001 -- never let reconciliation block boot
@@ -530,6 +776,8 @@ def boot(ckpt_dir: Path, seeds: str):
                 log(f"seed-reconcile: cancelled {nc} unscoped experiment(s)")
         except Exception as e:  # noqa: BLE001
             log(f"author-rule scrub skipped ({type(e).__name__}: {e})")
+    if booted_from == "seeds":
+        _stamp_checkpoint_seed_profile(adapter, seeds)
 
     auto_appr.ensure_policy_node(adapter)
     auto_appr.clear_pause_on_boot(adapter)
@@ -584,6 +832,10 @@ def _canon_rule_body(rule_json: dict) -> str:
 # stays install-if-missing only, so it is never churned. This is where the "edit a
 # rule, restart, it applies" workflow lives.
 _REFRESHABLE_SEEDS = frozenset({
+    # Episodic message memory is part of live conversational cognition; its
+    # graph-owned provenance rule must refresh on resumed daemon checkpoints.
+    "memory_core",
+    "communication_intent_arbitration",
     "speech_act_classify",
     "comprehend_instruction", "conversation_self_concern", "conversation_topic_route",
     "conversation_topic_tracking", "gap_awareness", "conversation_elaborate",
@@ -618,7 +870,8 @@ _REFRESHABLE_SEEDS = frozenset({
 })
 
 
-def _reconcile_seed_rules(adapter: WorldAdapter) -> int:
+def _reconcile_seed_rules(adapter: WorldAdapter, *,
+                          seed_ids: set[str] | None = None) -> int:
     """Reconcile the resumed graph's executable rules (match + effect(s)) with the
     current seed files. Two moves, both name-guarded and idempotent:
 
@@ -649,6 +902,7 @@ def _reconcile_seed_rules(adapter: WorldAdapter) -> int:
     present = set(live_by_name)
     changed = 0
     added = 0
+    allowed = None if seed_ids is None else {str(seed_id) for seed_id in seed_ids}
     paths = sorted(_glob.glob(_os.path.join(str(SEED_DIR), "*.json"))) \
         + sorted(_glob.glob(_os.path.join(str(SEED_DIR), "generated", "*.json")))
     for f in paths:
@@ -657,6 +911,9 @@ def _reconcile_seed_rules(adapter: WorldAdapter) -> int:
         except Exception:  # noqa: BLE001
             continue
         if not isinstance(d, dict):
+            continue
+        seed_id = str(d.get("id") or _os.path.basename(f)[:-5])
+        if allowed is not None and seed_id not in allowed:
             continue
         execu = [
             r for r in (d.get("rules") or [])
@@ -697,7 +954,9 @@ def _reconcile_seed_rules(adapter: WorldAdapter) -> int:
     return added + changed
 
 
-def _reconcile_seed_typed_nodes(adapter: WorldAdapter, node_type: str, key_attr: str) -> int:
+def _reconcile_seed_typed_nodes(adapter: WorldAdapter, node_type: str,
+                                key_attr: str, *,
+                                seed_ids: set[str] | None = None) -> int:
     """Install (find-or-create by `key_attr`) every `node_type` node declared in
     a TOP-LEVEL seed that the resumed graph doesn't already hold. Some seeds ship
     identity nodes their RULES / faculties depend on (gap_awareness's deficiency
@@ -718,12 +977,16 @@ def _reconcile_seed_typed_nodes(adapter: WorldAdapter, node_type: str, key_attr:
     except Exception:  # noqa: BLE001
         return 0
     added = 0
+    allowed = None if seed_ids is None else {str(seed_id) for seed_id in seed_ids}
     for f in sorted(_glob.glob(_os.path.join(str(SEED_DIR), "*.json"))):
         try:
             d = _json.load(open(f))
         except Exception:  # noqa: BLE001
             continue
         if not isinstance(d, dict):
+            continue
+        seed_id = str(d.get("id") or _os.path.basename(f)[:-5])
+        if allowed is not None and seed_id not in allowed:
             continue
         for node in (d.get("nodes") or []):
             if not isinstance(node, dict) or node.get("type") != node_type:
@@ -741,7 +1004,8 @@ def _reconcile_seed_typed_nodes(adapter: WorldAdapter, node_type: str, key_attr:
     return added
 
 
-def _reconcile_seed_capkeys(adapter: WorldAdapter) -> int:
+def _reconcile_seed_capkeys(adapter: WorldAdapter, *,
+                            seed_ids: set[str] | None = None) -> int:
     """Reconcile the CapKey provenance join on resume (the
     `_reconcile_seed_typed_nodes` precedent, Wave 5): for every top-level seed
     manifest declaring a `capability_keys` list, ensure its SeedSummary exists
@@ -756,6 +1020,7 @@ def _reconcile_seed_capkeys(adapter: WorldAdapter) -> int:
     from substrate.seed_loader import SEED_DIR
     from substrate.boot_all import _backfill_seed_capkeys, _mint_seed_summary
     added = 0
+    allowed = None if seed_ids is None else {str(seed_id) for seed_id in seed_ids}
     for f in sorted(_glob.glob(_os.path.join(str(SEED_DIR), "*.json"))):
         try:
             d = _json.load(open(f))
@@ -764,6 +1029,8 @@ def _reconcile_seed_capkeys(adapter: WorldAdapter) -> int:
         if not isinstance(d, dict) or not d.get("capability_keys"):
             continue
         sid = d.get("id") or _os.path.basename(f)[:-5]
+        if allowed is not None and str(sid) not in allowed:
+            continue
         try:
             _mint_seed_summary(adapter, sid, d)          # idempotent find-or-create
             added += _backfill_seed_capkeys(adapter, sid, d)
@@ -772,10 +1039,12 @@ def _reconcile_seed_capkeys(adapter: WorldAdapter) -> int:
     return added
 
 
-def _reconcile_seed_concepts(adapter: WorldAdapter) -> int:
+def _reconcile_seed_concepts(adapter: WorldAdapter, *,
+                             seed_ids: set[str] | None = None) -> int:
     """Reconcile top-level-seed `Concept` nodes by name (see
     _reconcile_seed_typed_nodes). Kept as a named entry point for callers/tests."""
-    return _reconcile_seed_typed_nodes(adapter, "Concept", "name")
+    return _reconcile_seed_typed_nodes(
+        adapter, "Concept", "name", seed_ids=seed_ids)
 
 
 def _ensure_supervisory_scheduler(adapter: WorldAdapter) -> int:
@@ -858,6 +1127,10 @@ class DaemonState:
 
     def __init__(self, adapter: WorldAdapter, booted_from: str):
         self.adapter = adapter
+        # Remote retrieval is fulfilled only by graph-selected async host
+        # actions in daemon mode; synchronous turns can still read local and
+        # held evidence without waiting on network I/O.
+        adapter._daemon_async_io_only = True
         self.booted_from = booted_from
         self.start_mono = time.monotonic()
         self.ticks = 0
@@ -888,6 +1161,13 @@ class DaemonState:
         self.host_actions_completed = 0
         self.last_host_action = ""
         self.last_host_action_outcome = ""
+        # Search transport workers receive immutable request snapshots only.
+        # Their futures are rejoined and committed by the daemon tick thread
+        # while it owns AGENT_LOCK.
+        self.search_io_executor = ThreadPoolExecutor(
+            max_workers=4, thread_name_prefix="topic-search-io")
+        self.pending_search_host_actions: dict[int, dict] = {}
+        _recover_interrupted_search_io(adapter)
         # Optional external body/simulator transducer.  It is host capability,
         # never policy: the graph must still author and schedule the exact
         # EmbodiedExternalTrialRequest before this callable is invoked.
@@ -916,6 +1196,34 @@ class DaemonState:
         with self._sse_lock:
             if q in self._sse_clients:
                 self._sse_clients.remove(q)
+
+
+def _recover_interrupted_search_io(adapter: WorldAdapter) -> None:
+    """Requeue persisted retrievals that lost their in-memory Future at restart."""
+    sub, native = adapter.s, adapter.inner
+    for req in list(sub.nodes("SearchRequest")):
+        if native.has_node(req) and sub.node(req)["attrs"].get("status") == "running":
+            native.set_attr(req, "status", "requested")
+            native.set_attr(req, "search_io_token", None)
+    for req in list(sub.nodes("GroundRequest")):
+        if native.has_node(req) and sub.node(req)["attrs"].get("status") == "running":
+            native.set_attr(req, "status", "requested")
+            native.set_attr(req, "ground_io_token", None)
+    for req in list(sub.nodes("DetailRequest")):
+        if native.has_node(req) and sub.node(req)["attrs"].get("status") == "running":
+            native.set_attr(req, "status", "requested")
+            native.set_attr(req, "detail_io_token", None)
+    for host in list(sub.nodes("HostActionRequest")):
+        if not native.has_node(host):
+            continue
+        attrs = sub.node(host)["attrs"]
+        if attrs.get("action") not in ("search", "detail") or attrs.get("status") != "io_pending":
+            continue
+        native.set_attr(host, "status", "requested")
+        native.set_attr(host, "search_io_token", None)
+        for task in native.neighbours(host, "scheduled_as"):
+            if native.has_node(task):
+                native.set_attr(task, "status", "host_requested")
 
 
 def _status_dict(state: DaemonState) -> dict:
@@ -1484,6 +1792,16 @@ def _tear_down_promoted_pipeline(adapter: WorldAdapter, sc, runs_dir: str | None
         if axis is not None and adapter.s.has_node(axis):
             try:
                 adapter.s.set_attr(axis, "status", "retired")
+                # A retired axis must stop CLAIMING the capability key: the
+                # sd loop's novelty guard (sd_mint_quantum / recognized_duplicate)
+                # treats an induced axis with the same capability_keys as the
+                # concern already surfaced, so a re-promoted concern could never
+                # mint a fresh axis and never be re-tested (tranche 5). The old
+                # keys are kept on the record for provenance.
+                old_keys = list(adapter.s.node(axis)["attrs"].get("capability_keys") or [])
+                adapter.s.set_attr(axis, "retired_capability_keys", old_keys)
+                adapter.s.set_attr(axis, "capability_keys",
+                                   [f"{k}#retired_{_nid_value(axis)}" for k in old_keys])
             except Exception:  # noqa: BLE001
                 pass
     return out
@@ -2048,6 +2366,9 @@ def _axis_wants_experiment(adapter: WorldAdapter, key: str) -> bool:
     return "test" in preds
 
 
+_PROMOTE_CUE_WORDS = 12
+
+
 def _promote_relations_for_concern(kind: str, content_words: list, tag: str) -> tuple[list, str]:
     """Pick StandingConcern relations from concern kind + content.
 
@@ -2138,7 +2459,12 @@ def _promote_relations_for_concern(kind: str, content_words: list, tag: str) -> 
                 ["judge", "TRIAL", "by", "OUTCOME"],
                 ["adopt", "WINNER", "as", "SELF"],
             ]
-            for w in content_words[:4]:
+            # Up to _PROMOTE_CUE_WORDS content words (was 4): every word is
+            # TARGET text the held RelationCue lexicon grounds, so truncation
+            # silently dropped the cues that make other variation families
+            # applicable ("...profile shape", "...threshold is too low";
+            # tranche 4 measurement). Conversation bundle only.
+            for w in content_words[:_PROMOTE_CUE_WORDS]:
                 relations.append([w, "TARGET", "of", "SELF"])
             return relations, "experiment"
         relations = [
@@ -2248,6 +2574,7 @@ def repromote_self_concern(adapter: WorldAdapter, id_str: str,
         if a.get("status") != "promoted":
             return {"ok": False, "error": "not promoted — use promote instead"}
         teardown = _tear_down_promoted_pipeline(adapter, sc, runs_dir=runs_dir)
+        adapter.s.set_attr(sc, "retry_requested", 0)   # a human retry supersedes a pending graph request
         adapter.s.set_attr(sc, "status", "noted")
         result = promote_self_concern(adapter, id_str)
         if result.get("ok"):
@@ -2342,15 +2669,259 @@ def _fetch_tick(adapter: WorldAdapter) -> None:
 # one, resolves + grounds it over HTTPS, and persists the result — see
 # domains/fetch_dispatch.py::scan_and_search + domains/topic_grounding.py.
 
-def _search_tick(adapter: WorldAdapter) -> None:
+_MAX_PENDING_SEARCH_IO = 16
+
+def _search_tick(adapter: WorldAdapter, state: "DaemonState | None" = None):
     try:
-        from domains.fetch_dispatch import scan_and_search
+        from domains.fetch_dispatch import scan_and_search, scan_and_sync_ground
     except ImportError:
         return
     try:
+        if state is not None:
+            source = getattr(state, "active_host_action_source", None)
+            source_id = (int(source.value) if hasattr(source, "value")
+                         else int(source) if source is not None else None)
+            if source_id is not None:
+                source_node = srs.NodeID(source_id)
+                if (adapter.inner.has_node(source_node)
+                        and adapter.s.node(source_node)["type"] ==
+                        "CausalRetrievalRequest"):
+                    stage = _start_causal_retrieval_io(
+                        adapter, state, source_node)
+                    if stage["jobs"]:
+                        return {"host_action_pending": True,
+                                "jobs": stage["jobs"]}
+                    if stage["deferred"]:
+                        return {"host_action_deferred": True}
+                    return None
+            ground_stage = _start_ground_request_io(adapter, state)
+            if ground_stage["jobs"]:
+                return {"host_action_pending": True,
+                        "jobs": ground_stage["jobs"]}
+            if ground_stage["deferred"]:
+                return {"host_action_deferred": True}
+            source = getattr(state, "active_host_action_source", None)
+            source_id = (int(source.value) if hasattr(source, "value")
+                         else int(source) if source is not None else None)
+            if source_id is not None:
+                source_node = srs.NodeID(source_id)
+                if (adapter.inner.has_node(source_node)
+                        and adapter.s.node(source_node)["type"] == "GroundRequest"):
+                    return None
+            stage = _start_search_candidate_io(adapter, state)
+            if stage["jobs"]:
+                return {"host_action_pending": True, "jobs": stage["jobs"]}
+            if stage["deferred"]:
+                return {"host_action_deferred": True}
+            return None
+        # The direct WorldAdapter path retains its synchronous contract.
+        # Specific grounding precedes generic search and successful specific
+        # evidence supersedes the broad fallback.
+        scan_and_sync_ground(adapter, log=log)
         scan_and_search(adapter, log=log)
     except Exception as e:  # noqa: BLE001 -- never let a search hiccup kill the tick loop
         log(f"search error (continuing): {e}")
+
+
+def _start_causal_retrieval_io(adapter: WorldAdapter, state: "DaemonState",
+                               request) -> dict:
+    """Run typed causal retrieval in a worker from an immutable request copy."""
+    from domains.causal_retrieval import retrieve_causal_candidate_payloads
+
+    native = adapter.inner
+    if not native.has_node(request):
+        return {"jobs": [], "deferred": False}
+    attrs = dict(adapter.s.node(request)["attrs"])
+    if (attrs.get("schema") != "causal_retrieval_request.v1"
+            or attrs.get("status") != "requested"):
+        return {"jobs": [], "deferred": False}
+    topic = str(attrs.get("topic") or "").strip()
+    entity_id = str(attrs.get("topic_entity_id") or "").strip()
+    if not topic:
+        native.set_attr(request, "status", "failed")
+        native.set_attr(request, "error", "empty causal topic")
+        return {"jobs": [], "deferred": False}
+    if not entity_id:
+        native.set_attr(request, "status", "failed")
+        native.set_attr(request, "error", "causal topic has no bound external identity")
+        return {"jobs": [], "deferred": False}
+    pending_count = sum(len(item["jobs"])
+                        for item in state.pending_search_host_actions.values())
+    if pending_count >= _MAX_PENDING_SEARCH_IO:
+        return {"jobs": [], "deferred": True}
+    token = f"causal:{int(request.value)}:{time.monotonic_ns()}"
+    native.set_attr(request, "status", "running")
+    native.set_attr(request, "causal_io_token", token)
+    try:
+        future = state.search_io_executor.submit(
+            retrieve_causal_candidate_payloads, topic,
+            entity_id=entity_id, timeout=8)
+    except Exception as exc:  # noqa: BLE001 -- preserve failure in request data
+        native.set_attr(request, "status", "failed")
+        native.set_attr(request, "causal_io_token", None)
+        native.set_attr(request, "error", f"{type(exc).__name__}: {exc}")
+        return {"jobs": [], "deferred": False}
+    future.add_done_callback(lambda _f, wake=state.dirty: wake.set())
+    return {"jobs": [{"kind": "causal", "request_id": int(request.value),
+                      "token": token, "query": topic, "future": future}],
+            "deferred": False}
+
+
+def _start_ground_request_io(adapter: WorldAdapter, state: "DaemonState") -> dict:
+    """Try local grounding on-owner, then stage remote retrieval as data-only I/O."""
+    from domains import topic_grounding as tg
+
+    active_source = getattr(state, "active_host_action_source", None)
+    source_id = (int(active_source.value) if hasattr(active_source, "value")
+                 else int(active_source) if active_source is not None else None)
+    source_node = srs.NodeID(source_id) if source_id is not None else None
+    source_kind = (adapter.s.node(source_node)["type"]
+                   if source_node is not None and adapter.inner.has_node(source_node)
+                   else None)
+    source_query = (str(adapter.s.node(source_node)["attrs"].get("query") or "").strip()
+                    if source_node is not None and adapter.inner.has_node(source_node)
+                    else "")
+
+    pending_count = sum(len(item["jobs"])
+                        for item in state.pending_search_host_actions.values())
+    capacity = max(0, _MAX_PENDING_SEARCH_IO - pending_count)
+    jobs = []
+    eligible = []
+    for req in list(adapter.s.nodes("GroundRequest")):
+        if not adapter.inner.has_node(req):
+            continue
+        attrs = dict(adapter.s.node(req)["attrs"])
+        if source_kind == "GroundRequest" and int(req.value) != source_id:
+            continue
+        if source_kind == "SearchRequest" and str(attrs.get("query") or "").strip() != source_query:
+            continue
+        if attrs.get("status") == "running" and attrs.get("ground_io_token"):
+            eligible.append(req)
+            continue
+        if attrs.get("status") != "requested":
+            continue
+        eligible.append(req)
+        query = str(attrs.get("query") or "").strip()
+        aspect = str(attrs.get("aspect") or "").strip() or None
+        if not query:
+            adapter.inner.set_attr(req, "status", "failed")
+            adapter.inner.set_attr(req, "error", "empty query")
+            continue
+        try:
+            local = tg.ground_local_attempt(adapter, query, aspect)
+        except Exception as exc:  # noqa: BLE001 -- preserve honest fallback
+            adapter.inner.set_attr(req, "status", "failed")
+            adapter.inner.set_attr(req, "error", f"{type(exc).__name__}: {exc}")
+            continue
+        if local["settled"]:
+            answer = local.get("answer")
+            adapter.inner.set_attr(req, "status", "done" if answer else "failed")
+            if answer:
+                adapter.inner.set_attr(req, "answer", str(answer)[:4000])
+                for search in adapter.s.nodes("SearchRequest"):
+                    if (adapter.inner.has_node(search)
+                            and adapter.s.node(search)["attrs"].get("status")
+                            in ("requested", "running", "io_pending")
+                            and str(adapter.s.node(search)["attrs"].get("query") or "").strip().lower()
+                            == query.lower()):
+                        adapter.inner.set_attr(search, "status", "superseded")
+                        adapter.inner.add_edge_unchecked(search, "superseded_by", req)
+            else:
+                adapter.inner.set_attr(req, "error", "no answer")
+            continue
+        if len(jobs) >= capacity:
+            continue
+        token = f"ground:{int(req.value)}:{time.monotonic_ns()}"
+        adapter.inner.set_attr(req, "status", "running")
+        adapter.inner.set_attr(req, "ground_io_token", token)
+        try:
+            future = state.search_io_executor.submit(
+                tg.retrieve_ground_payload, query, aspect, timeout=8)
+        except Exception as exc:  # noqa: BLE001 -- expose submit failure
+            adapter.inner.set_attr(req, "status", "failed")
+            adapter.inner.set_attr(req, "ground_io_token", None)
+            adapter.inner.set_attr(req, "error", f"{type(exc).__name__}: {exc}")
+            continue
+        future.add_done_callback(lambda _f, wake=state.dirty: wake.set())
+        jobs.append({"kind": "ground", "request_id": int(req.value),
+                     "token": token, "query": query, "aspect": aspect,
+                     "future": future})
+    still_pending = any(
+        adapter.inner.has_node(req)
+        and adapter.s.node(req)["attrs"].get("status") in ("requested", "running")
+        for req in eligible)
+    return {"jobs": jobs, "deferred": bool(still_pending and not jobs)}
+
+
+def _start_search_candidate_io(adapter: WorldAdapter, state: "DaemonState") -> dict:
+    """Submit immutable SearchRequest snapshots; workers never touch the graph."""
+    from domains.topic_grounding import retrieve_search_candidate_payloads
+
+    active_source = getattr(state, "active_host_action_source", None)
+    source_id = (int(active_source.value) if hasattr(active_source, "value")
+                 else int(active_source) if active_source is not None else None)
+    source_node = srs.NodeID(source_id) if source_id is not None else None
+    source_kind = (adapter.s.node(source_node)["type"]
+                   if source_node is not None and adapter.inner.has_node(source_node)
+                   else None)
+    source_query = (str(adapter.s.node(source_node)["attrs"].get("query") or "").strip()
+                    if source_node is not None and adapter.inner.has_node(source_node)
+                    else "")
+    pending_count = sum(len(item["jobs"])
+                        for item in state.pending_search_host_actions.values())
+    capacity = max(0, _MAX_PENDING_SEARCH_IO - pending_count)
+    jobs = []
+    for req in list(adapter.s.nodes("SearchRequest")):
+        if not adapter.inner.has_node(req):
+            continue
+        attrs = dict(adapter.s.node(req)["attrs"])
+        if attrs.get("status") != "requested":
+            continue
+        if source_kind == "SearchRequest" and int(req.value) != source_id:
+            continue
+        if source_kind == "GroundRequest" and str(attrs.get("query") or "").strip() != source_query:
+            continue
+        if len(jobs) >= capacity:
+            continue
+        query = str(attrs.get("query") or "").strip()
+        token = f"{int(req.value)}:{time.monotonic_ns()}"
+        if not query:
+            adapter.inner.set_attr(req, "status", "failed")
+            adapter.inner.set_attr(req, "epistemic_status", "unknown")
+            adapter.inner.set_attr(req, "evidence_path", "SearchRequest -> empty_query")
+            adapter.inner.set_attr(req, "error", "empty query")
+            continue
+        # The graph's unresolved-topic rule already treats `running` as
+        # pending and suppresses premature honest-miss output during retrieval.
+        adapter.inner.set_attr(req, "status", "running")
+        adapter.inner.set_attr(req, "search_io_token", token)
+        try:
+            future = state.search_io_executor.submit(
+                retrieve_search_candidate_payloads, query,
+                referent_status=attrs.get("referent_status", "supported"),
+                referents=attrs.get("referents") or [query],
+                referent_evidence_path=attrs.get("referent_evidence_path", ""),
+                timeout=8)
+        except Exception as exc:  # noqa: BLE001 -- expose submit failure
+            adapter.inner.set_attr(req, "status", "failed")
+            adapter.inner.set_attr(req, "search_io_token", None)
+            adapter.inner.set_attr(req, "epistemic_status", "search_failed")
+            adapter.inner.set_attr(req, "evidence_path",
+                                   "SearchRequest -> retrieval_attempt -> submit_exception")
+            adapter.inner.set_attr(req, "error", f"{type(exc).__name__}: {exc}")
+            continue
+        future.add_done_callback(lambda _f, wake=state.dirty: wake.set())
+        jobs.append({"kind": "search", "request_id": int(req.value), "token": token,
+                     "query": query, "future": future})
+    has_eligible = any(
+        adapter.inner.has_node(req)
+        and adapter.s.node(req)["attrs"].get("status") == "requested"
+        and (source_kind != "SearchRequest" or int(req.value) == source_id)
+        and (source_kind != "GroundRequest"
+             or str(adapter.s.node(req)["attrs"].get("query") or "").strip()
+             == source_query)
+        for req in adapter.s.nodes("SearchRequest"))
+    return {"jobs": jobs, "deferred": bool(has_eligible and not jobs)}
 
 
 # --- detail hook (best-effort; mirrors the search hook exactly) -------------
@@ -2380,15 +2951,93 @@ def _study_tick(adapter: WorldAdapter) -> None:
         log(f"study error (continuing): {e}")
 
 
-def _detail_tick(adapter: WorldAdapter) -> None:
+def _detail_tick(adapter: WorldAdapter, state: "DaemonState | None" = None):
     try:
         from domains.fetch_dispatch import scan_and_ingest_detail
     except ImportError:
         return
     try:
+        if state is not None:
+            stage = _start_detail_request_io(adapter, state)
+            if stage["jobs"]:
+                return {"host_action_pending": True, "jobs": stage["jobs"]}
+            if stage["deferred"]:
+                return {"host_action_deferred": True}
+            return None
         scan_and_ingest_detail(adapter, log=log)
     except Exception as e:  # noqa: BLE001 -- never let a detail hiccup kill the tick loop
         log(f"detail error (continuing): {e}")
+
+
+def _start_detail_request_io(adapter: WorldAdapter, state: "DaemonState") -> dict:
+    """Use local detail on-owner, then retrieve remote chunks without graph access."""
+    from domains import topic_grounding as tg
+    from domains.fetch_dispatch import commit_detail_payload
+
+    active_source = getattr(state, "active_host_action_source", None)
+    source_id = (int(active_source.value) if hasattr(active_source, "value")
+                 else int(active_source) if active_source is not None else None)
+    source_node = srs.NodeID(source_id) if source_id is not None else None
+    source_kind = (adapter.s.node(source_node)["type"]
+                   if source_node is not None and adapter.inner.has_node(source_node)
+                   else None)
+    pending_count = sum(len(item["jobs"])
+                        for item in state.pending_search_host_actions.values())
+    capacity = max(0, _MAX_PENDING_SEARCH_IO - pending_count)
+    jobs = []
+    eligible = []
+    for req in list(adapter.s.nodes("DetailRequest")):
+        if not adapter.inner.has_node(req):
+            continue
+        attrs = dict(adapter.s.node(req)["attrs"])
+        if source_kind == "DetailRequest" and int(req.value) != source_id:
+            continue
+        if attrs.get("status") == "running" and attrs.get("detail_io_token"):
+            eligible.append(req)
+            continue
+        if attrs.get("status") != "requested":
+            continue
+        eligible.append(req)
+        topic = str(attrs.get("topic") or "").strip()
+        if not topic:
+            adapter.inner.set_attr(req, "status", "failed")
+            adapter.inner.set_attr(req, "error", "empty topic")
+            continue
+        try:
+            local_chunks = tg.detail_local_chunks(adapter, topic)
+        except Exception as exc:  # noqa: BLE001
+            adapter.inner.set_attr(req, "status", "failed")
+            adapter.inner.set_attr(req, "error", f"{type(exc).__name__}: {exc}")
+            continue
+        if local_chunks:
+            try:
+                commit_detail_payload(adapter, topic, local_chunks)
+                adapter.inner.set_attr(req, "status", "done")
+            except Exception as exc:  # noqa: BLE001
+                adapter.inner.set_attr(req, "status", "failed")
+                adapter.inner.set_attr(req, "error", f"ingest {type(exc).__name__}: {exc}")
+            continue
+        if len(jobs) >= capacity:
+            continue
+        token = f"detail:{int(req.value)}:{time.monotonic_ns()}"
+        adapter.inner.set_attr(req, "status", "running")
+        adapter.inner.set_attr(req, "detail_io_token", token)
+        try:
+            future = state.search_io_executor.submit(
+                tg.retrieve_detail_payload, topic, timeout=8)
+        except Exception as exc:  # noqa: BLE001
+            adapter.inner.set_attr(req, "status", "failed")
+            adapter.inner.set_attr(req, "detail_io_token", None)
+            adapter.inner.set_attr(req, "error", f"{type(exc).__name__}: {exc}")
+            continue
+        future.add_done_callback(lambda _f, wake=state.dirty: wake.set())
+        jobs.append({"kind": "detail", "request_id": int(req.value),
+                     "token": token, "query": topic, "future": future})
+    still_pending = any(
+        adapter.inner.has_node(req)
+        and adapter.s.node(req)["attrs"].get("status") in ("requested", "running")
+        for req in eligible)
+    return {"jobs": jobs, "deferred": bool(still_pending and not jobs)}
 
 
 # --- browse hook (best-effort; mirrors the fetch hook exactly) ---------------
@@ -2787,12 +3436,33 @@ def _process_reply_fix_standing(adapter: WorldAdapter, standing_node, at: dict) 
     adapter.s.set_attr(standing_node, "reply_fix_compose_reason", reason)
 
 
+def _execute_requested_retries(adapter: WorldAdapter) -> list:
+    """Mechanical executor for seeds/instruction_repair_retry.json: a
+    SelfConcern the graph marked retry_requested=1 is torn down and
+    re-promoted (the same path as the human-gated repromote); the mark is
+    cleared. The DECISION to retry is the graph rule's, never made here."""
+    done = []
+    try:
+        scs = list(adapter.s.nodes("SelfConcern"))
+    except Exception:  # noqa: BLE001
+        return done
+    for sc in scs:
+        if not adapter.s.has_node(sc) or adapter.s.node(sc)["attrs"].get("retry_requested") != 1:
+            continue
+        adapter.s.set_attr(sc, "retry_requested", 0)
+        res = repromote_self_concern(adapter, str(_nid_value(sc)))
+        done.append(res)
+        log(f"self-improve: agent-requested retry of concern {_nid_value(sc)}: ok={res.get('ok')}")
+    return done
+
+
 def _concern_tick(adapter: WorldAdapter) -> None:
     try:
         import domains.reflective_faculty as rf
     except ImportError:
         return
     s = adapter.s
+    _execute_requested_retries(adapter)
     try:
         nodes = list(s.nodes("StandingConcern"))
     except Exception:  # noqa: BLE001 -- type not present in this seed set
@@ -3236,8 +3906,9 @@ def _host_action_handlers(state: DaemonState, world_ctx):
     return {
         "dispatch": lambda: _dispatch_tick(adapter, state.runs_dir),
         "fetch": lambda: _fetch_tick(adapter),
-        "search": lambda: _search_tick(adapter),
-        "detail": lambda: _detail_tick(adapter),
+        "search": lambda: _search_tick(adapter, state),
+        "causal_retrieval": lambda: _search_tick(adapter, state),
+        "detail": lambda: _detail_tick(adapter, state),
         "browse": lambda: _browse_tick(adapter),
         "imagine": lambda: _imagine_tick(adapter),
         "self_correct": lambda: _self_correct_tick(adapter),
@@ -3261,6 +3932,247 @@ def _int_attr(attrs: dict, key: str) -> int:
         return 0
 
 
+def _complete_pending_search_host_actions(state: DaemonState) -> int:
+    """Join completed I/O and mutate the graph only on the daemon owner thread."""
+    from domains.fetch_dispatch import commit_detail_payload
+    from domains.topic_grounding import (commit_ground_payload,
+                                         commit_search_candidate_payloads,
+                                         commit_selected_search)
+
+    adapter, sub, native = state.adapter, state.adapter.s, state.adapter.inner
+    completed = 0
+    for host_id, pending in list(state.pending_search_host_actions.items()):
+        jobs = pending["jobs"]
+        if not all(job["future"].done() for job in jobs):
+            # Preserve the graph-selected request order at the mutation
+            # boundary. I/O remains concurrent, but committing a later
+            # conversation's result before an earlier outstanding retrieval
+            # can change shared discourse focus across identical replays.
+            # Futures are bounded; the owner never waits here under AGENT_LOCK.
+            break
+        commit_errors = []
+        candidate_jobs = []
+        fallback_queries = []
+        for job in jobs:
+            req = srs.NodeID(job["request_id"])
+            if not native.has_node(req):
+                continue
+            attrs = sub.node(req)["attrs"]
+            token_attr = {"ground": "ground_io_token", "detail": "detail_io_token",
+                          "causal": "causal_io_token"}.get(
+                job["kind"], "search_io_token")
+            query_attr = ("topic" if job["kind"] in {"detail", "causal"}
+                          else "query")
+            if (attrs.get("status") != "running"
+                    or attrs.get(token_attr) != job["token"]
+                    or attrs.get(query_attr) != job["query"]):
+                # The graph changed/superseded the request while I/O ran; its
+                # result is stale and must not become graph evidence.
+                continue
+            try:
+                payloads = job["future"].result()
+            except Exception as exc:  # noqa: BLE001 -- expose honest failure
+                native.set_attr(req, "status", "failed")
+                if job["kind"] == "search":
+                    native.set_attr(req, "epistemic_status", "search_failed")
+                    native.set_attr(req, "evidence_path",
+                                    "SearchRequest -> retrieval_attempt -> exception")
+                native.set_attr(req, "error", f"{type(exc).__name__}: {exc}")
+                if job["kind"] == "detail":
+                    commit_errors.append(exc)
+                continue
+            if job["kind"] == "causal":
+                try:
+                    from domains.causal_retrieval import commit_causal_candidate_payloads
+                    commit_causal_candidate_payloads(
+                        adapter, req, payloads, io_token=job["token"])
+                except Exception as exc:  # noqa: BLE001 -- owner records failure
+                    native.set_attr(req, "status", "failed")
+                    native.set_attr(req, "error", f"{type(exc).__name__}: {exc}")
+                    commit_errors.append(exc)
+                continue
+            if job["kind"] == "detail":
+                try:
+                    if not payloads:
+                        raise RuntimeError("no detail chunks")
+                    commit_detail_payload(adapter, job["query"], payloads)
+                    native.set_attr(req, "status", "done")
+                    native.set_attr(req, "error", "")
+                except Exception as exc:  # noqa: BLE001 -- owner records failure
+                    native.set_attr(req, "status", "failed")
+                    native.set_attr(req, "error", f"{type(exc).__name__}: {exc}")
+                    commit_errors.append(exc)
+                continue
+            if job["kind"] == "ground":
+                try:
+                    answer = commit_ground_payload(
+                        adapter, job["query"], job["aspect"], payloads)
+                except Exception as exc:  # noqa: BLE001
+                    native.set_attr(req, "status", "failed")
+                    native.set_attr(req, "error", f"{type(exc).__name__}: {exc}")
+                    continue
+                if answer:
+                    native.set_attr(req, "answer", str(answer)[:4000])
+                    native.set_attr(req, "status", "done")
+                    for search in sub.nodes("SearchRequest"):
+                        if not native.has_node(search):
+                            continue
+                        sa = sub.node(search)["attrs"]
+                        if (sa.get("status") in ("requested", "running", "io_pending")
+                                and str(sa.get("query") or "").strip().lower()
+                                == job["query"].lower()):
+                            native.set_attr(search, "status", "superseded")
+                            native.add_edge_unchecked(search, "superseded_by", req)
+                else:
+                    native.set_attr(req, "status", "failed")
+                    native.set_attr(req, "error", "no answer")
+                    fallback_queries.append(job["query"])
+                continue
+            try:
+                count = commit_search_candidate_payloads(adapter, req, payloads)
+            except Exception as exc:  # noqa: BLE001 -- graph owner records failure
+                native.set_attr(req, "status", "failed")
+                native.set_attr(req, "epistemic_status", "search_failed")
+                native.set_attr(req, "evidence_path",
+                                "SearchRequest -> retrieval_attempt -> commit_exception")
+                native.set_attr(req, "error", f"{type(exc).__name__}: {exc}")
+                commit_errors.append(exc)
+                continue
+            if count:
+                native.set_attr(req, "status", "candidates_ready")
+                candidate_jobs.append((job, req))
+            else:
+                native.set_attr(req, "status", "failed")
+                native.set_attr(req, "epistemic_status", "unknown")
+                native.set_attr(req, "evidence_path",
+                                "SearchRequest -> retrieval_attempt -> no_candidates")
+                native.set_attr(req, "error", "no candidates")
+
+        try:
+            if candidate_jobs:
+                adapter.comprehend()
+            for job, req in candidate_jobs:
+                ans = commit_selected_search(adapter, req, job["query"])
+                if ans:
+                    native.set_attr(req, "answer", str(ans)[:4000])
+                    native.set_attr(req, "status", "done")
+                    native.set_attr(req, "epistemic_status", "supported")
+                    native.set_attr(req, "error", "")
+                else:
+                    attrs = sub.node(req)["attrs"]
+                    candidates = [sub.node(c)["attrs"] for c in
+                                  native.neighbours(req, "has_candidate")
+                                  if sub.has_node(c)]
+                    epistemic = ("contradicted" if any(
+                        c.get("epistemic_status") == "contradicted"
+                        for c in candidates) else "unknown")
+                    native.set_attr(req, "status", "failed")
+                    native.set_attr(req, "epistemic_status", epistemic)
+                    native.set_attr(req, "evidence_path",
+                                    "SearchRequest -> has_candidate -> verification -> no_supported_candidate")
+                    native.set_attr(req, "error", "no verified candidate")
+        except Exception as exc:  # noqa: BLE001
+            commit_errors.append(exc)
+            for _, req in candidate_jobs:
+                if native.has_node(req):
+                    native.set_attr(req, "status", "failed")
+                    native.set_attr(req, "epistemic_status", "search_failed")
+                    native.set_attr(req, "evidence_path",
+                                    "SearchRequest -> graph_commit -> exception")
+                    native.set_attr(req, "error", f"{type(exc).__name__}: {exc}")
+
+        for job in jobs:
+            req = srs.NodeID(job["request_id"])
+            if not native.has_node(req):
+                continue
+            attrs = sub.node(req)["attrs"]
+            token_attr = {"ground": "ground_io_token", "detail": "detail_io_token",
+                          "causal": "causal_io_token"}.get(
+                job["kind"], "search_io_token")
+            if (attrs.get(token_attr) == job["token"]
+                    and attrs.get("status") not in ("running", "candidates_ready")):
+                native.set_attr(req, token_attr, None)
+
+        host = srs.NodeID(host_id)
+        if (not native.has_node(host)
+                or sub.node(host)["attrs"].get("status") != "io_pending"
+                or sub.node(host)["attrs"].get("search_io_token")
+                != pending["host_token"]):
+            # A removed/recycled parent action must not strand valid child
+            # requests in `running`; release only jobs still carrying their
+            # own exact tokens, then let native supervision mint/serve again.
+            for job in jobs:
+                req = srs.NodeID(job["request_id"])
+                if not native.has_node(req):
+                    continue
+                token_attr = {"ground": "ground_io_token", "detail": "detail_io_token",
+                              "causal": "causal_io_token"}.get(
+                    job["kind"], "search_io_token")
+                attrs = sub.node(req)["attrs"]
+                if (attrs.get("status") == "running"
+                        and attrs.get(token_attr) == job["token"]):
+                    native.set_attr(req, "status", "requested")
+                    native.set_attr(req, token_attr, None)
+                    state.dirty.set()
+            del state.pending_search_host_actions[host_id]
+            continue
+        host_attrs = pending["attrs"]
+        # A graph-selected generic search action stages matching specific
+        # grounding first. If that grounding honestly misses, reuse the same
+        # selected action for its generic SearchRequest fallback; the graph's
+        # mint-once guard correctly will not mint a second action for the
+        # already-consumed source request.
+        source = host_attrs.get("source")
+        source_id = (int(source.value) if hasattr(source, "value")
+                     else int(source) if source is not None else None)
+        source_node = srs.NodeID(source_id) if source_id is not None else None
+        if (fallback_queries and source_node is not None
+                and native.has_node(source_node)
+                and sub.node(source_node)["type"] == "SearchRequest"):
+            source_attrs = sub.node(source_node)["attrs"]
+            if (source_attrs.get("status") == "requested"
+                    and str(source_attrs.get("query") or "").strip()
+                    in {str(query).strip() for query in fallback_queries}):
+                # Free this completed grounding job's bounded I/O slot before
+                # staging the fallback, then restore the same pending parent
+                # action if a fallback future was submitted.
+                del state.pending_search_host_actions[host_id]
+                state.active_host_action_source = source_node
+                try:
+                    fallback_stage = _start_search_candidate_io(adapter, state)
+                finally:
+                    state.active_host_action_source = None
+                if fallback_stage["jobs"]:
+                    pending["jobs"] = fallback_stage["jobs"]
+                    state.pending_search_host_actions[host_id] = pending
+                    continue
+                state.pending_search_host_actions[host_id] = pending
+        action = pending["action"]
+        outcome = "failed" if commit_errors else "done"
+        error = (f"{type(commit_errors[0]).__name__}: {commit_errors[0]}"
+                 if commit_errors else "")
+        native.set_attr(host, "status", outcome)
+        native.set_attr(host, "search_io_token", None)
+        for task in pending["tasks"]:
+            if native.has_node(task):
+                native.set_attr(task, "status", outcome)
+        receipt = sub.add_node("HostActionReceipt", {
+            "action": action, "status": outcome,
+            "urgency": _int_attr(host_attrs, "urgency"),
+            "residual": _int_attr(host_attrs, "residual"),
+            "estimated_cost": _int_attr(host_attrs, "estimated_cost"),
+            "deadline": _int_attr(host_attrs, "deadline"),
+            "logical_time": int(state.ticks), "error": error,
+        })
+        native.add_edge_unchecked(host, "has_receipt", receipt)
+        state.host_actions_completed += 1
+        state.last_host_action = action
+        state.last_host_action_outcome = outcome
+        del state.pending_search_host_actions[host_id]
+        completed += 1
+    return completed
+
+
 def _execute_host_action_requests(state: DaemonState, world_ctx=None) -> int:
     """Execute graph-requested host work and write a receipt for every request.
 
@@ -3278,7 +4190,7 @@ def _execute_host_action_requests(state: DaemonState, world_ctx=None) -> int:
     adapter = state.adapter
     sub, native = adapter.s, adapter.inner
     handlers = _host_action_handlers(state, world_ctx)
-    completed = 0
+    completed = _complete_pending_search_host_actions(state)
     for request in list(sub.nodes("HostActionRequest")):
         if not native.has_node(request):
             continue
@@ -3286,6 +4198,7 @@ def _execute_host_action_requests(state: DaemonState, world_ctx=None) -> int:
         if attrs.get("status") != "requested":
             continue
         action = str(attrs.get("action") or "")
+        receipt_attrs = dict(attrs)
         handler = handlers.get(action)
         outcome = "done"
         error = ""
@@ -3299,8 +4212,29 @@ def _execute_host_action_requests(state: DaemonState, world_ctx=None) -> int:
             error = f"no host capability registered for {action!r}"
         else:
             try:
-                handler()
+                state.active_host_action_source = attrs.get("source")
+                result = handler()
+                state.active_host_action_source = None
+                if isinstance(result, dict) and result.get("host_action_deferred"):
+                    native.set_attr(request, "status", "requested")
+                    for task in tasks:
+                        if native.has_node(task):
+                            native.set_attr(task, "status", "host_requested")
+                    continue
+                if isinstance(result, dict) and result.get("host_action_pending"):
+                    host_token = f"host:{int(request.value)}:{time.monotonic_ns()}"
+                    native.set_attr(request, "status", "io_pending")
+                    native.set_attr(request, "search_io_token", host_token)
+                    for task in tasks:
+                        if native.has_node(task):
+                            native.set_attr(task, "status", "io_pending")
+                    state.pending_search_host_actions[int(request.value)] = {
+                        "action": action, "attrs": receipt_attrs, "tasks": tasks,
+                        "jobs": result["jobs"], "host_token": host_token,
+                    }
+                    continue
             except Exception as e:  # noqa: BLE001 -- write failure into graph, keep daemon alive
+                state.active_host_action_source = None
                 outcome = "failed"
                 error = f"{type(e).__name__}: {e}"
                 log(f"host action {action!r} failed (continuing): {error}")
@@ -3387,17 +4321,37 @@ def tick_loop(state: DaemonState, stop: threading.Event, hz: float,
                 # selected here.
                 if state.pending_turns:
                     progressed += int(state.adapter.comprehend())
+                    progressed += int(
+                        state.adapter.settle_post_comprehension_authority(
+                            list(state.pending_turns)))
                     import substrate_rs as srs
                     completed_turns = []
                     for turn_id, text in state.pending_turns.items():
-                        reply = state.adapter.graph_turn_reply(srs.NodeID(turn_id))
-                        if reply is None:
+                        reply = state.adapter.release_graph_selected_response(
+                            srs.NodeID(turn_id))
+                        terminal_status = (
+                            "reply_released" if reply is not None else
+                            state.adapter.graph_turn_reply_outcome(turn_id)
+                        )
+                        if terminal_status in {
+                                "expected", "unrepresented", "reply_ready"}:
                             continue
+                        if terminal_status == "explicit_error":
+                            reply = state.adapter.graph_turn_reply(turn_id)
                         completed_turns.append(turn_id)
-                        state.publish_event({"type": "chat_completed", "text": text,
-                                             "turn_id": turn_id, "reply": reply})
-                        record_chat_turn(state, text, reply, turn_id=turn_id,
-                                         reply_from="agent")
+                        completion = {
+                            "type": "chat_completed", "text": text,
+                            "turn_id": turn_id,
+                            "status": (
+                                "error" if terminal_status == "explicit_error"
+                                else "completed" if reply is not None
+                                else "no_response_expected"),
+                            "reply": reply,
+                        }
+                        state.publish_event(completion)
+                        if reply is not None and terminal_status != "explicit_error":
+                            record_chat_turn(state, text, reply, turn_id=turn_id,
+                                             reply_from="agent")
                     for turn_id in completed_turns:
                         state.pending_turns.pop(turn_id, None)
                 state.last_tick_error = ""
@@ -3434,6 +4388,30 @@ def tick_loop(state: DaemonState, stop: threading.Event, hz: float,
             # or an explicit graph-owned host action released from that
             # receipt.
             state.dirty.set()
+    # Futures are process-local. Return their graph-owned requests to the
+    # scheduler before the final checkpoint so restart can safely resume them.
+    with AGENT_LOCK:
+        for host_id, pending in list(state.pending_search_host_actions.items()):
+            for job in pending["jobs"]:
+                job["future"].cancel()
+                req = srs.NodeID(job["request_id"])
+                token_attr = {"ground": "ground_io_token", "detail": "detail_io_token",
+                              "causal": "causal_io_token"}.get(
+                    job["kind"], "search_io_token")
+                if (state.adapter.inner.has_node(req)
+                        and state.adapter.s.node(req)["attrs"].get(
+                            token_attr) == job["token"]):
+                    state.adapter.inner.set_attr(req, "status", "requested")
+                    state.adapter.inner.set_attr(req, token_attr, None)
+            host = srs.NodeID(host_id)
+            if state.adapter.inner.has_node(host):
+                state.adapter.inner.set_attr(host, "status", "requested")
+                state.adapter.inner.set_attr(host, "search_io_token", None)
+                for task in state.adapter.inner.neighbours(host, "scheduled_as"):
+                    if state.adapter.inner.has_node(task):
+                        state.adapter.inner.set_attr(task, "status", "host_requested")
+        state.pending_search_host_actions.clear()
+    state.search_io_executor.shutdown(wait=False, cancel_futures=True)
     state.runtime_state = "stopped"
     log("tick loop stopped")
 
@@ -3491,6 +4469,23 @@ def monitor_loop(state: DaemonState, stop: threading.Event,
 # NEW connection each turn). This handler matches that exactly: one line in,
 # one line out.
 
+def _ingest_daemon_chat_turn(state: DaemonState, text: str) -> int:
+    """Prepare connected content, then publish one pending daemon turn.
+
+    The pre-pass is a mechanical seed/dependency lookup. It must precede text
+    parsing and native arbitration, matching ``WorldAdapter.converse()``;
+    full-profile agents have no connected-profile state and make it a no-op.
+    """
+    try:
+        prepass_conversation_turn(state.adapter, text)
+    except Exception as exc:  # keep ingress available; unresolved stays honest
+        log(f"conversation content pre-pass unavailable: {type(exc).__name__}: {exc}")
+    speech_act = state.adapter.classify_speech_act(text)
+    inbound = state.adapter.ingest_turn(text, speech_act=speech_act)
+    turn_id = int(inbound.value if hasattr(inbound, "value") else inbound)
+    state.pending_turns[turn_id] = text
+    return turn_id
+
 def _handle_conn(conn: socket.socket, state: DaemonState) -> None:
     with conn, conn.makefile("rwb", buffering=0) as f:
         for raw in f:
@@ -3503,20 +4498,24 @@ def _handle_conn(conn: socket.socket, state: DaemonState) -> None:
                     import substrate_rs as srs
                     turn_id = int(text.split(None, 1)[1])
                     with AGENT_LOCK:
-                        reply = state.adapter.graph_turn_reply(srs.NodeID(turn_id))
-                    reply = reply or f"pending:{turn_id}"
+                        mid = srs.NodeID(turn_id)
+                        reply = state.adapter.graph_turn_reply(mid)
+                        expectation = state.adapter.graph_turn_reply_expectation(mid)
+                    if reply is not None:
+                        result = reply
+                    elif expectation["status"] == "not_expected":
+                        result = f"no_response_expected:{turn_id}"
+                    else:
+                        result = f"pending:{turn_id}"
                 except Exception as e:  # noqa: BLE001
-                    reply = f"error: {type(e).__name__}: {e}"
-                f.write((reply.replace("\n", " ") + "\n").encode("utf-8"))
+                    result = f"error: {type(e).__name__}: {e}"
+                f.write((result.replace("\n", " ") + "\n").encode("utf-8"))
                 continue
             try:
                 with AGENT_LOCK:
                     # Publish only mechanical turn evidence here. The daemon's
                     # graph quanta settle cognition and mint the reply later.
-                    sa = state.adapter.classify_speech_act(text)
-                    mid = state.adapter.ingest_turn(text, speech_act=sa)
-                    turn_id = int(mid.value if hasattr(mid, "value") else mid)
-                    state.pending_turns[turn_id] = text
+                    turn_id = _ingest_daemon_chat_turn(state, text)
                     reply = f"pending:{turn_id}"
                 state.dirty.set()
             except Exception as e:  # noqa: BLE001 -- one bad turn shouldn't drop the client
@@ -3647,18 +4646,24 @@ class Handler(BaseHTTPRequestHandler):
                         if not state.adapter.s.has_node(mid):
                             return self._json({"ok": False, "error": "not found"}, 404)
                         reply = state.adapter.graph_turn_reply(mid)
+                        expectation = state.adapter.graph_turn_reply_expectation(mid)
+                        outcome = state.adapter.graph_turn_reply_outcome(mid)
                         pending = turn_id in state.pending_turns
                 except (TypeError, ValueError):
                     return self._json({"ok": False, "error": "invalid turn id"}, 400)
                 except Exception as e:  # noqa: BLE001 -- read-only transport boundary
                     return self._json({"ok": False, "error": f"{type(e).__name__}: {e}"}, 500)
-                result = {"ok": True, "turn_id": turn_id,
-                          "status": "completed" if reply is not None else "pending"}
+                status = ("error" if outcome == "explicit_error" else
+                          "completed" if outcome == "reply_ready" else
+                          "no_response_expected"
+                          if outcome == "not_expected" else "pending")
+                result = {"ok": True, "turn_id": turn_id, "status": status,
+                          "reply_expected": expectation["status"] == "expected"}
                 if reply is not None:
                     result["reply"] = reply
-                # A graph reply is authoritative. ``pending`` is retained as
-                # a diagnostic only, so a stale transport entry can never
-                # conceal a completed turn.
+                # Reply/no-response terminality is read from graph evidence;
+                # transport bookkeeping is diagnostic and cannot turn a
+                # graph-complete turn back into ``pending``.
                 result["transport_pending"] = pending
                 return self._json(result)
         if path.startswith("/api/chat/turns/") and path.endswith("/trace"):
@@ -3825,10 +4830,7 @@ class Handler(BaseHTTPRequestHandler):
         turn_id = None
         try:
             with AGENT_LOCK:
-                sa = state.adapter.classify_speech_act(text)
-                mid = state.adapter.ingest_turn(text, speech_act=sa)
-                turn_id = int(mid.value if hasattr(mid, "value") else mid)
-                state.pending_turns[turn_id] = text
+                turn_id = _ingest_daemon_chat_turn(state, text)
             state.dirty.set()
         except Exception as e:  # noqa: BLE001
             return self._json({"ok": False, "error": f"{type(e).__name__}: {e}"}, 500)
@@ -4087,10 +5089,22 @@ def main() -> int:
     ap.add_argument("--interval", type=float, default=60.0, help="checkpoint interval (s)")
     ap.add_argument("--tick-hz", type=float, default=20.0, help="agent tick rate")
     ap.add_argument("--keep", type=int, default=10, help="checkpoints to retain")
-    ap.add_argument("--seeds", default="full", choices=["full", "chat", "embodied"],
-                    help="fresh-boot seed set: 'full' (load_all_seeds, ~20s) or "
-                         "'chat' (fast small conversational set, for iteration), or "
-                         "'embodied' (dependency-closed real-body cognition)")
+    ap.add_argument("--seeds", default=DEFAULT_SEED_PROFILE,
+                    choices=["full", "chat", "conversation", "embodied"],
+                    help="fresh-boot seed set (default: conversation, validated "
+                         "cached connected-seed profile); 'full' loads all seeds, "
+                         "'chat' is a small smoke profile, and 'embodied' is the "
+                         "dependency-closed real-body profile")
+    ap.add_argument("--conversation-content-manifest", default=None,
+                    help="optional JSON conversation_content_prepass.v1 manifest; "
+                         "preloads its connected content groups before the first "
+                         "turn and keeps connected loading available for later "
+                         "content; set manifest field sealed=true for a fixed "
+                         "offline workload. The manifest "
+                         "digest is checkpoint-bound; use only with --seeds conversation")
+    ap.add_argument("--strict-seed-profile-checkpoints", action="store_true",
+                    help="refuse legacy checkpoints without graph-resident "
+                         "seed-profile identity; mismatched profiles are always refused")
     ap.add_argument("--socket", default=os.path.expanduser("~/.jabberwock/jbw.sock"),
                     help="Unix socket to talk to the running agent ('' to disable)")
     ap.add_argument("--http-port", type=int, default=8787, help="HTTP API port (127.0.0.1)")
@@ -4166,15 +5180,14 @@ def main() -> int:
                     help="deprecated compatibility flag; voice is drained on queue wake")
     ap.add_argument("--once", action="store_true", help="boot, one checkpoint, exit (test)")
     ap.add_argument("--shadow-read", dest="shadow_read", action="store_true",
-                    default=True,
+                    default=False,
                     help="Wave 2 (Deep-Reader): run a light deep-read of every "
                     "chat turn on the live substrate (arm the deictic centre + "
                     "the conversational-aperture reading flow), purely additive "
                     "and recorded on the Message as shadow_* attrs -- comp_* "
-                    "stays authoritative for the reply. ON by default for the "
-                    "daemon (the always-on process pays the one-time WordNet "
-                    "warm-up once, then ~30-45ms/turn); use --no-shadow-read to "
-                    "disable.")
+                    "stays authoritative for the reply. Disabled by default to "
+                    "reduce daemon cold RSS and first-turn latency; use "
+                    "--shadow-read to opt in when the resource budget permits.")
     ap.add_argument("--no-shadow-read", dest="shadow_read", action="store_false",
                     help="disable the Wave 2 shadow read (see --shadow-read)")
     args = ap.parse_args()
@@ -4193,7 +5206,10 @@ def main() -> int:
 
     log(f"booting (ckpt-dir={ckpt_dir}, interval={args.interval}s, tick={args.tick_hz}Hz, "
         f"seeds={args.seeds})")
-    adapter, booted_from = boot(ckpt_dir, args.seeds)
+    adapter, booted_from = boot(
+        ckpt_dir, args.seeds,
+        strict_profile=args.strict_seed_profile_checkpoints,
+        content_manifest=args.conversation_content_manifest)
     # Wave 2 (Deep-Reader): set explicitly AFTER boot/load either way, since
     # `WorldAdapter.load()` (the resume path) bypasses `__init__` and always
     # restores `shadow_read=False` — the CLI flag is the single source of

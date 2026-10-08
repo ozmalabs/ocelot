@@ -1,7 +1,8 @@
 {
   "id": "coherence_relations",
   "version": "1.0.0",
-  "depends_on": ["reading_constructions"],
+  "depends_on": [],
+  "domain_data_requires": ["reading_constructions"],
   "description": "DISCOURSE COHERENCE = COLLAPSE OVER A COHERENCE-RELATION CODEBOOK, one level up from reading_collapse's clause-construction codebook (a span-pair is decoded the same way a clause is: recognised markers -> skeleton -> ShapeDecode against held ShapeSignatureCoherence nodes, kept in their OWN codebook_type so they never compete with the clause-construction ShapeSignature pool). Two triggers feed the skeleton: (1) MARKED -- a discourse connective leading the second span, recognised via new MarkerClass discourse-cue classes (DISC_CONTRAST/DISC_CAUSE/DISC_SEQUENCE/DISC_CONDITION) using the SAME marker-lexicon mechanism reading_collapse's clause markers use; (2) UNMARKED -- a situation-model-style signal computed from the two spans' own grounded predications: shared entity (continuity, Centering Theory's 'preserved center'), spanA's verb a change-of-state (COS class, reused as-is from situation_model_reader.cos_membership) or spanB's verb a TELIC_RESULT (achievement) verb, or spanB itself a property-description construction (elaboration). Both paths mint the SAME token vocabulary (DISC_* or SM_*) that the decode reads -- the RELATION ITSELF is always ShapeDecode's verdict (the winning ShapeSignatureCoherence's `relation` attr), never a Python if/else naming the relation directly.",
   "microtheory": {
     "name": "coherence_relations",

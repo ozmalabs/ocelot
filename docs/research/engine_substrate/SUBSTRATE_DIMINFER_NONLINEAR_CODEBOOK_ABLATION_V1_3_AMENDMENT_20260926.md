@@ -1,0 +1,3 @@
+# Full-seed nonlinear DimInfer codebook ablation v1.3 amendment
+
+The v1.2 raw capture and its v1.2/v1.2.1 analyses are retained. Audit found that v1.2 sampled the `CapabilityAxis` count after rule closure for both the before and after fields, making its quantum-delta field uninformative even though status and transform-route fields are valid. V1.3 moves the before-count read to immediately before `native.run_rules()` and retains the after-count read immediately after closure. No other workload, source behavior, route definition, or acceptance gate changes. V1.3 reruns the same 72 paired worker cells under a fresh lock; only v1.3 quanta counts support quantum-mint conclusions.

@@ -1,0 +1,5 @@
+# Fresh-rule active query v1 — timing amendment
+
+The v1 proposal selection, oracle survivor, held-out utility, and source-preservation observations remain valid. Its condition-specific query times are not valid for comparing neutral rates: the runner reused each mutable prediction branch across pool conditions in the fixed order 0%, 50%, 90%, 99%, accumulating prior cases before timing the next pool. Thus those durations confound condition with graph size and must not be interpreted as an alias-rate effect.
+
+The source-locked v1.1 replication resets graph state for every hypothesis/input prediction and measures both shared-page snapshot CoW forks and full-copy forks from the same base. Its separate [protocol](THOUGHTEXPERIMENT_FRESH_RULE_ACTIVE_QUERY_V1_1_PREREG_20261002.md) and [results](THOUGHTEXPERIMENT_FRESH_RULE_ACTIVE_QUERY_V1_1_RESULTS_20261002.md) supersede v1 timing interpretation while preserving v1's frozen artifacts. V1 remains useful as the first cross-family correctness capture; v1.1 is the timing evidence.

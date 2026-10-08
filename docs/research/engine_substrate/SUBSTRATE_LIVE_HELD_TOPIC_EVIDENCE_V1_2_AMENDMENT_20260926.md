@@ -1,0 +1,5 @@
+# Live held-topic evidence v1.2 amendment (2026-09-26)
+
+The locked v1.1 capture completed and preserved all three workers, but the unknown-topic analysis gate failed because it required exactly one invocation of the patched no-result grounder. The captured runtime invokes that grounder twice per `unobtainium` turn in all three workers (both with `allow_web=False`). The unknown Goal remains unresolved, the reply reports no held answer, and the other 15 positive answer checks pass. Thus the failure is an over-specific analyzer condition, not a semantic task failure; the raw capture and false gate are retained.
+
+The preregistration required a counted no-result grounder call but did not require exactly one. V1.2 changes the unknown-topic gate to require at least one such invocation and records the exact invocation count for every worker. All prompts, evidence, route expectations, work instrumentation, and semantic outcome criteria remain unchanged. This exposes repeated fallback work without masking it as a pass-only condition.

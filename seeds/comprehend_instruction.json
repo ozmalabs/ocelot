@@ -1,6 +1,6 @@
 {
  "id": "comprehend_instruction",
- "version": "2.0.0",
+ "version": "2.4.0",
  "depends_on": [
   "intent"
  ],
@@ -8,7 +8,7 @@
   "route_instruction",
   "instruction_verbs"
  ],
- "_verbs_as_data_note": "v2.0.0: the instruction-verb inventories are GRAPH DATA, not rule-body literals. Each covered verb is a held Concept{name:<verb>, instruction_route:<route>} seeded below; the rules match a Message's predicate Mention resolving (seeds/intent.json's rule_mention_resolves_to_concept, wired by _backfill_knows_concept at ingest) to a Concept whose instruction_route names the faculty -- the note_reported_gap deficiency-concept pattern, applied to verbs. Duplicate same-name Concepts from other seeds (learned_lexicon etc.) are harmless: the referent rule wires the Mention to EVERY same-named held Concept (batch match), and the Exists here finds the route-carrying one. EXTENSIBLE AT RUNTIME: teach(agent, 'Concept', {'name': 'dance', 'instruction_route': 'world_action'}) makes a previously-unhandled verb route through the same rules with NO rule edit -- verb coverage is data the agent can be taught.",
+ "_verbs_as_data_note": "v2.4.0 (tranche 7): a route Concept with route_object_scope='other' claims a turn only when no mention refers to the agent itself (content-conditioned route; absent -> unconditioned). v2.3.0 keeps the parsed source-language action-target phrase separately from the normalized Goal object, so graph-authored no-world replies retain determiners without changing semantic target identity or implying execution. v2.2.0 added the parsed comp_content as the Goal's object and the graph floor's readback, so the authored action-space limitation represents the same event/patient tuple as the input without asserting execution. v2.1.0 added 'check' as a world_action verb after the fixed-corpus replay showed Check(pressure) parsed as an instruction but not routed to an instruction goal; this permits the honest no-attached-world outcome and does not claim execution. The instruction-verb inventories are GRAPH DATA, not rule-body literals. Each covered verb is a held Concept{name:<verb>, instruction_route:<route>} seeded below; the rules match a Message's predicate Mention resolving (seeds/intent.json's rule_mention_resolves_to_concept, wired by _backfill_knows_concept at ingest) to a Concept whose instruction_route names the faculty -- the note_reported_gap deficiency-concept pattern, applied to verbs. Duplicate same-name Concepts from other seeds (learned_lexicon etc.) are harmless: the referent rule wires the Mention to EVERY same-named held Concept (batch match), and the Exists here finds the route-carrying one. EXTENSIBLE AT RUNTIME: teach(agent, 'Concept', {'name': 'dance', 'instruction_route': 'world_action'}) makes a previously-unhandled verb route through the same rules with NO rule edit -- verb coverage is data the agent can be taught.",
  "description": "Graph-native conversation migration (plan: 'comprehend -> mint goal -> reply, no Python ladder'): instruction cases moved off the Python decision ladder (domains/conversation_action.act_on_instruction) onto graph rules. The adapter WRITES the mechanical parse of an inbound utterance onto its Message as graph data (comp_kind, comp_predicate, comp_content -- substrate/world_adapter.py::_write_comprehension_to_graph, which also mints the agent -received-> Message edge these rules match on, the sd 'agent observed obs' pattern -- NEVER ['agent','is_a','Agent'], whose type triple expands to many bindings and over-fires); these rules DECIDE. PHASE 1 (comprehend_read_instruction): a 'read'/'comprehend' instruction whose content is already modeled internally (its tokens are Mention nodes minted at ingest -- reading inline text needs no external world, the comprehension IS the internal model) mints a Goal{kind:comprehend_text} + a comprehends/comprehended_by link + a StringConcat reply over the extracted content, so converse() surfaces a graph-produced reply instead of act_on_instruction's 'no attached world/faculty' floor. PHASE 2 (instruction_world_action_floor): a physical/world-action instruction verb (open/run/move/... -- the Concept inventory below, deliberately DISJOINT from the self-report verbs, so no regression) with no world attached mints a Goal{kind:instruction} + the honest action-space-limit reply -- the SAME honest floor act_on_instruction produced, now graph-produced. Modeled on seeds/composer_comprehension_graph.json (Message -> Goal) + seeds/conversation_reply.json (outbound reply Message). The comprehended attr is the fixpoint-safety guard (mint once per Message), the idiom shape_decode_loop's status guards use. Text realization is deliberately MINIMAL (single StringConcat); routing substantive comprehension/self-report replies through the full production faculty is the remaining Phase 2 work.",
  "nodes": [
   {
@@ -208,6 +208,15 @@
     "instruction_route": "world_action",
     "description": "instruction verb: world action (needs an attached world)"
    }
+  },
+  {
+   "local_id": 23,
+   "type": "Concept",
+   "attrs": {
+    "name": "check",
+    "instruction_route": "world_action",
+    "description": "instruction verb: world action (requires an attached world/faculty; recognition does not imply execution)"
+   }
   }
  ],
  "edges": [],
@@ -220,6 +229,11 @@
      "agent",
      "received",
      "m"
+    ],
+    [
+     "m",
+     "has_interpretation",
+     "i"
     ]
    ],
    "where": {
@@ -238,6 +252,21 @@
       "b": {
        "type": "Lit",
        "value": "instruction"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "i"
+       },
+       "key": "cognitive_disposition"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "act"
       }
      },
      {
@@ -312,6 +341,93 @@
            "type": "Lit",
            "value": "comprehend_text"
           }
+         },
+         {
+          "type": "Or",
+          "items": [
+           {
+            "type": "Not",
+            "arg": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "vc"
+              },
+              "key": "route_object_scope"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "other"
+             }
+            }
+           },
+           {
+            "type": "Not",
+            "arg": {
+             "type": "Exists",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "m"
+              },
+              "edge_type": "has_mention"
+             },
+             "var_name": "sm",
+             "predicate": {
+              "type": "Exists",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Var",
+                "name": "sm"
+               },
+               "edge_type": "refers_to"
+              },
+              "var_name": "sc",
+              "predicate": {
+               "type": "And",
+               "items": [
+                {
+                 "type": "Eq",
+                 "a": {
+                  "type": "TypeOf",
+                  "node": {
+                   "type": "Var",
+                   "name": "sc"
+                  }
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": "Concept"
+                 }
+                },
+                {
+                 "type": "In",
+                 "member": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "sc"
+                  },
+                  "key": "name"
+                 },
+                 "container": {
+                  "type": "Lit",
+                  "value": [
+                   "yourself",
+                   "yourselves"
+                  ]
+                 }
+                }
+               ]
+              }
+             }
+            }
+           }
+          ]
          }
         ]
        }
@@ -375,6 +491,16 @@
          "name": "m"
         },
         "key": "comp_predicate"
+       }
+      },
+      "object": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "m"
+        },
+        "key": "comp_content"
        }
       }
      }
@@ -445,6 +571,11 @@
      "agent",
      "received",
      "m"
+    ],
+    [
+     "m",
+     "has_interpretation",
+     "i"
     ]
    ],
    "where": {
@@ -463,6 +594,21 @@
       "b": {
        "type": "Lit",
        "value": "instruction"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "i"
+       },
+       "key": "cognitive_disposition"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "act"
       }
      },
      {
@@ -537,6 +683,93 @@
            "type": "Lit",
            "value": "world_action"
           }
+         },
+         {
+          "type": "Or",
+          "items": [
+           {
+            "type": "Not",
+            "arg": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "vc"
+              },
+              "key": "route_object_scope"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "other"
+             }
+            }
+           },
+           {
+            "type": "Not",
+            "arg": {
+             "type": "Exists",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "m"
+              },
+              "edge_type": "has_mention"
+             },
+             "var_name": "sm",
+             "predicate": {
+              "type": "Exists",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Var",
+                "name": "sm"
+               },
+               "edge_type": "refers_to"
+              },
+              "var_name": "sc",
+              "predicate": {
+               "type": "And",
+               "items": [
+                {
+                 "type": "Eq",
+                 "a": {
+                  "type": "TypeOf",
+                  "node": {
+                   "type": "Var",
+                   "name": "sc"
+                  }
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": "Concept"
+                 }
+                },
+                {
+                 "type": "In",
+                 "member": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "sc"
+                  },
+                  "key": "name"
+                 },
+                 "container": {
+                  "type": "Lit",
+                  "value": [
+                   "yourself",
+                   "yourselves"
+                  ]
+                 }
+                }
+               ]
+              }
+             }
+            }
+           }
+          ]
          }
         ]
        }
@@ -632,6 +865,16 @@
         },
         "key": "comp_predicate"
        }
+      },
+      "object": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "m"
+        },
+        "key": "comp_content"
+       }
       }
      }
     ],
@@ -674,6 +917,18 @@
            "name": "m"
           },
           "key": "comp_predicate"
+         },
+         {
+          "type": "Lit",
+          "value": " "
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "m"
+          },
+          "key": "comp_object_surface"
          },
          {
           "type": "Lit",

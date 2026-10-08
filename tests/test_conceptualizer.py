@@ -228,6 +228,24 @@ def test_grounded_audience_smaller_focus_ungrounded_audience_full_focus():
     assert len(read_g["focus"]) < len(read_u["focus"])
 
 
+def test_conceptualize_reply_entrypoint_returns_native_committed_result():
+    """Exercise the public phase-3 entrypoint, not only its component steps."""
+    ag = _fresh_agent()
+    result = cc.conceptualize_reply(
+        ag, "inform", MEANING,
+        {"id": "visitor", "observed": True, "known_concepts": SHARED},
+        LEXICON,
+    )
+
+    assert result["goal"] is not None
+    assert result["intent"]["intent"] is not None
+    assert result["intent"]["force"] == "assertive"
+    assert sorted(result["intent"]["informative_content"]) == sorted(MEANING)
+    assert result["committed"]["committed"] is not None
+    assert result["committed"]["utterance"] == result["intent"]["utterance"]
+    assert result["committed"]["grounded_used"] is True
+
+
 # ===========================================================================
 # 5. AUDIENCE-DESIGNED FORMULATION — the formulated utterance differs by
 #    audience via select_utterance (verbatim contrast).
@@ -280,6 +298,12 @@ _ALLOWED_IF_PATTERNS = [
     re.compile(r"if bundle\[.system_model.\] is not None:"),
     re.compile(r"if shape_node is not None else"),
     re.compile(r"if intent_node is None:"),
+    # Native worklist scheduling from the monitor extension is mechanical.
+    re.compile(r"if shaped:"),
+    re.compile(r"if native_work_pending:"),
+    # Worklist exhaustion only bounds redundant native passes; production/commit
+    # outcomes remain exclusively rule-authored.
+    re.compile(r"if not shaped and not monitored:"),
     re.compile(r"if __name__"),
 ]
 

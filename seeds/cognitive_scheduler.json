@@ -1,6 +1,6 @@
 {
  "id": "cognitive_scheduler",
- "version": "1.0.0",
+ "version": "1.0.1",
  "self_load_only": true,
  "depends_on": [
   "cognitive_areas"
@@ -1810,6 +1810,326 @@
      {
       "kind": "host_action",
       "action": "search",
+      "area": "supervision",
+      "status": "pending",
+      "urgency": 1,
+      "residual": 1,
+      "estimated_cost": 1,
+      "deadline": 0,
+      "priority": 1,
+      "input_epoch": 0,
+      "logical_time": 0
+     }
+    ],
+    [
+     "add_edge",
+     "request",
+     "scheduled_as",
+     "task",
+     {}
+    ]
+   ]
+  },
+  {
+   "name": "supervise_causal_retrieval_request",
+   "area": "supervision",
+   "order": 1,
+   "latency_class": "hard_realtime",
+   "match": [],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Exists",
+      "source": {
+       "type": "NodesOfType",
+       "node_type": "CausalRetrievalRequest"
+      },
+      "var_name": "source",
+      "predicate": {
+       "type": "And",
+       "items": [
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "source"
+          },
+          "key": "status"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "requested"
+         }
+        },
+        {
+         "type": "Not",
+         "arg": {
+          "type": "Exists",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "HostActionRequest"
+          },
+          "var_name": "prior",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "prior"
+              },
+              "key": "action"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "causal_retrieval"
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "prior"
+              },
+              "key": "source"
+             },
+             "b": {
+              "type": "Var",
+              "name": "source"
+             }
+            }
+           ]
+          }
+         }
+        }
+       ]
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "HostActionRequest"
+       },
+       "var_name": "request",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "request"
+           },
+           "key": "action"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "causal_retrieval"
+          }
+         },
+         {
+          "type": "Or",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "request"
+             },
+             "key": "status"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "pending"
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "request"
+             },
+             "key": "status"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "requested"
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "request"
+             },
+             "key": "status"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "running"
+            }
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "request",
+     "HostActionRequest",
+     {
+      "action": "causal_retrieval",
+      "source_type": "CausalRetrievalRequest",
+      "source": {
+       "__term__": {
+        "type": "Argmax",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "CausalRetrievalRequest"
+         },
+         "var_name": "source",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "source"
+             },
+             "key": "status"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "requested"
+            }
+           },
+           {
+            "type": "Not",
+            "arg": {
+             "type": "Exists",
+             "source": {
+              "type": "NodesOfType",
+              "node_type": "HostActionRequest"
+             },
+             "var_name": "prior",
+             "predicate": {
+              "type": "And",
+              "items": [
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "prior"
+                 },
+                 "key": "action"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": "causal_retrieval"
+                }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "prior"
+                 },
+                 "key": "source"
+                },
+                "b": {
+                 "type": "Var",
+                 "name": "source"
+                }
+               }
+              ]
+             }
+            }
+           }
+          ]
+         }
+        },
+        "var_name": "candidate",
+        "value": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Gt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "candidate"
+           },
+           "key": "supervision_priority"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         "then": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "candidate"
+          },
+          "key": "supervision_priority"
+         },
+         "other": {
+          "type": "Lit",
+          "value": 1
+         }
+        },
+        "default": null
+       }
+      },
+      "status": "pending",
+      "urgency": 1,
+      "residual": 1,
+      "estimated_cost": 1,
+      "deadline": 0,
+      "priority": 1
+     }
+    ],
+    [
+     "add_node",
+     "task",
+     "CognitiveTask",
+     {
+      "kind": "host_action",
+      "action": "causal_retrieval",
       "area": "supervision",
       "status": "pending",
       "urgency": 1,
@@ -6309,6 +6629,397 @@
      {
       "kind": "host_action",
       "action": "search",
+      "area": "supervision",
+      "status": "pending",
+      "urgency": 1,
+      "residual": 1,
+      "estimated_cost": 1,
+      "deadline": 0,
+      "priority": 1,
+      "input_epoch": 0,
+      "logical_time": 0
+     }
+    ],
+    [
+     "add_edge",
+     "request",
+     "scheduled_as",
+     "task",
+     {}
+    ]
+   ]
+  },
+  {
+   "name": "supervise_causal_retrieval_request_rearm",
+   "area": "supervision",
+   "order": 1,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "previous",
+     "scheduled_as",
+     "previous_task"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "previous"
+       },
+       "key": "action"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "causal_retrieval"
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "previous"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "done"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "previous"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "failed"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "previous"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "unavailable"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "NodesOfType",
+       "node_type": "CausalRetrievalRequest"
+      },
+      "var_name": "source",
+      "predicate": {
+       "type": "And",
+       "items": [
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "source"
+          },
+          "key": "status"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "requested"
+         }
+        },
+        {
+         "type": "Not",
+         "arg": {
+          "type": "Exists",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "HostActionRequest"
+          },
+          "var_name": "prior",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "prior"
+              },
+              "key": "action"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "causal_retrieval"
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "prior"
+              },
+              "key": "source"
+             },
+             "b": {
+              "type": "Var",
+              "name": "source"
+             }
+            }
+           ]
+          }
+         }
+        }
+       ]
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "HostActionRequest"
+       },
+       "var_name": "request",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "request"
+           },
+           "key": "action"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "causal_retrieval"
+          }
+         },
+         {
+          "type": "Or",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "request"
+             },
+             "key": "status"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "pending"
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "request"
+             },
+             "key": "status"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "requested"
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "request"
+             },
+             "key": "status"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "running"
+            }
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "request",
+     "HostActionRequest",
+     {
+      "action": "causal_retrieval",
+      "source_type": "CausalRetrievalRequest",
+      "source": {
+       "__term__": {
+        "type": "Argmax",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "CausalRetrievalRequest"
+         },
+         "var_name": "source",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "source"
+             },
+             "key": "status"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "requested"
+            }
+           },
+           {
+            "type": "Not",
+            "arg": {
+             "type": "Exists",
+             "source": {
+              "type": "NodesOfType",
+              "node_type": "HostActionRequest"
+             },
+             "var_name": "prior",
+             "predicate": {
+              "type": "And",
+              "items": [
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "prior"
+                 },
+                 "key": "action"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": "causal_retrieval"
+                }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "prior"
+                 },
+                 "key": "source"
+                },
+                "b": {
+                 "type": "Var",
+                 "name": "source"
+                }
+               }
+              ]
+             }
+            }
+           }
+          ]
+         }
+        },
+        "var_name": "candidate",
+        "value": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Gt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "candidate"
+           },
+           "key": "supervision_priority"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         "then": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "candidate"
+          },
+          "key": "supervision_priority"
+         },
+         "other": {
+          "type": "Lit",
+          "value": 1
+         }
+        },
+        "default": null
+       }
+      },
+      "status": "pending",
+      "urgency": 1,
+      "residual": 1,
+      "estimated_cost": 1,
+      "deadline": 0,
+      "priority": 1
+     }
+    ],
+    [
+     "add_node",
+     "task",
+     "CognitiveTask",
+     {
+      "kind": "host_action",
+      "action": "causal_retrieval",
       "area": "supervision",
       "status": "pending",
       "urgency": 1,

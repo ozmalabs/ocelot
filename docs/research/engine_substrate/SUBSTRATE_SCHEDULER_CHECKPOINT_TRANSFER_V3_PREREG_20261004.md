@@ -1,0 +1,5 @@
+# Scheduler checkpoint transfer v3 preregistration
+
+This is a fresh locked rerun of the v2 two-family checkpoint-transfer panel after the first v2 attempt exposed a restore validator bug: when empty-match proof was disabled, the native engine legitimately retained an empty `empty_match_skips` vector, but checkpoint restore incorrectly required one slot per rule. The fix accepts either the valid empty disabled-state or a dense per-rule vector, while still requiring dense state when the feature is enabled.
+
+The measurement is otherwise unchanged: a CAN productive closure and a retinal synthesis closure with predicate retraction enabled and one photoreceptor activation changed between calls. Capture two call-entry states per family; replay each from graph, ordered rules, and the expanded scheduler/configuration checkpoint. Require exact graph/rule/checkpoint round-trip, exact global/per-rule work, and exact resulting graph/rule/checkpoint state. The retinal post-mutation state must contain dirty-node entries. Failed v2 artifacts are retained. Scope remains two small synthetic workloads, not natural-task prevalence, scaling, or learning.

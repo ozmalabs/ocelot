@@ -1,0 +1,9 @@
+# Browser profile ReachableFrom cache v1.3 results
+
+V1.3 reruns the source-locked cache audit/quiet factorial after fixing the browser seed's stale-mirror cleanup rule. The normal five-seed `WorldAdapter` profile was tested at N=2/8/32/128 affordances and B=1/4 wrappers, with three fresh workers per cell (24 workers, 96 ticks).
+
+All 13 runner gates and 12 independent analyzer checks passed. The eight active rules match seed manifests; all four cache/audit arms produce identical graphs, progress, mirror edges, and zero-work terminal ticks. Audited access traces and matcher counters match exactly. Every enabled cache hit/miss counter still matches the number of `ReachableFrom` Term evaluations.
+
+At N=128, quiet tick medians improve 12.81× for B=1 (139.9 ms off, 11.8 ms on) and 7.46× for B=4 (47.0 ms off, 6.1 ms on). At N=32, the ratios are 4.00× and 2.59×. At N=2, the per-replicate median off/on ratios are near parity (1.03× in both branch cells); this is descriptive with three replicates. The corrected cleanup rule increases N=128 audited traversal from 257/260 to 514/520 cached units because the stale-mirror rule now evaluates a second reachability condition. Cache payload remains 8,512/9,028 estimated bytes across two/five entries. All timings and byte estimates remain specific to synthetic DOM-shaped records, not live Chromium pages or general workload complexity.
+
+Artifacts: [protocol](SUBSTRATE_BROWSER_PROFILE_REACHABLE_CACHE_V1_3_PREREG_20260928.md), [raw run](../../../evaluation/reports/substrate_browser_profile_reachable_cache_v1_3_20260928.json), [independent analysis](../../../evaluation/reports/substrate_browser_profile_reachable_cache_v1_3_analysis_20260928.json), [runner](../../../scripts/substrate_browser_profile_reachable_cache_v1_3.py), [analyzer](../../../scripts/analyze_substrate_browser_profile_reachable_cache_v1_3.py).

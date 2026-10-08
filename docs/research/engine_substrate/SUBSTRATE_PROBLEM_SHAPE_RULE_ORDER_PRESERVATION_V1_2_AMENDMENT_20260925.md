@@ -1,0 +1,5 @@
+# Amendment: deterministic seed ordering for cross-process comparison
+
+V1.1 passed semantic parity on ten pairs, then stopped at pair 11 because baseline and candidate active-rule-order fingerprints differed. Their five ProblemShape rules were internally ordered the same, but the baseline's absolute positions were 1825–1829 and the candidate's 1830–1834. A previous mismatch showed the opposite arm shifted. This indicates process-level seed-topology order variation, making cross-process position comparison invalid without controlling Python's hash randomization.
+
+V1.2 sets `PYTHONHASHSEED=0` in every worker subprocess before interpreter startup. This is locked as part of the execution protocol. The runner continues to compare the complete active rule-name sequence and ProblemShape relative order; it fails fast and preserves a checkpoint on any mismatch. The transformed manifest builder also asserts that the five rule names retain their exact positions in the original `problem_shape_growth.json` rule list. V1 and V1.1 raw/checkpoint artifacts remain unchanged and are incomplete diagnostics.

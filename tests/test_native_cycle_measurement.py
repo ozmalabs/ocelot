@@ -32,7 +32,7 @@ def test_bounded_native_cycle_measurement_records_native_and_graph_evidence():
         "basis": "workload_rss_growth",
         "measured_field": "rss_delta_bytes",
         "limit_field": "resource_limits.rss_growth_bytes",
-        "limit_bytes": 100 * 1024 * 1024,
+        "limit_bytes": 150 * 1024 * 1024,
         "absolute_fields_observability_only": True,
     }
     assert result["resource_limits"]["rss_bytes"] == 1024 * 1024 * 1024

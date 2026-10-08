@@ -1,0 +1,3 @@
+# Attribute-site cue-ablation v1 analysis amendment
+
+The first offline analyzer required the fixture to expose exactly the two preregistered opposing swaps. The native generic enumerator also correctly exposes swaps involving `positive` and `negative`, so the equality check rejected the capture for an irrelevant reason. The analyzer was corrected to require both preregistered opposing candidates as a subset. No runner, protocol, lock, or raw capture data changed. Reanalysis passes all eight checks. The corrected analyzer source hash differs from the analyzer hash recorded in the lock; treat the original capture as valid under the unchanged runner/source lock and this disclosed post-capture analysis correction, not as a locked replay of the corrected analyzer.

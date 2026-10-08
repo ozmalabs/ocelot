@@ -1,0 +1,5 @@
+# Concurrent branch lifecycle v1 amendment 2 (2026-10-01)
+
+The thread-only control alone did not account for the negative live-byte drift: it measured zero, while each branch-bearing wave ended 24 bytes per fork below baseline. The confirmatory measurement therefore adds a **backend-matched fork/drop control** with identical barriers and cancellation, but no branch mutation. The mutation arm is compared against this fork-only wave at the all-live, after-cancellation, and post-drop stages.
+
+The amended reclamation gate is exact equality between the branch-mutated and fork-only post-drop raw deltas for each paired worker wave; their difference is the mutation-adjusted post-drop allocation residual and must be zero. Keep both raw deltas, the separate thread-only delta, and the adjusted stages. The earlier thread-only amendment remains diagnostic context, not the reclamation reference. This adjustment isolates mutation-owned retained bytes from both worker and substrate fork/drop lifecycle costs without relaxing the zero-residual criterion.

@@ -1,0 +1,13 @@
+# Preregistration: episodic cue robustness and near-neighbor interference
+
+**Question.** What retrieval behavior does the current graph-authored episodic path provide when a cue is exact, truncated, paraphrased, or accompanied by a lexically similar stored cue?
+
+**Source-grounded expectation.** The current retrieval rule selects episodes only when `request.cue_key == episode.cue_key`. The rule's `partial_cue_completion` label therefore does not imply approximate string or semantic matching. This evaluation measures that interface boundary and tests whether similar-but-distinct stored keys interfere with exact-key recall.
+
+**Frozen task set.** Six target episodes use the keys `route/district/i/door/north` for i=0..5 and distinct known summaries. Two fresh-process arms use the episodic rules: `clean` stores only the six targets; `near_neighbor` also stores six high-salience episodes keyed `route/district/i/door/northwest`. Each target is queried with three fixed forms: exact key; truncated prefix `route/district/i/door`; and a lexical paraphrase `north entrance in district i`. The transformed queries are intentionally not aliases supplied to the system. Each arm receives 18 queries. Acquisition settles once before requests; all requests are then processed in a fixed order (by target index, exact, truncated, paraphrase).
+
+**Scoring.** Exact query success requires one candidate reconstructing the exact target summary, status `recalled`, provenance `recalled`, and observation status `not_observed`. Truncated and paraphrase queries are expected to return zero candidates with `insufficient_information`; any answer or different status is recorded as an unexpected result. In the near-neighbor arm, exact keys must still retrieve the north target, never the northwest distractor. Report transformed-cue miss rates separately from false-answer rates. No general semantic or approximate-matching success criterion is assumed.
+
+**Measures.** Per-form exact candidate/summary/status, confidence, provenance, and latency; false retrieval and abstention rates; near-neighbor exact-recall preservation; episode counts; acquisition tick; process boot and RSS. Timing is descriptive with no pass threshold.
+
+**Claim boundary.** This is a six-item synthetic symbolic-key interface probe, not natural-language memory or a representative estimate of cue robustness. The source inspection and pre-run expectation are disclosed. It can establish current exact-match behavior for these inputs and whether this specific neighboring-key manipulation changes it; it cannot establish general semantic absence or prevalence in natural tasks.

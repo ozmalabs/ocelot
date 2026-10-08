@@ -583,7 +583,7 @@ def mint_solve_analogical_promote_goal_from_text(adapter, statement: str):
     promote`, which the predecessor rung (SOLVER_NL_ADAPTER_RESULTS.md)
     ranked #2 and left unbuilt on the belief that "no analogy-shaped
     sentence parser exists anywhere in the tree." That belief does not
-    survive a broader grep: `seeds/reading_constructions.json` already
+    survive a broader grep: `domain_data/reading_constructions.json` already
     seeds a `LIKE` MarkerClass (`like`/`resembles`/`resemble`) plus
     `comparative_like`/`comparative_like_cop` constructions that ground
     "X is like Y"/"X resembles Y" to exactly `["similar", subject, object]`

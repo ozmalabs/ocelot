@@ -1,0 +1,10 @@
+# Thoughtexperiment A8 quantum-route transfer v1.2 — portal oracle coordinate defect
+
+**Date:** 2026-10-02  
+**Status:** All candidates and controls were captured, but the portal-crossing oracle was wrong for asymmetric openings; no analyzer pass is claimed.
+
+The v1.2 lock passed world-construction and receipt preflights. The order capture again passed prompted graph attribution, exact `qf_hop_route` target selection, target preservation, no-cue graph abstention, and held-out separation. Four workers scored seven host candidates and source/fault controls across four portal layouts. The corrected receipt comparator accepted order-insensitive match edges while retaining exact guards/effects; all receipt and primary-preservation records pass.
+
+The path data show the source and `flip_comparison` candidates reach all four goals without wall contact; the faulted rule fails all four. However, the analyzer's `crossed_opening` and `passed` checks used transposed coordinates for off-diagonal openings: for a vertical wall the opening is `(row, 2)`, and for a horizontal wall it is `(2, column)`. H1/H2 use symmetric opening `(2,2)` and therefore concealed this error; H3/H4 reached their goals but the erroneous oracle reported that they had not crossed the opening. This is a benchmark-oracle defect, so v1.2 is not treated as a valid held-out utility result.
+
+v1.3 corrects the coordinate mapping, retains H1-H4 as diagnostic replication, and adds two new mirrored portal layouts as the fresh primary cases. No operator, target, or cue changes. Artifacts: [v1.2 amendment](THOUGHTEXPERIMENT_A8_QUANTA_ROUTE_TRANSFER_V1_2_AMENDMENT_20261002.md); lock `evaluation/substrate_capability/thoughtexperiment_a8_quanta_route_transfer_v1_2_lock_20261002.json`; orders `evaluation/reports/thoughtexperiment_a8_quanta_route_transfer_v1_2_orders_20261002.json`; scores `evaluation/reports/thoughtexperiment_a8_quanta_route_transfer_v1_2_scores_20261002.json`; analysis `evaluation/reports/thoughtexperiment_a8_quanta_route_transfer_v1_2_analysis_20261002.json`.

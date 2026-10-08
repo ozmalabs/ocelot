@@ -1,0 +1,177 @@
+{
+  "schema": "P5R0TrackAApproval020BlockedReconciliationV1",
+  "version": 1,
+  "classification": "read_only_reconciliation_blocked_non_release",
+  "status": "blocked_pending_verifier_issued_live_bindings_and_child_approval",
+  "master_run": "P5-MASTER-001",
+  "approval_context": {
+    "approval_id": "P5-MASTER-001/APPROVAL-020",
+    "approval_status": "not_issued_by_this_packet",
+    "user_requested_scope": "minimal Track A path through reviewed definitions only",
+    "single_attempt": false,
+    "retry_allowed": false,
+    "claim_boundary": "This packet is a truthful read-only blocker report, not an approval, child approval, attestation, credential, signature, execution receipt, or result."
+  },
+  "stop": {
+    "first_blocker": "verifier-issued LIVE_BINDINGS and an enabled verifier-issued child approval for this exact packet are absent",
+    "runner_invoked": false,
+    "effectful_runner_eligible": false,
+    "downstream_started": false,
+    "cloud_operations": [],
+    "mutations_performed": false,
+    "credentials_created_or_exported": false,
+    "timing_obtained": false,
+    "task_issued": false,
+    "native_execution": false,
+    "kms_signing": false,
+    "gcs_upload": false
+  },
+  "read_only_reconciliation": {
+    "sdk_path": "/home/matt/google-cloud-sdk/bin/gcloud",
+    "sdk_version": "Google Cloud SDK 585.0.0",
+    "authenticated_account_observed": "hrdwrbob@gmail.com",
+    "commands": [
+      {
+        "command": "/home/matt/google-cloud-sdk/bin/gcloud projects describe ocelot-proof --format=json",
+        "exit_code": 0,
+        "observation": "project ocelot-proof / 141633828616 is ACTIVE"
+      },
+      {
+        "command": "/home/matt/google-cloud-sdk/bin/gcloud artifacts docker images describe us-east1-docker.pkg.dev/ocelot-proof/p5-cs/evaluator@sha256:394a0707d1e162315bdf22de4ff034a7cf75a32b919cef6f12bba501521be11c --project=ocelot-proof --format=json",
+        "exit_code": 0,
+        "observation": "immutable remote digest observed equal to sha256:394a0707d1e162315bdf22de4ff034a7cf75a32b919cef6f12bba501521be11c; slsa_build_level=unknown"
+      },
+      {
+        "command": "/home/matt/google-cloud-sdk/bin/gcloud iam workload-identity-pools providers describe p5-cs-production --workload-identity-pool=p5-cs-pool --location=global --project=ocelot-proof --format=json",
+        "exit_code": 0,
+        "observation": "provider ACTIVE; live attribute mapping/condition binds the candidate digest and expected Confidential Space claims; no attestation was obtained"
+      },
+      {
+        "command": "/home/matt/google-cloud-sdk/bin/gcloud kms keys describe p5-v3-authority --keyring=p5-evaluator --location=global --project=ocelot-proof --format=json",
+        "exit_code": 0,
+        "observation": "ASYMMETRIC_SIGN key exists"
+      },
+      {
+        "command": "/home/matt/google-cloud-sdk/bin/gcloud kms keys versions describe 1 --key=p5-v3-authority --keyring=p5-evaluator --location=global --project=ocelot-proof --format=json",
+        "exit_code": 0,
+        "observation": "version 1 ENABLED, EC_SIGN_ED25519, SOFTWARE protection"
+      },
+      {
+        "command": "/home/matt/google-cloud-sdk/bin/gcloud kms keys get-iam-policy p5-v3-authority --keyring=p5-evaluator --location=global --project=ocelot-proof --format=json",
+        "exit_code": 0,
+        "observation": "signerVerifier binding is present for legacy p5-evaluator and an older image-digest principal sha256:0a42a061ac593c7dd4e21e90fab7b8bb62d1836666e5507549fb4194b18dcca7; no APPROVAL-020 authority binding or signature"
+      },
+      {
+        "command": "/home/matt/google-cloud-sdk/bin/gcloud storage buckets describe gs://p5-evaluator-ocelot-proof-141633828616 --project=ocelot-proof --format=json",
+        "exit_code": 0,
+        "observation": "bucket exists in US-CENTRAL1; uniform bucket-level access=true; public access prevention=inherited"
+      },
+      {
+        "command": "/home/matt/google-cloud-sdk/bin/gcloud storage buckets get-iam-policy gs://p5-evaluator-ocelot-proof-141633828616 --project=ocelot-proof --format=json",
+        "exit_code": 0,
+        "observation": "legacy p5-evaluator service account has roles/storage.objectAdmin; candidate-bound objectUser binding is for older digest sha256:0a42a061ac593c7dd4e21e90fab7b8bb62d1836666e5507549fb4194b18dcca7; proposed GCS-only boundary is not materialized"
+      },
+      {
+        "command": "/home/matt/google-cloud-sdk/bin/gcloud storage ls --long gs://p5-evaluator-ocelot-proof-141633828616/p5-r0/operation-4/rs069r18r13-op4-04a98e3e/** --project=ocelot-proof",
+        "exit_code": 1,
+        "observation": "one or more URLs matched no objects; no target bundle objects observed"
+      },
+      {
+        "command": "/home/matt/google-cloud-sdk/bin/gcloud iam service-accounts describe p5-r0-gcs-only@ocelot-proof.iam.gserviceaccount.com --project=ocelot-proof --format=json",
+        "exit_code": 1,
+        "observation": "NOT_FOUND; proposed GCS-only service account is absent"
+      },
+      {
+        "command": "/home/matt/google-cloud-sdk/bin/gcloud iam roles describe p5R0Operation4BundleWriterV1 --project=ocelot-proof --format=json",
+        "exit_code": 1,
+        "observation": "NOT_FOUND; proposed custom role is absent"
+      },
+      {
+        "command": "/home/matt/google-cloud-sdk/bin/gcloud iam service-accounts get-iam-policy p5-evaluator@ocelot-proof.iam.gserviceaccount.com --project=ocelot-proof --format=json",
+        "exit_code": 0,
+        "observation": "legacy account has roles/iam.workloadIdentityUser for older image-digest principal sha256:0a42a061ac593c7dd4e21e90fab7b8bb62d1836666e5507549fb4194b18dcca7"
+      },
+      {
+        "command": "/home/matt/google-cloud-sdk/bin/gcloud compute instances list --project=ocelot-proof --filter='name~p5 OR labels.p5-r0=evaluator' --format=json",
+        "exit_code": 0,
+        "observation": "empty list; no evaluator VM observed"
+      },
+      {
+        "command": "/home/matt/google-cloud-sdk/bin/gcloud run services describe p5-r0-evaluator --region=us-east1 --project=ocelot-proof --format=json",
+        "exit_code": 1,
+        "observation": "service not found"
+      }
+    ]
+  },
+  "local_reviewed_artifacts": {
+    "candidate_image_binding": {
+      "path": "var/p5-r0-rs069r1/candidate-image-binding.json",
+      "image_digest": "sha256:394a0707d1e162315bdf22de4ff034a7cf75a32b919cef6f12bba501521be11c",
+      "closure_digest": "sha256:4f49f208c6e65d87c5c50b90a316a1314298719425dde0858d66b33ceabed5c3",
+      "remote_digest_verified": true,
+      "remote_provenance_verified": null,
+      "local_closure_image_reference": "localhost/p5-r0-native-v3-rs069r1:clean-4804c41d37c0@sha256:394a0707d1e162315bdf22de4ff034a7cf75a32b919cef6f12bba501521be11c",
+      "runtime": "crun",
+      "network": "none",
+      "pull": "never",
+      "limits": {"steps": 8, "frame_bytes": 65536, "wall_seconds": 3, "memory_mb": 512, "cpu": 1, "pids": 32},
+      "status": "review_only_registry_bound_non_production"
+    },
+    "bootstrap_request_018": {
+      "path": "services/p5_r0_evaluator/deploy/p5-r0-track-a-bootstrap-request-approval-018-v1.json",
+      "request_digest": "sha256:eaa44e722611d0e6c07a3138d44b6625e1073e161cdb880b8c717bb9839cdf89",
+      "status": "blocked_pending_live_bindings"
+    },
+    "bootstrap_child_approval_018": {
+      "path": "services/p5_r0_evaluator/deploy/p5-r0-track-a-bootstrap-child-approval-018-v1.json",
+      "artifact_digest": "sha256:9eb73f2318702be7bdc3c3b123341d81b16d37659b4c2dcb9d5e5ecad5935812",
+      "approved": false,
+      "enabled": false,
+      "status": "blocked_pending_verifier_issued_bindings"
+    },
+    "historical_bootstrap_request": {
+      "path": "services/p5_r0_evaluator/deploy/p5-r0-track-a-bootstrap-request.json",
+      "request_digest": "sha256:7f4fa1631016366b486cb8d8e7445c15d0355b12fed9ae24fb55a2fdc3360f14",
+      "status": "blocked_pending_reviewed_effectful_bootstrap_runner"
+    },
+    "gcs_boundary_packet": {
+      "path": "services/p5_r0_evaluator/deploy/rs069r18r13-gcs-boundary-packet-v1.json",
+      "packet_digest": "sha256:a8c313f6e5b775b4ba48a8e8ff4cc5e2561c560930c4e89ec2e9666fb509c447",
+      "object_count": 11,
+      "status": "reviewed_candidate_binding_pending_credential_and_iam"
+    },
+    "iam_prestate": {
+      "path": "var/p5-r0-rs069/rs069r18r13-iam-prestate-v2.json",
+      "artifact_digest": "sha256:03c83325fd531f0a2db39f0d54d02b10ae7cfa96577ab3cc93046602f109b946"
+    },
+    "local_validation": [
+      {
+        "command": "PYTHONPATH=. python3 -m services.p5_r0_evaluator.deploy.track_a_bootstrap_request validate",
+        "exit_code": 0,
+        "observation": "historical APPROVAL-016 request validates as blocked review-only"
+      },
+      {
+        "command": "PYTHONPATH=. python3 -m services.p5_r0_evaluator.deploy.gcs_boundary_packet",
+        "exit_code": 0,
+        "observation": "11-object GCS packet validates with child_approval_present=false and mutations_performed=false"
+      },
+      {
+        "command": "PYTHONPATH=. python3 -m services.p5_r0_evaluator.deploy.definition validate --definition services/p5_r0_evaluator/deploy/p5-r0-native-deployment.json",
+        "exit_code": 2,
+        "observation": "RS-040 validation blocked because reviewed run/environment bindings are unresolved"
+      }
+    ]
+  },
+  "missing_verifier_artifacts": [
+    "APPROVAL-020-bound verifier-issued LIVE_BINDINGS object covering exact image, closure, WIP/IAM, KMS authority, bucket, project, zone, and claim paths",
+    "APPROVAL-020-bound enabled verifier-issued child approval with approval/expiry/request/authority/capability digests",
+    "materialized authority binding digest and real signed-environment approval",
+    "attestation subject prefix and real Google-signed Confidential Space claims",
+    "attestation-derived short-lived capability credential",
+    "fresh least-privilege IAM poststate for the GCS-only account/role/token-creator path",
+    "attested runtime/native closure reconciliation"
+  ],
+  "permitted_next_step": "Stop. Do not invoke the bootstrap runner, provision resources, export credentials, call KMS/STS/FreeTSA, upload to GCS, issue a task, launch Confidential Space, or edit the master runsheet until the verifier supplies exact live bindings and an enabled child approval for this packet through the reviewed path.",
+  "packet_digest": null,
+  "packet_digest_status": "not_self_approved_or_promoted; digest intentionally not asserted"
+}

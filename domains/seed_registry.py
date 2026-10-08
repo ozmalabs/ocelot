@@ -135,7 +135,7 @@ REGISTRY.register(Seed(
 
 REGISTRY.register(Seed(
     id="adaptive_control_core", version="1.0.0",
-    depends_on=("affective_state_core", "dual_process_core", "motor_core"),
+    depends_on=("affective_state_core", "motor_core"),
     installer=_installer_from_manifest("adaptive_control_core"),
     description="Graph-native temporal credit assignment, precision-separated "
                 "learning control, sensorimotor forward prediction, allostatic "
@@ -163,8 +163,7 @@ REGISTRY.register(Seed(
 
 REGISTRY.register(Seed(
     id="default_mode_core", version="2.0.0",
-    depends_on=("affective_state_core", "dual_process_core",
-                "generative_world_model"),
+    depends_on=("affective_state_core", "generative_world_model"),
     installer=_installer_from_manifest("default_mode_core"),
     description="Continuous graph-native intrinsic/default-mode control: "
                 "overlapping network weights gate bounded, interruptible "
@@ -298,6 +297,14 @@ REGISTRY.register(Seed(
     installer=_installer_from_manifest("intent"),
     description="Intent / Unknown / Mention types + the rewrite Rules "
                 "that build an Intent for each Message.",
+))
+
+REGISTRY.register(Seed(
+    id="communication_intent_arbitration", version="1.4.17",
+    depends_on=("intent",),
+    installer=_installer_from_manifest("communication_intent_arbitration"),
+    description="Typed communication intent arbitration and discourse-local "
+                "action-target carry rules.",
 ))
 
 REGISTRY.register(Seed(
@@ -1739,6 +1746,36 @@ REGISTRY.register(Seed(
                 "dim_types vocabulary is already populated across the corpus "
                 "and MapList/ZipWith/In/IfThenElse compose the projection. "
                 "PER_OBSERVER_APERTURE.md, ONE_LOOP_MANY_GRAINS.md.",
+))
+
+REGISTRY.register(Seed(
+    id="instruction_repair_retry", version="1.0.0", depends_on=(),
+    installer=_installer_from_manifest("instruction_repair_retry"),
+    description="Agent-initiated retry of a promoted instruction concern whose own "
+                "experiments were refuted/inconclusive (graph marks, daemon hook executes), "
+                "bounded by InstructionRetryPolicy.max_retries (tranche 6).",
+))
+
+REGISTRY.register(Seed(
+    id="vision_grain_policy", version="1.0.0",
+    depends_on=("shape_decode_loop",),
+    installer=_installer_from_manifest("vision_grain_policy"),
+    description="Vision-route default for the held-generator grain ladder "
+                "(agent.dim_grains=[0,1,2] unless explicitly set); confirmed on "
+                "held-out Omniglot alphabets (tranche 3).",
+))
+
+REGISTRY.register(Seed(
+    id="aperture_minting", version="1.0.0",
+    depends_on=("observer_aperture", "shape_decode_loop"),
+    installer=_installer_from_manifest("aperture_minting"),
+    description="MINTING AT APERTURE (opt-in per observer, mint_at_aperture==1) "
+                "and REFINEMENT ALONG IT. A projected decode that settles with a "
+                "non-empty residual mints a CapabilityAxis carrying the observer's "
+                "aperture/grain; an axis refines another iff the coarser aperture "
+                "is a strict subset and the finer residual projected onto it "
+                "equals the coarser residual exactly (refines_at_aperture). "
+                "MINTING_AT_APERTURE.md; RECURSIVE_SELF_IMPROVEMENT_PLAN_20261006 WP1.",
 ))
 
 REGISTRY.register(Seed(

@@ -12,7 +12,7 @@ The fix is graph-DATA, not a Python classification ladder: two new marker classe
 (WH, the fronted interrogative pro-form; AUXINV, the inverted subject-aux) plus one
 new POSITIONALLY-synthesised marker (OBL, a question-scoped oblique preposition) and
 four new `ShapeSignature{kind:'construction'}` entries
-(`seeds/reading_constructions.json`: wh_question / wh_question_oblique /
+(`domain_data/reading_constructions.json`: wh_question / wh_question_oblique /
 polar_question / imperative) the SAME `reflective_faculty.compose_design_for_goal`
 (ShapeDecode) collapse decodes against. WHICH construction wins — hence
 `speech_act`/`polar` — is read straight off that construction's own

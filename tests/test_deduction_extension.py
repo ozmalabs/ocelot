@@ -329,9 +329,9 @@ def test_deduction_generalization_module_test_file_untouched():
 #  that revisits this doesn't have to re-derive it: quantifier WORDS are
 #  seeded as plain `determiner`-role ClosedClass members (the SAME role
 #  "a"/"the" occupy — `_DETERMINERS`, populated from
-#  `seeds/reading_constructions.json`'s own `ClosedClass{role:"determiner"}`
+#  `domain_data/reading_constructions.json`'s own `ClosedClass{role:"determiner"}`
 #  data at `ensure_codebook` time), and no construction anywhere in
-#  `seeds/reading_constructions.json` names a distinct quantifier-SCOPE
+#  `domain_data/reading_constructions.json` names a distinct quantifier-SCOPE
 #  relation (no `forall`/`exists`/`scope` predication exists in that
 #  codebook) — i.e. there is no bound-variable premise representation for
 #  "every"/"some" to ground into today, confirmed by direct read, not
@@ -351,7 +351,7 @@ def test_quantifier_words_are_seeded_determiners_with_no_scope_construction():
     # role "a"/"the" occupy, once the codebook is loaded from seed data.
     assert {"every", "some", "any", "each", "a", "the"} <= rc._DETERMINERS
     # no construction in the codebook names a quantifier-SCOPE relation.
-    seed_path = os.path.join(ROOT, "seeds", "reading_constructions.json")
+    seed_path = os.path.join(ROOT, "domain_data", "reading_constructions.json")
     manifest = json.load(open(seed_path))
     predications = {n["attrs"].get("predication") for n in manifest["nodes"]
                     if n.get("type") == "ShapeSignature" and n["attrs"].get("predication")}

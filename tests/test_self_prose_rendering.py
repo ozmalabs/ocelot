@@ -73,6 +73,36 @@ def test_self_organisation_reply_is_fluent_first_person(agent):
     assert ans.startswith("I ")
 
 
+def test_self_organisation_does_not_train_unused_account_grammar(agent, monkeypatch):
+    def unexpected_producer():
+        pytest.fail("area-list rendering must not train the self-account grammar")
+
+    monkeypatch.setattr(agent, "_self_account_producer", unexpected_producer)
+    answer = agent.answer_question("How are you organised?")
+
+    assert answer.startswith("I am organised into")
+
+
+def test_self_organisation_reader_marks_inventory_scope(agent):
+    from domains.self_organisation_reader import run_self_organisation
+
+    state = run_self_organisation(agent.s)
+
+    assert state["inventory_scope"] == "validated_seed_prepass_top12"
+    assert state["complete_within_scope"] is True
+    live_rows = []
+    for node in agent.s.nodes("Microtheory"):
+        attrs = agent.s.node(node)["attrs"]
+        if attrs.get("name"):
+            live_rows.append((
+                len(list(agent.s.neighbours(node, "has_concept"))),
+                attrs["name"],
+            ))
+    live_top12 = [name for _, name in sorted(
+        live_rows, key=lambda row: (-row[0], row[1]))[:12]]
+    assert state["areas"][:12] == live_top12
+
+
 def test_self_shape_reply_is_fluent_and_preserves_facts(agent):
     ans = agent.answer_question("What shape are you?")
     for tell in _RAW_DUMP_TELLS:

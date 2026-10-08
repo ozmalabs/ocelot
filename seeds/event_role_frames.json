@@ -1,9 +1,8 @@
 {
   "id": "event_role_frames",
   "version": "0.3.0",
-  "depends_on": [
-    "reading_constructions"
-  ],
+  "depends_on": [],
+  "domain_data_requires": ["reading_constructions"],
   "description": "Graph-native EVENT GROUNDING (the Jabberwock grows its own argument roles). v0.2.0 (Phase 2): the CLAUSE-GRAPH VOCABULARY (EventClause/Token node types + has_token/next productions) PLUS the VerbFrame CODEBOOK (the `frames` array): one VerbFrame per step of _event_predication's role-assignment ladder (svo_base -> nom/acc case binding -> collision clear -> OSV fronted object -> locative inversion), each a priority + a guard Term (over the clause's precomputed candidate attrs and running-state r_* attrs) + an effect list. reading_collapse._decode_roles_graph reads these frames from the graph, evaluates each guard via the Rust `evaluate`, and applies the applicable frames in priority order to the running state (r_subj/r_obj/\u2026) \u2014 the graph-native replacement for the Python _resolve_roles_py cascade, byte-identical to _event_predication over the frozen Aesop+Grimm corpus. _ground_event emits predications from the resolved roles. Phase 3 adds the role-growth rungs so a novel role mints from a residual. Loaded idempotently by reading_collapse.ensure_event_frames via the Rust load_seed_manifest.",
   "microtheory": {
     "name": "event_role_frames",

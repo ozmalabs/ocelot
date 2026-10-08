@@ -1,0 +1,7 @@
+# Amendment: separate installed rule order from runtime-mutated order
+
+V1.2 stopped after one pair because the full active-rule-name fingerprint was taken at worker exit. A deterministic read-only boot comparison of the default and transformed seed corpora (both under `PYTHONHASHSEED=0`) showed the same 831-seed order, the same 724 loaded seeds and 11 existing failures, and identical initial ProblemShape indices 1830–1834. Thus the V1.2 fingerprint difference arose during the worker's rule executions, not during seed installation. Runtime rule mutation is itself a possible treatment outcome and must not invalidate the paired comparison.
+
+V1.3 records active-rule order fingerprints at three phases: immediately after seed loading, immediately before the observation stream (after the common scaffolding), and after the full worker. Only the first two must match baseline to validate the order control; the final fingerprint is retained as an outcome. The candidate's transformed manifest builder separately asserts that the five ProblemShape names occupy the original positions within the seed's own rule list. `PYTHONHASHSEED=0` remains fixed. V1/V1.1/V1.2 partial artifacts remain unchanged and incomplete.
+
+The seed corpus changed again after V1.2: `communication_causal_retrieval.json` has a new digest. V1.3 therefore snapshots the current 831-file corpus in its own corpus lock and will refuse to run against subsequent drift. This preserves the workspace state observed at V1.3 preregistration.

@@ -1,0 +1,672 @@
+{
+ "id": "aperture_minting",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "comment": "Emit seeds/aperture_minting.json -- MINTING AT APERTURE and REFINEMENT ALONG IT.\n\nRECURSIVE_SELF_IMPROVEMENT_PLAN_20261006.md WP1; design MINTING_AT_APERTURE.md.\n\nTwo rules, both opt-in per observer (`mint_at_aperture == 1`) or per axis pair:\n\n* `am_mint_at_aperture` -- an observer whose projected decode settled with a\n  NON-EMPTY residual mints a CapabilityAxis that INHERITS ITS APERTURE: the\n  dimensions it resolved (`resolves`), its `grain`, the frame's `dim_types`, and\n  the projected residual it was formed from. A coarse observer is not inventing\n  detail -- the mint claims only what it saw at that grain (\"you cannot mint\n  finer than your grain\"). Content-keyed (`add_node_if_absent` on source +\n  aperture + residual), so two observers at the same aperture seeing the same\n  thing share one axis.\n\n* `am_refine_along_aperture` -- the intensive axis, made a relation. Axis F\n  REFINES axis C iff C's aperture is a strict subset of F's AND F's minted\n  residual, projected onto C's aperture (unresolved slots collapse to the\n  same constant the observer projection uses), equals C's minted residual\n  exactly (as sorted relation lists). Refinement is then movement along the\n  aperture axis, not a contradiction or a duplicate. Applies to ANY two mints\n  carrying WP1 provenance (sd-loop mints record their full-resolution\n  dim_types), so a coarse aperture mint links to a later fine sd-loop mint of\n  the same thing.\n\nNo guard elsewhere reads these; the seed is inert unless an observer opts in\nor two provenance-carrying axes exist.\n",
+ "depends_on": [
+  "observer_aperture",
+  "shape_decode_loop"
+ ],
+ "productions": [
+  {
+   "provenance": "seed:aperture_minting:minted",
+   "src": {
+    "type": "ObservedShape",
+    "var": "pv"
+   },
+   "edge_type": "minted",
+   "tgt": {
+    "type": "CapabilityAxis",
+    "var": "axis"
+   }
+  },
+  {
+   "provenance": "seed:aperture_minting:refines",
+   "src": {
+    "type": "CapabilityAxis",
+    "var": "f"
+   },
+   "edge_type": "refines_at_aperture",
+   "tgt": {
+    "type": "CapabilityAxis",
+    "var": "c"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "am_mint_at_aperture",
+   "comment": "An observer that opted in (mint_at_aperture==1) and whose projected decode SETTLED at the current scope (pv.ap_seen == obs.ap_scope_n, the same settled test ap_decode_percept uses) with a non-empty residual mints a CapabilityAxis that inherits its aperture. Content-keyed: source+observer-independent aperture+residual is the dedup key.",
+   "match": [
+    [
+     "obs",
+     "projected",
+     "pv"
+    ],
+    [
+     "obs",
+     "perceives",
+     "sh"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "mint_at_aperture"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pv"
+       },
+       "key": "kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "percept"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pv"
+       },
+       "key": "of_name"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "sh"
+       },
+       "key": "name"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pv"
+       },
+       "key": "ap_gen"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "ap_gen"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pv"
+       },
+       "key": "ap_seen"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "ap_scope_n"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pv"
+          },
+          "key": "ap_residual"
+         },
+         "b": {
+          "type": "Lit",
+          "value": null
+         }
+        },
+        "then": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "pv"
+         },
+         "key": "signature"
+        },
+        "other": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "pv"
+         },
+         "key": "ap_residual"
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "pv"
+        },
+        "key": "aperture_minted"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node_if_absent",
+     "axis",
+     "CapabilityAxis",
+     {
+      "source": "aperture_mint",
+      "minted_aperture": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "resolves"
+       }
+      },
+      "minted_dim_types": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sh"
+        },
+        "key": "dim_types"
+       }
+      },
+      "minted_from_signature": {
+       "__term__": {
+        "type": "Sort",
+        "seq": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "pv"
+           },
+           "key": "ap_residual"
+          },
+          "b": {
+           "type": "Lit",
+           "value": null
+          }
+         },
+         "then": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pv"
+          },
+          "key": "signature"
+         },
+         "other": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pv"
+          },
+          "key": "ap_residual"
+         }
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "axis",
+     "is_axis",
+     1.0
+    ],
+    [
+     "set_attr",
+     "axis",
+     "induced",
+     1.0
+    ],
+    [
+     "set_attr",
+     "axis",
+     "from_observation",
+     1.0
+    ],
+    [
+     "set_attr",
+     "axis",
+     "minted_grain",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "grain"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "axis",
+     "minted_by_observer",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "name"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "axis",
+     "minted_of",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pv"
+       },
+       "key": "of_name"
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "pv",
+     "minted",
+     "axis"
+    ],
+    [
+     "set_attr",
+     "pv",
+     "aperture_minted",
+     1
+    ]
+   ]
+  },
+  {
+   "name": "am_refine_along_aperture",
+   "comment": "Axis f refines axis c iff c's aperture is a strict subset of f's and f's minted residual projected onto c's aperture equals c's minted residual exactly (sorted). Same frame typing required. Adds f -refines_at_aperture-> c once.",
+   "match": [
+    [
+     "pf",
+     "minted",
+     "f"
+    ],
+    [
+     "pc",
+     "minted",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "f"
+        },
+        "key": "minted_aperture"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "c"
+        },
+        "key": "minted_aperture"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "f"
+        },
+        "key": "minted_from_signature"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "c"
+        },
+        "key": "minted_from_signature"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "f"
+       },
+       "key": "minted_dim_types"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "minted_dim_types"
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Difference",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "minted_aperture"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "f"
+           },
+           "key": "minted_aperture"
+          }
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Difference",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "f"
+           },
+           "key": "minted_aperture"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "minted_aperture"
+          }
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Sort",
+       "seq": {
+        "type": "MapList",
+        "source": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "f"
+         },
+         "key": "minted_from_signature"
+        },
+        "var_name": "rel",
+        "value": {
+         "type": "ZipWith",
+         "a": {
+          "type": "Var",
+          "name": "rel"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "f"
+          },
+          "key": "minted_dim_types"
+         },
+         "a_name": "slot",
+         "b_name": "dt",
+         "value": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "In",
+           "member": {
+            "type": "Var",
+            "name": "dt"
+           },
+           "container": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "c"
+            },
+            "key": "minted_aperture"
+           }
+          },
+          "then": {
+           "type": "Var",
+           "name": "slot"
+          },
+          "other": {
+           "type": "Lit",
+           "value": "\u00b7"
+          }
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Sort",
+       "seq": {
+        "type": "MapList",
+        "source": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "key": "minted_from_signature"
+        },
+        "var_name": "rel",
+        "value": {
+         "type": "ZipWith",
+         "a": {
+          "type": "Var",
+          "name": "rel"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "minted_dim_types"
+         },
+         "a_name": "slot",
+         "b_name": "dt",
+         "value": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "In",
+           "member": {
+            "type": "Var",
+            "name": "dt"
+           },
+           "container": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "c"
+            },
+            "key": "minted_aperture"
+           }
+          },
+          "then": {
+           "type": "Var",
+           "name": "slot"
+          },
+          "other": {
+           "type": "Lit",
+           "value": "\u00b7"
+          }
+         }
+        }
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "In",
+       "member": {
+        "type": "Var",
+        "name": "c"
+       },
+       "container": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "f"
+        },
+        "edge_type": "refines_at_aperture"
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "f",
+     "refines_at_aperture",
+     "c"
+    ]
+   ]
+  }
+ ]
+}

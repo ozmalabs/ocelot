@@ -42,7 +42,7 @@ ARCHITECTURE (CLAUDE.md). A world-adapter refinement over graph data, scoped to 
 encyclopedic read (the fable/crow path never calls it — byte-identical). WordNet
 hypernymy + the case scan are mechanical reference reads (the coref idiom); the
 head-type roots + acquisition-verb roots are graph-resident seed data
-(`seeds/named_compound_heads.json`); the coherence residual is a native Filter Term
+(`domain_data/named_compound_heads.json`); the coherence residual is a native Filter Term
 the Rust evaluator runs; the composition writes real graph edges (`named_after`).
 No Python if/else decides MEANING, and there is no 'nobel' literal in the decision
 path — the fix is generic comprehension. donkey=0 (no LLM), no `import re`.
@@ -58,7 +58,7 @@ from domains import name_variant_merge as nvm
 from substrate_rs import ext
 
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-_SEED = os.path.join(_ROOT, "seeds", "named_compound_heads.json")
+_SEED = os.path.join(_ROOT, "domain_data", "named_compound_heads.json")
 _METON_SEED = os.path.join(_ROOT, "seeds", "metonymy_patterns.json")
 
 
@@ -121,7 +121,7 @@ def _NodesOfType(t):
 def ensure_head_codebook(agent) -> None:
     """Idempotently install the named-compound head-type roots (`HeadTypeRoot`) +
     acquisition-verb roots (`AcquireVerbRoot`/`AcquireVerbLex`) from
-    seeds/named_compound_heads.json. Guarded by a `Seed{id:'named_compound_heads'}`
+    domain_data/named_compound_heads.json. Guarded by a `Seed{id:'named_compound_heads'}`
     sentinel — the same seed-I/O idiom register_source uses. Mechanical."""
     sub, _native, _ag = _resolve(agent)
     if any(sub.node(n)["attrs"].get("id") == "named_compound_heads"

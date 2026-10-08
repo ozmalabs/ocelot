@@ -2,7 +2,7 @@
 signal the single-template argmax harvest throws away, and MEASURE the recovery
 against the honest 0.27-valid baseline (block 337).
 
-BASELINE TO BEAT (block 337, seeds/generated/qwen3_reaped_isa_full.json):
+BASELINE TO BEAT (block 337, domain_data/llm_harvest/qwen3_reaped_isa_full.json):
   single template "A {} is a kind of", single-token constrained argmax over the
   candidate hypernym set, top-1, flat trust 0.5. On 6000 WordNet noun subjects:
   27.2% VALID is-a edges (validity = object is ANY-level WordNet ancestor of the
