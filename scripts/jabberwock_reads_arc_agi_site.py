@@ -162,6 +162,8 @@ def install_prior_experience(s) -> dict:
     loaded = {}
     for seed in PRIOR_SEEDS_NODES:
         p = ROOT / "seeds" / f"{seed}.json"
+        if not p.exists():                             # domain data (domain_data/, tranche 11)
+            p = ROOT / "domain_data" / f"{seed}.json"
         if not p.exists():
             loaded[seed] = "(missing)"; continue
         loaded[seed] = _install_nodes_seed(s, json.loads(p.read_text()))

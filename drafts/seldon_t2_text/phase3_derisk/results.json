@@ -1,0 +1,593 @@
+{
+  "n_snippets": 52,
+  "gold_distribution": {
+    "up": 26,
+    "down": 19,
+    "none": 7
+  },
+  "rules_only_RUN": {
+    "overall_accuracy": 0.712,
+    "per_class": {
+      "up": {
+        "precision": 0.944,
+        "recall": 0.654,
+        "f1": 0.773,
+        "support": 26
+      },
+      "down": {
+        "precision": 0.833,
+        "recall": 0.789,
+        "f1": 0.811,
+        "support": 19
+      },
+      "none": {
+        "precision": 0.312,
+        "recall": 0.714,
+        "f1": 0.435,
+        "support": 7
+      }
+    },
+    "confusion_matrix": {
+      "up": {
+        "none": 8,
+        "up": 17,
+        "down": 1
+      },
+      "down": {
+        "down": 15,
+        "up": 1,
+        "none": 3
+      },
+      "none": {
+        "none": 5,
+        "down": 2
+      }
+    },
+    "confusion_ascii": "gold\\pred |    up  down  none\n-----------------------------\n       up |    17     1     8\n     down |     1    15     3\n     none |     0     2     5",
+    "directional": {
+      "n_directional": 45,
+      "usable_directional_recall": 0.711,
+      "wrong_direction_rate": 0.044,
+      "abstain_rate": 0.244,
+      "n_correct": 32,
+      "n_wrong": 2,
+      "n_abstain": 11
+    },
+    "trap_subset_accuracy": 0.667,
+    "trap_n": 18,
+    "by_doc_type": {
+      "fomc_statement": {
+        "correct": 34,
+        "n": 41,
+        "acc": 0.829
+      },
+      "macro_release": {
+        "correct": 0,
+        "n": 2,
+        "acc": 0.0
+      },
+      "cb_speech": {
+        "correct": 3,
+        "n": 7,
+        "acc": 0.429
+      },
+      "corporate_8k": {
+        "correct": 0,
+        "n": 1,
+        "acc": 0.0
+      },
+      "positioning_report": {
+        "correct": 0,
+        "n": 1,
+        "acc": 0.0
+      }
+    },
+    "per_snippet": [
+      {
+        "id": "s01",
+        "gold": "up",
+        "pred": "none",
+        "rule": "no-cue",
+        "trap": false,
+        "unit": "t2-F1-hawkish-cut-2024",
+        "doc_type": "fomc_statement"
+      },
+      {
+        "id": "s02",
+        "gold": "down",
+        "pred": "down",
+        "rule": "tally",
+        "trap": false,
+        "unit": "t2-F1-hawkish-cut-2024",
+        "doc_type": "fomc_statement"
+      },
+      {
+        "id": "s03",
+        "gold": "up",
+        "pred": "none",
+        "rule": "no-cue",
+        "trap": false,
+        "unit": "t2-F1-hawkish-cut-2024",
+        "doc_type": "macro_release"
+      },
+      {
+        "id": "s04",
+        "gold": "up",
+        "pred": "up",
+        "rule": "tally",
+        "trap": false,
+        "unit": "t2-F1-liftoff-telegraph-2015",
+        "doc_type": "fomc_statement"
+      },
+      {
+        "id": "s05",
+        "gold": "up",
+        "pred": "up",
+        "rule": "tally",
+        "trap": false,
+        "unit": "t2-F1-liftoff-telegraph-2015",
+        "doc_type": "fomc_statement"
+      },
+      {
+        "id": "s06",
+        "gold": "up",
+        "pred": "up",
+        "rule": "tally",
+        "trap": false,
+        "unit": "t2-F1-patient-dropped-2015",
+        "doc_type": "fomc_statement"
+      },
+      {
+        "id": "s07",
+        "gold": "down",
+        "pred": "down",
+        "rule": "tally",
+        "trap": false,
+        "unit": "t2-F1-patient-dropped-2015",
+        "doc_type": "fomc_statement"
+      },
+      {
+        "id": "s08",
+        "gold": "up",
+        "pred": "none",
+        "rule": "tie",
+        "trap": false,
+        "unit": "t2-F1-patient-dropped-2015",
+        "doc_type": "fomc_statement"
+      },
+      {
+        "id": "s09",
+        "gold": "down",
+        "pred": "down",
+        "rule": "flip",
+        "trap": false,
+        "unit": "t2-F1-patient-dropped-2015",
+        "doc_type": "fomc_statement"
+      },
+      {
+        "id": "s10",
+        "gold": "down",
+        "pred": "down",
+        "rule": "tally",
+        "trap": false,
+        "unit": "t2-F1-third-cut-2019",
+        "doc_type": "fomc_statement"
+      },
+      {
+        "id": "s11",
+        "gold": "up",
+        "pred": "up",
+        "rule": "tally",
+        "trap": false,
+        "unit": "t2-F1-pause-2006",
+        "doc_type": "fomc_statement"
+      },
+      {
+        "id": "s12",
+        "gold": "down",
+        "pred": "down",
+        "rule": "tally",
+        "trap": false,
+        "unit": "t2-F1-pause-2006",
+        "doc_type": "fomc_statement"
+      },
+      {
+        "id": "s13",
+        "gold": "up",
+        "pred": "up",
+        "rule": "tally",
+        "trap": false,
+        "unit": "t2-F1-measured-pace-2004",
+        "doc_type": "fomc_statement"
+      },
+      {
+        "id": "s14",
+        "gold": "down",
+        "pred": "down",
+        "rule": "tally",
+        "trap": false,
+        "unit": "t2-F1-considerable-period-2003",
+        "doc_type": "fomc_statement"
+      },
+      {
+        "id": "s15",
+        "gold": "none",
+        "pred": "none",
+        "rule": "neutral",
+        "trap": false,
+        "unit": "t2-F1-considerable-period-2003",
+        "doc_type": "fomc_statement"
+      },
+      {
+        "id": "s16",
+        "gold": "up",
+        "pred": "up",
+        "rule": "flip",
+        "trap": false,
+        "unit": "t2-F2-taper-begins-2013",
+        "doc_type": "fomc_statement"
+      },
+      {
+        "id": "s17",
+        "gold": "down",
+        "pred": "down",
+        "rule": "tally",
+        "trap": false,
+        "unit": "t2-F2-taper-begins-2013",
+        "doc_type": "fomc_statement"
+      },
+      {
+        "id": "s18",
+        "gold": "up",
+        "pred": "up",
+        "rule": "flip",
+        "trap": false,
+        "unit": "t2-F2-taper-testimony-2013",
+        "doc_type": "cb_speech"
+      },
+      {
+        "id": "s19",
+        "gold": "down",
+        "pred": "up",
+        "rule": "tally",
+        "trap": false,
+        "unit": "t2-F2-taper-testimony-2013",
+        "doc_type": "cb_speech"
+      },
+      {
+        "id": "s20",
+        "gold": "up",
+        "pred": "up",
+        "rule": "tally",
+        "trap": false,
+        "unit": "t2-F2-higher-for-longer-2023",
+        "doc_type": "fomc_statement"
+      },
+      {
+        "id": "s21",
+        "gold": "up",
+        "pred": "none",
+        "rule": "neutral",
+        "trap": false,
+        "unit": "t2-F2-higher-for-longer-2023",
+        "doc_type": "fomc_statement"
+      },
+      {
+        "id": "s22",
+        "gold": "down",
+        "pred": "down",
+        "rule": "tally",
+        "trap": false,
+        "unit": "t2-F2-whatever-it-takes-2012",
+        "doc_type": "cb_speech"
+      },
+      {
+        "id": "s23",
+        "gold": "down",
+        "pred": "none",
+        "rule": "no-cue",
+        "trap": false,
+        "unit": "t2-F2-whatever-it-takes-2012",
+        "doc_type": "cb_speech"
+      },
+      {
+        "id": "s24",
+        "gold": "up",
+        "pred": "up",
+        "rule": "tally",
+        "trap": false,
+        "unit": "t2-F2-eur-parity-2022",
+        "doc_type": "cb_speech"
+      },
+      {
+        "id": "s25",
+        "gold": "up",
+        "pred": "none",
+        "rule": "tie",
+        "trap": false,
+        "unit": "t2-F2-eur-parity-2022",
+        "doc_type": "cb_speech"
+      },
+      {
+        "id": "s26",
+        "gold": "up",
+        "pred": "none",
+        "rule": "no-cue",
+        "trap": false,
+        "unit": "t2-F2-eur-parity-2022",
+        "doc_type": "cb_speech"
+      },
+      {
+        "id": "s27",
+        "gold": "up",
+        "pred": "none",
+        "rule": "tie",
+        "trap": false,
+        "unit": "t2-F2-powell-pivot-2019",
+        "doc_type": "fomc_statement"
+      },
+      {
+        "id": "s28",
+        "gold": "up",
+        "pred": "up",
+        "rule": "tally",
+        "trap": false,
+        "unit": "t2-F2-powell-pivot-2019",
+        "doc_type": "fomc_statement"
+      },
+      {
+        "id": "s29",
+        "gold": "down",
+        "pred": "down",
+        "rule": "flip",
+        "trap": false,
+        "unit": "t2-F2-cut-sizing-2024",
+        "doc_type": "fomc_statement"
+      },
+      {
+        "id": "s30",
+        "gold": "down",
+        "pred": "down",
+        "rule": "tally",
+        "trap": false,
+        "unit": "t2-F2-cut-sizing-2024",
+        "doc_type": "fomc_statement"
+      },
+      {
+        "id": "s31",
+        "gold": "down",
+        "pred": "down",
+        "rule": "flip",
+        "trap": false,
+        "unit": "t2-F2-time-has-come-2024",
+        "doc_type": "fomc_statement"
+      },
+      {
+        "id": "s32",
+        "gold": "down",
+        "pred": "down",
+        "rule": "flip",
+        "trap": false,
+        "unit": "t2-F2-abenomics-2012",
+        "doc_type": "fomc_statement"
+      },
+      {
+        "id": "s33",
+        "gold": "down",
+        "pred": "down",
+        "rule": "tally",
+        "trap": false,
+        "unit": "t2-F2-draghi-precommit-2014",
+        "doc_type": "fomc_statement"
+      },
+      {
+        "id": "s34",
+        "gold": "up",
+        "pred": "up",
+        "rule": "flip",
+        "trap": false,
+        "unit": "t2-F2-draghi-precommit-2014",
+        "doc_type": "fomc_statement"
+      },
+      {
+        "id": "s35",
+        "gold": "up",
+        "pred": "up",
+        "rule": "tally",
+        "trap": false,
+        "unit": "t2-F2-some-pain-2022",
+        "doc_type": "fomc_statement"
+      },
+      {
+        "id": "s36",
+        "gold": "up",
+        "pred": "none",
+        "rule": "tie",
+        "trap": false,
+        "unit": "t2-F4-powell-december-2018",
+        "doc_type": "fomc_statement"
+      },
+      {
+        "id": "s37",
+        "gold": "none",
+        "pred": "none",
+        "rule": "neutral",
+        "trap": false,
+        "unit": "t2-F4-powell-december-2018",
+        "doc_type": "fomc_statement"
+      },
+      {
+        "id": "s38",
+        "gold": "up",
+        "pred": "up",
+        "rule": "tally",
+        "trap": false,
+        "unit": "t2-F4-svb-whiplash-2023",
+        "doc_type": "fomc_statement"
+      },
+      {
+        "id": "s39",
+        "gold": "down",
+        "pred": "none",
+        "rule": "no-cue",
+        "trap": false,
+        "unit": "t2-F4-svb-whiplash-2023",
+        "doc_type": "corporate_8k"
+      },
+      {
+        "id": "s40",
+        "gold": "down",
+        "pred": "down",
+        "rule": "tally",
+        "trap": false,
+        "unit": "t2-F4-taper-warning-2013",
+        "doc_type": "fomc_statement"
+      },
+      {
+        "id": "s41",
+        "gold": "up",
+        "pred": "up",
+        "rule": "flip",
+        "trap": false,
+        "unit": "t2-F4-cpi-friday-2022",
+        "doc_type": "fomc_statement"
+      },
+      {
+        "id": "s42",
+        "gold": "none",
+        "pred": "none",
+        "rule": "neutral",
+        "trap": false,
+        "unit": "t2-F4-covid-rates-2020",
+        "doc_type": "fomc_statement"
+      },
+      {
+        "id": "s43",
+        "gold": "none",
+        "pred": "none",
+        "rule": "neutral",
+        "trap": false,
+        "unit": "t2-F4-covid-rates-2020",
+        "doc_type": "fomc_statement"
+      },
+      {
+        "id": "s44",
+        "gold": "up",
+        "pred": "up",
+        "rule": "tally",
+        "trap": false,
+        "unit": "t2-F4-jpy-carry-2007",
+        "doc_type": "fomc_statement"
+      },
+      {
+        "id": "s45",
+        "gold": "none",
+        "pred": "none",
+        "rule": "neutral",
+        "trap": false,
+        "unit": "t2-F4-jpy-carry-2007",
+        "doc_type": "fomc_statement"
+      },
+      {
+        "id": "s46",
+        "gold": "down",
+        "pred": "none",
+        "rule": "no-cue",
+        "trap": false,
+        "unit": "t2-F4-jpy-carry-2007",
+        "doc_type": "positioning_report"
+      },
+      {
+        "id": "s47",
+        "gold": "down",
+        "pred": "down",
+        "rule": "flip",
+        "trap": false,
+        "unit": "t2-F1-greater-confidence-2024",
+        "doc_type": "fomc_statement"
+      },
+      {
+        "id": "s48",
+        "gold": "none",
+        "pred": "down",
+        "rule": "tally",
+        "trap": false,
+        "unit": "t2-F2-taper-begins-2013",
+        "doc_type": "fomc_statement"
+      },
+      {
+        "id": "s49",
+        "gold": "up",
+        "pred": "up",
+        "rule": "tally",
+        "trap": false,
+        "unit": "t2-F1-measured-pace-2004",
+        "doc_type": "fomc_statement"
+      },
+      {
+        "id": "s50",
+        "gold": "up",
+        "pred": "up",
+        "rule": "flip",
+        "trap": false,
+        "unit": "t2-F2-some-pain-2022",
+        "doc_type": "fomc_statement"
+      },
+      {
+        "id": "s51",
+        "gold": "none",
+        "pred": "down",
+        "rule": "tally",
+        "trap": false,
+        "unit": "t2-F1-considerable-period-2003",
+        "doc_type": "fomc_statement"
+      },
+      {
+        "id": "s52",
+        "gold": "up",
+        "pred": "down",
+        "rule": "tally",
+        "trap": false,
+        "unit": "t2-F2-higher-for-longer-2023",
+        "doc_type": "macro_release"
+      }
+    ]
+  },
+  "model_endpoint_MOCK": {
+    "architecture": "build_request -> transport -> parse_response -> map",
+    "well_formed_typings": "52/52",
+    "live_accuracy": "NOT OBTAINED \u2014 requires house MODEL_ENDPOINT; not fabricated",
+    "example": {
+      "request_url": "http://model-endpoint.invalid/v1/chat/completions",
+      "request_payload_keys": [
+        "max_tokens",
+        "messages",
+        "model",
+        "response_format",
+        "temperature"
+      ],
+      "response": {
+        "id": "chatcmpl-mock",
+        "object": "chat.completion",
+        "model": "house-model",
+        "choices": [
+          {
+            "index": 0,
+            "finish_reason": "stop",
+            "message": {
+              "role": "assistant",
+              "content": "{\"direction\": \"none\", \"confidence\": 0.5, \"_mock\": true}"
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 0,
+          "completion_tokens": 0,
+          "total_tokens": 0
+        },
+        "_transport": "MOCK \u2014 no network; architecture proof only"
+      },
+      "parsed_direction": "none"
+    }
+  }
+}

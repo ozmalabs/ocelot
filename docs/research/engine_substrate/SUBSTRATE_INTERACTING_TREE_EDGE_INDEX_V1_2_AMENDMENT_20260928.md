@@ -1,0 +1,3 @@
+# High-degree edge lookup replay v1.2 amendment
+
+The v1.1 workers match every source hash in the parent lock and each worker's pre/post snapshots are identical. The gate still failed because `build_is_stale()` represents a fresh build as an empty list (`[]`), while the projection helper compared that value by identity to boolean `False`. V1.2 treats the field according to its contract (any empty result is fresh), retains v1 and v1.1 captures unchanged, and writes a new lock and raw record. No source, implementation, workload, semantic oracle, or timing analysis changed; only the fail-closed source projection predicate is corrected.

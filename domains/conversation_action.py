@@ -329,6 +329,41 @@ def _mint_goal(agent, kind: str, predicate, obj, inbound=None, **extra) -> Any:
     return g
 
 
+def _record_live_goal_event(agent, inbound, goal, kind, *, payload=None):
+    """Record a lifecycle event on the inbound Goal's discourse state.
+
+    This is mechanical provenance around the selected self-report faculty.
+    The goal ID is passed directly; it is never reconstructed from event order
+    or recipient. Native rules apply the lifecycle transition.
+    """
+    if inbound is None or goal is None or not agent.s.has_node(inbound):
+        return None
+    attrs = agent.s.node(inbound)["attrs"]
+    state = attrs.get("discourse_state_id")
+    origin = attrs.get("discourse_event_id")
+    if (state is None or origin is None or not agent.s.has_node(state)
+            or not agent.s.has_node(origin) or not agent.s.has_node(goal)):
+        return None
+    from domains.discourse_state import record_event
+    ga = agent.s.node(goal)["attrs"]
+    if ga.get("lifecycle_status") is None:
+        agent.inner.set_attr(goal, "lifecycle_status", "proposed")
+        if ga.get("status") is None:
+            agent.inner.set_attr(goal, "status", "proposed")
+    if goal not in agent.inner.neighbours(state, "has_active_goal"):
+        agent.inner.add_edge_unchecked(state, "has_active_goal", goal)
+    if origin not in agent.inner.neighbours(goal, "originated_in"):
+        agent.inner.add_edge_unchecked(goal, "originated_in", origin)
+    if inbound not in agent.inner.neighbours(goal, "comprehends"):
+        agent.inner.add_edge_unchecked(goal, "comprehends", inbound)
+    speakers = list(agent.inner.neighbours(inbound, "sent_by"))
+    event = record_event(agent, state, kind=kind, speaker=agent.agent,
+        addressee=speakers[0] if speakers else None,
+        interaction_mode="event", payload=payload, goal=goal)
+    agent.inner.run_rules()
+    return event
+
+
 # --- describe-scene faculty (the agent's OWN authored rules; donkey=0) --------
 
 def attach_scene(agent, percepts: list[dict]) -> Any:
@@ -450,15 +485,37 @@ def _act_describe_scene(agent, comp, inbound) -> dict:
         return {"acted": False, "reply": None, "route": "describe_scene",
                 "note": "no scene attached / language stack unavailable"}
     prod, asr = built
-    asr.world_receive(agent, scene, comp.raw)
+    before_goals = {int(g.value if hasattr(g, "value") else g)
+                    for g in agent.s.nodes("Goal")}
+    request_scene = asr.request_scene_view(agent, scene)
+    request_message = asr.world_receive(agent, request_scene, comp.raw, message=inbound)
     agent.inner.run_rules()
-    ng, nsg, lines = asr.self_report(agent, prod)
-    # the describe-Goal the agent's OWN rule minted (the action record)
+    # Bind only the Goal newly minted by the authored rule for this request
+    # message. A global last-Goal scan can silently reuse a prior request's
+    # parent when a Scene has already been described.
     goals = [g for g in agent.s.nodes("Goal")
              if agent.inner.has_node(g)
-             and agent.s.node(g)["attrs"].get("kind") == "describe_scene"]
-    if goals:
-        _bind_goal_to_inbound(agent, goals[-1], inbound)
+             and int(g.value if hasattr(g, "value") else g) not in before_goals
+             and agent.s.node(g)["attrs"].get("kind") == "describe_scene"
+             and request_message in agent.inner.neighbours(g, "comprehends")]
+    goal = goals[0] if len(goals) == 1 else None
+    if goal is None:
+        return {"acted": False, "reply": None, "route": "describe_scene",
+                "goal": None, "goal_kind": "describe_scene",
+                "note": f"authored rule produced {len(goals)} request-owned parent Goals; expected exactly one"}
+    _bind_goal_to_inbound(agent, goal, inbound)
+    lifecycle_payload = {"action_route": "describe_scene",
+                         "request_message_id": int(request_message.value if hasattr(request_message, "value") else request_message)}
+    _record_live_goal_event(agent, inbound, goal, "selection", payload=lifecycle_payload)
+    _record_live_goal_event(agent, inbound, goal, "execution", payload=lifecycle_payload)
+    try:
+        ng, nsg, lines = asr.self_report(agent, prod, parent_goal=goal)
+    except Exception:
+        ng, nsg, lines = 1, 0, []
+    _record_live_goal_event(agent, inbound, goal,
+        "action_result" if lines else "action_failure",
+        payload={**lifecycle_payload,
+                 "outcome": "faculty_returned" if lines else "faculty_failed_or_empty"})
     # CONCEPTUALIZE: form + shape + monitor + commit -> the audience-designed conveyed
     # subset of lines (mechanical map-back from the committed utterance). Falls back to
     # the full line set on any failure — never silent.
@@ -474,7 +531,7 @@ def _act_describe_scene(agent, comp, inbound) -> dict:
     return {"acted": bool(lines), "reply": reply, "route": "describe_scene",
             "conceptualized": intent_result is not None,
             "intent": (intent_result or {}).get("intent"),
-            "goal": (goals[-1] if goals else None), "goal_kind": "describe_scene",
+            "goal": goal, "goal_kind": "describe_scene",
             "subgoals": nsg, "served_by": "agent_rule:comprehend_describe+communicate",
             "note": f"the agent authored the describe/communicate rules (donkey=0); "
                     f"minted {ng} describe-Goal + {nsg} produce-utterance subgoals; "
@@ -581,13 +638,48 @@ def act_on_instruction(agent, comp, inbound=None) -> dict:
         # 1. SELF-REPORT about the self -> the held reflective faculty -> prose.
         target = strong or ("self_identity" if _has_generic_self_ref(comp.raw) else None)
         if target and target in _rf._DISPATCH:
-            goal = _mint_goal(agent, "report_self", pred, obj,
-                              inbound=inbound, self_target=target)
+            # The held reflexive self-report rule already commits a
+            # Goal{report_self} to this Message. Adopt that exact graph
+            # commitment so the live faculty can attach its event-owned
+            # lifecycle instead of minting a parallel Goal. Only reuse a
+            # unique event-bound report_self Goal; ambiguous or unrelated
+            # state keeps the ordinary mint path.
+            graph_goals = ([goal for goal in agent.inner.neighbours(
+                agent.agent, "has_goal")
+                if agent.s.has_node(goal)
+                and agent.s.node(goal)["attrs"].get("kind") == "report_self"
+                and inbound is not None
+                and inbound in agent.inner.neighbours(goal, "comprehends")]
+                if inbound is not None else [])
+            if len(graph_goals) == 1:
+                goal = graph_goals[0]
+                for key, value in (("predicate", pred or ""),
+                                   ("object", obj or ""),
+                                   ("self_target", target),
+                                   ("source", "conversation")):
+                    agent.inner.set_attr(goal, key, value)
+                _bind_goal_to_inbound(agent, goal, inbound)
+                from domains import interlocutor_model as _im
+                _im.wanted_by(agent, goal)
+            else:
+                goal = _mint_goal(agent, "report_self", pred, obj,
+                                  inbound=inbound, self_target=target)
+            lifecycle_payload = {"action_route": "self_report",
+                                 "faculty_target": target,
+                                 "predicate": pred or ""}
+            _record_live_goal_event(agent, inbound, goal, "selection",
+                                    payload=lifecycle_payload)
+            _record_live_goal_event(agent, inbound, goal, "execution",
+                                    payload=lifecycle_payload)
             try:
                 state = _rf.reflect(target, None, agent.s)
                 reply = agent._surface_self_state(state)
             except Exception:
                 reply = None
+            _record_live_goal_event(agent, inbound, goal,
+                "action_result" if reply else "action_failure",
+                payload={**lifecycle_payload,
+                         "outcome": "faculty_returned" if reply else "faculty_failed_or_empty"})
             return {"acted": reply is not None, "reply": reply, "route": "self_report",
                     "goal": goal, "goal_kind": "report_self",
                     "served_by": f"self_model:{target}",
@@ -620,7 +712,8 @@ def act_on_instruction(agent, comp, inbound=None) -> dict:
     # 3. A perception/nav/manipulation predicate with no attached world, or a
     #    general predicate: mint the Goal, report HONESTLY — no faked action.
     goal = _mint_goal(agent, "instruction", pred, obj, inbound=inbound)
-    if action_evidence.get("deferred_condition") and goal is not None:
+    deferred_condition = action_evidence.get("deferred_condition")
+    if deferred_condition and goal is not None:
         # A typed condition changes lifecycle state; it does not authorize an
         # immediate world action. Preserve the evidence on the graph-resident
         # Goal so later cognition can resume it when the condition is observed.
@@ -635,7 +728,12 @@ def act_on_instruction(agent, comp, inbound=None) -> dict:
         except Exception:
             pass
     has_world = getattr(agent, "_conv_scene", None) is not None
-    if pred_l in _SELF_REPORT_VERBS and not has_world:
+    if deferred_condition:
+        target = f" the {obj}" if obj else ""
+        note = f'The request to {pred}{target} is deferred.'
+        if not has_world:
+            note += " I have no attached world/faculty to carry it out here."
+    elif pred_l in _SELF_REPORT_VERBS and not has_world:
         note = (f'I took on the goal to {pred}'
                 + (f' the {obj}' if obj else '')
                 + ", but I have no scene attached to perceive right now.")
@@ -691,16 +789,33 @@ def is_ask_back(comp) -> bool:
     return d.get("path") == "frontier" or head_untyped
 
 
-def ask_back(agent, comp, inbound=None) -> dict:
+def ask_back(agent, comp, inbound=None, *, focus_override=None,
+             surface_kind_override=None) -> dict:
     """Produce a repair FIRST-PAIR-PART about the gap focus: an outbound Message
     with a `clarification` speech act (adjacency-pair vocabulary from the
     conversation seed), threaded `responds_to` the inbound, `expects_response`.
     The trouble source is the user's OWN word quoted back — other-initiated
     repair, never a fabricated answer. Returns the asked question as `reply`."""
     evidence = (comp.dispatch or {}).get("language_evidence") or {}
-    focus = (evidence.get("repair_focus") or _head_untyped_gap(comp)
+    inbound_attrs = (agent.s.node(inbound)["attrs"]
+                     if inbound is not None and agent.s.has_node(inbound) else {})
+    unresolved_question_reference = (
+        comp.kind == "question" and inbound_attrs.get("comp_anaphor"))
+    focus = (focus_override or evidence.get("repair_focus") or _head_untyped_gap(comp)
              or _first_untyped_surface(comp)
              or comp.focus or (comp.dispatch or {}).get("reason") or comp.raw)
+    surface_kind = surface_kind_override or "inquire_unknown"
+    if (surface_kind_override is None
+            and evidence.get("repair_evidence") == "nonunderstanding_report"):
+        focus = focus_override or evidence.get("repair_focus") or "understanding"
+        surface_kind = "inquire_clarification"
+    if unresolved_question_reference and surface_kind_override is None:
+        # A typed topic with an unresolved discourse referent is not an
+        # unknown word. Ask which entity the interlocutor means, using the
+        # adapter's selected topic label rather than the wh-relation focus.
+        focus = ((comp.dispatch or {}).get("concept")
+                 or evidence.get("referent_target") or focus)
+        surface_kind = "inquire_reference"
     focus = str(focus).strip(",.;:?!") or comp.raw
     # Render the repair in the interlocutor's REGISTER (the agent's voice): the
     # held `inquire_unknown` surface quotes the real trouble source and matches
@@ -708,7 +823,7 @@ def ask_back(agent, comp, inbound=None) -> dict:
     # Fall back to the plain honest template if the register lexicon is absent.
     surface = None
     try:
-        surface = agent.surface_for("inquire_unknown", word=focus)
+        surface = agent.surface_for(surface_kind, word=focus)
     except Exception:
         surface = None
     if not surface:

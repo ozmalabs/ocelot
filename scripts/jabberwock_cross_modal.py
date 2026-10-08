@@ -12,7 +12,8 @@ The demo teaches 10 grapheme<->digit pairs by co-presentation (self-recognising 
 binding is exact), then READS ALOUD held-out writers (grapheme -> recalled digit) and takes DICTATION from
 held-out speakers (spoken digit -> recalled symbol) -- each bounded by its modality's held-out recognition.
 
-Run:  PYTHONPATH=.:runners/dsl/python python -m scripts.jabberwock_cross_modal [n_test]
+Run:  PYTHONPATH=.:runners/dsl/python python -m scripts.jabberwock_cross_modal [n_test [pair_shift]]
+`pair_shift=0` is the ordinary mapping; nonzero shifts provide a permuted-binding control.
 """
 from __future__ import annotations
 
@@ -77,11 +78,19 @@ def load_wav(p):
         return np.frombuffer(w.readframes(w.getnframes()), dtype=np.int16).astype(np.float32) / 32768.0
 
 
-def main():
-    n_test = int(sys.argv[1]) if len(sys.argv) > 1 else 40
+def main(n_test=None, pair_shift=None):
+    if n_test is None:
+        n_test = int(sys.argv[1]) if len(sys.argv) > 1 else 40
+    else:
+        n_test = int(n_test)
+    if pair_shift is None:
+        pair_shift = int(sys.argv[2]) if len(sys.argv) > 2 else 0
+    else:
+        pair_shift = int(pair_shift)
+    pair_shift %= NDIG
     print(SEP)
     print("CROSS-MODAL GRAPHEME<->PHONEME (graph-native): reading aloud. Vision (Omniglot/PointSetDist) and")
-    print("speech (FSDD/DtwTo) share the AbS spine; a co-presented pair binds grapheme<->phoneme. Recall is bidir.")
+    print(f"speech (FSDD/DtwTo) share the AbS spine; co-presentation uses a cyclic digit shift of {pair_shift}. Recall is bidir.")
     print(SEP)
     if not ow.have_data("evaluation") or not os.path.isdir(FSDD):
         print(f"\n  need Omniglot ({ow.DATA}) and FSDD ({FSDD}).")
@@ -134,7 +143,8 @@ def main():
     # --- TEACH: co-present each grapheme with a self-recognising audio exemplar (binding is exact) ---
     for d in range(NDIG):
         gm, _ = recognise(GRAPH_PRED, whole(ow.drawings(ch[d])[0]))            # the gallery exemplar (self-recognises)
-        t0 = next(t for t, dd in aud_gallery if dd == d)                       # a gallery audio template of digit d
+        paired_digit = (d + pair_shift) % NDIG
+        t0 = next(t for t, dd in aud_gallery if dd == paired_digit)             # correct pair, or shifted control
         am = s.add_node("Mark", {}); s.set_attr(am, "axs_heard_feat", s.node(t0)["attrs"]["axs_synth_feat"])
         s.add_edge_unchecked(am, "recognised_as", t0)
         s.add_edge_unchecked(gm, "co_modal", am)                               # cross-modal ostension

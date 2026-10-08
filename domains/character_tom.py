@@ -6,18 +6,18 @@ coreference into it, but neither represents what a CHARACTER believes/wants/
 knows — a propositional attitude. domains/psychology.py has a real belief/
 desire/intention/knowledge taxonomy, but it is aimed at the AGENT's own mind
 (and its interlocutor's), not narrative characters; reading_collapse's
-construction codebook (seeds/reading_constructions.json) has no propositional-
+construction codebook (domain_data/reading_constructions.json) has no propositional-
 attitude construction, so "Sally thinks the ball is in the basket" has nowhere
 to ground — the sentence decodes (if at all) as a bare copular definitional
 clause, losing "thinks" entirely.
 
 THE CONSTRUCTION. 'SUBJ ATTITUDE-VERB COMPLEMENT' is a ShapeSignature
-(seeds/character_tom.json: `propositional_attitude`, signature [["ATTITUDE"]])
+(domain_data/character_tom.json: `propositional_attitude`, signature [["ATTITUDE"]])
 in the SAME codebook designation/possession live in — recognised by the SAME
 `reflective_faculty.compose_design_for_goal` ShapeDecode Term reading_collapse
 already uses (reused here via `rc._decode`/`rc._winner`, not reimplemented).
 The ATTITUDE marker-class (believes/thinks/knows/wants/hopes/fears/wishes/
-doubts) mirrors seeds/reading_constructions.json's COS class exactly: it is
+doubts) mirrors domain_data/reading_constructions.json's COS class exactly: it is
 NOT wired into reading_collapse's reading-time `_SKELETON` set (an attitude
 verb sitting in a clause's main-verb slot would otherwise collide with the
 clause's OTHER markers — the embedded "is" of "...the ball IS in the basket"
@@ -103,7 +103,7 @@ from domains import reading_scope as rs
 from domains import situation_model_reader as smr
 
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-_SEED_FILE = os.path.join(_ROOT, "seeds", "character_tom.json")
+_SEED_FILE = os.path.join(_ROOT, "domain_data", "character_tom.json")
 
 
 # --------------------------------------------------------------------------- #
@@ -232,7 +232,7 @@ def _find_attitude_marker(agent, words: list[str]) -> Optional[tuple]:
     BUGFIX (Wave: interlocutor-as-modeled-participant, task 3): the guard
     used to read `lex.get(w.lower()) is not None`, which ALSO excludes a word
     the ATTITUDE class ITSELF already owns — and the class's own SEED forms
-    (believe/think/know/want/hope/fear/wish/doubt, seeds/character_tom.json)
+    (believe/think/know/want/hope/fear/wish/doubt, domain_data/character_tom.json)
     are registered into this SAME shared marker lexicon at install time. That
     silently broke every BASE-FORM first-person self-report ("I think X" /
     "I want Y") while a conjugated third-person form ("Sally thinks X")

@@ -1,0 +1,3 @@
+# Threshold noise panel v1.1 pre-capture amendment
+
+The first locked worker stopped before producing any capture because the baseline code-shape census converted native node IDs to strings before querying their attributes. The native wrapper requires its `NodeID` object. Corrected the census to inspect attributes using the native ID, while retaining string IDs only for before/after set comparison. The failed pre-capture lock is preserved as a diagnostic artifact; the confirmatory panel uses the v1.1 lock generated from the amended runner, analyzer, and protocol. The task set, labels, hypotheses, domains, held-outs, gates, and interpretation are unchanged.

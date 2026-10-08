@@ -232,10 +232,10 @@ def arm_a8(sides, k):
 #  A9 -- attribution. The SAME drive, the SAME engine, ONE bit of seed DATA.
 # --------------------------------------------------------------------------- #
 def _strip_batch_seed() -> str:
-    """A temp copy of `seeds/vision_change.json` with `batch` stripped from every
+    """A temp copy of `domain_data/vision_change.json` with `batch` stripped from every
     rule -- `batch_apply_measure.py::_strip_batch_seed`, verbatim."""
     import tempfile
-    with open(os.path.join(ROOT, "seeds", "vision_change.json")) as fh:
+    with open(os.path.join(ROOT, "domain_data", "vision_change.json")) as fh:
         seed = json.load(fh)
     for r in seed.get("rules", []):
         r.pop("batch", None)
@@ -246,7 +246,7 @@ def _strip_batch_seed() -> str:
 
 
 def _seed_batch_flags() -> dict:
-    with open(os.path.join(ROOT, "seeds", "vision_change.json")) as fh:
+    with open(os.path.join(ROOT, "domain_data", "vision_change.json")) as fh:
         seed = json.load(fh)
     return {r["name"]: bool(r.get("batch", False)) for r in seed.get("rules", [])}
 

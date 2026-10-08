@@ -1,7 +1,8 @@
 {
   "id": "story_boundary",
   "version": "1.0.0",
-  "depends_on": ["reading_constructions"],
+  "depends_on": [],
+  "domain_data_requires": ["reading_constructions"],
   "description": "STORY BOUNDARY = COLLAPSE OVER A STORY-BOUNDARY CODEBOOK, one level up from narrative_structure's per-sentence story-grammar-ROLE collapse. Where narrative_structure decodes the ROLE of ONE sentence in a character's goal-pursuit chain, this codebook decodes whether a SEAM between two adjacent sentences is a STORY BOUNDARY -- the seam at which a real story's NESTED structure (episodes inside an arc, a tale inside a frame) splits into StoryUnit sub-trees. Each inter-sentence seam is turned into a SINGLE-TOKEN skeleton by a mechanical graph read (does sentence_i carry a TELLING/speech marker opening a reported narrative? does sentence_j LEAD with a TEMPORAL-SHIFT episode marker recognised against the held TEMPORAL_SHIFT MarkerClass forms? do the already-minted NarrativeRole nodes show a resolution/consequence role at/before the seam followed by a fresh setup/problem role after it -- an arc discontinuity?), and that ONE token is decoded against this codebook exactly the way narrative_structure.decode_slot decodes a slot token against ShapeSignatureNarrative -- the BOUNDARY VERDICT is always the winning ShapeSignatureStoryBoundary's own `boundary` attr, never a Python if/else naming the boundary, and NEVER a paragraph/blank-line/regex splitter. A seam whose token no schema covers (SEAM_NONE) mints NOTHING -- the discriminative null that keeps a single-arc story ONE unit (precision-safe). The TEMPORAL_SHIFT / TELL MarkerClass nodes are NOT construction-identity markers (not in reading_collapse._SKELETON/_GLUE), so they stay CONTENT inside a read_clause skeleton -- adding them perturbs no existing construction decode; they only give the seam decoder recognised marker data.",
   "microtheory": {
     "name": "story_boundary",

@@ -1,0 +1,3 @@
+# MetaShape multi-schema transfer panel v1.1 amendment (2026-09-26)
+
+V1's locked 4-schema panel fails the intended generalization gates: the MotionRule family is classified by the preexisting `spatial_dynamics` pattern instead of minting a new schema, and fixed-field negative controls for ResourceTransfer and GoalTrace are covered by their newly minted MetaShapes. V1.1 is an exact fresh-process replication of the same source mechanism, inputs, ordering, and preregistered acceptance conditions. It will report the same per-family counts, including any gate failures. No examples, labels, or thresholds are changed.

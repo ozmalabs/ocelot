@@ -3259,8 +3259,41 @@ def _wikt_dom(low: str) -> Optional[str]:
     return ps[0] if ps else None
 
 
+def _typed_modal_word(substrate: Any, low: str) -> bool:
+    """Read graph modal metadata when a surface has a content-POS homograph."""
+    if substrate is None:
+        return False
+    agent = substrate if callable(getattr(substrate, "_concept_by_name", None)) else None
+    graph = getattr(substrate, "s", substrate)
+    inner = getattr(substrate, "inner", None) or getattr(graph, "_inner", None)
+    try:
+        if agent is not None:
+            concept = agent._concept_by_name(low)
+            attrs = dict(graph.node(concept)["attrs"]) if concept is not None else {}
+        else:
+            concepts = inner.nodes_where("Concept", "name", low) if inner else []
+            if not concepts:
+                concepts = [node for node in graph.nodes("Concept")
+                            if str(graph.node(node)["attrs"].get(
+                                "name") or "").lower() == low]
+            typed = [node for node in concepts
+                     if graph.node(node)["attrs"].get("semantic_role")
+                     or graph.node(node)["attrs"].get("modality")]
+            node = (typed or concepts or [None])[0]
+            attrs = dict(graph.node(node)["attrs"]) if node is not None else {}
+    except Exception:
+        return False
+    definition = (str(attrs.get("definition") or "") + " "
+                  + str(attrs.get("description") or "")).lower()
+    role = str(attrs.get("semantic_role") or attrs.get("modality") or "").lower()
+    return (role in {"permission", "permission_modality", "ability_permission",
+                     "ability", "epistemic_possibility"}
+            or "modal" in definition or "deficiency cue" in definition)
+
+
 def _pos_token(low: str, prev: Optional[str], nxt: Optional[str] = None,
-               prev_low: Optional[str] = None) -> tuple[str, Optional[str]]:
+               prev_low: Optional[str] = None,
+               substrate: Any = None) -> tuple[str, Optional[str]]:
     """(role, pos) for one token from the agent's own POS faculty + left/right context."""
     if low in _WH_FOCUS:
         return ("focus", _WH_FOCUS[low])
@@ -3300,16 +3333,55 @@ def _pos_token(low: str, prev: Optional[str], nxt: Optional[str] = None,
         posset = _wikt.wiktionary_pos(low, "en") or []
     except Exception:
         posset = []
+    if ("verb" in posset
+            and (cf == "particle" or "noun" in posset or "adj" in posset)
+            # Modal metadata licenses the auxiliary reading only where the
+            # clause can syntactically host one. Inside a determiner/adjective
+            # phrase the same homograph is nominal/adjectival (e.g. "the gap";
+            # the graph may also describe gaps as a deficiency cue).
+            and prev not in ("determiner", "adj")
+            and _typed_modal_word(substrate, low)):
+        return ("function", "auxiliary")
     dom = posset[0] if posset else None
     if dom in _CLOSED_POS:                             # you->pron, into->prep, the/your->det, if/or->conj
         return ("function", _CLOSED_POS[dom])
     if dom in _CONTENT_POS or dom == "name":          # the substantive ("name" = a proper noun)
         p = "noun" if dom == "name" else dom
-        if "noun" in posset and "verb" in posset:     # ambiguous -> LEFT context decides
-            if prev in ("determiner", "adj"):
+        verb_context = (prev in ("noun", "pronoun", "verb", "auxiliary")
+                        or (prev == "conjunction" and prev_low == "that")
+                        or (prev == "preposition" and prev_low == "to"))
+        adjective_context = prev in ("determiner", "adj")
+        if ("verb" in posset
+                and ("noun" in posset or "adj" in posset
+                     or (prev == "preposition" and prev_low == "to"))
+                and (verb_context or adjective_context)):
+            # Ambiguous content words resolve from LEFT context. The earlier
+            # noun/verb-only check missed adjective/verb homographs such as
+            # participles: a verb after a subject pronoun is the matrix head
+            # ("I learned ..."), while the same form before a nominal can
+            # remain adjectival ("the learned skill"). Keep this a POS/syntax
+            # decision; semantic disposition is still selected downstream.
+            # A lexically ambiguous modifier in determiner/adjective context
+            # remains adjectival. This uses only already-read left context and
+            # avoids a second vocabulary lookup for every ambiguous token.
+            if dom == "adj" and adjective_context:
+                p = "adj"
+            elif prev in ("determiner", "adj"):
                 p = "noun"
-            elif prev in ("noun", "pronoun", "verb") or (prev == "conjunction" and prev_low == "that"):
+            elif prev == "verb":
+                # After a lexical predicate, a noun/verb homograph is the
+                # direct complement unless syntax says otherwise. Auxiliary
+                # chains are handled separately by their function-word POS;
+                # infinitives after "to" are handled by the preposition case
+                # below. Treating every post-verb homograph as another verb
+                # loses ordinary objects ("needs power").
+                p = "noun" if "noun" in posset else p
+            elif prev in ("noun", "pronoun") or (prev == "conjunction" and prev_low == "that"):
                 p = "verb"                                # subject precedes a verb; relativizer "that" heads one
+            elif prev == "preposition" and prev_low == "to" and "verb" in posset:
+                p = "verb"                                # infinitival "to run"
+            elif prev in ("auxiliary", "aux") and "verb" in posset:
+                p = "verb"                                # finite/modal auxiliary + verb
         return ("content", p)
     if cf:                                             # e.g. "a": Wiktionary's dominant sense is the letter;
         return ("function", cf)                        # the grounded classifier still knows it's a determiner
@@ -3326,7 +3398,7 @@ def parse_with_gaps(text: str, substrate: Any = None) -> dict:
     for i, t in enumerate(toks):
         low = lows[i]
         nxt = lows[i + 1] if i + 1 < len(lows) else None
-        role, pos = _pos_token(low, prev, nxt, prev_low)
+        role, pos = _pos_token(low, prev, nxt, prev_low, substrate)
         elements.append({"surface": t, "role": role, "pos": pos})
         if role in ("content", "function"):
             prev = pos
@@ -3335,6 +3407,88 @@ def parse_with_gaps(text: str, substrate: Any = None) -> dict:
             focus = pos
         elif role in ("content", "gap"):
             gaps.append({"surface": t, "pos": pos})
+    # In an auxiliary-inversion polar question, keep a determiner-headed
+    # object NP intact after the matrix verb. Local POS dominance can otherwise
+    # turn its final noun/verb homograph into a second predicate ("Should we
+    # use the north route?"). This is a clause-role repair, not topic or answer
+    # selection; later cognition still requires graph grounding.
+    if (text.strip().endswith("?") and elements
+            and elements[0].get("role") == "function"
+            and elements[0].get("pos") in ("auxiliary", "aux", "copula")):
+        first_verb = next((i for i, item in enumerate(elements[1:], 1)
+                           if item.get("role") == "content"
+                           and item.get("pos") == "verb"), None)
+        if first_verb is not None:
+            determiner = next((i for i in range(first_verb + 1, len(elements))
+                               if elements[i].get("role") == "function"
+                               and elements[i].get("pos") == "determiner"), None)
+            if determiner is not None:
+                for index in range(determiner + 1, len(elements)):
+                    item = elements[index]
+                    if item.get("role") != "content":
+                        continue
+                    options = _wikt_posset(str(item.get("surface") or "")
+                                           .strip(".,;:?!").lower())
+                    if item.get("pos") == "verb" and "noun" in options:
+                        item["pos"] = "noun"
+                        previous = next((elements[j] for j in range(index - 1,
+                                          determiner, -1)
+                                         if elements[j].get("role") == "content"),
+                                        None)
+                        if previous is not None:
+                            previous_options = _wikt_posset(
+                                str(previous.get("surface") or "")
+                                .strip(".,;:?!").lower())
+                            if "adj" in previous_options:
+                                previous["pos"] = "adj"
+                        break
+    # A wh-selection clause can end with an adverb that scopes the event
+    # rather than filling the predicate's object slot ("Which rule fired
+    # last?"). Resolve this from clause position and the lexicon's POS set;
+    # do not let the temporal modifier become a nominal object and erase the
+    # event-selection relation. The downstream graph still needs actual
+    # event-history evidence before it can answer.
+    if focus == "selection":
+        selected_nominal = next((i for i, item in enumerate(elements)
+                                 if item.get("role") == "content"
+                                 and item.get("pos") == "noun"), None)
+        predicate_index = next((i for i, item in enumerate(elements)
+                                if selected_nominal is not None
+                                and i > selected_nominal
+                                and item.get("role") == "content"
+                                and item.get("pos") == "verb"), None)
+        trailing = next((i for i in range(len(elements) - 1,
+                                          (predicate_index or -1), -1)
+                         if elements[i].get("role") == "content"), None)
+        if (predicate_index is not None and trailing is not None
+                and trailing > predicate_index
+                and elements[trailing].get("pos") in {"noun", "adj"}):
+            trailing_options = _wikt_posset(
+                str(elements[trailing].get("surface") or "")
+                .strip(".,;:?!").lower())
+            if "adv" in trailing_options:
+                elements[trailing]["pos"] = "adv"
+    # `that` opens a finite complement only when a subject nominal occurs
+    # before the next predicate. This distinguishes a complementizer from a
+    # determiner/demonstrative without sentence templates or lexical verb
+    # lists; the language adapter supplies the POS sequence, cognition sees
+    # only the resulting clause relation.
+    for i, element in enumerate(elements):
+        if (element["surface"].lower().strip(",.;:?!") != "that"
+                or i == 0 or elements[i - 1].get("pos") != "verb"):
+            continue
+        rest = elements[i + 1:]
+        predicate_index = next((j for j, item in enumerate(rest)
+                                if (item.get("role") == "content"
+                                    and item.get("pos") == "verb")
+                                or (item.get("role") == "function"
+                                    and item.get("pos") in ("copula", "auxiliary"))),
+                               None)
+        if predicate_index is not None and any(
+                _is_nominal(item) for item in rest[:predicate_index]):
+            element["role"], element["pos"] = "function", "complementizer"
+    gaps = [{"surface": element["surface"], "pos": element["pos"]}
+            for element in elements if element.get("role") in ("content", "gap")]
     return {"parsed": True, "focus": focus, "elements": elements, "gaps": gaps}
 
 
@@ -3399,9 +3553,10 @@ def _segment_clauses(els: list) -> list:
     clauses, cur = [], []
     for e in els:
         surf = e["surface"].lower().strip(",.;:?!")
-        is_boundary = surf in _SUBORDINATORS or (
-            e["role"] == "function" and e["pos"] == "conjunction"
-            and surf not in _COORDINATORS and surf != "that")   # "that" relativizer stays in-clause (handled
+        is_boundary = (e["role"] == "function" and e["pos"] == "complementizer") or \
+            surf in _SUBORDINATORS or (
+        e["role"] == "function" and e["pos"] == "conjunction"
+        and surf not in _COORDINATORS and surf != "that")   # "that" relativizer stays in-clause (handled
         #                                                          by _extract_relatives, not a clause split)
         if is_boundary and cur:
             clauses.append(cur); cur = [e]
@@ -3418,7 +3573,7 @@ def _is_subordinate(clause: list) -> bool:
     if not clause:
         return True
     s0 = clause[0]["surface"].lower().strip(",.;:?!")
-    return s0 in _SUBORDINATORS or (clause[0]["role"] == "function" and clause[0]["pos"] == "conjunction")
+    return s0 in _SUBORDINATORS or (clause[0]["role"] == "function" and clause[0]["pos"] in ("conjunction", "complementizer"))
 
 
 def _clause_focus(clause: list) -> str:
@@ -3434,6 +3589,23 @@ def _compose_clause(clause: list, focus: Optional[str]) -> dict:
     for i, e in enumerate(clause):
         if e["role"] == "content" and e["pos"] == "verb":
             pred_i, predicate = i, e
+    if predicate is None:
+        # A copula plus a predicative adjective expresses a unary property
+        # ("the gate is open"). Prefer that lexical complement to the
+        # grammatical copula, including when a negator causes contextual POS
+        # disambiguation to mark the adjective rather than the homographic
+        # verb ("is the gate not open?"). The adapter records the selected
+        # property predicate; native cognition still requires a matching
+        # accepted graph proposition before answering.
+        copula_i = next((i for i, e in enumerate(clause)
+                         if e["role"] == "function"
+                         and e["pos"] == "copula"), None)
+        if copula_i is not None:
+            pred_i = next((i for i, e in enumerate(clause)
+                           if i > copula_i and e["role"] == "content"
+                           and e["pos"] == "adj"), None)
+            if pred_i is not None:
+                predicate = clause[pred_i]
     if predicate is None:
         for i, e in enumerate(clause):
             if e["role"] == "function" and e["pos"] in ("copula", "auxiliary"):
@@ -3534,12 +3706,24 @@ def compose_relation(frame: dict) -> dict:
                 (c[1]["role"] == "content" and c[1]["pos"] == "verb") or
                 (c[1]["role"] == "function" and c[1]["pos"] in ("copula", "auxiliary"))):
             return _compose_clause(c, c[0]["pos"])
+    embedded = [c for c in clauses if c and c[0].get("pos") == "complementizer"]
     cand = [c for c in clauses if not _is_subordinate(c)]  # else the matrix (non-subordinate) clause
     if cand:
         main = max(cand, key=len)
-        return _compose_clause(main, _clause_focus(main))
+        relation = _compose_clause(main, _clause_focus(main))
+        if embedded:
+            relation["embedded_relations"] = [
+                _compose_clause(c[1:], _clause_focus(c[1:]))
+                for c in embedded
+            ]
+        return relation
     main = max(clauses, key=len) if clauses else []
-    return _compose_clause(main, frame.get("focus"))
+    relation = _compose_clause(main, frame.get("focus"))
+    if embedded:
+        relation["embedded_relations"] = [
+            _compose_clause(c[1:], _clause_focus(c[1:])) for c in embedded
+        ]
+    return relation
 
 
 def render_relation(rel: dict) -> str:

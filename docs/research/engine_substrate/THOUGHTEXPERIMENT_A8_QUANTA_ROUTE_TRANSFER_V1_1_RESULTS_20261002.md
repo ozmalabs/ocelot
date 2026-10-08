@@ -1,0 +1,12 @@
+# Thoughtexperiment A8 quantum-route transfer v1.1 — behavior passed, receipt gate failed
+
+**Date:** 2026-10-02  
+**Status:** Score capture completed; receipt-validity gates failed, so no valid utility result is claimed. Primary isolation checks passed.
+
+The amended lock preflight successfully built both maze graphs and quantized them (3 and 4 SpaceQuantum regions); it did not run route outcomes. The fresh order capture again passed graph attribution: all four prompted calls selected `flip_comparison` on `qf_hop_route`, preserved the target, and all four no-cue calls abstained through the graph route. Seven host candidates per worker were scored on both portal worlds.
+
+The path traces show that `flip_comparison` and the unmodified source rule reached both goals through the openings in 8 moves with no wall contacts; the faulted rule repeatedly selected an invalid move and failed both worlds. The graph proposal's semantic digest matched the host `flip_comparison` candidate. However, the harness receipt comparator requires the exported match-edge list to preserve source ordering. Native `replace_active_rule_by_name` canonicalizes the equivalent `qf_hop_route` match edges into a different order. Consequently, the source, flip, fault, and other candidate receipts were marked invalid, utility summaries were false, and the independent analyzer rejected the receipt-validity gate. Primary graphs themselves remained unchanged. This is a receipt-validation defect, not a valid pass.
+
+Preserve the score file and analysis as a failed gate. v1.2 should compare match edges as an order-insensitive multiset while keeping effect order, guard structure, literals, multiplicity, and target name checked exactly; lock-time positive and negative receipt controls must pass before any new held-out scoring. Add fresh portal layouts to the amended held-out set rather than treating these already-inspected traces as confirmatory.
+
+Artifacts: [v1 preregistration](THOUGHTEXPERIMENT_A8_QUANTA_ROUTE_TRANSFER_V1_PREREG_20261002.md); [v1.1 amendment](THOUGHTEXPERIMENT_A8_QUANTA_ROUTE_TRANSFER_V1_1_AMENDMENT_20261002.md); lock `evaluation/substrate_capability/thoughtexperiment_a8_quanta_route_transfer_v1_1_lock_20261002.json`; orders `evaluation/reports/thoughtexperiment_a8_quanta_route_transfer_v1_1_orders_20261002.json`; scores `evaluation/reports/thoughtexperiment_a8_quanta_route_transfer_v1_1_scores_20261002.json`; analysis `evaluation/reports/thoughtexperiment_a8_quanta_route_transfer_v1_1_analysis_20261002.json`.

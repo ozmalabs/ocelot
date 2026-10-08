@@ -9,6 +9,8 @@ Phase 0 corpus but never edits or replays that corpus.
 from __future__ import annotations
 
 import json
+import argparse
+import hashlib
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -194,4 +196,32 @@ def measure_cases(cases: Mapping[str, Any] | None = None) -> dict[str, Any]:
 
 
 if __name__ == "__main__":
-    print(json.dumps(measure_cases(), indent=2, sort_keys=True))
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--output", type=Path,
+                        help="write the measurement report to this path")
+    args = parser.parse_args()
+    report = measure_cases()
+    report["inputs"] = {
+        "overlay_fixture": {
+            "path": str(FIXTURE.relative_to(ROOT)),
+            "sha256": hashlib.sha256(FIXTURE.read_bytes()).hexdigest(),
+        },
+        "phase0_corpus": {
+            "path": str(PHASE0.relative_to(ROOT)),
+            "sha256": hashlib.sha256(PHASE0.read_bytes()).hexdigest(),
+            "used_as_event_id_registry_only": True,
+            "replayed_or_modified": False,
+        },
+    }
+    rendered = json.dumps(report, indent=2, sort_keys=True) + "\n"
+    if args.output:
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(rendered, encoding="utf-8")
+        print(json.dumps({"output": str(args.output),
+                          "case_count": report["case_count"],
+                          "status_accuracy": report["commitment_status_accuracy"],
+                          "consequence_accuracy": report[
+                              "consequence_projection_accuracy"]},
+                         sort_keys=True))
+    else:
+        print(rendered, end="")

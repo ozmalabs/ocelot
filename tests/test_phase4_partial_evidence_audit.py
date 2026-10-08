@@ -49,6 +49,22 @@ def test_complete_explicit_record_is_observable_but_not_selected():
     assert "selected_candidate_id" not in report
 
 
+def test_complete_tuple_from_unapproved_source_is_not_promotion_eligible():
+    report = audit_partial_evidence([{
+        "source_id": "complete-but-unapproved",
+        "source_type": "AudienceModel",
+        "faculty": "audience",
+        "attrs": {
+            "grounding": 1.0, "expected_value": 0.8,
+            "residual_cost": 0.1, "consequence": 0.6, "novelty": 0.2,
+        },
+    }])
+    assert report["complete_tuple_count"] == 1
+    assert report["promotion_eligible_count"] == 0
+    assert report["promotion_count"] == 0
+    assert report["records"][0]["promotion_reason"] == "unapproved_source_type"
+
+
 def test_live_event_audit_reads_only_explicit_event_links():
     agent = WorldAdapter(seeds=())
     event = agent.s.add_node("DiscourseEvent", {"event_id": "e4r"})
@@ -79,6 +95,31 @@ def test_live_event_audit_follows_explicit_manifold_evidence_provenance():
     report = audit_live_event(agent, event)
     assert report["source_count"] == 1
     assert any(row["source_id"] == str(source.value) for row in report["records"])
+
+
+def test_live_event_audit_discovers_each_explicit_event_link_direction():
+    agent = WorldAdapter(seeds=())
+    event = agent.s.add_node("DiscourseEvent", {"event_id": "e4r-directions"})
+    relations = (
+        "derived_from_discourse_event", "generated_from_discourse_event",
+        "evidence_for_event", "for_event",
+    )
+    expected = set()
+    for index, relation in enumerate(relations):
+        outgoing = agent.s.add_node("AudienceModel", {
+            "evidence_faculty": "outgoing", "novelty": float(index + 1),
+        })
+        incoming = agent.s.add_node("AudienceModel", {
+            "evidence_faculty": "incoming", "novelty": float(index + 5),
+        })
+        agent.inner.add_edge_unchecked(event, relation, outgoing)
+        agent.inner.add_edge_unchecked(incoming, relation, event)
+        expected.update({str(outgoing.value), str(incoming.value)})
+
+    report = audit_live_event(agent, event)
+    assert {row["source_id"] for row in report["records"]} == expected
+    assert report["source_count"] == 8
+    assert report["complete_tuple_count"] == 0
 
 
 def test_partial_audit_replay_is_deterministic():

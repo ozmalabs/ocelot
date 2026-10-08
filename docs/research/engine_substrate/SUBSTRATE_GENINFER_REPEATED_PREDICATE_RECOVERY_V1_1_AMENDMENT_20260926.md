@@ -1,0 +1,5 @@
+# GenInfer repeated-predicate recovery protocol amendment v1.1
+
+**Amendment date:** 2026-09-26, after the v1 capture. The v1 analyzer's requirement that all calls report exactly 6,560 checked candidates fails for one cell: `adjacent_12 × unequal_1_3` reports 14,640 on all five repeats. Source inspection of the emitted observations shows this is consistent with the evaluator's data-dependent search bound: the perturbation raises the observed coordinate range. Therefore a fixed candidate count across perturbed inputs was not a valid integrity invariant.
+
+Preserve the v1 raw capture and v1 analyzer unchanged. For descriptive v1.1 reanalysis, require the unperturbed positive calls to report 6,560, require every `checked` value to be a positive integer and constant across repeats within each cell, and report its distribution. All other construction, matrix-recovery, decomposition, determinism, and source/native provenance criteria remain as stated in v1. This amendment does not claim a preregistered candidate-count result for the perturbed cells; a new confirmatory run would need its own locked search-count rule.

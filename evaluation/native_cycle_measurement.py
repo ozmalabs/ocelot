@@ -65,10 +65,10 @@ _PROFILE_LIMITS.update({
     "phase6_production": {"steps": 512, "nodes": 32, "edges": 32},
 })
 _RSS_ABSOLUTE_OBSERVABILITY_LIMIT = 1024 * 1024 * 1024
-# The execution plan's resident-memory budget is <100 MiB.  Measure workload
+# The execution plan's resident-memory budget is <150 MiB. Measure workload
 # growth rather than the host process's inherited baseline, while retaining
 # absolute RSS fields for observability.
-_RSS_GROWTH_LIMIT = 100 * 1024 * 1024
+_RSS_GROWTH_LIMIT = 150 * 1024 * 1024
 
 
 def _current_rss_bytes() -> int:

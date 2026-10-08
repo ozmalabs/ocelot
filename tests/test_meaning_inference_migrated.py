@@ -921,7 +921,7 @@ def test_source_audit_structural_analogy_never_decided_in_python():
 #  'BOUND_PAREN_DEF'} + ShapeSignature{name:'appositive_definition'|
 #  'parenthetical_definition', kind:'construction'}) was authored via
 #  `domains.teach.teach` (not hand-written JSON) and lives in
-#  seeds/reading_constructions.json — see
+#  domain_data/reading_constructions.json — see
 #  test_insitu_definition_authoring_persists_via_teach below for the isolated
 #  proof that teach() itself performs the persist.
 # =========================================================================== #
@@ -968,10 +968,10 @@ def test_insitu_appositive_abstains_without_a_det_headed_flanked_span(agent):
 
 def test_insitu_definition_construction_is_taught_graph_data():
     """The two constructions + their boundary MarkerClasses are graph data in
-    seeds/reading_constructions.json (authored via teach(), see the isolated
+    domain_data/reading_constructions.json (authored via teach(), see the isolated
     persistence test below), not Python literals scattered through the reading
     module."""
-    seed_path = os.path.join(ROOT, "seeds", "reading_constructions.json")
+    seed_path = os.path.join(ROOT, "domain_data", "reading_constructions.json")
     seed = json.load(open(seed_path))
     names = {n["attrs"].get("name") for n in seed["nodes"] if n["type"] == "ShapeSignature"}
     assert {"appositive_definition", "parenthetical_definition"} <= names
@@ -1014,7 +1014,7 @@ def test_insitu_definition_authoring_persists_via_teach(tmp_path, agent):
     depends on, with an EXPLICIT tmp seeds_dir (the documented test-isolation
     idiom -- see domains/teach.py's own DURABLE SAFETY GUARD note), writes them
     to disk immediately (not runtime-only), decoupled from whether the real
-    seeds/reading_constructions.json already carries them (it does — see
+    domain_data/reading_constructions.json already carries them (it does — see
     test_insitu_definition_construction_is_taught_graph_data above; that file
     was produced by this exact teach() call, run once against the real seeds
     dir). The live graph holds the taught node the instant teach() returns

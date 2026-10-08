@@ -86,6 +86,14 @@ impl Epoch {
         self.n.load(Ordering::Acquire)
     }
 
+    /// Copy the current version into an independent counter. Experiment
+    /// branches must not share Γ invalidation with their primary substrate.
+    pub fn detached(&self) -> Self {
+        Self {
+            n: Arc::new(AtomicU64::new(self.current())),
+        }
+    }
+
     /// Bump after Γ mutation. Release ordering pairs with the
     /// Acquire reads on `current()`.
     pub fn bump(&self) -> u64 {

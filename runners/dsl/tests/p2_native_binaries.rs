@@ -102,7 +102,6 @@ fn native_worker_to_evaluator_round_trip_requires_the_measured_envelope_digest()
     assert_eq!(scored["accepted"], true);
 }
 
-
 #[test]
 fn worker_binary_returns_only_fixed_diagnostic_for_preplan_digest_failure() {
     let request = json!({
@@ -112,24 +111,32 @@ fn worker_binary_returns_only_fixed_diagnostic_for_preplan_digest_failure() {
     let output = run(env!("CARGO_BIN_EXE_p2_native_worker"), request);
     assert!(!output.status.success());
     let diagnostic: Value = serde_json::from_slice(&output.stdout).unwrap();
-    assert_eq!(diagnostic, json!({
-        "schema":"P2NativeWorkerDiagnosticV1", "status":"unestablished",
-        "reason_code":"sealed_digest_mismatch"
-    }));
+    assert_eq!(
+        diagnostic,
+        json!({
+            "schema":"P2NativeWorkerDiagnosticV1", "status":"unestablished",
+            "reason_code":"sealed_digest_mismatch"
+        })
+    );
 }
 
 #[test]
 fn worker_binary_runtime_probe_has_no_context_or_filesystem_oracle() {
-    let output = run(env!("CARGO_BIN_EXE_p2_native_worker"), json!({
-        "schema":"P2NativeRuntimeProbeV1", "nonce":"p2-native-runtime-probe-v1"
-    }));
+    let output = run(
+        env!("CARGO_BIN_EXE_p2_native_worker"),
+        json!({
+            "schema":"P2NativeRuntimeProbeV1", "nonce":"p2-native-runtime-probe-v1"
+        }),
+    );
     assert!(output.status.success());
     let reply: Value = serde_json::from_slice(&output.stdout).unwrap();
-    assert_eq!(reply, json!({
-        "schema":"P2NativeRuntimeProbeReplyV1", "status":"ready", "abi":"p2-native-v1"
-    }));
+    assert_eq!(
+        reply,
+        json!({
+            "schema":"P2NativeRuntimeProbeReplyV1", "status":"ready", "abi":"p2-native-v1"
+        })
+    );
 }
-
 
 #[test]
 fn worker_binary_proves_bounded_selection_route_under_label_and_order_controls() {
@@ -152,10 +159,13 @@ fn worker_binary_proves_bounded_selection_route_under_label_and_order_controls()
                 "goal_atoms":["g"], "cost_bounds":{"maximum_intervention":2},
                 "training_bundle":{"schema":"P2PublicGraphV1","action_bindings":bindings}
             });
-            let output = run(env!("CARGO_BIN_EXE_p2_native_worker"), json!({
-                "schema":"P2NativeWorkerRequestV1", "verified_input_digest":canonical_envelope_digest(&sealed).unwrap(),
-                "envelope":sealed
-            }));
+            let output = run(
+                env!("CARGO_BIN_EXE_p2_native_worker"),
+                json!({
+                    "schema":"P2NativeWorkerRequestV1", "verified_input_digest":canonical_envelope_digest(&sealed).unwrap(),
+                    "envelope":sealed
+                }),
+            );
             assert!(output.status.success());
             let proposal: Value = serde_json::from_slice(&output.stdout).unwrap();
             let selection = &proposal["selection"];
@@ -163,8 +173,15 @@ fn worker_binary_proves_bounded_selection_route_under_label_and_order_controls()
             assert_eq!(selection["minimal_action_ids"].as_array().unwrap().len(), 1);
             assert_eq!(selection["native_tie_set"].as_array().unwrap().len(), 1);
             let selected = selection["selected_action_id"].as_str().unwrap();
-            assert_eq!(proposal["predictions"].as_array().unwrap().iter()
-                .find(|prediction| prediction["intervention_cost"] == 1).unwrap()["action_id"], selected);
+            assert_eq!(
+                proposal["predictions"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .find(|prediction| prediction["intervention_cost"] == 1)
+                    .unwrap()["action_id"],
+                selected
+            );
         }
     }
 }

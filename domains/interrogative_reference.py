@@ -65,6 +65,11 @@ _PROFORM_SURFACE: dict[str, dict[str, str]] = {
         "quién": "?WHO", "qué": "?WHAT",
         "dónde": "?WHERE", "cuándo": "?WHEN", "por qué": "?WHY", "cómo": "?HOW",
     },
+    "ja": {
+        "誰": "?WHO", "何": "?WHAT", "どの": "?WHAT",
+        "どこ": "?WHERE", "いつ": "?WHEN", "なぜ": "?WHY",
+        "どう": "?HOW",
+    },
 }
 
 # Placeholder -> the semantic slot the question QUERIES. The participant

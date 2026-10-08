@@ -94,6 +94,42 @@ def test_category_analysis_accepts_only_explicit_runtime_evidence_paths():
     ) == "declared_graph_path_unverified"
 
 
+def test_attributed_source_path_is_separate_from_world_grounding():
+    corpus = load_corpus()
+    event = next(event for event in corpus["events"]
+                 if event["id"] == "question_source")
+    observation = {
+        "grounding_status": "unresolved",
+        "grounding_evidence_path": "",
+        "reported_content_evidence_path": (
+            "ReportedContentEvidence:1 -> from_source_event "
+            "DiscourseEvent:2 -> represents_message Message:3; "
+            "epistemic_status=attributed_source_utterance"),
+    }
+    assert grounding_cognitive_category(event, observation) == (
+        "attributed_source_utterance")
+    report = measure_grounding(
+        corpus,
+        [observation if row["id"] == "question_source" else {
+            "grounding_status": row["grounding_status"],
+            "reply_present": True,
+        } for row in corpus["events"]],
+    )
+    measured = next(row for row in report["observations"]
+                    if row["id"] == "question_source")
+    assert measured["observed_grounding_label"] == "unknown"
+    assert measured["unrelated_answer_resolution"] is False
+    assert measured["runtime_attributed_source_path"] == (
+        observation["reported_content_evidence_path"])
+    assert report["cognitive_category_analysis"][
+        "attributed_source_utterance"] == {
+            "support": 1,
+            "false_negative": 1,
+            "false_positive": 0,
+            "runtime_evidence_verified": 1,
+        }
+
+
 def test_measurement_reads_graph_grounding_path_not_reply_provenance():
     """A graph interpretation path is measurable; prose alone is not."""
     corpus = load_corpus()
@@ -123,3 +159,36 @@ def test_measurement_reads_graph_grounding_path_not_reply_provenance():
     row = next(item for item in report["observations"]
                if item["id"] == "information_question")
     assert row["cognitive_category"] == "declared_graph_path_unverified"
+
+
+def test_authority_missing_is_unknown_grounding_not_a_supported_referent():
+    corpus = load_corpus()
+    statuses = [event["grounding_status"] for event in corpus["events"]]
+    index = next(i for i, event in enumerate(corpus["events"])
+                 if event["id"] == "blocked_permission")
+    statuses[index] = "authority_missing"
+    report = measure_grounding(corpus, _observations(corpus, statuses))
+    row = next(item for item in report["observations"]
+               if item["id"] == "blocked_permission")
+    assert row["observed_grounding_label"] == "unknown"
+    assert row["unrelated_answer_resolution"] is False
+    assert report["per_label"]["referent"]["false_negative"] == 1
+
+
+def test_generic_unresolved_is_unknown_not_assumed_coreference():
+    corpus = load_corpus()
+    statuses = [event["grounding_status"] for event in corpus["events"]]
+    unresolved_index = next(
+        i for i, event in enumerate(corpus["events"])
+        if event["id"] == "question_weather"
+    )
+    coreference_index = next(
+        i for i, event in enumerate(corpus["events"])
+        if event["id"] == "unresolved_reference"
+    )
+    statuses[unresolved_index] = "unresolved"
+    statuses[coreference_index] = "unresolved_reference"
+    report = measure_grounding(corpus, _observations(corpus, statuses))
+    rows = {row["id"]: row for row in report["observations"]}
+    assert rows["question_weather"]["observed_grounding_label"] == "unknown"
+    assert rows["unresolved_reference"]["observed_grounding_label"] == "coreference"

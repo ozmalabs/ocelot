@@ -1,0 +1,27 @@
+diff --git a/abides-markets/abides_markets/agents/exchange_agent.py b/abides-markets/abides_markets/agents/exchange_agent.py
+index 0e8db67..bf2c315 100644
+--- a/abides-markets/abides_markets/agents/exchange_agent.py
++++ b/abides-markets/abides_markets/agents/exchange_agent.py
+@@ -910,6 +910,22 @@ class ExchangeAgent(FinancialAgent):
+         if len(book) == 0:
+             return
+ 
++        # NOTE (Agenthon Track 3 fast overlay): the liquidity-dropout metric below
++        # runs in kernel_terminating (post-loop) and materializes the ENTIRE L2
++        # book_log2 into a DataFrame then walks it with df.iterrows() -- the slowest
++        # pandas access pattern -- costing ~14-21% of wall-clock. Its ONLY output is
++        # self.metric_trackers[symbol] (a MetricTracker liquidity-dropout stat), which
++        # is consumed NOWHERE on the scored path: the scored trace.parquet /
++        # message_trace.parquet are built by abides_fork/trace.py from the event log,
++        # and the stylized-fact depth check reads QUOTE_UPDATE rows from that trace,
++        # not book_log2 and not metric_trackers. So this is dead compute on the scored
++        # path. We keep book_logging=True and book_log2 fully populated (untouched),
++        # and only skip the dead metric computation. metric_trackers[symbol] retains
++        # its default-initialized MetricTracker (created in __init__), so the
++        # subsequent total_exchanged_volume / last_trade writes in kernel_terminating
++        # still succeed. RNG-neutral, ordering-neutral: touches no draw and no event.
++        return
++
+         df = pd.DataFrame(book)
+ 
+         total_time = df["QuoteTime"].iloc[-1] - df["QuoteTime"].iloc[0]

@@ -1,0 +1,5 @@
+# V2.1 execution-record amendment: pair checkpoints
+
+The first V2 coordinator process was observed running through worker pairs and later terminated, but no aggregate report was present when its process exited. Its exit status and last pair cannot be recovered from the available session record, so it is retained as an incomplete attempt and contributes no timing data. Both worker types were subsequently run once in isolation; both returned valid JSON and passed their semantic checks.
+
+Before repeating the unchanged 12-pair workload, the coordinator was amended to atomically write a partial JSON checkpoint after every completed pair and refuse to overwrite an existing checkpoint. Final output still requires all 12 pairs, all semantic checks, unique worker PIDs, and six executions in each order. The amendment changes record preservation only; N, task mix, arms, candidate behavior, pair count, ordering seed, metrics, and interpretation are unchanged. The amended runner and this note receive a new lock before the repeated execution. Any incomplete checkpoint is preserved and must not be counted as a completed study.

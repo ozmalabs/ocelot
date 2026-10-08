@@ -66,13 +66,38 @@ def build_describe_faculty(a):
         ground_concern(a, [cD["capability_key"]])
 
 
-def world_receive(a, scene, instruction):
+def request_scene_view(a, scene):
+    """Create an isolated scene frame for one live instruction.
+
+    The authored describe rule uses ``scene --described_by--> goal`` as its
+    fixpoint guard. Reusing the shared world Scene would therefore make a later
+    request reuse the previous request's Goal. A request view preserves the
+    observed percept attributes while giving rule-authored Goals and utterance
+    markers request-local ownership.
+    """
+    view = a.s.add_node("Scene", {"kind": "request_view"})
+    for percept in a.inner.neighbours(scene, "has_percept"):
+        if not a.inner.has_node(percept):
+            continue
+        clone = a.s.add_node("Percept", dict(a.s.node(percept)["attrs"]))
+        a.inner.add_edge_unchecked(view, "has_percept", clone)
+    a.inner.add_edge_unchecked(view, "source_scene", scene)
+    return view
+
+
+def world_receive(a, scene, instruction, *, message=None):
     """THE WORLD'S LANGUAGE RECEIVER — translate an external instruction into a Message the agent perceives
     (about the current scene). Mechanical ingest; no decision, no utterance authored here."""
-    msg = a.s.add_node("Message", {"text": instruction})
+    msg = message if message is not None and a.inner.has_node(message) else a.s.add_node("Message", {"text": instruction})
+    if a.s.node(msg)["attrs"].get("text") is None:
+        a.inner.set_attr(msg, "text", instruction)
     a.inner.add_edge_unchecked(msg, "about", scene)
+    mentions = [str(a.s.node(m)["attrs"].get("text", "")) for m in a.inner.neighbours(msg, "has_mention")]
     for w in instruction.lower().replace(".", "").replace("?", "").split():
-        a.inner.add_edge_unchecked(msg, "has_mention", a.s.add_node("Mention", {"text": w}))
+        if w not in mentions:
+            a.inner.add_edge_unchecked(msg, "has_mention", a.s.add_node("Mention", {"text": w}))
+            mentions.append(w)
+    return msg
 
 
 def world_receive_intent(a, game, instruction="What are you doing, and why?"):
@@ -84,7 +109,7 @@ def world_receive_intent(a, game, instruction="What are you doing, and why?"):
         a.inner.add_edge_unchecked(msg, "has_mention", a.s.add_node("Mention", {"text": w}))
 
 
-def self_report(a, prod, parent_kind="describe_scene"):
+def self_report(a, prod, parent_kind="describe_scene", *, parent_goal=None):
     """EMIT a self-report. The utterance frame on each produce_utterance subgoal was ASSEMBLED by graph rules
     from graph state — for OBSERVATIONS (parent describe_scene): the perceived shape/noun, verb, colour; for
     GOALS (parent report_intent): the aim verb, and the curiosity (watch the unpredicted mover). The host makes
@@ -92,7 +117,9 @@ def self_report(a, prod, parent_kind="describe_scene"):
     speaks it through the production faculty, deduping identical utterances. donkey=0."""
     s, I = a.s, a.inner
     # node ids recycle from a freelist (no generation), so guard every raw id with has_node before node().
-    gs = [g for g in s.nodes("Goal") if I.has_node(g) and s.node(g)["attrs"].get("kind") == parent_kind]
+    gs = [g for g in s.nodes("Goal") if I.has_node(g)
+          and s.node(g)["attrs"].get("kind") == parent_kind
+          and (parent_goal is None or g == parent_goal)]
     subgoals = [sg for g in gs for sg in I.neighbours(g, "has_subgoal")]
     lines, seen = [], set()
     for sg in subgoals:

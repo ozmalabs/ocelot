@@ -44,13 +44,25 @@ pub fn install_field_grammar_rules(substrate: &mut Substrate) -> Result<usize, S
         .as_array()
         .ok_or_else(|| "rules JSON must be an array".to_string())?;
     let initial = substrate.rules.len();
+    let terms_before = substrate.terms.nodes.len();
+    let symbols_before = substrate.interner.len();
+    let mut staged = Vec::with_capacity(arr.len());
     for (i, rule_json) in arr.iter().enumerate() {
-        let rule = crate::py::parse_rule_json_pub(
+        let rule = match crate::py::parse_rule_json_pub(
             rule_json,
             &mut substrate.terms,
             &mut substrate.interner,
-        )
-        .map_err(|e| format!("rule {}: {}", i, e))?;
+        ) {
+            Ok(rule) => rule,
+            Err(err) => {
+                substrate.terms.nodes.truncate(terms_before);
+                substrate.interner.truncate(symbols_before);
+                return Err(format!("rule {}: {}", i, err));
+            }
+        };
+        staged.push(rule);
+    }
+    for rule in staged {
         // Route through `add_rule` — the SOLE path that makes a newly-installed
         // rule live. A raw `substrate.rules.push(rule)` here left every rule
         // `active: false` (the matcher skips them) AND skipped the cost-based

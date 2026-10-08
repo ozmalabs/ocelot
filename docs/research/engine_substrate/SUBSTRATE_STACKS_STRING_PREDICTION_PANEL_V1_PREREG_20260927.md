@@ -1,0 +1,19 @@
+# Stacks Project string-predicate prediction panel v1 preregistration
+
+Date: 2026-09-27  
+Status: freeze before confirmatory execution.  
+Question: does code-reading structure support exact output prediction on held-out members of one independently authored function family?
+
+## Frame and selection
+
+Use `data/stacks/repo/scripts/functions.py` from the Stacks Project source commit named in the source lock; the module is covered by the adjacent Apache-2.0 scripts license. Parse but never import or execute the source. Outcome-blind eligibility is a top-level one-argument function with exactly three executable statements: assign `n = <parameter>.find(<string constant>)`; an `if` comparing `n` with zero using `==` or `<`, whose sole body statement returns integer 0 or 1; and a final integer return. Select every eligible function and sort lexically by function name. The first selected function is the acquisition example; all remaining eligible functions are held out. No substrate outcome informs eligibility or order.
+
+For each eligible function, freeze four inputs from its literal marker and comparison contract. `n < 0` functions receive marker-at-start, marker-later, marker-absent, and repeated-marker strings; `n == 0` functions receive exact-start, marker-later, absent, and leading-space strings. The expected result is computed by a bounded independent AST interpreter implementing only this grammar and Python string `find`; it never calls `exec` or evaluates corpus code. Type-sensitive exact output, abstention, incorrect returned output, and interpreter errors are distinct outcomes. Add one positive measurement control outside the Stacks score: the already identified Think Python example `ch06_thinkpython2007.txt` fenced block 17 (`is_divisible(x, y): return x % y == 0`) with calls `(6,3)` and `(7,2)`. It checks that this prediction path can return exact typed outputs on a familiar arithmetic construction; it is not part of the external-corpus claim or acquisition/held-out sequence.
+
+## Runtime and measures
+
+Two fresh full-runtime workers process the first function's four calls, then each held-out function's four calls, on one carried graph per worker. The two positive-control calls run last so they cannot affect the measured Stacks sequence. Each case invokes production `code_reading.predict_output`. Stacks cases use the full containing module; the control uses its frozen fenced function source. Record task-level expected/predicted typed values, error type, receipt and Observation-linked mint deltas, graph deltas, wall/CPU time, boot, RSS, and exact source hashes. Raw artifacts contain no function source text. Primary measures are exact accuracy over the 20 Stacks cases, coverage, conditional accuracy, held-out coverage/accuracy, and post-acquisition mint/receipt incidence. Report the two control outcomes separately. This family tests source-code output behavior on 20 short strings only; it does not estimate general software correctness or tractability.
+
+## Gates and limits
+
+Lock the preregistration, selector, frame, runner, analyzer, full runtime source closure, boot-selected seed manifests, native extension/build state, Stacks module, license, README, nested repository commit, and Think Python control source/provenance. Use the shared run-manifest capture and hashed parent console log. Require distinct fresh PIDs, stable before/after locks, exact 22-case schedules per worker (20 Stacks cases and two separate positive-control calls), independent frame and oracle reconstruction, zero oracle errors, source-hash agreement, worker parity, and both positive-control cases correct. Preserve outcomes even if the engine abstains; no task is excluded based on prediction results. A single acquired example and four held-out functions are a mechanism probe, not a useful generalization estimate. Replicate across multiple independently sourced families before making transfer claims.

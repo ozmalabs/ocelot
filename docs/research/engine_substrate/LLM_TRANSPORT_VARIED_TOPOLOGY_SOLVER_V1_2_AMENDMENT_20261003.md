@@ -1,0 +1,7 @@
+# Varied-topology transport solver v1.2 amendment
+
+Date: 2026-10-03
+
+The v1.1 worker was stopped after 21 checkpointed cases when the next exact-conditioning call exposed a pathological component for its implementation. A separate quick audit of the checkpoint confirms energy parity, returned-sign parity, state validity, and no-mutation for all 21 completed rows. At least one selected minimum separator is empty while leaving a 15-node component. V1.1's component routine exhaustively enumerates each component, requiring up to `3^15` assignments for that case. Thus the issue is the component solver, not separator discovery or the measured junction-tree baseline; the partial run is diagnostic and not confirmatory. Its lock and partial JSONL checkpoint are retained as source-locked inputs below.
+
+V1.2 preserves the full registered 320-case grid, graph semantics, graph-only minimum separator search, and same-run monolithic comparator. It replaces component enumeration for components larger than five nodes with exact local junction-tree MAP under each fixed separator assignment. Components of at most five nodes retain direct enumeration. Local elimination-order construction is cached per anonymous topology and separately charged. This makes the component operation exact while allowing its cost to follow component treewidth instead of component cardinality alone. The complete three-worker run remains the confirmatory target; no subset result will be generalized to the full grid.

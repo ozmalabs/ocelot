@@ -210,6 +210,9 @@ def test_decompose_shape_mints_from_real_recurrence_and_redecodes(agent):
     m_attrs = sub.node(minted[0])["attrs"]
     assert m_attrs["minted"] == 1.0
     assert m_attrs["support"] == 2
+    # tranche 2 gate 6: the mint records what it was formed from
+    assert m_attrs["minted_from_signature"] == sub.node(obs2)["attrs"]["signature"]
+    assert "minted_epoch" in m_attrs
 
     # BOTH observations end up recognized against the freshly minted entry
     # (obs2 recognizes directly against the newly-grown codebook at decode

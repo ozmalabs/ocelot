@@ -1,6 +1,6 @@
 {
  "id": "conversation_steering",
- "version": "1.0.0",
+ "version": "1.1.0",
  "depends_on": [
   "intent"
  ],
@@ -178,11 +178,19 @@
      "received",
      "m"
     ],
-    [
-     "agent",
-     "has_self_concern",
-     "sc"
-    ]
+   [
+    "agent",
+    "has_self_concern",
+    "sc"
+   ]
+   ],
+   "index_hints": [
+    {
+     "for_var": "m",
+     "probe_value": "interlocutor",
+     "node_type": "Message",
+     "this_key": "from"
+    }
    ],
    "where": {
     "type": "And",
@@ -709,6 +717,12 @@
     ],
     [
      "set_attr",
+     "m",
+     "self_improvement_route",
+     "promote_concern"
+    ],
+    [
+     "set_attr",
      "sc",
      "promote_requested",
      1.0
@@ -772,11 +786,19 @@
      "received",
      "m"
     ],
-    [
-     "agent",
-     "has_self_concern",
-     "sc"
-    ]
+   [
+    "agent",
+    "has_self_concern",
+    "sc"
+   ]
+   ],
+   "index_hints": [
+    {
+     "for_var": "m",
+     "probe_value": "interlocutor",
+     "node_type": "Message",
+     "this_key": "from"
+    }
    ],
    "where": {
     "type": "And",

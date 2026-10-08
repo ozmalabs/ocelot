@@ -1,0 +1,12 @@
+# Foreign-snapshot variation diagnostic v1: results
+
+Date: 2026-10-06  
+Status: all capture-integrity and per-call repeatability checks passed.
+
+Three fresh global workers ran the seven-turn held-topic workload with `PYTHONHASHSEED=0`. From turn two onward, the harness observed two foreign-snapshot model calls per turn. Across workers, each corresponding call had identical input graph contents and size, reconstructed enumeration labels, and generated model result fields. Input sizes progressed from 5 nodes / 7 edges to 6 / 9, 7 / 11, and 8 / 13 as the conversation state accumulated.
+
+A preregistered seed contrast repeated the same calls with `PYTHONHASHSEED=1,2,3`. Inputs, semantic enumeration labels, and result fields matched each other and the seed-zero capture at every corresponding call. Hash-seed variation therefore does not explain the earlier raw digest differences on this workload.
+
+The uninstrumented fixed-seed repeat still had different raw graph digests, but a follow-up of retained snapshots isolated `SystemModel.ts` and `SystemModel.runtime_s` as execution-time fields and found embedded serialized node IDs in graph attributes. A reference-aware final-graph fingerprint, excluding only those two timing fields and normalizing graph references, matched across all fixed-seed global workers and all nine original global/barrier/async workers. The corrected per-turn v1.2 panel then passed the same semantic fingerprint, reply, cardinality, and settlement checks at every turn. The earlier v1.1 interpretation of substantive `SystemModel` variation was incorrect and is superseded.
+
+Artifacts: [v1 protocol](SUBSTRATE_FOREIGN_SNAPSHOT_VARIATION_DIAGNOSTIC_V1_PREREG_20261006.md), [v1.1 seed contrast protocol](SUBSTRATE_FOREIGN_SNAPSHOT_VARIATION_DIAGNOSTIC_V1_1_PREREG_20261006.md), [v1 capture](../../../evaluation/reports/foreign_snapshot_variation_v1_20261006/capture.json.gz), [v1 analysis](../../../evaluation/reports/foreign_snapshot_variation_v1_analysis_20261006.json), [seed contrast capture](../../../evaluation/reports/foreign_snapshot_variation_v1_1_20261006/capture.json.gz), [seed contrast analysis](../../../evaluation/reports/foreign_snapshot_variation_v1_1_analysis_20261006.json), [fixed-seed capture](../../../evaluation/reports/area_settlement_fixed_seed_repeatability_v1_20261006/capture.json.gz), [semantic snapshot analysis](../../../evaluation/reports/settlement_snapshot_semantic_fingerprint_v1_analysis_20261006.json), [per-turn parity results](SUBSTRATE_HELD_TOPIC_AREA_SETTLEMENT_PARITY_V1_2_RESULTS_20261006.md).

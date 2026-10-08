@@ -1,0 +1,7 @@
+# Scheduler EvalCache codec probe v1.1 results — 2026-10-04
+
+The source-locked probe passes all gates: schema V6, nonempty neighbour/filter/argmax entries, two Holds entries spanning present and absent optional node arguments, exact family payloads, exact full checkpoint equality, and source stability. Values include node references, a frozen set, tuple, boolean, integer, and a binding list. The fixture loads the CAN seed to supply valid graph vocabulary and rule-term context.
+
+V1 failed whole-object parity only because its two input Holds rows were not in the checkpoint's deterministic sort order. V1.1 preserves the first result and supplies canonical row order. This validates wire encoding/decoding and canonicalization for representative payloads. Cache rows are seeded through the checkpoint wire object; it does not establish evaluator-generated key correctness, cache hit behavior, downstream work parity, reachable-cache restoration, or SD-operation restoration.
+
+Evidence: [protocol](SUBSTRATE_SCHEDULER_CACHE_CODEC_V1_1_PREREG_20261004.md), [runner](../../../evaluation/substrate_capability/scheduler_cache_codec_probe_v1_1.py), [source lock](../../../evaluation/substrate_capability/scheduler_cache_codec_probe_v1_1_lock_20261004.json), [capture](../../../evaluation/reports/scheduler_cache_codec_probe_v1_1_20261004.json), and [retained v1 failed capture](../../../evaluation/reports/scheduler_cache_codec_probe_v1_20261004.json).

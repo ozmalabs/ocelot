@@ -31,6 +31,7 @@ impl Default for Sym {
 /// Owning interner. `Vec<Arc<str>>` lets us hand out cheap `&str` borrows
 /// without holding the interner's lock; AHashMap is used because it's
 /// faster than FxHashMap for short string keys.
+#[derive(Clone)]
 pub struct Interner {
     table: AHashMap<Arc<str>, Sym>,
     strings: Vec<Arc<str>>,
@@ -76,6 +77,22 @@ impl Interner {
 
     pub fn len(&self) -> usize {
         self.strings.len()
+    }
+
+    /// Roll back symbols appended after a saved length. This is intended for
+    /// failure-atomic staging before any new Sym has escaped into persistent
+    /// graph, Term, rule, or grammar state.
+    pub fn truncate(&mut self, len: usize) {
+        assert!(
+            len >= 1 && len <= self.strings.len(),
+            "invalid interner rollback length"
+        );
+        for idx in (len..self.strings.len()).rev() {
+            let text = self.strings[idx].as_ref();
+            let removed = self.table.remove(text);
+            debug_assert_eq!(removed, Some(Sym(idx as u32)));
+        }
+        self.strings.truncate(len);
     }
 
     pub fn is_empty(&self) -> bool {

@@ -896,7 +896,11 @@ def _domain_of(origin: str) -> str:
 
 
 def _owning_mt_map(substrate) -> dict:
-    """concept-name / rule-name  ->  (owning_Mt_name, owning_Mt_id).
+    """Legacy diagnostic: name -> first (owning Mt name, owning Mt ID).
+
+    This is intentionally not used to attribute harvested shapes: names can
+    collide across different Concept/Rule nodes and the first edge is
+    order-sensitive. Use `_owning_mt_by_node()` for semantic provenance.
 
     The SUBSTANTIVE shapes (harvest_shapes / harvest_shapes_from_rules) record a
     `domain` LABEL (_domain_of, a lossy provenance string that can be '?' or a
@@ -907,7 +911,8 @@ def _owning_mt_map(substrate) -> dict:
     the (first) Mt that has_concept/has_rule it, returning BOTH name and id so the
     lineage membership test (which carries both) works by either key.
 
-    Returns {name: (mt_name, mt_id)}. Names not under any Mt are absent."""
+    Returns {name: (mt_name, mt_id)} for diagnostics only. Names not under any
+    Mt are absent; collisions are lossy and depend on graph edge iteration."""
     g = substrate.graph_to_dict()
     name_of = {nd["id"]: str(nd["attrs"].get("name", "") or "")
                for nd in g["nodes"]}
@@ -920,6 +925,48 @@ def _owning_mt_map(substrate) -> dict:
         if cn and cn not in out:
             out[cn] = (name_of.get(mt_id, ""), mt_id)
     return out
+
+
+def _owning_mt_by_node(substrate) -> dict[int, list[tuple[str, int]]]:
+    """Return every owning Microtheory keyed by the exact Concept/Rule node ID.
+
+    Names are not identities: the corpus contains homonyms in different
+    Microtheories, so callers selecting one donor node must resolve provenance
+    from that node ID. Candidate lists are sorted to make genuinely multiply
+    owned nodes deterministic; consumers can preserve the full ambiguity.
+    """
+    graph = substrate.graph_to_dict()
+    names = {row["id"]: str(row.get("attrs", {}).get("name", "") or "")
+             for row in graph["nodes"]}
+    mt_ids = {row["id"] for row in graph["nodes"]
+              if row.get("type") == "Microtheory"}
+    owners: dict[int, set[tuple[str, int]]] = {}
+    for edge in graph["edges"]:
+        if edge["type"] not in ("has_concept", "has_rule"):
+            continue
+        mt_id, child_id = edge["src"], edge["tgt"]
+        if mt_id not in mt_ids:
+            continue
+        owners.setdefault(child_id, set()).add((names.get(mt_id, ""), mt_id))
+    return {node_id: sorted(rows, key=lambda row: (row[0], row[1]))
+            for node_id, rows in owners.items()}
+
+
+def _source_owner_fields(owners: dict[int, list[tuple[str, int]]],
+                         node_id: int, fallback: str) -> dict:
+    """Build stable shape provenance for one selected source node."""
+    candidates = owners.get(node_id, [])
+    if len(candidates) == 1:
+        name, owner_id = candidates[0]
+        return {"source_mt": name, "source_mt_id": owner_id,
+                "source_mt_candidates": [{"name": name, "id": owner_id}]}
+    if len(candidates) > 1:
+        return {"source_mt": None, "source_mt_id": None,
+                "source_mt_candidates": [
+                    {"name": name, "id": owner_id}
+                    for name, owner_id in candidates]}
+    return {"source_mt": fallback, "source_mt_id": None,
+            "source_mt_candidates": []}
 
 
 def harvest_shapes(substrate, exclude_mt: str = "speech_science",
@@ -948,12 +995,13 @@ def harvest_shapes(substrate, exclude_mt: str = "speech_science",
             for c in substrate.neighbours(n, "contains"):
                 excluded.add(c)
 
-    # source-concept name -> (owning Mt name, owning Mt id), for brick-3's
-    # structural (Mt-lineage) firing of substantive shapes.
-    owner = _owning_mt_map(substrate)
+    # Resolve source provenance by the selected Concept node's identity. The
+    # name-keyed map remains useful for diagnostics, but homonyms must not let
+    # edge order assign one donor's domain to another donor.
+    owners_by_node = _owning_mt_by_node(substrate)
 
     extractors = _extractors()
-    # kind -> list of (relevance, source_name, source_domain)
+    # kind -> list of (relevance, source_name, source_domain, source_node_id)
     donors: dict[str, list] = {e["id"]: [] for e in extractors}
 
     for c in substrate.nodes("Concept"):
@@ -978,7 +1026,8 @@ def harvest_shapes(substrate, exclude_mt: str = "speech_science",
             # concepts BEST exhibits the structure, not a hand-pick of the answer.
             name_hit = any(re.search(p, nlow) for p in e.get("name_signals", []))
             relevance = n_hits + (3 if name_hit else 0)
-            donors[e["id"]].append((relevance, name, _domain_of(origin)))
+            donors[e["id"]].append((relevance, name, _domain_of(origin),
+                                    int(getattr(c, "value", c))))
 
     shapes = []
     for e in extractors:
@@ -988,8 +1037,9 @@ def harvest_shapes(substrate, exclude_mt: str = "speech_science",
         # the named source = the donor that BEST exhibits the kind (highest
         # relevance; ties broken toward the more specific term of art).
         ds_sorted = sorted(ds, key=lambda d: (-d[0], -len(d[1]), d[1]))
-        _rel, src_name, src_domain = ds_sorted[0]
-        src_mt_name, src_mt_id = owner.get(src_name, (src_domain, None))
+        _rel, src_name, src_domain, src_node_id = ds_sorted[0]
+        source_owner = _source_owner_fields(owners_by_node, src_node_id,
+                                            src_domain)
         shapes.append({
             "name": f"{e['id']}__from__{src_name}",
             "kind": e["id"],
@@ -1004,9 +1054,9 @@ def harvest_shapes(substrate, exclude_mt: str = "speech_science",
             # the structural node a postulate's genlMt lineage is tested against,
             # so this SUBSTANTIVE shape can fire by STRUCTURE (its domain Mt in the
             # lineage) and transfer its real consequence, not only by text overlap.
-            "source_mt": src_mt_name,
-            "source_mt_id": src_mt_id,
-            "alt_sources": [(n, d) for _, n, d in ds_sorted[1:per_kind]],
+            **source_owner,
+            "source_node_id": src_node_id,
+            "alt_sources": [(n, d) for _, n, d, _node_id in ds_sorted[1:per_kind]],
             "n_donors": len(ds),
             "match_patterns": list(e["triggers"]),
             "consequence": e["consequence"].format(
@@ -1089,8 +1139,8 @@ def harvest_shapes_from_rules(substrate, exclude_mt: str = "speech_science",
         for r in substrate.neighbours(mt, "has_rule"):
             excluded_rules.add(r)
 
-    # rule-name -> (owning Mt name, owning Mt id), for brick-3 structural firing.
-    owner = _owning_mt_map(substrate)
+    # Preserve the selected Rule node identity when attaching its owner.
+    owners_by_node = _owning_mt_by_node(substrate)
 
     shapes = []
     for r in substrate.nodes("Rule"):
@@ -1137,7 +1187,9 @@ def harvest_shapes_from_rules(substrate, exclude_mt: str = "speech_science",
         # Domain from the rule's origin attr.
         origin = str(a.get("origin", "")) or "?"
         domain = _domain_of(origin)
-        src_mt_name, src_mt_id = owner.get(rule_name, (domain, None))
+        rule_node_id = int(getattr(r, "value", r))
+        source_owner = _source_owner_fields(owners_by_node, rule_node_id,
+                                            domain)
         shapes.append({
             "name": f"rule_derived__{rule_name}",
             "kind": "rule_derived",
@@ -1152,8 +1204,8 @@ def harvest_shapes_from_rules(substrate, exclude_mt: str = "speech_science",
             "domain": domain,
             # BRICK 3: the rule's TRUE owning Microtheory (name + id) for the
             # structural Mt-lineage firing path.
-            "source_mt": src_mt_name,
-            "source_mt_id": src_mt_id,
+            **source_owner,
+            "source_node_id": rule_node_id,
             "source_rule": rule_name,
             "source_concept": rule_name,  # also fill source_concept for
                                             # back-compat with harvest_report

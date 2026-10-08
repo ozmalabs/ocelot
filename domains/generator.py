@@ -211,11 +211,32 @@ def synthesize(
     guide_select: Callable[[list, tuple, int], list] | None = None,
     exclude: Callable[[Any, tuple, tuple], bool] | None = None,
     return_trace: bool = False,
+    probe_envs: Sequence[dict] = (),
+    max_solutions: int = 1,
+    include_output_constants: bool = True,
+    stream_cohort: bool = False,
 ) -> dict | None:
     """Bottom-up, size-ordered, observational-equivalence-pruned synthesis.
 
     `examples`: list of (env: dict[varname->value], expected_output). The SPEC.
     Returns the smallest (MDL) Term fitting the spec, or None.
+
+    Optional version-space collection (`probe_envs`, `max_solutions>1`):
+      retain distinct hypotheses that fit the training examples while using
+      their predictions on `probe_envs` to separate functionally different
+      candidates. Stops after `max_solutions` MDL-ordered distinct behaviors,
+      the size/fuel limit, or saturation. Probe environments have no labels and
+      do not affect target matching. This mode cannot be combined with guided
+      selection or exclusions because those interfaces assume training-only
+      signatures. `include_output_constants=False` fixes the literal grammar
+      to `consts`, preventing training labels from silently expanding it; the
+      default remains True for compatibility with existing synthesis calls.
+
+    `stream_cohort=True` registers each generated term immediately instead of
+    first materializing every term at a given size. This preserves the
+    size/operator/child enumeration order while bounding temporary candidate
+    storage and checking the timeout during generation. It is opt-in until
+    parity and workload-cost measurements justify changing the default.
 
     Optional GUIDED search (weightless, no LLM, no trained net):
       `guide(term_output_signature, target_signature) -> score`  — a smaller
@@ -240,7 +261,13 @@ def synthesize(
     """
     t0 = time.time()
     envs = [env for env, _ in examples]
+    if max_solutions < 1:
+        raise ValueError("max_solutions must be at least one")
+    if max_solutions > 1 and (guide is not None or guide_select is not None or exclude is not None):
+        raise ValueError("version-space collection is incompatible with guide/exclude hooks")
+    signature_envs = envs + (list(probe_envs) if max_solutions > 1 else [])
     target = tuple(_num(out) for _, out in examples)
+    training_width = len(envs)
 
     table = _op_table()
     op_specs = [(name, table[name]) for name in ops if name in table]
@@ -255,11 +282,12 @@ def synthesize(
     # Constant set: requested consts + any integer constants appearing in the
     # outputs (so a target like x*x+1 can find the `1`). Keep it small.
     const_set: list[Any] = list(dict.fromkeys(consts))
-    for _, out in examples:
-        if isinstance(out, (int, float)) and not isinstance(out, bool):
-            iv = int(out)
-            if iv == out and iv not in const_set:
-                const_set.append(iv)
+    if include_output_constants:
+        for _, out in examples:
+            if isinstance(out, (int, float)) and not isinstance(out, bool):
+                iv = int(out)
+                if iv == out and iv not in const_set:
+                    const_set.append(iv)
 
     # by_size[s] = list of (term, signature). seen_sigs = global dedup map
     # signature -> (size, term) keeping the SMALLEST per behaviour.
@@ -267,28 +295,47 @@ def synthesize(
     seen_sigs: dict[tuple, Any] = {}
     explored = 0
     beam_bit = False
+    solutions = []
     # `guided` covers both the scalar-score beam (guide+guide_beam) and the
     # set-level selector beam (guide_select+guide_beam, e.g. interference).
     guided = guide_beam is not None and (guide is not None or guide_select is not None)
+
+    def make_result(term, size, reason, *, trace=None):
+        result = _make_result(term, size, reason, t0, explored, seen_sigs,
+                              beam_bit, guided, trace=trace)
+        if max_solutions > 1:
+            # In collection mode a fitting first hypothesis does not mean the
+            # version-space search is done. Preserve the actual collection stop.
+            result["halt_reason"] = reason
+            result["hypotheses"] = list(solutions)
+            result["probe_env_count"] = len(probe_envs)
+        return result
 
     def register(term, size) -> dict | None:
         """Compute sig, prune by observational-equivalence, store. Return a
         solution dict if this term hits the target, else None."""
         nonlocal explored, beam_bit
         explored += 1
-        sig = _signature(term, envs, substrate)
+        sig = _signature(term, signature_envs, substrate)
         if sig is None:
             return None  # inadmissible on some input
         if sig in seen_sigs:
             return None  # observationally equivalent to a smaller (or =) term
         # Target match FIRST — a matching term is the solution and must NEVER be
         # dropped by an exclusion (keeps the exclude hook from hiding answers).
-        if _matches_target(sig, target):
+        if _matches_target(sig[:training_width], target):
             seen_sigs[sig] = (size, term)
             by_size.setdefault(size, []).append((term, sig))
-            return _make_result(term, size, "solved", t0, explored, seen_sigs,
-                                 beam_bit, guided,
-                                 trace=seen_sigs if return_trace else None)
+            if max_solutions > 1:
+                solutions.append({"term": term, "term_str": _term_str(term),
+                                  "size": size, "signature": sig})
+                if len(solutions) >= max_solutions:
+                    return make_result(solutions[0]["term"],
+                                       solutions[0]["size"], "solution_limit",
+                                       trace=seen_sigs if return_trace else None)
+                return None
+            return make_result(term, size, "solved",
+                               trace=seen_sigs if return_trace else None)
         # EXCLUSION hook (Γ): drop the term as a building block if excluded.
         if exclude is not None and exclude(term, sig, target):
             return None  # admissibility grammar rules this region out
@@ -311,10 +358,24 @@ def synthesize(
     # --- grow sizes 2..max_size ---
     for size in range(2, max_size + 1):
         if time.time() - t0 > timeout_s:
-            return _make_result(None, None, "timeout", t0, explored,
-                                seen_sigs, beam_bit, guided)
+            return make_result(solutions[0]["term"] if solutions else None,
+                               solutions[0]["size"] if solutions else None,
+                               "timeout")
 
         produced_this_size = []
+
+        def consider(term):
+            if time.time() - t0 > timeout_s:
+                return make_result(solutions[0]["term"] if solutions else None,
+                                   solutions[0]["size"] if solutions else None,
+                                   "timeout")
+            return register(term, size)
+
+        def emit(term):
+            if stream_cohort:
+                return consider(term)
+            produced_this_size.append(term)
+            return None
 
         for name, spec in op_specs:
             kind = spec["kind"]
@@ -323,7 +384,9 @@ def synthesize(
             if kind == "u":
                 # unary: child has size-1
                 for child, _ in by_size.get(size - 1, []):
-                    produced_this_size.append(build(child))
+                    r = emit(build(child))
+                    if r:
+                        return r
 
             elif kind in ("b", "bc"):
                 # binary: child sizes sum to size-1
@@ -341,7 +404,9 @@ def synthesize(
                                 # commutative op are still distinct partitions
                                 # and both needed.)
                                 pass
-                            produced_this_size.append(build(ca, cb))
+                            r = emit(build(ca, cb))
+                            if r:
+                                return r
                 if kind == "bc":
                     # de-dup commutative same-size double-counting cheaply:
                     # handled below by signature pruning anyway.
@@ -357,17 +422,16 @@ def synthesize(
                         for cc, _ in by_size.get(sc, []):
                             for tt, _ in by_size.get(st, []):
                                 for oo, _ in by_size.get(so, []):
-                                    produced_this_size.append(build(cc, tt, oo))
+                                    r = emit(build(cc, tt, oo))
+                                    if r:
+                                        return r
 
         # Register all produced terms (observational-equivalence prune as we go).
-        n_before = len(seen_sigs)
-        for term in produced_this_size:
-            if time.time() - t0 > timeout_s:
-                return _make_result(None, None, "timeout", t0, explored,
-                                    seen_sigs, beam_bit, guided)
-            r = register(term, size)
-            if r:
-                return r
+        if not stream_cohort:
+            for term in produced_this_size:
+                r = consider(term)
+                if r:
+                    return r
 
         # GUIDED beam: keep only the top-K distinct-signature terms at this
         # size by guide score (lowest = closest to target = most promising).
@@ -399,11 +463,13 @@ def synthesize(
         if len(distinct_history) > saturate_k:
             recent = distinct_history[-(saturate_k + 1):]
             if recent[0] == recent[-1]:
-                return _make_result(None, None, "saturated", t0, explored,
-                                    seen_sigs, beam_bit, guided)
+                return make_result(solutions[0]["term"] if solutions else None,
+                                   solutions[0]["size"] if solutions else None,
+                                   "saturated")
 
-    return _make_result(None, None, "max_size", t0, explored, seen_sigs,
-                        beam_bit, guided)
+    return make_result(solutions[0]["term"] if solutions else None,
+                       solutions[0]["size"] if solutions else None,
+                       "max_size")
 
 
 def _make_result(term, size, halt_reason, t0, explored, seen_sigs, beam_bit,

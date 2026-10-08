@@ -218,7 +218,7 @@
       "set_attr",
       "rn1",
       "program",
-      "{\"type\": \"Argmin\", \"source\": {\"type\": \"Filter\", \"source\": {\"type\": \"NodesOfType\", \"node_type\": \"CorrectionCandidate\"}, \"var_name\": \"x\", \"predicate\": {\"type\": \"Eq\", \"a\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"x\"}, \"key\": \"attempt_tag\"}, \"b\": {\"type\": \"Var\", \"name\": \"tag\"}}}, \"var_name\": \"x\", \"value\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"x\"}, \"key\": \"cost\"}, \"default\": null}"
+      "{\"type\": \"Argmin\", \"source\": {\"type\": \"Filter\", \"source\": {\"type\": \"NodesOfType\", \"node_type\": \"CorrectionCandidate\"}, \"var_name\": \"x\", \"predicate\": {\"type\": \"Eq\", \"a\": {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"x\"}, \"key\": \"attempt_tag\"}, \"b\": {\"type\": \"Var\", \"name\": \"tag\"}}}, \"var_name\": \"x\", \"value\": {\"type\": \"Minus\", \"a\": {\"type\": \"Plus\", \"items\": [{\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"x\"}, \"key\": \"cost\"}, {\"type\": \"Times\", \"items\": [{\"type\": \"Lit\", \"value\": 100.0}, {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"x\"}, \"key\": \"prior_failures\"}]}]}, \"b\": {\"type\": \"Times\", \"items\": [{\"type\": \"Lit\", \"value\": 10000.0}, {\"type\": \"Attr\", \"node\": {\"type\": \"Var\", \"name\": \"x\"}, \"key\": \"prior_successes\"}]}}, \"default\": null}"
      ],
      [
       "set_attr",

@@ -57,11 +57,39 @@ def test_phase0_corpus_has_independent_cognitive_labels():
          "update_common_ground", "coordinate_socially"})
 
 
+def test_question_followup_adjudication_does_not_assume_unobserved_cause():
+    event = next(event for event in load_corpus()["events"]
+                 if event["id"] == "question_followup")
+    assert event["cognitive_goal"] == "learn"
+    assert event["expected_state"] == "repair"
+    assert "no event or causal relation" in event["adjudication_note"]
+
+
 def test_phase0_validation_rejects_missing_or_invalid_labels():
     corpus = load_corpus()
     corpus["events"][0] = dict(corpus["events"][0], communicative_force="question")
     errors = validate_corpus(corpus)
     assert any("communicative_force is invalid" in error for error in errors)
+
+
+def test_phase0_preserves_nonexclusive_communicative_act_annotations():
+    corpus = load_corpus()
+    event = next(item for item in corpus["events"]
+                 if item["id"] == "social_question")
+    assert event["communicative_acts"] == [
+        {"act_type": "greeting", "force": "social_action"},
+        {"act_type": "polar_question", "force": "information_request"},
+    ]
+    assert event["expected_released_semantic_events"] == [
+        "greeting", "repair"]
+    assert validate_corpus(corpus) == []
+
+    malformed = {**corpus, "events": [dict(event,
+                 communicative_acts=[{"act_type": "surface_phrase",
+                                      "force": "information_request"}])]}
+    errors = validate_corpus(malformed)
+    assert any("communicative_acts[0].act_type is invalid" in error
+               for error in errors)
 
 
 def test_phase0_candidate_trace_is_conditional_and_cross_references_phase4():

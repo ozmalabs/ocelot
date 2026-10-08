@@ -1,0 +1,9 @@
+# Thoughtexperiment deferred rule-edit attribution v1 (preregistration)
+
+Question: can the observer carry `SetRuleClause`'s source effect index through its ordered queue and report the rule-table mutation made during drain?
+
+Fixture: use the exact `repair_apply_rule_clause` production rule from `seeds/self_repair.json`. Install a `target_rule` whose `where` clause is true and whose effect marks a matching probe. An Axis/Fault pair supplies `target_rule`, field `where`, corrected clause `Lit(false)`, `applied=0`, and `awaiting_synth=0`. The rule's effect order and dynamic clause argument remain unchanged. A new probe is added only after the edit queue drains, so the committed correction suppresses its marker.
+
+Compare four source-locked policies from one shared-page snapshot: blind effect-index omission; pre-state graph/rule rematching; target/effect report using a unique deferred source origin and target UID; and deferred rule-change receipt matching target UID, field, and committed revision/hash transition. Every candidate branch removes one effect, drains queues, adds the held-out probe, and tests whether the marker appears. The uniquely necessary effect is the one whose omission allows the marker. A no-cause control sets `applied=1`; rematch and receipt arms must abstain. Three workers and three isolated replicates per arm are planned.
+
+Gates require the real seed rule hash, one pre-state guarded binding, one committed `where` rule change with a revision/hash transition, exact source effect index propagation, correct necessity result, no-cause abstention, identical primary graph/rule revisions, and worker/isolated parity. This validates one rule-edit queue with one source; it does not establish natural self-repair, multiple concurrent edit origins, queue-order changes, or other deferred queues. Timing remains exploratory.

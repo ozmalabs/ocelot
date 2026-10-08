@@ -1,18 +1,53 @@
 {
   "id": "conversation_topic_reply",
-  "version": "1.1.0",
-  "depends_on": ["conversation_topic_route", "topic_search"],
+  "version": "1.2.3",
+  "depends_on": ["conversation_topic_route", "topic_search", "communication_intent_arbitration"],
   "description": "Graph-native replies for external-topic questions. After conversation_topic_route mints Goal{kind:answer_topic}, THESE rules read HeldAnswer nodes (written mechanically by learn_from_teacher / scan_and_search) and mint an agent outbound Message. No adapter topic-reply ladder — the graph decides and speaks. Topic TRACKING is its own trio of rules (fresh/same/shift): a resolved answer_topic goal installs its concept as the ONE current topic, retiring the prior CurrentTopic edge rather than accumulating a second (the shift rule dels the stale edge, then the fresh rule installs the new topic in the same fixpoint).",
   "nodes": [],
   "edges": [],
   "productions": [],
   "rules": [
     {
+      "name": "reply_selected_rule_firing_history",
+      "comment": "Mint an output-null answer candidate only for the RuleFiringHistory item already selected and supported by native communication arbitration. LanguageProduction realizes the selected identity after graph readback; this rule does not choose a language or surface.",
+      "match": [
+        ["agent", "holds_interpretation", "i"],
+        ["i", "interprets", "m"],
+        ["agent", "has_rule_firing_history", "h"],
+        ["i", "has_rule_firing_answer_evidence", "e"],
+        ["e", "supported_by", "h"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "arbitration_basis"}, "b": {"type": "Lit", "value": "grounded_rule_firing_history"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": "answer"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "e"}, "key": "status"}, "b": {"type": "Lit", "value": "supported"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "e"}, "key": "rule_name"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "selected_rule_name"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "rule_firing_history_reply_emitted"}, "b": {"type": "Lit", "value": 1.0}}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "rule_firing_history_reply_emitted", 1.0],
+        ["add_node", "reply", "Message", {
+          "from": "agent",
+          "rule_firing_history_answer": 1.0
+        }],
+        ["add_node", "answer_act", "Concept", {
+          "name": "answer",
+          "description": "answers from selected prior rule-firing history"
+        }],
+        ["add_edge", "reply", "has_speech_act", "answer_act"],
+        ["add_edge", "reply", "responds_to", "m"],
+        ["add_edge", "reply", "grounded_by_rule_firing_history", "h"],
+        ["add_edge", "reply", "realizes_rule_firing_answer_evidence", "e"],
+        ["add_edge", "agent", "sent", "reply"]
+      ]
+    },
+    {
       "name": "reply_topic_from_held_answer",
       "match": [
         ["agent", "has_goal", "g"],
         ["g", "comprehends", "m"],
         ["agent", "received", "m"],
+        ["i", "interprets", "m"],
         ["agent", "holds_answer", "ha"]
       ],
       "where": {
@@ -23,7 +58,10 @@
           {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ha"}, "key": "grounding_referent"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "concept"}},
           {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ha"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "supported"}},
           {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ha"}, "key": "grounding_evidence_path"}, "b": {"type": "Lit", "value": null}}},
-          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "topic_replied"}, "b": {"type": "Lit", "value": 1.0}}}
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "topic_replied"}, "b": {"type": "Lit", "value": 1.0}}},
+          {"type": "Not", "arg": {"type": "And", "items": [
+            {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_focus"}, "b": {"type": "Lit", "value": "polar"}}
+          ]}}
         ]
       },
       "effects": [

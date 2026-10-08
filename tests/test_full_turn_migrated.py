@@ -64,7 +64,25 @@ def test_multiple_turns_each_get_their_own_reply():
     assert wa.converse("hello", "greeting") == "hello"
     assert wa.converse("the sky is blue", "statement") == \
         "ERROR: no communicative response could be generated."
-    # two inbound, two outbound replies
+    # The statement first receives a textless graph acknowledgment candidate,
+    # then the graph's honest floor creates the one text-bearing final reply.
     assert len([m for m in wa.s.nodes("Message")
                 if wa.s.node(m)["attrs"].get("from") == "interlocutor"]) == 2
-    assert len(wa.outbound_messages()) == 2
+    outbound = wa.outbound_messages()
+    assert len(outbound) == 3
+    replies = {inbound: [reply for reply in outbound
+                         if inbound in wa.responds_to(reply)]
+               for inbound in [m for m in wa.s.nodes("Message")
+                               if wa.s.node(m)["attrs"].get("from")
+                               == "interlocutor"]}
+    assert sorted(len(rows) for rows in replies.values()) == [1, 2]
+    assert sum(bool(wa.s.node(reply)["attrs"].get("floor"))
+               for rows in replies.values() for reply in rows) == 1
+    statement_replies = next(rows for inbound, rows in replies.items()
+                             if wa.s.node(inbound)["attrs"].get("text")
+                             == "the sky is blue")
+    floors = [reply for reply in statement_replies
+              if wa.s.node(reply)["attrs"].get("floor") == 1.0]
+    assert len(floors) == 1
+    assert wa.s.node(floors[0])["attrs"].get("text") == \
+        "ERROR: no communicative response could be generated."

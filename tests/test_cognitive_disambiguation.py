@@ -1,7 +1,7 @@
 """test_cognitive_disambiguation — the reader UNDERSTANDS a named compound
 (coherence-check + compositional composition), it does not PARSE it.
 
-Gates domains/cognitive_disambiguation.py + seeds/named_compound_heads.json +
+Gates domains/cognitive_disambiguation.py + domain_data/named_compound_heads.json +
 scripts/jabberwock_understands_compounds.py:
 
   (a) THE NOBEL LEAK — on the real Curie article, the person-as-prize incoherence is
@@ -48,7 +48,7 @@ _CURIE_CACHE = os.path.join(ROOT, "data", "register", "curie.txt")
 _HAVE_CURIE = os.path.exists(_CURIE_CACHE)
 _needs_curie = pytest.mark.skipif(not _HAVE_CURIE, reason="curie cache absent")
 _MODULE = os.path.join(ROOT, "domains", "cognitive_disambiguation.py")
-_SEED = os.path.join(ROOT, "seeds", "named_compound_heads.json")
+_SEED = os.path.join(ROOT, "domain_data", "named_compound_heads.json")
 
 
 class _Agent:

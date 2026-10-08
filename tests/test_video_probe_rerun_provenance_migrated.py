@@ -11,7 +11,7 @@ WHAT THIS RUNG CLAIMED, and therefore what this file asserts:
     tree's existing source (md5 byte-identical to the batch-apply rung's), and
     the whole attribution argument in §4.1 depends on that being true;
   * it adds/edits **NO seed** — A9's batch-off arm varies a TEMP COPY of
-    `seeds/vision_change.json`, never the file. If the repo seed had been
+    `domain_data/vision_change.json`, never the file. If the repo seed had been
     edited, the "batch LIVE as committed" arm would be measuring something that
     is not committed, and §4.1's isolation would be worthless;
   * it touches **only files it owns** — no other rung's results, prereg or gate.
@@ -90,7 +90,7 @@ def test_adds_no_rust():
 def test_adds_or_edits_no_seed():
     """A9's control varies a TEMP COPY, never the committed seed.
 
-    If `seeds/vision_change.json` had been edited, the arm labelled 'batch LIVE
+    If `domain_data/vision_change.json` had been edited, the arm labelled 'batch LIVE
     as committed' would not be measuring what is committed."""
     seeds = [p for p in _changed() if "/seeds/" in p and p.endswith(".json")]
     assert seeds == [], f"this rung claims NO seed edit, but the range touches {seeds}"

@@ -1,0 +1,3 @@
+# Cross-family induction v1.1 amendment: additive holdout support
+
+The initial cross-family capture's additive-equality fractional grid had zero positive cases: sums of two half-integers are integers, while the expected input was restricted to half-integers. Its exactness score was therefore vacuous and is excluded from capability conclusions. V1.1 changes only the additive held-out input domain to `{-2.5,-1.5,-0.5,0,0.5,1.5,2.5}` so the expected-value coordinate can contain integer sums and the grid has positive and negative examples. Training, reserve, policy, operator schedule, budget, and other task holdouts remain unchanged. This correction is source-locked as a new capture.

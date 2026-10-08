@@ -1,0 +1,5 @@
+# Scheduler checkpoint transfer v2 preregistration
+
+V2 broadens the v1 two-family transfer panel to exercise non-empty predicate dirty-node state and checkpointed configuration. It uses the same 32-node/128-pair CAN closure and 12-column retinal synthesis fixture. The retinal substrate enables native predicate retraction before execution; after the first productive closure it changes one photoreceptor's activation, captures the pre-call state, then closes again. The state must include the predicate-retraction flag and pending graph attribute-write journal in addition to dirty bits/nodes, cursors, deletion versions, and `any_mutation`.
+
+Both families retain a fresh entry and a populated-state replay. A fresh substrate restores graph, ordered rules, full checkpoint, and then runs one closure at the registered cap. The analyzer checks exact graph/rule/checkpoint round-trip and exact global/per-rule metrics and after-state parity. It also requires the retinal mutation state to contain at least one dirty node. The panel is small synthetic transfer evidence only; it does not estimate prevalence or scale.

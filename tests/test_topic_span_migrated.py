@@ -183,6 +183,13 @@ def test_ablating_the_rule_reverts_to_the_old_head_truncated_miss(monkeypatch):
             break
     assert idx is not None
     assert a.inner.remove_rule(idx) is True
+    # Hold the ablation: _ensure_comprehension_seeds self-heals a missing
+    # probe rule on the next turn (it re-installs conversation_topic_span when
+    # route_shadow_topic_to_answer is absent). This test passed vacuously
+    # until tranche 7 because every shadow read raised (_LAAdapter lacked the
+    # adapter lock), so shadow_doc_topic was never set; with shadow reads
+    # working the re-installed rule answered and the ablation measured nothing.
+    a._ensure_comprehension_seeds = lambda: None
 
     reply = a.converse("What do you know about the Wright brothers?",
                        speech_act="question")

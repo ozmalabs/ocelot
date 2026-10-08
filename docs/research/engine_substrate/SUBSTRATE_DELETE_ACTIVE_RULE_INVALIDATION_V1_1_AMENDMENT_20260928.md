@@ -1,0 +1,5 @@
+# Active-rule node-deletion invalidation v1.1 amendment
+
+V1 measured a default-mode stale derived value after `remove_node`, while `precise_dirty` refreshed it. Source review located the discrepancy: `remove_node` only snapshotted and dirtied incident edge types when precise mode was enabled. The engine now snapshots incident edge types in both modes and applies the same type-local dirty marking and cursor invalidation used by edge deletion. Precise node-type/attribute invalidation remains conditional on precise mode.
+
+The v1 pre-fix raw capture, analysis, and lock are preserved as `substrate_delete_active_rule_invalidation_v1_pre_fix_20260928.json`, `substrate_delete_active_rule_invalidation_v1_pre_fix_analysis_20260928.json`, and `delete_active_rule_invalidation_v1_pre_fix_lock_20260928.json`. V1.1 uses a new source lock and result paths. Its acceptance condition is that both modes refresh the derived value to the independent graph count, with the reader re-enumerated after deletion.

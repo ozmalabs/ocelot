@@ -22,3 +22,24 @@ def test_typed_overlap_fragment_defers_without_repair_receipt():
     assert attrs["communication_route"] == "defer"
     assert not [node for node in agent.s.nodes("ProductionGateReceipt")
                 if agent.s.node(node)["attrs"].get("status") == "released"]
+
+
+def test_native_non_turn_continuation_defer_does_not_force_ask_back():
+    agent = WorldAdapter(seeds=())
+    load_all_seeds(agent)
+    reply = agent.converse(
+        "Please—", speech_act="instruction",
+        context={"interaction_mode": "non_turn",
+                 "interaction_relation": "continuation",
+                 "literal_form": "fragment",
+                 "evidence": ["explicit_uncertainty", "discourse_state"]},
+    )
+    assert reply == ""
+    inbound = agent._last_turn_inbound
+    attrs = agent.s.node(inbound)["attrs"]
+    interpretation = agent.inner.node(attrs["communication_interpretation_id"])["attrs"]
+    assert interpretation["cognitive_disposition"] == "defer"
+    assert attrs["communication_route"] == "defer"
+    assert not list(agent.inner.neighbours(inbound, "has_reply"))
+    assert not [node for node in agent.s.nodes("ProductionGateReceipt")
+                if agent.s.node(node)["attrs"].get("status") == "released"]

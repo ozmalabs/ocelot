@@ -1,0 +1,9 @@
+# Connected-conversation access trace panel v1.3.1 analysis amendment
+
+Date: 2026-10-03
+
+The source-locked v1.3 runner capture and its trace-on/off state results are unchanged. A repeat invocation of the original independent analyzer exposed an output-serialization defect: its terminal `\\n` was written as two literal characters after the JSON document, so the analysis file was not directly parseable as one JSON value. The analyzer's printed output was valid and reported passing gates; the malformed file was repaired for immediate inspection, then the result was independently regenerated with the corrected v1.3.1 analyzer.
+
+The v1.3.1 analyzer reads the same locked capture, baseline, and source lock, applies the same independent checks, writes a standards-parseable JSON artifact, and records its own SHA-256 in that artifact. It passes with zero errors and reproduces 12/12 paired state matches, 5,448 aggregated trace rows, and 6,240 event occurrences. The original v1.3 analyzer and its source-locked provenance are preserved. This correction affects analysis artifact serialization only; no workload, capture, or success criterion changed.
+
+Artifacts: [corrected analyzer](../../../evaluation/substrate_capability/analyze_substrate_connected_conversation_access_trace_panel_v1_3_1.py), [corrected analysis](../../../evaluation/reports/substrate_connected_conversation_access_trace_panel_v1_3_1_analysis_20261003.json), [original analyzer](../../../evaluation/substrate_capability/analyze_substrate_connected_conversation_access_trace_panel_v1_3.py), [original capture](../../../evaluation/reports/substrate_connected_conversation_access_trace_panel_v1_3_20261003.json), and [source lock](../../../evaluation/substrate_capability/substrate_connected_conversation_access_trace_panel_v1_3_lock_20261003.json).

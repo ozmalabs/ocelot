@@ -896,7 +896,8 @@ class LanguageWorld:
     def _add_lex_entry(self, code: str, surface: str, concept: str,
                        tentative: bool = False, weight: float = 1.0,
                        source: str = "teacher",
-                       voice_feature: str | None = None):
+                       voice_feature: str | None = None,
+                       semantic_role: str | None = None):
         if self._lexicon_cache.get(code, {}).get(surface) == concept:
             return
         lex_nid = self._get_or_create_lexicon(code)
@@ -920,6 +921,10 @@ class LanguageWorld:
         # entry, so all existing behaviour is byte-identical.
         if voice_feature:
             attrs["voice_feature"] = voice_feature
+        # Optional reference-derived lexical role (for example, a temporal
+        # ordering adverb). This is language evidence, not a disposition.
+        if semantic_role:
+            attrs["semantic_role"] = semantic_role
         entry_nid = self.s.add_node("LexEntry", attrs)
         try:
             self.s.add_edge(lex_nid, "has_entry", entry_nid, None)
@@ -930,6 +935,34 @@ class LanguageWorld:
         except Exception:
             pass
         self._lexicon_cache.setdefault(code, {})[surface] = concept
+
+    def install_conversation_selection_lexicon(self, language: str) -> None:
+        """Ground the small event-history vocabulary in this language graph.
+
+        Entries are lexical evidence only. Their canonical concepts and
+        optional morphology/semantic-role tags are read back by the ordinary
+        parser; this routine neither builds a semantic frame nor selects a
+        conversational disposition.
+        """
+        entries = {
+            "es": (
+                ("regla", "rule", None, None),
+                ("ejecutó", "fire", "past", None),
+                ("última", "last", None, "temporal_order"),
+                ("vez", "time", None, "temporal_measure"),
+            ),
+            "ja": (
+                ("ルール", "rule", None, None),
+                ("発火しました", "fire", "past", None),
+                ("最後", "last", None, "temporal_order"),
+            ),
+        }.get(language, ())
+        for surface, concept, voice_feature, semantic_role in entries:
+            self._add_lex_entry(
+                language, surface, concept,
+                source="conversation_language_reference",
+                voice_feature=voice_feature,
+                semantic_role=semantic_role)
 
     def _add_production(self, code: str, rule: str):
         if rule in self._production_cache.get(code, []):
@@ -1006,7 +1039,17 @@ class LanguageWorld:
             # don't get absorbed into a content chunk and so the slot-
             # guess can read the next particle.
             cjk_particles = _CJK_PARTICLES.get(language, set())
-            surfaces = sorted(lex.keys(), key=len, reverse=True)
+            # Closed-class interrogatives are lexical candidates even before
+            # this world has a language-local LexEntry for them. Include the
+            # reference's finite Japanese surface set in segmentation so a
+            # form such as どの survives as one proform token and can be
+            # resolved below to the shared semantic placeholder.
+            proform_surfaces = {
+                surface for surface, _placeholder
+                in ireg.lexicon_pairs(language)
+            }
+            surfaces = sorted(set(lex) | proform_surfaces,
+                              key=len, reverse=True)
             i = 0
             chunk: list[str] = []
             while i < len(text):
@@ -1074,7 +1117,7 @@ class LanguageWorld:
                         expanded.append(tok)
                 tokens = expanded
         else:
-            raw = re.findall(r"[A-Za-zÁÉÍÓÚáéíóúÑñ]+", text)
+            raw = _latin_content_tokens(text, lex)
             # MULTI-WORD lexicon match (latin). A grounded LexEntry whose SURFACE
             # contains a space (e.g. a named entity re-exposed by a reader bridge,
             # "justice department") is a single lexical item, so it must tokenize
@@ -1205,6 +1248,13 @@ class LanguageWorld:
             resolved = []
             for tok in tokens:
                 concept = lex.get(tok) or inferred_lex.get(tok)
+                if concept is None:
+                    # Preserve closed-class interrogative placeholders when
+                    # unknown content in the same utterance is replayed after
+                    # substrate inference. Otherwise a Japanese wh-token can
+                    # be correctly recognized on pass one and silently vanish
+                    # during this positional reconstruction.
+                    concept = ireg.proform_placeholder(tok, language)
                 if concept:
                     resolved.append((tok, concept))
         self._last_inferred = inferred_records
@@ -1372,8 +1422,18 @@ class LanguageWorld:
 
         other: list[tuple[str, int]] = []
         seen_c: set[str] = set()
+        temporal_modifier_surfaces = {
+            str(self.s.node(entry)["attrs"].get("surface") or "")
+            for entry in self.s.nodes("LexEntry")
+            if self.s.node(entry)["attrs"].get("language") == language
+            and self.s.node(entry)["attrs"].get("semantic_role") in {
+                "temporal_order", "temporal_measure",
+            }
+        }
         for _, c, tpos in resolved_pos:
             if c in ("?WHO", "?WHAT") or ireg.is_oblique(c) or c == event_concept:
+                continue
+            if tokens[tpos] in temporal_modifier_surfaces:
                 continue
             if tpos == comp_standard_pos:
                 continue
@@ -1392,6 +1452,27 @@ class LanguageWorld:
         role_positions = self._role_marked_positions(
             tokens, self._last_function_words, content_positions, language)
 
+        # A closed-class wh determiner can query a role through its following
+        # nominal head (Japanese ``どの猫が``: the wh-form is not itself
+        # case-marked; 猫 bears が). When the grounded grammar supplies a core
+        # role for that adjacent head, bind the shared wh placeholder into the
+        # head's role and retain the head only as a type restriction. This is
+        # compositional NP/case handling, not a surface phrase decision.
+        wh_np_role: str | None = None
+        if wh_entry is not None and is_question:
+            wh_head = next(
+                ((concept, tpos) for concept, tpos in other
+                 if tpos > wh_pos and role_positions.get(tpos)
+                 in {"agent", "patient"}),
+                None,
+            )
+            if wh_head is not None:
+                head_concept, head_pos = wh_head
+                wh_np_role = role_positions[head_pos]
+                frame[wh_np_role] = wh_concept
+                frame["wh_restriction"] = head_concept
+                other.remove(wh_head)
+
         # wh-GAP RECONSTRUCTION. A FRONTED wh-word in an interrogative may fill
         # the SUBJECT gap (subject-wh: "Who broke the vase?" -> agent) or the
         # OBJECT gap (object-wh: "Who does Mary love?" -> patient, with the
@@ -1406,7 +1487,12 @@ class LanguageWorld:
                 wh_surface, wh_pos, tokens, content_positions,
                 role_positions, event_concept, resolved_pos, language)
 
-        if wh_concept and wh_gap_role:
+        if wh_np_role is not None:
+            # The wh placeholder already occupies the case-marked role of its
+            # nominal head; do not reinterpret the following NP as the other
+            # argument of a wh-gap construction.
+            pass
+        elif wh_concept and wh_gap_role:
             # OBJECT-wh (or other marked gap): the wh fills its grounded role
             # (を/personal-a -> patient); the intervening content NP -> agent.
             frame[wh_gap_role] = wh_concept
@@ -1468,6 +1554,41 @@ class LanguageWorld:
                         first_fn = None
                 if first_fn in ("copula", "auxiliary"):
                     frame["polar"] = True
+
+        # Read optional lexical semantic-role annotations from the grounded
+        # language graph. These add typed modifiers to the frame without
+        # changing argument roles or choosing a communicative disposition.
+        temporal_order = next((
+            self.s.node(entry)["attrs"].get("concept")
+            for entry in self.s.nodes("LexEntry")
+            if self.s.node(entry)["attrs"].get("language") == language
+            and self.s.node(entry)["attrs"].get("semantic_role")
+            == "temporal_order"
+            and self.s.node(entry)["attrs"].get("surface") in tokens
+        ), None)
+        if temporal_order:
+            frame["temporal_order"] = str(temporal_order)
+            # Temporal selection is a compositional language construction:
+            # an event question, participant wh-gap, grounded ordering cue,
+            # and a target kind allowed by the neutral evidence schema.
+            # Native cognition still decides whether source history exists.
+            from domains.communication_evidence import _SELECTION_TARGET_KINDS
+            has_participant_wh = any(
+                frame.get(role) in {"?WHO", "?WHAT"}
+                for role in ("agent", "patient", "location", "time")
+            )
+            target = frame.get("wh_restriction") or frame.get("patient")
+            if (frame.get("speech_act") == "question"
+                    and frame.get("event")
+                    and has_participant_wh
+                    and temporal_order == "last"
+                    and target in _SELECTION_TARGET_KINDS):
+                frame.update({
+                    "communicative_force": "repair_or_defer",
+                    "relation_scope": "event_specific",
+                    "relation_focus": "selection",
+                    "selection_target_kind": target,
+                })
 
         return frame
 
@@ -1714,7 +1835,7 @@ class LanguageWorld:
 
         The rules + categories live in
         domains/phase_composer_language_rules.py and
-        seeds/conceptual_categories.json. Both are graph data the
+        domain_data/conceptual_categories.json. Both are graph data the
         substrate reads at install time; this adapter only
         constructs UnknownToken nodes and reads LexEntries — no
         Python decisions over graph state."""
@@ -2129,7 +2250,7 @@ class LanguageWorld:
             # particles inside a multi-char surface).
             covered = min(covered, total)
             return covered, max(total, 1)
-        tokens = [t.lower() for t in re.findall(r"[A-Za-zÁÉÍÓÚáéíóúÑñ]+", text)]
+        tokens = [t.lower() for t in _latin_content_tokens(text, lex)]
         if not tokens:
             return 0, 0
         content_tokens = [t for t in tokens
@@ -2224,6 +2345,28 @@ _LANG_NAMES = {
     "ja": "Japanese",
 }
 
+
+def _latin_content_tokens(text: str, lexicon: dict[str, str]) -> list[str]:
+    """Tokenize Latin-script content while preserving grounded identifiers.
+
+    Native rule names and other code-like proper names commonly contain
+    underscores and digits. Preserve one as a lexical item only when that
+    exact spelling is grounded in this language's lexicon; otherwise retain
+    the historical letter-only splitting behavior. This is an orthographic
+    boundary operation, not a source of lexical meaning.
+    """
+    chunks = re.findall(
+        r"[A-Za-zÁÉÍÓÚáéíóúÑñ][A-Za-zÁÉÍÓÚáéíóúÑñ0-9_]*", text)
+    tokens: list[str] = []
+    for chunk in chunks:
+        key = chunk.lower()
+        is_identifier = "_" in chunk or any(ch.isdigit() for ch in chunk)
+        if is_identifier and key in lexicon:
+            tokens.append(chunk)
+        else:
+            tokens.extend(re.findall(r"[A-Za-zÁÉÍÓÚáéíóúÑñ]+", chunk))
+    return tokens
+
 _LANG_FAMILIES = {
     "en": "Indo-European/Germanic",
     "es": "Indo-European/Romance",
@@ -2246,7 +2389,7 @@ _RELATION_CONCEPTS = {"on", "in", "at", "to", "from", "above", "below", "top", "
 # function words, not concept fillers; treating them as unknowns
 # pollutes the inferer's candidate scoring.
 _CJK_PARTICLES = {
-    "ja": {"が", "を", "に", "は", "で", "の", "へ", "と", "も", "や", "から",
+    "ja": {"が", "を", "に", "は", "で", "の", "へ", "と", "も", "や", "から", "か",
             "上", "下", "中", "間"},
     "zh": {"了", "在", "上", "下", "里", "的", "得", "地", "和", "与"},
 }
@@ -2254,7 +2397,7 @@ _CJK_PARTICLES = {
 
 _LATIN_FUNCTION_WORDS = {
     "en": {"the", "a", "an", "on", "in", "at", "to", "of", "is", "are", "was", "were"},
-    "es": {"el", "la", "los", "las", "un", "una", "en", "sobre", "a", "de",
+    "es": {"el", "la", "los", "las", "un", "una", "en", "sobre", "a", "de", "por",
             "se", "es", "son", "era", "fue"},
 }
 

@@ -1,0 +1,7 @@
+# Residual CoW allocator reclamation v1 preregistration
+
+This focused follow-up distinguishes live allocations from resident pages in the fanout-16, 100,000-node residual workflow. It uses three fresh processes per backend (full copy and shared graph pages), instruments the existing runner's `smaps()` stage sampler without changing its workload, and reads glibc `mallinfo2` fields alongside RSS/PSS. After the runner drops branch references and samples that state, the wrapper calls `malloc_trim(0)` and records a second process-memory/allocator sample while that worker's host substrate is still alive.
+
+Report `uordblks + hblkhd` as glibc-accounted allocated payload/mapped bytes, `fordblks` as free bytes retained in glibc arenas, and `malloc_trim`'s return plus post-trim RSS/PSS. These are allocator-specific diagnostics: Python's small-object allocator and any non-glibc/custom allocations may not be represented exactly. PSS/RSS remain process-wide. This does not prove all Rust allocations use glibc or provide a portable allocator metric.
+
+Require six fresh workers, exact source locks, the fanout runner's semantic/return/isolation gates, and valid allocator samples at all six stages. The primary finding is the measured change in glibc-accounted allocated bytes from all-branches-live to after-drop; whether it returns to the host-baseline level is descriptive, with no forced-reclamation success threshold. Compare pre/post-trim residency as a separate observation.

@@ -1,0 +1,97 @@
+{
+  "_meta": {
+    "purpose": "FROZEN hand-labeled macro-direction extension of the phase3_derisk frozen study set (MACRO_SURPRISE_PREREG.md deliverable). Each snippet is a REAL macro_release print (CPI m/m headline, or NFP headline) from the cloned Track-2 corpus at .bigtmp/track2/units/<unit>/text/<file>. The gold `direction` is the RELEASED-vs-PRIOR (or released-vs-recent-trend) direction, hand-assigned per the rubric BELOW, BEFORE the macro_surprise mechanism was built or measured (PREREG-then-measure: labels frozen before H-M1 runs).",
+    "committed_before_measure": true,
+    "label_space": ["up", "down", "none"],
+    "label_rubric": "Direction = the forecast-relevant rate-band move implied by the NUMERIC SURPRISE of the print, from a forecaster's seat. The surprise is released-value vs EXPECTATION, where expectation = the print's OWN stated prior ('after rising Y percent' / 'after being unchanged' / 'the same increase as in May') when present, else the series' recent trend. Which SIGN of surprise is hawkish is the series' causal semantics (taught as the MacroSurpriseSign codebook): CPI ABOVE prior/trend = hotter inflation = hawkish = rates band UP (up); CPI BELOW = cooler = dovish = DOWN (down); EQUAL to prior = no surprise = none. NFP ABOVE prior/trend = stronger labor = hawkish = up; BELOW = weaker = down. The MONTH-OVER-MONTH (m/m) print is the load-bearing surprise vs the m/m prior; the 12-month figure is used only where that is the print's own headline framing (s03). Anchored on the number direction, NOT on any policy verb.",
+    "labeller": "macro-surprise prereg (single annotator; labels frozen before build/measure)",
+    "n_snippets": 17,
+    "note_on_s03_s52": "s03 and s52 are the two macro_release snippets ALREADY present in phase3_derisk/study_set.json (both gold=up there). They are re-stated here for the macro-direction measurement; their gold is identical (released above prior -> up). The remaining 15 are the frozen EXTENSION."
+  },
+  "snippets": [
+    {"id": "m03", "study_set_id": "s03", "unit": "t2-F1-hawkish-cut-2024", "file": "cpi_2024-12-11.txt", "doc_type": "macro_release",
+     "text": "The all items index rose 2.7 percent for the 12 months ending November, after rising 2.6 percent over the 12 months ending October.",
+     "released": 2.7, "prior": 2.6, "series": "CPI", "basis": "12mo",
+     "gold": "up", "note": "CPI 12-mo reaccelerating 2.6->2.7 = above prior = hotter inflation = hawkish -> up. (== study_set s03)"},
+
+    {"id": "m52", "study_set_id": "s52", "unit": "t2-F2-higher-for-longer-2023", "file": "cpi_2023-09-13.txt", "doc_type": "macro_release",
+     "text": "The Consumer Price Index for All Urban Consumers (CPI-U) rose 0.6 percent in August on a seasonally adjusted basis, after increasing 0.2 percent in July, the U.S. Bureau of Labor Statistics reported today.",
+     "released": 0.6, "prior": 0.2, "series": "CPI", "basis": "mm",
+     "gold": "up", "note": "Hot CPI 0.6 m/m vs 0.2 prior = above = hawkish -> up. (== study_set s52)"},
+
+    {"id": "m_actasapprop_2019", "unit": "t2-F2-act-as-appropriate-2019", "file": "cpi_2019-06-12.txt", "doc_type": "macro_release",
+     "text": "The Consumer Price Index for All Urban Consumers (CPI-U) increased 0.1 percent in May on a seasonally adjusted basis after rising 0.3 percent in April, the U.S. Bureau of Labor Statistics reported today.",
+     "released": 0.1, "prior": 0.3, "series": "CPI", "basis": "mm",
+     "gold": "down", "note": "0.1 m/m vs 0.3 prior = below = cooler inflation = dovish -> down."},
+
+    {"id": "m_cutsizing_2024", "unit": "t2-F2-cut-sizing-2024", "file": "cpi_2024-08-14.txt", "doc_type": "macro_release",
+     "text": "The Consumer Price Index for All Urban Consumers (CPI-U) increased 0.2 percent on a seasonally adjusted basis, after declining 0.1 percent in June, the U.S. Bureau of Labor Statistics reported today.",
+     "released": 0.2, "prior": -0.1, "series": "CPI", "basis": "mm",
+     "gold": "up", "note": "0.2 m/m vs -0.1 prior (declined) = above = firmer = hawkish -> up."},
+
+    {"id": "m_powellpivot_2019", "unit": "t2-F2-powell-pivot-2019", "file": "cpi_2019-01-11.txt", "doc_type": "macro_release",
+     "text": "The Consumer Price Index for All Urban Consumers (CPI-U) declined 0.1 percent in December on a seasonally adjusted basis after being unchanged in November, the U.S. Bureau of Labor Statistics reported today.",
+     "released": -0.1, "prior": 0.0, "series": "CPI", "basis": "mm",
+     "gold": "down", "note": "-0.1 m/m (declined) vs 0.0 prior (unchanged) = below = cooler = dovish -> down."},
+
+    {"id": "m_qe2jh_2010", "unit": "t2-F2-qe2-jackson-hole-2010", "file": "cpi_2010-08-13.txt", "doc_type": "macro_release",
+     "text": "The Consumer Price Index for All Urban Consumers (CPI-U) increased 0.3 percent in July on a seasonally adjusted basis, the U.S. Bureau of Labor Statistics reported today.",
+     "released": 0.3, "prior": null, "series": "CPI", "basis": "mm",
+     "gold": "up", "note": "No explicit prior in the sentence -> panel-trend path. 0.3 m/m is above the deflationary-scare 2010 CPI trend (index flat/soft) = firmer = hawkish-tilt -> up. TREND-DEPENDENT: flagged as a panel-trend label."},
+
+    {"id": "m_taperbegins_2013", "unit": "t2-F2-taper-begins-2013", "file": "cpi_2013-12-17.txt", "doc_type": "macro_release",
+     "text": "The Consumer Price Index for All Urban Consumers (CPI-U) was unchanged in November on a seasonally adjusted basis, the U.S. Bureau of Labor Statistics reported today.",
+     "released": 0.0, "prior": null, "series": "CPI", "basis": "mm",
+     "gold": "none", "note": "Unchanged (0.0 m/m), no directional surprise stated -> none. A flat print carries no surprise sign."},
+
+    {"id": "m_tapertestimony_2013", "unit": "t2-F2-taper-testimony-2013", "file": "cpi_2013-05-16.txt", "doc_type": "macro_release",
+     "text": "The Consumer Price Index for All Urban Consumers (CPI-U) decreased 0.4 percent in April on a seasonally adjusted basis, the U.S. Bureau of Labor Statistics reported today.",
+     "released": -0.4, "prior": null, "series": "CPI", "basis": "mm",
+     "gold": "down", "note": "-0.4 m/m (decreased), no prior in sentence -> panel-trend path. A negative m/m print is a downside inflation surprise vs the ~flat-to-positive trend = cooler = dovish -> down."},
+
+    {"id": "m_tradewar_2019", "unit": "t2-F2-trade-war-escalation-2019", "file": "cpi_2019-07-11.txt", "doc_type": "macro_release",
+     "text": "The Consumer Price Index for All Urban Consumers (CPI-U) increased 0.1 percent in June on a seasonally adjusted basis, the same increase as in May, the U.S. Bureau of Labor Statistics reported today.",
+     "released": 0.1, "prior": 0.1, "series": "CPI", "basis": "mm",
+     "gold": "none", "note": "'the same increase as in May' = 0.1 vs 0.1 = NO surprise = none. An explicit equal-to-prior print."},
+
+    {"id": "m_covidrates_2020", "unit": "t2-F4-covid-rates-2020", "file": "cpi_2020-02-13.txt", "doc_type": "macro_release",
+     "text": "The Consumer Price Index for All Urban Consumers (CPI-U) rose 0.1 percent in January on a seasonally adjusted basis, after rising 0.2 percent in December, the U.S. Bureau of Labor Statistics reported today.",
+     "released": 0.1, "prior": 0.2, "series": "CPI", "basis": "mm",
+     "gold": "down", "note": "0.1 m/m vs 0.2 prior = below = cooler = dovish -> down."},
+
+    {"id": "m_cpifriday_2022", "unit": "t2-F4-cpi-friday-2022", "file": "cpi_2022-05-11.txt", "doc_type": "macro_release",
+     "text": "The Consumer Price Index for All Urban Consumers (CPI-U) increased 0.3 percent in April on a seasonally adjusted basis after rising 1.2 percent in March, the U.S. Bureau of Labor Statistics reported today.",
+     "released": 0.3, "prior": 1.2, "series": "CPI", "basis": "mm",
+     "gold": "down", "note": "0.3 m/m vs 1.2 prior = sharply below = decelerating = dovish surprise -> down. (Headline decel even though YoY still high.)"},
+
+    {"id": "m_cpivintage_2022", "unit": "t2-F4-cpi-vintage-2022", "file": "cpi_2021-06-10.txt", "doc_type": "macro_release",
+     "text": "The Consumer Price Index for All Urban Consumers (CPI-U) increased 0.6 percent in May on a seasonally adjusted basis after rising 0.8 percent in April, the U.S. Bureau of Labor Statistics reported today.",
+     "released": 0.6, "prior": 0.8, "series": "CPI", "basis": "mm",
+     "gold": "down", "note": "0.6 m/m vs 0.8 prior = below = decelerating = dovish surprise -> down."},
+
+    {"id": "m_fundingstress_2008", "unit": "t2-F4-funding-stress-10y-2008", "file": "cpi_2008-08-14.txt", "doc_type": "macro_release",
+     "text": "The Consumer Price Index for All Urban Consumers (CPI-U) increased 0.5 percent in July, before seasonal adjustment, the Bureau of Labor Statistics of the U.S. Department of Labor reported today.",
+     "released": 0.5, "prior": null, "series": "CPI", "basis": "mm",
+     "gold": "up", "note": "0.5 m/m, no prior in sentence -> panel-trend path. A hot +0.5 m/m print in the 2008 inflation-scare (oil spike) is above the trend = hawkish -> up. TREND-DEPENDENT."},
+
+    {"id": "m_qe1_2009", "unit": "t2-F4-qe1-expansion-2009", "file": "cpi_2009-01-16.txt", "doc_type": "macro_release",
+     "text": "The Consumer Price Index for All Urban Consumers (CPI-U) decreased 1.0 percent in December, before seasonal adjustment, the Bureau of Labor Statistics of the U.S. Department of Labor reported today.",
+     "released": -1.0, "prior": null, "series": "CPI", "basis": "mm",
+     "gold": "down", "note": "-1.0 m/m (a large deflationary print, GFC), no prior in sentence -> panel-trend path. Sharply below trend = cooler = dovish -> down."},
+
+    {"id": "m_svb_2023", "unit": "t2-F4-svb-whiplash-2023", "file": "cpi_2023-02-14.txt", "doc_type": "macro_release",
+     "text": "The Consumer Price Index for All Urban Consumers (CPI-U) rose 0.5 percent in January on a seasonally adjusted basis, after increasing 0.1 percent in December, the U.S. Bureau of Labor Statistics reported today.",
+     "released": 0.5, "prior": 0.1, "series": "CPI", "basis": "mm",
+     "gold": "up", "note": "0.5 m/m vs 0.1 prior = well above = hotter = hawkish -> up."},
+
+    {"id": "m_taperwarning_2013", "unit": "t2-F4-taper-warning-2013", "file": "cpi_2013-04-16.txt", "doc_type": "macro_release",
+     "text": "The Consumer Price Index for All Urban Consumers (CPI-U) decreased 0.2 percent in March on a seasonally adjusted basis, the U.S. Bureau of Labor Statistics reported today.",
+     "released": -0.2, "prior": null, "series": "CPI", "basis": "mm",
+     "gold": "down", "note": "-0.2 m/m (decreased), no prior in sentence -> panel-trend path. Negative print vs the flat-to-positive 2013 trend = downside surprise = dovish -> down. TREND-DEPENDENT."},
+
+    {"id": "m_ustdowngrade_2011", "unit": "t2-F4-ust-downgrade-watch-2011", "file": "cpi_2011-07-15.txt", "doc_type": "macro_release",
+     "text": "The Consumer Price Index for All Urban Consumers (CPI-U) decreased 0.2 percent in June on a seasonally adjusted basis, the U.S. Bureau of Labor Statistics reported today.",
+     "released": -0.2, "prior": null, "series": "CPI", "basis": "mm",
+     "gold": "down", "note": "-0.2 m/m (decreased), no prior -> panel-trend path. Downside surprise vs the positive 2011 trend = dovish -> down. TREND-DEPENDENT."}
+  ]
+}

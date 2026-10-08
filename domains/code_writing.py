@@ -188,18 +188,38 @@ def _request_cue_sets(agent) -> tuple:
         sub = getattr(agent, "s", agent)
         verbs: set = set()
         nouns: set = set()
-        for n in sub.nodes("Concept"):
+        for n in _concepts_with_role(sub, "write_verb"):
             at = sub.node(n)["attrs"]
-            role = at.get("code_request_role")
-            if role == "write_verb" and at.get("name"):
+            if at.get("name"):
                 verbs.add(str(at["name"]).lower())
-            elif role == "function_noun" and at.get("name"):
+        for n in _concepts_with_role(sub, "function_noun"):
+            at = sub.node(n)["attrs"]
+            if at.get("name"):
                 nouns.add(str(at["name"]).lower())
         if verbs and nouns:
             return verbs, nouns
     except Exception:
         pass
     return _WRITE_VERBS, _FUNCTION_NOUNS
+
+
+def _concepts_with_role(sub, role: str):
+    """Read a held cue role through the substrate's maintained attr index.
+
+    The index is mechanical and tracks native/graph-authored node writes; the
+    fallback preserves compatibility with substrate-shaped test doubles.
+    """
+    native = getattr(sub, "_inner", None)
+    if native is not None:
+        try:
+            if not native.has_attr_index("Concept", "code_request_role"):
+                native.declare_attr_index("Concept", "code_request_role")
+            return native.nodes_where(
+                "Concept", "code_request_role", role)
+        except Exception:
+            pass
+    return [n for n in sub.nodes("Concept")
+            if sub.node(n)["attrs"].get("code_request_role") == role]
 
 
 _IMPERATIVE_VERBS = {"write", "create", "implement", "compose"}
@@ -230,15 +250,16 @@ def _imperative_cue_sets(agent) -> tuple:
         imp_verbs: set = set()
         phrases: list = []
         any_verb = False
-        for n in sub.nodes("Concept"):
+        for n in _concepts_with_role(sub, "write_verb"):
             at = sub.node(n)["attrs"]
-            role = at.get("code_request_role")
-            if role == "write_verb" and at.get("name"):
+            if at.get("name"):
                 any_verb = True
                 lead = at.get("imperative_lead", 1.0)
                 if not (lead == 0 or lead == 0.0 or lead is False):
                     imp_verbs.add(str(at["name"]).lower())
-            elif role == "imperative_lead_phrase" and at.get("name"):
+        for n in _concepts_with_role(sub, "imperative_lead_phrase"):
+            at = sub.node(n)["attrs"]
+            if at.get("name"):
                 phrases.append(str(at["name"]).lower())
         if any_verb:
             return imp_verbs, tuple(phrases) if phrases else _IMPERATIVE_LEAD_PHRASES

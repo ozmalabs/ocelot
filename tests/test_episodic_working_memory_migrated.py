@@ -203,6 +203,29 @@ def test_legacy_memory_rules_defer_rich_episode_consolidation_to_replay():
     assert len(_nodes(agent, "SemanticSupport")) == 1
 
 
+def test_legacy_message_episode_retains_native_source_message_provenance():
+    agent = WorldAdapter(seeds=("memory_core",))
+    message = agent.receive_utterance(
+        "The route is clear.", speech_act="statement")
+
+    for _ in range(8):
+        agent.tick()
+        episodes = [
+            node for node in _nodes(agent, "Episode")
+            if _attrs(agent, node).get("memory_architecture")
+            == "legacy_message_episode"
+        ]
+        if episodes:
+            break
+
+    assert len(episodes) == 1
+    episode = episodes[0]
+    assert list(agent.inner.neighbours(
+        episode, "recorded_from_message")) == [message]
+    assert list(agent.inner.neighbours(
+        agent.agent, "recorded_episode")) == [episode]
+
+
 def test_imagined_recalled_and_predicted_material_cannot_launder_as_episode():
     agent = _fresh()
     for index, provenance in enumerate(("imagined", "recalled", "predicted")):
@@ -232,6 +255,7 @@ def test_imagined_recalled_and_predicted_material_cannot_launder_as_episode():
 
 def test_overlapping_cues_remain_separate_and_lower_completion_confidence():
     agent = _fresh()
+    assert agent.inner.has_attr_index("Episode", "cue_key")
     _experience(agent, event_key="door-a", cue_key="door", context_key="room-a")
     _experience(agent, event_key="door-b", cue_key="door", context_key="room-b")
 
@@ -239,6 +263,10 @@ def test_overlapping_cues_remain_separate_and_lower_completion_confidence():
 
     episodes = _nodes(agent, "Episode")
     assert len(episodes) == 2
+    assert all(agent.inner.has_edge(
+        agent.agent, "recorded_cued_working_memory_episode", ep) for ep in episodes)
+    assert all(_attrs(agent, ep)["cue_overlap_indexed"] == 1.0
+               for ep in episodes)
     assert {_attrs(agent, ep)["episode_key"] for ep in episodes} == {
         "door-a",
         "door-b",
@@ -251,6 +279,64 @@ def test_overlapping_cues_remain_separate_and_lower_completion_confidence():
         _attrs(agent, ep)["completion_confidence_cap"] == pytest.approx(0.5)
         for ep in episodes
     )
+
+
+def test_distinct_episode_cues_do_not_create_false_overlap_with_index_hint():
+    agent = _fresh()
+    assert agent.inner.has_attr_index("Episode", "cue_key")
+    _experience(agent, event_key="door-a", cue_key="door-a")
+    _experience(agent, event_key="door-b", cue_key="door-b")
+
+    agent.tick()
+
+    episodes = _nodes(agent, "Episode")
+    assert len(episodes) == 2
+    assert all(_attrs(agent, ep)["separation_status"] == "distinct_event_record"
+               for ep in episodes)
+    assert all(_attrs(agent, ep)["completion_confidence_cap"] == pytest.approx(0.85)
+               for ep in episodes)
+    assert all(agent.inner.has_edge(
+        agent.agent, "recorded_cued_working_memory_episode", ep) for ep in episodes)
+
+
+def test_unkeyed_working_memory_episodes_are_stored_but_not_overlap_candidates():
+    agent = _fresh()
+    _experience(agent, event_key="unkeyed-a", cue_key=None)
+    _experience(agent, event_key="unkeyed-b", cue_key=None)
+
+    agent.tick()
+
+    episodes = _nodes(agent, "Episode")
+    traces = [ep for ep in episodes if _attrs(agent, ep).get(
+        "memory_architecture") == "episodic_working_memory_v1"]
+    assert len(traces) == 2
+    assert all(agent.inner.has_edge(
+        agent.agent, "recorded_working_memory_episode", ep) for ep in traces)
+    assert all(not agent.inner.has_edge(
+        agent.agent, "recorded_cued_working_memory_episode", ep) for ep in traces)
+    assert all(_attrs(agent, ep).get("separation_status") == "distinct_event_record"
+               for ep in traces)
+
+
+def test_legacy_message_episodes_are_outside_typed_cue_overlap_population():
+    agent = _fresh()
+    legacy = []
+    for event_key in ("legacy-a", "legacy-b"):
+        episode = agent.s.add_node("Episode", {
+            "episode_key": event_key,
+            "cue_key": "shared-cue",
+            "memory_architecture": "legacy_message_episode",
+        })
+        _edge(agent, agent.agent, "recorded_episode", episode)
+        legacy.append(episode)
+
+    agent.tick()
+
+    assert all(not agent.inner.has_edge(
+        agent.agent, "recorded_working_memory_episode", ep) for ep in legacy)
+    assert all(_attrs(agent, ep).get("separation_status") is None for ep in legacy)
+    assert all(_attrs(agent, ep).get("completion_confidence_cap") is None
+               for ep in legacy)
 
 
 def test_partial_cue_retrieval_is_bounded_uncertain_and_reconsolidated():

@@ -69,6 +69,67 @@ def test_filing_a_concern_does_not_auto_promote(agent):
         "own -- self-modification requires an explicit human promote")
 
 
+def test_focus_directive_releases_graph_filed_human_gated_concern():
+    agent = WorldAdapter(seeds=())
+    load_all_seeds(agent)
+    reply = agent.converse("Focus on the reading work.", speech_act="statement")
+    inbound = agent._last_turn_inbound
+    message_attrs = agent.s.node(inbound)["attrs"]
+    assert message_attrs.get("self_improvement_route") == "filed_concern"
+    assert "filed it as a self-concern" in reply
+
+    goals = [goal for goal in agent.inner.neighbours(agent.agent, "has_goal")
+             if inbound in agent.inner.neighbours(goal, "comprehends")]
+    assert any(agent.s.node(goal)["attrs"].get("kind") == "self_improvement"
+               for goal in goals)
+    concerns = [agent.s.node(node)["attrs"]
+                for node in agent.s.nodes("SelfConcern")
+                if agent.s.node(node)["attrs"].get("source") == "conversation"
+                and agent.s.node(node)["attrs"].get("content") == "reading"]
+    assert any(item.get("status") == "noted" for item in concerns)
+    assert not any(
+        agent.s.node(node)["attrs"].get("source") == "conversation_promoted"
+        and agent.s.node(node)["attrs"].get("status") == "pending"
+        for node in agent.s.nodes("StandingConcern"))
+    receipts = [agent.s.node(node)["attrs"]
+                for node in agent.s.nodes("ProductionGateReceipt")
+                if agent.s.node(node)["attrs"].get("turn_message_id")
+                == int(inbound.value)]
+    assert any(item.get("status") == "released"
+               and item.get("parse_back_mode") == "conversation_instruction_graph"
+               for item in receipts)
+
+
+def test_focus_unknown_target_does_not_treat_function_words_as_grounding():
+    agent = WorldAdapter(seeds=())
+    load_all_seeds(agent)
+    before_concerns = {
+        node for node in agent.s.nodes("SelfConcern")
+        if agent.s.node(node)["attrs"].get("source") == "conversation"
+    }
+    before_goals = {
+        node for node in agent.s.nodes("Goal")
+        if agent.s.node(node)["attrs"].get("source") == "conversation"
+    }
+
+    reply = agent.converse("Focus on the blorfnax.", speech_act="statement")
+    inbound = agent._last_turn_inbound
+    attrs = agent.s.node(inbound)["attrs"]
+
+    assert attrs.get("self_improvement_route") == "clarify"
+    assert "don't yet hold" in reply
+    after_concerns = {
+        node for node in agent.s.nodes("SelfConcern")
+        if agent.s.node(node)["attrs"].get("source") == "conversation"
+    }
+    after_goals = {
+        node for node in agent.s.nodes("Goal")
+        if agent.s.node(node)["attrs"].get("source") == "conversation"
+    }
+    assert after_concerns == before_concerns
+    assert after_goals == before_goals
+
+
 # --- seed-on-resume reconciliation (the checkpoint-staleness fix) ---------
 
 def test_seed_rule_reconciliation_installs_missing_rules_exactly_once():

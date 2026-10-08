@@ -160,6 +160,32 @@ def _flag(a, turn_id, note):
 
 # --- THE HEADLINE GATE ----------------------------------------------------------
 
+
+def _replacement_identity_rule():
+    """A real (non-error) replacement for reply_self_identity, so the variant's
+    changed reply is a genuine change and not the adapter's error surface
+    (tranche 4: the replay judge scores a change INTO the error surface as a
+    broken fix). Same match/where as the shipped rule, different text."""
+    from substrate.world_adapter import WorldAdapter as _WA  # noqa: F401
+    V = lambda n: {"type": "Var", "name": n}
+    L = lambda v: {"type": "Lit", "value": v}
+    A = lambda n, k: {"type": "Attr", "node": V(n), "key": k}
+    NotEq = lambda a, b: {"type": "Not", "arg": {"type": "Eq", "a": a, "b": b}}
+    return {
+        "name": "reply_self_identity_variant",
+        "match": [["agent", "received", "m"], ["agent", "operates_in", "mt"]],
+        "where": {"type": "And", "items": [
+            {"type": "Eq", "a": A("m", "comp_dispatch_meta"), "b": L("self_identity")},
+            NotEq(A("mt", "substrate_name"), L(None)),
+            NotEq(A("m", "self_replied"), L(1.0)),
+            NotEq(A("m", "attachment_pending"), L(1.0)),
+            NotEq(A("m", "topic_pending"), L(1.0))]},
+        "effects": [["set_attr", "m", "self_replied", 1.0],
+                    ["add_node", "reply", "Message", {"from": "agent", "text": {"__term__": {
+                        "type": "StringConcat", "parts": [L("My name is "), A("mt", "substrate_name"), L(".")]}}}],
+                    ["add_edge", "reply", "responds_to", "m"], ["add_edge", "agent", "sent", "reply"]],
+    }
+
 def test_net_positive_but_regressing_variant_is_not_adopted(agent, tmp_path):
     # Corpus: three identity turns; flag 1+2, leave 3 unflagged. Ablating the
     # identity reply changes all three -> +2 (flagged fixed) − 1 (regression)
@@ -169,7 +195,8 @@ def test_net_positive_but_regressing_variant_is_not_adopted(agent, tmp_path):
     _flag(agent, turns[1], "identity reply rule wrong: probe two")
 
     exp = mint_experiment(agent, "net-positive-but-regressing ablation", "conversation",
-                          remove_rules=["reply_self_identity"])
+                          remove_rules=["reply_self_identity"],
+                          add_rules=[_replacement_identity_rule()])
     delta = _delta_of(agent, exp)
     # mark the delta a genuine ablation variant (what the authored composer
     # writes on the promote path — test authoring, same as mint_experiment)
@@ -231,7 +258,8 @@ def test_zero_regression_variant_is_not_vetoed(agent, tmp_path):
     _flag(agent, turns[1], "identity reply rule wrong: probe two")
 
     exp = mint_experiment(agent, "clean ablation (all affected turns flagged)", "conversation",
-                          remove_rules=["reply_self_identity"])
+                          remove_rules=["reply_self_identity"],
+                          add_rules=[_replacement_identity_rule()])
     delta = _delta_of(agent, exp)
     agent.s.set_attr(delta, "act_rule_varied", "reply_self_identity")
     agent.s.set_attr(delta, "ablation", 1.0)

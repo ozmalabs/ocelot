@@ -1,5 +1,5 @@
 """CONSTRUCTION-LEARNING IS CLASS-LEARNING (domains/reading_collapse.py +
-seeds/reading_constructions.json).
+domain_data/reading_constructions.json).
 
 Adding constructions one surface-form at a time is a slower trenchcoat. Naming /
 classification / "known as" / "termed" / "described as" / "defined as" are all

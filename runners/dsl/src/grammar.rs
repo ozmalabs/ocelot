@@ -45,6 +45,7 @@ pub struct ProdIdx(pub u32);
 /// Γ. Tracks the type vocabulary (N ∪ E in paper notation) so the
 /// checker can distinguish Type-1 from Type-2 inadmissibility
 /// (Definition 3).
+#[derive(Clone)]
 pub struct Grammar {
     pub productions: Vec<Production>,
     /// (src_type, edge_type, tgt_type) → matching productions.

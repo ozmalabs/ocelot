@@ -15,7 +15,7 @@ report verb's complement is very often introduced with NO complementizer at all
 THE DECISION MOVED GRAPH-NATIVE: "does a finite clause immediately following a
 REPORT verb open an embedded clause even with no complementizer present" is now a
 HELD DATA fact -- the SET of report/communication verbs the agent recognises
-(`ReportClass{cls:'REPORT'}`, seeds/reading_constructions.json) -- read by
+(`ReportClass{cls:'REPORT'}`, domain_data/reading_constructions.json) -- read by
 `reading_collapse._report_literal_member` / `_is_report_complement_here`, which
 `_segment_into_clauses` consults exactly the way it already consults the
 COMPLEMENTIZER/CLAUSE_LINK marker classes. Absent that class (an older/ablated

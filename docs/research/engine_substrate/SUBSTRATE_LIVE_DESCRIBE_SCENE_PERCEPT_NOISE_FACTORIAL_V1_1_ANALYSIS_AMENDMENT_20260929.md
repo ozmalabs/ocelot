@@ -1,0 +1,5 @@
+# v1.1 offline analysis amendment
+
+The v1.1 48-worker capture completed with stable locked inputs. The first independent analysis returned a failed `constant_base_graph_population` check because its copied v1 analyzer incorrectly subtracted request Percept count from `has_concept` membership totals. This route attaches request Percepts with `has_percept`; it does not add those nodes to the measured `has_concept` relation. The raw worker rows show a constant base Concept count of 10,796 and constant base `has_concept` membership count of 6,323 in every worker.
+
+The initial analysis JSON is retained as `live_describe_scene_percept_noise_factorial_v1_1_analysis_initial_invariant_bug_20260929.json`, and the exact analyzer source present in the source lock is retained as `scripts/analyze_substrate_live_describe_scene_percept_noise_factorial_v1_1_locked_source.py`. The corrected analyzer changes only the membership invariant and records both captured and corrected analyzer hashes. It is rerun against the unchanged raw capture; no worker is rerun and no measurement is edited.

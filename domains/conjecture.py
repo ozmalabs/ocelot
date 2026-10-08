@@ -23,7 +23,7 @@ WHERE THE GUESSES COME FROM (the agent's OWN shape machinery — no hardcoded
 guess table):
 
   * TYPE / ROLE conjecture — the queried slot's EXPECTED filler category, read
-    off the graph-resident RolePrior nodes (seeds/conceptual_categories.json:
+    off the graph-resident RolePrior nodes (domain_data/conceptual_categories.json:
     slot -> expected_categories / proper_category). A 'location' query expects a
     place; an 'agent' query expects a person/animal. A type-level guess: "I
     think it's a <category>." This is the role's selectional prior, the same

@@ -65,6 +65,7 @@ from typing import Any, Optional
 
 from domains import code_reading as cdr
 from domains import code_writing as cw
+from domains import independent_adequacy as ia
 from domains.teach import teach
 
 
@@ -235,7 +236,11 @@ def teach_write_shape_from_example(agent, example_source: str, *,
                                    request_text: Optional[str] = None,
                                    func_name: Optional[str] = None,
                                    seeds_dir=None,
-                                   lesson_source: Optional[str] = None) -> dict:
+                                   lesson_source: Optional[str] = None,
+                                   contract_examples: Optional[list] = None,
+                                   adequacy_receipt: Optional[dict] = None,
+                                   require_adequacy_receipt: bool = False,
+                                   provider_evidence: Optional[dict] = None) -> dict:
     """READ a human-supplied example function (code_reading.read_function --
     the SAME faculty CODE-1/2 read the agent's own repo with), VALIDATE its
     Term by running (item 5), then TEACH it as a new code_write_construction
@@ -247,7 +252,40 @@ def teach_write_shape_from_example(agent, example_source: str, *,
     came from a PUBLISHED document region rather than a chat-pasted example,
     the caller passes a provenance string (e.g. the lesson's file/URL) that
     is carried onto the taught ShapeSignature verbatim -- the SAME teach()
-    path, just with one more mechanical fact attached."""
+    path, just with one more mechanical fact attached.
+
+    `contract_examples` (additive, opt-in): a list of independent
+    `{inputs: {arg: value}, expected: value}` observations for `request_text`.
+    When supplied, every row must match both native Term evaluation and the
+    emitted Python function before any ShapeSignature is taught. These
+    observations are caller-provided evidence; this method does not infer
+    their correctness from the request text. Omission preserves the legacy
+    teach-by-example behavior.
+
+    `adequacy_receipt` (opt-in): when supplied, adoption also requires an
+    integrity-checked accepted receipt bound to this exact source, Term,
+    request, and lesson provenance. The receipt API checks consistency, not
+    the identity or honesty of the external label provider. Set
+    `require_adequacy_receipt=True` to refuse adoption when no receipt is
+    supplied; leaving it false preserves the legacy caller contract.
+
+    `provider_evidence` (strict-adapter path): when the agent was constructed
+    with `require_authenticated_code_examples=True`, this must contain the
+    request, audit rows, and receipt. The adapter-owned trusted key registry
+    authenticates the signed rows, and the request must bind the exact local
+    candidate and Term before this function reaches `_teach_shape`. This
+    guard also covers callers such as `code_curriculum` that invoke this
+    shared adoption function directly. If the adapter also enables
+    `require_discriminating_code_example_probe`, the evidence must include a
+    recomputable challenger-selection context; zero-entropy selections are
+    refused."""
+    if not isinstance(require_adequacy_receipt, bool):
+        return {"ok": False, "reason": "require_adequacy_receipt must be boolean"}
+    strict_provider_auth = bool(getattr(agent, "require_authenticated_code_examples", False))
+    if strict_provider_auth and (not isinstance(provider_evidence, dict) or
+            not {"request", "audit_rows", "receipt"}.issubset(provider_evidence)):
+        return {"ok": False,
+                "reason": "provider-authenticated adequacy evidence required"}
     reading = cdr.read_function(agent, example_source, func_name)
     if reading.get("term") is None:
         return {"ok": False, "reason": reading.get("emit_error") or reading.get("note")
@@ -274,6 +312,119 @@ def teach_write_shape_from_example(agent, example_source: str, *,
                "reason": "validate-by-running disagreement: %r" % (check,),
                "reading": reading, "written_source": written_source, "validate": check}
 
+    contract_check = None
+    if contract_examples is not None:
+        if not isinstance(contract_examples, list) or not contract_examples:
+            return {"ok": False, "reason": "contract_examples must be a non-empty list",
+                    "reading": reading, "validate": check}
+        namespace: dict = {}
+        try:
+            exec(written_source, namespace)  # noqa: S102 -- isolated candidate validation
+            written_fn = namespace.get(reading["name"])
+            if not callable(written_fn):
+                raise ValueError("rendered function is not callable")
+            checked = []
+            for index, row in enumerate(contract_examples):
+                if not isinstance(row, dict) or set(row) != {"inputs", "expected"}:
+                    raise ValueError("case %d must contain exactly inputs and expected" % index)
+                env = row["inputs"]
+                if not isinstance(env, dict) or set(env) != set(args):
+                    raise ValueError("case %d inputs must exactly match function arguments" % index)
+                expected = row["expected"]
+                native_value = native.evaluate(term, env)
+                python_value = written_fn(*[env[arg] for arg in args])
+                native_match = type(native_value) is type(expected) and native_value == expected
+                python_match = type(python_value) is type(expected) and python_value == expected
+                checked.append({"index": index, "inputs": dict(env),
+                                "expected": expected, "native_output": native_value,
+                                "python_output": python_value,
+                                "native_match": native_match, "python_match": python_match})
+                if not native_match or not python_match:
+                    return {"ok": False, "reason": "contract example %d did not match expected output" % index,
+                            "reading": reading, "validate": check,
+                            "contract_validation": {"ok": False, "checked": checked,
+                                                    "failed_index": index,
+                                                    "native_output": native_value,
+                                                    "python_output": python_value,
+                                                    "expected": expected}}
+            contract_check = {"ok": True, "checked": checked}
+        except Exception as e:  # noqa: BLE001
+            return {"ok": False, "reason": "invalid contract examples: %s: %s" % (type(e).__name__, e),
+                    "reading": reading, "validate": check,
+                    "contract_validation": {"ok": False}}
+
+    candidate_id = ia.candidate_id_for_write_shape(
+        example_source, reading["name"], args, term, request_text, lesson_source)
+    provider_verification = None
+    if strict_provider_auth:
+        request = provider_evidence["request"]
+        if (not isinstance(request, dict)
+                or request.get("candidate_id") != candidate_id
+                or request.get("term_sha256") != ia._digest(term)):
+            return {"ok": False,
+                    "reason": "provider evidence is bound to another candidate or Term",
+                    "reading": reading, "candidate_id": candidate_id}
+        from domains.adequacy_provider_auth import verify_signed_audit_evidence
+        provider_verification = verify_signed_audit_evidence(
+            request, provider_evidence["audit_rows"], provider_evidence["receipt"],
+            getattr(agent, "_trusted_adequacy_provider_keys", {}))
+        if not provider_verification["ok"]:
+            return {"ok": False,
+                    "reason": "provider-authenticated adequacy evidence required",
+                    "reading": reading, "candidate_id": candidate_id,
+                    "provider_auth": provider_verification}
+        if bool(getattr(agent, "require_discriminating_code_example_probe", False)):
+            context = provider_evidence.get("probe_selection_context")
+            required = {"challenger_terms", "acquisition_rows", "admissible_inputs",
+                        "acquisition_source_ids", "seed", "selection"}
+            if not isinstance(context, dict) or not required.issubset(context):
+                return {"ok": False,
+                        "reason": "discriminating probe selection evidence required",
+                        "reading": reading, "candidate_id": candidate_id,
+                        "provider_auth": provider_verification}
+            try:
+                from domains.adequacy_probe_selection import select_disagreement_probe
+                selected = select_disagreement_probe(
+                    candidate_id, term, context["challenger_terms"],
+                    context["acquisition_rows"], context["admissible_inputs"],
+                    lambda challenger, env: native.evaluate(challenger, env),
+                    seed=context["seed"])
+                selection_matches = selected == context["selection"]
+                probes = request.get("probes")
+                probe_bound = (isinstance(probes, list) and len(probes) == 1
+                    and isinstance(probes[0], dict)
+                    and probes[0].get("inputs") == selected["input"]
+                    and probes[0].get("input_sha256") == selected["selected_input_sha256"])
+                source_ids = context["acquisition_source_ids"]
+                if not isinstance(source_ids, list) or not source_ids:
+                    raise ValueError("selection acquisition source IDs must be a non-empty list")
+                acquisition_hash = ia._digest({
+                    "rows": context["acquisition_rows"],
+                    "source_ids": sorted(set(source_ids))})
+                request_bound = (request.get("seed") == selected["selection_id"]
+                    and request.get("acquisition_sha256") == acquisition_hash
+                    and request.get("domain_sha256") == ia._digest([selected["input"]]))
+            except Exception as exc:  # noqa: BLE001 -- malformed selection fails closed
+                return {"ok": False,
+                        "reason": "invalid discriminating probe selection evidence",
+                        "reading": reading, "candidate_id": candidate_id,
+                        "provider_auth": provider_verification,
+                        "probe_selection_error": type(exc).__name__}
+            if (not selection_matches or not probe_bound or not request_bound
+                    or selected["prediction_entropy_bits"] <= 0):
+                return {"ok": False,
+                        "reason": "no valid discriminating adequacy probe",
+                        "reading": reading, "candidate_id": candidate_id,
+                        "provider_auth": provider_verification,
+                        "probe_selection": selected}
+        adequacy_receipt = provider_evidence["receipt"]
+        require_adequacy_receipt = True
+    if (require_adequacy_receipt or adequacy_receipt is not None) and not ia.verify_accepted_receipt(
+            adequacy_receipt, candidate_id, term):
+        return {"ok": False, "reason": "independent adequacy receipt missing, invalid, or bound to another candidate",
+                "reading": reading, "validate": check,
+                "contract_validation": contract_check, "candidate_id": candidate_id}
+
     # IDENTIFIER GROUNDING (item 4): the example's own arg names + function
     # name are unknown identifier words worth grounding through the teacher
     # chain, exactly like any other unknown word.
@@ -286,7 +437,10 @@ def teach_write_shape_from_example(agent, example_source: str, *,
                           taught_for=request_text, lesson_source=lesson_source,
                           seeds_dir=seeds_dir)
     return {"ok": True, "shape": shape_name, "tokens": tokens, "reading": reading,
-           "written_source": written_source, "validate": check, "teach": result}
+           "written_source": written_source, "validate": check,
+           "contract_validation": contract_check, "candidate_id": candidate_id,
+           "adequacy_receipt": adequacy_receipt, "provider_auth": provider_verification,
+           "teach": result}
 
 
 # --------------------------------------------------------------------------- #

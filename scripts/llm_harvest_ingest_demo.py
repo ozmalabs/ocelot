@@ -28,7 +28,7 @@ from domains import llm_knowledge_seed as ks
 from domains import source_provenance as sp
 
 CAN_SEED = "seeds/can_native_reimplementation.json"
-REAPED = "seeds/generated/qwen3_reaped_knowledge.json"
+REAPED = "domain_data/llm_harvest/qwen3_reaped_knowledge.json"
 SOLO_ASSERT_BAR = 0.8      # the derive_opposition fusion bar: assert iff S >= 0.8
 
 

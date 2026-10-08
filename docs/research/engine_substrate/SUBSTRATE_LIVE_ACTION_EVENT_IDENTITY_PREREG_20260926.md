@@ -1,0 +1,7 @@
+# Live action event identity producer audit
+
+**Question:** on the real live instruction path, which event/Goal identity relations are produced, and does that path create the `selection`, `execution`, or `action_result` DiscourseEvents consumed by the discourse lifecycle rules?
+
+This confirmation follows one discovery-only manual turn on `Check the pressure.` It does not select a new task outcome; the fixed message and expected graph contract are now frozen. In three fresh processes, instantiate `WorldAdapter(seeds=())`, call `load_all_seeds`, then run `converse("Check the pressure.", speech_act="instruction", speaker="alice")`. Capture source/build hashes, reply route, the newly created DiscourseEvents and Goals, Message `comprehends` and Goal `originated_in` relations, associated Deliberations, and the selected lifecycle event-kind counts in that DiscourseState.
+
+Gates: unique PIDs; each worker creates exactly one new inbound DiscourseEvent of kind `instruction`; at least one action Goal is linked to the inbound Message and origin DiscourseEvent; no `selection`, `execution`, or `action_result` DiscourseEvents are emitted during this one-turn path; no Goal is transitioned by those event kinds. Report all Goals including unrelated communication Goals. Do not infer that no other application path emits such events from this one live path. This is producer coverage evidence, not a fix, task-success claim, or timing-scale result. The discovery-only first run is excluded from the three confirmation workers.

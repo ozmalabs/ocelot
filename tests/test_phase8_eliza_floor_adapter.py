@@ -22,6 +22,34 @@ def test_eliza_floor_emits_one_raw_deterministic_observation_per_case():
     assert all(item["output"].strip() for item in report["observations"])
 
 
+def test_eliza_floor_v5_binds_transport_context_and_prior_history():
+    protocol = "phase8a-fixed-phase0-corpus-v5-event-context-history8"
+    corpus = {"protocol_id": protocol, "events": [
+        {"id": "one", "signal": "hello", "event_mode": "turn_compatible",
+         "interaction_relation": "turn_compatible"},
+        {"id": "two", "signal": "What is the sensor status?",
+         "event_mode": "turn_compatible", "interaction_relation": "adjacent",
+         "setup": {"held_answers": [{"topic": "sensor", "answer": "nominal"}]},
+         "expected_state": "learn", "communicative_force": "request_information"},
+    ]}
+    report = run_eliza_floor(corpus, protocol_id=protocol)
+    first, second = report["observations"]
+    assert report["protocol_id"] == protocol
+    assert report["input_profile"] == "event_context_v5_history8"
+    assert report["session_history_limit"] == 8
+    trace = second["raw_trace"]
+    assert trace["input_context"]["interaction"] == {
+        "mode": "turn_compatible", "relation": "adjacent"}
+    assert trace["input_context"]["held_answers"] == [
+        {"topic": "sensor", "answer": "nominal"}]
+    assert trace["input_context"]["history"] == [
+        {"signal": "hello", "response": first["output"]}]
+    assert trace["cognitive_labels"] is None
+    assert "expected_state" not in trace["input_context"]
+    assert "communicative_force" not in trace["input_context"]
+    assert report["scorecard"]["protocol_id"] == protocol
+
+
 def test_eliza_floor_does_not_read_annotations_or_claim_cognitive_labels():
     corpus = load_corpus()
     baseline = run_eliza_floor(corpus)

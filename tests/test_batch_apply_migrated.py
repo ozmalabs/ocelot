@@ -38,7 +38,7 @@ import numpy as np
 import pytest
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SEED = os.path.join(ROOT, "seeds", "vision_change.json")
+SEED = os.path.join(ROOT, "domain_data", "vision_change.json")
 
 pytest.importorskip("substrate_rs")
 

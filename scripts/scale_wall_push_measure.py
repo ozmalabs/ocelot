@@ -139,7 +139,7 @@ def sweep_arm(arm, grids):
         tmp = BA._strip_batch_seed()
         wave_world._CHANGE_SEED = tmp
     else:
-        wave_world._CHANGE_SEED = os.path.join(ROOT, "seeds", "vision_change.json")
+        wave_world._CHANGE_SEED = os.path.join(ROOT, "domain_data", "vision_change.json")
 
     dispatch = BA._drive_dispatch_name()
     rows, states = [], {}

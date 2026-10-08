@@ -94,7 +94,10 @@ TWO BASELINES, not one (both still string comparison, no judgment):
     a no-op delta scores ZERO regressions BY CONSTRUCTION (control and
     variant are then byte-identical replays of the same probes) — the
     determinism gate this wave adds.
-  * ``score = (+1 per flagged_changed) − (1 per regression)`` — so the
+  * a flagged probe whose variant reply is EMPTY, the fixed error surface, or
+    raised is a ``broken_fix`` (tranche 4): it changed, but into a failure,
+    and scores −1 like a regression rather than +1;
+  * ``score = (+1 per flagged_changed) − (1 per regression or broken_fix)`` — so the
     parent's own authored judge (score-per-frame SIGN, unchanged from the ARC
     family) reads: positive → supported, negative → refuted, zero (including
     the no-probes and no-op-delta cases) → inconclusive.
@@ -170,6 +173,7 @@ for p in (str(_ROOT), str(_HERE), str(_ROOT / "runners" / "dsl" / "python")):
         sys.path.insert(0, p)
 
 from substrate.world_adapter import WorldAdapter   # noqa: E402
+from substrate.world_adapter import _CONVERSATION_ERROR_SURFACE   # noqa: E402
 from substrate.boot_all import load_all_seeds       # noqa: E402
 # Shared mechanical helpers — the SAME delta parse / bookkeeping-fill / concept
 # application the ARC child uses, imported rather than re-implemented so the
@@ -327,6 +331,23 @@ def _active_interlocutor_belief(agent, attr: str, default=None):
         return default
 
 
+def _classified_party_count(agent) -> int:
+    """Tranche 8 shape_mint witness: how many modeled parties fit SOME held
+    InterlocutorShape at decode_shape's own floor (fit >= _SHAPE_FIT_MIN).
+    Party-independent and read AFTER each pass's replay, so control and
+    variant are measured identically. The old witness
+    (_active_interlocutor_shape_fit) read whichever party was active in the
+    snapshot (measured: a typical party, fit 4 in both passes) and read the
+    control BEFORE its replay, so a shape minted for an atypical party could
+    never move it."""
+    try:
+        from domains import interlocutor_model as im
+        return sum(1 for p in im._parties(agent)
+                   if int(im.decode_shape(agent, p).get("fit", 0) or 0) >= im._SHAPE_FIT_MIN)
+    except Exception:  # noqa: BLE001
+        return 0
+
+
 def _active_interlocutor_shape_fit(agent) -> int:
     """Mechanical read (COMPOSER-CAPABILITY, R4): `decode_shape`'s own fit
     count for the CURRENTLY ACTIVE party — the witness the shape_mint
@@ -460,6 +481,32 @@ def _arm_parent_fidelity(agent, delta: dict) -> None:
         agent.deep_ingest = True
 
 
+_READING_WARMED = False
+
+
+def _warm_reading_path(delta: dict) -> None:
+    """PAIRED-CONTROL FAIRNESS (tranche 7): the first shadow read in a process
+    pays a one-time warm-up (lexicon/WordNet load, ~1.8 s measured) that the
+    later pass does not, so without this the CONTROL replay's
+    control_shadow_ms was inflated ~10x and every shadow-latency comparison
+    favoured the variant (a performance experiment whose delta changed
+    nothing was judged supported). One throwaway shadow read on a scratch
+    adapter, before either replay, so both passes run warm. Mechanical; only
+    when the parent ran shadow reads."""
+    global _READING_WARMED
+    if _READING_WARMED or not delta.get("parent_shadow_read"):
+        return
+    _READING_WARMED = True
+    try:
+        scratch = WorldAdapter(seeds=(), shadow_read=True)
+        mid = scratch.s.add_node("Message", {"text": "Hello.", "from": "interlocutor"})
+        scratch._shadow_read_turn(mid, "Hello.")
+        del scratch
+        gc.collect()
+    except Exception:  # noqa: BLE001 — warming is best-effort, never breaks a replay
+        pass
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(
         description="conversation child runner — replays one dispatched Experiment's corpus")
@@ -519,15 +566,16 @@ def main() -> int:
             control_agent = _load_snapshot_agent(args.snapshot)
             probes = read_corpus(control_agent)
         result["boot_mode"] = boot_mode
+        _warm_reading_path(delta)
         _arm_parent_fidelity(control_agent, delta)
 
         control_belief = None
         if datum_feedback_probe:
             belief_attr = str(delta.get("datum_feedback_belief_attr") or "self_report_reliability")
             control_belief = _active_interlocutor_belief(control_agent, belief_attr, 0.5)
-        elif shape_mint_probe:
-            control_belief = _active_interlocutor_shape_fit(control_agent)
         control = _replay_pass(control_agent, probes, witness=witness)
+        if shape_mint_probe:
+            control_belief = _classified_party_count(control_agent)
         del control_agent
         gc.collect()
 
@@ -550,7 +598,7 @@ def main() -> int:
             belief_attr = str(delta.get("datum_feedback_belief_attr") or "self_report_reliability")
             variant_belief = _active_interlocutor_belief(agent, belief_attr, 0.5)
         elif shape_mint_probe:
-            variant_belief = _active_interlocutor_shape_fit(agent)
+            variant_belief = _classified_party_count(agent)
 
         # SCORE — TWO BASELINES (module docstring): a flagged probe's
         # `flagged_changed` is checked against the RECORDED reply (unchanged
@@ -563,14 +611,40 @@ def main() -> int:
         score = 0
         flagged_n = 0
         flagged_changed = 0
+        broken_fixes = 0
         regressions = 0
         for i, probe in enumerate(probes):
             replayed = stats["replies"][i]
             if probe["flagged"]:
                 flagged_n += 1
                 baseline, baseline_text = "recorded", probe["reply"]
-                changed = replayed != baseline_text
-                if changed:
+                # Fixed only if the DELTA changed it: the variant must differ
+                # from the recorded bad reply AND from the paired control
+                # replay. A reply that drifted from the recording under replay
+                # state alone (control == variant) is no fix (tranche 6:
+                # a no-op cue delta scored 'supported' this way).
+                changed = (replayed != baseline_text
+                           and replayed != control["replies"][i])
+                # A change only FIXES the flagged turn if the new reply is a
+                # real communicative surface: an empty reply, the adapter's
+                # fixed error surface, or a probe that raised is a BROKEN fix
+                # (it fails the turn harder than the flagged reply did), and
+                # scores like a regression (tranche 4).
+                _is_broken = lambda txt, err: (not str(txt or "").strip()
+                                               or str(txt).strip() == _CONVERSATION_ERROR_SURFACE
+                                               or bool(err))
+                # Broken only if the DELTA broke it: when the paired control
+                # replay of the same probe is already broken (replay-state
+                # drift, independent of the delta), the variant's failure is
+                # not the delta's doing (tranche 5).
+                broken = (_is_broken(replayed, stats["errors"][i])
+                          and not _is_broken(control["replies"][i], control["errors"][i]))
+                if changed and _is_broken(replayed, stats["errors"][i]) and not broken:
+                    changed = False      # neither fixed nor broken by the delta
+                if changed and broken:
+                    broken_fixes += 1
+                    score -= 1
+                elif changed:
                     flagged_changed += 1
                     score += 1
             else:
@@ -592,7 +666,7 @@ def main() -> int:
                   "won": score > 0, "over": True, "boot_mode": boot_mode,
                   "removed_rules": removed_rules,
                   "flagged": flagged_n, "flagged_changed": flagged_changed,
-                  "regressions": regressions, "avg_turn_ms": stats["avg_turn_ms"]}
+                  "broken_fixes": broken_fixes, "regressions": regressions, "avg_turn_ms": stats["avg_turn_ms"]}
         if knob_probe:
             result["control_reforms"] = int(control["reforms"])
             result["variant_reforms"] = int(stats["reforms"])

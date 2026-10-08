@@ -1,0 +1,3 @@
+# RatioInduce cost pilot v1.3 amendment — 2026-09-26
+
+The v1.2 capture is retained and its analysis is reproducible, but it is not the preregistered timing record: the protocol required an untimed operator warm-up for each dimensionality, while v1.2 warmed only Python/native imports. v1.3 adds exactly one untimed `RatioInduce` call for each D ∈ {2,3,4}, then runs the same 11 cells and seven timed repeats. The per-D substrate/schema is reused so the warm-up applies to the same native context. v1.2 is excluded from the primary timing summary; v1.3 is the pilot timing record. No other factor, fixture, or metric changes.

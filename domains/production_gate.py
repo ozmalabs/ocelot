@@ -11,6 +11,22 @@ from __future__ import annotations
 from typing import Any
 
 
+_SEMANTIC_ROLES = (
+    "agent", "patient", "location", "recipient", "instrument",
+)
+
+
+def _semantic_content(frame: dict[str, Any]) -> list[str]:
+    values = []
+    for role in _SEMANTIC_ROLES:
+        value = frame.get(role)
+        items = (sorted(value) if isinstance(value, set)
+                 else value if isinstance(value, (list, tuple))
+                 else (value,))
+        values.extend(str(item) for item in items if item)
+    return sorted(values)
+
+
 def _native(agent):
     return getattr(agent, "inner", getattr(getattr(agent, "s", None), "_inner", None))
 
@@ -28,8 +44,14 @@ def legacy_readback_gate(frame: dict[str, Any], surface: str | None,
     text = str(surface or "").strip().lower()
     normalized_text = text.replace("-", " ")
     keys = tuple(evidence_keys or ("event", "agent", "patient"))
-    intended = [str(frame.get(key)).strip().lower()
-                for key in keys if frame.get(key)]
+    intended = []
+    for key in keys:
+        value = frame.get(key)
+        values = (sorted(value) if isinstance(value, set)
+                  else value if isinstance(value, (list, tuple))
+                  else (value,))
+        intended.extend(str(item).strip().lower()
+                        for item in values if item)
     def _forms(token: str) -> set[str]:
         """Small structural inflection tolerance for legacy topic keys.
 
@@ -40,6 +62,12 @@ def legacy_readback_gate(frame: dict[str, Any], surface: str | None,
         renderer's exact forms remain the normal case.
         """
         forms = {token}
+        if token.endswith("e") and len(token) > 2:
+            # Preserve a selected lexical event through regular English
+            # gerund/past realization (promote -> promoting). This is only a
+            # parse-back surface equivalence; it cannot select an event.
+            forms.add(token[:-1] + "ing")
+            forms.add(token[:-1] + "ed")
         if token.endswith("ies") and len(token) > 3:
             forms.add(token[:-3] + "y")
         if token.endswith("es") and len(token) > 3:
@@ -76,14 +104,20 @@ def release_if_gated(agent, frame: dict[str, Any], surface: str | None,
     semantic = frame if isinstance(frame, dict) else {}
     monitor = gate or {}
     recoverable = bool(monitor.get("recoverable"))
-    has_goal = bool(semantic.get("event") and semantic.get("intent"))
-    has_content = any(semantic.get(role) for role in
-                      ("agent", "patient", "location", "recipient", "instrument"))
+    fragment_content = _semantic_content(semantic)
+    answer_fragment = bool(semantic.get("answer_fragment"))
+    has_goal = bool(semantic.get("event") and semantic.get("intent")) or (
+        answer_fragment and semantic.get("intent") in {"inform", "answer"})
+    has_content = (len(fragment_content) == 1 if answer_fragment else
+                   bool(fragment_content))
     reasons = []
     if not text:
         reasons.append("empty_surface")
     if text.rstrip(".!?").strip().lower() == "noted":
         reasons.append("forbidden_fallback_surface")
+    if (text.rstrip(".!?").strip().lower()
+            == "error: no communicative response could be generated"):
+        reasons.append("diagnostic_error_surface_not_a_release")
     if not has_goal:
         reasons.append("missing_selected_goal")
     if not has_content:
@@ -108,9 +142,7 @@ def release_if_gated(agent, frame: dict[str, Any], surface: str | None,
     if hasattr(turn_id, "value"):
         turn_id = int(turn_id.value)
     if not reasons and turn_id is not None:
-        semantic_content = sorted(str(semantic.get(role)) for role in
-                                  ("agent", "patient", "location", "recipient", "instrument")
-                                  if semantic.get(role))
+        semantic_content = _semantic_content(semantic)
         for existing in sub.nodes("ProductionGateReceipt"):
             existing_attrs = sub.node(existing)["attrs"]
             if (existing_attrs.get("status") == "released"
@@ -143,11 +175,10 @@ def release_if_gated(agent, frame: dict[str, Any], surface: str | None,
     attrs = {
         "status": "released" if not reasons else "withheld",
         "surface": text,
-        "semantic_event": str(semantic.get("event")),
+        "semantic_event": str(semantic.get("event") or
+                               ("answer_fragment" if answer_fragment else None)),
         "semantic_intent": str(semantic.get("intent")),
-        "semantic_content": sorted(str(semantic.get(role)) for role in
-                                    ("agent", "patient", "location", "recipient", "instrument")
-                                    if semantic.get(role)),
+        "semantic_content": _semantic_content(semantic),
         "recoverable": recoverable,
         "parse_back_mode": monitor.get("mode"),
         "coverage": monitor.get("coverage"),

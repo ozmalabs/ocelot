@@ -1,0 +1,5 @@
+# GenMint matrix/layout fixture-selection pilot
+
+This explicitly unregistered single-run pilot crossed three linear matrices with three predicate layouts using the six training relations from the full-seed held-out protocol. The prior matrix `[1,1,0,2]` and `shearA [1,0,1,1]` were acquired in all three layouts. `shearB [1,1,0,1]` was acquired in `opposite_03` and `adjacent_12`, but not in `adjacent_01`; that case still ended `recognized_transformed` with no linear generator in the graph. Therefore terminal status is not sufficient evidence of matrix acquisition, and matrix × predicate-layout interaction must remain in the confirmatory design.
+
+The pilot has one observation per cell, no held-out transfer, no disabled control, and no timing estimate. It is fixture-selection evidence only. It must not be cited as a capability or reliability rate. The exact inputs and source/native hashes are in the [raw capture](../../../evaluation/reports/substrate_genmint_matrix_layout_exploratory_v1_20260926.json); reproduce with the [pilot runner](../../../scripts/genmint_matrix_layout_exploratory_v1.py).

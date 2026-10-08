@@ -91,6 +91,30 @@ def test_steer_promote_marks_the_named_concern(agent):
     assert not _standing(agent)
 
 
+def test_focus_gap_imperative_routes_by_held_graph_verb_and_preserves_human_gate():
+    # The legacy parse snapshot tagged sentence-initial `Focus` as a noun.
+    # With an explicit gap noun, the graph path must recognize the held
+    # steering route from typed Mention/Concept evidence, not a Python list.
+    agent = WorldAdapter(seeds=())
+    load_all_seeds(agent)
+    concern = agent.s.add_node("SelfConcern", {
+        "source": "implicit", "kind": "instruction", "status": "noted",
+        "content": "reading work", "promote_requested": 0.0,
+    })
+    agent.inner.add_edge_unchecked(agent.agent, "has_self_concern", concern)
+
+    reply = agent.converse("Focus on the reading work gap.", speech_act="request")
+
+    attrs = agent.s.node(concern)["attrs"]
+    assert attrs.get("promote_requested") == 1.0
+    assert attrs.get("status") == "noted", "graph routing must not bypass human promotion"
+    assert reply and reply.lower().startswith("promoting:")
+    trace = agent.reply_turn_trace(agent.last_turn_inbound_id())
+    release = trace["production_release"]
+    assert release["parse_back_mode"] == "conversation_instruction_graph"
+    assert release["semantic_event"] == "promote"
+
+
 # --- (b) the hook EXECUTES what the rule marked (human gate preserved) -------
 
 def test_steer_tick_promotes_marked_concern_to_standing(agent):
@@ -129,12 +153,20 @@ def test_steer_retire_retires_the_named_concern(agent):
 # --- (d) ambiguity floor: no matching concern -> clarify, mint nothing --------
 
 def test_steering_verb_with_no_match_clarifies_and_mints_nothing(agent):
-    n_sc = len(list(agent.s.nodes("SelfConcern")))
+    # The first live turn may file the separately established implicit
+    # boot-integrity concern from BootSeedAnomaly evidence. The ambiguity floor
+    # must not add a concern for this request; keep that unrelated baseline out
+    # of the request-effect assertion.
+    def request_concerns():
+        return [node for node in agent.s.nodes("SelfConcern")
+                if agent.s.node(node)["attrs"].get("kind") != "boot_integrity"]
+
+    n_sc = len(request_concerns())
     n_st = len(list(agent.s.nodes("StandingConcern")))
     reply = agent.converse("Pursue the flurble gap.", speech_act="request")
     assert reply and "couldn't tell which gap" in reply.lower(), (
         "the clarify floor must name that it couldn't identify the gap")
-    assert len(list(agent.s.nodes("SelfConcern"))) == n_sc, "no concern minted"
+    assert len(request_concerns()) == n_sc, "no request concern minted"
     assert len(list(agent.s.nodes("StandingConcern"))) == n_st, "nothing promoted"
     assert not [1 for _sc, at in _concerns(agent)
                 if at.get("promote_requested") == 1.0 and at.get("status") == "noted"], (

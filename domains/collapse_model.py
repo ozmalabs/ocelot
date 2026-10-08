@@ -310,7 +310,12 @@ def _synthesize_recurrence_hypothesis(sub, obs_sample: list, round_idx: int) -> 
 
 
 def _bounded_forward_look(agent, obs_sample: list, *, horizon: int, imagine_steps: int,
-                           focus_hops: int) -> dict:
+                           focus_hops: int,
+                           snapshot_backend: str = "serialization",
+                           _force_full_graph_readout: bool = False,
+                           _process_forked: bool = False,
+                           _measure_phases: bool = False,
+                           record_trace: bool = True) -> dict:
     """Run up to `horizon` bounded, reversible collapse rounds, chaining each
     round's DETACHED result into the next (never touching the live graph
     beyond round 0's sanctioned `imagine` trace). Returns
@@ -318,50 +323,48 @@ def _bounded_forward_look(agent, obs_sample: list, *, horizon: int, imagine_step
      "rounds_run": n}. `counts[0]` is the pre-look volatile total; a caller
     derives the growth-rate sign from the trajectory of `counts`.
 
-    SEED-RULE REPLAY (the one place this module reaches past `imagine`'s own
-    contract): `imagine`'s detached copy is built via `graph_to_dict`/
-    `graph_from_dict`, which -- by that module's own documented design --
-    carries graph-resident `Rule` NODES but never the separate `add_rule`
-    rewrite-rule store a seed manifest's `rules` section installs into (see
-    `domains/imagination.py`'s module docstring, "install such logic on the
-    detached copy directly if that shape is ever needed" -- this is that
-    case: `seeds/shape_decode_loop.json`'s `sd_*` rules, like every seed-
-    loaded rule in this codebase, live ONLY in that store). Without a
-    replay, the detached copy's `tick()` would be a rule-less no-op and
-    every forward-look round would trivially "grow" by however many fresh
-    Observation nodes it injects, regardless of what the REAL collapse would
-    actually do -- a meaningless prediction. `export_rules`/`import_rules`
-    are the sanctioned Rust primitives for exactly this (PyO3, `runners/dsl/
-    src/py.rs`): export the CURRENT round's rule store, import it onto the
-    fresh (rule-store-empty) detached copy, then re-tick so the REAL rules
-    get a real look at the injected hypothesis. Still bounded/cheap: export/
-    import is a linear copy of the (small, fixed) rule count, not graph-
-    sized."""
-    sub0, native0 = _resolve(agent)
+    The detached `imagine()` branch now copies the current native rewrite
+    store and executes graph-resident plus native rules with the explicit
+    graph-then-struct plan. Thus each round's injected recurrence is evaluated
+    by the same two rule stores as the current round; this function no longer
+    repairs an incomplete snapshot by importing rules or issuing a second
+    structural-only tick."""
+    sub0, _native0 = _resolve(agent)
     counts = [_volatile_count(sub0)]
     steps_run_total = 0
     rounds_run = 0
+    forward_look_deltas = []
+    phase_records = []
     cur = agent
     for r in range(max(1, horizon)):
-        cur_sub, cur_native = _resolve(cur)
+        cur_sub, _cur_native = _resolve(cur)
         hyp = _synthesize_recurrence_hypothesis(cur_sub, obs_sample, r)
         if not hyp["nodes"]:
             break
         dc = imagine(cur, focus_nodes=list(obs_sample), hypothesis=hyp,
-                     steps=imagine_steps, cut_grounding=False, focus_hops=focus_hops)
+                     steps=imagine_steps, cut_grounding=False, focus_hops=focus_hops,
+                     snapshot_backend=snapshot_backend,
+                     _force_full_graph_readout=_force_full_graph_readout,
+                     _process_forked=_process_forked,
+                     _measure_phases=_measure_phases,
+                     record_trace=record_trace)
         steps_run_total += dc.steps_run
-        dnative = dc.detached._inner
-        try:
-            rules = cur_native.export_rules()
-        except AttributeError:
-            rules = []
-        if rules and not dnative.export_rules():
-            dnative.import_rules(rules)
-            steps_run_total += dc.detached.tick(imagine_steps)
+        forward_look_deltas.append({
+            "conclusions": dc.conclusions,
+            "derived_only": dc.derived_only,
+            "n_conclusions": dc.n_conclusions,
+            "steps_run": dc.steps_run,
+            "converged": dc.converged,
+        })
+        if _measure_phases:
+            phase_records.append({"round_index": r,
+                                  "imagination": dc.phase_timings_ms})
         counts.append(_volatile_count(dc.detached))
         rounds_run += 1
         cur = dc.detached
-    return {"counts": counts, "steps_run": steps_run_total, "rounds_run": rounds_run}
+    return {"counts": counts, "steps_run": steps_run_total, "rounds_run": rounds_run,
+            "forward_look_deltas": forward_look_deltas,
+            "phase_records": phase_records}
 
 
 # ---------------------------------------------------------------------------
@@ -384,6 +387,9 @@ class CollapseModelResult:
     forward_look_ran: bool = False
     imagine_steps_run: int = 0
     counts_trajectory: list = field(default_factory=list)
+    forward_look_deltas: list = field(default_factory=list)
+    phase_timings_ms: dict = field(default_factory=dict)
+    forward_look_phase_records: list = field(default_factory=list)
 
 
 # ---------------------------------------------------------------------------
@@ -391,7 +397,12 @@ class CollapseModelResult:
 # ---------------------------------------------------------------------------
 def predict_collapse(agent, *, horizon: int = 3, frontier_sample: int = 50,
                       focus_hops: int = 1, imagine_steps: int = 2,
-                      mint_edges: int = 15) -> CollapseModelResult:
+                      mint_edges: int = 15,
+                      snapshot_backend: str = "serialization",
+                      _force_full_graph_readout: bool = False,
+                      _process_forked: bool = False,
+                      _measure_phases: bool = False,
+                      record_trace: bool = True) -> CollapseModelResult:
     """Predict the WHOLE graph's collapse trajectory: fixed points, volatile
     frontier, and a CONVERGED/DIVERGENT call, minted as a `CollapseModel`
     graph node (+ `fixed_point`/`volatile_frontier` edges to a bounded
@@ -414,6 +425,8 @@ def predict_collapse(agent, *, horizon: int = 3, frontier_sample: int = 50,
     """
     sub, native = _resolve(agent)
     t0 = time.time()
+    phase_clock = time.perf_counter_ns if _measure_phases else None
+    phase_started = phase_clock() if phase_clock else 0
 
     volatile = volatile_frontier(sub)
     fixed = fixed_points(agent)
@@ -421,19 +434,33 @@ def predict_collapse(agent, *, horizon: int = 3, frontier_sample: int = 50,
     n_fixed = sum(len(v) for k, v in fixed.items() if not k.startswith("_"))
 
     obs_sample = volatile["Observation"][:frontier_sample]
+    structural_ms = ((phase_clock() - phase_started) / 1_000_000
+                     if phase_clock else None)
     forward_look_ran = False
     steps_run = 0
     counts = [n_volatile]
+    forward_look_deltas = []
+    forward_look_phase_records = []
     frontier_growth_rate = 0.0
+    look_started = phase_clock() if phase_clock else 0
     if obs_sample:
         look = _bounded_forward_look(agent, obs_sample, horizon=horizon,
-                                      imagine_steps=imagine_steps, focus_hops=focus_hops)
+                                      imagine_steps=imagine_steps, focus_hops=focus_hops,
+                                      snapshot_backend=snapshot_backend,
+                                      _force_full_graph_readout=_force_full_graph_readout,
+                                      _process_forked=_process_forked,
+                                      _measure_phases=_measure_phases,
+                                      record_trace=record_trace)
         counts = look["counts"]
         steps_run = look["steps_run"]
+        forward_look_deltas = look["forward_look_deltas"]
+        forward_look_phase_records = look["phase_records"]
         forward_look_ran = look["rounds_run"] > 0
         if forward_look_ran and len(counts) > 1:
             deltas = [counts[i + 1] - counts[i] for i in range(len(counts) - 1)]
             frontier_growth_rate = sum(deltas) / len(deltas)
+    forward_look_ms = ((phase_clock() - look_started) / 1_000_000
+                       if phase_clock else None)
 
     converged = frontier_growth_rate <= 0.0
     denom = max(1, n_volatile + n_fixed)
@@ -453,7 +480,12 @@ def predict_collapse(agent, *, horizon: int = 3, frontier_sample: int = 50,
            "already-settled graph)")
     )
 
-    model = sub.add_node(_MODEL_TYPE, {
+    model = None
+    fixed_sample: list = []
+    volatile_sample: list = []
+    trace_started = phase_clock() if phase_clock else 0
+    if record_trace:
+        model = sub.add_node(_MODEL_TYPE, {
         "converged": bool(converged),
         "residual": float(residual),
         "n_fixed": int(n_fixed),
@@ -467,21 +499,21 @@ def predict_collapse(agent, *, horizon: int = 3, frontier_sample: int = 50,
         "runtime_s": float(runtime_s),
         "method": method,
         "ts": time.time(),
-    })
+        })
 
-    fixed_sample: list = []
-    for k, v in fixed.items():
-        if k.startswith("_"):
-            continue
-        for n in v[:mint_edges]:
-            _add_edge_unchecked(native, model, _FIXED_EDGE, n, {"category": k})
-            fixed_sample.append(n)
+        for k, v in fixed.items():
+            if k.startswith("_"):
+                continue
+            for n in v[:mint_edges]:
+                _add_edge_unchecked(native, model, _FIXED_EDGE, n, {"category": k})
+                fixed_sample.append(n)
 
-    volatile_sample: list = []
-    for k, v in volatile.items():
-        for n in v[:mint_edges]:
-            _add_edge_unchecked(native, model, _VOLATILE_EDGE, n, {"category": k})
-            volatile_sample.append(n)
+        for k, v in volatile.items():
+            for n in v[:mint_edges]:
+                _add_edge_unchecked(native, model, _VOLATILE_EDGE, n, {"category": k})
+                volatile_sample.append(n)
+    trace_mint_ms = ((phase_clock() - trace_started) / 1_000_000
+                     if phase_clock else None)
 
     return CollapseModelResult(
         model_node=model, converged=converged, residual=residual,
@@ -490,7 +522,13 @@ def predict_collapse(agent, *, horizon: int = 3, frontier_sample: int = 50,
         runtime_s=runtime_s, fixed_points=fixed, volatile_frontier=volatile,
         fixed_sample=fixed_sample, volatile_sample=volatile_sample,
         forward_look_ran=forward_look_ran, imagine_steps_run=steps_run,
-        counts_trajectory=counts,
+        counts_trajectory=counts, forward_look_deltas=forward_look_deltas,
+        phase_timings_ms={
+            "structural_frontier_scan": structural_ms,
+            "bounded_forward_look": forward_look_ms,
+            "trace_minting": trace_mint_ms,
+        } if _measure_phases else {},
+        forward_look_phase_records=forward_look_phase_records,
     )
 
 

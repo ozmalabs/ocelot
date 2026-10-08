@@ -1,0 +1,5 @@
+# Active thoughtexperiment rehearsal memory v1 — amendment
+
+The first implementation added an unregistered gate requiring the primary graph's edge count to remain unchanged. The production self-correction path intentionally appends durable `CollapseModel`, `Imagination`, and conclusion trace state, including edges, so this checker rejected valid trace writes even though the preregistered task-input and rule checks passed. The initial 12-worker capture is preserved at `evaluation/reports/thoughtexperiment_active_rehearsal_memory_v1_initial_diagnostic_raw_20261001.json` as a harness diagnostic, not confirmatory evidence.
+
+The corrected gate follows the preregistration: rewrite rules, source observations, and the unrelated noise graph's node values and exact chain edges must remain unchanged. Durable trace additions are allowed. No treatment, memory metric, task, repeat count, or semantic expectation changes. The source/native lock is regenerated before the confirmatory rerun; both captures will be reported.

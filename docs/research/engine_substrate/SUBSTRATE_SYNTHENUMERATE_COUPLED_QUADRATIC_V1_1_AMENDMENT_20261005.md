@@ -1,0 +1,5 @@
+# Bounded coupled-quadratic synthesis v1.1 amendment
+
+The v1 capture and its preregistration are preserved. V1 completed all 30 cells and passed integrity, but every quadratic search halted at `max_size` with only 305 candidates tested in the supplied `Plus, Times, TupleOf` grammar. Thus v1 did not exercise its candidate cap and did not reach a resource-bound comparison; the registered size ceiling was too small to test whether the target expression is reachable.
+
+V1.1 changes only `max_size`, from 7 to 11, in every registered grammar, keeping the task formulas, examples, operator sets, constants, candidate cap (150,000), repetitions (10), schedule seed, reuse batches, and admission rules fixed. A fresh source/native lock, capture, and analysis are required. This is a prospective budget amendment, not a reinterpretation or replacement of v1. V1.1 outcomes remain bounded to the supplied map family and native direct-synthesis path; exact transfer is checked independently on the registered held-outs. See the original [v1 preregistration](SUBSTRATE_SYNTHENUMERATE_COUPLED_QUADRATIC_V1_PREREG_20261005.md).

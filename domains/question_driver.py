@@ -64,6 +64,8 @@ frontier; a deep target with no fed supply walls honestly (the supply line).
 """
 from __future__ import annotations
 
+import threading
+
 import os
 import sys
 import types
@@ -527,6 +529,10 @@ _RESOLVER_FUNCTIONS = {
 
 class _QDAdapter(WorldAdapter):
     def __init__(self, s):
+        # This facade intentionally bypasses WorldAdapter.__init__, but public
+        # adapter methods are serialized by the base-class decorator and still
+        # require the same re-entrant transaction lock contract.
+        self._conversation_lock = threading.RLock()
         self.s = s
         self.inner = getattr(s, "_inner", s)
         agent = _agent_root_node(s)

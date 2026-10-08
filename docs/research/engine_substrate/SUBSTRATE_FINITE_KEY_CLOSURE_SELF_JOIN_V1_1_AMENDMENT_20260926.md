@@ -1,0 +1,5 @@
+# Finite-key closure self-join v1.1 amendment — 2026-09-26
+
+The native v1 raw capture is retained. The initial independent analysis failed only the preregistered `E=5` expectation in null strata. Inspection confirms that the analyzer counts edge types that occur in the complete initial graph or in insertion effects. A type used only in a match body cannot enter the graph fact universe unless it is initially present or some admitted effect inserts it. Thus `rich_triangles` has E=5; `self_only` and `reciprocal_pairs` each have E=4. The original blanket E=5 expectation was conservative as a bound but did not match the analyzer's stated count contract.
+
+V1.1 keeps all native raw data and all semantic gates, with the exact edge-universe definition corrected to `E = |initial edge types ∪ emitted edge types|`. The amended independent analyzer derives E from each case's complete initial facts and rule effects, then independently recomputes the finite fact bound. No native run is replaced or excluded.

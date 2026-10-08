@@ -1,0 +1,5 @@
+# Live self-report lifecycle identity v1.8 amendment
+
+**Amendment before capture.** V1.7 measures two repeated organisation-report requests. V1.8 broadens the within-adapter task pair while retaining the live production path and full-source work attribution: turn one asks `report your organisation` (expected reflective target `self_organisation`); turn two asks `describe who you are` (expected target `self_identity`). The prompts are distinct and the capture must verify the dispatch target from each resulting Goal, nonempty reply, exact Goal/message/origin identity, ordered selection/execution/result ownership, terminal closure, and six helper work records.
+
+All five existing link/omission/swap/duplicate/failure controls remain. The full seed and Python source closure, native artifact, and build remain locked as in v1.7. Work is reported by turn and event kind. The two prompts are a small authored task pair, not a population sample; sequential order and evolving substrate state are confounds, and no causal target-cost claim will be made.

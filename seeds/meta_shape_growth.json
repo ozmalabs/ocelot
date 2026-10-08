@@ -1,10 +1,10 @@
 {
  "id": "meta_shape_growth",
- "version": "1.1.0",
+ "version": "1.2.0",
  "depends_on": [
   "shape_vocabulary"
  ],
- "description": "THE META-SHAPE GRAIN'S GROWTH LADDER. SHAPE_AUDIT.md finding #1: the agent's meta-shape vocabulary is a closed, hand-authored 11-entry table with no mint path anywhere in the tree \u2014 'the sd loop's fourth rung is not wired to the faculty named shape'. This seed wires the whole four-rung Occam ladder at that grain by pointing the UNCHANGED ShapeDecode / TransformDecode / DimInfer Terms at codebook_type='MetaShape' (load_parts is grain-agnostic), with the FIXED keyword scorer as the bootstrap rung below them and a new MetaShapeMint Term as rung 4. Emitted by tools/build_meta_shape_growth_seed.py.",
+ "description": "THE META-SHAPE GRAIN'S GROWTH LADDER. SHAPE_AUDIT.md finding #1: the agent's meta-shape vocabulary is a closed, hand-authored 11-entry table with no mint path anywhere in the tree \u2014 'the sd loop's fourth rung is not wired to the faculty named shape'. This seed wires the whole four-rung Occam ladder at that grain by pointing the UNCHANGED ShapeDecode / TransformDecode / DimInfer Terms at codebook_type='MetaShape' (load_parts is grain-agnostic), with the FIXED keyword scorer as the bootstrap rung below them and a new MetaShapeMint Term as rung 4. Emitted by tools/build_meta_shape_growth_seed.py. v1.2.0 (2026-10-07, tranche 2 gate 6): the mint rule records WP1 mint provenance (minted_aperture/grain/dim_types/from_signature/epoch) via scripts/emit_mint_aperture_provenance.py; additive, no guard reads it.",
  "microtheory": {
   "name": "meta_shape_growth",
   "description": "the meta-shape codebook grows on residual"
@@ -1503,6 +1503,237 @@
          "value": 1
         }
        ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "ms",
+     "minted_aperture",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ms"
+         },
+         "key": "minted_aperture"
+        },
+        "b": {
+         "type": "Lit",
+         "value": null
+        }
+       },
+       "then": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "obs"
+          },
+          "key": "aperture"
+         },
+         "b": {
+          "type": "Lit",
+          "value": null
+         }
+        },
+        "then": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "dim_types"
+        },
+        "other": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "aperture"
+        }
+       },
+       "other": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "ms"
+        },
+        "key": "minted_aperture"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "ms",
+     "minted_grain",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ms"
+         },
+         "key": "minted_grain"
+        },
+        "b": {
+         "type": "Lit",
+         "value": null
+        }
+       },
+       "then": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "grain"
+       },
+       "other": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "ms"
+        },
+        "key": "minted_grain"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "ms",
+     "minted_dim_types",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ms"
+         },
+         "key": "minted_dim_types"
+        },
+        "b": {
+         "type": "Lit",
+         "value": null
+        }
+       },
+       "then": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "dim_types"
+       },
+       "other": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "ms"
+        },
+        "key": "minted_dim_types"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "ms",
+     "minted_from_signature",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ms"
+         },
+         "key": "minted_from_signature"
+        },
+        "b": {
+         "type": "Lit",
+         "value": null
+        }
+       },
+       "then": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "signature"
+       },
+       "other": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "ms"
+        },
+        "key": "minted_from_signature"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "ms",
+     "minted_epoch",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ms"
+         },
+         "key": "minted_epoch"
+        },
+        "b": {
+         "type": "Lit",
+         "value": null
+        }
+       },
+       "then": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "ag"
+        },
+        "key": "meta_codebook_epoch"
+       },
+       "other": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "ms"
+        },
+        "key": "minted_epoch"
+       }
       }
      }
     ]

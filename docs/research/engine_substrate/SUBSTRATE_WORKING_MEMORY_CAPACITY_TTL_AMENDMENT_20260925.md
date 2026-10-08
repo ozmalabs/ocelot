@@ -1,0 +1,3 @@
+# Working-memory capacity/TTL pilot harness amendment — 2026-09-25
+
+The first frozen invocation failed in the replacement worker while serializing a native `NodeID` into its JSON record. The capacity worker had completed, but no aggregate raw report or gate verdict was written. The runner now converts the diagnostic reused-slot identifier to a string before JSON serialization. The task set, scenarios, inputs, outcome criteria, and timing measures are unchanged. This amendment and its v2 input lock precede the scored rerun; the original preregistration and v1 lock are retained as evidence of the failed attempt.

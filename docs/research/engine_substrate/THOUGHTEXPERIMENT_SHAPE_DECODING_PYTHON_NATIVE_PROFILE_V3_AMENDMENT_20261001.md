@@ -1,0 +1,3 @@
+# Shape-decoding Python/native attribution v3 — rule-store summary amendment
+
+The native summary applies only when the detached substrate was created by a native fork, which already carries the complete rewrite-rule store. It counts active slots before deletion and removes all active entries matching requested names, matching the legacy export/scan/reverse-remove path. A compatibility fallback retains the legacy route if the extension lacks the summary method. The current benchmark supplies no rewrite delta, so the expected task outcome is unchanged while the full-store serialization is eliminated from native-fork prediction branches.

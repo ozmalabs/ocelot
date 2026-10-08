@@ -44,7 +44,8 @@
 
 use crate::term_variants::{NUM_TERM_VARIANTS, TERM_VARIANT_NAMES};
 use std::cell::Cell;
-use std::sync::atomic::{AtomicBool, AtomicU64, AtomicU8, Ordering};
+use std::collections::BTreeMap;
+use std::sync::atomic::{AtomicBool, AtomicU32, AtomicU64, AtomicU8, Ordering};
 use std::sync::{Mutex, OnceLock};
 
 const MODE_OFF: u8 = 0;
@@ -52,6 +53,346 @@ const MODE_ON: u8 = 1;
 
 static MODE: AtomicU8 = AtomicU8::new(MODE_OFF);
 static ENV_READ: OnceLock<()> = OnceLock::new();
+static PER_RULE_MODE: AtomicBool = AtomicBool::new(false);
+static RULE_STORE_STATE_CAPTURE_ENABLED: AtomicBool = AtomicBool::new(false);
+static MODE_TRACE_ENABLED: AtomicBool = AtomicBool::new(false);
+static MODE_TRACE: Mutex<Vec<String>> = Mutex::new(Vec::new());
+static NEXT_AUDIT_STORE_ID: AtomicU64 = AtomicU64::new(1);
+static NEXT_AUDIT_RULE_ID: AtomicU32 = AtomicU32::new(0);
+static NAMESPACED_RULE_IDS: Mutex<BTreeMap<(u64, u32), u32>> = Mutex::new(BTreeMap::new());
+static AUDIT_RULE_IDENTITIES: Mutex<BTreeMap<u32, (u64, u32)>> = Mutex::new(BTreeMap::new());
+static PER_RULE_COUNTS: Mutex<BTreeMap<(u32, &'static str), u64>> = Mutex::new(BTreeMap::new());
+static RULE_AUDIT_METADATA: Mutex<BTreeMap<u32, (u32, String, usize)>> =
+    Mutex::new(BTreeMap::new());
+/// Optional first-closure snapshots keyed by store instance. Each value holds
+/// the graph and complete local rule-slot export observed at that store's first
+/// instrumented execution in the current capture window.
+static RULE_STORE_STATE_SNAPSHOTS: Mutex<BTreeMap<u64, serde_json::Value>> =
+    Mutex::new(BTreeMap::new());
+static AMBIGUOUS_RULE_AUDIT_IDS: Mutex<std::collections::BTreeSet<u32>> =
+    Mutex::new(std::collections::BTreeSet::new());
+/// Candidate tests keyed by `(native rule index, match-edge position)`. Kept
+/// separate from the compact static-metric table because clause positions are
+/// dynamic and this readout is only enabled for targeted matcher attribution.
+static MATCH_CLAUSE_CANDIDATES: Mutex<BTreeMap<(u32, usize), u64>> = Mutex::new(BTreeMap::new());
+/// Candidate expansions keyed by stable `(rule, src-var, edge-type, tgt-var)`
+/// identity, so clause reordering does not change attribution.
+static MATCH_EDGE_CANDIDATES: Mutex<BTreeMap<(u32, u32, u32, u32), (u64, u64)>> =
+    Mutex::new(BTreeMap::new());
+const NO_RULE: u32 = u32::MAX;
+
+/// Allocate a process-unique identity for a rule-owning store. Forked
+/// substrates intentionally receive a fresh identity even when their rules
+/// and local indices are copied from the source.
+pub fn new_rule_audit_store_id() -> u64 {
+    NEXT_AUDIT_STORE_ID.fetch_add(1, Ordering::Relaxed)
+}
+
+/// Enable expensive, opt-in graph/rule state capture for matcher stores.
+pub fn set_rule_store_state_capture_enabled(on: bool) {
+    RULE_STORE_STATE_CAPTURE_ENABLED.store(on, Ordering::Relaxed);
+}
+
+pub fn rule_store_state_capture_enabled() -> bool {
+    RULE_STORE_STATE_CAPTURE_ENABLED.load(Ordering::Relaxed)
+}
+
+pub fn reset_rule_store_state_snapshots() {
+    if let Ok(mut snapshots) = RULE_STORE_STATE_SNAPSHOTS.lock() {
+        snapshots.clear();
+    }
+}
+
+pub fn rule_store_state_snapshot_needed(store_id: u64) -> bool {
+    let _ = store_id;
+    rule_store_state_capture_enabled()
+}
+
+/// Save the first graph and accumulate every distinct local rule slot observed
+/// for a live store in this capture window. Scoped matcher calls can expose
+/// disjoint slices of one persistent store, so a single first-call rule table
+/// is not sufficient for identity reconciliation.
+pub fn record_rule_store_state_snapshot(store_id: u64, state: serde_json::Value) {
+    if !rule_store_state_capture_enabled() {
+        return;
+    }
+    if let Ok(mut snapshots) = RULE_STORE_STATE_SNAPSHOTS.lock() {
+        let Some(existing) = snapshots.get_mut(&store_id) else {
+            snapshots.insert(store_id, state);
+            return;
+        };
+        let Some(existing_rules) = existing
+            .get_mut("rules")
+            .and_then(serde_json::Value::as_array_mut)
+        else {
+            return;
+        };
+        let Some(incoming_rules) = state.get("rules").and_then(serde_json::Value::as_array) else {
+            return;
+        };
+        for incoming in incoming_rules {
+            let Some(local_index) = incoming.get("local_rule_index") else {
+                continue;
+            };
+            if let Some(current) = existing_rules
+                .iter_mut()
+                .find(|row| row.get("local_rule_index") == Some(local_index))
+            {
+                let Some(definition) = incoming.get("definition") else {
+                    continue;
+                };
+                if current.get("definition") == Some(definition) {
+                    continue;
+                }
+                let initial = current
+                    .get("definition")
+                    .cloned()
+                    .unwrap_or(serde_json::Value::Null);
+                let observations = current.as_object_mut().map(|object| {
+                    object
+                        .entry("definition_observations")
+                        .or_insert_with(|| serde_json::Value::Array(vec![initial]))
+                });
+                if let Some(serde_json::Value::Array(rows)) = observations {
+                    if !rows.iter().any(|row| row == definition) {
+                        rows.push(definition.clone());
+                    }
+                }
+            } else {
+                existing_rules.push(incoming.clone());
+            }
+        }
+    }
+}
+
+pub fn rule_store_state_snapshots() -> Vec<(u64, String)> {
+    RULE_STORE_STATE_SNAPSHOTS
+        .lock()
+        .map(|rows| {
+            rows.iter()
+                .map(|(&store, state)| (store, state.to_string()))
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+fn namespaced_rule_id(store_id: u64, local_rule_i: u32) -> u32 {
+    if let Ok(mut ids) = NAMESPACED_RULE_IDS.lock() {
+        if let Some(&id) = ids.get(&(store_id, local_rule_i)) {
+            return id;
+        }
+        let id = NEXT_AUDIT_RULE_ID.fetch_add(1, Ordering::Relaxed);
+        if id != NO_RULE {
+            ids.insert((store_id, local_rule_i), id);
+            if let Ok(mut reverse) = AUDIT_RULE_IDENTITIES.lock() {
+                reverse.insert(id, (store_id, local_rule_i));
+            }
+            return id;
+        }
+    }
+    // Exhaustion or a poisoned lock must not silently alias another rule.
+    NO_RULE
+}
+
+/// Return the process-local audit key for one store-qualified native rule.
+pub fn rule_audit_id_for(store_id: u64, local_rule_i: u32) -> Option<u32> {
+    let id = namespaced_rule_id(store_id, local_rule_i);
+    (id != NO_RULE).then_some(id)
+}
+
+/// Source identity behind an exported audit ID: `(store_instance, local_rule_index)`.
+pub fn rule_audit_identity_snapshot() -> Vec<(u32, u64, u32)> {
+    AUDIT_RULE_IDENTITIES
+        .lock()
+        .map(|rows| {
+            rows.iter()
+                .map(|(&id, &(store, local))| (id, store, local))
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+thread_local! {
+/// Process-local audit ID currently being enumerated. Valid only inside a
+/// rule attempt; exported identity snapshots map it to store plus local index.
+    static CURRENT_RULE: Cell<u32> = const { Cell::new(NO_RULE) };
+    /// Host-requested evaluation has no matcher owner and needs a separate cost
+    /// category from a missing rule context inside matcher execution.
+    static HOST_EVALUATION_DEPTH: Cell<u32> = const { Cell::new(0) };
+}
+
+pub struct HostEvaluationGuard;
+
+impl Drop for HostEvaluationGuard {
+    fn drop(&mut self) {
+        HOST_EVALUATION_DEPTH.with(|depth| depth.set(depth.get().saturating_sub(1)));
+    }
+}
+
+/// Mark a direct host-requested Term evaluation while per-rule tracking is
+/// active. The instrumentation is inert in the default-off path.
+pub fn host_evaluation_scope() -> Option<HostEvaluationGuard> {
+    if !enabled() || !PER_RULE_MODE.load(Ordering::Relaxed) {
+        return None;
+    }
+    HOST_EVALUATION_DEPTH.with(|depth| depth.set(depth.get().saturating_add(1)));
+    Some(HostEvaluationGuard)
+}
+
+#[inline]
+fn per_rule_bump(metric: &'static str, n: u64) {
+    if n == 0 || !PER_RULE_MODE.load(Ordering::Relaxed) {
+        return;
+    }
+    let rule = CURRENT_RULE.with(Cell::get);
+    if rule == NO_RULE {
+        return;
+    }
+    if AMBIGUOUS_RULE_AUDIT_IDS
+        .lock()
+        .map(|ids| ids.contains(&rule))
+        .unwrap_or(true)
+    {
+        return;
+    }
+    if let Ok(mut counts) = PER_RULE_COUNTS.lock() {
+        *counts.entry((rule, metric)).or_insert(0) += n;
+    }
+}
+
+/// Enable attribution keyed by the native rule index. This is opt-in on top of
+/// the ordinary scale audit because the exact per-event map updates add cost.
+pub fn set_per_rule_enabled(on: bool) {
+    PER_RULE_MODE.store(on, Ordering::Relaxed);
+    trace_mode_transition("per_rule", on);
+}
+
+fn trace_mode_transition(gate: &str, on: bool) {
+    if !MODE_TRACE_ENABLED.load(Ordering::Relaxed) {
+        return;
+    }
+    if let Ok(mut rows) = MODE_TRACE.lock() {
+        rows.push(format!(
+            "{}:{on}:thread={:?}",
+            gate,
+            std::thread::current().id()
+        ));
+    }
+}
+
+pub fn mode_trace_set_enabled(on: bool) {
+    MODE_TRACE_ENABLED.store(on, Ordering::Relaxed);
+}
+
+pub fn mode_trace_reset() {
+    if let Ok(mut rows) = MODE_TRACE.lock() {
+        rows.clear();
+    }
+}
+
+pub fn mode_trace_snapshot() -> Vec<String> {
+    MODE_TRACE
+        .lock()
+        .map(|rows| rows.clone())
+        .unwrap_or_default()
+}
+
+/// `(rule_index, metric, count)` rows, sorted by rule index and metric.
+pub fn per_rule_snapshot() -> Vec<(u32, String, u64)> {
+    PER_RULE_COUNTS
+        .lock()
+        .map(|counts| {
+            counts
+                .iter()
+                .map(|(&(rule, metric), &n)| (rule, metric.to_string(), n))
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+/// Clear only the opt-in per-rule attribution table.
+pub fn per_rule_reset() {
+    if let Ok(mut counts) = PER_RULE_COUNTS.lock() {
+        counts.clear();
+    }
+    CURRENT_RULE.with(|rule| rule.set(NO_RULE));
+    if let Ok(mut counts) = MATCH_CLAUSE_CANDIDATES.lock() {
+        counts.clear();
+    }
+    if let Ok(mut counts) = MATCH_EDGE_CANDIDATES.lock() {
+        counts.clear();
+    }
+    if let Ok(mut metadata) = RULE_AUDIT_METADATA.lock() {
+        metadata.clear();
+    }
+    if let Ok(mut ambiguous) = AMBIGUOUS_RULE_AUDIT_IDS.lock() {
+        ambiguous.clear();
+    }
+    if let Ok(mut ids) = NAMESPACED_RULE_IDS.lock() {
+        ids.clear();
+    }
+    if let Ok(mut identities) = AUDIT_RULE_IDENTITIES.lock() {
+        identities.clear();
+    }
+}
+
+/// `(rule_index, zero_based_match_edge_position, candidate_tests)` rows.
+pub fn match_clause_candidate_snapshot() -> Vec<(u32, usize, u64)> {
+    MATCH_CLAUSE_CANDIDATES
+        .lock()
+        .map(|counts| {
+            counts
+                .iter()
+                .map(|(&(rule, clause), &n)| (rule, clause, n))
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+/// `(rule, src-var sym, edge-type sym, tgt-var sym, expansion calls, candidates)`.
+pub fn match_edge_candidate_snapshot() -> Vec<(u32, u32, u32, u32, u64, u64)> {
+    MATCH_EDGE_CANDIDATES
+        .lock()
+        .map(|counts| {
+            counts
+                .iter()
+                .map(|(&(rule, src, edge, tgt), &(calls, candidates))| {
+                    (rule, src, edge, tgt, calls, candidates)
+                })
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+/// Attribute one `extend_each` candidate-set expansion to its semantic edge.
+/// The edge identity remains stable when an anchor path changes join order.
+#[inline]
+pub fn match_edge_candidates(src: u32, edge: u32, tgt: u32, candidates: u64) {
+    if !enabled() || !PER_RULE_MODE.load(Ordering::Relaxed) {
+        return;
+    }
+    let rule = CURRENT_RULE.with(Cell::get);
+    if rule == NO_RULE {
+        return;
+    }
+    let valid = RULE_AUDIT_METADATA
+        .lock()
+        .ok()
+        .and_then(|metadata| metadata.get(&rule).map(|(_, _, _)| ()))
+        .is_some()
+        && !AMBIGUOUS_RULE_AUDIT_IDS
+            .lock()
+            .map(|ids| ids.contains(&rule))
+            .unwrap_or(true);
+    if !valid {
+        return;
+    }
+    if let Ok(mut counts) = MATCH_EDGE_CANDIDATES.lock() {
+        let row = counts.entry((rule, src, edge, tgt)).or_insert((0, 0));
+        row.0 = row.0.saturating_add(1);
+        row.1 = row.1.saturating_add(candidates);
+    }
+}
 
 // ---------------------------------------------------------------------------
 // F — FFI / PyO3 BOUNDARY
@@ -98,9 +439,17 @@ static CAND_ENUM_REPEAT: AtomicU64 = AtomicU64::new(0);
 
 /// Candidate pairs actually tested in the `extend_each` loop.
 static CAND_TESTED: AtomicU64 = AtomicU64::new(0);
+/// Matcher candidate tests with no verified active rule identity.
+static CAND_TESTED_UNATTRIBUTED: AtomicU64 = AtomicU64::new(0);
 /// Candidates discarded by the bound-src/bound-tgt equality filter — enumerated
 /// and then thrown away without any substantive test.
 static CAND_REJECT_BOUND: AtomicU64 = AtomicU64::new(0);
+/// Scoped matcher invocations routed through ownership-seeded candidate paths.
+static SCOPED_LOCAL_RULE_MATCHES: AtomicU64 = AtomicU64::new(0);
+static SCOPED_DECLARED_ANCHOR_MATCHES: AtomicU64 = AtomicU64::new(0);
+static SCOPED_ANCHOR_REJECTED: AtomicU64 = AtomicU64::new(0);
+static SCOPED_MT_SEEDED_RULE_MATCHES: AtomicU64 = AtomicU64::new(0);
+static SCOPED_FULL_FALLBACK_RULE_MATCHES: AtomicU64 = AtomicU64::new(0);
 
 /// Where-clause evaluations at the leaf (the substantive per-candidate test).
 static WHERE_EVALS: AtomicU64 = AtomicU64::new(0);
@@ -141,6 +490,213 @@ static RULE_ENUMERATIONS_REPEAT: AtomicU64 = AtomicU64::new(0);
 
 /// Graph attribute writes performed via the Python boundary.
 static GRAPH_WRITES: AtomicU64 = AtomicU64::new(0);
+/// AddEdge effect insertion attempts inside the native rule executor. Kept
+/// separate from GRAPH_WRITES, whose scope is graph mutations via the Python
+/// boundary. Attempts include idempotent duplicate insertions.
+static RULE_EFFECT_EDGE_INSERT_ATTEMPTS: AtomicU64 = AtomicU64::new(0);
+static RULE_EFFECT_EDGE_DELETES: AtomicU64 = AtomicU64::new(0);
+static RULE_EFFECT_NODE_INSERTS: AtomicU64 = AtomicU64::new(0);
+static RULE_EFFECT_NODE_DELETE_ATTEMPTS: AtomicU64 = AtomicU64::new(0);
+static RULE_EFFECT_ATTR_SET_ATTEMPTS: AtomicU64 = AtomicU64::new(0);
+static RULE_EFFECT_REPLACE_EDGE_DELETES: AtomicU64 = AtomicU64::new(0);
+static RULE_EFFECT_REPLACE_EDGE_INSERT_ATTEMPTS: AtomicU64 = AtomicU64::new(0);
+static SCHEDULER_PASSES: AtomicU64 = AtomicU64::new(0);
+static SCHEDULER_EXTERNAL_POLL_SLOTS: AtomicU64 = AtomicU64::new(0);
+static SCHEDULER_FIXEDPOINT_PROBE_SLOTS: AtomicU64 = AtomicU64::new(0);
+static SCHEDULER_DIRTY_VECTOR_SLOTS: AtomicU64 = AtomicU64::new(0);
+static SCHEDULER_SELECTED_RULES: AtomicU64 = AtomicU64::new(0);
+static SCHEDULER_PLAN_NS: AtomicU64 = AtomicU64::new(0);
+
+/// Graph-scoped scheduler/deferred totals captured inside active run_rules
+/// operations. Process-global audit counters remain available unchanged.
+static SCOPED_WORK_AUDIT: Mutex<BTreeMap<(usize, &'static str), u64>> = Mutex::new(BTreeMap::new());
+
+fn scoped_work_bump(name: &'static str, count: u64) {
+    if count == 0 || !enabled() {
+        return;
+    }
+    let scope = crate::access_trace::current_work_scope();
+    if scope == 0 {
+        return;
+    }
+    if let Ok(mut rows) = SCOPED_WORK_AUDIT.lock() {
+        *rows.entry((scope, name)).or_insert(0) += count;
+    }
+}
+
+pub fn scoped_work_snapshot(scope: usize) -> Vec<(String, u64)> {
+    SCOPED_WORK_AUDIT
+        .lock()
+        .map(|rows| {
+            rows.iter()
+                .filter(|((row_scope, _), _)| *row_scope == scope)
+                .map(|((_, name), count)| ((*name).to_string(), *count))
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+pub fn scoped_work_snapshot_all() -> Vec<(usize, String, u64)> {
+    SCOPED_WORK_AUDIT
+        .lock()
+        .map(|rows| {
+            rows.iter()
+                .map(|((scope, name), count)| (*scope, (*name).to_string(), *count))
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+/// Record one entered monolithic fixpoint pass when the scale audit is on.
+#[inline]
+pub fn scheduler_pass_started() {
+    crate::access_trace::note_work(19, crate::access_trace::NO_ID, 1);
+    scoped_work_bump("scheduler_passes", 1);
+    if enabled() {
+        bump(&SCHEDULER_PASSES, 1);
+    }
+}
+
+/// Record exact rule-slot inspections and dirty-rule selection work for one
+/// monolithic scheduler decision. External polling scans the full live rule
+/// vector; the fixed-point probe short-circuits; the dirty vector scan visits
+/// every slot when the probe finds work.
+#[inline]
+pub fn scheduler_plan_completed(
+    external_poll_slots: usize,
+    fixedpoint_probe_slots: usize,
+    dirty_vector_slots: usize,
+    selected_rules: usize,
+    elapsed_ns: u64,
+) {
+    crate::access_trace::note_work(20, crate::access_trace::NO_ID, external_poll_slots as u64);
+    crate::access_trace::note_work(
+        21,
+        crate::access_trace::NO_ID,
+        fixedpoint_probe_slots as u64,
+    );
+    crate::access_trace::note_work(22, crate::access_trace::NO_ID, dirty_vector_slots as u64);
+    crate::access_trace::note_work(23, crate::access_trace::NO_ID, selected_rules as u64);
+    scoped_work_bump("scheduler_external_poll_slots", external_poll_slots as u64);
+    scoped_work_bump(
+        "scheduler_fixedpoint_probe_slots",
+        fixedpoint_probe_slots as u64,
+    );
+    scoped_work_bump("scheduler_dirty_vector_slots", dirty_vector_slots as u64);
+    scoped_work_bump("scheduler_selected_rules", selected_rules as u64);
+    if !enabled() {
+        return;
+    }
+    bump(&SCHEDULER_EXTERNAL_POLL_SLOTS, external_poll_slots as u64);
+    bump(
+        &SCHEDULER_FIXEDPOINT_PROBE_SLOTS,
+        fixedpoint_probe_slots as u64,
+    );
+    bump(&SCHEDULER_DIRTY_VECTOR_SLOTS, dirty_vector_slots as u64);
+    bump(&SCHEDULER_SELECTED_RULES, selected_rules as u64);
+    bump(&SCHEDULER_PLAN_NS, elapsed_ns);
+}
+
+/// Family/action counters for work deferred from a rule firing and drained
+/// between fixpoint passes. These are populated only while the scale audit is
+/// enabled; family-level drain timing is separate from per-rule enqueue counts.
+static DEFERRED_QUEUE_AUDIT: Mutex<BTreeMap<&'static str, u64>> = Mutex::new(BTreeMap::new());
+
+fn deferred_bump(name: &'static str, count: u64) {
+    if count == 0 || !enabled() {
+        return;
+    }
+    if let Ok(mut rows) = DEFERRED_QUEUE_AUDIT.lock() {
+        *rows.entry(name).or_insert(0) += count;
+    }
+}
+
+/// Count one item enqueued by the currently enumerated rule, with a global
+/// family total as well. Rule identity applies only to the producer; queue
+/// drains are reported separately because current entries carry no origin UID.
+pub fn deferred_queue_enqueued(family: &'static str) {
+    crate::access_trace::note_work(24, deferred_family_id(family), 1);
+    if !enabled() {
+        return;
+    }
+    let name = match family {
+        "rule_edits" => "deferred_queue:rule_edits:enqueued_items",
+        "rule_patches" => "deferred_queue:rule_patches:enqueued_items",
+        "fb_samples" => "deferred_queue:fb_samples:enqueued_items",
+        "track_identity" => "deferred_queue:track_identity:enqueued_items",
+        "net_collapses" => "deferred_queue:net_collapses:enqueued_items",
+        _ => "deferred_queue:unknown:enqueued_items",
+    };
+    scoped_work_bump(name, 1);
+    deferred_bump(name, 1);
+    match family {
+        "rule_edits" => per_rule_bump("deferred_queue_enqueued:rule_edits", 1),
+        "rule_patches" => per_rule_bump("deferred_queue_enqueued:rule_patches", 1),
+        "fb_samples" => per_rule_bump("deferred_queue_enqueued:fb_samples", 1),
+        "track_identity" => per_rule_bump("deferred_queue_enqueued:track_identity", 1),
+        "net_collapses" => per_rule_bump("deferred_queue_enqueued:net_collapses", 1),
+        _ => per_rule_bump("deferred_queue_enqueued:unknown", 1),
+    }
+}
+
+/// Record a completed between-pass drain. `items` counts dequeued records,
+/// including records that are stale or rejected during application.
+pub fn deferred_queue_drained(family: &'static str, items: usize, elapsed_ns: u64) {
+    crate::access_trace::note_work(25, deferred_family_id(family), 1);
+    crate::access_trace::note_work(26, deferred_family_id(family), items as u64);
+    if !enabled() {
+        return;
+    }
+    let (batches, drained, nanos) = match family {
+        "rule_edits" => (
+            "deferred_queue:rule_edits:drain_batches",
+            "deferred_queue:rule_edits:drained_items",
+            "deferred_queue:rule_edits:drain_ns",
+        ),
+        "rule_patches" => (
+            "deferred_queue:rule_patches:drain_batches",
+            "deferred_queue:rule_patches:drained_items",
+            "deferred_queue:rule_patches:drain_ns",
+        ),
+        "fb_samples" => (
+            "deferred_queue:fb_samples:drain_batches",
+            "deferred_queue:fb_samples:drained_items",
+            "deferred_queue:fb_samples:drain_ns",
+        ),
+        "track_identity" => (
+            "deferred_queue:track_identity:drain_batches",
+            "deferred_queue:track_identity:drained_items",
+            "deferred_queue:track_identity:drain_ns",
+        ),
+        "net_collapses" => (
+            "deferred_queue:net_collapses:drain_batches",
+            "deferred_queue:net_collapses:drained_items",
+            "deferred_queue:net_collapses:drain_ns",
+        ),
+        _ => (
+            "deferred_queue:unknown:drain_batches",
+            "deferred_queue:unknown:drained_items",
+            "deferred_queue:unknown:drain_ns",
+        ),
+    };
+    scoped_work_bump(batches, 1);
+    scoped_work_bump(drained, items as u64);
+    deferred_bump(batches, 1);
+    deferred_bump(drained, items as u64);
+    deferred_bump(nanos, elapsed_ns);
+}
+
+#[inline]
+fn deferred_family_id(family: &'static str) -> u32 {
+    match family {
+        "rule_edits" => 1,
+        "rule_patches" => 2,
+        "fb_samples" => 3,
+        "track_identity" => 4,
+        "net_collapses" => 5,
+        _ => u32::MAX,
+    }
+}
 
 // ---------------------------------------------------------------------------
 // T — TERM EVALUATION  (VISION_TERM_EVAL_COUNTER_PREREG.md §2)
@@ -160,9 +716,11 @@ static GRAPH_WRITES: AtomicU64 = AtomicU64::new(0);
 //                        dispatch point, so coverage is structural for all 175
 //                        variants rather than dependent on per-variant opt-in.
 //
-//   term_unit:<Variant>  INTERIOR COMPARISON UNITS. Charged by the interior
-//                        loops of variants that loop, attributed to the
-//                        INNERMOST variant currently evaluating.
+//   term_unit:<Variant>  INTERIOR WORK UNITS. Sites define a unit locally
+//                        (comparison, inspected neighbour/edge, predicate
+//                        item, or sequence item) and attribute it to the
+//                        INNERMOST variant currently evaluating. Compare a
+//                        unit only within the same variant/site semantics.
 //
 // Why both: for a leaf (`Plus`, `Attr`) interior work is O(1), so invocations
 // ARE the cost and `term_unit` is legitimately zero. For an aggregate
@@ -177,7 +735,13 @@ static GRAPH_WRITES: AtomicU64 = AtomicU64::new(0);
 /// arity (`term_variants.rs`, generated) — not a chosen constant.
 static TERM_EVALS: [AtomicU64; NUM_TERM_VARIANTS] =
     [const { AtomicU64::new(0) }; NUM_TERM_VARIANTS];
-/// Per-variant interior comparison units.
+/// Term evaluations that could not be assigned to one verified rule identity.
+/// Meaningful when per-rule auditing is enabled; otherwise zero by design.
+static TERM_EVALS_UNATTRIBUTED: AtomicU64 = AtomicU64::new(0);
+static TERM_EVALS_UNATTRIBUTED_HOST_API: AtomicU64 = AtomicU64::new(0);
+static TERM_EVALS_UNATTRIBUTED_NO_RULE: AtomicU64 = AtomicU64::new(0);
+static TERM_EVALS_UNATTRIBUTED_AMBIGUOUS: AtomicU64 = AtomicU64::new(0);
+/// Per-variant interior work units, with site-defined units.
 static TERM_UNITS: [AtomicU64; NUM_TERM_VARIANTS] =
     [const { AtomicU64::new(0) }; NUM_TERM_VARIANTS];
 
@@ -220,9 +784,29 @@ pub fn term_eval(variant: u16) -> Option<VariantGuard> {
     if !enabled() {
         return None;
     }
+    if PER_RULE_MODE.load(Ordering::Relaxed) {
+        let rule = CURRENT_RULE.with(Cell::get);
+        if rule == NO_RULE {
+            bump(&TERM_EVALS_UNATTRIBUTED, 1);
+            if HOST_EVALUATION_DEPTH.with(|depth| depth.get() > 0) {
+                bump(&TERM_EVALS_UNATTRIBUTED_HOST_API, 1);
+            } else {
+                bump(&TERM_EVALS_UNATTRIBUTED_NO_RULE, 1);
+            }
+        } else if AMBIGUOUS_RULE_AUDIT_IDS
+            .lock()
+            .map(|ids| ids.contains(&rule))
+            .unwrap_or(true)
+        {
+            bump(&TERM_EVALS_UNATTRIBUTED, 1);
+            bump(&TERM_EVALS_UNATTRIBUTED_AMBIGUOUS, 1);
+        }
+    }
+    per_rule_bump("term_evaluations", 1);
     let i = variant as usize;
     if i < NUM_TERM_VARIANTS {
         bump(&TERM_EVALS[i], 1);
+        per_rule_bump(TERM_VARIANT_NAMES[i], 1);
     }
     let prev = CURRENT_VARIANT.with(|c| {
         let p = c.get();
@@ -232,15 +816,16 @@ pub fn term_eval(variant: u16) -> Option<VariantGuard> {
     Some(VariantGuard(prev))
 }
 
-/// Charge `n` interior comparison units to the innermost variant currently
-/// evaluating. Call from inside an interior loop, ONCE per loop with the count,
-/// not once per iteration — an atomic per iteration would dominate the very work
-/// it is measuring.
+/// Charge `n` site-defined interior work units to the innermost variant currently
+/// evaluating. Call once per loop with the count, not once per iteration — an
+/// atomic per iteration would dominate the very work it is measuring. Unit
+/// meanings are site-specific and should only be compared within that site.
 #[inline]
 pub fn term_units(n: u64) {
     if !enabled() || n == 0 {
         return;
     }
+    per_rule_bump("term_units", n);
     let v = CURRENT_VARIANT.with(|c| c.get());
     if v == NO_VARIANT {
         bump(&TERM_UNITS_UNATTRIBUTED, n);
@@ -299,6 +884,211 @@ static DIM_INFER_ARG_CALLS: AtomicU64 = AtomicU64::new(0);
 static DIM_INFER_ARGS_ORDERED: Mutex<Vec<Vec<u8>>> = Mutex::new(Vec::new());
 /// The distinct UNORDERED (canonically sorted) encodings. Lower bound.
 static DIM_INFER_ARGS_UNORDERED: Mutex<Vec<Vec<u8>>> = Mutex::new(Vec::new());
+
+// GenInfer search attribution. These sit at the operation itself rather than
+// in EvalCtx: production rewrite effects construct EvalCtx at several paths,
+// and an EvalCtx-only probe can silently miss the rule engine entirely.
+static GEN_INFER_REQUESTS: AtomicU64 = AtomicU64::new(0);
+static GEN_INFER_CACHE_HITS: AtomicU64 = AtomicU64::new(0);
+static GEN_INFER_KERNEL_CALLS: AtomicU64 = AtomicU64::new(0);
+static GEN_INFER_ELIGIBLE_BASES: AtomicU64 = AtomicU64::new(0);
+static GEN_INFER_MATRIX_ATTEMPTS: AtomicU64 = AtomicU64::new(0);
+static GEN_INFER_APPLY_REJECTS: AtomicU64 = AtomicU64::new(0);
+static GEN_INFER_CANDIDATE_REJECTS: AtomicU64 = AtomicU64::new(0);
+static GEN_INFER_RESIDUAL_REJECTS: AtomicU64 = AtomicU64::new(0);
+static GEN_INFER_CANDIDATE_SURVIVORS: AtomicU64 = AtomicU64::new(0);
+static GEN_INFER_BASES_BY_BOUND: Mutex<BTreeMap<i64, u64>> = Mutex::new(BTreeMap::new());
+static GEN_INFER_FULL_RANK_BASES: AtomicU64 = AtomicU64::new(0);
+static GEN_INFER_FULL_RANK_REFUSALS: AtomicU64 = AtomicU64::new(0);
+static GEN_INFER_FULL_RANK_ATTEMPTS: AtomicU64 = AtomicU64::new(0);
+static GEN_INFER_FULL_RANK_APPLY_REJECTS: AtomicU64 = AtomicU64::new(0);
+static GEN_INFER_FULL_RANK_CANDIDATE_REJECTS: AtomicU64 = AtomicU64::new(0);
+static GEN_INFER_FULL_RANK_RESIDUAL_REJECTS: AtomicU64 = AtomicU64::new(0);
+static GEN_INFER_FULL_RANK_SURVIVORS: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_PREFILTER_ATTEMPTS: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_PREFILTER_SOLVED: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_PREFILTER_NO_FIT: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_PREFILTER_FALLBACK: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_PREFILTER_INPUT_RELATIONS: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_PREFILTER_IDENTITY_VALUE_COMPARISONS: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_PREFILTER_EXACT_ARITHMETIC_CHECKS: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_PREFILTER_NO_FIT_REASONS: Mutex<BTreeMap<&'static str, u64>> = Mutex::new(BTreeMap::new());
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_PREFILTER_FALLBACK_REASONS: Mutex<BTreeMap<&'static str, u64>> = Mutex::new(BTreeMap::new());
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_ROWF_ATTEMPTS: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_ROWF_SOLVED: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_ROWF_NO_CANDIDATE: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_ROWF_FALLBACK: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_ROWF_ROW_EVALUATIONS: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_ROWF_NO_CANDIDATE_REASONS: Mutex<BTreeMap<&'static str, u64>> = Mutex::new(BTreeMap::new());
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_ROWF_FALLBACK_REASONS: Mutex<BTreeMap<&'static str, u64>> = Mutex::new(BTreeMap::new());
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_CORR_ATTEMPTS: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_CORR_FOUND: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_CORR_NO_CANDIDATE: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_CORR_FALLBACK: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_CORR_HYPOTHESES: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_CORR_VALIDATIONS: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_CORR_NO_CANDIDATE_REASONS: Mutex<BTreeMap<&'static str, u64>> = Mutex::new(BTreeMap::new());
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_CORR_FALLBACK_REASONS: Mutex<BTreeMap<&'static str, u64>> = Mutex::new(BTreeMap::new());
+#[cfg(feature = "geninfer_quadratic_map_solver")]
+static GEN_INFER_QUADRATIC_ENABLED_CALLS: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_quadratic_map_solver")]
+static GEN_INFER_QUADRATIC_ATTEMPTS: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_quadratic_map_solver")]
+static GEN_INFER_QUADRATIC_VALIDATION_REJECTS: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_quadratic_map_solver")]
+static GEN_INFER_QUADRATIC_SURVIVORS: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_quadratic_map_solver")]
+static GEN_INFER_QUADRATIC_REFUSALS: Mutex<BTreeMap<&'static str, u64>> = Mutex::new(BTreeMap::new());
+#[cfg(feature = "geninfer_full_rank_identity_join_work_audit")]
+static GEN_INFER_FULL_RANK_IDENTITY_KEY_COMPARISONS: AtomicU64 = AtomicU64::new(0);
+
+#[inline]
+pub fn gen_infer_request() {
+    if enabled() { bump(&GEN_INFER_REQUESTS, 1); }
+}
+
+#[inline]
+pub fn gen_infer_cache_hit() {
+    if enabled() { bump(&GEN_INFER_CACHE_HITS, 1); }
+}
+
+#[inline]
+pub fn gen_infer_kernel_call() {
+    if enabled() { bump(&GEN_INFER_KERNEL_CALLS, 1); }
+}
+
+pub fn gen_infer_search_result(
+    eligible_bases: u64,
+    matrix_attempts: u64,
+    apply_rejects: u64,
+    candidate_rejects: u64,
+    residual_rejects: u64,
+    candidate_survivors: u64,
+    bases_by_bound: &rustc_hash::FxHashMap<i64, u64>,
+) {
+    if !enabled() { return; }
+    bump(&GEN_INFER_ELIGIBLE_BASES, eligible_bases);
+    bump(&GEN_INFER_MATRIX_ATTEMPTS, matrix_attempts);
+    bump(&GEN_INFER_APPLY_REJECTS, apply_rejects);
+    bump(&GEN_INFER_CANDIDATE_REJECTS, candidate_rejects);
+    bump(&GEN_INFER_RESIDUAL_REJECTS, residual_rejects);
+    bump(&GEN_INFER_CANDIDATE_SURVIVORS, candidate_survivors);
+    if let Ok(mut totals) = GEN_INFER_BASES_BY_BOUND.lock() {
+        for (bound, count) in bases_by_bound {
+            *totals.entry(*bound).or_insert(0) += count;
+        }
+    }
+}
+
+pub fn gen_infer_full_rank_result(
+    bases: u64,
+    refusals: u64,
+    attempts: u64,
+    apply_rejects: u64,
+    candidate_rejects: u64,
+    residual_rejects: u64,
+    survivors: u64,
+) {
+    if !enabled() { return; }
+    bump(&GEN_INFER_FULL_RANK_BASES, bases);
+    bump(&GEN_INFER_FULL_RANK_REFUSALS, refusals);
+    bump(&GEN_INFER_FULL_RANK_ATTEMPTS, attempts);
+    bump(&GEN_INFER_FULL_RANK_APPLY_REJECTS, apply_rejects);
+    bump(&GEN_INFER_FULL_RANK_CANDIDATE_REJECTS, candidate_rejects);
+    bump(&GEN_INFER_FULL_RANK_RESIDUAL_REJECTS, residual_rejects);
+    bump(&GEN_INFER_FULL_RANK_SURVIVORS, survivors);
+}
+
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+pub fn gen_infer_linear_prefilter_result(attempts: u64, solved: u64, no_fit: u64, fallback: u64, input_relations: u64,
+    identity_comparisons: u64, arithmetic_checks: u64,
+    no_fit_reasons: &rustc_hash::FxHashMap<&'static str,u64>, fallback_reasons: &rustc_hash::FxHashMap<&'static str,u64>) {
+    if !enabled() { return; }
+    bump(&GEN_INFER_PREFILTER_ATTEMPTS, attempts);
+    bump(&GEN_INFER_PREFILTER_SOLVED, solved);
+    bump(&GEN_INFER_PREFILTER_NO_FIT, no_fit);
+    bump(&GEN_INFER_PREFILTER_FALLBACK, fallback);
+    bump(&GEN_INFER_PREFILTER_INPUT_RELATIONS, input_relations);
+    bump(&GEN_INFER_PREFILTER_IDENTITY_VALUE_COMPARISONS, identity_comparisons);
+    bump(&GEN_INFER_PREFILTER_EXACT_ARITHMETIC_CHECKS, arithmetic_checks);
+    if let Ok(mut totals)=GEN_INFER_PREFILTER_NO_FIT_REASONS.lock() { for (reason,count) in no_fit_reasons { *totals.entry(reason).or_insert(0)+=count; } }
+    if let Ok(mut totals)=GEN_INFER_PREFILTER_FALLBACK_REASONS.lock() { for (reason,count) in fallback_reasons { *totals.entry(reason).or_insert(0)+=count; } }
+}
+
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+pub fn gen_infer_row_factorized_result(attempts: u64, solved: u64, no_candidate: u64, fallback: u64, row_evaluations: u64,
+    no_candidate_reasons: &rustc_hash::FxHashMap<&'static str,u64>, fallback_reasons: &rustc_hash::FxHashMap<&'static str,u64>) {
+    if !enabled() { return; }
+    bump(&GEN_INFER_ROWF_ATTEMPTS, attempts);
+    bump(&GEN_INFER_ROWF_SOLVED, solved);
+    bump(&GEN_INFER_ROWF_NO_CANDIDATE, no_candidate);
+    bump(&GEN_INFER_ROWF_FALLBACK, fallback);
+    bump(&GEN_INFER_ROWF_ROW_EVALUATIONS, row_evaluations);
+    if let Ok(mut totals)=GEN_INFER_ROWF_NO_CANDIDATE_REASONS.lock() { for (reason,count) in no_candidate_reasons { *totals.entry(reason).or_insert(0)+=count; } }
+    if let Ok(mut totals)=GEN_INFER_ROWF_FALLBACK_REASONS.lock() { for (reason,count) in fallback_reasons { *totals.entry(reason).or_insert(0)+=count; } }
+}
+
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+#[allow(clippy::too_many_arguments)]
+pub fn gen_infer_correspondence_result(attempts: u64, found: u64, no_candidate: u64, fallback: u64, hypotheses: u64, validations: u64,
+    no_candidate_reasons: &rustc_hash::FxHashMap<&'static str,u64>, fallback_reasons: &rustc_hash::FxHashMap<&'static str,u64>) {
+    if !enabled() { return; }
+    bump(&GEN_INFER_CORR_ATTEMPTS, attempts);
+    bump(&GEN_INFER_CORR_FOUND, found);
+    bump(&GEN_INFER_CORR_NO_CANDIDATE, no_candidate);
+    bump(&GEN_INFER_CORR_FALLBACK, fallback);
+    bump(&GEN_INFER_CORR_HYPOTHESES, hypotheses);
+    bump(&GEN_INFER_CORR_VALIDATIONS, validations);
+    if let Ok(mut totals)=GEN_INFER_CORR_NO_CANDIDATE_REASONS.lock() { for (reason,count) in no_candidate_reasons { *totals.entry(reason).or_insert(0)+=count; } }
+    if let Ok(mut totals)=GEN_INFER_CORR_FALLBACK_REASONS.lock() { for (reason,count) in fallback_reasons { *totals.entry(reason).or_insert(0)+=count; } }
+}
+
+#[cfg(feature = "geninfer_quadratic_map_solver")]
+pub fn gen_infer_quadratic_result(
+    quadratic_enabled: bool,
+    attempts: u64,
+    refusals: &rustc_hash::FxHashMap<&'static str, u64>,
+    validation_rejects: u64,
+    survivors: u64,
+) {
+    if !quadratic_enabled || !enabled() { return; }
+    bump(&GEN_INFER_QUADRATIC_ENABLED_CALLS, 1);
+    bump(&GEN_INFER_QUADRATIC_ATTEMPTS, attempts);
+    bump(&GEN_INFER_QUADRATIC_VALIDATION_REJECTS, validation_rejects);
+    bump(&GEN_INFER_QUADRATIC_SURVIVORS, survivors);
+    if let Ok(mut totals) = GEN_INFER_QUADRATIC_REFUSALS.lock() {
+        for (reason, count) in refusals { *totals.entry(reason).or_insert(0) += *count; }
+    }
+}
+
+#[cfg(feature = "geninfer_full_rank_identity_join_work_audit")]
+pub fn gen_infer_full_rank_identity_key_comparisons(comparisons: u64) {
+    if enabled() { bump(&GEN_INFER_FULL_RANK_IDENTITY_KEY_COMPARISONS, comparisons); }
+}
 
 /// Record one `DimInfer` invocation's exact argument encoding, in both forms.
 ///
@@ -413,6 +1203,17 @@ pub fn enabled() -> bool {
     MODE.load(Ordering::Relaxed) != MODE_OFF
 }
 
+/// Diagnostic state for proving which audit gates are active on the calling
+/// thread. The tuple is `(process_mode, thread_override, per_rule_mode)`.
+/// `enabled()` remains the authoritative effective process-or-thread gate.
+pub fn mode_snapshot() -> (bool, bool, bool) {
+    init_from_env();
+    let process_mode = MODE.load(Ordering::Relaxed) != MODE_OFF;
+    let thread_override = THREAD_ENABLED.with(Cell::get);
+    let per_rule_mode = PER_RULE_MODE.load(Ordering::Relaxed);
+    (process_mode, thread_override, per_rule_mode)
+}
+
 /// Enable recording FOR THE CALLING THREAD ONLY.
 ///
 /// `set_enabled` flips a process-global mode, which is right for a real
@@ -433,6 +1234,7 @@ pub fn enabled() -> bool {
 /// measuring real whole-process cost.
 pub fn set_enabled_for_thread(on: bool) {
     THREAD_ENABLED.with(|c| c.set(on));
+    trace_mode_transition("thread", on);
 }
 
 /// Test-facing setter (the harness's §6.1 zero-when-off gate flips this rather
@@ -475,6 +1277,7 @@ pub fn exclusive() -> std::sync::MutexGuard<'static, ()> {
 pub fn set_enabled(on: bool) {
     init_from_env();
     MODE.store(if on { MODE_ON } else { MODE_OFF }, Ordering::Relaxed);
+    trace_mode_transition("process", on);
 }
 
 #[inline(always)]
@@ -504,6 +1307,95 @@ pub fn graph_writes(n: u64) {
     }
 }
 
+#[inline]
+pub fn scoped_match_path(path: ScopedMatchPath) {
+    if !enabled() {
+        return;
+    }
+    match path {
+        ScopedMatchPath::LocalOwnedEdge => {
+            bump(&SCOPED_LOCAL_RULE_MATCHES, 1);
+            per_rule_bump("scoped_path_local_owned_edge", 1);
+        }
+        ScopedMatchPath::DeclaredAnchor => {
+            bump(&SCOPED_DECLARED_ANCHOR_MATCHES, 1);
+            per_rule_bump("scoped_path_declared_anchor", 1);
+        }
+        ScopedMatchPath::AnchorRejected => {
+            bump(&SCOPED_ANCHOR_REJECTED, 1);
+            per_rule_bump("scoped_path_anchor_rejected", 1);
+        }
+        ScopedMatchPath::MicrotheorySeed => {
+            bump(&SCOPED_MT_SEEDED_RULE_MATCHES, 1);
+            per_rule_bump("scoped_path_microtheory_seed", 1);
+        }
+        ScopedMatchPath::FullFallback => {
+            bump(&SCOPED_FULL_FALLBACK_RULE_MATCHES, 1);
+            per_rule_bump("scoped_path_full_fallback", 1);
+        }
+    }
+}
+
+#[derive(Copy, Clone)]
+pub enum ScopedMatchPath {
+    LocalOwnedEdge,
+    DeclaredAnchor,
+    AnchorRejected,
+    MicrotheorySeed,
+    FullFallback,
+}
+
+#[inline]
+pub fn rule_effect_edge_insert_attempt() {
+    if enabled() {
+        bump(&RULE_EFFECT_EDGE_INSERT_ATTEMPTS, 1);
+        per_rule_bump("effect_edge_insert_attempts", 1);
+    }
+}
+
+#[inline]
+pub fn rule_effect_edge_delete() {
+    if enabled() {
+        bump(&RULE_EFFECT_EDGE_DELETES, 1);
+        per_rule_bump("effect_edge_deletes", 1);
+    }
+}
+#[inline]
+pub fn rule_effect_node_insert() {
+    if enabled() {
+        bump(&RULE_EFFECT_NODE_INSERTS, 1);
+        per_rule_bump("effect_node_inserts", 1);
+    }
+}
+#[inline]
+pub fn rule_effect_node_delete_attempt() {
+    if enabled() {
+        bump(&RULE_EFFECT_NODE_DELETE_ATTEMPTS, 1);
+        per_rule_bump("effect_node_delete_attempts", 1);
+    }
+}
+#[inline]
+pub fn rule_effect_attr_set_attempt() {
+    if enabled() {
+        bump(&RULE_EFFECT_ATTR_SET_ATTEMPTS, 1);
+        per_rule_bump("effect_attr_set_attempts", 1);
+    }
+}
+#[inline]
+pub fn rule_effect_replace_edge_delete() {
+    if enabled() {
+        bump(&RULE_EFFECT_REPLACE_EDGE_DELETES, 1);
+        per_rule_bump("effect_replace_edge_deletes", 1);
+    }
+}
+#[inline]
+pub fn rule_effect_replace_edge_insert_attempt() {
+    if enabled() {
+        bump(&RULE_EFFECT_REPLACE_EDGE_INSERT_ATTEMPTS, 1);
+        per_rule_bump("effect_replace_edge_insert_attempts", 1);
+    }
+}
+
 // --- epochs ----------------------------------------------------------------
 
 /// Open a new epoch: a Python→Rust call into a rule-running method.
@@ -530,10 +1422,26 @@ pub fn begin_epoch_kind(apply_once: bool) {
 /// Declare that `rule_i`'s bindings are about to be enumerated. Decides whether
 /// the enumeration that follows is charged to C (first this epoch) or R (repeat).
 pub fn begin_rule_enumeration(rule_i: u32) {
+    begin_rule_enumeration_in_store(0, rule_i);
+}
+
+/// Begin enumeration for a local rule index owned by a specific store.
+pub fn begin_rule_enumeration_in_store(store_id: u64, local_rule_i: u32) {
     if !enabled() {
         return;
     }
+    let rule_i = if PER_RULE_MODE.load(Ordering::Relaxed) {
+        namespaced_rule_id(store_id, local_rule_i)
+    } else {
+        local_rule_i
+    };
+    if rule_i == NO_RULE {
+        CURRENT_RULE.with(|current| current.set(NO_RULE));
+        return;
+    }
+    CURRENT_RULE.with(|current| current.set(rule_i));
     bump(&RULE_ENUMERATIONS, 1);
+    per_rule_bump("rule_enumerations", 1);
     let repeat = match EPOCH_RULES.lock() {
         Ok(mut s) => {
             if s.contains(&rule_i) {
@@ -551,6 +1459,131 @@ pub fn begin_rule_enumeration(rule_i: u32) {
         bump(&RULE_ENUMERATIONS_REPEAT, 1);
     }
     CURRENT_IS_REPEAT.store(repeat, Ordering::Relaxed);
+}
+
+/// Register the pattern shape for a rule in the legacy namespace. New owners
+/// should use `register_rule_audit_metadata_in_store` to prevent cross-store
+/// collisions in process-global counters.
+pub fn register_rule_audit_metadata(rule_i: u32, name_sym: u32, name: &str, match_arity: usize) {
+    register_rule_audit_metadata_in_store(0, rule_i, name_sym, name, match_arity);
+}
+
+/// Register matcher metadata under a store-qualified local rule identity.
+pub fn register_rule_audit_metadata_in_store(
+    store_id: u64,
+    local_rule_i: u32,
+    name_sym: u32,
+    name: &str,
+    match_arity: usize,
+) {
+    if !enabled() || !PER_RULE_MODE.load(Ordering::Relaxed) {
+        return;
+    }
+    let rule_i = namespaced_rule_id(store_id, local_rule_i);
+    if rule_i == NO_RULE {
+        return;
+    }
+    if let Ok(mut metadata) = RULE_AUDIT_METADATA.lock() {
+        let next = (name_sym, name.to_owned(), match_arity);
+        if let Some(previous) = metadata.get(&rule_i) {
+            if previous != &next {
+                if let Ok(mut ambiguous) = AMBIGUOUS_RULE_AUDIT_IDS.lock() {
+                    ambiguous.insert(rule_i);
+                }
+                let mut invalidated = 0u64;
+                if let Ok(mut clauses) = MATCH_CLAUSE_CANDIDATES.lock() {
+                    let keys: Vec<_> = clauses
+                        .keys()
+                        .filter(|(id, _)| *id == rule_i)
+                        .copied()
+                        .collect();
+                    for key in keys {
+                        invalidated = invalidated.saturating_add(clauses.remove(&key).unwrap_or(0));
+                    }
+                }
+                if let Ok(mut edges) = MATCH_EDGE_CANDIDATES.lock() {
+                    edges.retain(|(id, _, _, _), _| *id != rule_i);
+                }
+                if let Ok(mut counts) = PER_RULE_COUNTS.lock() {
+                    let keys: Vec<_> = counts
+                        .keys()
+                        .filter(|(id, _)| *id == rule_i)
+                        .copied()
+                        .collect();
+                    let mut invalidated_terms = 0u64;
+                    for key in keys {
+                        let value = counts.remove(&key).unwrap_or(0);
+                        if key.1 == "term_evaluations" {
+                            invalidated_terms = invalidated_terms.saturating_add(value);
+                        }
+                    }
+                    if invalidated_terms > 0 {
+                        bump(&TERM_EVALS_UNATTRIBUTED, invalidated_terms);
+                    }
+                }
+                if invalidated > 0 {
+                    bump(&CAND_TESTED_UNATTRIBUTED, invalidated);
+                }
+            }
+        } else {
+            metadata.insert(rule_i, next);
+        }
+    }
+}
+
+/// Read metadata for the identities represented in the current audit window.
+pub fn rule_audit_metadata_snapshot() -> Vec<(u32, u32, String, usize, bool)> {
+    RULE_AUDIT_METADATA
+        .lock()
+        .map(|rows| {
+            rows.iter()
+                .map(|(&id, (name_sym, name, arity))| {
+                    let ambiguous = AMBIGUOUS_RULE_AUDIT_IDS
+                        .lock()
+                        .map(|set| set.contains(&id))
+                        .unwrap_or(true);
+                    (id, *name_sym, name.clone(), *arity, ambiguous)
+                })
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+/// Return the rule context on this thread, if per-rule auditing is active.
+/// Parallel matcher workers capture this before Rayon dispatch and rebind it
+/// while evaluating their partition; reading a coordinator's thread-local
+/// value from a worker would otherwise return that worker's stale context.
+#[inline]
+pub fn current_rule_index() -> Option<u32> {
+    if !PER_RULE_MODE.load(Ordering::Relaxed) {
+        return None;
+    }
+    CURRENT_RULE.with(|current| {
+        let rule = current.get();
+        (rule != NO_RULE).then_some(rule)
+    })
+}
+
+/// Run work with an explicit native rule attribution on the current thread,
+/// restoring the worker's prior context even when the callback unwinds.
+#[inline]
+pub fn with_rule_index<R>(rule_i: u32, f: impl FnOnce() -> R) -> R {
+    struct RestoreRule(u32);
+    impl Drop for RestoreRule {
+        fn drop(&mut self) {
+            CURRENT_RULE.with(|current| current.set(self.0));
+        }
+    }
+    let previous = CURRENT_RULE.with(|current| current.replace(rule_i));
+    let _restore = RestoreRule(previous);
+    f()
+}
+
+/// Stop attributing work to the most recently enumerated rule. Call at the
+/// end of each rule attempt so unrelated term evaluation cannot leak in.
+#[inline]
+pub fn end_rule_enumeration() {
+    CURRENT_RULE.with(|current| current.set(NO_RULE));
 }
 
 #[inline(always)]
@@ -577,6 +1610,7 @@ pub fn candidates(n: u64, path: CandPath) {
         return;
     }
     bump(&CAND_ENUM, n);
+    per_rule_bump("candidate_pairs", n);
     match path {
         CandPath::Local => bump(&CAND_ENUM_LOCAL, n),
         CandPath::Hinted => bump(&CAND_ENUM_HINTED, n),
@@ -593,9 +1627,36 @@ pub fn candidates(n: u64, path: CandPath) {
 }
 
 #[inline]
-pub fn cand_tested() {
+pub fn cand_tested(match_edge_position: usize, name_sym: u32, match_arity: usize) {
     if enabled() {
         bump(&CAND_TESTED, 1);
+        if PER_RULE_MODE.load(Ordering::Relaxed) {
+            let rule = CURRENT_RULE.with(Cell::get);
+            let registered_identity = RULE_AUDIT_METADATA
+                .lock()
+                .ok()
+                .and_then(|metadata| {
+                    metadata
+                        .get(&rule)
+                        .map(|(expected_name, _, expected_arity)| {
+                            *expected_name == name_sym && *expected_arity == match_arity
+                        })
+                })
+                .unwrap_or(false);
+            let ambiguous = AMBIGUOUS_RULE_AUDIT_IDS
+                .lock()
+                .map(|set| set.contains(&rule))
+                .unwrap_or(true);
+            let valid_identity = registered_identity && !ambiguous;
+            if rule != NO_RULE && valid_identity && match_edge_position < match_arity {
+                per_rule_bump("candidate_tests", 1);
+                if let Ok(mut counts) = MATCH_CLAUSE_CANDIDATES.lock() {
+                    *counts.entry((rule, match_edge_position)).or_insert(0) += 1;
+                }
+            } else {
+                bump(&CAND_TESTED_UNATTRIBUTED, 1);
+            }
+        }
     }
 }
 
@@ -612,6 +1673,7 @@ pub fn where_eval(passed: bool) {
         return;
     }
     bump(&WHERE_EVALS, 1);
+    per_rule_bump("where_evaluations", 1);
     if is_repeat() {
         bump(&WHERE_EVALS_REPEAT, 1);
     } else {
@@ -619,6 +1681,7 @@ pub fn where_eval(passed: bool) {
     }
     if !passed {
         bump(&WHERE_REJECTS, 1);
+        per_rule_bump("where_rejections", 1);
     }
 }
 
@@ -628,8 +1691,10 @@ pub fn pushdown_eval(pruned: bool) {
         return;
     }
     bump(&PUSHDOWN_EVALS, 1);
+    per_rule_bump("pushdown_evaluations", 1);
     if pruned {
         bump(&PUSHDOWN_PRUNES, 1);
+        per_rule_bump("pushdown_prunes", 1);
     }
 }
 
@@ -637,6 +1702,7 @@ pub fn pushdown_eval(pruned: bool) {
 pub fn leaf_visit() {
     if enabled() {
         bump(&LEAF_VISITS, 1);
+        per_rule_bump("binding_leaves", 1);
     }
 }
 
@@ -651,6 +1717,7 @@ pub fn var_collision() {
 pub fn binding_cloned() {
     if enabled() {
         bump(&BINDINGS_CLONED, 1);
+        per_rule_bump("binding_clones", 1);
     }
 }
 
@@ -676,7 +1743,17 @@ macro_rules! all_counters {
             cand_enum_first => CAND_ENUM_FIRST,
             cand_enum_repeat => CAND_ENUM_REPEAT,
             cand_tested => CAND_TESTED,
+            cand_tested_unattributed => CAND_TESTED_UNATTRIBUTED,
+            term_evals_unattributed => TERM_EVALS_UNATTRIBUTED,
+            term_evals_unattributed_host_api => TERM_EVALS_UNATTRIBUTED_HOST_API,
+            term_evals_unattributed_no_rule => TERM_EVALS_UNATTRIBUTED_NO_RULE,
+            term_evals_unattributed_ambiguous => TERM_EVALS_UNATTRIBUTED_AMBIGUOUS,
             cand_reject_bound => CAND_REJECT_BOUND,
+            scoped_local_rule_matches => SCOPED_LOCAL_RULE_MATCHES,
+            scoped_declared_anchor_rule_matches => SCOPED_DECLARED_ANCHOR_MATCHES,
+            scoped_anchor_rejected_rule_matches => SCOPED_ANCHOR_REJECTED,
+            scoped_mt_seeded_rule_matches => SCOPED_MT_SEEDED_RULE_MATCHES,
+            scoped_full_fallback_rule_matches => SCOPED_FULL_FALLBACK_RULE_MATCHES,
             where_evals => WHERE_EVALS,
             where_evals_first => WHERE_EVALS_FIRST,
             where_evals_repeat => WHERE_EVALS_REPEAT,
@@ -690,6 +1767,19 @@ macro_rules! all_counters {
             rule_enumerations => RULE_ENUMERATIONS,
             rule_enumerations_repeat => RULE_ENUMERATIONS_REPEAT,
             graph_writes => GRAPH_WRITES,
+            rule_effect_edge_insert_attempts => RULE_EFFECT_EDGE_INSERT_ATTEMPTS,
+            rule_effect_edge_deletes => RULE_EFFECT_EDGE_DELETES,
+            rule_effect_node_inserts => RULE_EFFECT_NODE_INSERTS,
+            rule_effect_node_delete_attempts => RULE_EFFECT_NODE_DELETE_ATTEMPTS,
+            rule_effect_attr_set_attempts => RULE_EFFECT_ATTR_SET_ATTEMPTS,
+            rule_effect_replace_edge_deletes => RULE_EFFECT_REPLACE_EDGE_DELETES,
+            rule_effect_replace_edge_insert_attempts => RULE_EFFECT_REPLACE_EDGE_INSERT_ATTEMPTS,
+            scheduler_passes => SCHEDULER_PASSES,
+            scheduler_external_poll_slots => SCHEDULER_EXTERNAL_POLL_SLOTS,
+            scheduler_fixedpoint_probe_slots => SCHEDULER_FIXEDPOINT_PROBE_SLOTS,
+            scheduler_dirty_vector_slots => SCHEDULER_DIRTY_VECTOR_SLOTS,
+            scheduler_selected_rules => SCHEDULER_SELECTED_RULES,
+            scheduler_plan_ns => SCHEDULER_PLAN_NS,
             epochs => EPOCHS,
             epochs_apply_once => EPOCHS_APPLY_ONCE,
             cand_enum_apply_once => CAND_ENUM_APPLY_ONCE,
@@ -751,6 +1841,92 @@ pub fn snapshot() -> Vec<(String, u64)> {
             ];
             term_rows(&mut v);
             dim_infer_arg_rows(&mut v);
+            v.extend([
+                ("gen_infer_requests".to_string(), GEN_INFER_REQUESTS.load(Ordering::Relaxed)),
+                ("gen_infer_cache_hits".to_string(), GEN_INFER_CACHE_HITS.load(Ordering::Relaxed)),
+                ("gen_infer_kernel_calls".to_string(), GEN_INFER_KERNEL_CALLS.load(Ordering::Relaxed)),
+                ("gen_infer_eligible_bases".to_string(), GEN_INFER_ELIGIBLE_BASES.load(Ordering::Relaxed)),
+                ("gen_infer_matrix_attempts".to_string(), GEN_INFER_MATRIX_ATTEMPTS.load(Ordering::Relaxed)),
+                ("gen_infer_apply_rejects".to_string(), GEN_INFER_APPLY_REJECTS.load(Ordering::Relaxed)),
+                ("gen_infer_candidate_rejects".to_string(), GEN_INFER_CANDIDATE_REJECTS.load(Ordering::Relaxed)),
+                ("gen_infer_residual_rejects".to_string(), GEN_INFER_RESIDUAL_REJECTS.load(Ordering::Relaxed)),
+                ("gen_infer_candidate_survivors".to_string(), GEN_INFER_CANDIDATE_SURVIVORS.load(Ordering::Relaxed)),
+                ("gen_infer_full_rank_bases".to_string(), GEN_INFER_FULL_RANK_BASES.load(Ordering::Relaxed)),
+                ("gen_infer_full_rank_refusals".to_string(), GEN_INFER_FULL_RANK_REFUSALS.load(Ordering::Relaxed)),
+                ("gen_infer_full_rank_attempts".to_string(), GEN_INFER_FULL_RANK_ATTEMPTS.load(Ordering::Relaxed)),
+                ("gen_infer_full_rank_apply_rejects".to_string(), GEN_INFER_FULL_RANK_APPLY_REJECTS.load(Ordering::Relaxed)),
+                ("gen_infer_full_rank_candidate_rejects".to_string(), GEN_INFER_FULL_RANK_CANDIDATE_REJECTS.load(Ordering::Relaxed)),
+                ("gen_infer_full_rank_residual_rejects".to_string(), GEN_INFER_FULL_RANK_RESIDUAL_REJECTS.load(Ordering::Relaxed)),
+                ("gen_infer_full_rank_survivors".to_string(), GEN_INFER_FULL_RANK_SURVIVORS.load(Ordering::Relaxed)),
+                #[cfg(feature = "geninfer_linear_exact_prefilter")]
+                ("gen_infer_prefilter_attempts".to_string(), GEN_INFER_PREFILTER_ATTEMPTS.load(Ordering::Relaxed)),
+                #[cfg(feature = "geninfer_linear_exact_prefilter")]
+                ("gen_infer_prefilter_solved".to_string(), GEN_INFER_PREFILTER_SOLVED.load(Ordering::Relaxed)),
+                #[cfg(feature = "geninfer_linear_exact_prefilter")]
+                ("gen_infer_prefilter_proven_no_fit".to_string(), GEN_INFER_PREFILTER_NO_FIT.load(Ordering::Relaxed)),
+                #[cfg(feature = "geninfer_linear_exact_prefilter")]
+                ("gen_infer_prefilter_fallback".to_string(), GEN_INFER_PREFILTER_FALLBACK.load(Ordering::Relaxed)),
+                #[cfg(feature = "geninfer_linear_exact_prefilter")]
+                ("gen_infer_prefilter_input_relations".to_string(), GEN_INFER_PREFILTER_INPUT_RELATIONS.load(Ordering::Relaxed)),
+                #[cfg(feature = "geninfer_linear_exact_prefilter")]
+                ("gen_infer_prefilter_identity_value_comparisons".to_string(), GEN_INFER_PREFILTER_IDENTITY_VALUE_COMPARISONS.load(Ordering::Relaxed)),
+                #[cfg(feature = "geninfer_linear_exact_prefilter")]
+                ("gen_infer_prefilter_exact_arithmetic_checks".to_string(), GEN_INFER_PREFILTER_EXACT_ARITHMETIC_CHECKS.load(Ordering::Relaxed)),
+                #[cfg(feature = "geninfer_linear_exact_prefilter")]
+                ("gen_infer_row_factorized_attempts".to_string(), GEN_INFER_ROWF_ATTEMPTS.load(Ordering::Relaxed)),
+                #[cfg(feature = "geninfer_linear_exact_prefilter")]
+                ("gen_infer_row_factorized_solved".to_string(), GEN_INFER_ROWF_SOLVED.load(Ordering::Relaxed)),
+                #[cfg(feature = "geninfer_linear_exact_prefilter")]
+                ("gen_infer_row_factorized_no_candidate".to_string(), GEN_INFER_ROWF_NO_CANDIDATE.load(Ordering::Relaxed)),
+                #[cfg(feature = "geninfer_linear_exact_prefilter")]
+                ("gen_infer_row_factorized_fallback".to_string(), GEN_INFER_ROWF_FALLBACK.load(Ordering::Relaxed)),
+                #[cfg(feature = "geninfer_linear_exact_prefilter")]
+                ("gen_infer_row_factorized_row_evaluations".to_string(), GEN_INFER_ROWF_ROW_EVALUATIONS.load(Ordering::Relaxed)),
+                #[cfg(feature = "geninfer_linear_exact_prefilter")]
+                ("gen_infer_correspondence_attempts".to_string(), GEN_INFER_CORR_ATTEMPTS.load(Ordering::Relaxed)),
+                #[cfg(feature = "geninfer_linear_exact_prefilter")]
+                ("gen_infer_correspondence_found".to_string(), GEN_INFER_CORR_FOUND.load(Ordering::Relaxed)),
+                #[cfg(feature = "geninfer_linear_exact_prefilter")]
+                ("gen_infer_correspondence_no_candidate".to_string(), GEN_INFER_CORR_NO_CANDIDATE.load(Ordering::Relaxed)),
+                #[cfg(feature = "geninfer_linear_exact_prefilter")]
+                ("gen_infer_correspondence_fallback".to_string(), GEN_INFER_CORR_FALLBACK.load(Ordering::Relaxed)),
+                #[cfg(feature = "geninfer_linear_exact_prefilter")]
+                ("gen_infer_correspondence_hypotheses".to_string(), GEN_INFER_CORR_HYPOTHESES.load(Ordering::Relaxed)),
+                #[cfg(feature = "geninfer_linear_exact_prefilter")]
+                ("gen_infer_correspondence_validations".to_string(), GEN_INFER_CORR_VALIDATIONS.load(Ordering::Relaxed)),
+                #[cfg(feature = "geninfer_quadratic_map_solver")]
+                ("gen_infer_quadratic_enabled_calls".to_string(), GEN_INFER_QUADRATIC_ENABLED_CALLS.load(Ordering::Relaxed)),
+                #[cfg(feature = "geninfer_quadratic_map_solver")]
+                ("gen_infer_quadratic_attempts".to_string(), GEN_INFER_QUADRATIC_ATTEMPTS.load(Ordering::Relaxed)),
+                #[cfg(feature = "geninfer_quadratic_map_solver")]
+                ("gen_infer_quadratic_validation_rejects".to_string(), GEN_INFER_QUADRATIC_VALIDATION_REJECTS.load(Ordering::Relaxed)),
+                #[cfg(feature = "geninfer_quadratic_map_solver")]
+                ("gen_infer_quadratic_survivors".to_string(), GEN_INFER_QUADRATIC_SURVIVORS.load(Ordering::Relaxed)),
+                #[cfg(feature = "geninfer_full_rank_identity_join_work_audit")]
+                ("gen_infer_full_rank_identity_key_comparisons".to_string(), GEN_INFER_FULL_RANK_IDENTITY_KEY_COMPARISONS.load(Ordering::Relaxed)),
+            ]);
+            if let Ok(bounds) = GEN_INFER_BASES_BY_BOUND.lock() {
+                v.extend(bounds.iter().map(|(bound, count)| (format!("gen_infer_bases_by_bound:{bound}"), *count)));
+            }
+            #[cfg(feature = "geninfer_linear_exact_prefilter")]
+            if let Ok(reasons)=GEN_INFER_PREFILTER_NO_FIT_REASONS.lock() { v.extend(reasons.iter().map(|(r,n)|(format!("gen_infer_prefilter_proven_no_fit_reason:{r}"),*n))); }
+            #[cfg(feature = "geninfer_linear_exact_prefilter")]
+            if let Ok(reasons)=GEN_INFER_PREFILTER_FALLBACK_REASONS.lock() { v.extend(reasons.iter().map(|(r,n)|(format!("gen_infer_prefilter_fallback_reason:{r}"),*n))); }
+            #[cfg(feature = "geninfer_linear_exact_prefilter")]
+            if let Ok(reasons)=GEN_INFER_ROWF_NO_CANDIDATE_REASONS.lock() { v.extend(reasons.iter().map(|(r,n)|(format!("gen_infer_row_factorized_no_candidate_reason:{r}"),*n))); }
+            #[cfg(feature = "geninfer_linear_exact_prefilter")]
+            if let Ok(reasons)=GEN_INFER_ROWF_FALLBACK_REASONS.lock() { v.extend(reasons.iter().map(|(r,n)|(format!("gen_infer_row_factorized_fallback_reason:{r}"),*n))); }
+            #[cfg(feature = "geninfer_linear_exact_prefilter")]
+            if let Ok(reasons)=GEN_INFER_CORR_NO_CANDIDATE_REASONS.lock() { v.extend(reasons.iter().map(|(r,n)|(format!("gen_infer_correspondence_no_candidate_reason:{r}"),*n))); }
+            #[cfg(feature = "geninfer_linear_exact_prefilter")]
+            if let Ok(reasons)=GEN_INFER_CORR_FALLBACK_REASONS.lock() { v.extend(reasons.iter().map(|(r,n)|(format!("gen_infer_correspondence_fallback_reason:{r}"),*n))); }
+            #[cfg(feature = "geninfer_quadratic_map_solver")]
+            if let Ok(refusals) = GEN_INFER_QUADRATIC_REFUSALS.lock() {
+                v.extend(refusals.iter().map(|(reason, count)| (format!("gen_infer_quadratic_refusal:{reason}"), *count)));
+            }
+            if let Ok(rows) = DEFERRED_QUEUE_AUDIT.lock() {
+                v.extend(rows.iter().map(|(name, count)| ((*name).to_string(), *count)));
+            }
             v.sort_by(|a, b| a.0.cmp(&b.0));
             v
         }};
@@ -766,6 +1942,87 @@ pub fn reset() {
         }};
     }
     all_counters!(zero);
+    for counter in [
+        &GEN_INFER_REQUESTS,
+        &GEN_INFER_CACHE_HITS,
+        &GEN_INFER_KERNEL_CALLS,
+        &GEN_INFER_ELIGIBLE_BASES,
+        &GEN_INFER_MATRIX_ATTEMPTS,
+        &GEN_INFER_APPLY_REJECTS,
+        &GEN_INFER_CANDIDATE_REJECTS,
+        &GEN_INFER_RESIDUAL_REJECTS,
+        &GEN_INFER_CANDIDATE_SURVIVORS,
+        &GEN_INFER_FULL_RANK_BASES,
+        &GEN_INFER_FULL_RANK_REFUSALS,
+        &GEN_INFER_FULL_RANK_ATTEMPTS,
+        &GEN_INFER_FULL_RANK_APPLY_REJECTS,
+        &GEN_INFER_FULL_RANK_CANDIDATE_REJECTS,
+        &GEN_INFER_FULL_RANK_RESIDUAL_REJECTS,
+        &GEN_INFER_FULL_RANK_SURVIVORS,
+        #[cfg(feature = "geninfer_linear_exact_prefilter")]
+        &GEN_INFER_PREFILTER_ATTEMPTS,
+        #[cfg(feature = "geninfer_linear_exact_prefilter")]
+        &GEN_INFER_PREFILTER_SOLVED,
+        #[cfg(feature = "geninfer_linear_exact_prefilter")]
+        &GEN_INFER_PREFILTER_NO_FIT,
+        #[cfg(feature = "geninfer_linear_exact_prefilter")]
+        &GEN_INFER_PREFILTER_FALLBACK,
+        #[cfg(feature = "geninfer_linear_exact_prefilter")]
+        &GEN_INFER_PREFILTER_INPUT_RELATIONS,
+        #[cfg(feature = "geninfer_linear_exact_prefilter")]
+        &GEN_INFER_PREFILTER_IDENTITY_VALUE_COMPARISONS,
+        #[cfg(feature = "geninfer_linear_exact_prefilter")]
+        &GEN_INFER_PREFILTER_EXACT_ARITHMETIC_CHECKS,
+        #[cfg(feature = "geninfer_linear_exact_prefilter")]
+        &GEN_INFER_ROWF_ATTEMPTS,
+        #[cfg(feature = "geninfer_linear_exact_prefilter")]
+        &GEN_INFER_ROWF_SOLVED,
+        #[cfg(feature = "geninfer_linear_exact_prefilter")]
+        &GEN_INFER_ROWF_NO_CANDIDATE,
+        #[cfg(feature = "geninfer_linear_exact_prefilter")]
+        &GEN_INFER_ROWF_FALLBACK,
+        #[cfg(feature = "geninfer_linear_exact_prefilter")]
+        &GEN_INFER_ROWF_ROW_EVALUATIONS,
+        #[cfg(feature = "geninfer_linear_exact_prefilter")]
+        &GEN_INFER_CORR_ATTEMPTS,
+        #[cfg(feature = "geninfer_linear_exact_prefilter")]
+        &GEN_INFER_CORR_FOUND,
+        #[cfg(feature = "geninfer_linear_exact_prefilter")]
+        &GEN_INFER_CORR_NO_CANDIDATE,
+        #[cfg(feature = "geninfer_linear_exact_prefilter")]
+        &GEN_INFER_CORR_FALLBACK,
+        #[cfg(feature = "geninfer_linear_exact_prefilter")]
+        &GEN_INFER_CORR_HYPOTHESES,
+        #[cfg(feature = "geninfer_linear_exact_prefilter")]
+        &GEN_INFER_CORR_VALIDATIONS,
+        #[cfg(feature = "geninfer_quadratic_map_solver")]
+        &GEN_INFER_QUADRATIC_ENABLED_CALLS,
+        #[cfg(feature = "geninfer_quadratic_map_solver")]
+        &GEN_INFER_QUADRATIC_ATTEMPTS,
+        #[cfg(feature = "geninfer_quadratic_map_solver")]
+        &GEN_INFER_QUADRATIC_VALIDATION_REJECTS,
+        #[cfg(feature = "geninfer_quadratic_map_solver")]
+        &GEN_INFER_QUADRATIC_SURVIVORS,
+        #[cfg(feature = "geninfer_full_rank_identity_join_work_audit")]
+        &GEN_INFER_FULL_RANK_IDENTITY_KEY_COMPARISONS,
+    ] {
+        counter.store(0, Ordering::Relaxed);
+    }
+    if let Ok(mut bounds) = GEN_INFER_BASES_BY_BOUND.lock() { bounds.clear(); }
+    #[cfg(feature = "geninfer_linear_exact_prefilter")]
+    if let Ok(mut reasons)=GEN_INFER_PREFILTER_NO_FIT_REASONS.lock() { reasons.clear(); }
+    #[cfg(feature = "geninfer_linear_exact_prefilter")]
+    if let Ok(mut reasons)=GEN_INFER_PREFILTER_FALLBACK_REASONS.lock() { reasons.clear(); }
+    #[cfg(feature = "geninfer_linear_exact_prefilter")]
+    if let Ok(mut reasons)=GEN_INFER_ROWF_NO_CANDIDATE_REASONS.lock() { reasons.clear(); }
+    #[cfg(feature = "geninfer_linear_exact_prefilter")]
+    if let Ok(mut reasons)=GEN_INFER_ROWF_FALLBACK_REASONS.lock() { reasons.clear(); }
+    #[cfg(feature = "geninfer_linear_exact_prefilter")]
+    if let Ok(mut reasons)=GEN_INFER_CORR_NO_CANDIDATE_REASONS.lock() { reasons.clear(); }
+    #[cfg(feature = "geninfer_linear_exact_prefilter")]
+    if let Ok(mut reasons)=GEN_INFER_CORR_FALLBACK_REASONS.lock() { reasons.clear(); }
+    #[cfg(feature = "geninfer_quadratic_map_solver")]
+    if let Ok(mut refusals) = GEN_INFER_QUADRATIC_REFUSALS.lock() { refusals.clear(); }
     for i in 0..NUM_TERM_VARIANTS {
         TERM_EVALS[i].store(0, Ordering::Relaxed);
         TERM_UNITS[i].store(0, Ordering::Relaxed);
@@ -775,6 +2032,13 @@ pub fn reset() {
         s.clear();
     }
     CURRENT_IS_REPEAT.store(false, Ordering::Relaxed);
+    per_rule_reset();
+    if let Ok(mut rows) = DEFERRED_QUEUE_AUDIT.lock() {
+        rows.clear();
+    }
+    if let Ok(mut rows) = SCOPED_WORK_AUDIT.lock() {
+        rows.clear();
+    }
     IN_APPLY_ONCE.store(false, Ordering::Relaxed);
     if let Ok(mut s) = DIM_INFER_ARGS_ORDERED.lock() {
         s.clear();
@@ -790,6 +2054,50 @@ pub fn reset() {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn mode_snapshot_distinguishes_process_and_thread_gates() {
+        let _x = super::exclusive();
+        set_enabled(false);
+        set_enabled_for_thread(false);
+        set_per_rule_enabled(false);
+        assert_eq!(mode_snapshot(), (false, false, false));
+        set_enabled_for_thread(true);
+        assert_eq!(mode_snapshot(), (false, true, false));
+        set_per_rule_enabled(true);
+        assert_eq!(mode_snapshot(), (false, true, true));
+        set_enabled_for_thread(false);
+        set_enabled(true);
+        assert_eq!(mode_snapshot(), (true, false, true));
+        set_per_rule_enabled(false);
+        set_enabled(false);
+        assert_eq!(mode_snapshot(), (false, false, false));
+    }
+
+    #[test]
+    fn host_term_evaluation_is_separate_from_missing_rule_context() {
+        let _x = super::exclusive();
+        set_enabled(true);
+        set_per_rule_enabled(true);
+        reset();
+        {
+            let _host = host_evaluation_scope().expect("audit is enabled");
+            let _term = term_eval(0);
+        }
+        let counts: std::collections::HashMap<String, u64> = snapshot().into_iter().collect();
+        assert_eq!(counts["term_evals_unattributed"], 1);
+        assert_eq!(counts["term_evals_unattributed_host_api"], 1);
+        assert_eq!(counts["term_evals_unattributed_no_rule"], 0);
+        reset();
+        let _term = term_eval(0);
+        let counts: std::collections::HashMap<String, u64> = snapshot().into_iter().collect();
+        assert_eq!(counts["term_evals_unattributed"], 1);
+        assert_eq!(counts["term_evals_unattributed_host_api"], 0);
+        assert_eq!(counts["term_evals_unattributed_no_rule"], 1);
+        set_per_rule_enabled(false);
+        set_enabled(false);
+        reset();
+    }
 
     /// §6.1 — every counter reads zero when the audit is off, and the sites are
     /// inert. A counter that moves while disabled would contaminate every
@@ -839,6 +2147,66 @@ mod tests {
         );
         set_enabled_for_thread(false);
         reset();
+    }
+
+    #[test]
+    fn namespaced_rule_identity_separates_overlapping_indices_across_threads() {
+        let _x = super::exclusive();
+        set_enabled(true);
+        set_per_rule_enabled(true);
+        reset();
+        per_rule_reset();
+        begin_epoch();
+
+        let store_a = new_rule_audit_store_id();
+        let store_b = new_rule_audit_store_id();
+        assert_ne!(store_a, store_b);
+        for store in [store_a, store_b] {
+            begin_rule_enumeration_in_store(store, 7);
+            register_rule_audit_metadata_in_store(store, 7, 41, "same_rule", 1);
+        }
+
+        let id_a = rule_audit_id_for(store_a, 7).unwrap();
+        let id_b = rule_audit_id_for(store_b, 7).unwrap();
+        assert_ne!(id_a, id_b);
+        with_rule_index(id_a, || cand_tested(0, 41, 1));
+        std::thread::spawn(move || {
+            with_rule_index(id_b, || cand_tested(0, 41, 1));
+        })
+        .join()
+        .unwrap();
+
+        let global: std::collections::HashMap<String, u64> = snapshot().into_iter().collect();
+        assert_eq!(global["cand_tested"], 2);
+        assert_eq!(global["cand_tested_unattributed"], 0);
+        let per_rule = per_rule_snapshot();
+        let candidate_rows: Vec<_> = per_rule
+            .iter()
+            .filter(|(_, metric, _)| metric == "candidate_tests")
+            .collect();
+        assert_eq!(candidate_rows.len(), 2);
+        assert!(candidate_rows
+            .iter()
+            .any(|(id, _, n)| *id == id_a && *n == 1));
+        assert!(candidate_rows
+            .iter()
+            .any(|(id, _, n)| *id == id_b && *n == 1));
+        let clauses = match_clause_candidate_snapshot();
+        assert_eq!(clauses, vec![(id_a, 0, 1), (id_b, 0, 1)]);
+        let identities = rule_audit_identity_snapshot();
+        assert!(identities.contains(&(id_a, store_a, 7)));
+        assert!(identities.contains(&(id_b, store_b, 7)));
+        assert!(rule_audit_metadata_snapshot()
+            .iter()
+            .all(|(_, _, _, arity, ambiguous)| *arity == 1 && !ambiguous));
+
+        set_enabled(false);
+        reset();
+        per_rule_reset();
+        cand_tested(0, 41, 1);
+        assert!(per_rule_snapshot().is_empty());
+        assert!(match_clause_candidate_snapshot().is_empty());
+        set_per_rule_enabled(false);
     }
 
     /// §6.1 for the TERM family: the per-variant cells and the interior-unit

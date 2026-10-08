@@ -83,8 +83,17 @@ def test_converse_lists_filed_gaps_not_self_identity():
     assert "Jabberwock" not in reply
 
 
-def test_converse_surfaces_boot_integrity_gap_when_full_boot_is_incomplete():
+def test_converse_surfaces_boot_integrity_gap_when_full_boot_is_incomplete(tmp_path):
+    # Since tranche 11 the shipped full boot is complete (the 11 non-manifest
+    # files moved to domain_data/), so the incomplete boot is constructed: a
+    # second boot cycle over a seed dir holding one invalid manifest.
+    import json as _json
     a = _boot()
+    (tmp_path / "broken.json").write_text(_json.dumps({
+        "id": "broken", "version": "1", "nodes": [{"type": "Concept", "attrs": {"name": "broken"}}],
+        "edges": [], "productions": [], "rules": []}))
+    load_all_seeds(a, seed_dir=tmp_path)
+    a.inner.run_rules()
     reply = a.converse("What gaps do you have?", speech_act="question")
     assert isinstance(reply, str) and reply.strip()
     assert "boot integrity" in reply.lower()

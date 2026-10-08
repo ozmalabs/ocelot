@@ -46,6 +46,19 @@ def _sub(wa):
 
 
 def _find_concept(sub, name):
+    # WorldAdapter's graph facade stores the native substrate on `_inner`;
+    # direct substrate providers may expose the indexed lookup themselves.
+    # Use the maintained exact-name index when available, while retaining the
+    # generic scan fallback for minimal graph implementations.
+    index = getattr(sub, "_inner", sub)
+    nodes_where = getattr(index, "nodes_where", None)
+    has_index = getattr(index, "has_attr_index", None)
+    declare_index = getattr(index, "declare_attr_index", None)
+    if callable(nodes_where) and callable(has_index) and callable(declare_index):
+        if not has_index("Concept", "name"):
+            declare_index("Concept", "name")
+        matches = nodes_where("Concept", "name", str(name))
+        return matches[0] if matches else None
     for c in sub.nodes("Concept"):
         if sub.node(c)["attrs"].get("name") == str(name):
             return c

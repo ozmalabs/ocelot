@@ -1,0 +1,7 @@
+# Percept × distractor factorial v1.1 capture amendment
+
+The v1 factorial protocol and its 4 × 3 design remain unchanged. The first 48-worker capture is preserved at `evaluation/reports/live_describe_scene_percept_noise_factorial_v1_workers_raw_20260929.json`, but its source gate failed: six workers detected source changes during the run, affecting `domains/discourse_state.py`, `domains/conceptualizer.py`, and `seeds/communication_intent_arbitration.json`. The corresponding analysis is explicitly censored for factor-effect interpretation. No rows are discarded or overwritten.
+
+A lock stability probe taken twice 20 seconds apart after that capture found identical full source fingerprints. This v1.1 run uses a new lock, raw report, driver report, and analysis report. It repeats the original factor levels, worker count, oracles, counters, and finite-model analysis without changing outcomes or thresholds. Every worker still checks source fingerprints at start and finish, and the driver checks again after all workers. If any fingerprint changes, the capture is retained and source instability is reported; results are not interpreted as a stable factorial estimate.
+
+The two-point probe establishes stability only during that interval. It does not guarantee that the tree will remain unchanged for the duration of the capture. This amendment is a procedural repeat, not independent replication: the same substrate, synthetic workloads, rules, and machine are used.

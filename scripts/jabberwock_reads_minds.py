@@ -10,7 +10,7 @@ propositional-attitude construction, so "Sally thinks the ball is in the
 basket" had nowhere to ground. domains/character_tom.py adds ONE construction
 ('propositional_attitude', signature [["ATTITUDE"]]) recognised by the SAME
 ShapeDecode collapse designation/possession already use, over an ATTITUDE
-marker-class that mirrors seeds/reading_constructions.json's COS class
+marker-class that mirrors domain_data/reading_constructions.json's COS class
 exactly (seed members + join-by-adjacency for an unseen verb). BELIEF/
 KNOWLEDGE grounds the complement as a NESTED SmEntity/proposition under a
 `belief_world` edge; DESIRE grounds the character's GOAL — the Zwaan &

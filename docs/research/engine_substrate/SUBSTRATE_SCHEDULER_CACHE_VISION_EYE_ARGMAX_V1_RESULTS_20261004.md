@@ -1,0 +1,7 @@
+# Source-authored vision-eye Argmax scheduler-cache replay v1 results — 2026-10-04
+
+All locked gates pass. Four fixed-patch phase-0 input steps on a 16×16 retinal graph with four WUnits load and execute the unchanged `ph0_wunit_winner` rule. The measured input path records three Argmax evaluations and leaves one evaluator-generated Argmax entry alongside one neighbour entry. Two independent restores reproduce the captured graph/rule/scheduler checkpoint exactly. After forcing the same rules dirty without changing graph facts, live and restored closures match in aggregate work, per-rule work, graph state, and scheduler state.
+
+This is the first source-authored subsystem result showing nonempty Argmax checkpoint state, beyond the authored cache fixture. It validates checkpoint/replay compatibility for one eligible ranking expression and its current binding shape. It does not measure a cache speedup, broad input distribution, task accuracy, natural workload prevalence, or scaling. The short fixed-patch sequence is a cache transfer diagnostic; the 4,000-step receptive-field assay is a separate capability result.
+
+Evidence: [protocol](SUBSTRATE_SCHEDULER_CACHE_VISION_EYE_ARGMAX_V1_PREREG_20261004.md), [runner](../../../evaluation/substrate_capability/scheduler_cache_vision_eye_argmax_v1.py), [source lock](../../../evaluation/substrate_capability/scheduler_cache_vision_eye_argmax_v1_lock_20261004.json), and [capture](../../../evaluation/reports/scheduler_cache_vision_eye_argmax_v1_20261004.json).

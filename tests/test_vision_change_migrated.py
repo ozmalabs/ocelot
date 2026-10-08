@@ -139,7 +139,7 @@ def test_each_drive_rule_has_its_own_phase_key():
     change its own match re-fires forever under the adapter's fixed-point loop
     (it hung the bench), so the guards must exist at all."""
     import json
-    with open(os.path.join(ROOT, "seeds", "vision_change.json")) as fh:
+    with open(os.path.join(ROOT, "domain_data", "vision_change.json")) as fh:
         seed = json.load(fh)
     keys = []
     for r in seed["rules"]:

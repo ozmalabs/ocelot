@@ -1,0 +1,9 @@
+# LS20 map-navigation current-source scale panel v1.1 amendment
+
+**Date:** 2026-09-28
+
+The v1 attempt completed all 150 paired scenarios, but its post-run lock differed from the pre-run lock: Python-source tree digests changed under `scripts/` and `substrate/`. The runner correctly preserved `partial.json` and refused a final capture. The v1 partial and lock are retained as censored artifacts and are not used to score outcomes.
+
+V1.1 retains the v1 task family, cell sizes, wall density, station counts, sample count, arm pairing/order, independent transform/station oracle, metric set, and all five gates. It uses a fresh seed block `221200`–`221204` in the preregistered cell order and writes to a new runner, source lock, and capture directory. The initial v1.1 lock gates stopped before task execution: first, unrelated `scripts/jabberwock_daemon.py` edits changed a broad `scripts/` tree digest; then an unrelated `domains/construction_grammar.py` edit changed a broad `domains/` digest. A separate paired diagnostic imported both routers' runtime path and identified the 40-file Python module closure. The v1.1 protocol is amended to hash that loaded file closure, the benchmark, and directly loaded `scripts/arc3_env.py`; it retains full Rust, native facade, build, and recursively loaded seed-closure hashes. Both unstarted v1.1 locks are preserved separately; a replacement lock is taken against the corrected protocol before evaluation. This is a preregistered source-current panel on a disjoint generated scenario sample, not a continuation, pooling, or replication of the censored v1 outcomes. No task outcome labels are used to alter the gates or algorithm.
+
+This amendment does not weaken the source-lock requirement or relax any performance threshold. If v1.1 source drift occurs, preserve it as censored and stop rather than analyzing partial outcomes as a completed run.

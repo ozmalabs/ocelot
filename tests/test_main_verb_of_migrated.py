@@ -8,7 +8,7 @@ NO skeleton marker fired at all).
 THE DECISION MOVED GRAPH-NATIVE: "does a nested 'of' defer to an already-seen
 finite verb, or does it head the clause itself" is now a HELD FACT
 (`MarkerClass{cls:'OF', yields_to_finite_verb:true}`,
-seeds/reading_constructions.json) that `_of_yields_to_finite_verb` reads —
+domain_data/reading_constructions.json) that `_of_yields_to_finite_verb` reads —
 mirroring the pre-existing QUANTIFIER-partitive-glue / BUT-contrast-coordinator
 precedent in `domains.reading_collapse._skeleton_from_words` (held MarkerClass
 DATA the parser reads, not a Python literal `if`). Hand-authored bootstrapping

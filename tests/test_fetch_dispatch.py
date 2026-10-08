@@ -11,8 +11,12 @@ the graph), but fetch is synchronous so there's no poll-loop.
 from __future__ import annotations
 
 import http.server
+import concurrent.futures
 import socket
+import subprocess
+import sys
 import threading
+import time
 from pathlib import Path
 
 import pytest
@@ -103,6 +107,140 @@ def test_scan_and_fetch_success(adapter, local_server):
     assert len(chained) >= 1
 
 
+def test_authored_http_get_reuses_keep_alive_connection():
+    from domains.http_transport import close_idle_connections
+    from domains.runtime_design import (agent_specify_http_get,
+                                        emit_external_io_binding)
+
+    class KeepAliveHandler(http.server.BaseHTTPRequestHandler):
+        protocol_version = "HTTP/1.1"
+
+        def setup(self):
+            super().setup()
+            self.server.connection_count += 1
+
+        def do_GET(self):
+            self.server.request_count += 1
+            body = f"body:{self.path}".encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, fmt, *args):
+            pass
+
+    srv = http.server.HTTPServer(("127.0.0.1", 0), KeepAliveHandler)
+    srv.connection_count = 0
+    srv.request_count = 0
+    thread = threading.Thread(target=srv.serve_forever, daemon=True)
+    thread.start()
+    namespace = {}
+    source = emit_external_io_binding(agent_specify_http_get())[
+        "world_adapter.py (binding)"]
+    exec(compile(source, "<test-authored-http-get>", "exec"), namespace)
+    get = namespace["http_get"]
+    base = f"http://127.0.0.1:{srv.server_port}"
+    try:
+        first = get(base + "/first", timeout=2)
+        second = get(base + "/second", timeout=2)
+        assert first["text"] == "body:/first"
+        assert second["text"] == "body:/second"
+        assert first["status"] == second["status"] == 200
+        assert srv.request_count == 2
+        assert srv.connection_count == 1
+    finally:
+        close_idle_connections()
+        srv.shutdown()
+        srv.server_close()
+        thread.join(timeout=2)
+
+
+def test_https_connections_reuse_process_client_trust_context(monkeypatch):
+    import domains.http_transport as transport
+
+    context = object()
+    created = []
+    connections = []
+
+    def create_context():
+        created.append(context)
+        return context
+
+    class FakeHTTPSConnection:
+        def __init__(self, host, port, *, timeout, context):
+            self.host = host
+            self.port = port
+            self.timeout = timeout
+            self.context = context
+            connections.append(self)
+
+    monkeypatch.setattr(transport, "_SSL_CONTEXT", None)
+    monkeypatch.setattr(transport.ssl, "create_default_context", create_context)
+    monkeypatch.setattr(transport.http.client, "HTTPSConnection",
+                        FakeHTTPSConnection)
+
+    first = transport._new_connection(("https", "example.test", 443), 2)
+    second = transport._new_connection(("https", "example.test", 443), 2)
+
+    assert len(created) == 1
+    assert len(connections) == 2
+    assert first.context is second.context is context
+    assert (first.host, first.port, first.timeout) == (
+        "example.test", 443, 2)
+
+
+def test_authored_http_get_allows_bounded_same_origin_concurrency():
+    from domains.http_transport import close_idle_connections, http_get
+
+    class ConcurrentHandler(http.server.BaseHTTPRequestHandler):
+        protocol_version = "HTTP/1.1"
+
+        def setup(self):
+            super().setup()
+            with self.server.guard:
+                self.server.connections.add(self.connection.fileno())
+
+        def do_GET(self):
+            with self.server.guard:
+                self.server.active += 1
+                self.server.max_active = max(self.server.max_active,
+                                             self.server.active)
+            time.sleep(0.08)
+            body = self.path.encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            with self.server.guard:
+                self.server.active -= 1
+
+        def log_message(self, fmt, *args):
+            pass
+
+    srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), ConcurrentHandler)
+    srv.guard = threading.Lock()
+    srv.connections = set()
+    srv.active = 0
+    srv.max_active = 0
+    thread = threading.Thread(target=srv.serve_forever, daemon=True)
+    thread.start()
+    base = f"http://127.0.0.1:{srv.server_port}"
+    try:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
+            results = list(pool.map(
+                lambda i: http_get(f"{base}/item-{i}", timeout=3), range(4)))
+        assert [item["text"] for item in results] == [
+            f"/item-{i}" for i in range(4)]
+        assert srv.max_active > 1
+        assert len(srv.connections) <= 4
+    finally:
+        srv.shutdown()
+        srv.server_close()
+        close_idle_connections()
+        thread.join(timeout=2)
+
+
 def test_scan_and_fetch_failure_unreachable(adapter):
     # Bind an ephemeral port then close it immediately -> nothing listens there,
     # connection refused (still entirely local, no real internet touched).
@@ -141,6 +279,45 @@ def test_scan_and_fetch_refuses_file_scheme(adapter, tmp_path):
 
 def test_scan_and_fetch_noop_when_nothing_requested(adapter):
     assert scan_and_fetch(adapter, timeout=3) == []
+
+
+def test_optional_reference_transports_stay_out_of_profile_imports():
+    code = (
+        "import sys; "
+        "import domains.fetch_dispatch; "
+        "import domains.wiktionary_reference; "
+        "assert 'urllib.request' not in sys.modules"
+    )
+    subprocess.run([sys.executable, "-c", code], check=True)
+
+
+def test_fetch_dispatch_urllib_fallback_remains_available(monkeypatch):
+    from urllib import request
+    from domains import fetch_dispatch as fd
+
+    class FakeResponse:
+        status = 200
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+        def read(self, size):
+            assert size == 5
+            return b"test!"
+
+    monkeypatch.setattr(fd, "_materialize_http_get", lambda: None)
+    monkeypatch.setattr(request, "urlopen", lambda *_a, **_kw: FakeResponse())
+    result, route = fd._fetch(
+        "https://example.invalid/test", timeout=1, max_bytes=4)
+
+    assert route == "fallback_urllib"
+    assert result == {
+        "status": 200, "length": 5, "text": "test",
+        "url": "https://example.invalid/test",
+    }
 
 
 def test_scan_and_fetch_with_supplied_http_get(adapter, local_server):

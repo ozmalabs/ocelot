@@ -1,0 +1,11 @@
+# Where-reader Term/fan-out scaling v1.1 results
+
+**Evidence grade:** 36 source-locked fresh worker processes; all 10 runner gates and 7 independent analysis checks pass across 12 cells, three workers per cell.
+
+The panel crosses N=128/512 stable slot bindings with R=1/16/64 reader rules in two families: `Count(ReachableFrom(Root, block)) == 0` and `Not Exists` over `InNeighbours(Slot, block)`. Each begins with every slot blocked; a single public batch edge deletion removes all blockers. Full rescan and sound incremental modes reach identical graphs and open all N slots. The unsound falsifier opens none. Candidate counts equal N×R, rule enumerations equal R, and all observed cells satisfy those relations.
+
+At N=512,R=64, both families enumerate 32,768 candidate pairs. The transitive family invokes Terms 163,840 times and charges 16,777,216 `ReachableFrom` traversal units during initial closure (N²R for this star topology); its post-delete traversal units are zero because the graph has no block edges. Median post-delete closure is 14.56 ms. `Not Exists` charges 32,768 initial units (N×R), then zero after deletion, with a 12.82 ms post-delete closure. These are site-defined inspected-neighbor counts, not CPU instructions. The result exposes substantial repeated evaluation of the same root reachability query across slot bindings; it does not prove the general engine's asymptotic complexity or natural-task frequency.
+
+V1's first capture passed its semantic and candidate-count gates but enabled auditing only after deletion, missing initial nonempty traversal cost. That capture is preserved in the [v1.1 amendment](SUBSTRATE_WHERE_READER_TERM_FANOUT_V1_1_AMENDMENT_20260928.md); v1.1 measures initial and post-delete work separately.
+
+Artifacts: [protocol](SUBSTRATE_WHERE_READER_TERM_FANOUT_V1_PREREG_20260928.md), [amendment](SUBSTRATE_WHERE_READER_TERM_FANOUT_V1_1_AMENDMENT_20260928.md), [runner](../../../scripts/substrate_where_reader_term_fanout_v1.py), [raw capture](../../../evaluation/reports/substrate_where_reader_term_fanout_v1_1_20260928.json), [analysis](../../../evaluation/reports/substrate_where_reader_term_fanout_v1_1_analysis_20260928.json), and [source lock](../../../evaluation/substrate_capability/where_reader_term_fanout_v1_1_lock_20260928.json).

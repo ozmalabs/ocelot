@@ -1,0 +1,3 @@
+# Balanced 10M extension v1.4.1 amendment
+
+V1.4 completed all three worker runs, and every graph, sampled-state, fixed-point, timing, and worker-stability check passed. The source-projection gate failed because the parent lock omitted `scripts/analyze_substrate_interacting_tree_closure_scale_v1.py`, which is part of the reused worker's own fingerprint. Worker pre/post fingerprints are stable and every other worker-hashed path matches. Preserve the v1.4 capture as a disclosed failed gate; v1.4.1 adds that path and compares fresh worker snapshots against the complete parent lock. Workload, engine, semantic controls, and acceptance conditions are unchanged. The rerun uses new lock and raw paths.

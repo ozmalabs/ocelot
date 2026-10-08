@@ -117,6 +117,16 @@ control (random must still floor) is preserved in the new gate.
 
 ## What I got wrong / honest scope
 
+- **Order-N is model order, not O(N) runtime.** For `T` observed frame-to-frame
+  offsets of dimension `d`, `diff_pyramid` constructs successive difference
+  levels until it finds a witnessed constant or exhausts the stream. In the
+  worst case it computes and retains a triangular number of vectors, so this
+  stage is `O(T² d)` time and space. It then extrapolates one vector in
+  `O(T d)` time. This bound excludes the per-pair frame correspondence and
+  translation checks in `infer_translate_offset`, whose cost depends on frame
+  size. Low-order regular streams stop early, but this implementation does not
+  establish a linear-time guarantee in stream length.
+
 - **First instinct check.** I confirmed (as Stage 0 did) that the failure was a
   genuine expressiveness limit, not a wiring bug — the order-N path is genuinely
   new code, correctly additive rather than a polarity flip.

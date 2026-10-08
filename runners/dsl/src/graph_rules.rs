@@ -290,6 +290,15 @@ fn parse_effect_op(v: &Value, arena: &mut TermArena, interner: &mut Interner) ->
             let value = parse_effect_arg(&parts[3], arena, interner)?;
             Some(Effect::SetAttr { var, key, value })
         }
+        "set_attr_if_different" => {
+            if parts.len() < 4 {
+                return None;
+            }
+            let var = intern_str(&parts[1], interner)?;
+            let key = intern_str(&parts[2], interner)?;
+            let value = parse_effect_arg(&parts[3], arena, interner)?;
+            Some(Effect::SetAttrIfDifferent { var, key, value })
+        }
         "set_rule_clause" => {
             if parts.len() < 4 {
                 return None;
@@ -388,7 +397,7 @@ pub fn rule_from_node(
     let where_ = parse_where(&where_v, arena, interner)?;
     let effects = parse_effects(&effect_v, arena, interner)?;
 
-    // slice (b): the optional batch / match_type attrs off the Rule node.
+    // slice (b): optional scheduling and match-driving attrs off the Rule node.
     let batch_sym = interner.intern("batch");
     let match_type_key = interner.intern("match_type");
     let explicit_batch: Option<bool> = match attrs.get(&batch_sym) {
@@ -404,6 +413,39 @@ pub fn rule_from_node(
             None
         }
     });
+    let scope_anchor_var_key = interner.intern("scope_anchor_var");
+    let scope_anchor_type_key = interner.intern("scope_anchor_type");
+    let scope_anchor_owner_var_key = interner.intern("scope_anchor_owner_var");
+    let scope_anchor_owner_type_key = interner.intern("scope_anchor_owner_type");
+    let scope_anchor_owner_edge_key = interner.intern("scope_anchor_owner_edge");
+    let scope_anchor_field = |key| {
+        attrs.get(&key).and_then(|value| match value {
+            Value::Str(sym) => Some(*sym),
+            _ => None,
+        })
+    };
+    let scope_anchor = match (
+        scope_anchor_field(scope_anchor_var_key),
+        scope_anchor_field(scope_anchor_type_key),
+        scope_anchor_field(scope_anchor_owner_var_key),
+        scope_anchor_field(scope_anchor_owner_type_key),
+        scope_anchor_field(scope_anchor_owner_edge_key),
+    ) {
+        (
+            Some(anchor_var),
+            Some(anchor_type),
+            Some(owner_var),
+            Some(owner_type),
+            Some(owner_edge),
+        ) => Some(crate::rewrite::ScopeAnchor {
+            anchor_var,
+            anchor_type,
+            owner_var,
+            owner_type,
+            owner_edge,
+        }),
+        _ => None,
+    };
 
     let mut rule = RewriteRule {
         uid: crate::rewrite::RuleUid(
@@ -429,6 +471,7 @@ pub fn rule_from_node(
         where_,
         effects,
         match_type,
+        scope_anchor,
         ..Default::default()
     };
     rule.derive_access(arena);
@@ -471,11 +514,15 @@ pub fn run_graph_rules_opts(
     let rule_ids: Vec<NodeID> = substrate.graph.nodes_of_type(rule_type_sym);
 
     let mut rules: Vec<RewriteRule> = Vec::with_capacity(rule_ids.len());
+    let mut audit_ids: Vec<u32> = Vec::with_capacity(rule_ids.len());
     for nid in rule_ids {
         if let Some(rule) =
             rule_from_node(&substrate.graph, nid, &mut arena, &mut substrate.interner)
         {
             rules.push(rule);
+            // Graph Rule nodes use a separate audit namespace from the
+            // substrate's positional RuleIdx values (high-bit tagged NodeID).
+            audit_ids.push(0x8000_0000 | (nid.0 & 0x7fff_ffff));
         }
         // Rules that fail to parse are silently skipped — they
         // remain in the graph and can be inspected for diagnostics.
@@ -483,8 +530,9 @@ pub fn run_graph_rules_opts(
 
     let rule_refs: Vec<&RewriteRule> = rules.iter().collect();
     let no_jits: Vec<Option<&crate::jit::CompiledWhere>> = vec![None; rule_refs.len()];
-    let steps = crate::rewrite::run_rules_opts(
+    let steps = crate::rewrite::run_rules_opts_with_audit_ids(
         &rule_refs,
+        Some(&audit_ids),
         &mut arena,
         &mut substrate.graph,
         &mut substrate.interner,

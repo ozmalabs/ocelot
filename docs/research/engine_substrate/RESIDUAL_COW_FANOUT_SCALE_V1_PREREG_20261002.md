@@ -1,0 +1,7 @@
+# Residual CoW fanout scale v1 preregistration
+
+Extend the source-locked residual proposal workflow from 100,000 to 1,000,000 unrelated host nodes. Preserve the original capture. Cross branch fanout 1/4/16 with full-copy/shared-graph-pages backends and three fresh-process repetitions per cell (18 workers). The underlying worker and task semantics are the previously locked `Residual CoW fanout memory v1` protocol; this extension changes only the unrelated-node count and capture identity.
+
+For every branch, the worker must induce the measured navigation cue, build and score the same candidate against held-out cases, preserve branch target rules and host graph/rule state, then explicitly return exactly one validated 41-node/2-edge residual. The independent analyzer gates complete cell coverage, unique worker PIDs, stable source hashes, all semantic outcomes, and exact residual size. A failure aborts analysis rather than being silently excluded.
+
+Primary outcomes are current PSS/RSS deltas by stage, peak RSS, median fork cost, and candidate operation cost, compared descriptively with the archived 100k capture. Current PSS is a workload measure, not live allocator bytes. Sequentially evaluated but simultaneously retained branches do not establish concurrent throughput. The synthetic noise nodes and one navigation task do not establish natural-task locality, general capability, or linear complexity. Resource use is monitored; the run is stopped if host memory pressure becomes unsafe.
